@@ -15,10 +15,12 @@ import { convertTextsSerialize } from './convertTextsSerialize';
 import { listToMdastTree } from './listToMdastTree';
 import { unreachable } from './utils';
 import { getSerializerByKey } from './utils/getSerializerByKey';
+import { wrapWithBlockId } from './wrapWithBlockId';
 
 export const convertNodesSerialize = (
   nodes: Descendant[],
-  options: SerializeMdOptions
+  options: SerializeMdOptions,
+  isBlock = false
 ): unistLib.Node[] => {
   const mdastNodes: unistLib.Node[] = [];
   let textQueue: TText[] = [];
@@ -60,11 +62,21 @@ export const convertNodesSerialize = (
           next && next.type === pType && 'listStyleType' in next;
 
         if (!isNextIndent) {
-          mdastNodes.push(listToMdastTree(listBlock as any, options));
+          // Pass the original nodes and isBlock flag to listToMdastTree
+          // so it can handle wrapping individual items with block IDs
+          const result = listToMdastTree(listBlock as any, options, isBlock);
+
+          // Handle fragment type (used when list items have IDs)
+          if (result.type === 'fragment') {
+            mdastNodes.push(...result.children);
+          } else {
+            mdastNodes.push(result);
+          }
+
           listBlock.length = 0;
         }
       } else {
-        const node = buildMdastNode(n, options);
+        const node = buildMdastNode(n, options, isBlock);
 
         if (node) {
           mdastNodes.push(node as unistLib.Node);
@@ -76,7 +88,11 @@ export const convertNodesSerialize = (
   return mdastNodes;
 };
 
-export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
+export const buildMdastNode = (
+  node: any,
+  options: SerializeMdOptions,
+  isBlock = false
+) => {
   const editor = options.editor!;
 
   let key = getPluginKey(editor, node.type) ?? node.type;
@@ -92,7 +108,15 @@ export const buildMdastNode = (node: any, options: SerializeMdOptions) => {
   const nodeParser = getSerializerByKey(key, options);
 
   if (nodeParser) {
-    return nodeParser(node, options);
+    const mdastNode = nodeParser(node, options);
+
+    // If withBlockId is enabled and the node has an ID, wrap it
+    // But only wrap if isBlock is true (top-level elements only)
+    if (options.withBlockId && node.id && isBlock) {
+      return wrapWithBlockId(mdastNode, node.id);
+    }
+
+    return mdastNode;
   }
 
   unreachable(node);

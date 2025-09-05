@@ -16,7 +16,12 @@ export interface EditorPromptParams {
   isSelecting: boolean;
 }
 
-export type MarkdownType = 'block' | 'editor' | 'selection';
+export type MarkdownType =
+  | 'block'
+  | 'blockWithBlockId'
+  | 'editor'
+  | 'editorWithBlockId'
+  | 'selection';
 
 export interface PromptConfig {
   default: string;
@@ -36,7 +41,9 @@ const replacePlaceholders = (
   let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
+    '{blockWithBlockId}': 'blockWithBlockId',
     '{block}': 'block',
+    '{editorWithBlockId}': 'editorWithBlockId',
     '{editor}': 'editor',
     '{selection}': 'selection',
   };

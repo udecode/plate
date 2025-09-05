@@ -1,7 +1,6 @@
 'use client';
 
 import type { AIChatPluginConfig } from '@platejs/ai/react';
-import type { UseChatOptions } from 'ai/react';
 
 import { streamInsertChunk, withAIBatch } from '@platejs/ai';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
@@ -11,6 +10,7 @@ import { usePluginOption } from 'platejs/react';
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 
+import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
 
@@ -19,7 +19,12 @@ export const aiChatPlugin = AIChatPlugin.extend({
     chatOptions: {
       api: '/api/ai/command',
       body: {},
-    } as UseChatOptions,
+    },
+    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting || isSelecting
+        ? PROMPT_TEMPLATES.commentSelecting
+        : PROMPT_TEMPLATES.commentDefault;
+    },
     promptTemplate: ({ isBlockSelecting, isSelecting }) => {
       return isBlockSelecting
         ? PROMPT_TEMPLATES.userBlockSelecting
@@ -42,6 +47,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
   },
   shortcuts: { show: { keys: 'mod+j' } },
   useHooks: ({ editor, getOption }) => {
+    useChat();
+
     const mode = usePluginOption(
       { key: KEYS.aiChat } as AIChatPluginConfig,
       'mode'
@@ -85,6 +92,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         editor.setOption(AIChatPlugin, 'streaming', false);
         editor.setOption(AIChatPlugin, '_blockChunks', '');
         editor.setOption(AIChatPlugin, '_blockPath', null);
+        editor.setOption(AIChatPlugin, '_mdxName', null);
       },
     });
   },
@@ -180,7 +188,19 @@ NEVER write <Block> or <Selection>.
 </Reminder>
 {prompt} about <Selection>`;
 
+const commentSelecting = `{prompt}:
+        
+{blockWithBlockId}
+`;
+
+const commentDefault = `{prompt}:
+        
+{editorWithBlockId}
+`;
+
 export const PROMPT_TEMPLATES = {
+  commentDefault,
+  commentSelecting,
   systemBlockSelecting,
   systemDefault,
   systemSelecting,

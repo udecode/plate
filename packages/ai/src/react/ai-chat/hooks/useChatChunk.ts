@@ -21,11 +21,16 @@ export const useChatChunk = ({
   }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
-  const { isLoading } = usePluginOption(
+  const { status } = usePluginOption(
     { key: KEYS.aiChat } as AIChatPluginConfig,
     'chat'
   );
-  const content = useLastAssistantMessage()?.content;
+  const isLoading = status === 'streaming' || status === 'submitted';
+
+  const content = useLastAssistantMessage()?.parts.find(
+    (part) => part.type === 'text'
+  )?.text;
+
   const insertedTextRef = useRef<string>('');
   const prevIsLoadingRef = useRef(isLoading);
 

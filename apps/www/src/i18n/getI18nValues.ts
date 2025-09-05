@@ -39,10 +39,8 @@ import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/ifra
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
-import {
-  listValue as listClassicValueCn,
-  listValue as listValueCn,
-} from '@/registry/examples/values/cn/list-classic-value';
+import { listValue as listClassicValueCn } from '@/registry/examples/values/cn/list-classic-value';
+import { listValue as listValueCn } from '@/registry/examples/values/cn/list-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
 import { placeholderValue as placeholderValueCn } from '@/registry/examples/values/cn/placeholder-value';
@@ -78,7 +76,7 @@ import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
-import { listValue as listValueEn } from '@/registry/examples/values/list-classic-value';
+import { listValue as listValueEn } from '@/registry/examples/values/list-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
 import { blockPlaceholderValue as placeholderValueEn } from '@/registry/examples/values/placeholder-value';

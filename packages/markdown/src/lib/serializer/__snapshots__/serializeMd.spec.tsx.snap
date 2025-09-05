@@ -65,7 +65,7 @@ exports[`serializeMd should serialize a simple paragraph 1`] = `
 
 ## Comments and suggestions
 
-Add comments to your content to provide additional conte1xt, , or collaborate with others
+Add <comment>comments to your content</comment> to provide additional conte1xt, <suggestion>insightssuggestions</suggestion>, or <comment>collaborate</comment> with others
 
 ### Heading
 

@@ -247,11 +247,11 @@ Plugin for block selection functionality.
 Adds one or more blocks to the selection.
 
 <API name="add">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    The ID(s) of the block(s) to be selected.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      The ID(s) of the block(s) to be selected.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.clear`
@@ -263,11 +263,11 @@ Resets the set of selected IDs to an empty set.
 Removes one or more blocks from the selection.
 
 <API name="delete">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    The ID(s) of the block(s) to remove from selection.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      The ID(s) of the block(s) to remove from selection.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.deselect`
@@ -283,6 +283,19 @@ Focuses the block selection shadow input. This input handles copy, delete, and p
 Gets the selected blocks in the editor.
 
 <API name="getNodes">
+<APIParameters>
+  <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
+    Options for getting nodes.
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="selectionFallback" type="boolean" optional>
+    If true, and no blocks are selected by block selection, the method will use
+    the editor's original selection to retrieve blocks. - **Default:** `false`
+  </APIItem>
+</APIOptions>
+
 <APIReturns type="NodeEntry[]">
   Array of selected block entries.
 </APIReturns>
@@ -293,16 +306,14 @@ Gets the selected blocks in the editor.
 Checks if one or more blocks are selected.
 
 <API name="has">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    The ID(s) of the block(s) to check.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem type="boolean">
-    Whether the block(s) are selected.
-  </APIItem>
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      The ID(s) of the block(s) to check.
+    </APIItem>
+  </APIParameters>
+  <APIReturns>
+    <APIItem type="boolean">Whether the block(s) are selected.</APIItem>
+  </APIReturns>
 </API>
 
 ### `api.blockSelection.isSelectable`
@@ -310,17 +321,15 @@ Checks if one or more blocks are selected.
 Checks if a block at a given path is selectable based on the `isSelectable` plugin option.
 
 <API name="isSelectable">
-<APIParameters>
-  <APIItem name="element" type="TElement">
-    Block element to check.
-  </APIItem>
-  <APIItem name="path" type="Path">
-    Path to the block element.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the block is selectable.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="element" type="TElement">
+      Block element to check.
+    </APIItem>
+    <APIItem name="path" type="Path">
+      Path to the block element.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the block is selectable.</APIReturns>
 </API>
 
 ### `api.blockSelection.moveSelection`
@@ -328,20 +337,21 @@ Checks if a block at a given path is selectable based on the `isSelectable` plug
 Moves the selection up or down to the next selectable block.
 
 When moving up:
+
 - Gets the previous selectable block from the top-most selected block
 - Sets it as the new anchor
 - Clears previous selection and selects only this block
-When moving down:
+  When moving down:
 - Gets the next selectable block from the bottom-most selected block
 - Sets it as the new anchor
 - Clears previous selection and selects only this block
 
 <API name="moveSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    Direction to move selection.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="direction" type="'up' | 'down'">
+      Direction to move selection.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.selectAll`
@@ -353,11 +363,11 @@ Selects all selectable blocks in the editor.
 Sets the selection to one or more blocks, clearing any existing selection.
 
 <API name="set">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    The ID(s) of the block(s) to be selected.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      The ID(s) of the block(s) to be selected.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.shiftSelection`
@@ -365,21 +375,22 @@ Sets the selection to one or more blocks, clearing any existing selection.
 Expands or shrinks the selection based on the anchor block.
 
 For `Shift+ArrowDown`:
+
 - If anchor is top-most: Expands down by adding block below bottom-most
 - Otherwise: Shrinks from top-most (unless top-most is the anchor)
-For `Shift+ArrowUp`:
+  For `Shift+ArrowUp`:
 - If anchor is bottom-most: Expands up by adding block above top-most
 - Otherwise: Shrinks from bottom-most (unless bottom-most is the anchor)
-The anchor block always remains selected. If no anchor is set, it defaults to:
+  The anchor block always remains selected. If no anchor is set, it defaults to:
 - Bottom-most block for `Shift+ArrowUp`
 - Top-most block for `Shift+ArrowDown`
 
 <API name="shiftSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    Direction to expand/shrink selection.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="direction" type="'up' | 'down'">
+      Direction to expand/shrink selection.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ## Transforms
@@ -401,14 +412,14 @@ Selects the nodes returned by `getNodes()` in the editor and resets selected IDs
 Sets properties on the selected nodes.
 
 <API name="setNodes">
-<APIParameters>
-  <APIItem name="props" type="Partial<NodeProps<TElement>>">
-    Properties to set on selected nodes.
-  </APIItem>
-  <APIItem name="options" type="SetNodesOptions" optional>
-    Options for setting nodes.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="props" type="Partial<NodeProps<TElement>>">
+      Properties to set on selected nodes.
+    </APIItem>
+    <APIItem name="options" type="SetNodesOptions" optional>
+      Options for setting nodes.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `tf.blockSelection.setTexts`
@@ -416,14 +427,14 @@ Sets properties on the selected nodes.
 Sets text properties on the selected nodes.
 
 <API name="setTexts">
-<APIParameters>
-  <APIItem name="props" type="Partial<NodeProps<TText>>">
-    Text properties to set on selected nodes.
-  </APIItem>
-  <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
-    Options for setting text nodes, excluding the 'at' property.
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="props" type="Partial<NodeProps<TText>>">
+      Text properties to set on selected nodes.
+    </APIItem>
+    <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+      Options for setting text nodes, excluding the 'at' property.
+    </APIItem>
+  </APIParameters>
 </API>
 
 ## Hooks
@@ -433,59 +444,53 @@ Sets text properties on the selected nodes.
 A hook that provides props for making a block element selectable, including context menu behavior.
 
 <API name="useBlockSelectable">
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    Props to be spread on the block element.
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        Required class for selection functionality.
-        - **Default:** `'slate-selectable'`
-      </APISubListItem>
-      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
-        Handles right-click context menu behavior:
-        - Opens context menu for selected blocks
-        - Opens for void elements
-        - Opens for elements with `data-plate-open-context-menu="true"`
-        - Adds block to selection with Shift key for multi-select
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
+  <APIReturns type="object">
+    <APIItem name="props" type="object">
+      Props to be spread on the block element.
+      <APISubList>
+        <APISubListItem parent="props" name="className" type="string">
+          Required class for selection functionality. - **Default:**
+          `'slate-selectable'`
+        </APISubListItem>
+        <APISubListItem
+          parent="props"
+          name="onContextMenu"
+          type="(event: React.MouseEvent) => void"
+        >
+          Handles right-click context menu behavior: - Opens context menu for
+          selected blocks - Opens for void elements - Opens for elements with
+          `data-plate-open-context-menu="true"` - Adds block to selection with
+          Shift key for multi-select
+        </APISubListItem>
+      </APISubList>
+    </APIItem>
+  </APIReturns>
 </API>
 
 ### `useBlockSelected`
 
 <API name="useBlockSelected">
-<APIReturns type="boolean">
-  Whether the context block is selected.
-</APIReturns>
+  <APIReturns type="boolean">Whether the context block is selected.</APIReturns>
 </API>
 
 ### `useBlockSelectionNodes`
 
 <API name="useBlockSelectionNodes">
-<APIReturns type="NodeEntry[]">
-  Array of selected block entries.
-</APIReturns>
+  <APIReturns type="NodeEntry[]">Array of selected block entries.</APIReturns>
 </API>
 
 ### `useBlockSelectionFragment`
 
 <API name="useBlockSelectionFragment">
-<APIReturns type="Node[]">
-  Array of selected block nodes.
-</APIReturns>
+  <APIReturns type="Node[]">Array of selected block nodes.</APIReturns>
 </API>
 
 ### `useBlockSelectionFragmentProp`
 
 <API name="useBlockSelectionFragmentProp">
-<APIReturns type="Node[]">
-  Fragment prop for selected blocks.
-</APIReturns>
+  <APIReturns type="Node[]">Fragment prop for selected blocks.</APIReturns>
 </API>
 
 ### `useSelectionArea`
 
 Initialize and manage selection area functionality.
-

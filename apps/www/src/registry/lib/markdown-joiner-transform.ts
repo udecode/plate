@@ -16,18 +16,18 @@ export const markdownJoinerTransform =
         const remaining = joiner.flush();
         if (remaining) {
           controller.enqueue({
-            textDelta: remaining,
+            text: remaining,
             type: 'text-delta',
           } as TextStreamPart<TOOLS>);
         }
       },
       async transform(chunk, controller) {
         if (chunk.type === 'text-delta') {
-          const processedText = joiner.processText(chunk.textDelta);
+          const processedText = joiner.processText(chunk.text);
           if (processedText) {
             controller.enqueue({
               ...chunk,
-              textDelta: processedText,
+              text: processedText,
             });
             await delay(joiner.delayInMs);
           }
@@ -43,8 +43,10 @@ const NEST_BLOCK_DELAY_IN_MS = 100;
 
 export class MarkdownJoiner {
   private buffer = '';
+  private documentCharacterCount = 0;
   private isBuffering = false;
   private streamingCodeBlock = false;
+  private streamingLargeDocument = false;
   private streamingTable = false;
   public delayInMs = DEFAULT_DELAY_IN_MS;
 
@@ -106,6 +108,10 @@ export class MarkdownJoiner {
     return char === '\n' || this.buffer.length > 30;
   }
 
+  private isLargeDocumentStart(): boolean {
+    return this.documentCharacterCount > 2500;
+  }
+
   private isListStartChar(char: string): boolean {
     return char === '-' || char === '*' || /^[0-9]$/.test(char);
   }
@@ -124,7 +130,11 @@ export class MarkdownJoiner {
     let output = '';
 
     for (const char of text) {
-      if (this.streamingCodeBlock || this.streamingTable) {
+      if (
+        this.streamingCodeBlock ||
+        this.streamingTable ||
+        this.streamingLargeDocument
+      ) {
         this.buffer += char;
 
         if (char === '\n') {
@@ -162,6 +172,12 @@ export class MarkdownJoiner {
           continue;
         }
 
+        if (this.isLargeDocumentStart()) {
+          this.delayInMs = NEST_BLOCK_DELAY_IN_MS;
+          this.streamingLargeDocument = true;
+          continue;
+        }
+
         if (
           this.isCompleteBold() ||
           this.isCompleteMdxTag() ||
@@ -195,6 +211,7 @@ export class MarkdownJoiner {
       }
     }
 
+    this.documentCharacterCount += text.length;
     return output;
   }
 }

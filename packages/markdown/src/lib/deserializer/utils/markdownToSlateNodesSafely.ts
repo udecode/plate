@@ -1,4 +1,4 @@
-import { type SlateEditor, getPluginType, KEYS } from 'platejs';
+import { type SlateEditor, ElementApi, getPluginType, KEYS } from 'platejs';
 
 import {
   type DeserializeMdOptions,
@@ -45,12 +45,12 @@ export const markdownToSlateNodesSafely = (
 
   const lastBlock = completeNodes.at(-1);
 
-  if (editor.api.isVoid(lastBlock)) {
+  if (ElementApi.isElement(lastBlock) && editor.api.isVoid(lastBlock)) {
     return [newBlock];
   }
 
   // FIXME table column will fail, need recursive find the last p
-  if (lastBlock?.children) {
+  if (ElementApi.isElement(lastBlock) && lastBlock?.children) {
     lastBlock.children.push(...incompleteNodes);
     return completeNodes;
   }

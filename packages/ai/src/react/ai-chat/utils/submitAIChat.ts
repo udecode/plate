@@ -11,6 +11,7 @@ import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
 
 export const submitAIChat = (
   editor: PlateEditor,
+  input: string,
   {
     mode,
     options,
@@ -30,13 +31,14 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, promptTemplate, systemTemplate } = getOptions();
+  const { chat, commentPromptTemplate, promptTemplate, systemTemplate } =
+    getOptions();
 
-  if (!prompt && chat.input?.length === 0) {
+  if (!prompt && input?.length === 0) {
     return;
   }
   if (!prompt) {
-    prompt = chat.input;
+    prompt = input;
   }
   if (!mode) {
     mode = isSelecting(editor) ? 'chat' : 'insert';
@@ -47,19 +49,27 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
-  chat.setInput?.('');
+  console.log(
+    getEditorPrompt(editor, {
+      prompt,
+      promptTemplate: commentPromptTemplate,
+    })
+  );
 
-  void chat.append?.(
+  void chat.sendMessage?.(
     {
-      content:
+      text:
         getEditorPrompt(editor, {
           prompt,
           promptTemplate,
         }) ?? '',
-      role: 'user',
     },
     {
       body: {
+        commentPrompt: getEditorPrompt(editor, {
+          prompt,
+          promptTemplate: commentPromptTemplate,
+        }),
         system: getEditorPrompt(editor, {
           prompt: system,
           promptTemplate: systemTemplate,
