@@ -1,4 +1,3 @@
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';

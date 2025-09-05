@@ -29,9 +29,7 @@ import {
 } from 'lucide-react';
 import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
 import {
-  useEditorId,
   useEditorPlugin,
-  useEventEditorValue,
   useFocusedLast,
   useHotkeys,
   usePluginOption,

@@ -7,8 +7,9 @@ import type { NodeEntry } from 'platejs';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
+import type { Chat } from '../internal/types';
+
 import { AIChatPlugin } from '../AIChatPlugin';
-import { type Chat } from '../internal/types';
 
 export type UseEditorChatOptions = {
   chat: Chat;

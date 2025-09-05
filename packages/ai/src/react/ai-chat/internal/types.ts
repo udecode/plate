@@ -1,4 +1,4 @@
-import { UseChatHelpers } from '@ai-sdk/react';
+import type { UseChatHelpers } from '@ai-sdk/react';
 import type { UIMessage } from 'ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';

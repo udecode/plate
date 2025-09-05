@@ -1,8 +1,11 @@
+import type {
+  ChatMessage,
+  ToolName,
+} from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { createOpenAI } from '@ai-sdk/openai';
-
 import { google } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -16,7 +19,6 @@ import { nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
-import { ChatMessage, ToolName } from '@/registry/components/editor/use-chat';
 
 const choseToolSystem = `You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
 

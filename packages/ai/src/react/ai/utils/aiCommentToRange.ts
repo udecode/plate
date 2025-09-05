@@ -7,8 +7,9 @@ import {
   NodeApi,
 } from 'platejs';
 
+import type { TComment } from '../../ai-chat/internal/types';
+
 import { findTextRangeInBlock } from './findTextRangeInBlock';
-import { TComment } from '../../ai-chat/internal/types';
 
 export const aiCommentToRange = (
   editor: SlateEditor,
