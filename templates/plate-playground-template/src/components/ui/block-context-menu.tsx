@@ -9,7 +9,7 @@ import {
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
 import { KEYS } from 'platejs';
-import { useEditorPlugin, usePlateState } from 'platejs/react';
+import { useEditorPlugin, usePlateState, usePluginOption } from 'platejs/react';
 
 import {
   ContextMenu,
@@ -30,6 +30,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const [value, setValue] = React.useState<Value>(null);
   const isTouch = useIsTouchDevice();
   const [readOnly] = usePlateState('readOnly');
+  const openId = usePluginOption(BlockMenuPlugin, 'openId');
+  const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
     (type: string) => {
@@ -85,15 +87,17 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
           if (disabled) return event.preventDefault();
 
-          api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, {
-            x: event.clientX,
-            y: event.clientY,
-          });
+         setTimeout(() => {
+            api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, {
+              x: event.clientX,
+              y: event.clientY,
+            });
+         }, 0);
         }}
       >
         <div className="w-full">{children}</div>
       </ContextMenuTrigger>
-      <ContextMenuContent
+      {isOpen && (<ContextMenuContent
         className="w-64"
         onCloseAutoFocus={(e) => {
           e.preventDefault();
@@ -191,7 +195,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
             </ContextMenuSubContent>
           </ContextMenuSub>
         </ContextMenuGroup>
-      </ContextMenuContent>
+      </ContextMenuContent>)}
     </ContextMenu>
   );
 }
