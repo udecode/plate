@@ -15,8 +15,3 @@ export type MessageDataPart = {
 };
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
-
-export type Chat = UseChatHelpers<ChatMessage> & {
-  toolName: ToolName;
-  setToolName: (toolName: ToolName) => void;
-};

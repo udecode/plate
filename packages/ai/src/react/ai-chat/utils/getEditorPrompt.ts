@@ -4,6 +4,7 @@ import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { getMarkdown } from './getMarkdown';
+import { AIMode, AIChatPlugin, AIToolName } from '../AIChatPlugin';
 
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
@@ -14,6 +15,8 @@ export interface EditorPromptParams {
   editor: PlateEditor;
   isBlockSelecting: boolean;
   isSelecting: boolean;
+  mode: AIMode;
+  toolName: AIToolName;
 }
 
 export type MarkdownType =
@@ -86,6 +89,8 @@ export const getEditorPrompt = (
     editor,
     isBlockSelecting: editor.getOption(BlockSelectionPlugin, 'isSelectingSome'),
     isSelecting: isSelecting(editor),
+    mode: editor.getOption(AIChatPlugin, 'mode'),
+    toolName: editor.getOption(AIChatPlugin, 'toolName'),
   };
 
   const template = promptTemplate(params);

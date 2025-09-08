@@ -118,7 +118,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           </ContextMenuItem>
           <ContextMenuItem
             onClick={() =>
-              editor.getApi(AIChatPlugin).aiChat.submitComment(commentPrompt)
+              editor.getApi(AIChatPlugin).aiChat.submit(commentPrompt, {
+                mode: 'insert',
+                toolName: 'comment',
+              })
             }
           >
             AI Comment

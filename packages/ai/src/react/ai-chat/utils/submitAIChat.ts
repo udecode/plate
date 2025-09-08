@@ -4,7 +4,7 @@ import { isSelecting } from '@platejs/selection';
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
-import type { AIChatPluginConfig } from '../AIChatPlugin';
+import type { AIMode, AIChatPluginConfig, AIToolName } from '../AIChatPlugin';
 
 import { AIPlugin } from '../../ai/AIPlugin';
 import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
@@ -14,11 +14,13 @@ export const submitAIChat = (
   input: string,
   {
     mode,
+    toolName,
     options,
     prompt,
     system,
   }: {
-    mode?: 'chat' | 'insert';
+    mode?: AIMode;
+    toolName?: AIToolName;
     options?: ChatRequestOptions;
     prompt?: EditorPrompt;
     system?: EditorPrompt;
@@ -31,8 +33,7 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, commentPromptTemplate, promptTemplate, systemTemplate } =
-    getOptions();
+  const { chat, promptTemplate, systemTemplate } = getOptions();
 
   if (!prompt && input?.length === 0) {
     return;
@@ -49,12 +50,7 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
-  console.log(
-    getEditorPrompt(editor, {
-      prompt,
-      promptTemplate: commentPromptTemplate,
-    })
-  );
+  setOption('toolName', toolName ?? null);
 
   void chat.sendMessage?.(
     {
@@ -68,8 +64,9 @@ export const submitAIChat = (
       body: {
         commentPrompt: getEditorPrompt(editor, {
           prompt,
-          promptTemplate: commentPromptTemplate,
+          promptTemplate: promptTemplate,
         }),
+        toolName,
         system: getEditorPrompt(editor, {
           prompt: system,
           promptTemplate: systemTemplate,

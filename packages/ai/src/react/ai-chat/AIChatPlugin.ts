@@ -16,7 +16,7 @@ import {
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
-import type { Chat } from './internal/types';
+import type { ChatMessage } from './internal/types';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { removeAnchorAIChat } from './transforms';
@@ -29,8 +29,12 @@ import {
 } from './utils/getEditorPrompt';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
-import { submitAIComment } from './utils/submitAIComment';
 import { withAIChat } from './withAIChat';
+import { UseChatHelpers } from '@ai-sdk/react';
+
+export type AIMode = 'chat' | 'insert';
+
+export type AIToolName = 'generate' | 'edit' | 'comment' | null;
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
@@ -41,7 +45,7 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
-    chat: Chat;
+    chat: UseChatHelpers<ChatMessage>;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -51,15 +55,11 @@ export type AIChatPluginConfig = PluginConfig<
      * - 'chat': Initiates an interactive session to review and refine content
      *   before insertion.
      */
-    mode: 'chat' | 'insert';
+    mode: AIMode;
     open: boolean;
+    toolName: AIToolName;
     /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
-    /**
-     * Template function for generating the comment prompt. Supports the same
-     * placeholders as `promptTemplate`.
-     */
-    commentPromptTemplate: (props: EditorPromptParams) => string | void;
     /**
      * Template function for generating the user prompt. Supports the following
      * placeholders:
@@ -80,7 +80,6 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
-      submitComment: OmitFirst<typeof submitAIComment>;
       hide: () => void;
       node: (
         options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
@@ -111,14 +110,14 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockPath: null,
     _mdxName: null,
     aiEditor: null,
-    chat: { messages: [] } as unknown as Chat,
+    chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
     experimental_lastTextId: null,
     mode: 'insert',
+    toolName: null,
     open: false,
     streaming: false,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
-    commentPromptTemplate: () => {},
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
   },
@@ -127,13 +126,12 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   .extendApi<
     Pick<
       AIChatPluginConfig['api']['aiChat'],
-      'node' | 'reset' | 'stop' | 'submit' | 'submitComment'
+      'node' | 'reset' | 'stop' | 'submit'
     >
   >(({ editor, getOption, getOptions, setOption, type }) => {
     return {
       reset: bindFirst(resetAIChat, editor),
       submit: bindFirst(submitAIChat, editor),
-      submitComment: bindFirst(submitAIComment, editor),
       node: (options = {}) => {
         const { anchor = false, streaming = false, ...rest } = options;
 

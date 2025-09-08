@@ -7,12 +7,12 @@ import type { NodeEntry } from 'platejs';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
-import type { Chat } from '../internal/types';
-
 import { AIChatPlugin } from '../AIChatPlugin';
+import { UseChatHelpers } from '@ai-sdk/react';
+import { ChatMessage } from '../internal/types';
 
 export type UseEditorChatOptions = {
-  chat: Chat;
+  chat: UseChatHelpers<ChatMessage>;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;

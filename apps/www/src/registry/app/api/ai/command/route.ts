@@ -51,7 +51,13 @@ Rules:
 `;
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, commentPrompt, messages, system } = await req.json();
+  const {
+    apiKey: key,
+    commentPrompt,
+    messages,
+    system,
+    toolName: toolNameParam,
+  } = await req.json();
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 
@@ -71,20 +77,25 @@ export async function POST(req: NextRequest) {
           (message: any) => message.role === 'user'
         );
 
-        const { object: toolName } = await generateObject({
-          enum: ['generate', 'edit', 'comment'],
-          model: openai('gpt-4o'),
-          output: 'enum',
-          prompt: `User message:
-          ${JSON.stringify(lastUserMessage)}`,
-          system: choseToolSystem,
-        });
+        let toolName = toolNameParam;
 
-        console.log('🚀 ~ POST ~ toolName:', toolName);
-        writer.write({
-          data: toolName as ToolName,
-          type: 'data-toolName',
-        });
+        if (!toolName) {
+          const { object: AIToolName } = await generateObject({
+            enum: ['generate', 'edit', 'comment'],
+            model: openai('gpt-4o'),
+            output: 'enum',
+            prompt: `User message:
+            ${JSON.stringify(lastUserMessage)}`,
+            system: choseToolSystem,
+          });
+
+          writer.write({
+            data: AIToolName as ToolName,
+            type: 'data-toolName',
+          });
+
+          toolName = AIToolName;
+        }
 
         if (toolName === 'generate') {
           const gen = streamText({

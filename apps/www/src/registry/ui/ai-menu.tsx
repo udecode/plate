@@ -241,6 +241,7 @@ const aiChatItems = {
 
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
+        toolName: 'generate',
         prompt: isEmpty
           ? `<Document>
 {editor}
@@ -267,6 +268,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Emojify',
+        toolName: 'edit',
       });
     },
   },
@@ -276,6 +278,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'explain',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+        toolName: 'generate',
         prompt: {
           default: 'Explain {editor}',
           selecting: 'Explain',
@@ -289,6 +292,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
+        toolName: 'edit',
         prompt: 'Fix spelling and grammar',
       });
     },
@@ -300,6 +304,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Generate a markdown sample',
+        toolName: 'generate',
       });
     },
   },
@@ -310,6 +315,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Generate a mdx sample',
+        toolName: 'generate',
       });
     },
   },
@@ -320,6 +326,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Improve the writing',
+        toolName: 'edit',
       });
     },
   },
@@ -341,6 +348,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Make longer',
+        toolName: 'edit',
       });
     },
   },
@@ -351,6 +359,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Make shorter',
+        toolName: 'edit',
       });
     },
   },
@@ -369,6 +378,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         prompt: 'Simplify the language',
+        toolName: 'edit',
       });
     },
   },
@@ -379,6 +389,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
+        toolName: 'generate',
         prompt: {
           default: 'Summarize {editor}',
           selecting: 'Summarize',

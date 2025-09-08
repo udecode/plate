@@ -7,4 +7,3 @@ export * from './getLastAssistantMessage';
 export * from './getMarkdown';
 export * from './resetAIChat';
 export * from './submitAIChat';
-export * from './submitAIComment';

@@ -38,7 +38,6 @@ export type ChatMessage = UIMessage<{}, MessageDataPart>;
 
 export const useChat = () => {
   const editor = useEditorRef();
-  const [toolName, setToolName] = React.useState<ToolName>('generate');
   const options = usePluginOption(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
@@ -102,7 +101,7 @@ export const useChat = () => {
     }),
     onData(data) {
       if (data.type === 'data-toolName') {
-        setToolName(data.data);
+        editor.setOption(AIChatPlugin, 'toolName', data.data);
       }
 
       if (data.type === 'data-comment' && data.data) {
@@ -167,14 +166,12 @@ export const useChat = () => {
   const chat = {
     ...baseChat,
     _abortFakeStream,
-    setToolName,
-    toolName,
-  } as Chat;
+  };
 
   React.useEffect(() => {
     editor.setOption(AIChatPlugin, 'chat', chat);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.status, chat.messages, chat.toolName, chat.error]);
+  }, [chat.status, chat.messages, chat.error]);
 
   return chat;
 };

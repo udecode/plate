@@ -18,7 +18,9 @@ export function AICommentToolbarButton(
     <ToolbarButton
       {...props}
       onClick={() =>
-        editor.getApi(AIChatPlugin).aiChat.submitComment(commentPrompt)
+        editor
+          .getApi(AIChatPlugin)
+          .aiChat.submit(commentPrompt, { mode: 'insert', toolName: 'comment' })
       }
       onMouseDown={(e) => e.preventDefault()}
     >

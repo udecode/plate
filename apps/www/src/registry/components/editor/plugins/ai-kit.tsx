@@ -20,12 +20,13 @@ export const aiChatPlugin = AIChatPlugin.extend({
       api: '/api/ai/command',
       body: {},
     },
-    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
-      return isBlockSelecting || isSelecting
-        ? PROMPT_TEMPLATES.commentSelecting
-        : PROMPT_TEMPLATES.commentDefault;
-    },
-    promptTemplate: ({ isBlockSelecting, isSelecting }) => {
+    promptTemplate: ({ isBlockSelecting, isSelecting, toolName }) => {
+      if (toolName === 'comment') {
+        return isBlockSelecting || isSelecting
+          ? PROMPT_TEMPLATES.commentSelecting
+          : PROMPT_TEMPLATES.commentDefault;
+      }
+
       return isBlockSelecting
         ? PROMPT_TEMPLATES.userBlockSelecting
         : isSelecting
