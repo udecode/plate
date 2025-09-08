@@ -1,3 +1,4 @@
+import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -30,11 +31,10 @@ import {
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
-import { UseChatHelpers } from '@ai-sdk/react';
 
 export type AIMode = 'chat' | 'insert';
 
-export type AIToolName = 'generate' | 'edit' | 'comment' | null;
+export type AIToolName = 'comment' | 'edit' | 'generate' | null;
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
@@ -57,9 +57,9 @@ export type AIChatPluginConfig = PluginConfig<
      */
     mode: AIMode;
     open: boolean;
-    toolName: AIToolName;
     /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
+    toolName: AIToolName;
     /**
      * Template function for generating the user prompt. Supports the following
      * placeholders:
@@ -113,9 +113,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
     experimental_lastTextId: null,
     mode: 'insert',
-    toolName: null,
     open: false,
     streaming: false,
+    toolName: null,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',

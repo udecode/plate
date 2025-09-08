@@ -241,13 +241,13 @@ const aiChatItems = {
 
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
-        toolName: 'generate',
         prompt: isEmpty
           ? `<Document>
 {editor}
 </Document>
 Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
           : 'Continue writing AFTER <Block> ONLY ONE SENTENCE. DONT REPEAT THE TEXT.',
+        toolName: 'generate',
       });
     },
   },
@@ -278,11 +278,11 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'explain',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        toolName: 'generate',
         prompt: {
           default: 'Explain {editor}',
           selecting: 'Explain',
         },
+        toolName: 'generate',
       });
     },
   },
@@ -292,8 +292,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        toolName: 'edit',
         prompt: 'Fix spelling and grammar',
+        toolName: 'edit',
       });
     },
   },
@@ -389,11 +389,11 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
         mode: 'insert',
-        toolName: 'generate',
         prompt: {
           default: 'Summarize {editor}',
           selecting: 'Summarize',
         },
+        toolName: 'generate',
       });
     },
   },

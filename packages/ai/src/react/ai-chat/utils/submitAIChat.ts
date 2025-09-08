@@ -4,7 +4,7 @@ import { isSelecting } from '@platejs/selection';
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
-import type { AIMode, AIChatPluginConfig, AIToolName } from '../AIChatPlugin';
+import type { AIChatPluginConfig, AIMode, AIToolName } from '../AIChatPlugin';
 
 import { AIPlugin } from '../../ai/AIPlugin';
 import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
@@ -14,16 +14,16 @@ export const submitAIChat = (
   input: string,
   {
     mode,
-    toolName,
     options,
     prompt,
     system,
+    toolName,
   }: {
     mode?: AIMode;
-    toolName?: AIToolName;
     options?: ChatRequestOptions;
     prompt?: EditorPrompt;
     system?: EditorPrompt;
+    toolName?: AIToolName;
   } = {}
 ) => {
   const { getOptions, setOption } = getEditorPlugin<AIChatPluginConfig>(
@@ -66,11 +66,11 @@ export const submitAIChat = (
           prompt,
           promptTemplate: promptTemplate,
         }),
-        toolName,
         system: getEditorPrompt(editor, {
           prompt: system,
           promptTemplate: systemTemplate,
         }),
+        toolName,
       },
       ...options,
     }

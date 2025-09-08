@@ -3,8 +3,8 @@ import type { PlateEditor } from 'platejs/react';
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
+import { type AIMode, type AIToolName, AIChatPlugin } from '../AIChatPlugin';
 import { getMarkdown } from './getMarkdown';
-import { AIMode, AIChatPlugin, AIToolName } from '../AIChatPlugin';
 
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
