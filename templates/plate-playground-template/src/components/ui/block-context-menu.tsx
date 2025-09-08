@@ -31,7 +31,9 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const isTouch = useIsTouchDevice();
   const [readOnly] = usePlateState('readOnly');
   const openId = usePluginOption(BlockMenuPlugin, 'openId');
-  const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
+  const isOpen = React.useMemo(() => {
+    return openId === BLOCK_CONTEXT_MENU_ID;
+  }, [openId]);
 
   const handleTurnInto = React.useCallback(
     (type: string) => {
@@ -68,10 +70,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
     <ContextMenu
       onOpenChange={(open) => {
         if (!open) {
-          // prevent unselect the block selection
-          setTimeout(() => {
-            api.blockMenu.hide();
-          }, 0);
+          api.blockMenu.hide();
         }
       }}
       modal={false}
