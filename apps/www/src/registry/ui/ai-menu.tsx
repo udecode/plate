@@ -27,7 +27,14 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { type NodeEntry, type SlateEditor, isHotkey, NodeApi } from 'platejs';
+import {
+  type NodeEntry,
+  type SlateEditor,
+  isHotkey,
+  KEYS,
+  NodeApi,
+  TextApi,
+} from 'platejs';
 import {
   useEditorPlugin,
   useFocusedLast,
@@ -52,6 +59,7 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
+import { getTransientCommentKey } from '@platejs/comment';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -564,6 +572,10 @@ export function AILoadingBar() {
   const handleAccept = () => {
     api.aiChat.hide();
     setMessages?.([]);
+    editor.tf.unsetNodes([getTransientCommentKey()], {
+      at: [],
+      match: (n) => TextApi.isText(n) && !!n[KEYS.comment],
+    });
     setOptions({
       toolName: 'generate',
       mode: 'insert',
