@@ -1,5 +1,29 @@
 # @platejs/dnd
 
+## 49.2.22
+
+### Patch Changes
+
+- [#4603](https://github.com/udecode/plate/pull/4603) by [@delijah](https://github.com/delijah) – Fix: Drop line is not visible when hovering white space inside the editor
+
+## 49.2.20
+
+### Patch Changes
+
+- [#4597](https://github.com/udecode/plate/pull/4597) by [@delijah](https://github.com/delijah) – Hide drop line, whenever drag happens outside the editor
+
+## 49.2.19
+
+### Patch Changes
+
+- [#4595](https://github.com/udecode/plate/pull/4595) by [@delijah](https://github.com/delijah) – Enable dnd between editors
+
+## 49.2.18
+
+### Patch Changes
+
+- [#4592](https://github.com/udecode/plate/pull/4592) by [@delijah](https://github.com/delijah) – Hide drop line when user leaves document or drops (also besides editor)
+
 ## 49.2.10
 
 ### Patch Changes
