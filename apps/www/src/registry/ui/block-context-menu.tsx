@@ -31,9 +31,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const isTouch = useIsTouchDevice();
   const [readOnly] = usePlateState('readOnly');
   const openId = usePluginOption(BlockMenuPlugin, 'openId');
-  const isOpen = React.useMemo(() => {
-    return openId === BLOCK_CONTEXT_MENU_ID;
-  }, [openId]);
+  const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
     (type: string) => {
