@@ -56,6 +56,7 @@ import { AIChatEditor } from './ai-chat-editor';
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
   const mode = usePluginOption(AIChatPlugin, 'mode');
+  const toolName = usePluginOption(AIChatPlugin, 'toolName');
 
   const streaming = usePluginOption(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
@@ -138,7 +139,7 @@ export function AIMenu() {
 
   if (isLoading && mode === 'insert') return null;
 
-  if (chat.toolName === 'comment') return null;
+  if (toolName === 'comment') return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
@@ -539,11 +540,12 @@ export const AIMenuItems = ({
 export function AILoadingBar() {
   const editor = useEditorRef();
 
-  const { setOption } = useEditorPlugin(AIChatPlugin);
+  const { setOptions } = useEditorPlugin(AIChatPlugin);
+  const toolName = usePluginOption(AIChatPlugin, 'toolName');
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const { setMessages, setToolName, status, toolName } = chat;
+  const { setMessages, status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
@@ -553,15 +555,19 @@ export function AILoadingBar() {
     api.aiChat.hide();
     editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
     setMessages?.([]);
-    setToolName('generate');
-    setOption('mode', 'insert');
+    setOptions({
+      toolName: 'generate',
+      mode: 'insert',
+    });
   };
 
   const handleAccept = () => {
     api.aiChat.hide();
     setMessages?.([]);
-    setToolName('generate');
-    setOption('mode', 'insert');
+    setOptions({
+      toolName: 'generate',
+      mode: 'insert',
+    });
   };
 
   useHotkeys('esc', () => {
