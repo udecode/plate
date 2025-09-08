@@ -68,6 +68,8 @@ export type AIChatPluginConfig = PluginConfig<
      * - {editor}: Replaced with the markdown of the entire editor content.
      * - {selection}: Replaced with the markdown of the current selection.
      * - {prompt}: Replaced with the actual user prompt.
+     * - {editorWithBlockId}: Replaced with the markdown of the entire editor content with block ids.
+     * - {blockWithBlockId}: Replaced with the markdown of the blocks in selection with block ids.
      */
     promptTemplate: (props: EditorPromptParams) => string;
     /**
@@ -75,6 +77,11 @@ export type AIChatPluginConfig = PluginConfig<
      * placeholders as `promptTemplate`.
      */
     systemTemplate: (props: EditorPromptParams) => string | void;
+    /**
+     * Template function for generating the comment prompt. Supports the same
+     * placeholders as `promptTemplate`.
+     */
+    commentPromptTemplate: (props: EditorPromptParams) => string;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -120,6 +127,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     triggerPreviousCharPattern: /^\s?$/,
     promptTemplate: () => '{prompt}',
     systemTemplate: () => {},
+    commentPromptTemplate: () => '',
   },
 })
   .overrideEditor(withAIChat)

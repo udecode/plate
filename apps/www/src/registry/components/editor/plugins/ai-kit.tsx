@@ -20,13 +20,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
       api: '/api/ai/command',
       body: {},
     },
-    promptTemplate: ({ isBlockSelecting, isSelecting, toolName }) => {
-      if (toolName === 'comment') {
-        return isBlockSelecting || isSelecting
-          ? PROMPT_TEMPLATES.commentSelecting
-          : PROMPT_TEMPLATES.commentDefault;
-      }
-
+    promptTemplate: ({ isBlockSelecting, isSelecting }) => {
       return isBlockSelecting
         ? PROMPT_TEMPLATES.userBlockSelecting
         : isSelecting
@@ -39,6 +33,11 @@ export const aiChatPlugin = AIChatPlugin.extend({
         : isSelecting
           ? PROMPT_TEMPLATES.systemSelecting
           : PROMPT_TEMPLATES.systemDefault;
+    },
+    commentPromptTemplate: ({ isBlockSelecting, isSelecting }) => {
+      return isBlockSelecting || isSelecting
+        ? PROMPT_TEMPLATES.commentSelecting
+        : PROMPT_TEMPLATES.commentDefault;
     },
   },
   render: {

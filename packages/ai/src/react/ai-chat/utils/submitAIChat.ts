@@ -33,7 +33,8 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, promptTemplate, systemTemplate } = getOptions();
+  const { chat, commentPromptTemplate, promptTemplate, systemTemplate } =
+    getOptions();
 
   if (!prompt && input?.length === 0) {
     return;
@@ -52,6 +53,13 @@ export const submitAIChat = (
 
   setOption('toolName', toolName ?? null);
 
+  const commentPrompt =
+    !toolName || toolName === 'comment'
+      ? getEditorPrompt(editor, {
+          promptTemplate: commentPromptTemplate,
+        })
+      : undefined;
+
   void chat.sendMessage?.(
     {
       text:
@@ -62,10 +70,7 @@ export const submitAIChat = (
     },
     {
       body: {
-        commentPrompt: getEditorPrompt(editor, {
-          prompt,
-          promptTemplate: promptTemplate,
-        }),
+        commentPrompt,
         system: getEditorPrompt(editor, {
           prompt: system,
           promptTemplate: systemTemplate,
