@@ -15,11 +15,12 @@ export interface EditorPromptParams {
 }
 
 export type MarkdownType =
-  | 'block'
-  | 'blockWithBlockId'
   | 'editor'
   | 'editorWithBlockId'
-  | 'selection';
+  | 'blockSelection'
+  | 'blockSelectionWithBlockId'
+  | 'block'
+  | 'blockWithBlockId';
 
 export interface PromptConfig {
   default: string;
@@ -31,29 +32,25 @@ export const replacePlaceholders = (
   editor: SlateEditor,
   text: string,
   {
-    blockIds,
     prompt,
   }: {
-    blockIds?: string[];
     prompt?: string;
   }
 ): string => {
   let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
-    '{blockWithBlockId}': 'blockWithBlockId',
-    '{block}': 'block',
-    '{editorWithBlockId}': 'editorWithBlockId',
     '{editor}': 'editor',
-    '{selection}': 'selection',
+    '{editorWithBlockId}': 'editorWithBlockId',
+    '{blockSelection}': 'blockSelection',
+    '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
+    '{block}': 'block',
+    '{blockWithBlockId}': 'blockWithBlockId',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
     if (result.includes(placeholder)) {
-      result = result.replace(
-        placeholder,
-        getMarkdown(editor, { blockIds: blockIds ?? [], type })
-      );
+      result = result.replace(placeholder, getMarkdown(editor, { type }));
     }
   });
 
@@ -103,8 +100,4 @@ export const getEditorPrompt = (
   }
 
   return promptText;
-  // return replacePlaceholders(editor, template, {
-  //   prompt: promptText,
-  //   blockIds,
-  // });
 };

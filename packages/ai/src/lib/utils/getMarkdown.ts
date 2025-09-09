@@ -1,53 +1,32 @@
 import { serializeMd } from '@platejs/markdown';
 import { type SlateEditor, type TElement, KEYS } from 'platejs';
+import { MarkdownType } from './getEditorPrompt';
 
 // Internal
 export const getMarkdown = (
   editor: SlateEditor,
   {
-    blockIds,
     type,
   }: {
-    blockIds: string[];
-    type:
-      | 'block'
-      | 'blockWithBlockId'
-      | 'editor'
-      | 'editorWithBlockId'
-      | 'selection';
+    type: MarkdownType;
   }
 ) => {
-  if (type === 'editor') {
-    return serializeMd(editor);
-  }
-  if (type === 'editorWithBlockId') {
-    return serializeMd(editor, { withBlockId: true });
-  }
-
-  if (type === 'block') {
-    const blocks = editor.api.nodes({
-      at: [],
-      mode: 'highest',
-      match: (n) => blockIds.includes(n.id as string),
+  if (type === 'editor' || type === 'editorWithBlockId') {
+    return serializeMd(editor, {
+      withBlockId: type === 'editorWithBlockId',
     });
-
-    const nodes = Array.from(blocks, (entry) => entry[0]);
-
-    return serializeMd(editor, { value: nodes });
   }
 
-  if (type === 'blockWithBlockId') {
-    const blocks = editor.api.nodes({
-      at: [],
-      mode: 'highest',
-      match: (n) => blockIds.includes(n.id as string),
+  if (type === 'block' || type === 'blockWithBlockId') {
+    const blocks = editor.api.blocks({ mode: 'highest' }).map(([node]) => node);
+
+    return serializeMd(editor, {
+      value: blocks,
+      withBlockId: type === 'blockWithBlockId',
     });
-    const nodes = Array.from(blocks, (entry) => entry[0]);
-
-    return serializeMd(editor, { value: nodes, withBlockId: true });
   }
 
-  if (type === 'selection') {
+  if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
     const fragment = editor.api.fragment<TElement>();
 
     // Remove any block formatting
@@ -59,10 +38,16 @@ export const getMarkdown = (
         },
       ];
 
-      return serializeMd(editor, { value: modifiedFragment });
+      return serializeMd(editor, {
+        value: modifiedFragment,
+        withBlockId: type === 'blockSelectionWithBlockId',
+      });
     }
 
-    return serializeMd(editor, { value: fragment });
+    return serializeMd(editor, {
+      value: fragment,
+      withBlockId: type === 'blockSelectionWithBlockId',
+    });
   }
 
   return '';

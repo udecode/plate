@@ -16,7 +16,7 @@ import {
   streamText,
 } from 'ai';
 import { NextResponse } from 'next/server';
-import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
+import { RangeApi, type SlateEditor, createSlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -31,14 +31,7 @@ export async function POST(req: NextRequest) {
     system,
   } = await req.json();
 
-  const {
-    blockIds = [],
-    children,
-    isBlockSelecting,
-    isSelecting,
-    selection,
-    toolName: toolNameParam,
-  } = ctx;
+  const { children, selection, toolName: toolNameParam } = ctx;
 
   const editor = createSlateEditor({
     plugins: BaseEditorKit,
@@ -57,12 +50,14 @@ export async function POST(req: NextRequest) {
 
   const openai = createOpenAI({ apiKey });
 
+  const isSelecting = editor.api.isExpanded();
+
+  const isBlockSelecting = isSelectingAllBlocks(editor);
+
   try {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
         const messages = replaceMessagePlaceholders(editor, messagesParam, {
-          blockIds,
-          isBlockSelecting,
           isSelecting,
         });
 
@@ -95,7 +90,6 @@ export async function POST(req: NextRequest) {
             editor,
             systemTemplate({ isBlockSelecting, isSelecting }),
             {
-              blockIds,
               prompt: system,
             }
           );
@@ -116,12 +110,9 @@ export async function POST(req: NextRequest) {
             editor,
             systemTemplate({ isBlockSelecting, isSelecting }),
             {
-              blockIds,
               prompt: system,
             }
           );
-
-          console.log('🚀 ~ POST ~ editSystem:', editSystem);
 
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
@@ -137,9 +128,8 @@ export async function POST(req: NextRequest) {
         if (toolName === 'comment') {
           const commentPrompt = replacePlaceholders(
             editor,
-            commentTemplate({ isBlockSelecting, isSelecting }),
+            commentTemplate({ isSelecting }),
             {
-              blockIds,
               prompt,
             }
           );
@@ -212,28 +202,14 @@ const systemTemplate = ({
       : PROMPT_TEMPLATES.systemDefault;
 };
 
-const promptTemplate = ({
-  isBlockSelecting,
-  isSelecting,
-}: {
-  isBlockSelecting: boolean;
-  isSelecting: boolean;
-}) => {
-  return isBlockSelecting
-    ? PROMPT_TEMPLATES.userBlockSelecting
-    : isSelecting
-      ? PROMPT_TEMPLATES.userSelecting
-      : PROMPT_TEMPLATES.userDefault;
+const promptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+  return isSelecting
+    ? PROMPT_TEMPLATES.userSelecting
+    : PROMPT_TEMPLATES.userDefault;
 };
 
-const commentTemplate = ({
-  isBlockSelecting,
-  isSelecting,
-}: {
-  isBlockSelecting: boolean;
-  isSelecting: boolean;
-}) => {
-  return isBlockSelecting || isSelecting
+const commentTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+  return isSelecting
     ? PROMPT_TEMPLATES.commentSelecting
     : PROMPT_TEMPLATES.commentDefault;
 };
@@ -342,14 +318,6 @@ NEVER write <Block> or <Selection>.
 </Reminder>
 {prompt} about <Selection>`;
 
-const userBlockSelecting = `<Reminder>
-If this is a question, provide a helpful and concise answer about <Selection>.
-If this is an instruction, provide ONLY the content to replace the entire <Selection>. No explanations.
-Maintain the overall structure unless instructed otherwise.
-NEVER write <Block> or <Selection>.
-</Reminder>
-{prompt} about <Selection>`;
-
 const commentSelecting = `{prompt}:
         
 {blockWithBlockId}
@@ -366,7 +334,6 @@ export const PROMPT_TEMPLATES = {
   systemBlockSelecting,
   systemDefault,
   systemSelecting,
-  userBlockSelecting,
   userDefault,
   userSelecting,
 };
@@ -374,28 +341,15 @@ export const PROMPT_TEMPLATES = {
 const replaceMessagePlaceholders = (
   editor: SlateEditor,
   messages: ChatMessage[],
-  {
-    blockIds,
-    isBlockSelecting,
-    isSelecting,
-  }: {
-    blockIds: string[];
-    isBlockSelecting: boolean;
-    isSelecting: boolean;
-  }
+  { isSelecting }: { isSelecting: boolean }
 ) => {
-  const template = promptTemplate({ isBlockSelecting, isSelecting });
+  const template = promptTemplate({ isSelecting });
 
   return messages.map((message) => {
-    if (message.role !== 'user') {
-      return message;
-    }
-
     const parts = message.parts.map((part) => {
       if (part.type !== 'text' || !part.text) return part;
 
       const text = replacePlaceholders(editor, template, {
-        blockIds,
         prompt: part.text,
       });
 
@@ -404,4 +358,17 @@ const replaceMessagePlaceholders = (
 
     return { ...message, parts };
   });
+};
+
+/** Check if the current selection fully covers all top-level blocks. */
+const isSelectingAllBlocks = (editor: SlateEditor) => {
+  const blocksRange = editor.api.nodesRange(
+    editor.api.blocks({ mode: 'highest' })
+  );
+
+  return (
+    !!blocksRange &&
+    !!editor.selection &&
+    RangeApi.equals(blocksRange, editor.selection)
+  );
 };

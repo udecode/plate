@@ -2,7 +2,7 @@ import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { KEYS } from 'platejs';
+import { KEYS, Range, Descendant } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { AIMode, AIToolName } from '../../../lib/types';
@@ -57,15 +57,7 @@ export const submitAIChat = (
 
   setOption('toolName', toolName ?? null);
 
-  const blockSelectionIds = Array.from(
-    editor.getOption(BlockSelectionPlugin, 'selectedIds') ?? []
-  );
-  const selectionBlockIds = editor.api
-    .blocks({ mode: 'highest' })
-    .map(([n]) => n.id as string);
-
-  const blockIds =
-    blockSelectionIds.length > 0 ? blockSelectionIds : selectionBlockIds;
+  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
 
   const promptText = getEditorPrompt(editor, {
     prompt,
@@ -75,23 +67,26 @@ export const submitAIChat = (
     prompt: system,
   });
 
+  const selection =
+    blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+
+  const ctx: {
+    children: Descendant[];
+    selection: Range | null;
+    toolName: string | null;
+  } = {
+    children: editor.children,
+    selection: selection ?? null,
+    toolName: toolName ?? null,
+  };
+
   void chat.sendMessage?.(
     {
       text: promptText,
     },
     {
       body: {
-        ctx: {
-          blockIds,
-          children: editor.children,
-          isBlockSelecting: editor.getOption(
-            BlockSelectionPlugin,
-            'isSelectingSome'
-          ),
-          isSelecting: isSelecting(editor),
-          selection: editor.selection,
-          toolName,
-        },
+        ctx,
         prompt: promptText,
         system: systemText,
       },
