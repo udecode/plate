@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         if (!toolName) {
           const { object: AIToolName } = await generateObject({
             enum: ['generate', 'edit', 'comment'],
-            model: openai('gpt-4o'),
+            model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
             ${JSON.stringify(lastUserMessage)}`,
