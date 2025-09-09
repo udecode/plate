@@ -1,6 +1,8 @@
 import type { Descendant, SlateEditor } from 'platejs';
 
-import remarkStringify from 'remark-stringify';
+import remarkStringify, {
+  type Options as RemarkStringifyOptions,
+} from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
 import type { AllowNodeConfig } from '../MarkdownPlugin';
@@ -16,6 +18,7 @@ export type SerializeMdOptions = {
   editor?: SlateEditor;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
+  remarkStringifyOptions?: RemarkStringifyOptions;
   rules?: MdRules;
   spread?: boolean;
   value?: Descendant[];
@@ -34,6 +37,7 @@ export const serializeMd = (
     .use(remarkPlugins ?? [])
     .use(remarkStringify, {
       emphasis: '_',
+      ...mergedOptions?.remarkStringifyOptions,
     });
 
   const mdast = slateToMdast({
