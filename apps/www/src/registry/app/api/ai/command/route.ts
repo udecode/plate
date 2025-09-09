@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server';
 
 import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
+import { replacePlaceholders } from '@platejs/ai';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -15,29 +16,28 @@ import {
   streamText,
 } from 'ai';
 import { NextResponse } from 'next/server';
-import { createSlateEditor, KEYS, nanoid, SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
-import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { replacePlaceholders } from '@platejs/ai';
+import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: NextRequest) {
   const {
     apiKey: key,
+    ctx,
     messages: messagesParam,
     prompt,
     system,
-    ctx,
   } = await req.json();
 
   const {
-    toolName: toolNameParam,
-    selection,
-    children,
     blockIds = [],
+    children,
     isBlockSelecting,
     isSelecting,
+    selection,
+    toolName: toolNameParam,
   } = ctx;
 
   const editor = createSlateEditor({
@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
         const messages = replaceMessagePlaceholders(editor, messagesParam, {
+          blockIds,
           isBlockSelecting,
           isSelecting,
-          blockIds,
         });
 
         const lastUserMessage = messages.findLast(
@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
             editor,
             systemTemplate({ isBlockSelecting, isSelecting }),
             {
-              prompt: system,
               blockIds,
+              prompt: system,
             }
           );
 
@@ -116,8 +116,8 @@ export async function POST(req: NextRequest) {
             editor,
             systemTemplate({ isBlockSelecting, isSelecting }),
             {
-              prompt: system,
               blockIds,
+              prompt: system,
             }
           );
 
@@ -139,8 +139,8 @@ export async function POST(req: NextRequest) {
             editor,
             commentTemplate({ isBlockSelecting, isSelecting }),
             {
-              prompt,
               blockIds,
+              prompt,
             }
           );
 
@@ -375,24 +375,28 @@ const replaceMessagePlaceholders = (
   editor: SlateEditor,
   messages: ChatMessage[],
   {
+    blockIds,
     isBlockSelecting,
     isSelecting,
-    blockIds,
   }: {
+    blockIds: string[];
     isBlockSelecting: boolean;
     isSelecting: boolean;
-    blockIds: string[];
   }
 ) => {
   const template = promptTemplate({ isBlockSelecting, isSelecting });
 
   return messages.map((message) => {
+    if (message.role !== 'user') {
+      return message;
+    }
+
     const parts = message.parts.map((part) => {
       if (part.type !== 'text' || !part.text) return part;
 
       const text = replacePlaceholders(editor, template, {
-        prompt: part.text,
         blockIds,
+        prompt: part.text,
       });
 
       return { ...part, text } as typeof part;

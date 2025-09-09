@@ -1,8 +1,7 @@
-import { KEYS, type SlateEditor } from 'platejs';
+import { isSelecting } from '@platejs/selection';
+import { type SlateEditor, KEYS } from 'platejs';
 
 import { getMarkdown } from './getMarkdown';
-import { isSelecting } from '@platejs/selection';
-import { AIToolName } from '../types';
 
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
@@ -32,11 +31,11 @@ export const replacePlaceholders = (
   editor: SlateEditor,
   text: string,
   {
-    prompt,
     blockIds,
+    prompt,
   }: {
-    prompt?: string;
     blockIds?: string[];
+    prompt?: string;
   }
 ): string => {
   let result = text.replace('{prompt}', prompt || '');
@@ -53,7 +52,7 @@ export const replacePlaceholders = (
     if (result.includes(placeholder)) {
       result = result.replace(
         placeholder,
-        getMarkdown(editor, { type, blockIds: blockIds ?? [] })
+        getMarkdown(editor, { blockIds: blockIds ?? [], type })
       );
     }
   });

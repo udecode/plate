@@ -1,4 +1,4 @@
-import { KEYS, SlateEditor } from 'platejs';
+import { type SlateEditor, KEYS } from 'platejs';
 
 export const isSelecting = (editor: SlateEditor) => {
   const isSelectingSome = editor.getOption(

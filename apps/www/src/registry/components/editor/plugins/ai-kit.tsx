@@ -6,8 +6,8 @@ import { withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
-  useChatChunk,
   streamInsertChunk,
+  useChatChunk,
 } from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';

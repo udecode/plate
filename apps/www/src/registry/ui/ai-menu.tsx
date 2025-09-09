@@ -8,6 +8,7 @@ import {
   useEditorChat,
   useLastAssistantMessage,
 } from '@platejs/ai/react';
+import { getTransientCommentKey } from '@platejs/comment';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
@@ -59,7 +60,6 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
-import { getTransientCommentKey } from '@platejs/comment';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -564,8 +564,8 @@ export function AILoadingBar() {
     editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
     setMessages?.([]);
     setOptions({
-      toolName: 'generate',
       mode: 'insert',
+      toolName: 'generate',
     });
   };
 
@@ -577,8 +577,8 @@ export function AILoadingBar() {
       match: (n) => TextApi.isText(n) && !!n[KEYS.comment],
     });
     setOptions({
-      toolName: 'generate',
       mode: 'insert',
+      toolName: 'generate',
     });
   };
 

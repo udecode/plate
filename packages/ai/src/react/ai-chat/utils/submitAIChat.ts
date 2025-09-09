@@ -1,18 +1,18 @@
 import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
+import type { AIMode, AIToolName } from '../../../lib/types';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
-import { AIPlugin } from '../../ai/AIPlugin';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
-  EditorPrompt,
+  type EditorPrompt,
   getEditorPrompt,
 } from '../../../lib/utils/getEditorPrompt';
-import { AIMode, AIToolName } from '../../../lib/types';
+import { AIPlugin } from '../../ai/AIPlugin';
 
 export const submitAIChat = (
   editor: PlateEditor,
@@ -81,19 +81,19 @@ export const submitAIChat = (
     },
     {
       body: {
-        system: systemText,
-        prompt: promptText,
         ctx: {
-          toolName,
-          selection: editor.selection,
-          children: editor.children,
           blockIds,
+          children: editor.children,
           isBlockSelecting: editor.getOption(
             BlockSelectionPlugin,
             'isSelectingSome'
           ),
           isSelecting: isSelecting(editor),
+          selection: editor.selection,
+          toolName,
         },
+        prompt: promptText,
+        system: systemText,
       },
       ...options,
     }

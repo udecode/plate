@@ -1,20 +1,20 @@
 import { serializeMd } from '@platejs/markdown';
-import { type TElement, KEYS, NodeEntry, SlateEditor } from 'platejs';
+import { type SlateEditor, type TElement, KEYS } from 'platejs';
 
 // Internal
 export const getMarkdown = (
   editor: SlateEditor,
   {
-    type,
     blockIds,
+    type,
   }: {
+    blockIds: string[];
     type:
-      | 'editor'
-      | 'editorWithBlockId'
       | 'block'
       | 'blockWithBlockId'
+      | 'editor'
+      | 'editorWithBlockId'
       | 'selection';
-    blockIds: string[];
   }
 ) => {
   if (type === 'editor') {
@@ -27,8 +27,8 @@ export const getMarkdown = (
   if (type === 'block') {
     const blocks = editor.api.nodes({
       at: [],
-      match: (n) => blockIds.includes(n.id as string),
       mode: 'highest',
+      match: (n) => blockIds.includes(n.id as string),
     });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
@@ -39,8 +39,8 @@ export const getMarkdown = (
   if (type === 'blockWithBlockId') {
     const blocks = editor.api.nodes({
       at: [],
-      match: (n) => blockIds.includes(n.id as string),
       mode: 'highest',
+      match: (n) => blockIds.includes(n.id as string),
     });
     const nodes = Array.from(blocks, (entry) => entry[0]);
 

@@ -16,11 +16,8 @@ import {
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
-import {
-  getEditorPrompt,
-  type AIBatch,
-  type EditorPromptParams,
-} from '../../lib';
+import type { AIBatch } from '../../lib';
+import type { AIMode, AIToolName } from '../../lib/types';
 import type { ChatMessage } from './internal/types';
 
 import { AIPlugin } from '../ai/AIPlugin';
@@ -31,7 +28,6 @@ import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
-import { AIMode, AIToolName } from '../../lib/types';
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
