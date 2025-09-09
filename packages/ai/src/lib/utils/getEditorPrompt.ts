@@ -15,12 +15,12 @@ export interface EditorPromptParams {
 }
 
 export type MarkdownType =
-  | 'editor'
-  | 'editorWithBlockId'
+  | 'block'
   | 'blockSelection'
   | 'blockSelectionWithBlockId'
-  | 'block'
-  | 'blockWithBlockId';
+  | 'blockWithBlockId'
+  | 'editor'
+  | 'editorWithBlockId';
 
 export interface PromptConfig {
   default: string;
@@ -40,12 +40,12 @@ export const replacePlaceholders = (
   let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
-    '{editor}': 'editor',
-    '{editorWithBlockId}': 'editorWithBlockId',
-    '{blockSelection}': 'blockSelection',
     '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
-    '{block}': 'block',
+    '{blockSelection}': 'blockSelection',
     '{blockWithBlockId}': 'blockWithBlockId',
+    '{block}': 'block',
+    '{editorWithBlockId}': 'editorWithBlockId',
+    '{editor}': 'editor',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {

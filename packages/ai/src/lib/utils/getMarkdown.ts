@@ -1,6 +1,7 @@
 import { serializeMd } from '@platejs/markdown';
 import { type SlateEditor, type TElement, KEYS } from 'platejs';
-import { MarkdownType } from './getEditorPrompt';
+
+import type { MarkdownType } from './getEditorPrompt';
 
 // Internal
 export const getMarkdown = (

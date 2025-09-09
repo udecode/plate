@@ -2,7 +2,7 @@ import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { KEYS, Range, Descendant } from 'platejs';
+import { type Descendant, type Range, KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { AIMode, AIToolName } from '../../../lib/types';

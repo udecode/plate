@@ -16,7 +16,7 @@ import {
   streamText,
 } from 'ai';
 import { NextResponse } from 'next/server';
-import { RangeApi, type SlateEditor, createSlateEditor, nanoid } from 'platejs';
+import { type SlateEditor, createSlateEditor, nanoid, RangeApi } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -342,22 +342,33 @@ const replaceMessagePlaceholders = (
   editor: SlateEditor,
   messages: ChatMessage[],
   { isSelecting }: { isSelecting: boolean }
-) => {
+): ChatMessage[] => {
   const template = promptTemplate({ isSelecting });
 
-  return messages.map((message) => {
-    const parts = message.parts.map((part) => {
-      if (part.type !== 'text' || !part.text) return part;
+  const lastUserIndex = messages
+    .map((m) => (m as any).role)
+    .lastIndexOf('user');
 
-      const text = replacePlaceholders(editor, template, {
-        prompt: part.text,
-      });
+  if (lastUserIndex === -1) return messages;
 
-      return { ...part, text } as typeof part;
+  const targetMessage = messages[lastUserIndex];
+  const parts = targetMessage.parts.map((part) => {
+    if (part.type !== 'text' || !part.text) return part;
+
+    const text = replacePlaceholders(editor, template, {
+      prompt: part.text,
     });
 
-    return { ...message, parts };
+    return { ...part, text } as typeof part;
   });
+
+  const updatedMessage = { ...targetMessage, parts };
+
+  return [
+    ...messages.slice(0, lastUserIndex),
+    updatedMessage,
+    ...messages.slice(lastUserIndex + 1),
+  ];
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
