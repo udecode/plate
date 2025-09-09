@@ -328,7 +328,7 @@ const commentDefault = `{prompt}:
 {editorWithBlockId}
 `;
 
-export const PROMPT_TEMPLATES = {
+const PROMPT_TEMPLATES = {
   commentDefault,
   commentSelecting,
   systemBlockSelecting,

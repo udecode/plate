@@ -7,8 +7,7 @@ import {
   useState,
 } from 'react';
 
-import { streamInsertChunk } from '@platejs/ai';
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
 import { deserializeMd } from '@platejs/markdown';
 import {
   ChevronFirstIcon,
