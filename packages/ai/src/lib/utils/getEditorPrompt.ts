@@ -35,7 +35,7 @@ export const replacePlaceholders = (
     prompt,
   }: {
     prompt?: string;
-  }
+  } = {}
 ): string => {
   let result = text.replace('{prompt}', prompt || '');
 

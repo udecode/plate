@@ -21,13 +21,11 @@ export const submitAIChat = (
     mode,
     options,
     prompt,
-    system,
     toolName,
   }: {
     mode?: AIMode;
     options?: ChatRequestOptions;
     prompt?: EditorPrompt;
-    system?: EditorPrompt;
     toolName?: AIToolName;
   } = {}
 ) => {
@@ -63,10 +61,6 @@ export const submitAIChat = (
     prompt,
   });
 
-  const systemText = getEditorPrompt(editor, {
-    prompt: system,
-  });
-
   const selection =
     blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
 
@@ -87,8 +81,6 @@ export const submitAIChat = (
     {
       body: {
         ctx,
-        prompt: promptText,
-        system: systemText,
       },
       ...options,
     }
