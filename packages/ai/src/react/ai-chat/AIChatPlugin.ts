@@ -16,7 +16,11 @@ import {
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
-import type { AIBatch } from '../../lib';
+import {
+  getEditorPrompt,
+  type AIBatch,
+  type EditorPromptParams,
+} from '../../lib';
 import type { ChatMessage } from './internal/types';
 
 import { AIPlugin } from '../ai/AIPlugin';
@@ -24,17 +28,10 @@ import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
-import {
-  type EditorPromptParams,
-  getEditorPrompt,
-} from './utils/getEditorPrompt';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
-
-export type AIMode = 'chat' | 'insert';
-
-export type AIToolName = 'comment' | 'edit' | 'generate' | null;
+import { AIMode, AIToolName } from '../../lib/types';
 
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
@@ -60,28 +57,6 @@ export type AIChatPluginConfig = PluginConfig<
     /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
     toolName: AIToolName;
-    /**
-     * Template function for generating the user prompt. Supports the following
-     * placeholders:
-     *
-     * - {block}: Replaced with the markdown of the blocks in selection.
-     * - {editor}: Replaced with the markdown of the entire editor content.
-     * - {selection}: Replaced with the markdown of the current selection.
-     * - {prompt}: Replaced with the actual user prompt.
-     * - {editorWithBlockId}: Replaced with the markdown of the entire editor content with block ids.
-     * - {blockWithBlockId}: Replaced with the markdown of the blocks in selection with block ids.
-     */
-    promptTemplate: (props: EditorPromptParams) => string;
-    /**
-     * Template function for generating the system message. Supports the same
-     * placeholders as `promptTemplate`.
-     */
-    systemTemplate: (props: EditorPromptParams) => string | void;
-    /**
-     * Template function for generating the comment prompt. Supports the same
-     * placeholders as `promptTemplate`.
-     */
-    commentPromptTemplate: (props: EditorPromptParams) => string;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -125,9 +100,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     toolName: null,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
-    promptTemplate: () => '{prompt}',
-    systemTemplate: () => {},
-    commentPromptTemplate: () => '',
   },
 })
   .overrideEditor(withAIChat)
@@ -178,13 +150,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
           editor.getTransforms(AIPlugin).ai.undo();
         }
 
-        void chat.regenerate?.({
-          body: {
-            system: getEditorPrompt(editor, {
-              promptTemplate: getOptions().systemTemplate,
-            }),
-          },
-        });
+        void chat.regenerate?.();
       },
       stop: () => {
         setOption('streaming', false);

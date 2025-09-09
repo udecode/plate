@@ -4,10 +4,15 @@ import { isSelecting } from '@platejs/selection';
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
-import type { AIChatPluginConfig, AIMode, AIToolName } from '../AIChatPlugin';
+import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 import { AIPlugin } from '../../ai/AIPlugin';
-import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import {
+  EditorPrompt,
+  getEditorPrompt,
+} from '../../../lib/utils/getEditorPrompt';
+import { AIMode, AIToolName } from '../../../lib/types';
 
 export const submitAIChat = (
   editor: PlateEditor,
@@ -33,8 +38,7 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, commentPromptTemplate, promptTemplate, systemTemplate } =
-    getOptions();
+  const { chat } = getOptions();
 
   if (!prompt && input?.length === 0) {
     return;
@@ -53,29 +57,43 @@ export const submitAIChat = (
 
   setOption('toolName', toolName ?? null);
 
-  const commentPrompt =
-    !toolName || toolName === 'comment'
-      ? getEditorPrompt(editor, {
-          promptTemplate: commentPromptTemplate,
-        })
-      : undefined;
+  const blockSelectionIds = Array.from(
+    editor.getOption(BlockSelectionPlugin, 'selectedIds') ?? []
+  );
+  const selectionBlockIds = editor.api
+    .blocks({ mode: 'highest' })
+    .map(([n]) => n.id as string);
+
+  const blockIds =
+    blockSelectionIds.length > 0 ? blockSelectionIds : selectionBlockIds;
+
+  const promptText = getEditorPrompt(editor, {
+    prompt,
+  });
+
+  const systemText = getEditorPrompt(editor, {
+    prompt: system,
+  });
 
   void chat.sendMessage?.(
     {
-      text:
-        getEditorPrompt(editor, {
-          prompt,
-          promptTemplate,
-        }) ?? '',
+      text: promptText,
     },
     {
       body: {
-        commentPrompt,
-        system: getEditorPrompt(editor, {
-          prompt: system,
-          promptTemplate: systemTemplate,
-        }),
-        toolName,
+        system: systemText,
+        prompt: promptText,
+        ctx: {
+          toolName,
+          selection: editor.selection,
+          children: editor.children,
+          blockIds,
+          isBlockSelecting: editor.getOption(
+            BlockSelectionPlugin,
+            'isSelectingSome'
+          ),
+          isSelecting: isSelecting(editor),
+        },
       },
       ...options,
     }

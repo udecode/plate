@@ -1,18 +1,21 @@
-import type { PlateEditor } from 'platejs/react';
-
 import { serializeMd } from '@platejs/markdown';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type TElement, KEYS } from 'platejs';
+import { type TElement, KEYS, NodeEntry, SlateEditor } from 'platejs';
 
 // Internal
 export const getMarkdown = (
-  editor: PlateEditor,
-  type:
-    | 'block'
-    | 'blockWithBlockId'
-    | 'editor'
-    | 'editorWithBlockId'
-    | 'selection'
+  editor: SlateEditor,
+  {
+    type,
+    blockIds,
+  }: {
+    type:
+      | 'editor'
+      | 'editorWithBlockId'
+      | 'block'
+      | 'blockWithBlockId'
+      | 'selection';
+    blockIds: string[];
+  }
 ) => {
   if (type === 'editor') {
     return serializeMd(editor);
@@ -22,9 +25,11 @@ export const getMarkdown = (
   }
 
   if (type === 'block') {
-    const blocks = editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes({ selectionFallback: true, sort: true });
+    const blocks = editor.api.nodes({
+      at: [],
+      match: (n) => blockIds.includes(n.id as string),
+      mode: 'highest',
+    });
 
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
@@ -32,9 +37,11 @@ export const getMarkdown = (
   }
 
   if (type === 'blockWithBlockId') {
-    const blocks = editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes({ selectionFallback: true, sort: true });
+    const blocks = editor.api.nodes({
+      at: [],
+      match: (n) => blockIds.includes(n.id as string),
+      mode: 'highest',
+    });
     const nodes = Array.from(blocks, (entry) => entry[0]);
 
     return serializeMd(editor, { value: nodes, withBlockId: true });

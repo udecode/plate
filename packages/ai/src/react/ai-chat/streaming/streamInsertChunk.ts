@@ -9,12 +9,12 @@ import {
   PathApi,
 } from 'platejs';
 
-import { AIChatPlugin } from '../../react';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
 import { streamDeserializeMd } from './streamDeserializeMd';
 import { streamSerializeMd } from './streamSerializeMd';
 import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
+import { AIChatPlugin } from '../AIChatPlugin';
 
 export interface SteamInsertChunkOptions {
   elementProps?: any;
