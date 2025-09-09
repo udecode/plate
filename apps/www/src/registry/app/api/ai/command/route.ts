@@ -23,13 +23,7 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 export async function POST(req: NextRequest) {
-  const {
-    apiKey: key,
-    ctx,
-    messages: messagesParam,
-    prompt,
-    system,
-  } = await req.json();
+  const { apiKey: key, ctx, messages: messagesRaw } = await req.json();
 
   const { children, selection, toolName: toolNameParam } = ctx;
 
@@ -57,13 +51,21 @@ export async function POST(req: NextRequest) {
   try {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
-        const messages = replaceMessagePlaceholders(editor, messagesParam, {
-          isSelecting,
-        });
-
-        const lastUserMessage = messages.findLast(
+        const lastIndex = messagesRaw.findIndex(
           (message: any) => message.role === 'user'
         );
+
+        const messages = [...messagesRaw];
+
+        messages[lastIndex] = replaceMessagePlaceholders(
+          editor,
+          messages[lastIndex],
+          {
+            isSelecting,
+          }
+        );
+
+        const lastUserMessage = messages[lastIndex];
 
         let toolName = toolNameParam;
 
@@ -88,10 +90,7 @@ export async function POST(req: NextRequest) {
         if (toolName === 'generate') {
           const generateSystem = replacePlaceholders(
             editor,
-            systemTemplate({ isBlockSelecting, isSelecting }),
-            {
-              prompt: system,
-            }
+            systemTemplate({ isBlockSelecting, isSelecting })
           );
 
           const gen = streamText({
@@ -108,10 +107,7 @@ export async function POST(req: NextRequest) {
         if (toolName === 'edit') {
           const editSystem = replacePlaceholders(
             editor,
-            systemTemplate({ isBlockSelecting, isSelecting }),
-            {
-              prompt: system,
-            }
+            systemTemplate({ isBlockSelecting, isSelecting })
           );
 
           const edit = streamText({
@@ -126,6 +122,11 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'comment') {
+          const lastUserMessage = messagesRaw[lastIndex] as ChatMessage;
+          const prompt = lastUserMessage.parts.find(
+            (p) => p.type === 'text'
+          )?.text;
+
           const commentPrompt = replacePlaceholders(
             editor,
             commentTemplate({ isSelecting }),
@@ -340,19 +341,12 @@ const PROMPT_TEMPLATES = {
 
 const replaceMessagePlaceholders = (
   editor: SlateEditor,
-  messages: ChatMessage[],
+  message: ChatMessage,
   { isSelecting }: { isSelecting: boolean }
-): ChatMessage[] => {
+): ChatMessage => {
   const template = promptTemplate({ isSelecting });
 
-  const lastUserIndex = messages
-    .map((m) => (m as any).role)
-    .lastIndexOf('user');
-
-  if (lastUserIndex === -1) return messages;
-
-  const targetMessage = messages[lastUserIndex];
-  const parts = targetMessage.parts.map((part) => {
+  const parts = message.parts.map((part) => {
     if (part.type !== 'text' || !part.text) return part;
 
     const text = replacePlaceholders(editor, template, {
@@ -362,13 +356,7 @@ const replaceMessagePlaceholders = (
     return { ...part, text } as typeof part;
   });
 
-  const updatedMessage = { ...targetMessage, parts };
-
-  return [
-    ...messages.slice(0, lastUserIndex),
-    updatedMessage,
-    ...messages.slice(lastUserIndex + 1),
-  ];
+  return { ...message, parts };
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
