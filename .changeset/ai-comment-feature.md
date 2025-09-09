@@ -1,5 +1,5 @@
 ---
-'@platejs/ai': minor
+'@platejs/ai': major
 ---
 
 Added **AI Comment** functionality to provide AI-powered text feedback and suggestions.And upgrade to AI SDK 5.
@@ -7,6 +7,7 @@ Added **AI Comment** functionality to provide AI-powered text feedback and sugge
 ### New Features:
 
 - **AI Comment Integration**: New utilities for AI-generated comments on selected text
+
   - `aiCommentToRange()` - Convert AI comments to text ranges with proper block mapping
   - `findTextRangeInBlock()` - Find text ranges within blocks for accurate comment positioning
 
@@ -32,3 +33,11 @@ const range = aiCommentToRange(editor, {
   comment: 'Consider adding more detail here',
 });
 ```
+
+### Breaking Changes:
+
+- `streamInsertChunk` has been moved from `@platejs/ai` to `@platejs/ai/react`.
+- `getEditorPrompt` has been moved from `@platejs/ai/react` to `@platejs/ai`.
+- `getMarkdown` has been moved from `@platejs/ai/react` to `@platejs/ai`.
+- `promptTemplate` and `systemTemplate` have been removed. They are now used directly in `api/ai/command/route.ts`.
+- The placeholder `{selection}` has been renamed to `{blockSelection}`.
