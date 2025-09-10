@@ -18,7 +18,7 @@ export type SerializeMdOptions = {
   editor?: SlateEditor;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
-  remarkStringifyOptions?: RemarkStringifyOptions;
+  remarkStringifyOptions?: RemarkStringifyOptions | null;
   rules?: MdRules;
   spread?: boolean;
   value?: Descendant[];
