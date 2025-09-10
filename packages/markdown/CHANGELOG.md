@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 50.1.1
+
+### Patch Changes
+
+- [#4620](https://github.com/udecode/plate/pull/4620) by [@baptisteArno](https://github.com/baptisteArno) – Fix remarkStringifyOptions not taken into account
+
 ## 50.1.0
 
 ### Minor Changes
