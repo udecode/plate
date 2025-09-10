@@ -1,4 +1,4 @@
-import { isCompleteMath } from '../..';
+import { isCompleteMath } from './utils';
 
 export const escapeInput = (data: string) => {
   let res = data;

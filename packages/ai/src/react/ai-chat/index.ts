@@ -5,5 +5,6 @@
 export * from './AIChatPlugin';
 export * from './withAIChat';
 export * from './hooks/index';
+export * from './streaming/index';
 export * from './transforms/index';
 export * from './utils/index';

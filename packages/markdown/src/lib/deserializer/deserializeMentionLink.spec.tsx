@@ -104,4 +104,43 @@ describe('deserializeMd - mention link format', () => {
       </hp>,
     ]);
   });
+
+  it('should not convert regular links to mentions even with @ in text', () => {
+    const editor = createTestEditor([BaseMentionPlugin]);
+
+    const markdown = `[@mention](/docs/mention)`;
+    const value = deserializeMd(editor, markdown);
+
+    expect(value).toEqual([
+      <hp>
+        <ha url="/docs/mention">
+          <htext>@mention</htext>
+        </ha>
+      </hp>,
+    ]);
+  });
+
+  it('should handle mixed links and mentions correctly', () => {
+    const editor = createTestEditor([BaseMentionPlugin]);
+
+    const markdown = `Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob`;
+    const value = deserializeMd(editor, markdown);
+
+    expect(value).toEqual([
+      <hp>
+        <htext>Check </htext>
+        <ha url="https://docs.com">
+          <htext>@docs</htext>
+        </ha>
+        <htext> and </htext>
+        <hmention key="alice" value="Alice">
+          <htext></htext>
+        </hmention>
+        <htext> plus </htext>
+        <hmention value="bob">
+          <htext></htext>
+        </hmention>
+      </hp>,
+    ]);
+  });
 });

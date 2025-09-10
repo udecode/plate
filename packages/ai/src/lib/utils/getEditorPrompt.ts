@@ -1,7 +1,5 @@
-import type { PlateEditor } from 'platejs/react';
-
 import { isSelecting } from '@platejs/selection';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { type SlateEditor, KEYS } from 'platejs';
 
 import { getMarkdown } from './getMarkdown';
 
@@ -11,12 +9,18 @@ export type EditorPrompt =
   | string;
 
 export interface EditorPromptParams {
-  editor: PlateEditor;
+  editor: SlateEditor;
   isBlockSelecting: boolean;
   isSelecting: boolean;
 }
 
-export type MarkdownType = 'block' | 'editor' | 'selection';
+export type MarkdownType =
+  | 'block'
+  | 'blockSelection'
+  | 'blockSelectionWithBlockId'
+  | 'blockWithBlockId'
+  | 'editor'
+  | 'editorWithBlockId';
 
 export interface PromptConfig {
   default: string;
@@ -24,26 +28,29 @@ export interface PromptConfig {
   selecting?: string;
 }
 
-const replacePlaceholders = (
-  editor: PlateEditor,
+export const replacePlaceholders = (
+  editor: SlateEditor,
   text: string,
   {
     prompt,
   }: {
     prompt?: string;
-  }
+  } = {}
 ): string => {
   let result = text.replace('{prompt}', prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
+    '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
+    '{blockSelection}': 'blockSelection',
+    '{blockWithBlockId}': 'blockWithBlockId',
     '{block}': 'block',
+    '{editorWithBlockId}': 'editorWithBlockId',
     '{editor}': 'editor',
-    '{selection}': 'selection',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
     if (result.includes(placeholder)) {
-      result = result.replace(placeholder, getMarkdown(editor, type));
+      result = result.replace(placeholder, getMarkdown(editor, { type }));
     }
   });
 
@@ -66,24 +73,21 @@ const createPromptFromConfig = (
 };
 
 export const getEditorPrompt = (
-  editor: PlateEditor,
+  editor: SlateEditor,
   {
     prompt = '',
-    promptTemplate = () => '{prompt}',
   }: {
     prompt?: EditorPrompt;
-    promptTemplate?: (params: EditorPromptParams) => string | void;
-  } = {}
-): string | undefined => {
+  }
+): string => {
   const params: EditorPromptParams = {
     editor,
-    isBlockSelecting: editor.getOption(BlockSelectionPlugin, 'isSelectingSome'),
+    isBlockSelecting: editor.getOption(
+      { key: KEYS.blockSelection },
+      'isSelectingSome'
+    ),
     isSelecting: isSelecting(editor),
   };
-
-  const template = promptTemplate(params);
-
-  if (!template) return;
 
   let promptText = '';
 
@@ -95,7 +99,5 @@ export const getEditorPrompt = (
     promptText = prompt;
   }
 
-  return replacePlaceholders(editor, template, {
-    prompt: promptText,
-  });
+  return promptText;
 };

@@ -3,11 +3,12 @@ import type { PlateEditor } from 'platejs/react';
 import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
 import { type TElement, getPluginType, KEYS, TextApi } from 'platejs';
 
-import { AIChatPlugin } from '../../react';
+import { AIChatPlugin } from '../AIChatPlugin';
 import { getChunkTrimmed } from './utils';
 import { escapeInput } from './utils/escapeInput';
 
-const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*)?>/;
+const statMdxTagRegex = /<([A-Za-z][A-Za-z0-9._:-]*)(?:\s[^>]*?)?(?<!\/)>/;
+
 export const streamDeserializeMd = (
   editor: PlateEditor,
   data: string,

@@ -109,7 +109,6 @@ export const EditorViewClient = () => {
       const text = await plainFiles[0].text();
 
       const nodes = getFileNodes(text);
-      console.log('🚀 ~ onFilesSelected: ~ nodes:', nodes);
     },
   });
 

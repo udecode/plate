@@ -1,8 +1,7 @@
 'use client';
 import { type HTMLAttributes, useCallback, useRef, useState } from 'react';
 
-import { streamInsertChunk } from '@platejs/ai';
-import { AIChatPlugin } from '@platejs/ai/react';
+import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
 import { getPluginType, KEYS } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 

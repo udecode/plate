@@ -52,11 +52,13 @@
   "dependencies": {
     "@platejs/markdown": "49.2.15",
     "@platejs/selection": "49.2.4",
+    "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@ai-sdk/react": "2.0.28",
     "@platejs/combobox": "49.0.0",
-    "ai": "4.3.16"
+    "ai": "5.0.28"
   },
   "peerDependencies": {
     "platejs": ">=49.2.4",

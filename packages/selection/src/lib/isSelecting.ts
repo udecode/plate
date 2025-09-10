@@ -1,10 +1,8 @@
-import type { PlateEditor } from 'platejs/react';
+import { type SlateEditor, KEYS } from 'platejs';
 
-import { BlockSelectionPlugin } from '../react';
-
-export const isSelecting = (editor: PlateEditor) => {
+export const isSelecting = (editor: SlateEditor) => {
   const isSelectingSome = editor.getOption(
-    BlockSelectionPlugin,
+    { key: KEYS.blockSelection },
     'isSelectingSome'
   );
   const selectionExpanded = editor.api.isExpanded();

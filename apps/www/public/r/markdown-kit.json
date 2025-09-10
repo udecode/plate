@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/markdown-kit.tsx",
-      "content": "import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';\nimport { KEYS } from 'platejs';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    options: {\n      disallowedNodes: [KEYS.suggestion],\n      remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n    },\n  }),\n];\n",
+      "content": "import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    options: {\n      remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

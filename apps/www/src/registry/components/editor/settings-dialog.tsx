@@ -73,6 +73,7 @@ export function SettingsDialog() {
 
     // Update AI chat options
     const chatOptions = editor.getOptions(aiChatPlugin).chatOptions ?? {};
+
     editor.setOption(aiChatPlugin, 'chatOptions', {
       ...chatOptions,
       body: {

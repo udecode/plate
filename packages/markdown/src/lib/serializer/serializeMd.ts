@@ -19,6 +19,7 @@ export type SerializeMdOptions = {
   rules?: MdRules;
   spread?: boolean;
   value?: Descendant[];
+  withBlockId?: boolean;
 };
 
 /** Serialize the editor value to Markdown. */
@@ -51,8 +52,14 @@ const slateToMdast = ({
   children: Descendant[];
   options: SerializeMdOptions;
 }): MdRoot => {
+  const processedChildren = convertNodesSerialize(
+    children,
+    options,
+    true // isBlock = true for top-level elements
+  ) as MdRoot['children'];
+
   const ast = {
-    children: convertNodesSerialize(children, options) as MdRoot['children'],
+    children: processedChildren,
     type: 'root',
   } as MdRoot;
   return ast;

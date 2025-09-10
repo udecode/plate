@@ -1,5 +1,5 @@
+import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
-import type { UseChatHelpers } from 'ai/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
@@ -17,16 +17,14 @@ import {
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
+import type { AIMode, AIToolName } from '../../lib/types';
+import type { ChatMessage } from './internal/types';
 
 import { AIPlugin } from '../ai/AIPlugin';
 import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
-import {
-  type EditorPromptParams,
-  getEditorPrompt,
-} from './utils/getEditorPrompt';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
@@ -40,7 +38,7 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
-    chat: Partial<UseChatHelpers>;
+    chat: UseChatHelpers<ChatMessage>;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -50,25 +48,11 @@ export type AIChatPluginConfig = PluginConfig<
      * - 'chat': Initiates an interactive session to review and refine content
      *   before insertion.
      */
-    mode: 'chat' | 'insert';
+    mode: AIMode;
     open: boolean;
     /** Whether the AI response is currently streaming. Cursor mode only. */
     streaming: boolean;
-    /**
-     * Template function for generating the user prompt. Supports the following
-     * placeholders:
-     *
-     * - {block}: Replaced with the markdown of the blocks in selection.
-     * - {editor}: Replaced with the markdown of the entire editor content.
-     * - {selection}: Replaced with the markdown of the current selection.
-     * - {prompt}: Replaced with the actual user prompt.
-     */
-    promptTemplate: (props: EditorPromptParams) => string;
-    /**
-     * Template function for generating the system message. Supports the same
-     * placeholders as `promptTemplate`.
-     */
-    systemTemplate: (props: EditorPromptParams) => string | void;
+    toolName: AIToolName;
   } & TriggerComboboxPluginOptions,
   {
     aiChat: {
@@ -104,15 +88,14 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockPath: null,
     _mdxName: null,
     aiEditor: null,
-    chat: { messages: [] } as any,
+    chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
     experimental_lastTextId: null,
-    mode: 'chat',
+    mode: 'insert',
     open: false,
     streaming: false,
+    toolName: null,
     trigger: ' ',
     triggerPreviousCharPattern: /^\s?$/,
-    promptTemplate: () => '{prompt}',
-    systemTemplate: () => {},
   },
 })
   .overrideEditor(withAIChat)
@@ -163,13 +146,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
           editor.getTransforms(AIPlugin).ai.undo();
         }
 
-        void chat.reload?.({
-          body: {
-            system: getEditorPrompt(editor, {
-              promptTemplate: getOptions().systemTemplate,
-            }),
-          },
-        });
+        void chat.regenerate?.();
       },
       stop: () => {
         setOption('streaming', false);

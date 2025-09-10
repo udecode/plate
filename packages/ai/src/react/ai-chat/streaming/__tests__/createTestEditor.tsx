@@ -14,9 +14,10 @@ import { ParagraphPlugin } from 'platejs/react';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 jsxt;
 
-import { MarkdownKit } from '../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '../../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 import { createSlateEditor, SlateEditor } from 'platejs';
-import { AIChatPlugin, AIPlugin } from '../../../react';
+import { AIPlugin } from '../../../ai/AIPlugin';
+import { AIChatPlugin } from '../../AIChatPlugin';
 // Helper function to create input and editor with common configuration
 export const defaultPlugins = [
   ParagraphPlugin,

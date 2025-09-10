@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`applyAIReview should apply the AI review to the editor 1`] = `
+[
+  {
+    "anchor": {
+      "offset": 0,
+      "path": [
+        0,
+        0,
+      ],
+    },
+    "focus": {
+      "offset": 32,
+      "path": [
+        0,
+        0,
+      ],
+    },
+  },
+  {
+    "anchor": {
+      "offset": 0,
+      "path": [
+        1,
+        0,
+      ],
+    },
+    "focus": {
+      "offset": 1,
+      "path": [
+        1,
+        4,
+      ],
+    },
+  },
+  {
+    "anchor": {
+      "offset": 0,
+      "path": [
+        2,
+        0,
+      ],
+    },
+    "focus": {
+      "offset": 13,
+      "path": [
+        3,
+        10,
+      ],
+    },
+  },
+  {
+    "anchor": {
+      "offset": 0,
+      "path": [
+        4,
+        0,
+      ],
+    },
+    "focus": {
+      "offset": 54,
+      "path": [
+        7,
+        0,
+      ],
+    },
+  },
+  {
+    "anchor": {
+      "offset": 0,
+      "path": [
+        8,
+        0,
+      ],
+    },
+    "focus": {
+      "offset": 9,
+      "path": [
+        9,
+        26,
+      ],
+    },
+  },
+]
+`;

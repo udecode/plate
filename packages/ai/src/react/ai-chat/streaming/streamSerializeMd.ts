@@ -9,7 +9,11 @@ import {
   TextApi,
 } from 'platejs';
 
-import { getChunkTrimmed, isCompleteCodeBlock, isCompleteMath } from './utils';
+import {
+  getChunkTrimmed,
+  isCompleteCodeBlock,
+  isCompleteMath,
+} from './utils/utils';
 
 // fixes test: should serialize heading with tailing line break
 // fixes test: incomplete line breaks

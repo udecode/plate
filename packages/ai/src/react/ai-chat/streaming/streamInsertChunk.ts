@@ -9,7 +9,7 @@ import {
   PathApi,
 } from 'platejs';
 
-import { AIChatPlugin } from '../../react';
+import { AIChatPlugin } from '../AIChatPlugin';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
 import { streamDeserializeMd } from './streamDeserializeMd';
 import { streamSerializeMd } from './streamSerializeMd';

@@ -1,26 +1,32 @@
 import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
-import { KEYS } from 'platejs';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { type Descendant, type Range, KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
+import type { AIMode, AIToolName } from '../../../lib/types';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
+import {
+  type EditorPrompt,
+  getEditorPrompt,
+} from '../../../lib/utils/getEditorPrompt';
 import { AIPlugin } from '../../ai/AIPlugin';
-import { type EditorPrompt, getEditorPrompt } from './getEditorPrompt';
 
 export const submitAIChat = (
   editor: PlateEditor,
+  input: string,
   {
     mode,
     options,
     prompt,
-    system,
+    toolName,
   }: {
-    mode?: 'chat' | 'insert';
+    mode?: AIMode;
     options?: ChatRequestOptions;
     prompt?: EditorPrompt;
-    system?: EditorPrompt;
+    toolName?: AIToolName;
   } = {}
 ) => {
   const { getOptions, setOption } = getEditorPlugin<AIChatPluginConfig>(
@@ -30,13 +36,13 @@ export const submitAIChat = (
     }
   );
 
-  const { chat, promptTemplate, systemTemplate } = getOptions();
+  const { chat } = getOptions();
 
-  if (!prompt && chat.input?.length === 0) {
+  if (!prompt && input?.length === 0) {
     return;
   }
   if (!prompt) {
-    prompt = chat.input;
+    prompt = input;
   }
   if (!mode) {
     mode = isSelecting(editor) ? 'chat' : 'insert';
@@ -47,23 +53,34 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
-  chat.setInput?.('');
+  setOption('toolName', toolName ?? null);
 
-  void chat.append?.(
+  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
+
+  const promptText = getEditorPrompt(editor, {
+    prompt,
+  });
+
+  const selection =
+    blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+
+  const ctx: {
+    children: Descendant[];
+    selection: Range | null;
+    toolName: string | null;
+  } = {
+    children: editor.children,
+    selection: selection ?? null,
+    toolName: toolName ?? null,
+  };
+
+  void chat.sendMessage?.(
     {
-      content:
-        getEditorPrompt(editor, {
-          prompt,
-          promptTemplate,
-        }) ?? '',
-      role: 'user',
+      text: promptText,
     },
     {
       body: {
-        system: getEditorPrompt(editor, {
-          prompt: system,
-          promptTemplate: systemTemplate,
-        }),
+        ctx,
       },
       ...options,
     }

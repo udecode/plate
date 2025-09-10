@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`wrapWithBlockId integration with serializeMd should handle complex nested structures 1`] = `
+"<block id="para-with-marks">
+  Text with **bold** and _italic_ marks
+</block>
+"
+`;
+
+exports[`wrapWithBlockId integration with serializeMd should not wrap nodes without IDs 1`] = `
+"No ID here
+"
+`;
+
+exports[`wrapWithBlockId integration with serializeMd should wrap indent lists with IDs in block elements when withBlockId is true 1`] = `
+"<block id="list-item-1">
+  * Item 1
+</block>
+
+<block id="list-item-2">
+  * Item 2
+</block>
+
+<block id="list-item-3">
+  * Nested item
+</block>
+"
+`;
+
+exports[`wrapWithBlockId integration with serializeMd should wrap nodes with IDs in block elements when withBlockId is true 1`] = `
+"<block id="123">
+  Hello world
+</block>
+"
+`;
+
+exports[`wrapWithBlockId integration with serializeMd should wrap ordered indent lists with IDs when withBlockId is true 1`] = `
+"<block id="ordered-1">
+  1. First
+</block>
+
+<block id="ordered-2">
+  2. Second
+</block>
+"
+`;

@@ -3,5 +3,6 @@
  */
 
 export * from './BaseAIPlugin';
-export * from './streaming/index';
+export * from './types';
 export * from './transforms/index';
+export * from './utils/index';
