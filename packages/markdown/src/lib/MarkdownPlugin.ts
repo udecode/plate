@@ -1,3 +1,4 @@
+import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Plugin } from 'unified';
 
 import {
@@ -46,6 +47,12 @@ export type MarkdownConfig = PluginConfig<
      */
     remarkPlugins: Plugin[];
     /**
+     * Custom options passed to remark-stringify.
+     *
+     * @default null
+     */
+    remarkStringifyOptions: RemarkStringifyOptions | null;
+    /**
      * Rules that define how to convert Markdown syntax elements to Slate editor
      * elements. Or rules that how to convert Slate editor elements to Markdown
      * syntax elements. Includes conversion rules for elements such as
@@ -81,6 +88,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
     allowedNodes: null,
     disallowedNodes: null,
     remarkPlugins: [],
+    remarkStringifyOptions: null,
     rules: null,
   },
 })

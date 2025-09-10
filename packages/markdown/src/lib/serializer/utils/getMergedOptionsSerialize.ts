@@ -22,6 +22,7 @@ export const getMergedOptionsSerialize = (
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
     remarkPlugins: PluginRemarkPlugins,
+    remarkStringifyOptions: PluginRemarkStringifyOptions,
     rules: PluginRules,
   } = editor.getOptions(MarkdownPlugin);
 
@@ -37,6 +38,8 @@ export const getMergedOptionsSerialize = (
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
+    remarkStringifyOptions:
+      options?.remarkStringifyOptions ?? PluginRemarkStringifyOptions,
     rules: mergedRules,
     spread: options?.spread,
     value: options?.value ?? editor.children,
