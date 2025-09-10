@@ -1,3 +1,4 @@
+import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Plugin } from 'unified';
 
 import {
@@ -65,6 +66,12 @@ export type MarkdownConfig = PluginConfig<
      * @default null
      */
     allowNode?: AllowNodeConfig;
+    /**
+     * Custom options passed to remark-stringify.
+     *
+     * @default undefined
+     */
+    remarkStringifyOptions?: RemarkStringifyOptions;
   },
   {
     markdown: {

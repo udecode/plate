@@ -304,4 +304,33 @@ describe('serializeMd', () => {
     });
     expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
   });
+
+  it('should serialize lists with custom remark-stringify options', () => {
+    const slateNodes = [
+      {
+        children: [
+          {
+            text: 'Make text ',
+          },
+          {
+            bold: true,
+            text: 'bold',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+    const result = serializeMd(editor as any, {
+      remarkStringifyOptions: {
+        handlers: {
+          strong: (node, _parent, state, info) => {
+            const value = state.containerPhrasing(node, info);
+            return `*${value}*`;
+          },
+        },
+      },
+      value: slateNodes,
+    });
+    expect(result).toBe('Make text *bold*\n');
+  });
 });
