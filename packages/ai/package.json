@@ -1,6 +1,6 @@
 {
   "name": "@platejs/ai",
-  "version": "50.0.0",
+  "version": "50.1.0",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/markdown": "50.0.0",
+    "@platejs/markdown": "50.1.0",
     "@platejs/selection": "50.0.0",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21"

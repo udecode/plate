@@ -1,5 +1,7 @@
 # @platejs/ai
 
+## 50.1.0
+
 ## 50.0.0
 
 ### Major Changes
