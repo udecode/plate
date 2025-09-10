@@ -18,6 +18,7 @@ export const serializeInlineMd = (
     .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkStringify, {
       emphasis: '_',
+      ...mergedOptions?.remarkStringifyOptions,
     });
 
   if (options?.value?.length === 0) return '';
