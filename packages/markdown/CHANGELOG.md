@@ -1,5 +1,25 @@
 # @platejs/markdown
 
+## 50.0.0
+
+### Patch Changes
+
+- [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) – Added support for preserving block IDs in markdown serialization to enable AI comment tracking.
+
+  ### Changes:
+
+  - **Enhanced Serialization**: Updated `serializeMd` to support `withBlockId` option for maintaining block references
+
+  ### Example:
+
+  ```typescript
+  // Serialize with block IDs preserved
+  const markdown = serializeMd(editor, {
+    withBlockId: true,
+  });
+  // Output: <block id="block-1">Content here</block>
+  ```
+
 ## 49.2.15
 
 ### Patch Changes

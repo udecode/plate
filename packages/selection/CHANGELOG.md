@@ -1,5 +1,13 @@
 # @platejs/selection
 
+## 50.0.0
+
+### Patch Changes
+
+- [#4587](https://github.com/udecode/plate/pull/4587) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Added a `selectionFallback` option to `api.getNodes`.
+    - If `selectionFallback` is set to `true`, and no nodes are selected by `blockSelection`, the method will use the editor's original selection to retrieve blocks.
+
 ## 49.2.4
 
 ### Patch Changes
