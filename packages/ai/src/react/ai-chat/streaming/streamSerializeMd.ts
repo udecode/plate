@@ -75,7 +75,6 @@ export const streamSerializeMd = (
   let result = '';
 
   result = editor.getApi(MarkdownPlugin).markdown.serialize({
-    preserveEmptyParagraphs: false,
     value: value,
     ...restOptions,
   });

@@ -37,6 +37,7 @@ export const getMergedOptionsSerialize = (
     allowNode: options?.allowNode ?? PluginAllowNode,
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
+    preserveEmptyParagraphs: options?.preserveEmptyParagraphs,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
     remarkStringifyOptions:
       options?.remarkStringifyOptions ?? PluginRemarkStringifyOptions,
