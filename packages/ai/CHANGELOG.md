@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 50.1.2
+
+### Patch Changes
+
+- [#4622](https://github.com/udecode/plate/pull/4622) by [@baptisteArno](https://github.com/baptisteArno) – fix preserveEmptyParagraphs option not merged
+
 ## 50.1.1
 
 ## 50.1.0
