@@ -15,6 +15,7 @@ import {
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { withSuggestion } from './withSuggestion';
+import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
 
 export type BaseSuggestionConfig = PluginConfig<
   'suggestion',
@@ -34,7 +35,7 @@ export type BaseSuggestionConfig = PluginConfig<
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
       nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
-        options?: EditorNodesOptions
+        options?: EditorNodesOptions & { transient?: boolean }
       ) => NodeEntry<TElement | TSuggestionText>[];
       suggestionData: (
         node: TElement | TSuggestionText
@@ -104,6 +105,8 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         }
       },
       nodes: (options = {}) => {
+        const { transient } = options;
+
         const at = getAt(editor, options.at) ?? [];
 
         return [
@@ -111,7 +114,11 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
             ...options,
             at,
             mode: 'all',
-            match: (n) => n[type],
+            match: (n) => {
+              return (
+                n[type] && (transient ? n[getTransientSuggestionKey()] : true)
+              );
+            },
           }),
         ];
       },

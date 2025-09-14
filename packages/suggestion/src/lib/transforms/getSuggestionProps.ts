@@ -3,7 +3,7 @@ import type { Descendant, SlateEditor } from 'platejs';
 import { ElementApi, KEYS, nanoid } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getSuggestionKey } from '../utils/index';
+import { getSuggestionKey, getTransientSuggestionKey } from '../utils/index';
 
 export const getSuggestionProps = (
   editor: SlateEditor,
@@ -13,11 +13,13 @@ export const getSuggestionProps = (
     createdAt = Date.now(),
     suggestionDeletion,
     suggestionUpdate,
+    transient,
   }: {
     id?: string;
     createdAt?: number;
     suggestionDeletion?: boolean;
     suggestionUpdate?: any;
+    transient?: boolean;
   } = {}
 ) => {
   const type = suggestionDeletion
@@ -45,6 +47,10 @@ export const getSuggestionProps = (
     [getSuggestionKey(id)]: suggestionData,
     [KEYS.suggestion]: true,
   };
+
+  if (transient) {
+    res[getTransientSuggestionKey()] = true;
+  }
 
   return res;
 };

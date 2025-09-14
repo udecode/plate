@@ -84,9 +84,6 @@ export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
 
   const isRemove = suggestionData?.type === 'remove';
 
-  // console.log("🚀 ~ BlockSuggestion ~ suggestionData:", suggestionData)
-  // console.log("🚀 ~ BlockSuggestion ~ isRemove:", isRemove)
-
   return (
     <div
       className={cn(

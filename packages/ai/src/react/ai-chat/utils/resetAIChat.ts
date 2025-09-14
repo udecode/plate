@@ -6,9 +6,12 @@ import type { AIChatPluginConfig } from '../AIChatPlugin';
 import { AIPlugin } from '../../ai/AIPlugin';
 
 export const resetAIChat = (editor: PlateEditor) => {
-  const { api, getOptions } = getEditorPlugin<AIChatPluginConfig>(editor, {
-    key: KEYS.aiChat,
-  });
+  const { api, getOptions, setOptions } = getEditorPlugin<AIChatPluginConfig>(
+    editor,
+    {
+      key: KEYS.aiChat,
+    }
+  );
 
   api.aiChat.stop();
 
@@ -17,6 +20,13 @@ export const resetAIChat = (editor: PlateEditor) => {
   if (chat.messages && chat.messages.length > 0) {
     chat.setMessages?.([]);
   }
+
+  setOptions({
+    chatBlocks: [],
+    _replaceIds: [],
+    mode: 'insert',
+    toolName: 'generate',
+  });
 
   editor.getTransforms(AIPlugin).ai.undo();
 };

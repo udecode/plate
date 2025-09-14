@@ -31,6 +31,7 @@ import {
 import {
   type NodeEntry,
   type SlateEditor,
+  ElementApi,
   isHotkey,
   KEYS,
   NodeApi,
@@ -60,6 +61,15 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import {
+  acceptSuggestion,
+  getSuggestionKey,
+  getTransientSuggestionKey,
+  rejectSuggestion,
+  TResolvedSuggestion,
+} from '@platejs/suggestion';
+import { RetryError } from 'ai';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -229,6 +239,26 @@ type EditorChatState =
   | 'selectionCommand'
   | 'selectionSuggestion';
 
+const AICommentIcon = () => (
+  <svg
+    fill="none"
+    height="24"
+    stroke="currentColor"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    width="24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M0 0h24v24H0z" fill="none" stroke="none" />
+    <path d="M8 9h8" />
+    <path d="M8 13h4.5" />
+    <path d="M10 19l-1 -1h-3a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v4.5" />
+    <path d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
+  </svg>
+);
+
 const aiChatItems = {
   accept: {
     icon: <Check />,
@@ -294,6 +324,19 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
           selecting: 'Explain',
         },
         toolName: 'generate',
+      });
+    },
+  },
+  comment: {
+    icon: <AICommentIcon />,
+    label: 'Comment',
+    value: 'comment',
+    onSelect: ({ editor, input }) => {
+      editor.getApi(AIChatPlugin).aiChat.submit(input, {
+        mode: 'insert',
+        toolName: 'comment',
+        prompt:
+          'Please comment on the following content and provide reasonable and meaningful feedback.',
       });
     },
   },
@@ -448,6 +491,7 @@ const menuStateItems: Record<
   cursorCommand: [
     {
       items: [
+        aiChatItems.comment,
         aiChatItems.generateMdxSample,
         aiChatItems.generateMarkdownSample,
         aiChatItems.continueWrite,
@@ -464,6 +508,7 @@ const menuStateItems: Record<
   selectionCommand: [
     {
       items: [
+        aiChatItems.comment,
         aiChatItems.improveWriting,
         aiChatItems.emojify,
         aiChatItems.makeLonger,
@@ -550,38 +595,69 @@ export const AIMenuItems = ({
 export function AILoadingBar() {
   const editor = useEditorRef();
 
-  const { setOptions } = useEditorPlugin(AIChatPlugin);
   const toolName = usePluginOption(AIChatPlugin, 'toolName');
   const chat = usePluginOption(AIChatPlugin, 'chat');
   const mode = usePluginOption(AIChatPlugin, 'mode');
 
-  const { setMessages, status } = chat;
+  const { status } = chat;
 
   const { api } = useEditorPlugin(AIChatPlugin);
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
-  const handleReject = () => {
+  const handleComments = (type: 'accept' | 'reject') => {
+    if (type === 'accept') {
+      editor.tf.unsetNodes([getTransientCommentKey()], {
+        at: [],
+        match: (n) => TextApi.isText(n) && !!n[KEYS.comment],
+      });
+    }
+
+    if (type === 'reject') {
+      editor
+        .getTransforms(commentPlugin)
+        .comment.unsetMark({ transient: true });
+    }
+
     api.aiChat.hide();
-    editor.getTransforms(commentPlugin).comment.unsetMark({ transient: true });
-    setMessages?.([]);
-    setOptions({
-      mode: 'insert',
-      toolName: 'generate',
-    });
   };
 
-  const handleAccept = () => {
-    api.aiChat.hide();
-    setMessages?.([]);
-    editor.tf.unsetNodes([getTransientCommentKey()], {
+  const handleSuggestions = (type: 'accept' | 'reject') => {
+    const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
+      transient: true,
+    });
+
+    suggestions.forEach(([suggestionNode]) => {
+      const suggestionData = editor
+        .getApi(SuggestionPlugin)
+        .suggestion.suggestionData(suggestionNode);
+
+      if (!suggestionData) return;
+
+      const description = {
+        keyId: getSuggestionKey(suggestionData.id),
+        createdAt: new Date(suggestionData.createdAt),
+        suggestionId: suggestionData.id,
+        type: suggestionData.type,
+        userId: suggestionData.userId,
+      };
+
+      if (type === 'accept') {
+        acceptSuggestion(editor, description);
+      }
+
+      if (type === 'reject') {
+        rejectSuggestion(editor, description);
+      }
+    });
+
+    editor.tf.unsetNodes([getTransientSuggestionKey()], {
       at: [],
-      match: (n) => TextApi.isText(n) && !!n[KEYS.comment],
+      mode: 'all',
+      match: (n) => !!n[getTransientSuggestionKey()],
     });
-    setOptions({
-      mode: 'insert',
-      toolName: 'generate',
-    });
+
+    api.aiChat.hide();
   };
 
   useHotkeys('esc', () => {
@@ -632,11 +708,27 @@ export function AILoadingBar() {
         {/* Header with controls */}
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex items-center gap-5">
-            <Button size="sm" disabled={isLoading} onClick={handleAccept}>
+            <Button
+              size="sm"
+              disabled={isLoading}
+              onClick={() =>
+                toolName === 'comment'
+                  ? handleComments('accept')
+                  : handleSuggestions('accept')
+              }
+            >
               Accept
             </Button>
 
-            <Button size="sm" disabled={isLoading} onClick={handleReject}>
+            <Button
+              size="sm"
+              disabled={isLoading}
+              onClick={() =>
+                toolName === 'comment'
+                  ? handleComments('reject')
+                  : handleSuggestions('reject')
+              }
+            >
               Reject
             </Button>
           </div>

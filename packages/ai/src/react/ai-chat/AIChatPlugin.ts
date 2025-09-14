@@ -33,6 +33,7 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
+    _replaceIds: string[];
     _blockChunks: string;
     _blockPath: Path | null;
     /** @private Using For streamInsertChunk */
@@ -86,6 +87,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     isElement: true,
   },
   options: {
+    _replaceIds: [],
     _blockChunks: '',
     _blockPath: null,
     _mdxName: null,

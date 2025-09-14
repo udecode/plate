@@ -4,8 +4,8 @@ import { withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
+  applyAISuggestions,
   streamInsertChunk,
-  useApplyAISuggestions,
   useChatChunk,
 } from '@platejs/ai/react';
 import { getPluginType, KEYS, PathApi } from 'platejs';
@@ -36,8 +36,6 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     const mode = usePluginOption(AIChatPlugin, 'mode');
     const toolName = usePluginOption(AIChatPlugin, 'toolName');
-
-    const { applyAISuggestions, reset } = useApplyAISuggestions();
 
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
@@ -74,14 +72,18 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
 
         if (toolName === 'edit' && mode === 'chat') {
-          applyAISuggestions(content);
+          withAIBatch(
+            editor,
+            () => {
+              applyAISuggestions(editor, content);
+            },
+            {
+              split: isFirst,
+            }
+          );
         }
       },
       onFinish: () => {
-        if (toolName === 'edit' && mode === 'chat') {
-          reset();
-        }
-
         editor.setOption(AIChatPlugin, 'streaming', false);
         editor.setOption(AIChatPlugin, '_blockChunks', '');
         editor.setOption(AIChatPlugin, '_blockPath', null);

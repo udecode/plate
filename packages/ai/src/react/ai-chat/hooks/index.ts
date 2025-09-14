@@ -3,6 +3,5 @@
  */
 
 export * from './useAIChatEditor';
-export * from './useApplyAISuggestions';
 export * from './useChatChunk';
 export * from './useEditorChat';
