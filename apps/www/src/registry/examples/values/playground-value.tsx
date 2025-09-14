@@ -1,556 +1,76 @@
 import type { Value } from 'platejs';
 
 export const playgroundValue: Value = [
-  // Intro
   {
-    children: [{ text: 'Welcome to the Plate Playground!' }],
+    id: 'R27BrEC5JZ',
+    children: [
+      {
+        text: '中国历史简述',
+      },
+    ],
     type: 'h1',
   },
   {
-    children: [
-      { text: 'Experience a modern rich-text editor built with ' },
-      { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
-      { text: ' and ' },
-      { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
-      {
-        text: ". This playground showcases just a part of Plate's capabilities. ",
-      },
-      {
-        children: [{ text: 'Explore the documentation' }],
-        type: 'a',
-        url: '/docs',
-      },
-      { text: ' to discover more.' },
-    ],
-    type: 'p',
-  },
-  // Suggestions & Comments Section
-  {
-    children: [{ text: 'Collaborative Editing' }],
-    type: 'h2',
-  },
-  {
-    children: [
-      { text: 'Review and refine content seamlessly. Use ' },
-      {
-        children: [
-          {
-            suggestion: true,
-            suggestion_playground1: {
-              id: 'playground1',
-              createdAt: Date.now(),
-              type: 'insert',
-              userId: 'alice',
-            },
-            text: 'suggestions',
-          },
-        ],
-        type: 'a',
-        url: '/docs/suggestion',
-      },
-      {
-        suggestion: true,
-        suggestion_playground1: {
-          id: 'playground1',
-          createdAt: Date.now(),
-          type: 'insert',
-          userId: 'alice',
-        },
-        text: ' ',
-      },
-      {
-        suggestion: true,
-        suggestion_playground1: {
-          id: 'playground1',
-          createdAt: Date.now(),
-          type: 'insert',
-          userId: 'alice',
-        },
-        text: 'like this added text',
-      },
-      { text: ' or to ' },
-      {
-        suggestion: true,
-        suggestion_playground2: {
-          id: 'playground2',
-          createdAt: Date.now(),
-          type: 'remove',
-          userId: 'bob',
-        },
-        text: 'mark text for removal',
-      },
-      { text: '. Discuss changes using ' },
-      {
-        children: [
-          { comment: true, comment_discussion1: true, text: 'comments' },
-        ],
-        type: 'a',
-        url: '/docs/comment',
-      },
-      {
-        comment: true,
-        comment_discussion1: true,
-        text: ' on many text segments',
-      },
-      { text: '. You can even have ' },
-      {
-        comment: true,
-        comment_discussion2: true,
-        suggestion: true,
-        suggestion_playground3: {
-          id: 'playground3',
-          createdAt: Date.now(),
-          type: 'insert',
-          userId: 'charlie',
-        },
-        text: 'overlapping',
-      },
-      { text: ' annotations!' },
-    ],
-    type: 'p',
-  },
-  // {
-  //   children: [
-  //     {
-  //       text: 'Block-level suggestions are also supported for broader feedback.',
-  //     },
-  //   ],
-  //   suggestion: {
-  //     suggestionId: 'suggestionBlock1',
-  //     type: 'block',
-  //     userId: 'charlie',
-  //   },
-  //   type: 'p',
-  // },
-  // AI Section
-  {
-    children: [{ text: 'AI-Powered Editing' }],
-    type: 'h2',
-  },
-  {
-    children: [
-      { text: 'Boost your productivity with integrated ' },
-      {
-        children: [{ text: 'AI SDK' }],
-        type: 'a',
-        url: '/docs/ai',
-      },
-      { text: '. Press ' },
-      { kbd: true, text: '⌘+J' },
-      { text: ' or ' },
-      { kbd: true, text: 'Space' },
-      { text: ' in an empty line to:' },
-    ],
-    type: 'p',
-  },
-  {
-    children: [
-      { text: 'Generate content (continue writing, summarize, explain)' },
-    ],
-    indent: 1,
-    listStyleType: 'disc',
-    type: 'p',
-  },
-  {
-    children: [
-      { text: 'Edit existing text (improve, fix grammar, change tone)' },
-    ],
-    indent: 1,
-    listStyleType: 'disc',
-    type: 'p',
-  },
-  // Core Features Section (Combined)
-  {
-    children: [{ text: 'Rich Content Editing' }],
-    type: 'h2',
-  },
-  {
-    children: [
-      { text: 'Structure your content with ' },
-      {
-        children: [{ text: 'headings' }],
-        type: 'a',
-        url: '/docs/heading',
-      },
-      { text: ', ' },
-      {
-        children: [{ text: 'lists' }],
-        type: 'a',
-        url: '/docs/list',
-      },
-      { text: ', and ' },
-      {
-        children: [{ text: 'quotes' }],
-        type: 'a',
-        url: '/docs/blockquote',
-      },
-      { text: '. Apply ' },
-      {
-        children: [{ text: 'marks' }],
-        type: 'a',
-        url: '/docs/basic-marks',
-      },
-      { text: ' like ' },
-      { bold: true, text: 'bold' },
-      { text: ', ' },
-      { italic: true, text: 'italic' },
-      { text: ', ' },
-      { text: 'underline', underline: true },
-      { text: ', ' },
-      { strikethrough: true, text: 'strikethrough' },
-      { text: ', and ' },
-      { code: true, text: 'code' },
-      { text: '. Use ' },
-      {
-        children: [{ text: 'autoformatting' }],
-        type: 'a',
-        url: '/docs/autoformat',
-      },
-      { text: ' for ' },
-      {
-        children: [{ text: 'Markdown' }],
-        type: 'a',
-        url: '/docs/markdown',
-      },
-      { text: '-like shortcuts (e.g., ' },
-      { kbd: true, text: '* ' },
-      { text: ' for lists, ' },
-      { kbd: true, text: '# ' },
-      { text: ' for H1).' },
-    ],
-    type: 'p',
-  },
-  {
+    id: 'TOD9VvM5gf',
     children: [
       {
-        text: 'Blockquotes are great for highlighting important information.',
-      },
-    ],
-    type: 'blockquote',
-  },
-  {
-    children: [
-      { children: [{ text: 'function hello() {' }], type: 'code_line' },
-      {
-        children: [{ text: "  console.info('Code blocks are supported!');" }],
-        type: 'code_line',
-      },
-      { children: [{ text: '}' }], type: 'code_line' },
-    ],
-    lang: 'javascript',
-    type: 'code_block',
-  },
-  {
-    children: [
-      { text: 'Create ' },
-      {
-        children: [{ text: 'links' }],
-        type: 'a',
-        url: '/docs/link',
-      },
-      { text: ', ' },
-      {
-        children: [{ text: '@mention' }],
-        type: 'a',
-        url: '/docs/mention',
-      },
-      { text: ' users like ' },
-      { children: [{ text: '' }], type: 'mention', value: 'Alice' },
-      { text: ', or insert ' },
-      {
-        children: [{ text: 'emojis' }],
-        type: 'a',
-        url: '/docs/emoji',
-      },
-      { text: ' ✨. Use the ' },
-      {
-        children: [{ text: 'slash command' }],
-        type: 'a',
-        url: '/docs/slash-command',
-      },
-      { text: ' (/) for quick access to elements.' },
-    ],
-    type: 'p',
-  },
-  // Table Section
-  {
-    children: [{ text: 'How Plate Compares' }],
-    type: 'h3',
-  },
-  {
-    children: [
-      {
-        text: 'Plate offers many features out-of-the-box as free, open-source plugins.',
+        text: '中国的历史可以追溯到远古时期。五千年前，黄河流域与长江流域的人类逐渐进入新石器时代，仰韶文化与龙山文化相继出现。人们已经掌握了农业、制陶和畜牧，社会逐渐走向文明化，为后世王朝的建立奠定了基础。',
       },
     ],
     type: 'p',
   },
   {
+    id: 'Z7qRNOsiLU',
     children: [
       {
-        children: [
-          {
-            children: [
-              { children: [{ bold: true, text: 'Feature' }], type: 'p' },
-            ],
-            type: 'th',
-          },
-          {
-            children: [
-              {
-                children: [{ bold: true, text: 'Plate (Free & OSS)' }],
-                type: 'p',
-              },
-            ],
-            type: 'th',
-          },
-          {
-            children: [
-              { children: [{ bold: true, text: 'Tiptap' }], type: 'p' },
-            ],
-            type: 'th',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'AI' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Comments' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Suggestions' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              { children: [{ text: 'Paid (Comments Pro)' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Emoji Picker' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Table of Contents' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [{ children: [{ text: 'Drag Handle' }], type: 'p' }],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [{ children: [{ text: 'Paid Extension' }], type: 'p' }],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-      {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Collaboration (Yjs)' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              {
-                attributes: { align: 'center' },
-                children: [{ text: '✅' }],
-                type: 'p',
-              },
-            ],
-            type: 'td',
-          },
-          {
-            children: [
-              { children: [{ text: 'Hocuspocus (OSS/Paid)' }], type: 'p' },
-            ],
-            type: 'td',
-          },
-        ],
-        type: 'tr',
-      },
-    ],
-
-    colSizes: [160, 170, 200],
-    type: 'table',
-  },
-  // Media Section
-  {
-    children: [{ text: 'Images and Media' }],
-    type: 'h3',
-  },
-  {
-    children: [
-      {
-        text: 'Embed rich media like images directly in your content. Supports ',
-      },
-      {
-        children: [{ text: 'Media uploads' }],
-        type: 'a',
-        url: '/docs/media',
-      },
-      {
-        text: ' and ',
-      },
-      {
-        children: [{ text: 'drag & drop' }],
-        type: 'a',
-        url: '/docs/dnd',
-      },
-      {
-        text: ' for a smooth experience.',
+        text: '夏朝通常被认为是中国最早的王朝，约公元前二千一百年出现。治水英雄大禹建立了夏朝，并传说实行了世袭制度。之后的商朝以青铜文明著称，出现了甲骨文，标志着中国最早的成熟文字。到了周朝，礼乐制度与分封制逐渐完善。春秋战国时期，思想文化蓬勃发展，孔子、老子、墨子等思想家在这一时期活跃，奠定了中华文明的思想根基。',
       },
     ],
     type: 'p',
   },
   {
-    attributes: { align: 'center' },
-    caption: [
+    id: 'SyMbvB9AsN',
+    children: [
       {
-        children: [{ text: 'Images with captions provide context.' }],
-        type: 'p',
+        text: '公元前二二一年，秦始皇完成统一，建立中央集权制度，修建长城，推行度量衡与文字的统一。然而秦朝二世而亡。随后汉朝崛起，历经西汉与东汉四百余年，丝绸之路开通，促进了中西方的交流，中国逐渐成为一个大一统、多民族的国家。',
       },
     ],
-    children: [{ text: '' }],
-    type: 'img',
-    url: 'https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    width: '75%',
+    type: 'p',
   },
   {
-    children: [{ text: '' }],
-    isUpload: true,
-    name: 'sample.pdf',
-    type: 'file',
-    url: 'https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf',
+    id: '2BrmprciAS',
+    children: [
+      {
+        text: '汉末三国鼎立，魏、蜀、吴的争雄开启了漫长的分裂时期。魏晋南北朝时期，虽然战乱频仍，但思想与文化依旧活跃，佛教得到广泛传播，玄学与清谈盛行。到了隋朝，中国再度统一，并开凿了大运河。唐朝在隋的基础上继续发展，国力鼎盛，长安成为当时世界上最繁华的城市之一，诗歌与艺术空前繁荣，开创了中国文化的黄金时期。',
+      },
+    ],
+    type: 'p',
   },
   {
-    children: [{ text: '' }],
-    type: 'audio',
-    url: 'https://samplelib.com/lib/preview/mp3/sample-3s.mp3',
+    id: 'l39z1zCQCX',
+    children: [
+      {
+        text: '宋朝建立后，经济重心逐渐南移，城市与商业繁荣，火药、指南针与活字印刷术相继广泛应用。理学兴起，文化学术昌盛。蒙古人建立元朝，疆域空前辽阔，东西方的交流达到新的高度。明朝时期，郑和七下西洋展现了海洋强国的风采，工商业与手工业高度发展，长城得到大规模修筑。清朝初期出现康乾盛世，社会稳定，人口剧增，但到了十九世纪，闭关锁国政策使得中国逐渐落后于世界潮流，列强入侵导致中国进入近代的动荡。',
+      },
+    ],
+    type: 'p',
   },
   {
-    children: [{ text: 'Table of Contents' }],
-    type: 'h3',
+    id: 'N_ey2Hppgi',
+    children: [
+      {
+        text: '鸦片战争后，中国逐渐沦为半殖民地半封建社会。辛亥革命结束了两千多年的帝制，建立了中华民国，但国家长期处于内战与分裂状态。直到1949年，中华人民共和国成立，中国进入了新的历史阶段，开启了现代化进程。',
+      },
+    ],
+    type: 'p',
   },
   {
-    children: [{ text: '' }],
-    type: 'toc',
-  },
-  {
-    children: [{ text: '' }],
+    id: 'aTvLFo_bRj',
+    children: [
+      {
+        text: '中国历史的演变既包含辉煌的统一与繁荣，也经历过分裂与屈辱。无论是制度、思想还是文化成就，都深刻影响着中华民族的延续与发展。',
+      },
+    ],
     type: 'p',
   },
 ];

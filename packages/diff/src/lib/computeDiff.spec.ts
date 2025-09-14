@@ -1666,3 +1666,35 @@ describe('computeDiff', () => {
     }
   );
 });
+
+describe('computeDiff', () => {
+  it('should compute diff', () => {
+    const input1 = [
+      {
+        id: '11111',
+        children: [
+          {
+            text: 'Item 1',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const input2 = [
+      {
+        id: '22222',
+        children: [
+          {
+            text: 'Item 12',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const output = computeDiff(input1, input2);
+
+    console.log('🚀 ~ output:', JSON.stringify(output));
+  });
+});

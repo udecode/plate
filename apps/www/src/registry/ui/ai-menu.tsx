@@ -149,6 +149,8 @@ export function AIMenu() {
 
   if (toolName === 'comment') return null;
 
+  if (toolName === 'edit' && mode === 'chat') return null;
+
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverAnchor virtualRef={{ current: anchorElement! }} />
@@ -589,7 +591,12 @@ export function AILoadingBar() {
     (chat as any)._abortFakeStream();
   });
 
-  if (isLoading && (mode === 'insert' || toolName === 'comment')) {
+  if (
+    isLoading &&
+    (mode === 'insert' ||
+      toolName === 'comment' ||
+      (toolName === 'edit' && mode === 'chat'))
+  ) {
     return (
       <div
         className={cn(
@@ -614,7 +621,7 @@ export function AILoadingBar() {
     );
   }
 
-  if (toolName === 'comment' && status === 'ready') {
+  if ((toolName === 'edit' || toolName === 'comment') && status === 'ready') {
     return (
       <div
         className={cn(

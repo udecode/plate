@@ -9,6 +9,7 @@ import {
   type Path,
   type PluginConfig,
   type SlateEditor,
+  type TIdElement,
   bindFirst,
   ElementApi,
   getPluginType,
@@ -39,6 +40,7 @@ export type AIChatPluginConfig = PluginConfig<
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
+    chatBlocks: NodeEntry<TIdElement>[];
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -89,6 +91,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _mdxName: null,
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
+    chatBlocks: [],
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,
@@ -177,6 +180,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     },
     show: () => {
       api.aiChat.reset();
+
+      setOption('toolName', null);
 
       getOptions().chat.setMessages?.([]);
 

@@ -53,7 +53,12 @@ export default function PlaygroundDemo({
   );
 
   return (
-    <Plate editor={editor}>
+    <Plate
+      onValueChange={(v) => {
+        console.log('🚀 ~ PlaygroundDemo ~ v:', v.value);
+      }}
+      editor={editor}
+    >
       <EditorContainer className={className}>
         <Editor
           variant="demo"

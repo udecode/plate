@@ -29,10 +29,7 @@ export type MessageDataPart = {
   comment?: TComment;
 };
 
-export type Chat = UseChatHelpers<ChatMessage> & {
-  toolName: ToolName;
-  setToolName: (toolName: ToolName) => void;
-};
+export type Chat = UseChatHelpers<ChatMessage>;
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
 

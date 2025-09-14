@@ -1,18 +1,20 @@
-import type { SlateEditor } from 'platejs';
+import type { Descendant, SlateEditor } from 'platejs';
 
-import { KEYS } from 'platejs';
+import { ElementApi, KEYS, nanoid } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils/index';
 
 export const getSuggestionProps = (
   editor: SlateEditor,
-  id: string,
+  node: Descendant,
   {
+    id = nanoid(),
     createdAt = Date.now(),
     suggestionDeletion,
     suggestionUpdate,
   }: {
+    id?: string;
     createdAt?: number;
     suggestionDeletion?: boolean;
     suggestionUpdate?: any;
@@ -24,13 +26,23 @@ export const getSuggestionProps = (
       ? 'update'
       : 'insert';
 
+  const isElement = ElementApi.isElement(node);
+
+  const suggestionData = {
+    id,
+    createdAt,
+    type,
+    userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+  };
+
+  if (isElement) {
+    return {
+      [KEYS.suggestion]: suggestionData,
+    };
+  }
+
   const res = {
-    [getSuggestionKey(id)]: {
-      id,
-      createdAt,
-      type,
-      userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
-    },
+    [getSuggestionKey(id)]: suggestionData,
     [KEYS.suggestion]: true,
   };
 

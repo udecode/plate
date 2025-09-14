@@ -64,6 +64,15 @@ export const submitAIChat = (
   const selection =
     blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
 
+  const chatBlocks =
+    blocks.length > 0
+      ? blocks
+      : editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.getNodes({ selectionFallback: true });
+
+  setOption('chatBlocks', chatBlocks);
+
   const ctx: {
     children: Descendant[];
     selection: Range | null;
