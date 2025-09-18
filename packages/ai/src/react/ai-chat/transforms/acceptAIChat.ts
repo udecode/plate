@@ -51,7 +51,6 @@ const acceptSuggestions = (editor: PlateEditor) => {
   });
 
   suggestions.forEach(([suggestionNode]) => {
-    console.log('🚀 ~ acceptSuggestions ~ suggestionNode:', suggestionNode);
     const suggestionData = editor
       .getApi(SuggestionPlugin)
       .suggestion.suggestionData(suggestionNode);

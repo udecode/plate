@@ -44,6 +44,7 @@ import {
   useResolveSuggestion,
 } from './block-suggestion';
 import { Comment, CommentCreateForm } from './comment';
+import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
@@ -60,7 +61,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
 
   const suggestionNodes = [
     ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
-  ];
+  ].filter(([node]) => !node[getTransientSuggestionKey()]);
 
   if (
     commentNodes.length === 0 &&

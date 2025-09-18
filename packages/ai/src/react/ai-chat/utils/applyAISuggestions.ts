@@ -12,6 +12,7 @@ import {
   type TSuggestionData,
   type TSuggestionElement,
   ElementApi,
+  TElement,
   TextApi,
 } from 'platejs';
 
@@ -95,6 +96,27 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
   }
 };
 
+const withProps = (
+  diffNodes: Descendant[],
+  chatNodes: Descendant[]
+): Descendant[] => {
+  return diffNodes.map((node, index) => {
+    const originalNode = chatNodes[index] as TElement;
+
+    if (TextApi.isText(node)) {
+      return {
+        ...node,
+      };
+    } else {
+      return {
+        ...node,
+        ...originalNode,
+        children: withProps(node.children, originalNode.children),
+      };
+    }
+  });
+};
+
 const withTransient = (diffNodes: Descendant[]): Descendant[] => {
   return diffNodes.map((node) => {
     if (TextApi.isText(node)) {
@@ -115,15 +137,7 @@ const withTransient = (diffNodes: Descendant[]): Descendant[] => {
 const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   /** Original document nodes */
   const chatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
-  const aiNodes = deserializeMd(editor, aiContent);
+  const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
 
-  const aiNodesWithProps = aiNodes.map((node, index) => {
-    return {
-      ...node,
-      ...chatNodes[index],
-      children: node.children,
-    };
-  });
-
-  return withTransient(diffToSuggestions(editor, chatNodes, aiNodesWithProps));
+  return withTransient(diffToSuggestions(editor, chatNodes, aiNodes));
 };

@@ -13,11 +13,6 @@ export const undoAI = (editor: SlateEditor) => {
       match: (n) => !!n[getTransientSuggestionKey()],
     });
 
-  console.log(
-    '🚀 ~ undoAI ~ hasAINodeOrAISuggestion:',
-    hasAINodeOrAISuggestion
-  );
-
   if ((editor.history.undos.at(-1) as any)?.ai && hasAINodeOrAISuggestion) {
     editor.undo();
     editor.history.redos.pop();
