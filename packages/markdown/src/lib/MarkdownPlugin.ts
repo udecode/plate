@@ -4,6 +4,7 @@ import type { Plugin } from 'unified';
 import {
   type OmitFirst,
   type PluginConfig,
+  type SlatePlugin,
   bindFirst,
   createTSlatePlugin,
   isUrl,
@@ -65,6 +66,7 @@ export type MarkdownConfig = PluginConfig<
      * @default null
      */
     rules: MdRules | null;
+    _tempPlugins?: SlatePlugin[];
     /**
      * Custom filter function for nodes during deserialization and
      * serialization.
@@ -85,6 +87,7 @@ export type MarkdownConfig = PluginConfig<
 export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   key: KEYS.markdown,
   options: {
+    _tempPlugins: [],
     allowedNodes: null,
     disallowedNodes: null,
     remarkPlugins: [],

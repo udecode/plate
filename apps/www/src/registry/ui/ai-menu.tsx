@@ -10,6 +10,13 @@ import {
 } from '@platejs/ai/react';
 import { getTransientCommentKey } from '@platejs/comment';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
+import {
+  acceptSuggestion,
+  getSuggestionKey,
+  getTransientSuggestionKey,
+  rejectSuggestion,
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -31,7 +38,6 @@ import {
 import {
   type NodeEntry,
   type SlateEditor,
-  ElementApi,
   isHotkey,
   KEYS,
   NodeApi,
@@ -61,15 +67,6 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
-import {
-  acceptSuggestion,
-  getSuggestionKey,
-  getTransientSuggestionKey,
-  rejectSuggestion,
-  TResolvedSuggestion,
-} from '@platejs/suggestion';
-import { RetryError } from 'ai';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -155,11 +152,26 @@ export function AIMenu() {
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
+  React.useEffect(() => {
+    if (toolName === 'edit' && mode === 'chat' && !isLoading) {
+      const sNode = editor.api.node({
+        at: [],
+        reverse: true,
+        match: (n) => !!n[KEYS.suggestion],
+      });
+
+      if (!sNode) return;
+
+      const block = editor.api.block({ at: sNode[1] });
+      setAnchorElement(editor.api.toDOMNode(block![0]!)!);
+    }
+  }, [isLoading]);
+
   if (isLoading && mode === 'insert') return null;
 
   if (toolName === 'comment') return null;
 
-  if (toolName === 'edit' && mode === 'chat') return null;
+  if (toolName === 'edit' && mode === 'chat' && isLoading) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={false}>
@@ -264,9 +276,30 @@ const aiChatItems = {
     icon: <Check />,
     label: 'Accept',
     value: 'accept',
-    onSelect: ({ editor }) => {
+    onSelect: ({ aiEditor, editor }) => {
+      const { mode, toolName } = editor.getOptions(AIChatPlugin);
+
+      if (mode === 'chat' && toolName === 'generate') {
+        return editor
+          .getTransforms(AIChatPlugin)
+          .aiChat.replaceSelection(aiEditor);
+      }
+
       editor.getTransforms(AIChatPlugin).aiChat.accept();
       editor.tf.focus({ edge: 'end' });
+    },
+  },
+  comment: {
+    icon: <AICommentIcon />,
+    label: 'Comment',
+    value: 'comment',
+    onSelect: ({ editor, input }) => {
+      editor.getApi(AIChatPlugin).aiChat.submit(input, {
+        mode: 'insert',
+        prompt:
+          'Please comment on the following content and provide reasonable and meaningful feedback.',
+        toolName: 'comment',
+      });
     },
   },
   continueWrite: {
@@ -324,19 +357,6 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
           selecting: 'Explain',
         },
         toolName: 'generate',
-      });
-    },
-  },
-  comment: {
-    icon: <AICommentIcon />,
-    label: 'Comment',
-    value: 'comment',
-    onSelect: ({ editor, input }) => {
-      editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        mode: 'insert',
-        toolName: 'comment',
-        prompt:
-          'Please comment on the following content and provide reasonable and meaningful feedback.',
       });
     },
   },
@@ -508,8 +528,8 @@ const menuStateItems: Record<
   selectionCommand: [
     {
       items: [
-        aiChatItems.comment,
         aiChatItems.improveWriting,
+        aiChatItems.comment,
         aiChatItems.emojify,
         aiChatItems.makeLonger,
         aiChatItems.makeShorter,
@@ -521,9 +541,9 @@ const menuStateItems: Record<
   selectionSuggestion: [
     {
       items: [
-        aiChatItems.replace,
-        aiChatItems.insertBelow,
+        aiChatItems.accept,
         aiChatItems.discard,
+        aiChatItems.insertBelow,
         aiChatItems.tryAgain,
       ],
     },
@@ -635,8 +655,8 @@ export function AILoadingBar() {
       if (!suggestionData) return;
 
       const description = {
-        keyId: getSuggestionKey(suggestionData.id),
         createdAt: new Date(suggestionData.createdAt),
+        keyId: getSuggestionKey(suggestionData.id),
         suggestionId: suggestionData.id,
         type: suggestionData.type,
         userId: suggestionData.userId,
@@ -697,7 +717,7 @@ export function AILoadingBar() {
     );
   }
 
-  if ((toolName === 'edit' || toolName === 'comment') && status === 'ready') {
+  if (toolName === 'comment' && status === 'ready') {
     return (
       <div
         className={cn(

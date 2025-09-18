@@ -4,3 +4,4 @@
 
 export * from './getEditorPrompt';
 export * from './getMarkdown';
+export * from './replacePlaceholders';

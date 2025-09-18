@@ -14,8 +14,8 @@ import {
 } from 'platejs';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
-import { withSuggestion } from './withSuggestion';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
+import { withSuggestion } from './withSuggestion';
 
 export type BaseSuggestionConfig = PluginConfig<
   'suggestion',

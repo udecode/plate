@@ -9,6 +9,7 @@ import {
   type Path,
   type PluginConfig,
   type SlateEditor,
+  type TElement,
   type TIdElement,
   bindFirst,
   ElementApi,
@@ -33,15 +34,16 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
-    _replaceIds: string[];
     _blockChunks: string;
     _blockPath: Path | null;
     /** @private Using For streamInsertChunk */
     _mdxName: string | null;
+    _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
-    chatBlocks: NodeEntry<TIdElement>[];
+    chatNodes: TIdElement[];
+    chatSelection: TElement[] | null;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -87,13 +89,14 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     isElement: true,
   },
   options: {
-    _replaceIds: [],
     _blockChunks: '',
     _blockPath: null,
     _mdxName: null,
+    _replaceIds: [],
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
-    chatBlocks: [],
+    chatNodes: [],
+    chatSelection: null,
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,
@@ -145,13 +148,28 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         });
       },
       reload: () => {
-        const { chat, mode } = getOptions();
+        const { chat } = getOptions();
 
-        if (mode === 'insert') {
-          editor.getTransforms(AIPlugin).ai.undo();
-        }
+        editor.getTransforms(AIPlugin).ai.undo();
 
-        void chat.regenerate?.();
+        const blocks = editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.getNodes();
+
+        const selection =
+          blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+
+        const ctx = {
+          children: editor.children,
+          selection: selection ?? null,
+          toolName: getOption('toolName'),
+        };
+
+        void chat.regenerate?.({
+          body: {
+            ctx,
+          },
+        });
       },
       stop: () => {
         setOption('streaming', false);

@@ -11,6 +11,7 @@ import type { MdRules, PlateType } from '../types';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptionsSerialize';
+
 export type SerializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
@@ -23,6 +24,7 @@ export type SerializeMdOptions = {
   spread?: boolean;
   value?: Descendant[];
   withBlockId?: boolean;
+  withSelection?: boolean;
 };
 
 /** Serialize the editor value to Markdown. */

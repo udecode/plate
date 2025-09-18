@@ -1,127 +1,129 @@
 import { deserializeMd } from '@platejs/markdown';
+import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   diffToSuggestions,
-  getSuggestionProps,
+  getTransientSuggestionKey,
   SkipSuggestionDeletes,
 } from '@platejs/suggestion';
-import { pickBy } from 'lodash';
 import {
-  type TElement,
+  type Descendant,
+  type SlateEditor,
   type TIdElement,
   type TSuggestionData,
   type TSuggestionElement,
   ElementApi,
-  KEYS,
-  nanoid,
-  SlateEditor,
+  TextApi,
 } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 export const applyAISuggestions = (editor: SlateEditor, content: string) => {
-  const { chatBlocks, _replaceIds } = editor.getOptions(AIChatPlugin);
-
-  const setReplaceIds = (ids: string[]) => {
-    editor.setOption(AIChatPlugin, '_replaceIds', ids);
-  };
-
-  const nodes = deserializeMd(editor, content);
-
-  const documentNodes = chatBlocks.map((node) => node[0]);
-
-  if (_replaceIds.length === 0) {
-    setReplaceIds(documentNodes.map((node) => node.id as string));
-  }
-
-  const aiNodesWithId = nodes.map((node, index) => {
-    const originNode = documentNodes[index] as TElement | undefined;
-
-    let props = {};
-
-    if (
-      node.type === editor.getType(KEYS.p) &&
-      node[KEYS.listType] &&
-      originNode &&
-      originNode[KEYS.listType]
-    ) {
-      props = {
-        [KEYS.listRestart]: originNode[KEYS.listRestart],
-        [KEYS.listRestartPolite]: originNode[KEYS.listRestartPolite],
-        [KEYS.listStart]: originNode[KEYS.listStart],
-      };
-
-      props = pickBy(props, (value) => value !== undefined);
-    }
-
-    return {
-      ...node,
-      ...props,
-      id: originNode?.id ?? nanoid(),
-    };
-  });
-
-  const diffNodes = diffToSuggestions(editor, documentNodes, aiNodesWithId, {
-    getDeleteProps: (node) => {
-      return getSuggestionProps(editor, node, {
-        suggestionDeletion: true,
-        transient: true,
-      });
-    },
-    getInsertProps: (node) =>
-      getSuggestionProps(editor, node, { transient: true }),
-    getUpdateProps: (node, _properties, newProperties) =>
-      getSuggestionProps(editor, node, {
-        suggestionUpdate: newProperties,
-        transient: true,
-      }),
-  });
-
-  const diffNodesWithId = diffNodes.map((node) => {
-    return {
-      ...node,
-      id: node.id ?? nanoid(),
-      [getTransientSuggestionKey()]: true,
-    };
-  });
-
-  const replaceNodes = Array.from(
-    editor.api.nodes<TIdElement>({
-      at: [],
-      match: (n: TIdElement) =>
-        ElementApi.isElement(n) && _replaceIds.includes(n.id),
-    })
+  const isBlockSelecting = editor.getOption(
+    BlockSelectionPlugin,
+    'isSelectingSome'
   );
 
-  replaceNodes.forEach(([node, path], index) => {
-    const replaceNode = node as unknown as TSuggestionElement;
-    const diffNode = diffNodesWithId[index] as unknown as TSuggestionElement;
+  const { chatNodes } = editor.getOptions(AIChatPlugin);
 
-    const isSameString =
-      SkipSuggestionDeletes(editor, replaceNode) ===
-      SkipSuggestionDeletes(editor, diffNode);
+  if (isBlockSelecting) {
+    const setReplaceIds = (ids: string[]) => {
+      editor.setOption(AIChatPlugin, '_replaceIds', ids);
+    };
 
-    const isSameSuggestion =
-      (replaceNode.suggestion as TSuggestionData | undefined)?.type ===
-      (diffNode.suggestion as TSuggestionData | undefined)?.type;
-
-    if (isSameString && isSameSuggestion && node.id == diffNode.id) {
-      return;
+    if (editor.getOption(AIChatPlugin, '_replaceIds').length === 0) {
+      setReplaceIds(chatNodes.map((node) => node.id as string));
     }
 
-    if (
-      index === replaceNodes.length - 1 &&
-      diffNodesWithId.length > replaceNodes.length
-    ) {
-      editor.tf.replaceNodes(diffNodesWithId.slice(index), {
-        at: path,
-      });
+    const diffNodes = getDiffNodes(editor, content);
+
+    const replaceNodes = Array.from(
+      editor.api.nodes<TIdElement>({
+        at: [],
+        match: (n: TIdElement) =>
+          ElementApi.isElement(n) &&
+          editor.getOption(AIChatPlugin, '_replaceIds').includes(n.id),
+      })
+    );
+
+    replaceNodes.forEach(([node, path], index) => {
+      const replaceNode = node as unknown as TSuggestionElement;
+      const diffNode = diffNodes[index] as unknown as TSuggestionElement;
+
+      const isSameString =
+        SkipSuggestionDeletes(editor, replaceNode) ===
+        SkipSuggestionDeletes(editor, diffNode);
+
+      const isSameSuggestion =
+        (replaceNode.suggestion as TSuggestionData | undefined)?.type ===
+        (diffNode.suggestion as TSuggestionData | undefined)?.type;
+
+      if (isSameString && isSameSuggestion && node.id == diffNode.id) {
+        return;
+      }
+
+      if (
+        index === replaceNodes.length - 1 &&
+        diffNodes.length > replaceNodes.length
+      ) {
+        editor.tf.replaceNodes(diffNodes.slice(index), {
+          at: path,
+        });
+      } else {
+        editor.tf.replaceNodes(diffNode, {
+          at: path,
+        });
+      }
+    });
+
+    setReplaceIds(diffNodes.map((node) => node.id as string));
+  } else {
+    const diffNodes = getDiffNodes(editor, content);
+
+    editor.tf.insertFragment(diffNodes);
+
+    const nodes = editor.api.nodes({
+      at: [],
+      mode: 'lowest',
+      match: (n) => TextApi.isText(n) && !!n[getTransientSuggestionKey()],
+    });
+
+    const range = editor.api.nodesRange(Array.from(nodes));
+
+    editor.tf.setSelection(range!);
+
+    return;
+  }
+};
+
+const withTransient = (diffNodes: Descendant[]): Descendant[] => {
+  return diffNodes.map((node) => {
+    if (TextApi.isText(node)) {
+      return {
+        ...node,
+        [getTransientSuggestionKey()]: true,
+      };
     } else {
-      editor.tf.replaceNodes(diffNode, {
-        at: path,
-      });
+      return {
+        ...node,
+        children: withTransient(node.children),
+        [getTransientSuggestionKey()]: true,
+      };
     }
   });
+};
 
-  setReplaceIds(diffNodesWithId.map((node) => node.id as string));
+const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
+  /** Original document nodes */
+  const chatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
+  const aiNodes = deserializeMd(editor, aiContent);
+
+  const aiNodesWithProps = aiNodes.map((node, index) => {
+    return {
+      ...node,
+      ...chatNodes[index],
+      children: node.children,
+    };
+  });
+
+  return withTransient(diffToSuggestions(editor, chatNodes, aiNodesWithProps));
 };

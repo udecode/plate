@@ -22,8 +22,8 @@ export const resetAIChat = (editor: PlateEditor) => {
   }
 
   setOptions({
-    chatBlocks: [],
     _replaceIds: [],
+    chatNodes: [],
     mode: 'insert',
     toolName: 'generate',
   });

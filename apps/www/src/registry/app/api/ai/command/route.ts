@@ -4,7 +4,6 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { replacePlaceholders } from '@platejs/ai';
 import {
@@ -46,8 +45,6 @@ export async function POST(req: NextRequest) {
 
   const isSelecting = editor.api.isExpanded();
 
-  const isBlockSelecting = isSelectingAllBlocks(editor);
-
   try {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
@@ -72,7 +69,7 @@ export async function POST(req: NextRequest) {
         if (!toolName) {
           const { object: AIToolName } = await generateObject({
             enum: ['generate', 'edit', 'comment'],
-            model: google('gemini-2.5-flash'),
+            model: openai('gpt-4o-mini'),
             output: 'enum',
             prompt: `User message:
             ${JSON.stringify(lastUserMessage)}`,
@@ -90,14 +87,14 @@ export async function POST(req: NextRequest) {
         if (toolName === 'generate') {
           const generateSystem = replacePlaceholders(
             editor,
-            systemTemplate({ isBlockSelecting, isSelecting })
+            generateTemplate({ isSelecting })
           );
 
           const gen = streamText({
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: google('gemini-2.5-flash'),
+            model: openai('gpt-4o-mini'),
             system: generateSystem,
           });
 
@@ -107,18 +104,22 @@ export async function POST(req: NextRequest) {
         if (toolName === 'edit') {
           const editSystem = replacePlaceholders(
             editor,
-            systemTemplate({ isBlockSelecting, isSelecting })
+            editTemplate({ isSelecting })
           );
 
-          const edit = streamText({
-            experimental_transform: markdownJoinerTransform(),
-            maxOutputTokens: 2048,
-            messages: convertToModelMessages(messages),
-            model: google('gemini-2.5-flash'),
-            system: editSystem,
-          });
+          if (isSelecting) {
+            const edit = streamText({
+              experimental_transform: markdownJoinerTransform(),
+              maxOutputTokens: 2048,
+              messages: convertToModelMessages(messages),
+              model: openai('gpt-4o-mini'),
+              system: editSystem,
+            });
 
-          writer.merge(edit.toUIMessageStream({ sendFinish: false }));
+            writer.merge(edit.toUIMessageStream({ sendFinish: false }));
+          } else {
+            // TODO: streamObject like comment
+          }
         }
 
         if (toolName === 'comment') {
@@ -174,8 +175,6 @@ export async function POST(req: NextRequest) {
               type: 'data-comment',
             });
           }
-
-          return;
         }
       },
     });
@@ -189,18 +188,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-const systemTemplate = ({
-  isBlockSelecting,
-  isSelecting,
-}: {
-  isBlockSelecting: boolean;
-  isSelecting: boolean;
-}) => {
-  return isBlockSelecting
-    ? PROMPT_TEMPLATES.systemBlockSelecting
-    : isSelecting
-      ? PROMPT_TEMPLATES.systemSelecting
-      : PROMPT_TEMPLATES.systemDefault;
+const generateTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+  return isSelecting
+    ? PROMPT_TEMPLATES.generateDefault
+    : PROMPT_TEMPLATES.generateSelecting;
+};
+
+const editTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+  return isSelecting
+    ? PROMPT_TEMPLATES.editSelecting
+    : PROMPT_TEMPLATES.editDefault;
 };
 
 const promptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
@@ -272,45 +269,81 @@ Rules:
 </column_group>
 `;
 
-const systemDefault = `\
+const generateDefault = `\
 ${systemCommon}
 - <Block> is the current block of text the user is working on.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
 
 <Block>
 {block}
 </Block>
 `;
 
-const systemSelecting = `\
+const generateSelecting = `\
 ${systemCommon}
-- <Block> is the block of text containing the user's selection, providing context.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
-- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
-- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+- <Block> contains the text context. You will always receive one <Block>.
+- <selection> is the text highlighted by the user.
+
+<BlockWithSelection>
+{block}
+</BlockWithSelection>
+`;
+
+const editDefault = `\
+You are a document suggestion assistant.  
+You will receive a single block of text wrapped in <block id="..."> ... </block>.  
+
+Your task:  
+- Read the content of the block.  
+- Improve the text if needed.  
+- Return a JSON object with two fields:
+  - id: the id of the block.
+  - editedContent: the improved version of the block content.  
+
+Rules:  
+- Do not include <block> tags in the output.  
+- Keep the original structure and formatting of the block content, only improving wording.  
+- Always return exactly one JSON object.  
+
+Example:  
+Input:  
+  <block id="1">  
+  This is a good idea.  
+  </block>  
+
+Output:  
+  {  
+    "id": "1",  
+    "editedContent": "This is a great idea."  
+  }
+`;
+
+const editSelecting = `\
+${systemCommon}
+- <block> contains the text context. You will always receive one <block>.
+- <selection> marks the only part of the text that must be edited.
+- In your output, remove all <block> and <selection> tags.
+- Keep all non-selected text exactly as in the input.
+- Replace only the text inside <selection> with an edited(following the user's instructions) version.
+
+Example:
+Input:
+  <block>
+  This is a <selection>good</selection> idea.
+  </block>
+
+Output:
+  This is a great idea.
+
 <Block>
 {block}
 </Block>
-<Selection>
-{selection}
-</Selection>
-`;
-
-const systemBlockSelecting = `\
-${systemCommon}
-- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
-- Your response should be a direct replacement for the entire <Selection>.
-- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
-- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
-<Selection>
-{block}
-</Selection>
 `;
 
 const userDefault = `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
+
 const userSelecting = `<Reminder>
 If this is a question, provide a helpful and concise answer about <Selection>.
 If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
@@ -332,9 +365,10 @@ const commentDefault = `{prompt}:
 const PROMPT_TEMPLATES = {
   commentDefault,
   commentSelecting,
-  systemBlockSelecting,
-  systemDefault,
-  systemSelecting,
+  editDefault,
+  editSelecting,
+  generateDefault,
+  generateSelecting,
   userDefault,
   userSelecting,
 };
