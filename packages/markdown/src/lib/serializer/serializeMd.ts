@@ -24,7 +24,6 @@ export type SerializeMdOptions = {
   spread?: boolean;
   value?: Descendant[];
   withBlockId?: boolean;
-  withSelection?: boolean;
 };
 
 /** Serialize the editor value to Markdown. */

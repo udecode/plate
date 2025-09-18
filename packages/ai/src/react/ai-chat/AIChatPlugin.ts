@@ -43,7 +43,6 @@ export type AIChatPluginConfig = PluginConfig<
     aiEditor: SlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
     chatNodes: TIdElement[];
-    chatSelection: TElement[] | null;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -96,7 +95,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
     chatNodes: [],
-    chatSelection: null,
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,

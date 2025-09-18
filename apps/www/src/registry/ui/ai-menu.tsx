@@ -642,44 +642,6 @@ export function AILoadingBar() {
     api.aiChat.hide();
   };
 
-  const handleSuggestions = (type: 'accept' | 'reject') => {
-    const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
-      transient: true,
-    });
-
-    suggestions.forEach(([suggestionNode]) => {
-      const suggestionData = editor
-        .getApi(SuggestionPlugin)
-        .suggestion.suggestionData(suggestionNode);
-
-      if (!suggestionData) return;
-
-      const description = {
-        createdAt: new Date(suggestionData.createdAt),
-        keyId: getSuggestionKey(suggestionData.id),
-        suggestionId: suggestionData.id,
-        type: suggestionData.type,
-        userId: suggestionData.userId,
-      };
-
-      if (type === 'accept') {
-        acceptSuggestion(editor, description);
-      }
-
-      if (type === 'reject') {
-        rejectSuggestion(editor, description);
-      }
-    });
-
-    editor.tf.unsetNodes([getTransientSuggestionKey()], {
-      at: [],
-      mode: 'all',
-      match: (n) => !!n[getTransientSuggestionKey()],
-    });
-
-    api.aiChat.hide();
-  };
-
   useHotkeys('esc', () => {
     api.aiChat.stop();
 
@@ -731,11 +693,7 @@ export function AILoadingBar() {
             <Button
               size="sm"
               disabled={isLoading}
-              onClick={() =>
-                toolName === 'comment'
-                  ? handleComments('accept')
-                  : handleSuggestions('accept')
-              }
+              onClick={() => handleComments('accept')}
             >
               Accept
             </Button>
@@ -743,11 +701,7 @@ export function AILoadingBar() {
             <Button
               size="sm"
               disabled={isLoading}
-              onClick={() =>
-                toolName === 'comment'
-                  ? handleComments('reject')
-                  : handleSuggestions('reject')
-              }
+              onClick={() => handleComments('reject')}
             >
               Reject
             </Button>

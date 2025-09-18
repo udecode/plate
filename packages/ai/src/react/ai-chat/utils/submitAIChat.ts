@@ -71,8 +71,6 @@ export const submitAIChat = (
 
   setOption('chatNodes', chatNodes);
 
-  setOption('chatSelection', editor.api.fragment());
-
   const ctx: {
     children: Descendant[];
     selection: Range | null;
