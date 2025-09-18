@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         if (!toolName) {
           const { object: AIToolName } = await generateObject({
             enum: ['generate', 'edit', 'comment'],
-            model: openai('gpt-4o-mini'),
+            model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
             ${JSON.stringify(lastUserMessage)}`,
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,
             messages: convertToModelMessages(messages),
-            model: openai('gpt-4o-mini'),
+            model: google('gemini-2.5-flash'),
             system: generateSystem,
           });
 
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
 
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
-            model: openai('gpt-4o-mini'),
+            model: google('gemini-2.5-flash'),
             output: 'array',
             prompt: commentPrompt,
             schema: z
