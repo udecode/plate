@@ -1,4 +1,3 @@
-import { BaseLinkPlugin } from '@platejs/link';
 import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';

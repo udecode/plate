@@ -32,12 +32,12 @@ export const computeDiff = (
   doc0: Descendant[],
   doc1: Descendant[],
   {
+    elementsAreRelated,
     getDeleteProps = defaultGetDeleteProps,
     getInsertProps = defaultGetInsertProps,
     getUpdateProps = defaultGetUpdateProps,
     ignoreProps,
     isInline = () => false,
-    elementsAreRelated,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): Descendant[] => {
@@ -49,12 +49,12 @@ export const computeDiff = (
   const diff = dmp.diff_main(m0, m1);
 
   return transformDiffDescendants(diff, {
+    elementsAreRelated,
     getDeleteProps,
     getInsertProps,
     ignoreProps,
     isInline,
     stringCharMapping,
-    elementsAreRelated,
     getUpdateProps: (node, properties, newProperties) => {
       // Ignore the update if only ignored props have changed
       if (

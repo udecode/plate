@@ -11,8 +11,6 @@ import { getI18nValues } from '@/i18n/getI18nValues';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
-import { basicBlocksValue } from './values/basic-blocks-value';
-import { listValue } from './values/list-value';
 
 export default function PlaygroundDemo({
   id,
@@ -22,7 +20,7 @@ export default function PlaygroundDemo({
   className?: string;
 }) {
   const locale = useLocale();
-  const value = getI18nValues(locale).basicBlocks;
+  const value = getI18nValues(locale).playground;
 
   const editor = usePlateEditor(
     {
@@ -49,18 +47,13 @@ export default function PlaygroundDemo({
         // Testing
         PlaywrightPlugin,
       ],
-      value: [...basicBlocksValue, ...listValue],
+      value,
     },
     []
   );
 
   return (
-    <Plate
-      onValueChange={(v) => {
-        console.log('🚀 ~ PlaygroundDemo ~ v:', v.value);
-      }}
-      editor={editor}
-    >
+    <Plate editor={editor}>
       <EditorContainer className={className}>
         <Editor
           variant="demo"

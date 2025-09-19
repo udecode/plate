@@ -6,6 +6,7 @@ import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
+import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   MessageSquareTextIcon,
@@ -44,7 +45,6 @@ import {
   useResolveSuggestion,
 } from './block-suggestion';
 import { Comment, CommentCreateForm } from './comment';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;

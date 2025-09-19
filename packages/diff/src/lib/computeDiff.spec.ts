@@ -1598,6 +1598,77 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       !NodeApi.string(element).startsWith('NO_DIFF_INLINE'),
   },
 
+  updateInlineElement: {
+    expected: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          { text: 'for ' },
+          {
+            id: 'ZdNInDwET8',
+            children: [
+              { text: 'ma' },
+              { diff: true, diffOperation: { type: 'delete' }, text: 'a' },
+              { text: 'in' },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          { text: ' titles' },
+        ],
+        type: 'p',
+      },
+    ],
+    input1: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            id: 'ZdNInDwET8',
+            children: [
+              {
+                text: 'maain',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+    input2: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            id: 'ZdNInDwET8',
+            children: [
+              {
+                text: 'main',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+  },
+
   updateInlineVoid: {
     expected: [
       {
@@ -1648,77 +1719,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: '!' },
         ],
         type: 'paragraph',
-      },
-    ],
-  },
-
-  updateInlineElement: {
-    input1: [
-      {
-        type: 'p',
-        children: [
-          {
-            text: 'for ',
-          },
-          {
-            children: [
-              {
-                text: 'maain',
-              },
-            ],
-            type: inlineElementType,
-            url: 'https://discord.com',
-            id: 'ZdNInDwET8',
-          },
-          {
-            text: ' titles',
-          },
-        ],
-        id: 'P3Jjv_ALdx',
-      },
-    ],
-    input2: [
-      {
-        children: [
-          {
-            text: 'for ',
-          },
-          {
-            children: [
-              {
-                text: 'main',
-              },
-            ],
-            type: inlineElementType,
-            url: 'https://discord.com',
-            id: 'ZdNInDwET8',
-          },
-          {
-            text: ' titles',
-          },
-        ],
-        type: 'p',
-        id: 'P3Jjv_ALdx',
-      },
-    ],
-    expected: [
-      {
-        children: [
-          { text: 'for ' },
-          {
-            children: [
-              { text: 'ma' },
-              { text: 'a', diff: true, diffOperation: { type: 'delete' } },
-              { text: 'in' },
-            ],
-              type: inlineElementType,
-            url: 'https://discord.com',
-            id: 'ZdNInDwET8',
-          },
-          { text: ' titles' },
-        ],
-        type: 'p',
-        id: 'P3Jjv_ALdx',
       },
     ],
   },

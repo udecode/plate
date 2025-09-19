@@ -10,13 +10,6 @@ import {
 } from '@platejs/ai/react';
 import { getTransientCommentKey } from '@platejs/comment';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
-import {
-  acceptSuggestion,
-  getSuggestionKey,
-  getTransientSuggestionKey,
-  rejectSuggestion,
-} from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,

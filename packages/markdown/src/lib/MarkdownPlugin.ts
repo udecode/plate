@@ -4,7 +4,6 @@ import type { Plugin } from 'unified';
 import {
   type OmitFirst,
   type PluginConfig,
-  type SlatePlugin,
   bindFirst,
   createTSlatePlugin,
   isUrl,

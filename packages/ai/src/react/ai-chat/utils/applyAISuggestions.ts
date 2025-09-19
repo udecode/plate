@@ -8,11 +8,11 @@ import {
 import {
   type Descendant,
   type SlateEditor,
+  type TElement,
   type TIdElement,
   type TSuggestionData,
   type TSuggestionElement,
   ElementApi,
-  TElement,
   TextApi,
 } from 'platejs';
 

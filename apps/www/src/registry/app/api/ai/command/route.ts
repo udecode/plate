@@ -7,6 +7,7 @@ import type { NextRequest } from 'next/server';
 import { google } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { replacePlaceholders } from '@platejs/ai';
+import { serializeMd } from '@platejs/markdown';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -21,7 +22,6 @@ import { z } from 'zod';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
-import { serializeMd } from '@platejs/markdown';
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw } = await req.json();
@@ -107,12 +107,12 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'edit') {
-          if (isSelecting) {
-            const editSystem = replacePlaceholders(
-              editor,
-              editTemplate({ isSelecting })
-            );
+          const editSystem = replacePlaceholders(
+            editor,
+            editTemplate({ isSelecting })
+          );
 
+          if (isSelecting) {
             console.log('🚀 ~ POST ~ editSystem:', editSystem);
             console.log('🚀 ~ POST ~ messages:', messages[0].parts[0].text);
 
@@ -148,6 +148,8 @@ export async function POST(req: NextRequest) {
               prompt,
             }
           );
+
+          console.log('🚀 ~ POST ~ commentPrompt:', commentPrompt);
 
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
@@ -400,8 +402,8 @@ const replaceMessagePlaceholders = (
   return { ...message, parts };
 };
 
-const SELECTION_START = '<Seleciton>';
-const SELECTION_END = '</Seleciton>';
+const SELECTION_START = '<Selection>';
+const SELECTION_END = '</Selection>';
 
 const addSelection = (editor: SlateEditor) => {
   if (!editor.selection) return;
@@ -426,6 +428,7 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
     .replace(`\\${SELECTION_START}`, SELECTION_START)
     .replace(`\\${SELECTION_END}`, SELECTION_END);
 
+  // If the selection is on a void element, inserting the placeholder will fail, and the string must be replaced manually.
   if (!newText.includes(SELECTION_END)) {
     const [_, end] = RangeApi.edges(editor.selection!);
 
@@ -436,8 +439,15 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
     if (editor.api.isVoid(node[0])) {
       const voidString = serializeMd(editor, { value: [node[0]] });
 
-      // TODO： 只replace 最后一个 void String， 然后整理这个函数 
-      newText = newText.replace(voidString, voidString.trimEnd() + SELECTION_END);
+      const idx = newText.lastIndexOf(voidString);
+
+      if (idx !== -1) {
+        newText =
+          newText.slice(0, idx) +
+          voidString.trimEnd() +
+          SELECTION_END +
+          newText.slice(idx + voidString.length);
+      }
     }
   }
 

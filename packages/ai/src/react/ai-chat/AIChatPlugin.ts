@@ -9,7 +9,6 @@ import {
   type Path,
   type PluginConfig,
   type SlateEditor,
-  type TElement,
   type TIdElement,
   bindFirst,
   ElementApi,
