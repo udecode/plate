@@ -37,6 +37,7 @@ export const computeDiff = (
     getUpdateProps = defaultGetUpdateProps,
     ignoreProps,
     isInline = () => false,
+    elementsAreRelated,
     ...options
   }: Partial<ComputeDiffOptions> = {}
 ): Descendant[] => {
@@ -53,6 +54,7 @@ export const computeDiff = (
     ignoreProps,
     isInline,
     stringCharMapping,
+    elementsAreRelated,
     getUpdateProps: (node, properties, newProperties) => {
       // Ignore the update if only ignored props have changed
       if (

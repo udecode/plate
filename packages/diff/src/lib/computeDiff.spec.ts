@@ -7,7 +7,9 @@ import { type TElement, type Value, NodeApi } from 'platejs';
 
 import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 
-const type = 'inline-void';
+const inlineVoidType = 'inline-void';
+
+const inlineElementType = 'inline-element';
 
 interface ComputeDiffFixture
   extends Pick<ComputeDiffOptions, 'elementsAreRelated' | 'lineBreakChar'> {
@@ -439,7 +441,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '4', children: [{ text: '' }], type: type },
+          { id: '4', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -449,7 +451,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '2', children: [{ text: '' }], type: type },
+          { id: '2', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -459,7 +461,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '4', children: [{ text: '' }], type: type },
+          { id: '4', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -573,7 +575,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -592,7 +594,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1207,7 +1209,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'delete' },
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1220,7 +1222,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1606,14 +1608,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             diff: true,
             diffOperation: { type: 'delete' },
             someProp: 'Hello',
-            type: type,
+            type: inlineVoidType,
           },
           {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
             someProp: 'World',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1627,7 +1629,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'Hello',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1641,11 +1643,82 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'World',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
         type: 'paragraph',
+      },
+    ],
+  },
+
+  updateInlineElement: {
+    input1: [
+      {
+        type: 'p',
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            children: [
+              {
+                text: 'maain',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+            id: 'ZdNInDwET8',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        id: 'P3Jjv_ALdx',
+      },
+    ],
+    input2: [
+      {
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            children: [
+              {
+                text: 'main',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+            id: 'ZdNInDwET8',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        type: 'p',
+        id: 'P3Jjv_ALdx',
+      },
+    ],
+    expected: [
+      {
+        children: [
+          { text: 'for ' },
+          {
+            children: [
+              { text: 'ma' },
+              { text: 'a', diff: true, diffOperation: { type: 'delete' } },
+              { text: 'in' },
+            ],
+              type: inlineElementType,
+            url: 'https://discord.com',
+            id: 'ZdNInDwET8',
+          },
+          { text: ' titles' },
+        ],
+        type: 'p',
+        id: 'P3Jjv_ALdx',
       },
     ],
   },
@@ -1657,7 +1730,8 @@ describe('computeDiff', () => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
           ignoreProps: ['id'],
-          isInline: (node) => node.type === type,
+          isInline: (node) =>
+            node.type === inlineVoidType || node.type === inlineElementType,
           ...options,
         });
 
@@ -1666,35 +1740,3 @@ describe('computeDiff', () => {
     }
   );
 });
-
-// describe('computeDiff', () => {
-//   it('should compute diff', () => {
-//     const input1 = [
-//       {
-//         id: '11111',
-//         children: [
-//           {
-//             text: 'Item 1',
-//           },
-//         ],
-//         type: 'p',
-//       },
-//     ];
-
-//     const input2 = [
-//       {
-//         id: '22222',
-//         children: [
-//           {
-//             text: 'Item 12',
-//           },
-//         ],
-//         type: 'p',
-//       },
-//     ];
-
-//     const output = computeDiff(input1, input2);
-
-//     console.log('🚀 ~ output:', JSON.stringify(output));
-//   });
-// });

@@ -15,9 +15,11 @@ import {
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
+import { computeDiff } from '../../lib/computeDiff';
 import { dmp } from '../utils/dmp';
 import { getProperties } from '../utils/get-properties';
 import { InlineNodeCharMap } from '../utils/inline-node-char-map';
+import { isEqual } from '../utils/is-equal';
 import { unusedCharGenerator } from '../utils/unused-char-generator';
 import { withChangeTracking } from '../utils/with-change-tracking';
 
@@ -31,6 +33,41 @@ export function transformDiffTexts(
   if (nodes.length === 0) throw new Error('must have at least one nodes');
   if (nextNodes.length === 0)
     throw new Error('must have at least one nextNodes');
+  
+  // Special handling for single inline elements that might be related
+  if (
+    nodes.length === 1 &&
+    nextNodes.length === 1 &&
+    !TextApi.isText(nodes[0]) &&
+    !TextApi.isText(nextNodes[0]) &&
+    options.isInline(nodes[0]) &&
+    options.isInline(nextNodes[0])
+  ) {
+    // Check if these inline elements are related
+    const element = nodes[0] as any;
+    const nextElement = nextNodes[0] as any;
+    
+    // If they have the same type and properties (except children), diff their children
+    if (
+      element.type === nextElement.type &&
+      element.children &&
+      nextElement.children
+    ) {
+      // Check if they're equal except for children
+      const { children: _1, ...elementProps } = element;
+      const { children: _2, ...nextElementProps } = nextElement;
+      
+      if (isEqual(elementProps, nextElementProps, { ignoreDeep: options.ignoreProps })) {
+        // Recursively diff the children
+        const diffedChildren = computeDiff(element.children, nextElement.children, options);
+        
+        return [{
+          ...nextElement,
+          children: diffedChildren,
+        }];
+      }
+    }
+  }
 
   const { lineBreakChar } = options;
   const hasLineBreakChar = lineBreakChar !== undefined;
