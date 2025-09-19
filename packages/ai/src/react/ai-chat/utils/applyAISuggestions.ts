@@ -166,8 +166,6 @@ const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
       };
     }
 
-    console.log('🚀 ~ withoutSuggestionAndComments ~ node:', node);
-
     return node;
   });
 };
