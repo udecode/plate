@@ -7,7 +7,10 @@ import type {
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
-import { HocuspocusProvider, HocuspocusProviderWebsocket } from '@hocuspocus/provider';
+import {
+  HocuspocusProvider,
+  HocuspocusProviderWebsocket,
+} from '@hocuspocus/provider';
 
 import type {
   ProviderEventHandlers,
@@ -55,9 +58,9 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
     onSyncChange,
   }: {
     options: HocuspocusProviderConfiguration;
-    wsOptions?: HocuspocusProviderWebsocketConfiguration;
     awareness?: Awareness;
     doc?: Y.Doc;
+    wsOptions?: HocuspocusProviderWebsocketConfiguration;
   } & ProviderEventHandlers) {
     this.onConnect = onConnect;
     this.onDisconnect = onDisconnect;
@@ -69,14 +72,19 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       ...options,
       ...(doc && { document: doc }),
       ...(awareness && { awareness }),
-      ...(wsOptions && (() => {
-        try {
-          return { websocketProvider: new HocuspocusProviderWebsocket(wsOptions) };
-        } catch (err) {
-          this.onError?.(err instanceof Error ? err : new Error(String(err)));
-          return {};
-        }
-      })()),
+      ...(wsOptions &&
+        (() => {
+          try {
+            return {
+              websocketProvider: new HocuspocusProviderWebsocket(wsOptions),
+            };
+          } catch (error) {
+            this.onError?.(
+              error instanceof Error ? error : new Error(String(error))
+            );
+            return {};
+          }
+        })()),
       // Disable broadcast channel here - we'll manually handle connections
       broadcast: options.broadcast || false,
       onAwarenessChange: options.onAwarenessChange || (() => {}),
