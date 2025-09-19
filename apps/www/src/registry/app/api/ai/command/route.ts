@@ -5,7 +5,6 @@ import type {
 import type { NextRequest } from 'next/server';
 
 import { google } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
 import { replacePlaceholders } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import {
@@ -43,8 +42,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const openai = createOpenAI({ apiKey });
-
   const isSelecting = editor.api.isExpanded();
 
   try {
@@ -70,7 +67,9 @@ export async function POST(req: NextRequest) {
 
         if (!toolName) {
           const { object: AIToolName } = await generateObject({
-            enum: ['generate', 'edit', 'comment'],
+            enum: isSelecting
+              ? ['generate', 'edit', 'comment']
+              : ['generate', 'comment'],
             model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
@@ -89,11 +88,8 @@ export async function POST(req: NextRequest) {
         if (toolName === 'generate') {
           const generateSystem = replacePlaceholders(
             editor,
-            generateTemplate({ isSelecting })
+            generateSystemTemplate({ isSelecting })
           );
-
-          console.log('🚀 ~ POST ~ generateSystem:', generateSystem);
-          console.log('🚀 ~ POST ~ messages:', messages[0].parts[0].text);
 
           const gen = streamText({
             experimental_transform: markdownJoinerTransform(),
@@ -107,35 +103,26 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'edit') {
-          const editSystem = replacePlaceholders(
-            editor,
-            editTemplate({ isSelecting })
-          );
+          if (!isSelecting)
+            throw new Error('Edit tool is only available when selecting');
 
-          if (isSelecting) {
-            console.log('🚀 ~ POST ~ editSystem:', editSystem);
-            console.log('🚀 ~ POST ~ messages:', messages[0].parts[0].text);
+          const editSystem = replacePlaceholders(editor, editSystemTemplate());
 
-            const edit = streamText({
-              experimental_transform: markdownJoinerTransform(),
-              maxOutputTokens: 2048,
-              messages: convertToModelMessages(messages),
-              model: google('gemini-2.5-flash'),
-              // model: openai('gpt-4o-mini'),
-              system: editSystem,
-            });
+          console.log('🚀 ~ POST ~ editSystem:', editSystem);
+          console.log('🚀 ~ POST ~ messages:', messages[0].parts[0].text);
 
-            writer.merge(edit.toUIMessageStream({ sendFinish: false }));
-          } else {
-            // TODO: streamObject like comment
-          }
+          const edit = streamText({
+            experimental_transform: markdownJoinerTransform(),
+            maxOutputTokens: 2048,
+            messages: convertToModelMessages(messages),
+            model: google('gemini-2.5-flash'),
+            system: editSystem,
+          });
+
+          writer.merge(edit.toUIMessageStream({ sendFinish: false }));
         }
 
         if (toolName === 'comment') {
-          if (isSelecting) {
-            addSelection(editor);
-          }
-
           const lastUserMessage = messagesRaw[lastIndex] as ChatMessage;
           const prompt = lastUserMessage.parts.find(
             (p) => p.type === 'text'
@@ -143,19 +130,17 @@ export async function POST(req: NextRequest) {
 
           const commentPrompt = replacePlaceholders(
             editor,
-            commentTemplate({ isSelecting }),
+            commentPromptTemplate({ isSelecting }),
             {
               prompt,
             }
           );
 
-          console.log('🚀 ~ POST ~ commentPrompt:', commentPrompt);
-
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
             model: google('gemini-2.5-flash'),
             output: 'array',
-            prompt: commentPrompt,
+            prompt: removeEscapeSelection(editor, commentPrompt),
             schema: z
               .object({
                 blockId: z
@@ -203,28 +188,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
-const generateTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+const generateSystemTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.generateDefault
-    : PROMPT_TEMPLATES.generateSelecting;
+    ? PROMPT_TEMPLATES.generateSystemDefault
+    : PROMPT_TEMPLATES.generateSystemSelecting;
 };
 
-const editTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
-  return isSelecting
-    ? PROMPT_TEMPLATES.editSystemSelecting
-    : PROMPT_TEMPLATES.editSystemDefault;
+const editSystemTemplate = () => {
+  return PROMPT_TEMPLATES.editSystemSelecting;
 };
 
 const promptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.userSelecting
-    : PROMPT_TEMPLATES.userDefault;
+    ? PROMPT_TEMPLATES.promptSelecting
+    : PROMPT_TEMPLATES.promptDefault;
 };
 
-const commentTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+const commentPromptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.commentSelecting
-    : PROMPT_TEMPLATES.commentDefault;
+    ? PROMPT_TEMPLATES.commentPromptSelecting
+    : PROMPT_TEMPLATES.commentPromptDefault;
 };
 
 const chooseToolSystem = `You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
@@ -238,6 +221,7 @@ Return only one enum value with no explanation.`;
 
 const commentSystem = `You are a document review assistant.  
 You will receive an MDX document wrapped in <block id="..."> content </block> tags.  
+<Selection> is the text highlighted by the user.
 
 Your task:  
 - Read the content of all blocks and provide comments.  
@@ -254,6 +238,7 @@ Rules:
   - If multiple blocks are included, separate them with two \\n\\n.  
   - Do NOT default to using the entire block—use the smallest relevant span instead.
 - At least one comment must be provided.
+- If a <Selection> exists, Your comments should come from the <Selection>, and if the <Selection> is too long, there should be more than one comment.
 `;
 
 const systemCommon = `\
@@ -299,35 +284,6 @@ ${systemCommon}
 - <selection> is the text highlighted by the user.
 `;
 
-const editSystemDefault = `\
-You are a document suggestion assistant.  
-You will receive a single block of text wrapped in <block id="..."> ... </block>.  
-
-Your task:  
-- Read the content of the block.  
-- Improve the text if needed.  
-- Return a JSON object with two fields:
-  - id: the id of the block.
-  - editedContent: the improved version of the block content.  
-
-Rules:  
-- Do not include <block> tags in the output.  
-- Keep the original structure and formatting of the block content, only improving wording.  
-- Always return exactly one JSON object.  
-
-Example:  
-Input:  
-  <block id="1">  
-  This is a good idea.  
-  </block>  
-
-Output:  
-  {  
-    "id": "1",  
-    "editedContent": "This is a great idea."  
-  }
-`;
-
 const editSystemSelecting = `\
 - <Block> shows the full sentence or paragraph, only for context. 
 - <Selection> is the exact span of text inside <Block> that must be replaced. 
@@ -357,25 +313,27 @@ NEVER write <Block> or <Selection>.
 </Block>
 `;
 
-const commentSelecting = `{prompt}:
+const commentPromptSelecting = `
+Comment on the content within the <Selection>.
+Never write <Selection>.
+{prompt}:
         
 {blockWithBlockId}
 `;
 
-const commentDefault = `{prompt}:
+const commentPromptDefault = `{prompt}:
         
 {editorWithBlockId}
 `;
 
 const PROMPT_TEMPLATES = {
-  commentDefault,
-  commentSelecting,
-  editSystemDefault: editSystemDefault,
-  editSystemSelecting: editSystemSelecting,
-  generateDefault: generateSystemDefault,
-  generateSelecting: generateSystemSelecting,
-  userDefault: promptDefault,
-  userSelecting: promptSelecting,
+  commentPromptDefault,
+  commentPromptSelecting,
+  editSystemSelecting,
+  generateSystemDefault,
+  generateSystemSelecting,
+  promptDefault,
+  promptSelecting,
 };
 
 const replaceMessagePlaceholders = (

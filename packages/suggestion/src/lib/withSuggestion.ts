@@ -52,7 +52,6 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       return apply(operation);
     },
     deleteBackward(unit) {
-      console.log('🚀 ~ deleteBackward ~ unit:', unit);
       const selection = editor.selection!;
       const pointTarget = editor.api.before(selection, { unit });
 
