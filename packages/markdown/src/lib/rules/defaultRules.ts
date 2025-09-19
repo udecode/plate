@@ -34,7 +34,6 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
-import { parseAttributes, propsToAttributes } from './utils';
 
 function isBoolean(value: any) {
   return (

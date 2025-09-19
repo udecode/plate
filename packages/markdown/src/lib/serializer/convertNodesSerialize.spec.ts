@@ -156,9 +156,7 @@ describe('convertNodesSerialize', () => {
         mockHeadingNodeMd,
         mockThematicBreakNodeMd,
         {
-          children: [
-            { type: 'text', value: 'HelloWorld' },
-          ],
+          children: [{ type: 'text', value: 'HelloWorld' }],
           type: 'paragraph',
         },
       ]);
@@ -182,9 +180,7 @@ describe('convertNodesSerialize', () => {
 
       expect(result).toEqual([
         {
-          children: [
-            { type: 'text', value: 'BoldItalic normal' },
-          ],
+          children: [{ type: 'text', value: 'BoldItalic normal' }],
           type: 'paragraph',
         },
       ]);
@@ -209,7 +205,10 @@ describe('convertNodesSerialize', () => {
       expect(result).toEqual([
         {
           children: [
-            { children: [{ type: 'text', value: 'BoldItalic' }], type: 'emphasis' },
+            {
+              children: [{ type: 'text', value: 'BoldItalic' }],
+              type: 'emphasis',
+            },
             { type: 'text', value: ' normal' },
           ],
           type: 'paragraph',

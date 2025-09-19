@@ -3,7 +3,7 @@ import type { TElement, TInlineSuggestionData, TText } from 'platejs';
 import { KEYS } from 'platejs';
 
 // the last id is the active id
-export const getSuggestionKeyId = (node: TText | TElement) => {
+export const getSuggestionKeyId = (node: TElement | TText) => {
   const ids: string[] = Object.keys(node).filter((key) => {
     return key.startsWith(`${KEYS.suggestion}_`);
   });
@@ -11,7 +11,7 @@ export const getSuggestionKeyId = (node: TText | TElement) => {
   return ids.at(-1);
 };
 
-export const getInlineSuggestionData = (node: TText | TElement) => {
+export const getInlineSuggestionData = (node: TElement | TText) => {
   const keyId = getSuggestionKeyId(node);
 
   if (!keyId) return;

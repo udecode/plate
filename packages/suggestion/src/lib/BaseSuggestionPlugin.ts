@@ -4,6 +4,7 @@ import {
   type PluginConfig,
   type TElement,
   type TInlineSuggestionData,
+  type TNode,
   type TSuggestionElement,
   type TSuggestionText,
   createTSlatePlugin,
@@ -11,8 +12,6 @@ import {
   getAt,
   KEYS,
   TextApi,
-  TNode,
-  TText,
 } from 'platejs';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';

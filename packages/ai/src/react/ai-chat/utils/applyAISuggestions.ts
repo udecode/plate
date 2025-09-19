@@ -146,7 +146,7 @@ const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
 
     if (ElementApi.isElement(node)) {
       if (node[KEYS.suggestion]) {
-        let nodeWithoutSuggestion: any = {};
+        const nodeWithoutSuggestion: any = {};
 
         Object.keys(node).forEach((key) => {
           if (key !== KEYS.suggestion && !key.startsWith(KEYS.suggestion)) {
