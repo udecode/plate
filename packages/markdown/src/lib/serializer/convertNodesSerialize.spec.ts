@@ -142,6 +142,82 @@ describe('convertNodesSerialize', () => {
     });
   });
 
+  describe('plainMarks option', () => {
+    it('should treat marks specified in plainMarks as plain text', () => {
+      const options: SerializeMdOptions = {
+        ...baseOptions,
+        plainMarks: ['bold'],
+      };
+
+      const result = convertNodesSerialize(mockNodesSlate, options);
+
+      expect(result).toEqual([
+        mockParagraphNodeMd,
+        mockHeadingNodeMd,
+        mockThematicBreakNodeMd,
+        {
+          children: [
+            { type: 'text', value: 'HelloWorld' },
+          ],
+          type: 'paragraph',
+        },
+      ]);
+    });
+
+    it('should treat multiple marks as plain text', () => {
+      const mockItalicBoldNodeSlate: Descendant = {
+        children: [
+          { bold: true, italic: true, text: 'BoldItalic' },
+          { text: ' normal' },
+        ],
+        type: 'p',
+      };
+
+      const options: SerializeMdOptions = {
+        ...baseOptions,
+        plainMarks: ['bold', 'italic'],
+      };
+
+      const result = convertNodesSerialize([mockItalicBoldNodeSlate], options);
+
+      expect(result).toEqual([
+        {
+          children: [
+            { type: 'text', value: 'BoldItalic normal' },
+          ],
+          type: 'paragraph',
+        },
+      ]);
+    });
+
+    it('should only treat specified marks as plain text', () => {
+      const mockItalicBoldNodeSlate: Descendant = {
+        children: [
+          { bold: true, italic: true, text: 'BoldItalic' },
+          { text: ' normal' },
+        ],
+        type: 'p',
+      };
+
+      const options: SerializeMdOptions = {
+        ...baseOptions,
+        plainMarks: ['bold'],
+      };
+
+      const result = convertNodesSerialize([mockItalicBoldNodeSlate], options);
+
+      expect(result).toEqual([
+        {
+          children: [
+            { children: [{ type: 'text', value: 'BoldItalic' }], type: 'emphasis' },
+            { type: 'text', value: ' normal' },
+          ],
+          type: 'paragraph',
+        },
+      ]);
+    });
+  });
+
   describe('allowNode option', () => {
     it('should exclude nodes specified in allowNode', () => {
       const options: SerializeMdOptions = {

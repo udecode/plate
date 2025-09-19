@@ -1605,7 +1605,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
         children: [
           { text: 'for ' },
           {
-            id: 'ZdNInDwET8',
             children: [
               { text: 'ma' },
               { diff: true, diffOperation: { type: 'delete' }, text: 'a' },
@@ -1627,7 +1626,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: 'for ',
           },
           {
-            id: 'ZdNInDwET8',
             children: [
               {
                 text: 'maain',
@@ -1651,7 +1649,6 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             text: 'for ',
           },
           {
-            id: 'ZdNInDwET8',
             children: [
               {
                 text: 'main',
@@ -1740,3 +1737,85 @@ describe('computeDiff', () => {
     }
   );
 });
+
+// describe('computeDiff', () => {
+//   it('should compute diff', () => {
+//     const input1 = [
+//       {
+//         children: [
+//           {
+//             text: 'Experience a modern rich-text editor built with ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Slaxxte',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://slatejs.org',
+//             id: 'zg0crujFC2',
+//           },
+//           {
+//             text: ' and ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Reaxct',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://reactjs.org',
+//             id: '-R-rUf5j6U',
+//           },
+//           {
+//             text: '.',
+//           },
+//         ],
+//         type: 'p',
+//         id: '8RCsJ5pSjR',
+//       },
+//     ];
+
+//     const input2 = [
+//       {
+//         children: [
+//           {
+//             text: 'Experience a modern rich-text editor built with ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Slate',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://slatejs.org',
+//           },
+//           {
+//             text: ' and ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'React',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://reactjs.org',
+//           },
+//           {
+//             text: '.',
+//           },
+//         ],
+//         type: 'p',
+//         id: '8RCsJ5pSjR',
+//       },
+//     ];
+
+//     const output = computeDiff(input1, input2, {
+//       isInline: (node) => node.type === 'a',
+//     });
+//   });
+// });

@@ -13,6 +13,8 @@ import {
   type TSuggestionData,
   type TSuggestionElement,
   ElementApi,
+  KEYS,
+  nanoid,
   TextApi,
 } from 'platejs';
 
@@ -101,19 +103,15 @@ const withProps = (
   chatNodes: Descendant[]
 ): Descendant[] => {
   return diffNodes.map((node, index) => {
-    const originalNode = chatNodes[index] as TElement;
+    if (!ElementApi.isElement(node)) return node;
 
-    if (TextApi.isText(node)) {
-      return {
-        ...node,
-      };
-    } else {
-      return {
-        ...node,
-        ...originalNode,
-        children: withProps(node.children, originalNode.children),
-      };
-    }
+    const originalNode = chatNodes?.[index] as TElement | undefined;
+
+    return {
+      ...node,
+      ...(originalNode ?? { id: nanoid() }),
+      children: node.children,
+    };
   });
 };
 
@@ -134,10 +132,60 @@ const withTransient = (diffNodes: Descendant[]): Descendant[] => {
   });
 };
 
+const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
+  return nodes.map((node) => {
+    if (TextApi.isText(node)) {
+      if (node[KEYS.suggestion] || node[KEYS.comment]) {
+        return {
+          text: node.text,
+        };
+      }
+
+      return node;
+    }
+
+    if (ElementApi.isElement(node)) {
+      if (node[KEYS.suggestion]) {
+        let nodeWithoutSuggestion: any = {};
+
+        Object.keys(node).forEach((key) => {
+          if (key !== KEYS.suggestion && !key.startsWith(KEYS.suggestion)) {
+            nodeWithoutSuggestion[key] = node[key];
+          }
+        });
+
+        return {
+          ...nodeWithoutSuggestion,
+          children: withoutSuggestionAndComments(node.children),
+        };
+      }
+
+      return {
+        ...node,
+        children: withoutSuggestionAndComments(node.children),
+      };
+    }
+
+    console.log('🚀 ~ withoutSuggestionAndComments ~ node:', node);
+
+    return node;
+  });
+};
 const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   /** Original document nodes */
-  const chatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
+  const chatNodes = withoutSuggestionAndComments(
+    editor.getOption(AIChatPlugin, 'chatNodes')
+  );
+
   const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
 
-  return withTransient(diffToSuggestions(editor, chatNodes, aiNodes));
+  console.log('🚀 ~ getDiffNodes ~ chatNodes:', chatNodes);
+  console.log('🚀 ~ getDiffNodes ~ aiNodes:', aiNodes);
+
+  const diffNodes = withTransient(
+    diffToSuggestions(editor, chatNodes, aiNodes, { ignoreProps: ['id'] })
+  );
+  console.log('🚀 ~ getDiffNodes ~ diffNodes:', diffNodes);
+
+  return diffNodes;
 };

@@ -34,6 +34,7 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
+import { parseAttributes, propsToAttributes } from './utils';
 
 function isBoolean(value: any) {
   return (
@@ -840,6 +841,7 @@ export const defaultRules: MdRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       // const props = parseAttributes(mdastNode.attributes);
+
       return convertChildrenDeserialize(
         mdastNode.children,
         {
@@ -851,7 +853,8 @@ export const defaultRules: MdRules = {
       ) as any;
     },
     serialize(slateNode): MdMdxJsxTextElement {
-      // const { text, comment, ...rest } = slateNode;
+      // const { text, suggestion, ...rest } = slateNode;
+
       return {
         // attributes: propsToAttributes(rest),
         attributes: [],

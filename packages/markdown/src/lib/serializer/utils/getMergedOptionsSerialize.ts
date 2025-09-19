@@ -24,6 +24,7 @@ export const getMergedOptionsSerialize = (
     remarkPlugins: PluginRemarkPlugins,
     remarkStringifyOptions: PluginRemarkStringifyOptions,
     rules: PluginRules,
+    plainMarks: PluginPlainMarks,
   } = editor.getOptions(MarkdownPlugin);
 
   const mergedRules = Object.assign(
@@ -45,5 +46,6 @@ export const getMergedOptionsSerialize = (
     spread: options?.spread,
     value: options?.value ?? editor.children,
     withBlockId: options?.withBlockId ?? false,
+    plainMarks: options?.plainMarks ?? PluginPlainMarks,
   };
 };

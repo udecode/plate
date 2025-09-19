@@ -17,6 +17,8 @@ export type SerializeMdOptions = {
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
   editor?: SlateEditor;
+  /** Marks to treat as plain text without applying markdown formatting. */
+  plainMarks?: PlateType[] | null;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
   remarkStringifyOptions?: RemarkStringifyOptions | null;

@@ -11,6 +11,8 @@ import {
   getAt,
   KEYS,
   TextApi,
+  TNode,
+  TText,
 } from 'platejs';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
@@ -29,7 +31,7 @@ export type BaseSuggestionConfig = PluginConfig<
   {
     suggestion: {
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
-      isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
+      isBlockSuggestion: (node: TNode) => node is TSuggestionElement;
       node: (
         options?: EditorNodesOptions & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
@@ -65,7 +67,9 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
           .map((key) => node[key] as TInlineSuggestionData);
       },
       isBlockSuggestion: (node): node is TSuggestionElement =>
-        ElementApi.isElement(node) && 'suggestion' in node,
+        ElementApi.isElement(node) &&
+        !editor.api.isInline(node) &&
+        'suggestion' in node,
       node: (options = {}) => {
         const { id, isText, ...rest } = options;
         const result = editor.api.node<TSuggestionElement | TSuggestionText>({
@@ -92,7 +96,10 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         return result;
       },
       nodeId: (node) => {
-        if (TextApi.isText(node)) {
+        if (
+          TextApi.isText(node) ||
+          (ElementApi.isElement(node) && editor.api.isInline(node))
+        ) {
           const keyId = getSuggestionKeyId(node);
 
           if (!keyId) return;
@@ -123,7 +130,10 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         ];
       },
       suggestionData: (node) => {
-        if (TextApi.isText(node)) {
+        if (
+          TextApi.isText(node) ||
+          (ElementApi.isElement(node) && editor.api.isInline(node))
+        ) {
           const keyId = getSuggestionKeyId(node);
 
           if (!keyId) return;
