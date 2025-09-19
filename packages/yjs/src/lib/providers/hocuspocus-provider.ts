@@ -69,7 +69,14 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       ...options,
       ...(doc && { document: doc }),
       ...(awareness && { awareness }),
-      ...(wsOptions && { websocketProvider: new HocuspocusProviderWebsocket(wsOptions) }),
+      ...(wsOptions && (() => {
+        try {
+          return { websocketProvider: new HocuspocusProviderWebsocket(wsOptions) };
+        } catch (err) {
+          this.onError?.(err instanceof Error ? err : new Error(String(err)));
+          return {};
+        }
+      })()),
       // Disable broadcast channel here - we'll manually handle connections
       broadcast: options.broadcast || false,
       onAwarenessChange: options.onAwarenessChange || (() => {}),
