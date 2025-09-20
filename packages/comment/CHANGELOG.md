@@ -1,5 +1,11 @@
 # @platejs/comment
 
+## 50.2.0
+
+### Patch Changes
+
+- [#4626](https://github.com/udecode/plate/pull/4626) by [@felixfeng33](https://github.com/felixfeng33) – Add `getTransientCommentKey` utility for temporary comments
+
 ## 50.0.0
 
 ### Patch Changes
