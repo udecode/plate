@@ -7,9 +7,11 @@ import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 export const insertBlocksAndSelect = (
   editor: PlateEditor,
   nodes: TElement[],
-  { at }: { at: Path }
+  { at, insertedCallback }: { at: Path; insertedCallback?: () => void }
 ) => {
   editor.tf.insertNodes(nodes, { at });
+
+  insertedCallback?.();
 
   const insertedNodes = [NodeApi.get<TElement>(editor, at)!];
 

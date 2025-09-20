@@ -61,7 +61,7 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
-      hide: () => void;
+      hide: (options?: { focus?: boolean }) => void;
       node: (
         options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
       ) => NodeEntry | undefined;
@@ -175,16 +175,17 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     };
   })
   .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
-    hide: () => {
+    hide: ({ focus = true }: { focus?: boolean } = {}) => {
       api.aiChat.reset();
 
       setOption('open', false);
 
-      if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
-        // TODO
-        // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
-      } else {
-        editor.tf.focus();
+      if (focus) {
+        if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
+          editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+        } else {
+          editor.tf.focus();
+        }
       }
 
       const lastBatch = editor.history.undos.at(-1) as AIBatch;

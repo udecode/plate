@@ -14,16 +14,11 @@ export const AIChatEditor = React.memo(function AIChatEditor({
 }: {
   content: string;
 }) {
-  const toolName = usePluginOption(AIChatPlugin, 'toolName');
-
   const aiEditor = usePlateEditor({
     plugins: BaseEditorKit,
   });
 
   useAIChatEditor(aiEditor, content);
 
-  if (toolName === 'generate') {
-    return <EditorStatic variant="aiChat" editor={aiEditor} />;
-  }
-  return null;
+  return <EditorStatic variant="aiChat" editor={aiEditor} />;
 });

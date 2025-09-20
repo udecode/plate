@@ -45,7 +45,7 @@ export const acceptAIChat = (editor: PlateEditor) => {
   }
 };
 
-const acceptSuggestions = (editor: PlateEditor) => {
+export const acceptSuggestions = (editor: PlateEditor) => {
   const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
     transient: true,
   });
@@ -66,10 +66,6 @@ const acceptSuggestions = (editor: PlateEditor) => {
     };
 
     acceptSuggestion(editor, description);
-
-    // if (type === 'reject') {
-    //   rejectSuggestion(editor, description);
-    // }
   });
 
   editor.tf.unsetNodes([getTransientSuggestionKey()], {

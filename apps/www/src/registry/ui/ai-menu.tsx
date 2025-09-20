@@ -60,6 +60,7 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
+import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
@@ -147,15 +148,22 @@ export function AIMenu() {
 
   React.useEffect(() => {
     if (toolName === 'edit' && mode === 'chat' && !isLoading) {
-      const sNode = editor.api.node({
+      let anchorNode = editor.api.node({
         at: [],
         reverse: true,
-        match: (n) => !!n[KEYS.suggestion],
+        match: (n) => !!n[KEYS.suggestion] && !!n[getTransientSuggestionKey()],
       });
 
-      if (!sNode) return;
+      if (!anchorNode) {
+        anchorNode = editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.getNodes({ selectionFallback: true, sort: true })
+          .at(-1);
+      }
 
-      const block = editor.api.block({ at: sNode[1] });
+      if (!anchorNode) return;
+
+      const block = editor.api.block({ at: anchorNode[1] });
       setAnchorElement(editor.api.toDOMNode(block![0]!)!);
     }
   }, [isLoading]);
@@ -188,9 +196,10 @@ export function AIMenu() {
           value={value}
           onValueChange={setValue}
         >
-          {mode === 'chat' && isSelecting && content && (
-            <AIChatEditor content={content} />
-          )}
+          {mode === 'chat' &&
+            isSelecting &&
+            content &&
+            toolName === 'generate' && <AIChatEditor content={content} />}
 
           {isLoading ? (
             <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
