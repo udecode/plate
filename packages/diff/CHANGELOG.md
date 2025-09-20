@@ -1,5 +1,12 @@
 # @platejs/diff
 
+## 50.2.0
+
+### Minor Changes
+
+- [#4626](https://github.com/udecode/plate/pull/4626) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Improve diffing of inline elements with same type
+
 ## 49.0.0
 
 ### Major Changes
