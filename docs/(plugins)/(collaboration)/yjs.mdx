@@ -231,7 +231,30 @@ type HocuspocusProviderConfig = {
     name: string;     // Document identifier
     url: string;      // WebSocket server URL
     token?: string;   // Authentication token
+    wsOptions?: HocuspocusProviderWebsocketConfiguration; // Advanced websocket config (headers, protocols, etc.)
   }
+}
+```
+
+#### `wsOptions`
+
+You can pass a `wsOptions` field to configure advanced websocket options for the Hocuspocus provider. This is useful for custom headers, authentication, protocols, or other websocket settings supported by [`HocuspocusProviderWebsocket`](https://tiptap.dev/hocuspocus/api/provider#websocket-configuration).
+
+Example usage:
+
+```tsx
+{
+  type: 'hocuspocus',
+  options: {
+    name: 'my-document-id',
+  },
+  wsOptions: {
+    url: 'ws://localhost:8888',
+    maxAttempts: 5,
+    parameters: {
+      // request parameters
+    }
+  },
 }
 ```
 
