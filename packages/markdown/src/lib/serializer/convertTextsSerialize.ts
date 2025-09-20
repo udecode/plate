@@ -43,6 +43,11 @@ export const convertTextsSerialize = (
       const nodeType = getPluginType(options.editor!, key);
 
       if (cur[nodeType]) {
+        // Skip marks that should be treated as plain text
+        if (options.plainMarks?.includes(key)) {
+          return;
+        }
+
         if (!prev?.[nodeType]) {
           starts.push(key);
         }

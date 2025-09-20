@@ -48,7 +48,10 @@ export const acceptSuggestion = (
       at: [],
       mode: 'all',
       match: (n) => {
-        if (TextApi.isText(n)) {
+        if (
+          TextApi.isText(n) ||
+          (ElementApi.isElement(n) && editor.api.isInline(n))
+        ) {
           const suggestionDataList = editor
             .getApi(BaseSuggestionPlugin)
             .suggestion.dataList(n as TSuggestionText);
@@ -100,7 +103,11 @@ export const acceptSuggestion = (
       at: [],
       mode: 'all',
       match: (n) => {
-        if (TextApi.isText(n)) {
+        if (
+          TextApi.isText(n) ||
+          // inline elements like links
+          (ElementApi.isElement(n) && editor.api.isInline(n))
+        ) {
           const suggestionData = getInlineSuggestionData(n);
 
           if (suggestionData) {

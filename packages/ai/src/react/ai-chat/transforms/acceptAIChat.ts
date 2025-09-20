@@ -1,3 +1,9 @@
+import {
+  acceptSuggestion,
+  getSuggestionKey,
+  getTransientSuggestionKey,
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
@@ -6,23 +12,65 @@ import { AIPlugin } from '../../ai/AIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 
 export const acceptAIChat = (editor: PlateEditor) => {
-  const { tf } = getEditorPlugin(editor, AIPlugin);
-  const api = editor.getApi<AIChatPluginConfig>({ key: KEYS.ai });
+  const mode = editor.getOption(AIChatPlugin, 'mode');
 
-  const lastAINodePath = api.aiChat.node({ at: [], reverse: true })![1];
+  if (mode === 'insert') {
+    const { tf } = getEditorPlugin(editor, AIPlugin);
+    const api = editor.getApi<AIChatPluginConfig>({ key: KEYS.ai });
 
-  withAIBatch(editor, () => {
-    tf.ai.removeMarks();
-    editor.getTransforms(AIChatPlugin).aiChat.removeAnchor();
+    const lastAINodePath = api.aiChat.node({ at: [], reverse: true })![1];
+
+    withAIBatch(editor, () => {
+      tf.ai.removeMarks();
+      editor.getTransforms(AIChatPlugin).aiChat.removeAnchor();
+    });
+
+    api.aiChat.hide();
+    editor.tf.focus();
+
+    const focusPoint = editor.api.end(lastAINodePath)!;
+
+    editor.tf.setSelection({
+      anchor: focusPoint,
+      focus: focusPoint,
+    });
+  }
+
+  if (mode === 'chat') {
+    withAIBatch(editor, () => {
+      acceptSuggestions(editor);
+    });
+
+    editor.getApi(AIChatPlugin).aiChat.hide();
+  }
+};
+
+export const acceptSuggestions = (editor: PlateEditor) => {
+  const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
+    transient: true,
   });
 
-  api.aiChat.hide();
-  editor.tf.focus();
+  suggestions.forEach(([suggestionNode]) => {
+    const suggestionData = editor
+      .getApi(SuggestionPlugin)
+      .suggestion.suggestionData(suggestionNode);
 
-  const focusPoint = editor.api.end(lastAINodePath)!;
+    if (!suggestionData) return;
 
-  editor.tf.setSelection({
-    anchor: focusPoint,
-    focus: focusPoint,
+    const description = {
+      createdAt: new Date(suggestionData.createdAt),
+      keyId: getSuggestionKey(suggestionData.id),
+      suggestionId: suggestionData.id,
+      type: suggestionData.type,
+      userId: suggestionData.userId,
+    };
+
+    acceptSuggestion(editor, description);
+  });
+
+  editor.tf.unsetNodes([getTransientSuggestionKey()], {
+    at: [],
+    mode: 'all',
+    match: (n) => !!n[getTransientSuggestionKey()],
   });
 };

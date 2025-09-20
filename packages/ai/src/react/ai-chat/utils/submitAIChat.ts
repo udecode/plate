@@ -2,7 +2,7 @@ import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type Descendant, type Range, KEYS } from 'platejs';
+import { type Descendant, type Range, type TIdElement, KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { AIMode, AIToolName } from '../../../lib/types';
@@ -56,13 +56,20 @@ export const submitAIChat = (
   setOption('toolName', toolName ?? null);
 
   const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
+  const blocksRange = editor.api.nodesRange(blocks);
 
   const promptText = getEditorPrompt(editor, {
     prompt,
   });
 
-  const selection =
-    blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+  const selection = blocks.length > 0 ? blocksRange : editor.selection;
+
+  const chatNodes =
+    blocks.length > 0
+      ? blocks.map((block) => block[0])
+      : editor.api.fragment<TIdElement>();
+
+  setOption('chatNodes', chatNodes);
 
   const ctx: {
     children: Descendant[];

@@ -52,6 +52,7 @@
   "dependencies": {
     "@platejs/markdown": "50.1.2",
     "@platejs/selection": "50.0.0",
+    "@platejs/suggestion": "49.0.0",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21"
   },

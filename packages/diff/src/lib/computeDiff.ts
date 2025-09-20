@@ -32,6 +32,7 @@ export const computeDiff = (
   doc0: Descendant[],
   doc1: Descendant[],
   {
+    elementsAreRelated,
     getDeleteProps = defaultGetDeleteProps,
     getInsertProps = defaultGetInsertProps,
     getUpdateProps = defaultGetUpdateProps,
@@ -48,6 +49,7 @@ export const computeDiff = (
   const diff = dmp.diff_main(m0, m1);
 
   return transformDiffDescendants(diff, {
+    elementsAreRelated,
     getDeleteProps,
     getInsertProps,
     ignoreProps,
