@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import { normalizeNodeId } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { EditorKit } from '@/components/editor/editor-kit';
@@ -25,7 +26,7 @@ export function PlateEditor() {
   );
 }
 
-const value = [
+const value = normalizeNodeId([
   {
     children: [{ text: 'Welcome to the Plate Playground!' }],
     type: 'h1',
@@ -580,4 +581,4 @@ const value = [
     children: [{ text: '' }],
     type: 'p',
   },
-];
+]);
