@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 
-import { AIChatPlugin, useAIChatEditor } from '@platejs/ai/react';
-import { usePlateEditor, usePluginOption } from 'platejs/react';
+import { useAIChatEditor } from '@platejs/ai/react';
+import { usePlateEditor } from 'platejs/react';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 

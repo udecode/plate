@@ -2,21 +2,13 @@ import type { PlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
-import {
-  type SlateEditor,
-  KEYS,
-  NodeApi,
-  PathApi,
-  RangeApi,
-  TElement,
-} from 'platejs';
+import { type SlateEditor, KEYS, PathApi, RangeApi } from 'platejs';
 
-import { AIChatPlugin, type AIChatPluginConfig } from '../AIChatPlugin';
-
-import { createFormattedBlocks } from './replaceSelectionAIChat';
-import { AIPlugin } from '../../ai/AIPlugin';
-import { acceptAIChat, acceptSuggestions } from './acceptAIChat';
 import { withAIBatch } from '../../../lib';
+import { AIPlugin } from '../../ai/AIPlugin';
+import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { acceptSuggestions } from './acceptAIChat';
+import { createFormattedBlocks } from './replaceSelectionAIChat';
 
 export const insertBelowAIChat = (
   editor: PlateEditor,

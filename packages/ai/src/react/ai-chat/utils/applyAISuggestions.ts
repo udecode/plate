@@ -177,13 +177,9 @@ const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
 
   const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
 
-  console.log('🚀 ~ getDiffNodes ~ chatNodes:', chatNodes);
-  console.log('🚀 ~ getDiffNodes ~ aiNodes:', aiNodes);
-
   const diffNodes = withTransient(
     diffToSuggestions(editor, chatNodes, aiNodes, { ignoreProps: ['id'] })
   );
-  console.log('🚀 ~ getDiffNodes ~ diffNodes:', diffNodes);
 
   return diffNodes;
 };

@@ -108,9 +108,6 @@ export async function POST(req: NextRequest) {
 
           const editSystem = replacePlaceholders(editor, editSystemTemplate());
 
-          console.log('🚀 ~ POST ~ editSystem:', editSystem);
-          console.log('🚀 ~ POST ~ messages:', messages[0].parts[0].text);
-
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
             maxOutputTokens: 2048,

@@ -10,6 +10,7 @@ import {
 } from '@platejs/ai/react';
 import { getTransientCommentKey } from '@platejs/comment';
 import { BlockSelectionPlugin, useIsSelecting } from '@platejs/selection/react';
+import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { Command as CommandPrimitive } from 'cmdk';
 import {
   Album,
@@ -60,7 +61,6 @@ import { cn } from '@/lib/utils';
 
 import { commentPlugin } from '../components/editor/plugins/comment-kit';
 import { AIChatEditor } from './ai-chat-editor';
-import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
