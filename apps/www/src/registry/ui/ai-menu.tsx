@@ -58,8 +58,8 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
+
 import { AIChatEditor } from './ai-chat-editor';
 
 export function AIMenu() {
@@ -166,6 +166,7 @@ export function AIMenu() {
       const block = editor.api.block({ at: anchorNode[1] });
       setAnchorElement(editor.api.toDOMNode(block![0]!)!);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
   if (isLoading && mode === 'insert') return null;
