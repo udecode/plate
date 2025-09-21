@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/google':
+        specifier: 2.0.11
+        version: 2.0.11(zod@4.1.9)
       '@ai-sdk/openai':
         specifier: ^2.0.32
         version: 2.0.32(zod@4.1.9)
@@ -202,7 +205,7 @@ importers:
         version: 19.1.1
       react-day-picker:
         specifier: ^9.10.0
-        version: 9.10.0(react@19.1.1)
+        version: 9.11.0(react@19.1.1)
       react-dnd:
         specifier: ^16.0.1
         version: 16.0.1(@types/node@24.5.2)(@types/react@19.1.13)(react@19.1.1)
@@ -246,8 +249,8 @@ importers:
         specifier: 7.7.4
         version: 7.7.4(express@5.1.0)(next@15.5.3(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(tailwindcss@4.1.13)
       use-file-picker:
-        specifier: 2.1.4
-        version: 2.1.4(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react@19.1.1)
+        specifier: 2.1.2
+        version: 2.1.2(react@19.1.1)
       zod:
         specifier: ^4.1.9
         version: 4.1.9
@@ -303,8 +306,20 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
+  '@ai-sdk/google@2.0.11':
+    resolution: {integrity: sha512-dnVIgSz1DZD/0gVau6ifYN3HZFN15HZwC9VjevTFfvrfSfbEvpXj5x/k/zk/0XuQrlQ5g8JiwJtxc9bx24x2xw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
   '@ai-sdk/openai@2.0.32':
     resolution: {integrity: sha512-p7giSkCs66Q1qYO/NPYI41CrSg65mcm8R2uAdF86+Y1D1/q4mUrWMyf5UTOJ0bx/z4jIPiNgGDCg2Kabi5zrKQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
+  '@ai-sdk/provider-utils@3.0.7':
+    resolution: {integrity: sha512-o3BS5/t8KnBL3ubP8k3w77AByOypLm+pkIL/DCw0qKkhDbvhCy+L3hRTGPikpdb8WHcylAeKsjgwOxhj4cqTUA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -2493,12 +2508,12 @@ packages:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
 
+  file-selector@0.2.4:
+    resolution: {integrity: sha512-ZDsQNbrv6qRi1YTDOEWzf5J2KjZ9KMI1Q2SGeTkCJmNNW25Jg4TW4UMcmoqcg4WrAyKRcpBXdbWRxkfrOzVRbA==}
+    engines: {node: '>= 10'}
+
   file-selector@0.6.0:
     resolution: {integrity: sha512-QlZ5yJC0VxHxQQsQhXvBaC7VRJ2uaxTf+Tfpu4Z/OcVQJVpZO+DGU0rkoVW5ce2SccxugvpBJoMvUs59iILYdw==}
-    engines: {node: '>= 12'}
-
-  file-selector@2.1.2:
-    resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
     engines: {node: '>= 12'}
 
   fill-range@7.1.1:
@@ -3579,8 +3594,8 @@ packages:
     resolution: {integrity: sha512-9G8cA+tuMS75+6G/TzW8OtLzmBDMo8p1JRxN5AZ+LAp8uxGA8V8GZm4GQ4/N5QNQEnLmg6SS7wyuSmbKepiKqA==}
     engines: {node: '>= 0.10'}
 
-  react-day-picker@9.10.0:
-    resolution: {integrity: sha512-tedecLSd+fpSN+J08601MaMsf122nxtqZXxB6lwX37qFoLtuPNuRJN8ylxFjLhyJS1kaLfAqL1GUkSLd2BMrpQ==}
+  react-day-picker@9.11.0:
+    resolution: {integrity: sha512-L4FYOaPrr3+AEROeP6IG2mCORZZfxJDkJI2df8mv1jyPrNYeccgmFPZDaHyAuPCBCddQFozkxbikj2NhMEYfDQ==}
     engines: {node: '>=18'}
     peerDependencies:
       react: '>=16.8.0'
@@ -4180,12 +4195,10 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  use-file-picker@2.1.4:
-    resolution: {integrity: sha512-b4lZiAWrXi/QNUjTv0Q+S0hVcSFXIC9c4EUcrnYtdPtgK3T6xfi01YLVamhoY0k9WM9Cg4KyxD1TtM1e8dzQAQ==}
+  use-file-picker@2.1.2:
+    resolution: {integrity: sha512-ZEIzRi1wXeIXDWr5i55gRBVER8rTkSGskDUY94bciTTAZJHlBnOTRLL/LDYjgz6d+US3yELHnRvtBhLxFGtB0A==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@types/react': '>=16'
-      '@types/react-dom': '>=16'
       react: '>=16'
 
   use-isomorphic-layout-effect@1.2.1:
@@ -4348,10 +4361,23 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
       zod: 4.1.9
 
+  '@ai-sdk/google@2.0.11(zod@4.1.9)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
+      zod: 4.1.9
+
   '@ai-sdk/openai@2.0.32(zod@4.1.9)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
+      zod: 4.1.9
+
+  '@ai-sdk/provider-utils@3.0.7(zod@4.1.9)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.6
       zod: 4.1.9
 
   '@ai-sdk/provider-utils@3.0.9(zod@4.1.9)':
@@ -6740,11 +6766,11 @@ snapshots:
     dependencies:
       flat-cache: 4.0.1
 
-  file-selector@0.6.0:
+  file-selector@0.2.4:
     dependencies:
       tslib: 2.8.1
 
-  file-selector@2.1.2:
+  file-selector@0.6.0:
     dependencies:
       tslib: 2.8.1
 
@@ -8056,7 +8082,7 @@ snapshots:
       unpipe: 1.0.0
     optional: true
 
-  react-day-picker@9.10.0(react@19.1.1):
+  react-day-picker@9.11.0(react@19.1.1):
     dependencies:
       '@date-fns/tz': 1.4.1
       date-fns: 4.1.0
@@ -8816,11 +8842,9 @@ snapshots:
       dequal: 2.0.3
       react: 19.1.1
 
-  use-file-picker@2.1.4(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react@19.1.1):
+  use-file-picker@2.1.2(react@19.1.1):
     dependencies:
-      '@types/react': 19.1.13
-      '@types/react-dom': 19.1.9(@types/react@19.1.13)
-      file-selector: 2.1.2
+      file-selector: 0.2.4
       react: 19.1.1
 
   use-isomorphic-layout-effect@1.2.1(@types/react@19.1.13)(react@19.1.1):

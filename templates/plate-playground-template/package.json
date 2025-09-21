@@ -15,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^2.0.32",
     "@ai-sdk/provider": "2.0.0",
+    "@ai-sdk/google": "2.0.11",
     "@ai-sdk/provider-utils": "3.0.9",
     "@ai-sdk/react": "2.0.47",
     "@ariakit/react": "^0.4.18",
@@ -92,7 +93,7 @@
     "tailwind-scrollbar-hide": "^4.0.0",
     "tw-animate-css": "^1.3.8",
     "uploadthing": "7.7.4",
-    "use-file-picker": "2.1.4",
+    "use-file-picker": "2.1.2",
     "zod": "^4.1.9"
   },
   "devDependencies": {
