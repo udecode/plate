@@ -1,4 +1,7 @@
-import type { HocuspocusProviderConfiguration } from '@hocuspocus/provider';
+import type {
+  HocuspocusProviderConfiguration,
+  HocuspocusProviderWebsocketConfiguration,
+} from '@hocuspocus/provider';
 import type { WithCursorsOptions } from '@slate-yjs/core';
 import type { PluginConfig } from 'platejs';
 import type { Awareness } from 'y-protocols/awareness';
@@ -18,6 +21,7 @@ export type DefaultYjsProviderType = 'hocuspocus' | 'webrtc';
 export type HocuspocusProviderConfig = BaseYjsProviderConfig & {
   options: HocuspocusProviderConfiguration;
   type: 'hocuspocus';
+  wsOptions?: HocuspocusProviderWebsocketConfiguration;
 };
 
 // Provider constructor type
