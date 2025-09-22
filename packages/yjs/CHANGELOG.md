@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 50.2.4
+
+### Patch Changes
+
+- [#4627](https://github.com/udecode/plate/pull/4627) by [@MohakBajaj](https://github.com/MohakBajaj) – Add `wsOptions` in YjsPlugin
+
 ## 49.0.0
 
 ### Major Changes
