@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 50.2.1
+
+### Patch Changes
+
+- [#4635](https://github.com/udecode/plate/pull/4635) by [@felixfeng33](https://github.com/felixfeng33) – Fix `api.aiChat.reload`
+
 ## 50.2.0
 
 ### Minor Changes
