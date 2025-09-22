@@ -10,11 +10,11 @@ import {
   type PluginConfig,
   type SlateEditor,
   type TIdElement,
+  type TRange,
   bindFirst,
   ElementApi,
   getPluginType,
   KEYS,
-  TRange,
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
@@ -190,11 +190,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       focus = true,
       undo = true,
     }: { focus?: boolean; undo?: boolean } = {}) => {
-      api.aiChat.reset();
+      api.aiChat.reset({ undo });
 
-      if (undo) {
-        editor.getTransforms(AIPlugin).ai.undo();
-      }
+      editor.getTransforms(AIPlugin).ai.undo();
 
       setOption('open', false);
 
