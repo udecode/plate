@@ -192,8 +192,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     }: { focus?: boolean; undo?: boolean } = {}) => {
       api.aiChat.reset({ undo });
 
-      editor.getTransforms(AIPlugin).ai.undo();
-
       setOption('open', false);
 
       if (focus) {
