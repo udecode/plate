@@ -1,5 +1,11 @@
 # @platejs/floating
 
+## 50.2.3
+
+### Patch Changes
+
+- [#4629](https://github.com/udecode/plate/pull/4629) by [@narraje](https://github.com/narraje) – Fix: infinite loop in useFloatingToolbar hook
+
 ## 49.0.0
 
 ### Major Changes
