@@ -1,5 +1,5 @@
 ---
-'@platejs/yjs': major
+'@platejs/yjs': patch
 ---
 
-Add capability to configure wsOptions in Hocuspocus Provider in YjsPlugin
+Add `wsOptions` in YjsPlugin
