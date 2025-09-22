@@ -27,6 +27,4 @@ export const resetAIChat = (editor: PlateEditor) => {
     mode: 'insert',
     toolName: 'generate',
   });
-
-  editor.getTransforms(AIPlugin).ai.undo();
 };
