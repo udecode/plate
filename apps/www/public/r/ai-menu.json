@@ -7,7 +7,7 @@
   "dependencies": [
     "@platejs/ai",
     "@platejs/selection",
-    "ai@4.3.19",
+    "ai@5.0.28",
     "cmdk",
     "@faker-js/faker"
   ],

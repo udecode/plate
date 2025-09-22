@@ -12,8 +12,8 @@ importers:
         specifier: 2.0.11
         version: 2.0.11(zod@4.1.9)
       '@ai-sdk/openai':
-        specifier: ^2.0.32
-        version: 2.0.32(zod@4.1.9)
+        specifier: ^2.0.23
+        version: 2.0.23(zod@4.1.9)
       '@ai-sdk/provider':
         specifier: 2.0.0
         version: 2.0.0
@@ -21,8 +21,8 @@ importers:
         specifier: 3.0.9
         version: 3.0.9(zod@4.1.9)
       '@ai-sdk/react':
-        specifier: 2.0.47
-        version: 2.0.47(react@19.1.1)(zod@4.1.9)
+        specifier: 2.0.28
+        version: 2.0.28(react@19.1.1)(zod@4.1.9)
       '@ariakit/react':
         specifier: ^0.4.18
         version: 0.4.18(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -165,8 +165,8 @@ importers:
         specifier: 7.3.3
         version: 7.3.3(next@15.5.3(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react@19.1.1)(uploadthing@7.7.4(express@5.1.0)(next@15.5.3(@opentelemetry/api@1.9.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(tailwindcss@4.1.13))
       ai:
-        specifier: 5.0.47
-        version: 5.0.47(zod@4.1.9)
+        specifier: 5.0.28
+        version: 5.0.28(zod@4.1.9)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -204,7 +204,7 @@ importers:
         specifier: ^19.1.1
         version: 19.1.1
       react-day-picker:
-        specifier: ^9.10.0
+        specifier: ^9.11.0
         version: 9.11.0(react@19.1.1)
       react-dnd:
         specifier: ^16.0.1
@@ -219,8 +219,8 @@ importers:
         specifier: ^2.5.6
         version: 2.5.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react-player:
-        specifier: 3.3.3
-        version: 3.3.3(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: 3.3.1
+        version: 3.3.1(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react-textarea-autosize:
         specifier: ^8.5.9
         version: 8.5.9(@types/react@19.1.13)(react@19.1.1)
@@ -300,8 +300,8 @@ importers:
 
 packages:
 
-  '@ai-sdk/gateway@1.0.24':
-    resolution: {integrity: sha512-Mwp0yYXrEnENoDrc7IH9yVRVJ7RrDW0CXWDtyz1BiyqccbtdWhAKu4wtrDMx2FkeK5riiME1kYYdjRnlba3UFw==}
+  '@ai-sdk/gateway@1.0.15':
+    resolution: {integrity: sha512-xySXoQ29+KbGuGfmDnABx+O6vc7Gj7qugmj1kGpn0rW0rQNn6UKUuvscKMzWyv1Uv05GyC1vqHq8ZhEOLfXscQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -312,8 +312,8 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4
 
-  '@ai-sdk/openai@2.0.32':
-    resolution: {integrity: sha512-p7giSkCs66Q1qYO/NPYI41CrSg65mcm8R2uAdF86+Y1D1/q4mUrWMyf5UTOJ0bx/z4jIPiNgGDCg2Kabi5zrKQ==}
+  '@ai-sdk/openai@2.0.23':
+    resolution: {integrity: sha512-uOXk8HzmMUoCmD0JMX/Y1HC/ABOR/Jza2Z2rkCaJISDYz3fp5pnb6eNjcPRL48JSMzRAGp9UP5p0OpxS06IJZg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -334,8 +334,8 @@ packages:
     resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
     engines: {node: '>=18'}
 
-  '@ai-sdk/react@2.0.47':
-    resolution: {integrity: sha512-6ySSOAHQGrTKbOBQ3a6dpyogBRov4jM8UNoR1LZNEdf437wlXVYsYaw6C+1gprlLt6ZxkISjmyYX21Ct9B+O7g==}
+  '@ai-sdk/react@2.0.28':
+    resolution: {integrity: sha512-+1iINCSRvjVgCMfe05Ki1PnV9nMeQvQqCIN45KKV+QhQSItyLsuE+WWQrKt5nDRAF3LFq6cSD0tm5F50SJJh4Q==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
@@ -1836,8 +1836,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  ai@5.0.47:
-    resolution: {integrity: sha512-/DKfU9tTsQVcUYSDCTu1L7jmvEgzUWOr1xf5UHwwDbRf/HED8LDb60QlWYs6f4BkZsVoLvpliCSjliXiRZywFQ==}
+  ai@5.0.28:
+    resolution: {integrity: sha512-tnybAqoDFzuK6O1NOMHX1d/wH7Eug8y0H4l/Gl6swi8BYGtlTPDjniKnGYzgTpLTdpj7SI3qjZuomz7evph9+w==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4
@@ -2097,8 +2097,8 @@ packages:
   damerau-levenshtein@1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
 
-  dash-video-element@0.2.0:
-    resolution: {integrity: sha512-dgmhBOte6JgvSvowvrh0Q/vhSrB52Q/AUl/KqminAUkPuUT3CCUNhto1X8ANigWkmNwhktFc/PCe0lF/4tBFwQ==}
+  dash-video-element@0.1.6:
+    resolution: {integrity: sha512-4gHShaQjcFv6diX5EzB6qAdUGKlIUGGZY8J8yp2pQkWqR0jX4c6plYy0cFraN7mr0DZINe8ujDN1fssDYxJjcg==}
 
   dashjs@5.0.3:
     resolution: {integrity: sha512-TXndNnCUjFjF2nYBxDVba+hWRpVkadkQ8flLp7kHkem+5+wZTfRShJCnVkPUosmjS0YPE9fVNLbYPJxHBeQZvA==}
@@ -3632,8 +3632,8 @@ packages:
       react: '>=18.2.0'
       react-dom: '>=18.2.0'
 
-  react-player@3.3.3:
-    resolution: {integrity: sha512-6U2ziVohA3WLdKI/WEQ7v27CIive0TCNIro55lJZka06fjB2kC4lJqBrvddG0yBvTDcn1owiUf2hRNaIzHAjIg==}
+  react-player@3.3.1:
+    resolution: {integrity: sha512-wE/xLloneXZ1keelFCaNeIFVNUp4/7YoUjfHjwF945aQzsbDKiIB0LQuCchGL+la0Y1IybxnR0R6Cm3AiqInMw==}
     peerDependencies:
       '@types/react': ^17.0.0 || ^18 || ^19
       react: ^17.0.2 || ^18 || ^19
@@ -4355,10 +4355,10 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/gateway@1.0.24(zod@4.1.9)':
+  '@ai-sdk/gateway@1.0.15(zod@4.1.9)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
+      '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
       zod: 4.1.9
 
   '@ai-sdk/google@2.0.11(zod@4.1.9)':
@@ -4367,10 +4367,10 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
       zod: 4.1.9
 
-  '@ai-sdk/openai@2.0.32(zod@4.1.9)':
+  '@ai-sdk/openai@2.0.23(zod@4.1.9)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
+      '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
       zod: 4.1.9
 
   '@ai-sdk/provider-utils@3.0.7(zod@4.1.9)':
@@ -4391,10 +4391,10 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.47(react@19.1.1)(zod@4.1.9)':
+  '@ai-sdk/react@2.0.28(react@19.1.1)(zod@4.1.9)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
-      ai: 5.0.47(zod@4.1.9)
+      '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
+      ai: 5.0.28(zod@4.1.9)
       react: 19.1.1
       swr: 2.3.6(react@19.1.1)
       throttleit: 2.1.0
@@ -5872,11 +5872,11 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  ai@5.0.47(zod@4.1.9):
+  ai@5.0.28(zod@4.1.9):
     dependencies:
-      '@ai-sdk/gateway': 1.0.24(zod@4.1.9)
+      '@ai-sdk/gateway': 1.0.15(zod@4.1.9)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.9(zod@4.1.9)
+      '@ai-sdk/provider-utils': 3.0.7(zod@4.1.9)
       '@opentelemetry/api': 1.9.0
       zod: 4.1.9
 
@@ -6183,11 +6183,10 @@ snapshots:
 
   damerau-levenshtein@1.0.8: {}
 
-  dash-video-element@0.2.0:
+  dash-video-element@0.1.6:
     dependencies:
       custom-media-element: 1.4.5
       dashjs: 5.0.3
-      media-tracks: 0.3.3
 
   dashjs@5.0.3:
     dependencies:
@@ -8117,12 +8116,12 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 
-  react-player@3.3.3(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  react-player@3.3.1(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@mux/mux-player-react': 3.6.0(@types/react-dom@19.1.9(@types/react@19.1.13))(@types/react@19.1.13)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@types/react': 19.1.13
       cloudflare-video-element: 1.3.4
-      dash-video-element: 0.2.0
+      dash-video-element: 0.1.6
       hls-video-element: 1.5.8
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)

@@ -39,7 +39,7 @@
       "dependencies": [
         "@platejs/ai",
         "@platejs/selection",
-        "ai@4.3.19",
+        "ai@5.0.28",
         "cmdk",
         "@faker-js/faker"
       ],
@@ -3830,10 +3830,10 @@
       "name": "ai-api",
       "type": "registry:file",
       "dependencies": [
-        "@ai-sdk/openai@1.3.23",
-        "ai@4.3.19",
-        "@ai-sdk/provider@1.1.3",
-        "@ai-sdk/provider-utils@2.2.8"
+        "@ai-sdk/react@2.0.28",
+        "@ai-sdk/google@2.0.11",
+        "@ai-sdk/openai@2.0.23",
+        "ai@5.0.28"
       ],
       "registryDependencies": [
         "https://platejs.org/r/copilot-api",
@@ -3851,8 +3851,8 @@
       "name": "copilot-api",
       "type": "registry:file",
       "dependencies": [
-        "@ai-sdk/openai@1.3.23",
-        "ai@4.3.19"
+        "@ai-sdk/openai@2.0.23",
+        "ai@5.0.28"
       ],
       "registryDependencies": [],
       "files": [
@@ -3867,7 +3867,7 @@
       "name": "media-uploadthing-api",
       "type": "registry:file",
       "dependencies": [
-        "uploadthing@7.7.2"
+        "uploadthing@7.7.4"
       ],
       "registryDependencies": [
         "https://platejs.org/r/uploadthing"
@@ -3905,7 +3905,7 @@
       "name": "use-chat",
       "type": "registry:component",
       "dependencies": [
-        "@ai-sdk/react@1.2.12",
+        "@ai-sdk/react@2.0.28",
         "@faker-js/faker"
       ],
       "registryDependencies": [
@@ -4198,8 +4198,8 @@
       "name": "uploadthing",
       "type": "registry:hook",
       "dependencies": [
-        "uploadthing@7.7.2",
-        "@uploadthing/react@7.3.1",
+        "uploadthing@7.7.4",
+        "@uploadthing/react@7.3.3",
         "sonner",
         "zod"
       ],
@@ -4218,7 +4218,7 @@
       "name": "markdown-joiner-transform",
       "type": "registry:hook",
       "dependencies": [
-        "ai@4.3.19"
+        "ai@5.0.28"
       ],
       "files": [
         {

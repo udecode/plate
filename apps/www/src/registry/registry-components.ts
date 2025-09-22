@@ -5,10 +5,10 @@ import { registryKits } from './registry-kits';
 const registryApi: Registry['items'] = [
   {
     dependencies: [
-      '@ai-sdk/openai@1.3.23',
-      'ai@4.3.19',
-      '@ai-sdk/provider@1.1.3',
-      '@ai-sdk/provider-utils@2.2.8',
+      '@ai-sdk/react@2.0.28',
+      '@ai-sdk/google@2.0.11',
+      '@ai-sdk/openai@2.0.23',
+      'ai@5.0.28',
     ],
     files: [
       {
@@ -22,7 +22,7 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['@ai-sdk/openai@1.3.23', 'ai@4.3.19'],
+    dependencies: ['@ai-sdk/openai@2.0.23', 'ai@5.0.28'],
     files: [
       {
         path: 'app/api/ai/copilot/route.ts',
@@ -35,7 +35,7 @@ const registryApi: Registry['items'] = [
     type: 'registry:file',
   },
   {
-    dependencies: ['uploadthing@7.7.2'],
+    dependencies: ['uploadthing@7.7.4'],
     files: [
       {
         path: 'app/api/uploadthing/route.ts',
@@ -72,7 +72,7 @@ export const registryComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@ai-sdk/react@1.2.12', '@faker-js/faker'],
+    dependencies: ['@ai-sdk/react@2.0.28', '@faker-js/faker'],
     files: [
       {
         path: 'components/editor/use-chat.ts',
