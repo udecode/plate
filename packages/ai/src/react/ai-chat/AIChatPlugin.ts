@@ -14,6 +14,7 @@ import {
   ElementApi,
   getPluginType,
   KEYS,
+  TRange,
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
@@ -42,6 +43,7 @@ export type AIChatPluginConfig = PluginConfig<
     aiEditor: SlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
     chatNodes: TIdElement[];
+    chatSelection: TRange | null;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -94,6 +96,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
     chatNodes: [],
+    chatSelection: null,
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,
@@ -145,9 +148,17 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         });
       },
       reload: () => {
-        const { chat } = getOptions();
+        const { chat, chatNodes, chatSelection } = getOptions();
 
         editor.getTransforms(AIPlugin).ai.undo();
+
+        if (chatSelection) {
+          editor.tf.setSelection(chatSelection);
+        } else {
+          editor
+            .getApi(BlockSelectionPlugin)
+            .blockSelection.set(chatNodes.map((node) => node.id as string));
+        }
 
         const blocks = editor
           .getApi(BlockSelectionPlugin)
