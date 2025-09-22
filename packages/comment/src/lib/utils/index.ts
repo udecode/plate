@@ -7,6 +7,7 @@ export * from './getCommentKey';
 export * from './getCommentKeyId';
 export * from './getCommentKeys';
 export * from './getDraftCommentKey';
+export * from './getTransientCommentKey';
 export * from './isCommentKey';
 export * from './isCommentNodeById';
 export * from './isCommentText';

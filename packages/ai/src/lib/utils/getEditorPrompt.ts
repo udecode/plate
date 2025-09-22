@@ -1,8 +1,6 @@
 import { isSelecting } from '@platejs/selection';
 import { type SlateEditor, KEYS } from 'platejs';
 
-import { getMarkdown } from './getMarkdown';
-
 export type EditorPrompt =
   | ((params: EditorPromptParams) => string)
   | PromptConfig
@@ -14,48 +12,11 @@ export interface EditorPromptParams {
   isSelecting: boolean;
 }
 
-export type MarkdownType =
-  | 'block'
-  | 'blockSelection'
-  | 'blockSelectionWithBlockId'
-  | 'blockWithBlockId'
-  | 'editor'
-  | 'editorWithBlockId';
-
 export interface PromptConfig {
   default: string;
   blockSelecting?: string;
   selecting?: string;
 }
-
-export const replacePlaceholders = (
-  editor: SlateEditor,
-  text: string,
-  {
-    prompt,
-  }: {
-    prompt?: string;
-  } = {}
-): string => {
-  let result = text.replace('{prompt}', prompt || '');
-
-  const placeholders: Record<string, MarkdownType> = {
-    '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
-    '{blockSelection}': 'blockSelection',
-    '{blockWithBlockId}': 'blockWithBlockId',
-    '{block}': 'block',
-    '{editorWithBlockId}': 'editorWithBlockId',
-    '{editor}': 'editor',
-  };
-
-  Object.entries(placeholders).forEach(([placeholder, type]) => {
-    if (result.includes(placeholder)) {
-      result = result.replace(placeholder, getMarkdown(editor, { type }));
-    }
-  });
-
-  return result;
-};
 
 const createPromptFromConfig = (
   config: PromptConfig,

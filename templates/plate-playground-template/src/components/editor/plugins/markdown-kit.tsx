@@ -6,7 +6,7 @@ import remarkMath from 'remark-math';
 export const MarkdownKit = [
   MarkdownPlugin.configure({
     options: {
-      disallowedNodes: [KEYS.suggestion],
+      plainMarks: [KEYS.suggestion, KEYS.comment],
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
     },
   }),

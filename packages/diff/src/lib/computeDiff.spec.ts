@@ -7,7 +7,9 @@ import { type TElement, type Value, NodeApi } from 'platejs';
 
 import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 
-const type = 'inline-void';
+const inlineVoidType = 'inline-void';
+
+const inlineElementType = 'inline-element';
 
 interface ComputeDiffFixture
   extends Pick<ComputeDiffOptions, 'elementsAreRelated' | 'lineBreakChar'> {
@@ -439,7 +441,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '4', children: [{ text: '' }], type: type },
+          { id: '4', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -449,7 +451,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '2', children: [{ text: '' }], type: type },
+          { id: '2', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -459,7 +461,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       {
         children: [
           { id: '1', text: 'PingCode' },
-          { id: '4', children: [{ text: '' }], type: type },
+          { id: '4', children: [{ text: '' }], type: inlineVoidType },
           { id: '3', text: 'Worktile' },
         ],
         type: 'paragraph',
@@ -573,7 +575,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -592,7 +594,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1207,7 +1209,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'delete' },
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1220,7 +1222,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           { text: 'This is an ' },
           {
             children: [{ text: '' }],
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1596,6 +1598,74 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       !NodeApi.string(element).startsWith('NO_DIFF_INLINE'),
   },
 
+  updateInlineElement: {
+    expected: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          { text: 'for ' },
+          {
+            children: [
+              { text: 'ma' },
+              { diff: true, diffOperation: { type: 'delete' }, text: 'a' },
+              { text: 'in' },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          { text: ' titles' },
+        ],
+        type: 'p',
+      },
+    ],
+    input1: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            children: [
+              {
+                text: 'maain',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+    input2: [
+      {
+        id: 'P3Jjv_ALdx',
+        children: [
+          {
+            text: 'for ',
+          },
+          {
+            children: [
+              {
+                text: 'main',
+              },
+            ],
+            type: inlineElementType,
+            url: 'https://discord.com',
+          },
+          {
+            text: ' titles',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+  },
+
   updateInlineVoid: {
     expected: [
       {
@@ -1606,14 +1676,14 @@ const fixtures: Record<string, ComputeDiffFixture> = {
             diff: true,
             diffOperation: { type: 'delete' },
             someProp: 'Hello',
-            type: type,
+            type: inlineVoidType,
           },
           {
             children: [{ text: '' }],
             diff: true,
             diffOperation: { type: 'insert' },
             someProp: 'World',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1627,7 +1697,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'Hello',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1641,7 +1711,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
           {
             children: [{ text: '' }],
             someProp: 'World',
-            type: type,
+            type: inlineVoidType,
           },
           { text: '!' },
         ],
@@ -1657,7 +1727,8 @@ describe('computeDiff', () => {
       itFn(name, () => {
         const output = computeDiff(input1, input2, {
           ignoreProps: ['id'],
-          isInline: (node) => node.type === type,
+          isInline: (node) =>
+            node.type === inlineVoidType || node.type === inlineElementType,
           ...options,
         });
 
@@ -1666,3 +1737,85 @@ describe('computeDiff', () => {
     }
   );
 });
+
+// describe('computeDiff', () => {
+//   it('should compute diff', () => {
+//     const input1 = [
+//       {
+//         children: [
+//           {
+//             text: 'Experience a modern rich-text editor built with ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Slaxxte',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://slatejs.org',
+//             id: 'zg0crujFC2',
+//           },
+//           {
+//             text: ' and ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Reaxct',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://reactjs.org',
+//             id: '-R-rUf5j6U',
+//           },
+//           {
+//             text: '.',
+//           },
+//         ],
+//         type: 'p',
+//         id: '8RCsJ5pSjR',
+//       },
+//     ];
+
+//     const input2 = [
+//       {
+//         children: [
+//           {
+//             text: 'Experience a modern rich-text editor built with ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'Slate',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://slatejs.org',
+//           },
+//           {
+//             text: ' and ',
+//           },
+//           {
+//             children: [
+//               {
+//                 text: 'React',
+//               },
+//             ],
+//             type: 'a',
+//             url: 'https://reactjs.org',
+//           },
+//           {
+//             text: '.',
+//           },
+//         ],
+//         type: 'p',
+//         id: '8RCsJ5pSjR',
+//       },
+//     ];
+
+//     const output = computeDiff(input1, input2, {
+//       isInline: (node) => node.type === 'a',
+//     });
+//   });
+// });

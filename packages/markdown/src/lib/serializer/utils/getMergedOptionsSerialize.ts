@@ -21,6 +21,7 @@ export const getMergedOptionsSerialize = (
     allowedNodes: PluginAllowedNodes,
     allowNode: PluginAllowNode,
     disallowedNodes: PluginDisallowedNodes,
+    plainMarks: PluginPlainMarks,
     remarkPlugins: PluginRemarkPlugins,
     remarkStringifyOptions: PluginRemarkStringifyOptions,
     rules: PluginRules,
@@ -37,6 +38,7 @@ export const getMergedOptionsSerialize = (
     allowNode: options?.allowNode ?? PluginAllowNode,
     disallowedNodes: options?.disallowedNodes ?? PluginDisallowedNodes,
     editor,
+    plainMarks: options?.plainMarks ?? PluginPlainMarks,
     preserveEmptyParagraphs: options?.preserveEmptyParagraphs,
     remarkPlugins: options?.remarkPlugins ?? PluginRemarkPlugins ?? [],
     remarkStringifyOptions:

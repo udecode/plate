@@ -9,6 +9,8 @@ import {
   type Path,
   type PluginConfig,
   type SlateEditor,
+  type TIdElement,
+  type TRange,
   bindFirst,
   ElementApi,
   getPluginType,
@@ -36,9 +38,12 @@ export type AIChatPluginConfig = PluginConfig<
     _blockPath: Path | null;
     /** @private Using For streamInsertChunk */
     _mdxName: string | null;
+    _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
+    chatNodes: TIdElement[];
+    chatSelection: TRange | null;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
     experimental_lastTextId: string | null;
     /**
@@ -58,7 +63,7 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
-      hide: () => void;
+      hide: (options?: { focus?: boolean; undo?: boolean }) => void;
       node: (
         options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
       ) => NodeEntry | undefined;
@@ -87,8 +92,11 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     _blockChunks: '',
     _blockPath: null,
     _mdxName: null,
+    _replaceIds: [],
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
+    chatNodes: [],
+    chatSelection: null,
     experimental_lastTextId: null,
     mode: 'insert',
     open: false,
@@ -140,13 +148,36 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         });
       },
       reload: () => {
-        const { chat, mode } = getOptions();
+        const { chat, chatNodes, chatSelection } = getOptions();
 
-        if (mode === 'insert') {
-          editor.getTransforms(AIPlugin).ai.undo();
+        editor.getTransforms(AIPlugin).ai.undo();
+
+        if (chatSelection) {
+          editor.tf.setSelection(chatSelection);
+        } else {
+          editor
+            .getApi(BlockSelectionPlugin)
+            .blockSelection.set(chatNodes.map((node) => node.id as string));
         }
 
-        void chat.regenerate?.();
+        const blocks = editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.getNodes();
+
+        const selection =
+          blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+
+        const ctx = {
+          children: editor.children,
+          selection: selection ?? null,
+          toolName: getOption('toolName'),
+        };
+
+        void chat.regenerate?.({
+          body: {
+            ctx,
+          },
+        });
       },
       stop: () => {
         setOption('streaming', false);
@@ -155,16 +186,20 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     };
   })
   .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
-    hide: () => {
-      api.aiChat.reset();
+    hide: ({
+      focus = true,
+      undo = true,
+    }: { focus?: boolean; undo?: boolean } = {}) => {
+      api.aiChat.reset({ undo });
 
       setOption('open', false);
 
-      if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
-        // TODO
-        // editor.getApi(BlockSelectionPlugin).blockSelection.focus();
-      } else {
-        editor.tf.focus();
+      if (focus) {
+        if (editor.getOption(BlockSelectionPlugin, 'isSelectingSome')) {
+          editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+        } else {
+          editor.tf.focus();
+        }
       }
 
       const lastBatch = editor.history.undos.at(-1) as AIBatch;
@@ -177,6 +212,8 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     },
     show: () => {
       api.aiChat.reset();
+
+      setOption('toolName', null);
 
       getOptions().chat.setMessages?.([]);
 

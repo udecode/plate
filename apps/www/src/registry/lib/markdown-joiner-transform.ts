@@ -10,19 +10,26 @@ export const markdownJoinerTransform =
   <TOOLS extends ToolSet>() =>
   () => {
     const joiner = new MarkdownJoiner();
+    let lastTextDeltaId: string | undefined;
+    let textStreamEnded = false;
 
     return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
       async flush(controller) {
-        const remaining = joiner.flush();
-        if (remaining) {
-          controller.enqueue({
-            text: remaining,
-            type: 'text-delta',
-          } as TextStreamPart<TOOLS>);
+        // Only flush if we haven't seen text-end yet
+        if (!textStreamEnded) {
+          const remaining = joiner.flush();
+          if (remaining && lastTextDeltaId) {
+            controller.enqueue({
+              id: lastTextDeltaId,
+              text: remaining,
+              type: 'text-delta',
+            } as TextStreamPart<TOOLS>);
+          }
         }
       },
       async transform(chunk, controller) {
         if (chunk.type === 'text-delta') {
+          lastTextDeltaId = chunk.id;
           const processedText = joiner.processText(chunk.text);
           if (processedText) {
             controller.enqueue({
@@ -31,6 +38,18 @@ export const markdownJoinerTransform =
             });
             await delay(joiner.delayInMs);
           }
+        } else if (chunk.type === 'text-end') {
+          // Flush any remaining buffer before text-end
+          const remaining = joiner.flush();
+          if (remaining && lastTextDeltaId) {
+            controller.enqueue({
+              id: lastTextDeltaId,
+              text: remaining,
+              type: 'text-delta',
+            } as TextStreamPart<TOOLS>);
+          }
+          textStreamEnded = true;
+          controller.enqueue(chunk);
         } else {
           controller.enqueue(chunk);
         }

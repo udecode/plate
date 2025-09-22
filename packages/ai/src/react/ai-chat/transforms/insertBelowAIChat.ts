@@ -4,11 +4,57 @@ import { BlockSelectionPlugin } from '@platejs/selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { type SlateEditor, KEYS, PathApi, RangeApi } from 'platejs';
 
-import type { AIChatPluginConfig } from '../AIChatPlugin';
-
+import { withAIBatch } from '../../../lib';
+import { AIPlugin } from '../../ai/AIPlugin';
+import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { acceptSuggestions } from './acceptAIChat';
 import { createFormattedBlocks } from './replaceSelectionAIChat';
 
 export const insertBelowAIChat = (
+  editor: PlateEditor,
+  sourceEditor: SlateEditor,
+  { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
+) => {
+  const { toolName } = editor.getOptions(AIChatPlugin);
+
+  if (toolName === 'generate')
+    return insertBelowGenerate(editor, sourceEditor, { format });
+
+  const selectedBlocks = editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.getNodes();
+
+  const selectedIds = editor.getOptions(BlockSelectionPlugin).selectedIds;
+
+  editor.getTransforms(AIPlugin).ai.undo();
+
+  const insertBlocksAndSelect =
+    editor.getTransforms(BlockSelectionPlugin).blockSelection
+      .insertBlocksAndSelect;
+
+  if (!selectedIds || selectedIds.size === 0) return;
+
+  const lastBlock = selectedBlocks.at(-1);
+
+  if (!lastBlock) return;
+
+  const nextPath = PathApi.next(lastBlock[1]);
+
+  const nodes = selectedBlocks.map((block) => block[0]);
+
+  insertBlocksAndSelect(nodes, {
+    at: nextPath,
+    insertedCallback: () => {
+      withAIBatch(editor, () => {
+        acceptSuggestions(editor);
+      });
+    },
+  });
+
+  editor.getApi(AIChatPlugin).aiChat.hide({ focus: false });
+};
+
+export const insertBelowGenerate = (
   editor: PlateEditor,
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}

@@ -17,7 +17,7 @@ import {
 import { KEYS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 
-import { AICommentToolbarButton, AIToolbarButton } from './ai-toolbar-button';
+import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
 import { CommentToolbarButton } from './comment-toolbar-button';
 import { EmojiToolbarButton } from './emoji-toolbar-button';
@@ -63,8 +63,6 @@ export function FixedToolbarButtons() {
             <AIToolbarButton tooltip="AI commands">
               <WandSparklesIcon />
             </AIToolbarButton>
-
-            <AICommentToolbarButton tooltip="AI comments" />
           </ToolbarGroup>
 
           <ToolbarGroup>

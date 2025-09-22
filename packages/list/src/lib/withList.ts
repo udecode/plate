@@ -91,8 +91,11 @@ export const withList: OverrideEditor<BaseListConfig> = (ctx) => {
           operation.type === 'split_node' &&
           (operation.properties as any)[KEYS.listType]
         ) {
-          (operation.properties as any)[KEYS.listRestart] = undefined;
-          (operation.properties as any)[KEYS.listRestartPolite] = undefined;
+          delete (operation.properties as any)[KEYS.listRestart];
+          delete (operation.properties as any)[KEYS.listRestartPolite];
+
+          // (operation.properties as any)[KEYS.listRestart] = undefined;
+          // (operation.properties as any)[KEYS.listRestartPolite] = undefined;
         }
 
         apply(operation);

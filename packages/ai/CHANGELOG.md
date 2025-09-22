@@ -1,5 +1,28 @@
 # @platejs/ai
 
+## 50.2.2
+
+### Patch Changes
+
+- [#4638](https://github.com/udecode/plate/pull/4638) by [@felixfeng33](https://github.com/felixfeng33) – Add undo option in `api.aiChat.hide`
+
+## 50.2.1
+
+### Patch Changes
+
+- [#4635](https://github.com/udecode/plate/pull/4635) by [@felixfeng33](https://github.com/felixfeng33) – Fix `api.aiChat.reload`
+
+## 50.2.0
+
+### Minor Changes
+
+- [#4626](https://github.com/udecode/plate/pull/4626) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add `applyAISuggestions` utility for applying AI-generated content as suggestions with diff tracking
+  - Add `replacePlaceholders` template system supporting `{prompt}`, `{block}`, `{blockSelection}`, `{editor}` placeholders
+  - Improve `acceptAIChat` transform to handle transient suggestions properly
+  - Add block selection mode support with `_replaceIds` tracking
+  - Fix suggestion acceptance and cleanup in chat mode
+
 ## 50.1.2
 
 ### Patch Changes
