@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 50.2.2
+
+### Patch Changes
+
+- [#4638](https://github.com/udecode/plate/pull/4638) by [@felixfeng33](https://github.com/felixfeng33) – Add undo option in `api.aiChat.hide`
+
 ## 50.2.1
 
 ### Patch Changes
