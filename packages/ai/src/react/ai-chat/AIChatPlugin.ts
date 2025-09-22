@@ -10,11 +10,11 @@ import {
   type PluginConfig,
   type SlateEditor,
   type TIdElement,
+  type TRange,
   bindFirst,
   ElementApi,
   getPluginType,
   KEYS,
-  TRange,
 } from 'platejs';
 import { createTPlatePlugin } from 'platejs/react';
 
@@ -63,7 +63,7 @@ export type AIChatPluginConfig = PluginConfig<
     aiChat: {
       reset: OmitFirst<typeof resetAIChat>;
       submit: OmitFirst<typeof submitAIChat>;
-      hide: (options?: { focus?: boolean }) => void;
+      hide: (options?: { focus?: boolean; undo?: boolean }) => void;
       node: (
         options?: EditorNodesOptions & { anchor?: boolean; streaming?: boolean }
       ) => NodeEntry | undefined;
@@ -186,8 +186,11 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     };
   })
   .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
-    hide: ({ focus = true }: { focus?: boolean } = {}) => {
-      api.aiChat.reset();
+    hide: ({
+      focus = true,
+      undo = true,
+    }: { focus?: boolean; undo?: boolean } = {}) => {
+      api.aiChat.reset({ undo });
 
       setOption('open', false);
 

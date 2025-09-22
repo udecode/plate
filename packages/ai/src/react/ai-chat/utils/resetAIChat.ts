@@ -5,7 +5,10 @@ import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 import { AIPlugin } from '../../ai/AIPlugin';
 
-export const resetAIChat = (editor: PlateEditor) => {
+export const resetAIChat = (
+  editor: PlateEditor,
+  { undo = true }: { undo?: boolean } = {}
+) => {
   const { api, getOptions, setOptions } = getEditorPlugin<AIChatPluginConfig>(
     editor,
     {
@@ -28,5 +31,7 @@ export const resetAIChat = (editor: PlateEditor) => {
     toolName: 'generate',
   });
 
-  editor.getTransforms(AIPlugin).ai.undo();
+  if (undo) {
+    editor.getTransforms(AIPlugin).ai.undo();
+  }
 };
