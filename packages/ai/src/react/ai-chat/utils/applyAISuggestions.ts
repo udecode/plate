@@ -78,6 +78,9 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
       }
     });
 
+    editor
+      .getApi(BlockSelectionPlugin)
+      .blockSelection.set(diffNodes.map((node) => node.id as string));
     setReplaceIds(diffNodes.map((node) => node.id as string));
   } else {
     const diffNodes = getDiffNodes(editor, content);
