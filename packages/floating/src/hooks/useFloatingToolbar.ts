@@ -124,21 +124,24 @@ export const useFloatingToolbar = ({
   }, []);
 
   React.useEffect(() => {
-    if (
-      !selectionExpanded ||
-      !selectionText ||
-      mousedown ||
-      hideToolbar ||
-      (readOnly && !showWhenReadOnly)
-    ) {
-      setOpen(false);
-    } else if (
-      selectionText &&
-      selectionExpanded &&
-      (!waitForCollapsedSelection || readOnly)
-    ) {
-      setOpen(true);
-    }
+    setOpen((prevOpen: boolean) => {
+      if (
+        !selectionExpanded ||
+        !selectionText ||
+        (mousedown && !prevOpen) ||
+        hideToolbar ||
+        (readOnly && !showWhenReadOnly)
+      ) {
+        return false;
+      } else if (
+        selectionText &&
+        selectionExpanded &&
+        (!waitForCollapsedSelection || readOnly)
+      ) {
+        return true;
+      }
+      return prevOpen; // No change needed
+    });
   }, [
     setOpen,
     editorId,
