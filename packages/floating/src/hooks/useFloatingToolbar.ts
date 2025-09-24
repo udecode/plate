@@ -127,7 +127,7 @@ export const useFloatingToolbar = ({
     if (
       !selectionExpanded ||
       !selectionText ||
-      mousedown ||
+      (mousedown && !open) ||
       hideToolbar ||
       (readOnly && !showWhenReadOnly)
     ) {
@@ -149,6 +149,7 @@ export const useFloatingToolbar = ({
     selectionText,
     mousedown,
     waitForCollapsedSelection,
+    open,
     readOnly,
   ]);
 
