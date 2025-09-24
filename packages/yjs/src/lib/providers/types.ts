@@ -8,7 +8,6 @@ import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 
 import type { WithYjsOptions } from '../withTYjs';
-import { IndexeddbProviderWrapper } from './indexeddb-provider';
 
 // Base config structure for provider configurations
 export interface BaseYjsProviderConfig extends ProviderEventHandlers {
@@ -151,8 +150,8 @@ export type YjsConfig = PluginConfig<
 // Union type for all known provider configurations
 export type YjsProviderConfig =
   | HocuspocusProviderConfig
-  | IndexeddbProviderConfig // Add custom config types here if needed
-  | WebRTCProviderConfig;
+  | IndexeddbProviderConfig
+  | WebRTCProviderConfig; // Add custom config types here if needed
 
 // Extensible provider type that can include custom types
 export type YjsProviderType = DefaultYjsProviderType | string;
