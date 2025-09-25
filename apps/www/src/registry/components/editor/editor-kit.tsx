@@ -20,6 +20,7 @@ import { DiscussionKit } from './plugins/discussion-kit';
 import { DndKit } from './plugins/dnd-kit';
 import { DocxKit } from './plugins/docx-kit';
 import { EmojiKit } from './plugins/emoji-kit';
+import { ExcalidrawKit } from './plugins/excalidraw-kit';
 import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
@@ -48,6 +49,7 @@ export const EditorKit = [
   ...ToggleKit,
   ...TocKit,
   ...MediaKit,
+  ...ExcalidrawKit,
   ...CalloutKit,
   ...ColumnKit,
   ...MathKit,
