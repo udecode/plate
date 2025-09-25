@@ -25,7 +25,7 @@ export const useLinkToolbarButtonState = () => {
 export const useLinkToolbarButton = (
   state: ReturnType<typeof useLinkToolbarButtonState>
 ) => {
-  const { editor, api } = useEditorPlugin(LinkPlugin);
+  const editor = useEditorRef();
 
   return {
     props: {
@@ -35,6 +35,7 @@ export const useLinkToolbarButton = (
           editor.tf.focus();
           triggerFloatingLink(editor, { focused: true });
         } else {
+          // select the link if it is already pressed
           const node = editor.api.node<TLinkElement>({
             match: { type: editor.getType(KEYS.link) },
           });

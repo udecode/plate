@@ -85,7 +85,6 @@ export const LinkPlugin = toTPlatePlugin<LinkConfig>(BaseLinkPlugin, {
         });
       },
       show: (mode: FloatingLinkMode, editorId: string) => {
-        console.log("🚀 ~ editorId:", editorId)
         setOptions({
           isEditing: false,
           mode,

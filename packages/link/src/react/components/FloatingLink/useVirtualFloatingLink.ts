@@ -13,9 +13,7 @@ export const useVirtualFloatingLink = ({
   const { setOption } = useEditorPlugin(LinkPlugin);
 
   return useVirtualFloating({
-    onOpenChange: (open) => {
-      setOption('openEditorId', open ? editorId : null);
-    },
+    onOpenChange: (open) => setOption('openEditorId', open ? editorId : null),
     ...floatingOptions,
   });
 };
