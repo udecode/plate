@@ -49,7 +49,7 @@ export const useChat = () => {
   const baseChat = useBaseChat<ChatMessage>({
     id: 'editor',
     transport: new DefaultChatTransport({
-      api: '/api/ai/command',
+      api: options.api || '/api/ai/command',
       // Mock the API response. Remove it when you implement the route /api/ai/command
       fetch: async (input, init) => {
         const res = await fetch(input, init);
