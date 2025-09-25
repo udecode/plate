@@ -50,9 +50,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@excalidraw/excalidraw": "0.16.4"
+    "@excalidraw/excalidraw": "0.18.0",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.13",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

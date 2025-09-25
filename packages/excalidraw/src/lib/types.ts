@@ -1,5 +1,5 @@
-import type { ImportedDataState } from '@excalidraw/excalidraw/types/data/types';
-import type { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
+import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
 export interface ExcalidrawDataState
   extends Omit<ImportedDataState, 'elements'> {
