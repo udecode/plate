@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 50.2.6
+
+### Patch Changes
+
+- [#4643](https://github.com/udecode/plate/pull/4643) by [@dpnova](https://github.com/dpnova) – Make provider accessible on hocuspocus so other libs can use it.
+
 ## 50.2.4
 
 ### Patch Changes
