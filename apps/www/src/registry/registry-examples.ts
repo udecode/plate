@@ -248,10 +248,8 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      //
-      //   description: 'A drawing component powered by Excalidraw.',
-      //   title: 'Excalidraw',
-      // },
+      dependencies: ['@platejs/excalidraw'],
+      description: 'A drawing component powered by Excalidraw.',
       files: [
         {
           path: 'examples/excalidraw-demo.tsx',
@@ -262,8 +260,17 @@ export const demoExamples: Registry['items'] = (
           type: 'registry:example',
         },
       ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/excalidraw',
+            title: 'Excalidraw',
+          },
+        ],
+      },
       name: 'excalidraw-demo',
-      registryDependencies: ['editor-kit'],
+      registryDependencies: ['excalidraw-kit', 'editor-kit'],
+      title: 'Excalidraw',
       type: 'registry:example',
     },
     {
