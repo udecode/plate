@@ -2832,6 +2832,23 @@
       ]
     },
     {
+      "name": "excalidraw-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/excalidraw",
+        "@excalidraw/excalidraw"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/excalidraw-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/excalidraw-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "font-base-kit",
       "type": "registry:component",
       "dependencies": [
@@ -3414,6 +3431,7 @@
         "https://platejs.org/r/dnd-kit",
         "https://platejs.org/r/docx-kit",
         "https://platejs.org/r/emoji-kit",
+        "https://platejs.org/r/excalidraw-kit",
         "https://platejs.org/r/exit-break-kit",
         "https://platejs.org/r/fixed-toolbar-kit",
         "https://platejs.org/r/floating-toolbar-kit",

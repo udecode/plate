@@ -45,6 +45,7 @@
     "@ai-sdk/react": "2.0.28",
     "@ariakit/react": "0.4.17",
     "@emoji-mart/data": "1.2.1",
+    "@excalidraw/excalidraw": "0.18.0",
     "@faker-js/faker": "9.8.0",
     "@hocuspocus/provider": "2.15.2",
     "@hookform/resolvers": "5.1.1",
