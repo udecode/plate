@@ -152,5 +152,25 @@ export const onDropNode = (
     }
   } else {
     editor.tf.insertNodes(dragItem.element, { at: to });
+
+    const sourceEditor = dragItem.editor;
+
+    if (sourceEditor) {
+      const draggedIds = Array.isArray(dragItem.id)
+        ? dragItem.id
+        : dragItem.id
+          ? [dragItem.id]
+          : [];
+
+      const paths = draggedIds
+        .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
+        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+        .map(([, path]) => path)
+        .sort((a, b) => PathApi.compare(b, a));
+      dsfsd;
+      paths.forEach((path) => {
+        sourceEditor.tf.removeNodes({ at: path });
+      });
+    }
   }
 };

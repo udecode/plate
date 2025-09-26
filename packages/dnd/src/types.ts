@@ -1,4 +1,5 @@
 import type { TElement } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 
@@ -12,6 +13,7 @@ export interface ElementDragItemNode {
   [key: string]: unknown;
   editorId: string;
   element: TElement;
+  editor?: PlateEditor;
 }
 
 export interface FileDragItemNode {
