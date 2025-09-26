@@ -167,7 +167,7 @@ export const onDropNode = (
         .filter((entry): entry is NodeEntry<TElement> => !!entry)
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));
-      dsfsd;
+
       paths.forEach((path) => {
         sourceEditor.tf.removeNodes({ at: path });
       });
