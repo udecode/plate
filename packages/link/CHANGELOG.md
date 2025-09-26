@@ -1,5 +1,11 @@
 # @platejs/link
 
+## 50.2.7
+
+### Patch Changes
+
+- [`780eb65`](https://github.com/udecode/plate/commit/780eb656cb717c1e8b2e5fa3ca8a6bddc64675cd) by [@felixfeng33](https://github.com/felixfeng33) – Fix link conflict with floating toolbar #4651
+
 ## 50.2.5
 
 ## 50.2.3
