@@ -11,7 +11,7 @@ import {
 import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getInlineSuggestionData } from '../utils';
+import { getInlineSuggestionData, getTransientSuggestionKey } from '../utils';
 
 export const acceptSuggestion = (
   editor: SlateEditor,
@@ -44,60 +44,63 @@ export const acceptSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
-      at: [],
-      mode: 'all',
-      match: (n) => {
-        if (
-          TextApi.isText(n) ||
-          (ElementApi.isElement(n) && editor.api.isInline(n))
-        ) {
-          const suggestionDataList = editor
-            .getApi(BaseSuggestionPlugin)
-            .suggestion.dataList(n as TSuggestionText);
-          const includeUpdate = suggestionDataList.some(
-            (data) => data.type === 'update'
-          );
-
-          if (includeUpdate) {
-            return suggestionDataList.some(
-              (d) => d.id === description.suggestionId
+    editor.tf.unsetNodes(
+      [description.keyId, KEYS.suggestion, getTransientSuggestionKey()],
+      {
+        at: [],
+        mode: 'all',
+        match: (n) => {
+          if (
+            TextApi.isText(n) ||
+            (ElementApi.isElement(n) && editor.api.isInline(n))
+          ) {
+            const suggestionDataList = editor
+              .getApi(BaseSuggestionPlugin)
+              .suggestion.dataList(n as TSuggestionText);
+            const includeUpdate = suggestionDataList.some(
+              (data) => data.type === 'update'
             );
-          } else {
-            const suggestionData = getInlineSuggestionData(n);
 
-            if (suggestionData)
+            if (includeUpdate) {
+              return suggestionDataList.some(
+                (d) => d.id === description.suggestionId
+              );
+            } else {
+              const suggestionData = getInlineSuggestionData(n);
+
+              if (suggestionData)
+                return (
+                  suggestionData.type === 'insert' &&
+                  suggestionData.id === description.suggestionId
+                );
+            }
+
+            return false;
+          }
+          if (
+            ElementApi.isElement(n) &&
+            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+          ) {
+            const suggestionElement = n as TSuggestionElement;
+            const suggestionData = suggestionElement.suggestion;
+
+            if (suggestionData) {
+              const isLineBreak = suggestionData.isLineBreak;
+
+              if (isLineBreak)
+                return suggestionData.id === description.suggestionId;
+
               return (
                 suggestionData.type === 'insert' &&
                 suggestionData.id === description.suggestionId
               );
+            }
           }
 
           return false;
-        }
-        if (
-          ElementApi.isElement(n) &&
-          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-        ) {
-          const suggestionElement = n as TSuggestionElement;
-          const suggestionData = suggestionElement.suggestion;
-
-          if (suggestionData) {
-            const isLineBreak = suggestionData.isLineBreak;
-
-            if (isLineBreak)
-              return suggestionData.id === description.suggestionId;
-
-            return (
-              suggestionData.type === 'insert' &&
-              suggestionData.id === description.suggestionId
-            );
-          }
-        }
-
-        return false;
-      },
-    });
+        },
+      }
+    );
 
     editor.tf.removeNodes({
       at: [],
