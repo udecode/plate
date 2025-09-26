@@ -230,7 +230,10 @@ describe('onDropNode', () => {
       expect(editor.tf.insertNodes).toHaveBeenCalledWith(dragElement, {
         at: [2],
       });
-      expect(sourceEditor.api.node).toHaveBeenCalledWith({ id: 'drag', at: [] });
+      expect(sourceEditor.api.node).toHaveBeenCalledWith({
+        id: 'drag',
+        at: [],
+      });
       expect(sourceEditor.tf.removeNodes).toHaveBeenCalledWith({ at: [0] });
     });
   });

@@ -92,8 +92,8 @@ export const useDragNode = (
 
         return {
           id,
-          editorId: editor.id,
           editor,
+          editorId: editor.id,
           element,
           ..._item,
         };
