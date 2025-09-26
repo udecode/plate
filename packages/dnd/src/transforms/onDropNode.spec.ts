@@ -14,6 +14,7 @@ jest.mock('../utils', () => ({
 describe('onDropNode', () => {
   const editor = createPlateEditor();
   editor.tf.moveNodes = jest.fn();
+  editor.tf.insertNodes = jest.fn();
   editor.tf.focus = jest.fn();
   editor.api.findPath = jest.fn();
   const monitor = { canDrop: () => true } as DropTargetMonitor;
@@ -199,6 +200,41 @@ describe('onDropNode', () => {
       });
 
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cross editor drop', () => {
+    it('should remove nodes from the source editor after inserting into the target editor', () => {
+      const { getHoverDirection } = require('../utils');
+      getHoverDirection.mockReturnValue('bottom');
+
+      const sourceEditor = createPlateEditor();
+      sourceEditor.tf.removeNodes = jest.fn();
+      sourceEditor.api.node = jest.fn().mockReturnValue([dragElement, [0]]);
+
+      (editor.api.findPath as jest.Mock)
+        .mockReturnValueOnce([1])
+        .mockReturnValueOnce([2]);
+
+      onDropNode(editor, {
+        dragItem: {
+          ...dragItem,
+          editor: sourceEditor,
+          editorId: sourceEditor.id,
+        },
+        element: hoverElement,
+        monitor,
+        nodeRef,
+      });
+
+      expect(editor.tf.insertNodes).toHaveBeenCalledWith(dragElement, {
+        at: [2],
+      });
+      expect(sourceEditor.api.node).toHaveBeenCalledWith({
+        id: 'drag',
+        at: [],
+      });
+      expect(sourceEditor.tf.removeNodes).toHaveBeenCalledWith({ at: [0] });
     });
   });
 });
