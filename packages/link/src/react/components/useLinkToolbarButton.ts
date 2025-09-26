@@ -1,4 +1,4 @@
-import { KEYS } from 'platejs';
+import { type TLinkElement, KEYS } from 'platejs';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { triggerFloatingLink } from '../index';
@@ -27,8 +27,19 @@ export const useLinkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
-        editor.tf.focus();
-        triggerFloatingLink(editor, { focused: true });
+        if (state.pressed) {
+          // select the link if it is already pressed
+          const node = editor.api.node<TLinkElement>({
+            match: { type: editor.getType(KEYS.link) },
+          });
+
+          const endPoint = editor.api.end(node![1]);
+
+          editor.tf.setSelection({ anchor: endPoint, focus: endPoint });
+        } else {
+          editor.tf.focus();
+          triggerFloatingLink(editor, { focused: true });
+        }
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
