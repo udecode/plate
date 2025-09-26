@@ -10,6 +10,7 @@ import { useLocale } from '@/hooks/useLocale';
 import { getI18nValues } from '@/i18n/getI18nValues';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
+import { ExcalidrawKit } from '@/registry/components/editor/plugins/excalidraw-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function PlaygroundDemo({
@@ -36,6 +37,7 @@ export default function PlaygroundDemo({
       plugins: [
         ...CopilotKit,
         ...EditorKit,
+        ...ExcalidrawKit,
 
         NormalizeTypesPlugin.configure({
           enabled: id === 'forced-layout',
