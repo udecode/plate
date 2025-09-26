@@ -18,6 +18,7 @@ import {
   ListIcon,
   ListOrderedIcon,
   MinusIcon,
+  PenToolIcon,
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
@@ -175,6 +176,11 @@ const groups: Group[] = [
         label: 'Equation',
         value: KEYS.equation,
       },
+      {
+        icon: <PenToolIcon />,
+        label: 'Excalidraw',
+        value: KEYS.excalidraw,
+      }
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {

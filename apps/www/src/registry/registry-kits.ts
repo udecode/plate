@@ -103,6 +103,18 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/excalidraw', '@excalidraw/excalidraw'],
+    files: [
+      {
+        path: 'components/editor/plugins/excalidraw-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'excalidraw-kit',
+    registryDependencies: ['excalidraw-node'],
+    type: 'registry:component',
+  },
+  {
     dependencies: ['@platejs/basic-styles'],
     files: [
       {
@@ -588,6 +600,7 @@ export const registryKits: Registry['items'] = [
       'dnd-kit',
       'docx-kit',
       'emoji-kit',
+      'excalidraw-kit',
       'exit-break-kit',
       'fixed-toolbar-kit',
       'floating-toolbar-kit',
