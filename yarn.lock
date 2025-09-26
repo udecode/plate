@@ -3468,7 +3468,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/floating@npm:50.2.3, @platejs/floating@workspace:^, @platejs/floating@workspace:packages/floating":
+"@platejs/floating@npm:50.2.5, @platejs/floating@workspace:^, @platejs/floating@workspace:packages/floating":
   version: 0.0.0-use.local
   resolution: "@platejs/floating@workspace:packages/floating"
   dependencies:
@@ -3523,7 +3523,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@platejs/link@workspace:packages/link"
   dependencies:
-    "@platejs/floating": "npm:50.2.3"
+    "@platejs/floating": "npm:50.2.5"
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=49.2.21"

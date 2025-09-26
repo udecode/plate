@@ -53,7 +53,7 @@ export const useFloatingLinkEditState = ({
     return getDOMSelectionBoundingClientRect();
   }, [editor, type]);
 
-  const isOpen = open && mode === 'edit';
+  const isOpen = open && mode === 'edit' && editor.api.isCollapsed();
 
   const floating = useVirtualFloatingLink({
     editorId: editor.id,
@@ -84,6 +84,7 @@ export const useFloatingLinkEdit = ({
   React.useEffect(() => {
     if (
       editor.selection &&
+      editor.api.isCollapsed() &&
       editor.api.some({
         match: { type: editor.getType(KEYS.link) },
       })

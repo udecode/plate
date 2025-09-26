@@ -12,9 +12,9 @@ export const triggerFloatingLink = (
     focused?: boolean;
   } = {}
 ) => {
-  const { getOptions } = getEditorPlugin(editor, LinkPlugin);
+  const { getOption } = getEditorPlugin(editor, LinkPlugin);
 
-  if (getOptions().mode === 'edit') {
+  if (getOption('mode') === 'edit') {
     triggerFloatingLinkEdit(editor);
 
     return;
