@@ -1691,6 +1691,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "excalidraw-kit": {
+    name: "excalidraw-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/excalidraw-node"],
+    files: [{
+      path: "src/registry/components/editor/plugins/excalidraw-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/excalidraw-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "font-base-kit": {
     name: "font-base-kit",
     description: "",
@@ -2256,7 +2273,7 @@ export const Index: Record<string, any> = {
     name: "editor-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-base-kit","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/code-block-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
+    registryDependencies: ["https://platejs.org/r/editor-base-kit","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/code-block-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/excalidraw-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
@@ -3319,9 +3336,9 @@ export const Index: Record<string, any> = {
   },
   "excalidraw-demo": {
     name: "excalidraw-demo",
-    description: "",
+    description: "A drawing component powered by Excalidraw.",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor-kit"],
+    registryDependencies: ["https://platejs.org/r/excalidraw-kit","https://platejs.org/r/editor-kit"],
     files: [{
       path: "src/registry/examples/excalidraw-demo.tsx",
       type: "registry:example",
@@ -3336,7 +3353,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"registry":false},
+    meta: {"docs":[{"route":"/docs/excalidraw","title":"Excalidraw"}],"registry":false},
   },
   "single-block-demo": {
     name: "single-block-demo",
@@ -4182,7 +4199,7 @@ export const Index: Record<string, any> = {
     name: "playground-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: undefined,
+    registryDependencies: ["https://platejs.org/r/editor-kit","https://platejs.org/r/copilot-kit","https://platejs.org/r/excalidraw-kit"],
     files: [{
       path: "src/registry/examples/demo.tsx",
       type: "registry:example",
