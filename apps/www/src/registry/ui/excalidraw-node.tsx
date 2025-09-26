@@ -18,14 +18,6 @@ export function ExcalidrawElement(
     element,
   });
 
-  const finalExcalidrawProps = React.useMemo(() => {
-    return {
-      ...excalidrawProps,
-      viewModeEnabled: readOnly,
-    };
-  }, [excalidrawProps, readOnly]);
-
-
   return (
     <PlateElement {...props}>
       <div contentEditable={false}>
