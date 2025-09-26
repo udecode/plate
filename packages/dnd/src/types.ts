@@ -13,7 +13,7 @@ export interface ElementDragItemNode {
   [key: string]: unknown;
   editorId: string;
   element: TElement;
-  editor?: PlateEditor;
+  editor?: SlateEditor;
 }
 
 export interface FileDragItemNode {
