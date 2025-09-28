@@ -148,7 +148,7 @@ const groups: Group[] = [
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
-        insertBlock(editor, value);
+        insertBlock(editor, value, { isFromSlashCommand: true });
       },
     })),
   },
@@ -181,7 +181,7 @@ const groups: Group[] = [
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {
-        insertBlock(editor, value);
+        insertBlock(editor, value, { isFromSlashCommand: true });
       },
     })),
   },

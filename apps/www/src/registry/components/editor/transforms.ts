@@ -79,7 +79,13 @@ const insertInlineMap: Record<
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),
 };
 
-export const insertBlock = (editor: PlateEditor, type: string) => {
+type InsertBlockOptions = {
+  isFromSlashCommand?: boolean;
+};
+
+export const insertBlock = (editor: PlateEditor, type: string, options: InsertBlockOptions = {}) => {
+  const { isFromSlashCommand = false } = options;
+  
   editor.tf.withoutNormalizing(() => {
     const block = editor.api.block();
 
@@ -91,18 +97,19 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
     const isSameBlockType = type === currentBlockType;
 
+    if (isFromSlashCommand && isCurrentBlockEmpty && isSameBlockType) {
+      return;
+    } 
 
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
-    } else if(isCurrentBlockEmpty && isSameBlockType){
-      // If current block is empty and it's a convertible text block, convert it instead of inserting
-      setBlockType(editor, type, { at: path });
     } else {
       editor.tf.insertNodes(editor.api.create.block({ type }), {
         at: PathApi.next(path),
         select: true,
       });
     }
+    
     if (!isSameBlockType) {
       editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
         editor.tf.removeNodes({ previousEmptyBlock: true });
