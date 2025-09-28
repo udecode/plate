@@ -84,15 +84,26 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
     const block = editor.api.block();
 
     if (!block) return;
+
+    const [currentNode, path] = block;
+    const isCurrentBlockEmpty = editor.api.isEmpty(currentNode);
+    const currentBlockType = getBlockType(currentNode);
+
+    const isSameBlockType = type === currentBlockType;
+
+
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
+    } else if(isCurrentBlockEmpty && isSameBlockType){
+      // If current block is empty and it's a convertible text block, convert it instead of inserting
+      setBlockType(editor, type, { at: path });
     } else {
       editor.tf.insertNodes(editor.api.create.block({ type }), {
-        at: PathApi.next(block[1]),
+        at: PathApi.next(path),
         select: true,
       });
     }
-    if (getBlockType(block[0]) !== type) {
+    if (!isSameBlockType) {
       editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
         editor.tf.removeNodes({ previousEmptyBlock: true });
       });
