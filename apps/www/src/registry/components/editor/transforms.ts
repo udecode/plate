@@ -84,7 +84,7 @@ type InsertBlockOptions = {
 };
 
 export const insertBlock = (editor: PlateEditor, type: string, options: InsertBlockOptions = {}) => {
-  const { isFromSlashCommand = false } = options;
+  const { upsert = false } = options;
   
   editor.tf.withoutNormalizing(() => {
     const block = editor.api.block();
@@ -97,7 +97,7 @@ export const insertBlock = (editor: PlateEditor, type: string, options: InsertBl
 
     const isSameBlockType = type === currentBlockType;
 
-    if (isFromSlashCommand && isCurrentBlockEmpty && isSameBlockType) {
+    if (upsert && isCurrentBlockEmpty && isSameBlockType) {
       return;
     } 
 
