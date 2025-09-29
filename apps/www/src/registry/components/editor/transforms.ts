@@ -80,7 +80,7 @@ const insertInlineMap: Record<
 };
 
 type InsertBlockOptions = {
-  isFromSlashCommand?: boolean;
+  upsert?: boolean;
 };
 
 export const insertBlock = (editor: PlateEditor, type: string, options: InsertBlockOptions = {}) => {
