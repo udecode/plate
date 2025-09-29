@@ -1,5 +1,4 @@
-import type { TElement } from 'platejs';
-import type { PlateEditor } from 'platejs/react';
+import type { SlateEditor, TElement } from 'platejs';
 
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 
