@@ -10,6 +10,31 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## September 2025 #26
 
+### September 28 #26.5
+- `transforms`: Fixed slash command duplicate block insertion - prevents creating duplicate blocks when selecting the same block type in empty blocks
+
+### September 20 #26.4
+- **AI Suggestions**: Major improvements to AI suggestion system with better content handling and UI enhancements
+  - `ai-menu`: 
+    - Added new `AILoadingBar` component with animated spinner and stop functionality
+    - Enhanced comment acceptance UI with Accept/Reject buttons
+    - Improved context-aware menu states based on selection and operation mode
+    - Better keyboard navigation with ESC to stop operations
+  - `ai-toolbar-button`: Streamlined implementation
+  - `api/ai/command/route.ts`: 
+    - Added multi-tool support (generate, edit, comment) with automatic intent classification
+    - Switched to Google Gemini model (`gemini-2.5-flash`)
+    - Enhanced prompt templates with placeholder support
+    - Added MDX tag preservation
+  - `markdown-joiner-transform`: Added smart buffering for smoother streaming of markdown content
+  - `use-chat`: Simplified implementation with better error handling
+  - `ai-kit`: Added markdown plugin to AI configuration
+  - `markdown-kit`: Added AI plugin integration
+  - `link-node`: Added AI-specific click handler functionality
+  - `block-context-menu`: Removed redundant AI options (now handled by ai-menu)
+  - `block-discussion`: Minor styling improvements
+  - `fixed-toolbar-buttons`: Simplified AI button implementation
+
 ### September 7 #26.3
 - `block-context-menu`: Fixed menu position sticking when triggered multiple times in different locations
 

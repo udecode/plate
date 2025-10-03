@@ -4,6 +4,7 @@ import {
   type PluginConfig,
   type TElement,
   type TInlineSuggestionData,
+  type TNode,
   type TSuggestionElement,
   type TSuggestionText,
   createTSlatePlugin,
@@ -14,6 +15,7 @@ import {
 } from 'platejs';
 
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
+import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
 import { withSuggestion } from './withSuggestion';
 
 export type BaseSuggestionConfig = PluginConfig<
@@ -28,13 +30,13 @@ export type BaseSuggestionConfig = PluginConfig<
   {
     suggestion: {
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
-      isBlockSuggestion: (node: TElement) => node is TSuggestionElement;
+      isBlockSuggestion: (node: TNode) => node is TSuggestionElement;
       node: (
         options?: EditorNodesOptions & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
       nodeId: (node: TElement | TSuggestionText) => string | undefined;
       nodes: (
-        options?: EditorNodesOptions
+        options?: EditorNodesOptions & { transient?: boolean }
       ) => NodeEntry<TElement | TSuggestionText>[];
       suggestionData: (
         node: TElement | TSuggestionText
@@ -64,7 +66,9 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
           .map((key) => node[key] as TInlineSuggestionData);
       },
       isBlockSuggestion: (node): node is TSuggestionElement =>
-        ElementApi.isElement(node) && 'suggestion' in node,
+        ElementApi.isElement(node) &&
+        !editor.api.isInline(node) &&
+        'suggestion' in node,
       node: (options = {}) => {
         const { id, isText, ...rest } = options;
         const result = editor.api.node<TSuggestionElement | TSuggestionText>({
@@ -91,7 +95,10 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         return result;
       },
       nodeId: (node) => {
-        if (TextApi.isText(node)) {
+        if (
+          TextApi.isText(node) ||
+          (ElementApi.isElement(node) && editor.api.isInline(node))
+        ) {
           const keyId = getSuggestionKeyId(node);
 
           if (!keyId) return;
@@ -104,6 +111,8 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
         }
       },
       nodes: (options = {}) => {
+        const { transient } = options;
+
         const at = getAt(editor, options.at) ?? [];
 
         return [
@@ -111,12 +120,19 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
             ...options,
             at,
             mode: 'all',
-            match: (n) => n[type],
+            match: (n) => {
+              return (
+                n[type] && (transient ? n[getTransientSuggestionKey()] : true)
+              );
+            },
           }),
         ];
       },
       suggestionData: (node) => {
-        if (TextApi.isText(node)) {
+        if (
+          TextApi.isText(node) ||
+          (ElementApi.isElement(node) && editor.api.isInline(node))
+        ) {
           const keyId = getSuggestionKeyId(node);
 
           if (!keyId) return;

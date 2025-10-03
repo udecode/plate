@@ -3,7 +3,7 @@
   "name": "media-uploadthing-api",
   "type": "registry:file",
   "dependencies": [
-    "uploadthing@7.7.2"
+    "uploadthing@7.7.4"
   ],
   "registryDependencies": [
     "https://platejs.org/r/uploadthing"

@@ -5,8 +5,8 @@ import type {
 import type { NextRequest } from 'next/server';
 
 import { google } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
 import { replacePlaceholders } from '@platejs/ai';
+import { serializeMd } from '@platejs/markdown';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -42,11 +42,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const openai = createOpenAI({ apiKey });
-
   const isSelecting = editor.api.isExpanded();
-
-  const isBlockSelecting = isSelectingAllBlocks(editor);
 
   try {
     const stream = createUIMessageStream<ChatMessage>({
@@ -71,7 +67,9 @@ export async function POST(req: NextRequest) {
 
         if (!toolName) {
           const { object: AIToolName } = await generateObject({
-            enum: ['generate', 'edit', 'comment'],
+            enum: isSelecting
+              ? ['generate', 'edit', 'comment']
+              : ['generate', 'comment'],
             model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
@@ -90,7 +88,7 @@ export async function POST(req: NextRequest) {
         if (toolName === 'generate') {
           const generateSystem = replacePlaceholders(
             editor,
-            systemTemplate({ isBlockSelecting, isSelecting })
+            generateSystemTemplate({ isSelecting })
           );
 
           const gen = streamText({
@@ -105,10 +103,10 @@ export async function POST(req: NextRequest) {
         }
 
         if (toolName === 'edit') {
-          const editSystem = replacePlaceholders(
-            editor,
-            systemTemplate({ isBlockSelecting, isSelecting })
-          );
+          if (!isSelecting)
+            throw new Error('Edit tool is only available when selecting');
+
+          const editSystem = replacePlaceholders(editor, editSystemTemplate());
 
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
@@ -129,7 +127,7 @@ export async function POST(req: NextRequest) {
 
           const commentPrompt = replacePlaceholders(
             editor,
-            commentTemplate({ isSelecting }),
+            commentPromptTemplate({ isSelecting }),
             {
               prompt,
             }
@@ -137,9 +135,9 @@ export async function POST(req: NextRequest) {
 
           const { elementStream } = streamObject({
             maxOutputTokens: 2048,
-            model: openai('gpt-4o'),
+            model: google('gemini-2.5-flash'),
             output: 'array',
-            prompt: commentPrompt,
+            prompt: removeEscapeSelection(editor, commentPrompt),
             schema: z
               .object({
                 blockId: z
@@ -174,8 +172,6 @@ export async function POST(req: NextRequest) {
               type: 'data-comment',
             });
           }
-
-          return;
         }
       },
     });
@@ -189,30 +185,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
-const systemTemplate = ({
-  isBlockSelecting,
-  isSelecting,
-}: {
-  isBlockSelecting: boolean;
-  isSelecting: boolean;
-}) => {
-  return isBlockSelecting
-    ? PROMPT_TEMPLATES.systemBlockSelecting
-    : isSelecting
-      ? PROMPT_TEMPLATES.systemSelecting
-      : PROMPT_TEMPLATES.systemDefault;
+const generateSystemTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+  return isSelecting
+    ? PROMPT_TEMPLATES.generateSystemDefault
+    : PROMPT_TEMPLATES.generateSystemSelecting;
+};
+
+const editSystemTemplate = () => {
+  return PROMPT_TEMPLATES.editSystemSelecting;
 };
 
 const promptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.userSelecting
-    : PROMPT_TEMPLATES.userDefault;
+    ? PROMPT_TEMPLATES.promptSelecting
+    : PROMPT_TEMPLATES.promptDefault;
 };
 
-const commentTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+const commentPromptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.commentSelecting
-    : PROMPT_TEMPLATES.commentDefault;
+    ? PROMPT_TEMPLATES.commentPromptSelecting
+    : PROMPT_TEMPLATES.commentPromptDefault;
 };
 
 const chooseToolSystem = `You are a strict classifier. Classify the user's last request as "generate", "edit", or "comment".
@@ -226,6 +218,7 @@ Return only one enum value with no explanation.`;
 
 const commentSystem = `You are a document review assistant.  
 You will receive an MDX document wrapped in <block id="..."> content </block> tags.  
+<Selection> is the text highlighted by the user.
 
 Your task:  
 - Read the content of all blocks and provide comments.  
@@ -242,6 +235,7 @@ Rules:
   - If multiple blocks are included, separate them with two \\n\\n.  
   - Do NOT default to using the entire block—use the smallest relevant span instead.
 - At least one comment must be provided.
+- If a <Selection> exists, Your comments should come from the <Selection>, and if the <Selection> is too long, there should be more than one comment.
 `;
 
 const systemCommon = `\
@@ -272,71 +266,71 @@ Rules:
 </column_group>
 `;
 
-const systemDefault = `\
+const generateSystemDefault = `\
 ${systemCommon}
 - <Block> is the current block of text the user is working on.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
 
 <Block>
 {block}
 </Block>
 `;
 
-const systemSelecting = `\
+const generateSystemSelecting = `\
 ${systemCommon}
-- <Block> is the block of text containing the user's selection, providing context.
-- Ensure your output can seamlessly fit into the existing <Block> structure.
-- <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
-- Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
-<Block>
-{block}
-</Block>
-<Selection>
-{selection}
-</Selection>
+- <Block> contains the text context. You will always receive one <Block>.
+- <selection> is the text highlighted by the user.
 `;
 
-const systemBlockSelecting = `\
-${systemCommon}
-- <Selection> represents the full blocks of text the user has selected and wants to modify or ask about.
-- Your response should be a direct replacement for the entire <Selection>.
-- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
-- CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
-<Selection>
-{block}
-</Selection>
+const editSystemSelecting = `\
+- <Block> shows the full sentence or paragraph, only for context. 
+- <Selection> is the exact span of text inside <Block> that must be replaced. 
+- Your output MUST be only the replacement string for <Selection>, with no tags. 
+- Never output <Block> or <Selection> tags, and never output surrounding text. 
+- The replacement must be grammatically correct when substituted back into <Block>. 
+- Ensure the replacement fits seamlessly so the whole <Block> reads naturally. 
+- Output must be limited to the replacement string itself.
+- Do not remove the \\n in the original text
 `;
 
-const userDefault = `<Reminder>
+const promptDefault = `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
-const userSelecting = `<Reminder>
+
+const promptSelecting = `<Reminder>
 If this is a question, provide a helpful and concise answer about <Selection>.
 If this is an instruction, provide ONLY the text to replace <Selection>. No explanations.
 Ensure it fits seamlessly within <Block>. If <Block> is empty, write ONE random sentence.
 NEVER write <Block> or <Selection>.
 </Reminder>
-{prompt} about <Selection>`;
+{prompt} about <Selection>
 
-const commentSelecting = `{prompt}:
+<Block>
+{block}
+</Block>
+`;
+
+const commentPromptSelecting = `
+Comment on the content within the <Selection>.
+Never write <Selection>.
+{prompt}:
         
 {blockWithBlockId}
 `;
 
-const commentDefault = `{prompt}:
+const commentPromptDefault = `{prompt}:
         
 {editorWithBlockId}
 `;
 
 const PROMPT_TEMPLATES = {
-  commentDefault,
-  commentSelecting,
-  systemBlockSelecting,
-  systemDefault,
-  systemSelecting,
-  userDefault,
-  userSelecting,
+  commentPromptDefault,
+  commentPromptSelecting,
+  editSystemSelecting,
+  generateSystemDefault,
+  generateSystemSelecting,
+  promptDefault,
+  promptSelecting,
 };
 
 const replaceMessagePlaceholders = (
@@ -344,14 +338,18 @@ const replaceMessagePlaceholders = (
   message: ChatMessage,
   { isSelecting }: { isSelecting: boolean }
 ): ChatMessage => {
+  if (isSelecting) addSelection(editor);
+
   const template = promptTemplate({ isSelecting });
 
   const parts = message.parts.map((part) => {
     if (part.type !== 'text' || !part.text) return part;
 
-    const text = replacePlaceholders(editor, template, {
+    let text = replacePlaceholders(editor, template, {
       prompt: part.text,
     });
+
+    if (isSelecting) text = removeEscapeSelection(editor, text);
 
     return { ...part, text } as typeof part;
   });
@@ -359,15 +357,54 @@ const replaceMessagePlaceholders = (
   return { ...message, parts };
 };
 
-/** Check if the current selection fully covers all top-level blocks. */
-const isSelectingAllBlocks = (editor: SlateEditor) => {
-  const blocksRange = editor.api.nodesRange(
-    editor.api.blocks({ mode: 'highest' })
-  );
+const SELECTION_START = '<Selection>';
+const SELECTION_END = '</Selection>';
 
-  return (
-    !!blocksRange &&
-    !!editor.selection &&
-    RangeApi.equals(blocksRange, editor.selection)
-  );
+const addSelection = (editor: SlateEditor) => {
+  if (!editor.selection) return;
+
+  if (editor.api.isExpanded()) {
+    const [start, end] = RangeApi.edges(editor.selection);
+
+    editor.tf.withoutNormalizing(() => {
+      editor.tf.insertText(SELECTION_END, {
+        at: end,
+      });
+
+      editor.tf.insertText(SELECTION_START, {
+        at: start,
+      });
+    });
+  }
+};
+
+const removeEscapeSelection = (editor: SlateEditor, text: string) => {
+  let newText = text
+    .replace(`\\${SELECTION_START}`, SELECTION_START)
+    .replace(`\\${SELECTION_END}`, SELECTION_END);
+
+  // If the selection is on a void element, inserting the placeholder will fail, and the string must be replaced manually.
+  if (!newText.includes(SELECTION_END)) {
+    const [_, end] = RangeApi.edges(editor.selection!);
+
+    const node = editor.api.block({ at: end.path });
+
+    if (!node) return newText;
+
+    if (editor.api.isVoid(node[0])) {
+      const voidString = serializeMd(editor, { value: [node[0]] });
+
+      const idx = newText.lastIndexOf(voidString);
+
+      if (idx !== -1) {
+        newText =
+          newText.slice(0, idx) +
+          voidString.trimEnd() +
+          SELECTION_END +
+          newText.slice(idx + voidString.length);
+      }
+    }
+  }
+
+  return newText;
 };

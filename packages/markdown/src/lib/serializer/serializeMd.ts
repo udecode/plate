@@ -11,11 +11,14 @@ import type { MdRules, PlateType } from '../types';
 
 import { convertNodesSerialize } from './convertNodesSerialize';
 import { getMergedOptionsSerialize } from './utils/getMergedOptionsSerialize';
+
 export type SerializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
   editor?: SlateEditor;
+  /** Marks to treat as plain text without applying markdown formatting. */
+  plainMarks?: PlateType[] | null;
   preserveEmptyParagraphs?: boolean;
   remarkPlugins?: Plugin[];
   remarkStringifyOptions?: RemarkStringifyOptions | null;

@@ -1,4 +1,4 @@
-import type { ExcalidrawProps } from '@excalidraw/excalidraw/types/types';
+import type { ExcalidrawProps } from '@excalidraw/excalidraw/types';
 
 import type { ExcalidrawDataState } from '../lib';
 

@@ -3,8 +3,8 @@ import type { Registry } from 'shadcn/registry';
 export const registryLib: Registry['items'] = [
   {
     dependencies: [
-      'uploadthing@7.7.2',
-      '@uploadthing/react@7.3.1',
+      'uploadthing@7.7.4',
+      '@uploadthing/react@7.3.3',
       'sonner',
       'zod',
     ],
@@ -22,7 +22,7 @@ export const registryLib: Registry['items'] = [
     type: 'registry:hook',
   },
   {
-    dependencies: ['ai@4.3.19'],
+    dependencies: ['ai@5.0.28'],
     files: [
       {
         path: 'lib/markdown-joiner-transform.ts',

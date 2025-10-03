@@ -152,6 +152,7 @@ export const useFloatingToolbar = ({
     selectionText,
     mousedown,
     waitForCollapsedSelection,
+    open,
     readOnly,
   ]);
 

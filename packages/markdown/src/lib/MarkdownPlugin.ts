@@ -72,6 +72,12 @@ export type MarkdownConfig = PluginConfig<
      * @default null
      */
     allowNode?: AllowNodeConfig;
+    /**
+     * Marks to treat as plain text without applying markdown formatting.
+     *
+     * @default null
+     */
+    plainMarks?: PlateType[] | null;
   },
   {
     markdown: {
@@ -87,6 +93,7 @@ export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
   options: {
     allowedNodes: null,
     disallowedNodes: null,
+    plainMarks: null,
     remarkPlugins: [],
     remarkStringifyOptions: null,
     rules: null,

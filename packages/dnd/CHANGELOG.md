@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 50.3.1
+
+### Patch Changes
+
+- [#4657](https://github.com/udecode/plate/pull/4657) by [@sneridagh](https://github.com/sneridagh) – Fixed support for dnd a node into another editor, it removes now the node from origin editor.
+
 ## 49.2.22
 
 ### Patch Changes

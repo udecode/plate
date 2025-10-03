@@ -6,6 +6,7 @@ import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
 import { getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
+import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   MessageSquareTextIcon,
@@ -22,12 +23,7 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
-import {
-  useEditorPlugin,
-  useEditorRef,
-  useFocusedLast,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -65,7 +61,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
 
   const suggestionNodes = [
     ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
-  ];
+  ].filter(([node]) => !node[getTransientSuggestionKey()]);
 
   if (
     commentNodes.length === 0 &&
@@ -99,7 +95,6 @@ const BlockCommentContent = ({
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
   const editor = useEditorRef();
-  const isFocusedLast = useFocusedLast();
   const resolvedSuggestions = useResolveSuggestion(suggestionNodes, blockPath);
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
 
@@ -137,10 +132,9 @@ const BlockCommentContent = ({
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
   const open =
-    isFocusedLast &&
-    (_open ||
-      selected ||
-      (isCommenting && !!draftCommentNode && commentingCurrent));
+    _open ||
+    selected ||
+    (isCommenting && !!draftCommentNode && commentingCurrent);
 
   const anchorElement = React.useMemo(() => {
     let activeNode: NodeEntry | undefined;

@@ -78,7 +78,7 @@ const editor = createPlateEditor({
 You can configure the `HorizontalRulePlugin` with autoformat rules to automatically convert typed patterns like `---` into horizontal rules.
 
 ```tsx
-import { insertNodes, setNodes, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 import { AutoformatPlugin } from '@platejs/autoformat';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
@@ -95,8 +95,8 @@ const editor = createPlateEditor({
             type: KEYS.hr,
             match: ['---', '—-', '___ '],
             format: (editor) => {
-              setNodes(editor, { type: KEYS.hr });
-              insertNodes(editor, {
+              editor.tf.setNodes({ type: KEYS.hr });
+              editor.tf.insertNodes({
                 type: KEYS.p,
                 children: [{ text: '' }],
               });

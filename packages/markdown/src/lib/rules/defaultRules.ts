@@ -840,6 +840,7 @@ export const defaultRules: MdRules = {
     mark: true,
     deserialize: (mdastNode, deco, options) => {
       // const props = parseAttributes(mdastNode.attributes);
+
       return convertChildrenDeserialize(
         mdastNode.children,
         {
@@ -851,7 +852,8 @@ export const defaultRules: MdRules = {
       ) as any;
     },
     serialize(slateNode): MdMdxJsxTextElement {
-      // const { text, comment, ...rest } = slateNode;
+      // const { text, suggestion, ...rest } = slateNode;
+
       return {
         // attributes: propsToAttributes(rest),
         attributes: [],

@@ -1,5 +1,11 @@
 # @platejs/excalidraw
 
+## 50.3.0
+
+### Minor Changes
+
+- [#4654](https://github.com/udecode/plate/pull/4654) by [@electroluxcode](https://github.com/electroluxcode) – upgrade @excalidraw/excalidraw to fix broken & fix onchange fn
+
 ## 49.0.0
 
 ### Major Changes

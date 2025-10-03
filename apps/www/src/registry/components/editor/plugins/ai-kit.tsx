@@ -1,11 +1,10 @@
 'use client';
 
-import type { AIChatPluginConfig } from '@platejs/ai/react';
-
 import { withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
+  applyAISuggestions,
   streamInsertChunk,
   useChatChunk,
 } from '@platejs/ai/react';
@@ -32,16 +31,14 @@ export const aiChatPlugin = AIChatPlugin.extend({
     node: AIAnchorElement,
   },
   shortcuts: { show: { keys: 'mod+j' } },
-  useHooks: ({ editor, getOption }) => {
+  useHooks: ({ api, editor, getOption }) => {
     useChat();
 
-    const mode = usePluginOption(
-      { key: KEYS.aiChat } as AIChatPluginConfig,
-      'mode'
-    );
+    const mode = usePluginOption(AIChatPlugin, 'mode');
+    const toolName = usePluginOption(AIChatPlugin, 'toolName');
 
     useChatChunk({
-      onChunk: ({ chunk, isFirst, nodes }) => {
+      onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode == 'insert') {
           editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(
@@ -71,6 +68,18 @@ export const aiChatPlugin = AIChatPlugin.extend({
               });
             },
             { split: isFirst }
+          );
+        }
+
+        if (toolName === 'edit' && mode === 'chat') {
+          withAIBatch(
+            editor,
+            () => {
+              applyAISuggestions(editor, content);
+            },
+            {
+              split: isFirst,
+            }
           );
         }
       },

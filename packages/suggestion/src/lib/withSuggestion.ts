@@ -1,6 +1,7 @@
 import {
   type OverrideEditor,
   type TSuggestionElement,
+  ElementApi,
   KEYS,
   nanoid,
   TextApi,
@@ -213,9 +214,13 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       api.suggestion.withoutSuggestions(() => {
         const [node, path] = entry;
 
+        const inlineSuggestion =
+          (ElementApi.isElement(node) && editor.api.isInline(node)) ||
+          TextApi.isText(node);
+
         if (
           node[KEYS.suggestion] && // Unset suggestion when there is no suggestion id
-          TextApi.isText(node) &&
+          inlineSuggestion &&
           !getSuggestionKeyId(node)
         ) {
           editor.tf.unsetNodes([KEYS.suggestion, 'suggestionData'], {
@@ -227,7 +232,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         // Unset suggestion when there is no suggestion user id
         if (
           node[KEYS.suggestion] &&
-          TextApi.isText(node) &&
+          inlineSuggestion &&
           !getInlineSuggestionData(node)?.userId
         ) {
           if (getInlineSuggestionData(node)?.type === 'remove') {

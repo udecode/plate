@@ -1,5 +1,13 @@
 # @platejs/markdown
 
+## 50.2.0
+
+### Minor Changes
+
+- [#4626](https://github.com/udecode/plate/pull/4626) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Add `plainMarks` option to exclude specific marks from markdown serialization
+  - Improve mark handling in text serialization
+
 ## 50.1.2
 
 ### Patch Changes

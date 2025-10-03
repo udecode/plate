@@ -1,5 +1,11 @@
 # @platejs/list
 
+## 50.2.0
+
+### Patch Changes
+
+- [#4626](https://github.com/udecode/plate/pull/4626) by [@felixfeng33](https://github.com/felixfeng33) – Fix list operations with improved selection handling
+
 ## 49.2.17
 
 ### Patch Changes
