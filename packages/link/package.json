@@ -1,6 +1,6 @@
 {
   "name": "@platejs/link",
-  "version": "50.2.7",
+  "version": "50.3.2",
   "description": "Link plugin for Plate",
   "keywords": [
     "plate",
@@ -50,7 +50,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/floating": "50.2.5"
+    "@platejs/floating": "50.3.2"
   },
   "devDependencies": {
     "platejs": "workspace:^"

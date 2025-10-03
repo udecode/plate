@@ -1,5 +1,7 @@
 # @platejs/link
 
+## 50.3.2
+
 ## 50.2.7
 
 ### Patch Changes
