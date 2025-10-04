@@ -60,10 +60,6 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
         (replaceNode.suggestion as TSuggestionData | undefined)?.type ===
         (diffNode.suggestion as TSuggestionData | undefined)?.type;
 
-      if (isSameString && isSameSuggestion && node.id == diffNode.id) {
-        return;
-      }
-
       if (
         index === replaceNodes.length - 1 &&
         diffNodes.length > replaceNodes.length
@@ -71,11 +67,15 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
         editor.tf.replaceNodes(diffNodes.slice(index), {
           at: path,
         });
-      } else {
-        editor.tf.replaceNodes(diffNode, {
-          at: path,
-        });
       }
+      // Performance optimization
+      if (isSameString && isSameSuggestion && node.id == diffNode.id) {
+        return;
+      }
+
+      editor.tf.replaceNodes(diffNode, {
+        at: path,
+      });
     });
 
     editor
@@ -87,13 +87,15 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
 
     editor.tf.insertFragment(diffNodes);
 
-    const nodes = editor.api.nodes({
-      at: [],
-      mode: 'lowest',
-      match: (n) => TextApi.isText(n) && !!n[getTransientSuggestionKey()],
-    });
+    const nodes = Array.from(
+      editor.api.nodes({
+        at: [],
+        mode: 'lowest',
+        match: (n) => TextApi.isText(n) && !!n[getTransientSuggestionKey()],
+      })
+    );
 
-    const range = editor.api.nodesRange(Array.from(nodes));
+    const range = editor.api.nodesRange(nodes);
 
     editor.tf.setSelection(range!);
 
@@ -146,7 +148,6 @@ const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
 
       return node;
     }
-
     if (ElementApi.isElement(node)) {
       if (node[KEYS.suggestion]) {
         const nodeWithoutSuggestion: any = {};
@@ -181,7 +182,9 @@ const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
 
   const diffNodes = withTransient(
-    diffToSuggestions(editor, chatNodes, aiNodes, { ignoreProps: ['id'] })
+    diffToSuggestions(editor, chatNodes, aiNodes, {
+      ignoreProps: ['id', 'listStart'],
+    })
   );
 
   return diffNodes;

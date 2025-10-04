@@ -1,7 +1,5 @@
-import type { NodeEntry } from 'platejs';
-
 import { distance } from 'fastest-levenshtein';
-import { type Path, type Range, Node } from 'slate';
+import { type NodeEntry, type Path, type Range, NodeApi } from 'platejs';
 
 function maxAllowedDistance(len: number): number {
   if (len <= 2) return 0;
@@ -27,7 +25,7 @@ export function findTextRangeInBlock({
   let fullText = '';
 
   // Iterate through all text nodes in the block
-  for (const [textNode, textPath] of Node.texts(blockNode)) {
+  for (const [textNode, textPath] of NodeApi.texts(blockNode)) {
     const startOffset = fullText.length;
     // textPath is relative to blockNode, not absolute
     const absolutePath = [...blockPath, ...textPath];
