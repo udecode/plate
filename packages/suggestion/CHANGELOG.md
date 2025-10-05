@@ -1,5 +1,11 @@
 # @platejs/suggestion
 
+## 50.3.3
+
+### Patch Changes
+
+- [#4658](https://github.com/udecode/plate/pull/4658) by [@felixfeng33](https://github.com/felixfeng33) – Fix: Properly unset transient suggestion key when accepting or rejecting suggestions
+
 ## 50.2.0
 
 ### Minor Changes

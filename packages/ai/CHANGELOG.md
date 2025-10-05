@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 50.3.3
+
+### Patch Changes
+
+- [#4670](https://github.com/udecode/plate/pull/4670) by [@felixfeng33](https://github.com/felixfeng33) – Fix list diff issue
+
 ## 50.2.2
 
 ### Patch Changes
