@@ -6,6 +6,7 @@ import type {
   OmitFirst,
   Path,
   PluginConfig,
+  SlateEditor,
   TElement,
   TIdElement,
 } from 'platejs';
@@ -49,7 +50,7 @@ export type BlockSelectionConfig = PluginConfig<
     shadowInputRef?: React.RefObject<HTMLInputElement | null>;
     /** Check if a block is selectable */
     isSelectable?: (element: TElement, path: Path) => boolean;
-    onKeyDownSelecting?: (e: KeyboardEvent) => void;
+    onKeyDownSelecting?: (editor: SlateEditor, e: KeyboardEvent) => void;
   },
   {
     blockSelection: {
