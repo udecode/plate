@@ -1,5 +1,11 @@
 # @platejs/selection
 
+## 50.3.4
+
+### Patch Changes
+
+- [#4673](https://github.com/udecode/plate/pull/4673) by [@felixfeng33](https://github.com/felixfeng33) – Fixed AI menu not opening when blocks are selected by updating `onKeyDownSelecting` callback to include editor parameter
+
 ## 50.2.0
 
 ### Patch Changes
