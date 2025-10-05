@@ -180,7 +180,7 @@ const groups: Group[] = [
         icon: <PenToolIcon />,
         label: 'Excalidraw',
         value: KEYS.excalidraw,
-      }
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {

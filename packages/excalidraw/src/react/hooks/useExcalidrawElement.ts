@@ -25,10 +25,12 @@ export const useExcalidrawElement = ({
   const [Excalidraw, setExcalidraw] = React.useState<any>(null);
   const editor = useEditorRef();
   const readOnly = useReadOnly();
-  
+
   // Store last saved data for deduplication
-  const lastSavedDataRef = React.useRef<{ elements: any; state: any } | null>(null);
-  
+  const lastSavedDataRef = React.useRef<{ elements: any; state: any } | null>(
+    null
+  );
+
   React.useEffect(() => {
     void import('@excalidraw/excalidraw').then((comp) =>
       setExcalidraw(comp.Excalidraw)
@@ -38,30 +40,36 @@ export const useExcalidrawElement = ({
   const _excalidrawRef = React.useRef<ExcalidrawImperativeAPI>(null);
 
   // Create save function with deduplication only
-  const handleChange = React.useCallback((elements: readonly OrderedExcalidrawElement[], state: AppState) => {
-    if (readOnly) return;
-    
-    // Create deep copies to avoid read-only property errors
-    const newData = { 
-      elements: cloneDeep(elements), 
-      state: cloneDeep(state) 
-    };
-    
-    // Use lodash isEqual for deep comparison and deduplication
-    if (lastSavedDataRef.current && isEqual(lastSavedDataRef.current, newData)) {
-      return;
-    }
-    
-    try {
-      const path = editor.api.findPath(element);
-      if (path) {
-        lastSavedDataRef.current = newData;
-        editor.tf.setNodes({ data: newData }, { at: path });
+  const handleChange = React.useCallback(
+    (elements: readonly OrderedExcalidrawElement[], state: AppState) => {
+      if (readOnly) return;
+
+      // Create deep copies to avoid read-only property errors
+      const newData = {
+        elements: cloneDeep(elements),
+        state: cloneDeep(state),
+      };
+
+      // Use lodash isEqual for deep comparison and deduplication
+      if (
+        lastSavedDataRef.current &&
+        isEqual(lastSavedDataRef.current, newData)
+      ) {
+        return;
       }
-    } catch (error) {
-      console.error('Failed to save Excalidraw data:', error);
-    }
-  }, [editor, element, readOnly]);
+
+      try {
+        const path = editor.api.findPath(element);
+        if (path) {
+          lastSavedDataRef.current = newData;
+          editor.tf.setNodes({ data: newData }, { at: path });
+        }
+      } catch (error) {
+        console.error('Failed to save Excalidraw data:', error);
+      }
+    },
+    [editor, element, readOnly]
+  );
 
   // Create mutable copies of initial data to ensure Excalidraw can modify them
   const initialData = React.useMemo(() => {
@@ -71,7 +79,12 @@ export const useExcalidrawElement = ({
       libraryItems: cloneDeep(libraryItems),
       scrollToContent,
     };
-  }, [element.data?.state, element.data?.elements, libraryItems, scrollToContent]);
+  }, [
+    element.data?.state,
+    element.data?.elements,
+    libraryItems,
+    scrollToContent,
+  ]);
 
   const excalidrawProps: TExcalidrawProps = {
     autoFocus: false,

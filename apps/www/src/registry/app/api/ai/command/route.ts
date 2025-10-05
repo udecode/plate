@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
             model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
-            ${JSON.stringify(lastUserMessage)}`,
+          ${JSON.stringify(lastUserMessage)}`,
             system: chooseToolSystem,
           });
 
@@ -187,8 +187,8 @@ export async function POST(req: NextRequest) {
 
 const generateSystemTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
-    ? PROMPT_TEMPLATES.generateSystemDefault
-    : PROMPT_TEMPLATES.generateSystemSelecting;
+    ? PROMPT_TEMPLATES.generateSystemSelecting
+    : PROMPT_TEMPLATES.generateSystemDefault;
 };
 
 const editSystemTemplate = () => {
@@ -223,17 +223,17 @@ You will receive an MDX document wrapped in <block id="..."> content </block> ta
 Your task:  
 - Read the content of all blocks and provide comments.  
 - For each comment, generate a JSON object:  
-  - blockId: the id of the block being commented on.
-  - content: the original document fragment that needs commenting.
-  - comments: a brief comment or explanation for that fragment.
+- blockId: the id of the block being commented on.
+- content: the original document fragment that needs commenting.
+- comments: a brief comment or explanation for that fragment.
 
 Rules:
 - IMPORTANT: If a comment spans multiple blocks, use the id of the **first** block.
 - The **content** field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
 - IMPORTANT: The **content** field must be flexible:
-  - It can cover one full block, only part of a block, or multiple blocks.  
-  - If multiple blocks are included, separate them with two \\n\\n.  
-  - Do NOT default to using the entire block—use the smallest relevant span instead.
+- It can cover one full block, only part of a block, or multiple blocks.  
+- If multiple blocks are included, separate them with two \\n\\n.  
+- Do NOT default to using the entire block—use the smallest relevant span instead.
 - At least one comment must be provided.
 - If a <Selection> exists, Your comments should come from the <Selection>, and if the <Selection> is too long, there should be more than one comment.
 `;
@@ -254,15 +254,15 @@ Rules:
 - CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
 - CRITICAL: When writing the column, such line breaks and indentation must be preserved.
 <column_group>
-  <column>
-    1
-  </column>
-  <column>
-    2
-  </column>
-  <column>
-    3
-  </column>
+<column>
+  1
+</column>
+<column>
+  2
+</column>
+<column>
+  3
+</column>
 </column_group>
 `;
 
@@ -314,12 +314,12 @@ const commentPromptSelecting = `
 Comment on the content within the <Selection>.
 Never write <Selection>.
 {prompt}:
-        
+      
 {blockWithBlockId}
 `;
 
 const commentPromptDefault = `{prompt}:
-        
+      
 {editorWithBlockId}
 `;
 

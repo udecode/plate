@@ -6,4 +6,4 @@ import { ExcalidrawElement } from '@/registry/ui/excalidraw-node';
 
 export const ExcalidrawKit = [
   ExcalidrawPlugin.withComponent(ExcalidrawElement),
-]; 
+];
