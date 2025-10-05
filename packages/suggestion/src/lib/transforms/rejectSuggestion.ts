@@ -12,7 +12,11 @@ import {
 import type { TResolvedSuggestion } from '../types';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getInlineSuggestionData, getSuggestionKey } from '../utils';
+import {
+  getInlineSuggestionData,
+  getSuggestionKey,
+  getTransientSuggestionKey,
+} from '../utils';
 
 export const rejectSuggestion = (
   editor: SlateEditor,
@@ -45,41 +49,46 @@ export const rejectSuggestion = (
       editor.tf.mergeNodes({ at: PathApi.next(path) });
     });
 
-    editor.tf.unsetNodes([description.keyId, KEYS.suggestion], {
-      at: [],
-      mode: 'all',
-      match: (n) => {
-        if (TextApi.isText(n)) {
-          const node = n as TSuggestionText;
-          const suggestionData = getInlineSuggestionData(node);
+    editor.tf.unsetNodes(
+      [description.keyId, KEYS.suggestion, getTransientSuggestionKey()],
+      {
+        at: [],
+        mode: 'all',
+        match: (n) => {
+          if (TextApi.isText(n)) {
+            const node = n as TSuggestionText;
+            const suggestionData = getInlineSuggestionData(node);
 
-          if (suggestionData)
+            if (suggestionData)
+              return (
+                suggestionData.type === 'remove' &&
+                suggestionData.id === description.suggestionId
+              );
+
+            return false;
+          }
+          if (
+            ElementApi.isElement(n) &&
+            editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
+          ) {
+            const suggestionElement = n as TSuggestionElement;
+            const isLineBreak = suggestionElement.suggestion.isLineBreak;
+
+            if (isLineBreak)
+              return (
+                suggestionElement.suggestion.id === description.suggestionId
+              );
+
             return (
-              suggestionData.type === 'remove' &&
-              suggestionData.id === description.suggestionId
+              suggestionElement.suggestion.type === 'remove' &&
+              suggestionElement.suggestion.id === description.suggestionId
             );
+          }
 
           return false;
-        }
-        if (
-          ElementApi.isElement(n) &&
-          editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(n)
-        ) {
-          const suggestionElement = n as TSuggestionElement;
-          const isLineBreak = suggestionElement.suggestion.isLineBreak;
-
-          if (isLineBreak)
-            return suggestionElement.suggestion.id === description.suggestionId;
-
-          return (
-            suggestionElement.suggestion.type === 'remove' &&
-            suggestionElement.suggestion.id === description.suggestionId
-          );
-        }
-
-        return false;
-      },
-    });
+        },
+      }
+    );
 
     editor.tf.removeNodes({
       at: [],
