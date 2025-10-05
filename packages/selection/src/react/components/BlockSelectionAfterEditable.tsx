@@ -105,7 +105,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const isReadonly = editor.api.isReadOnly();
-      getOptions().onKeyDownSelecting?.(e.nativeEvent);
+      getOptions().onKeyDownSelecting?.(editor, e.nativeEvent);
 
       if (!getOption('isSelectingSome')) return;
       if (isHotkey('shift+up')(e)) {
