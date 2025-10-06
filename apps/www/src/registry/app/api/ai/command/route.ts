@@ -207,12 +207,9 @@ const promptTemplate = ({
   isMultiBlocs: boolean;
   isSelecting: boolean;
 }) => {
-  if (isSelecting && isMultiBlocs)
-    return PROMPT_TEMPLATES.promptSelectingMultiBlocs;
-
-  return isSelecting
+  return isSelecting && !isMultiBlocs
     ? PROMPT_TEMPLATES.promptSelecting
-    : PROMPT_TEMPLATES.promptDefault;
+    : PROMPT_TEMPLATES.promptDefault({ isMultiBlocs });
 };
 const commentPromptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
@@ -312,16 +309,12 @@ const editSystemSelectingMultiBlocs = `\
 - CRITICAL: Provide only the content to replace <Block>. Do not add additional blocks or change the block structure unless specifically requested.
 `;
 
-const promptDefault = `<Reminder>
+const promptDefault = (ctx: { isMultiBlocs: boolean }) => `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
-{prompt}`;
+{prompt}
 
-const promptSelectingMultiBlocs = `${promptDefault}
-
-<Block>
-{block}
-</Block>
+${ctx.isMultiBlocs && `<Block>\n{block}\n</Block>`}
 `;
 
 const promptSelecting = `<Reminder>
@@ -359,7 +352,6 @@ const PROMPT_TEMPLATES = {
   generateSystemSelecting,
   promptDefault,
   promptSelecting,
-  promptSelectingMultiBlocs,
 };
 
 const replaceMessagePlaceholders = (
