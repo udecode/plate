@@ -106,7 +106,10 @@ export async function POST(req: NextRequest) {
           if (!isSelecting)
             throw new Error('Edit tool is only available when selecting');
 
-          const editSystem = replacePlaceholders(editor, editSystemTemplate({ isMultiBlocs: isMultiBlocs(editor) }));
+          const editSystem = replacePlaceholders(
+            editor,
+            editSystemTemplate({ isMultiBlocs: isMultiBlocs(editor) })
+          );
 
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),

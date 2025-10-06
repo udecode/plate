@@ -23,8 +23,7 @@ import { AIChatPlugin } from '../AIChatPlugin';
 export const applyAISuggestions = (editor: SlateEditor, content: string) => {
   /** Conflict with block selection */
   editor
-    .getApi({ key: KEYS.cursorOverlay })
-    .cursorOverlay.removeCursor('selection');
+    .getApi({ key: KEYS.cursorOverlay })?.cursorOverlay?.removeCursor('selection');
 
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
