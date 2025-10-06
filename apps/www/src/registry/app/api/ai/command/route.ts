@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 
           const editSystem = replacePlaceholders(
             editor,
-            editSystemTemplate({ isMultiBlocs: isMultiBlocs(editor) })
+            editSystemTemplate({ isMultiBlocks: isMultiBlocks(editor) })
           );
 
           const edit = streamText({
@@ -194,22 +194,22 @@ const generateSystemTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
     : PROMPT_TEMPLATES.generateSystemDefault;
 };
 
-const editSystemTemplate = ({ isMultiBlocs }: { isMultiBlocs: boolean }) => {
-  return isMultiBlocs
+const editSystemTemplate = ({ isMultiBlocks }: { isMultiBlocks: boolean }) => {
+  return isMultiBlocks
     ? PROMPT_TEMPLATES.editSystemSelectingMultiBlocs
     : PROMPT_TEMPLATES.editSystemSelecting;
 };
 
 const promptTemplate = ({
-  isMultiBlocs,
+  isMultiBlocks,
   isSelecting,
 }: {
-  isMultiBlocs: boolean;
+  isMultiBlocks: boolean;
   isSelecting: boolean;
 }) => {
-  return isSelecting && !isMultiBlocs
+  return isSelecting && !isMultiBlocks
     ? PROMPT_TEMPLATES.promptSelecting
-    : PROMPT_TEMPLATES.promptDefault({ isMultiBlocs });
+    : PROMPT_TEMPLATES.promptDefault({ isMultiBlocks });
 };
 const commentPromptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
@@ -309,12 +309,12 @@ const editSystemSelectingMultiBlocs = `\
 - CRITICAL: Provide only the content to replace <Block>. Do not add additional blocks or change the block structure unless specifically requested.
 `;
 
-const promptDefault = (ctx: { isMultiBlocs: boolean }) => `<Reminder>
+const promptDefault = (ctx: { isMultiBlocks: boolean }) => `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}
 
-${ctx.isMultiBlocs && `<Block>\n{block}\n</Block>`}
+${ctx.isMultiBlocks && `<Block>\n{block}\n</Block>`}
 `;
 
 const promptSelecting = `<Reminder>
@@ -359,10 +359,10 @@ const replaceMessagePlaceholders = (
   message: ChatMessage,
   { isSelecting }: { isSelecting: boolean }
 ): ChatMessage => {
-  if (isSelecting && !isMultiBlocs(editor)) addSelection(editor);
+  if (isSelecting && !isMultiBlocks(editor)) addSelection(editor);
 
   const template = promptTemplate({
-    isMultiBlocs: isMultiBlocs(editor),
+    isMultiBlocks: isMultiBlocks(editor),
     isSelecting,
   });
 
@@ -373,7 +373,7 @@ const replaceMessagePlaceholders = (
       prompt: part.text,
     });
 
-    if (isSelecting && !isMultiBlocs(editor))
+    if (isSelecting && !isMultiBlocks(editor))
       text = removeEscapeSelection(editor, text);
 
     return { ...part, text } as typeof part;
@@ -434,7 +434,7 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
-const isMultiBlocs = (editor: SlateEditor) => {
+const isMultiBlocks = (editor: SlateEditor) => {
   const blocks = editor.api.blocks({ mode: 'highest' });
 
   return blocks.length > 1;
