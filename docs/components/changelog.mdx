@@ -8,6 +8,13 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
+### October 6 #26.7
+- `api/ai/command/route.ts`: 
+  - Added multi-block selection support for AI edit operations
+  - New prompt templates (`editSystemSelectingMultiBlocs`, `promptSelectingMultiBlocs`) for handling multiple blocks
+  - Enhanced `isMultiBlocs` detection to check if selection spans multiple top-level blocks
+  - Fixed indentation in column_group examples within prompts
+
 ### October 5 #26.6
 - `ai-kit`: Removed unused `api` parameter from `useHooks` destructuring
 - `block-selection-kit`: Added keyboard shortcut handler to open AI menu with `mod+j` when blocks are selected
