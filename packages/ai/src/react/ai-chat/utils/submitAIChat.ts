@@ -64,10 +64,19 @@ export const submitAIChat = (
 
   const selection = blocks.length > 0 ? blocksRange : editor.selection;
 
-  const chatNodes =
-    blocks.length > 0
-      ? blocks.map((block) => block[0])
-      : editor.api.fragment<TIdElement>();
+  let chatNodes;
+
+  if (blocks.length > 0) {
+    chatNodes = blocks.map((block) => block[0]);
+  } else {
+    const selectionBlocks = editor.api.blocks({ mode: 'highest' });
+
+    if (selectionBlocks.length > 1) {
+      chatNodes = selectionBlocks.map((block) => block[0]) as TIdElement[];
+    } else {
+      chatNodes = editor.api.fragment<TIdElement>();
+    }
+  }
 
   setOption('chatNodes', chatNodes);
   setOption('chatSelection', blocks.length > 0 ? null : editor.selection);

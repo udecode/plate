@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
             model: google('gemini-2.5-flash'),
             output: 'enum',
             prompt: `User message:
-          ${JSON.stringify(lastUserMessage)}`,
+            ${JSON.stringify(lastUserMessage)}`,
             system: chooseToolSystem,
           });
 
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
           if (!isSelecting)
             throw new Error('Edit tool is only available when selecting');
 
-          const editSystem = replacePlaceholders(editor, editSystemTemplate());
+          const editSystem = replacePlaceholders(editor, editSystemTemplate({ isMultiBlocs: isMultiBlocs(editor) }));
 
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
@@ -191,16 +191,26 @@ const generateSystemTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
     : PROMPT_TEMPLATES.generateSystemDefault;
 };
 
-const editSystemTemplate = () => {
-  return PROMPT_TEMPLATES.editSystemSelecting;
+const editSystemTemplate = ({ isMultiBlocs }: { isMultiBlocs: boolean }) => {
+  return isMultiBlocs
+    ? PROMPT_TEMPLATES.editSystemSelectingMultiBlocs
+    : PROMPT_TEMPLATES.editSystemSelecting;
 };
 
-const promptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
+const promptTemplate = ({
+  isMultiBlocs,
+  isSelecting,
+}: {
+  isMultiBlocs: boolean;
+  isSelecting: boolean;
+}) => {
+  if (isSelecting && isMultiBlocs)
+    return PROMPT_TEMPLATES.promptSelectingMultiBlocs;
+
   return isSelecting
     ? PROMPT_TEMPLATES.promptSelecting
     : PROMPT_TEMPLATES.promptDefault;
 };
-
 const commentPromptTemplate = ({ isSelecting }: { isSelecting: boolean }) => {
   return isSelecting
     ? PROMPT_TEMPLATES.commentPromptSelecting
@@ -223,17 +233,17 @@ You will receive an MDX document wrapped in <block id="..."> content </block> ta
 Your task:  
 - Read the content of all blocks and provide comments.  
 - For each comment, generate a JSON object:  
-- blockId: the id of the block being commented on.
-- content: the original document fragment that needs commenting.
-- comments: a brief comment or explanation for that fragment.
+  - blockId: the id of the block being commented on.
+  - content: the original document fragment that needs commenting.
+  - comments: a brief comment or explanation for that fragment.
 
 Rules:
 - IMPORTANT: If a comment spans multiple blocks, use the id of the **first** block.
 - The **content** field must be the original content inside the block tag. The returned content must not include the block tags, but should retain other MDX tags.
 - IMPORTANT: The **content** field must be flexible:
-- It can cover one full block, only part of a block, or multiple blocks.  
-- If multiple blocks are included, separate them with two \\n\\n.  
-- Do NOT default to using the entire block—use the smallest relevant span instead.
+  - It can cover one full block, only part of a block, or multiple blocks.  
+  - If multiple blocks are included, separate them with two \\n\\n.  
+  - Do NOT default to using the entire block—use the smallest relevant span instead.
 - At least one comment must be provided.
 - If a <Selection> exists, Your comments should come from the <Selection>, and if the <Selection> is too long, there should be more than one comment.
 `;
@@ -254,15 +264,15 @@ Rules:
 - CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
 - CRITICAL: When writing the column, such line breaks and indentation must be preserved.
 <column_group>
-<column>
-  1
-</column>
-<column>
-  2
-</column>
-<column>
-  3
-</column>
+  <column>
+    1
+  </column>
+  <column>
+    2
+  </column>
+  <column>
+    3
+  </column>
 </column_group>
 `;
 
@@ -292,10 +302,24 @@ const editSystemSelecting = `\
 - Do not remove the \\n in the original text
 `;
 
+const editSystemSelectingMultiBlocs = `\
+- <Block> represents the full blocks of text the user has selected and wants to modify or ask about. 
+- Your response should be a direct replacement for the entire <Block>. 
+- Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise. 
+- CRITICAL: Provide only the content to replace <Block>. Do not add additional blocks or change the block structure unless specifically requested.
+`;
+
 const promptDefault = `<Reminder>
 CRITICAL: NEVER write <Block>.
 </Reminder>
 {prompt}`;
+
+const promptSelectingMultiBlocs = `${promptDefault}
+
+<Block>
+{block}
+</Block>
+`;
 
 const promptSelecting = `<Reminder>
 If this is a question, provide a helpful and concise answer about <Selection>.
@@ -314,12 +338,12 @@ const commentPromptSelecting = `
 Comment on the content within the <Selection>.
 Never write <Selection>.
 {prompt}:
-      
+        
 {blockWithBlockId}
 `;
 
 const commentPromptDefault = `{prompt}:
-      
+        
 {editorWithBlockId}
 `;
 
@@ -327,10 +351,12 @@ const PROMPT_TEMPLATES = {
   commentPromptDefault,
   commentPromptSelecting,
   editSystemSelecting,
+  editSystemSelectingMultiBlocs,
   generateSystemDefault,
   generateSystemSelecting,
   promptDefault,
   promptSelecting,
+  promptSelectingMultiBlocs,
 };
 
 const replaceMessagePlaceholders = (
@@ -338,9 +364,12 @@ const replaceMessagePlaceholders = (
   message: ChatMessage,
   { isSelecting }: { isSelecting: boolean }
 ): ChatMessage => {
-  if (isSelecting) addSelection(editor);
+  if (isSelecting && !isMultiBlocs(editor)) addSelection(editor);
 
-  const template = promptTemplate({ isSelecting });
+  const template = promptTemplate({
+    isMultiBlocs: isMultiBlocs(editor),
+    isSelecting,
+  });
 
   const parts = message.parts.map((part) => {
     if (part.type !== 'text' || !part.text) return part;
@@ -349,14 +378,14 @@ const replaceMessagePlaceholders = (
       prompt: part.text,
     });
 
-    if (isSelecting) text = removeEscapeSelection(editor, text);
+    if (isSelecting && !isMultiBlocs(editor))
+      text = removeEscapeSelection(editor, text);
 
     return { ...part, text } as typeof part;
   });
 
   return { ...message, parts };
 };
-
 const SELECTION_START = '<Selection>';
 const SELECTION_END = '</Selection>';
 
@@ -407,4 +436,11 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
   }
 
   return newText;
+};
+
+/** Check if the current selection fully covers all top-level blocks. */
+const isMultiBlocs = (editor: SlateEditor) => {
+  const blocks = editor.api.blocks({ mode: 'highest' });
+
+  return blocks.length > 1;
 };
