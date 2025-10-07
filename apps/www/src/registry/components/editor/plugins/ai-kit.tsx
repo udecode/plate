@@ -18,6 +18,8 @@ import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 import { MarkdownKit } from './markdown-kit';
 
+const chunks: string[] = [];
+
 export const aiChatPlugin = AIChatPlugin.extend({
   options: {
     chatOptions: {
@@ -36,9 +38,11 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     const mode = usePluginOption(AIChatPlugin, 'mode');
     const toolName = usePluginOption(AIChatPlugin, 'toolName');
-
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
+        console.log('🚀 ~ chunk:', chunk);
+
+        chunks.push(chunk);
         if (isFirst && mode == 'insert') {
           editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(
@@ -88,6 +92,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         editor.setOption(AIChatPlugin, '_blockChunks', '');
         editor.setOption(AIChatPlugin, '_blockPath', null);
         editor.setOption(AIChatPlugin, '_mdxName', null);
+        console.log('🚀 ~ chunks:', chunks);
       },
     });
   },
