@@ -150,7 +150,6 @@ export async function POST(req: NextRequest) {
 
           const gen = streamText({
             experimental_transform: markdownJoinerTransform(),
-            maxOutputTokens: 2048,
             model: openai('gpt-4o-mini'),
             prompt: generatePrompt,
           });
@@ -254,7 +253,6 @@ export async function POST(req: NextRequest) {
 
           const edit = streamText({
             experimental_transform: markdownJoinerTransform(),
-            maxOutputTokens: 2048,
             model: google('gemini-2.5-flash'),
             prompt: editPrompt,
           });
@@ -389,7 +387,6 @@ export async function POST(req: NextRequest) {
           });
 
           const { elementStream } = streamObject({
-            maxOutputTokens: 2048,
             model: google('gemini-2.5-flash'),
             output: 'array',
             prompt: commentPrompt,
