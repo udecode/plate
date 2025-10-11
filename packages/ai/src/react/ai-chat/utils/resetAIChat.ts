@@ -28,7 +28,7 @@ export const resetAIChat = (
     _replaceIds: [],
     chatNodes: [],
     mode: 'insert',
-    toolName: 'generate',
+    toolName: null,
   });
 
   if (undo) {

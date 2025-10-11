@@ -21,7 +21,7 @@ export const submitAIChat = (
     mode,
     options,
     prompt,
-    toolName,
+    toolName: toolNameProps,
   }: {
     mode?: AIMode;
     options?: ChatRequestOptions;
@@ -36,7 +36,9 @@ export const submitAIChat = (
     }
   );
 
-  const { chat } = getOptions();
+  const { chat, toolName: toolNameOption } = getOptions();
+
+  const toolName = toolNameProps ?? toolNameOption ?? null;
 
   if (!prompt && input?.length === 0) {
     return;
@@ -53,7 +55,7 @@ export const submitAIChat = (
 
   setOption('mode', mode);
 
-  setOption('toolName', toolName ?? null);
+  setOption('toolName', toolName);
 
   const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
   const blocksRange = editor.api.nodesRange(blocks);
@@ -64,10 +66,19 @@ export const submitAIChat = (
 
   const selection = blocks.length > 0 ? blocksRange : editor.selection;
 
-  const chatNodes =
-    blocks.length > 0
-      ? blocks.map((block) => block[0])
-      : editor.api.fragment<TIdElement>();
+  let chatNodes;
+
+  if (blocks.length > 0) {
+    chatNodes = blocks.map((block) => block[0]);
+  } else {
+    const selectionBlocks = editor.api.blocks({ mode: 'highest' });
+
+    if (selectionBlocks.length > 1) {
+      chatNodes = selectionBlocks.map((block) => block[0]) as TIdElement[];
+    } else {
+      chatNodes = editor.api.fragment<TIdElement>();
+    }
+  }
 
   setOption('chatNodes', chatNodes);
   setOption('chatSelection', blocks.length > 0 ? null : editor.selection);
@@ -79,7 +90,7 @@ export const submitAIChat = (
   } = {
     children: editor.children,
     selection: selection ?? null,
-    toolName: toolName ?? null,
+    toolName: toolName,
   };
 
   void chat.sendMessage?.(
