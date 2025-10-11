@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
           toolName = AIToolName;
         }
 
-        const s = streamText({
+        const stream = streamText({
           experimental_transform: markdownJoinerTransform(),
           model: 'google/gemini-2.5-flash',
           // Not used
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        writer.merge(s.toUIMessageStream({ sendFinish: false }));
+        writer.merge(stream.toUIMessageStream({ sendFinish: false }));
       },
     });
 
