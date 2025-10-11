@@ -90,11 +90,10 @@ export async function POST(req: NextRequest) {
             }
 
             if (toolName === 'edit') {
-              const editPrompt = getEditPrompt(
-                editor,
-                messagesRaw,
-                isSelecting
-              );
+              const editPrompt = getEditPrompt(editor, {
+                isSelecting,
+                messages: messagesRaw,
+              });
 
               return {
                 ...step,
@@ -109,7 +108,9 @@ export async function POST(req: NextRequest) {
             }
 
             if (toolName === 'generate') {
-              const generatePrompt = getGeneratePrompt(editor, messagesRaw);
+              const generatePrompt = getGeneratePrompt(editor, {
+                messages: messagesRaw,
+              });
 
               return {
                 ...step,
@@ -157,7 +158,10 @@ const getCommentTool = (
       const { elementStream } = streamObject({
         model: 'google/gemini-2.5-flash',
         output: 'array',
-        prompt: getCommentPrompt(selectingMarkdown, messagesRaw),
+        prompt: getCommentPrompt({
+          messages: messagesRaw,
+          selectingMarkdown,
+        }),
         schema: z
           .object({
             blockId: z

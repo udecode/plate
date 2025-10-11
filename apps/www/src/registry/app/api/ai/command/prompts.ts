@@ -11,7 +11,7 @@ import {
   isMultiBlocks,
 } from './utils';
 
-export function getChooseToolPrompt(messages: ChatMessage[]) {
+export function getChooseToolPrompt({ messages }: { messages: ChatMessage[] }) {
   return buildStructuredPrompt({
     examples: [
       // GENERATE
@@ -39,10 +39,13 @@ export function getChooseToolPrompt(messages: ChatMessage[]) {
   });
 }
 
-export function getCommentPrompt(
-  selectingMarkdown: string,
-  messages: ChatMessage[]
-) {
+export function getCommentPrompt({
+  messages,
+  selectingMarkdown,
+}: {
+  messages: ChatMessage[];
+  selectingMarkdown: string;
+}) {
   return buildStructuredPrompt({
     backgroundData: selectingMarkdown,
     examples: [
@@ -165,7 +168,7 @@ export function getCommentPrompt(
 
 export function getGeneratePrompt(
   editor: SlateEditor,
-  messages: ChatMessage[]
+  { messages }: { messages: ChatMessage[] }
 ) {
   !isMultiBlocks(editor) && addSelection(editor);
 
@@ -218,10 +221,10 @@ export function getGeneratePrompt(
 
 export function getEditPrompt(
   editor: SlateEditor,
-  messages: ChatMessage[],
-  isSelecting: boolean
+  { isSelecting, messages }: { isSelecting: boolean; messages: ChatMessage[] }
 ) {
-  if (!isSelecting) throw new Error('Edit tool is only available when selecting');
+  if (!isSelecting)
+    throw new Error('Edit tool is only available when selecting');
 
   if (isMultiBlocks(editor)) {
     const selectingMarkdown = getMarkdownWithSelection(editor);
