@@ -1,7 +1,10 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
+import { getMarkdown } from '@platejs/ai';
+import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
+import { type SlateEditor, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -179,3 +182,68 @@ export function formatTextFromMessages(
     .filter(Boolean)
     .join('\n');
 }
+
+const SELECTION_START = '<Selection>';
+const SELECTION_END = '</Selection>';
+
+export const addSelection = (editor: SlateEditor) => {
+  if (!editor.selection) return;
+
+  if (editor.api.isExpanded()) {
+    const [start, end] = RangeApi.edges(editor.selection);
+
+    editor.tf.withoutNormalizing(() => {
+      editor.tf.insertText(SELECTION_END, {
+        at: end,
+      });
+
+      editor.tf.insertText(SELECTION_START, {
+        at: start,
+      });
+    });
+  }
+};
+
+const removeEscapeSelection = (editor: SlateEditor, text: string) => {
+  let newText = text
+    .replace(`\\${SELECTION_START}`, SELECTION_START)
+    .replace(`\\${SELECTION_END}`, SELECTION_END);
+
+  // If the selection is on a void element, inserting the placeholder will fail, and the string must be replaced manually.
+  if (!newText.includes(SELECTION_END)) {
+    const [_, end] = RangeApi.edges(editor.selection!);
+
+    const node = editor.api.block({ at: end.path });
+
+    if (!node) return newText;
+
+    if (editor.api.isVoid(node[0])) {
+      const voidString = serializeMd(editor, { value: [node[0]] });
+
+      const idx = newText.lastIndexOf(voidString);
+
+      if (idx !== -1) {
+        newText =
+          newText.slice(0, idx) +
+          voidString.trimEnd() +
+          SELECTION_END +
+          newText.slice(idx + voidString.length);
+      }
+    }
+  }
+
+  return newText;
+};
+
+/** Check if the current selection fully covers all top-level blocks. */
+export const isMultiBlocks = (editor: SlateEditor) => {
+  const blocks = editor.api.blocks({ mode: 'highest' });
+
+  return blocks.length > 1;
+};
+
+/** Get markdown with selection markers */
+export const getMarkdownWithSelection = (editor: SlateEditor) => {
+  return removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
+};
+
