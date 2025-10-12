@@ -1,6 +1,7 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { SlateEditor } from 'platejs';
 
+import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
 
 import {
@@ -39,13 +40,18 @@ export function getChooseToolPrompt({ messages }: { messages: ChatMessage[] }) {
   });
 }
 
-export function getCommentPrompt({
-  messages,
-  selectingMarkdown,
-}: {
-  messages: ChatMessage[];
-  selectingMarkdown: string;
-}) {
+export function getCommentPrompt(
+  editor: SlateEditor,
+  {
+    messages,
+  }: {
+    messages: ChatMessage[];
+  }
+) {
+  const selectingMarkdown = getMarkdown(editor, {
+    type: 'blockWithBlockId',
+  });
+
   return buildStructuredPrompt({
     backgroundData: selectingMarkdown,
     examples: [

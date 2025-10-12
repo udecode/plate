@@ -4,7 +4,6 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { getMarkdown } from '@platejs/ai';
 import {
   type UIMessageStreamWriter,
   createUIMessageStream,
@@ -151,16 +150,11 @@ const getCommentTool = (
     description: 'Comment on the content',
     inputSchema: z.object({}),
     execute: async () => {
-      const selectingMarkdown = getMarkdown(editor, {
-        type: 'blockWithBlockId',
-      });
-
       const { elementStream } = streamObject({
         model: 'google/gemini-2.5-flash',
         output: 'array',
-        prompt: getCommentPrompt({
+        prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
-          selectingMarkdown,
         }),
         schema: z
           .object({

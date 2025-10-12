@@ -16,6 +16,16 @@ const registryApi: Registry['items'] = [
         target: 'app/api/ai/command/route.ts',
         type: 'registry:file',
       },
+      {
+        path: 'app/api/ai/command/utils.ts',
+        target: 'app/api/ai/command/utils.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompts.ts',
+        target: 'app/api/ai/command/prompts.ts',
+        type: 'registry:file',
+      },
     ],
     name: 'ai-api',
     registryDependencies: ['copilot-api', 'markdown-joiner-transform'],
