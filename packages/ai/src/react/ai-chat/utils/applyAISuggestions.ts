@@ -21,6 +21,10 @@ import {
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export const applyAISuggestions = (editor: SlateEditor, content: string) => {
+  /** Conflict with block selection */
+  editor
+    .getApi({ key: KEYS.cursorOverlay })?.cursorOverlay?.removeCursor('selection');
+
   const isBlockSelecting = editor.getOption(
     BlockSelectionPlugin,
     'isSelectingSome'
@@ -28,7 +32,7 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
 
   const { chatNodes } = editor.getOptions(AIChatPlugin);
 
-  if (isBlockSelecting) {
+  if (isBlockSelecting || editor.api.blocks({ mode: 'highest' }).length > 1) {
     const setReplaceIds = (ids: string[]) => {
       editor.setOption(AIChatPlugin, '_replaceIds', ids);
     };

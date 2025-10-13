@@ -83,9 +83,13 @@ type InsertBlockOptions = {
   upsert?: boolean;
 };
 
-export const insertBlock = (editor: PlateEditor, type: string, options: InsertBlockOptions = {}) => {
+export const insertBlock = (
+  editor: PlateEditor,
+  type: string,
+  options: InsertBlockOptions = {}
+) => {
   const { upsert = false } = options;
-  
+
   editor.tf.withoutNormalizing(() => {
     const block = editor.api.block();
 
@@ -99,7 +103,7 @@ export const insertBlock = (editor: PlateEditor, type: string, options: InsertBl
 
     if (upsert && isCurrentBlockEmpty && isSameBlockType) {
       return;
-    } 
+    }
 
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
@@ -109,7 +113,7 @@ export const insertBlock = (editor: PlateEditor, type: string, options: InsertBl
         select: true,
       });
     }
-    
+
     if (!isSameBlockType) {
       editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
         editor.tf.removeNodes({ previousEmptyBlock: true });

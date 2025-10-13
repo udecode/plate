@@ -19,9 +19,12 @@ import { discussionPlugin } from './plugins/discussion-kit';
 export type ToolName = 'comment' | 'edit' | 'generate';
 
 export type TComment = {
-  blockId: string;
-  comment: string;
-  content: string;
+  comment: {
+    blockId: string;
+    comment: string;
+    content: string;
+  } | null;
+  status: 'finished' | 'streaming';
 };
 
 export type MessageDataPart = {
@@ -102,7 +105,14 @@ export const useChat = () => {
       }
 
       if (data.type === 'data-comment' && data.data) {
-        const aiComment = data.data;
+        if (data.data.status === 'finished') {
+          editor.getApi(AIChatPlugin).aiChat.hide();
+          editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
+
+          return;
+        }
+
+        const aiComment = data.data.comment!;
         const range = aiCommentToRange(editor, aiComment);
 
         if (!range) return console.warn('No range found for AI comment');
@@ -166,7 +176,7 @@ export const useChat = () => {
   };
 
   React.useEffect(() => {
-    editor.setOption(AIChatPlugin, 'chat', chat);
+    editor.setOption(AIChatPlugin, 'chat', chat as any);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.status, chat.messages, chat.error]);
 
