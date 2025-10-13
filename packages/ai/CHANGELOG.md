@@ -1,5 +1,12 @@
 # @platejs/ai
 
+## 50.3.5
+
+### Patch Changes
+
+- [#4676](https://github.com/udecode/plate/pull/4676) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Fix poor AI generation quality when blockSelecting.
+
 ## 50.3.4
 
 ## 50.3.3
