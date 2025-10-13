@@ -180,10 +180,22 @@ const getCommentTool = (
 
         writer.write({
           id: commentDataId,
-          data: comment,
+          data: {
+            comment: comment,
+            status: 'streaming'
+          },
           type: 'data-comment',
         });
       }
+
+      writer.write({
+        id: nanoid(),
+        data: {
+          comment: null,
+          status: 'finished'
+        },
+        type: 'data-comment',
+      });     
     },
   });
 };
