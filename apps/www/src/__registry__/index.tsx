@@ -2678,6 +2678,14 @@ export const Index: Record<string, any> = {
       path: "src/registry/app/api/ai/command/route.ts",
       type: "registry:file",
       target: "app/api/ai/command/route.ts"
+    },{
+      path: "src/registry/app/api/ai/command/utils.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/utils.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompts.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompts.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/app/api/ai/command/route.ts")

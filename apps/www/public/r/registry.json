@@ -3849,9 +3849,8 @@
       "type": "registry:file",
       "dependencies": [
         "@ai-sdk/react@2.0.28",
-        "@ai-sdk/google@2.0.11",
-        "@ai-sdk/openai@2.0.23",
-        "ai@5.0.28"
+        "ai@5.0.28",
+        "dedent@1.0.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/copilot-api",
@@ -3862,6 +3861,16 @@
           "path": "src/registry/app/api/ai/command/route.ts",
           "type": "registry:file",
           "target": "app/api/ai/command/route.ts"
+        },
+        {
+          "path": "src/registry/app/api/ai/command/utils.ts",
+          "type": "registry:file",
+          "target": "app/api/ai/command/utils.ts"
+        },
+        {
+          "path": "src/registry/app/api/ai/command/prompts.ts",
+          "type": "registry:file",
+          "target": "app/api/ai/command/prompts.ts"
         }
       ]
     },
@@ -3869,7 +3878,6 @@
       "name": "copilot-api",
       "type": "registry:file",
       "dependencies": [
-        "@ai-sdk/openai@2.0.23",
         "ai@5.0.28"
       ],
       "registryDependencies": [],
