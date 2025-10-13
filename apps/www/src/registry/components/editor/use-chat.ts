@@ -105,6 +105,13 @@ export const useChat = () => {
       }
 
       if (data.type === 'data-comment' && data.data) {
+        if (data.data.status === 'finished') {
+          editor.getApi(AIChatPlugin).aiChat.hide();
+          editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
+
+          return;
+        }
+
         const aiComment = data.data.comment!;
         const range = aiCommentToRange(editor, aiComment);
 
