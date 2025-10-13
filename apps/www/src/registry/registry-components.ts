@@ -9,6 +9,7 @@ const registryApi: Registry['items'] = [
       '@ai-sdk/google@2.0.11',
       '@ai-sdk/openai@2.0.23',
       'ai@5.0.28',
+      'dedent@1.0.0',
     ],
     files: [
       {
