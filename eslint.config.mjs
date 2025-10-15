@@ -4,6 +4,7 @@ export default defineConfig(
   {
     ignores: [
       'scripts/**/*',
+      '.claude/**/*',
       '**/.contentlayer/*',
       '**/__registry__/*',
       '**/build-registry.mts',
