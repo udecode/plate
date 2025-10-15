@@ -174,6 +174,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       autoSelect,
       selection,
       value,
+      onReady,
     }: {
       /**
        * Id of the document.
@@ -241,6 +242,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         // Skipped since YjsEditor.connect already normalizes the editor
         shouldNormalizeEditor: false,
         value: null,
+        onReady,
       });
 
       // Then process and create providers
