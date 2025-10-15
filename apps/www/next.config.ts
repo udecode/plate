@@ -3,8 +3,6 @@ import type { NextConfig } from 'next';
 import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
-  console.log('process.env.RC', process.env.RC);
-
   const config: NextConfig = {
     experimental: {
       turbopackFileSystemCacheForDev: true,
