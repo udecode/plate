@@ -1,10 +1,10 @@
 # Playground Template
 
-A Next.js 15 template with [Plate](https://platejs.org/) AI, plugins and components.
+A Next.js template with [Plate](https://platejs.org/) AI, plugins and components.
 
 ## Features
 
-- Next.js 15 App Directory
+- Next.js 16
 - [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
 - [MCP](https://platejs.org/docs/components/mcp)
@@ -12,7 +12,7 @@ A Next.js 15 template with [Plate](https://platejs.org/) AI, plugins and compone
 ## Requirements
 
 - Node.js 20+
-- pnpm 9+
+- pnpm
 
 ## Installation
 

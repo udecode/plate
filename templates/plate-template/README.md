@@ -1,10 +1,10 @@
 # Playground Template
 
-A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js 15.
+A minimal template for building rich-text editors with [Plate](https://platejs.org/) and Next.js.
 
 ## Features
 
-- Next.js 15 App Directory
+- Next.js 16
 - [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
 - [MCP](https://platejs.org/docs/components/mcp)
@@ -12,7 +12,7 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 ## Requirements
 
 - Node.js 20+
-- pnpm 9+
+- pnpm
 
 ## Installation
 
