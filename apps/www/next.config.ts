@@ -3,7 +3,12 @@ import type { NextConfig } from 'next';
 import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
+  console.log('process.env.RC', process.env.RC);
+
   const config: NextConfig = {
+    experimental: {
+      turbopackFileSystemCacheForDev: true,
+    },
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
       remotePatterns: [
@@ -31,6 +36,9 @@ const nextConfig = async (phase: string) => {
       '/docs/*': ['./src/registry/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
+    // slower compilation, so let's disable it in development for now
+    reactCompiler:
+      process.env.RC === 'true' || process.env.NODE_ENV === 'production',
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
@@ -74,33 +82,33 @@ const nextConfig = async (phase: string) => {
       ];
     },
 
-    webpack: (config, { buildId, dev, isServer, webpack }) => {
-      config.externals.push({
-        shiki: 'shiki',
-        typescript: 'typescript',
-      });
+    // webpack: (config, { buildId, dev, isServer, webpack }) => {
+    //   config.externals.push({
+    //     shiki: 'shiki',
+    //     typescript: 'typescript',
+    //   });
 
-      if (!isServer) {
-        config.resolve.fallback = {
-          ...config.resolve.fallback,
-          crypto: require.resolve('crypto-browserify'),
-          stream: require.resolve('stream-browserify'),
-        };
+    //   if (!isServer) {
+    //     config.resolve.fallback = {
+    //       ...config.resolve.fallback,
+    //       crypto: require.resolve('crypto-browserify'),
+    //       stream: require.resolve('stream-browserify'),
+    //     };
 
-        config.plugins.push(
-          new webpack.ProvidePlugin({
-            process: 'process/browser',
-          }),
-          new webpack.NormalModuleReplacementPlugin(
-            /node:crypto/,
-            (resource: any) => {
-              resource.request = resource.request.replace(/^node:/, '');
-            }
-          )
-        );
-      }
-      return config;
-    },
+    //     config.plugins.push(
+    //       new webpack.ProvidePlugin({
+    //         process: 'process/browser',
+    //       }),
+    //       new webpack.NormalModuleReplacementPlugin(
+    //         /node:crypto/,
+    //         (resource: any) => {
+    //           resource.request = resource.request.replace(/^node:/, '');
+    //         }
+    //       )
+    //     );
+    //   }
+    //   return config;
+    // },
   };
 
   if (phase === 'phase-development-server') {

@@ -48,7 +48,7 @@
     "typescript-eslint": "8.34.0"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "15.3.3",
+    "@next/eslint-plugin-next": "16.0.0-beta.0",
     "@types/eslint-config-prettier": "6.11.3",
     "@typescript-eslint/utils": "8.34.0"
   }
