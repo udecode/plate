@@ -13,16 +13,12 @@
     "noUncheckedIndexedAccess": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-
     "isolatedModules": true,
-
     "allowJs": true,
     "checkJs": false,
-
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "target": "es2022",
@@ -37,8 +33,7 @@
     "sourceMap": true,
     "pretty": true,
     "preserveWatchOutput": true,
-
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "plugins": [
       {
         "name": "next"
@@ -52,6 +47,7 @@
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
     "**/*.cts",
