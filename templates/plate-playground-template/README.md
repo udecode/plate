@@ -42,7 +42,7 @@ cp .env.example .env.local
 
 Configure `.env.local`:
 
-- `OPENAI_API_KEY` – OpenAI API key ([get one here](https://platform.openai.com/account/api-keys))
+- `AI_GATEWAY_API_KEY` – AI Gateway API key ([get one here](https://vercel.com/ai-gateway))
 - `UPLOADTHING_TOKEN` – UploadThing API key ([get one here](https://uploadthing.com/dashboard))
 
 Start the development server:
