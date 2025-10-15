@@ -5,6 +5,7 @@ import type {
 import type { NextRequest } from 'next/server';
 
 import {
+  LanguageModel,
   type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -26,9 +27,10 @@ import {
   getEditPrompt,
   getGeneratePrompt,
 } from './prompts';
+import { createGateway } from '@ai-sdk/gateway';
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, ctx, messages: messagesRaw } = await req.json();
+  const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
 
   const { children, selection, toolName: toolNameParam } = ctx;
 
@@ -49,6 +51,10 @@ export async function POST(req: NextRequest) {
 
   const isSelecting = editor.api.isExpanded();
 
+  const gatewayProvider = createGateway({
+    apiKey,
+  });
+
   try {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
@@ -59,7 +65,7 @@ export async function POST(req: NextRequest) {
             enum: isSelecting
               ? ['generate', 'edit', 'comment']
               : ['generate', 'comment'],
-            model: 'google/gemini-2.5-flash',
+            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
             output: 'enum',
             prompt: getChooseToolPrompt(messagesRaw),
           });
@@ -74,11 +80,15 @@ export async function POST(req: NextRequest) {
 
         const stream = streamText({
           experimental_transform: markdownJoinerTransform(),
-          model: 'google/gemini-2.5-flash',
+          model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
           prompt: '',
           tools: {
-            comment: getCommentTool(editor, { messagesRaw, writer }),
+            comment: getCommentTool(editor, {
+              messagesRaw,
+              writer,
+              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            }),
           },
           prepareStep: async (step) => {
             if (toolName === 'comment') {
@@ -120,7 +130,7 @@ export async function POST(req: NextRequest) {
                     role: 'user',
                   },
                 ],
-                model: 'openai/gpt-4o-mini',
+                model: gatewayProvider(model || 'openai/gpt-4o-mini'),
               };
             }
           },
@@ -144,14 +154,19 @@ const getCommentTool = (
   {
     messagesRaw,
     writer,
-  }: { messagesRaw: ChatMessage[]; writer: UIMessageStreamWriter<ChatMessage> }
+    model,
+  }: {
+    messagesRaw: ChatMessage[];
+    writer: UIMessageStreamWriter<ChatMessage>;
+    model: LanguageModel;
+  }
 ) => {
   return tool({
     description: 'Comment on the content',
     inputSchema: z.object({}),
     execute: async () => {
       const { elementStream } = streamObject({
-        model: 'google/gemini-2.5-flash',
+        model,
         output: 'array',
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
@@ -182,7 +197,7 @@ const getCommentTool = (
           id: commentDataId,
           data: {
             comment: comment,
-            status: 'streaming'
+            status: 'streaming',
           },
           type: 'data-comment',
         });
@@ -192,10 +207,10 @@ const getCommentTool = (
         id: nanoid(),
         data: {
           comment: null,
-          status: 'finished'
+          status: 'finished',
         },
         type: 'data-comment',
-      });     
+      });
     },
   });
 };
