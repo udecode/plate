@@ -115,8 +115,8 @@ export const buildStructuredPrompt = ({
         Here is the background data you should reference when answering the user:
               ${backgroundData}
       `,
-
-    dedent`
+    rules &&
+      dedent`
       Here are some important rules for the interaction:
           ${rules}
     `,
@@ -246,4 +246,3 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 export const getMarkdownWithSelection = (editor: SlateEditor) => {
   return removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
 };
-
