@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 50.3.6
+
+### Patch Changes
+
+- [#4685](https://github.com/udecode/plate/pull/4685) by [@Pagebakers](https://github.com/Pagebakers) – Fixed issue where onReady would not be called
+
 ## 50.2.6
 
 ### Patch Changes
