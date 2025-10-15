@@ -31,12 +31,11 @@ export const aiChatPlugin = AIChatPlugin.extend({
     node: AIAnchorElement,
   },
   shortcuts: { show: { keys: 'mod+j' } },
-  useHooks: ({ api, editor, getOption }) => {
+  useHooks: ({ editor, getOption }) => {
     useChat();
 
     const mode = usePluginOption(AIChatPlugin, 'mode');
     const toolName = usePluginOption(AIChatPlugin, 'toolName');
-
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode == 'insert') {

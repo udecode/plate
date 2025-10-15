@@ -1,4 +1,4 @@
-import type { ChatMessage } from '@/registry/components/editor/use-chat';
+import type { ChatMessage } from '@/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
 import { getMarkdown } from '@platejs/ai';
