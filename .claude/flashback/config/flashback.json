@@ -1,0 +1,12 @@
+{
+  "version": "2.2.9",
+  "project_name": "dotai",
+  "initialized": "2025-08-10T11:03:41.829Z",
+  "memory": {
+    "max_archived_sessions": 10,
+    "max_archived_working_plans": 10
+  },
+  "hooks": {
+    "session_start_enabled": true
+  }
+}
