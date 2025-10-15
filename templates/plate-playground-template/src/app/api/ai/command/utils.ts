@@ -117,9 +117,9 @@ export const buildStructuredPrompt = ({
       `,
     rules &&
       dedent`
-      Here are some important rules for the interaction:
-          ${rules}
-    `,
+        Here are some important rules for the interaction:
+            ${rules}
+      `,
 
     formattedExamples &&
       dedent`

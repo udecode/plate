@@ -4,8 +4,9 @@ import type {
 } from '@/registry/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
+import { createGateway } from '@ai-sdk/gateway';
 import {
-  LanguageModel,
+  type LanguageModel,
   type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
@@ -27,7 +28,6 @@ import {
   getEditPrompt,
   getGeneratePrompt,
 } from './prompts';
-import { createGateway } from '@ai-sdk/gateway';
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
@@ -86,8 +86,8 @@ export async function POST(req: NextRequest) {
           tools: {
             comment: getCommentTool(editor, {
               messagesRaw,
-              writer,
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              writer,
             }),
           },
           prepareStep: async (step) => {
@@ -153,12 +153,12 @@ const getCommentTool = (
   editor: SlateEditor,
   {
     messagesRaw,
-    writer,
     model,
+    writer,
   }: {
     messagesRaw: ChatMessage[];
-    writer: UIMessageStreamWriter<ChatMessage>;
     model: LanguageModel;
+    writer: UIMessageStreamWriter<ChatMessage>;
   }
 ) => {
   return tool({

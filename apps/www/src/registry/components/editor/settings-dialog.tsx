@@ -40,6 +40,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+
 import { aiChatPlugin } from './plugins/ai-kit';
 
 interface Model {
@@ -48,26 +49,26 @@ interface Model {
 }
 
 export const models: Model[] = [
-    // OpenAI Models
-    { label: 'GPT-3.5 Turbo', value: 'openai/gpt-3.5-turbo' },
-    { label: 'GPT-3.5 Turbo Instruct', value: 'openai/gpt-3.5-turbo-instruct' },
-    { label: 'GPT-4 Turbo', value: 'openai/gpt-4-turbo' },
-    { label: 'GPT-4.1', value: 'openai/gpt-4.1' },
-    { label: 'GPT-4.1 Mini', value: 'openai/gpt-4.1-mini' },
-    { label: 'GPT-4.1 Nano', value: 'openai/gpt-4.1-nano' },
-    { label: 'GPT-4o', value: 'openai/gpt-4o' },
-    { label: 'GPT-4o Mini', value: 'openai/gpt-4o-mini' },
-    { label: 'GPT-5', value: 'openai/gpt-5' },
-    { label: 'GPT-5 Codex', value: 'openai/gpt-5-codex' },
-    { label: 'GPT-5 Mini', value: 'openai/gpt-5-mini' },
-    { label: 'GPT-5 Nano', value: 'openai/gpt-5-nano' },
-    { label: 'GPT-OSS 120B', value: 'openai/gpt-oss-120b' },
-    { label: 'GPT-OSS 20B', value: 'openai/gpt-oss-20b' },
-    { label: 'O1', value: 'openai/o1' },
-    { label: 'O3', value: 'openai/o3' },
-    { label: 'O3 Mini', value: 'openai/o3-mini' },
-    { label: 'O4 Mini', value: 'openai/o4-mini' },
-  
+  // OpenAI Models
+  { label: 'GPT-3.5 Turbo', value: 'openai/gpt-3.5-turbo' },
+  { label: 'GPT-3.5 Turbo Instruct', value: 'openai/gpt-3.5-turbo-instruct' },
+  { label: 'GPT-4 Turbo', value: 'openai/gpt-4-turbo' },
+  { label: 'GPT-4.1', value: 'openai/gpt-4.1' },
+  { label: 'GPT-4.1 Mini', value: 'openai/gpt-4.1-mini' },
+  { label: 'GPT-4.1 Nano', value: 'openai/gpt-4.1-nano' },
+  { label: 'GPT-4o', value: 'openai/gpt-4o' },
+  { label: 'GPT-4o Mini', value: 'openai/gpt-4o-mini' },
+  { label: 'GPT-5', value: 'openai/gpt-5' },
+  { label: 'GPT-5 Codex', value: 'openai/gpt-5-codex' },
+  { label: 'GPT-5 Mini', value: 'openai/gpt-5-mini' },
+  { label: 'GPT-5 Nano', value: 'openai/gpt-5-nano' },
+  { label: 'GPT-OSS 120B', value: 'openai/gpt-oss-120b' },
+  { label: 'GPT-OSS 20B', value: 'openai/gpt-oss-20b' },
+  { label: 'O1', value: 'openai/o1' },
+  { label: 'O3', value: 'openai/o3' },
+  { label: 'O3 Mini', value: 'openai/o3-mini' },
+  { label: 'O4 Mini', value: 'openai/o4-mini' },
+
   // Google Models
   { label: 'Gemini 2.0 Flash', value: 'google/gemini-2.0-flash' },
   { label: 'Gemini 2.0 Flash Lite', value: 'google/gemini-2.0-flash-lite' },
