@@ -1,16 +1,12 @@
-import { fixupConfigRules } from '@eslint/compat';
+import nextPlugin from '@next/eslint-plugin-next';
 
-import { compat, defineConfig } from '../utils.js';
+import { defineConfig } from '../utils.js';
 import reactConfig from './react.js';
 
-export default defineConfig(
-  ...reactConfig,
-  ...fixupConfigRules(compat.extends('plugin:@next/next/recommended')),
-  {
-    rules: {
-      '@next/next/no-html-link-for-pages': 'off',
-      // https://github.com/vercel/next.js/discussions/16832
-      '@next/next/no-img-element': 'off',
-    },
-  }
-);
+export default defineConfig(...reactConfig, nextPlugin.configs.recommended, {
+  rules: {
+    '@next/next/no-html-link-for-pages': 'off',
+    // https://github.com/vercel/next.js/discussions/16832
+    '@next/next/no-img-element': 'off',
+  },
+});

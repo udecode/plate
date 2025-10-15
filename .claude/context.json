@@ -1,0 +1,45 @@
+{
+  "defaultPreset": "app",
+  "rules": [
+    {
+      "name": "project-status",
+      "path": ".cursor/rules/project-status.mdc",
+      "description": "Project status and development priorities",
+      "alwaysApply": true
+    },
+    {
+      "name": "app-design",
+      "path": ".cursor/rules/app-design-document.mdc",
+      "description": "Application design and architecture overview",
+      "alwaysApply": true
+    },
+    {
+      "name": "tech-stack",
+      "path": ".cursor/rules/tech-stack.mdc",
+      "description": "Technology stack and dependencies",
+      "alwaysApply": true
+    }
+  ],
+  "presets": {
+    "frontend": {
+      "name": "Frontend",
+      "description": "Frontend preset",
+      "rules": []
+    },
+    "backend": {
+      "name": "Backend",
+      "description": "Backend preset",
+      "rules": []
+    },
+    "app": {
+      "name": "App (All Rules)",
+      "description": "Best for e2e features, architecture changes",
+      "rules": ["backend", "frontend"]
+    },
+    "custom": {
+      "description": "Your previously saved custom rule selection",
+      "name": "Custom Selection",
+      "rules": []
+    }
+  }
+}

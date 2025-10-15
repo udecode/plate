@@ -1,30 +1,34 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
+
 # Project Status Guidelines
 
 ## **Project Stage Assessment**
+
 - **Determine Current Stage**: Always assess project maturity before making development decisions
 - **Stage-Based Priorities**: Adjust development focus based on current project stage
 - **Documentation Updates**: Keep [CLAUDE.md](mdc:CLAUDE.md) "Project Status" section current
 
 ## **Development Stage Categories**
 
-Based on the project stage assessment from `@create-app-design-document.md`:
+Based on the project stage assessment from `@create-app-design-document.mdc`:
 
 ### **Stage-Based Development Guidelines**
 
 Development priorities should be determined based on the project stage assessment from the app design document. Each stage has different priorities for what AI should care about vs skip during development.
 
 **Reference:** The specific DO/DON'T lists for each stage are defined in:
-- App Design Document generated via `@create-app-design-document.md`
+
+- App Design Document generated via `@create-app-design-document.mdc`
 - CLAUDE.md "Project Status" section (updated during app design document creation)
 
 ## **Implementation Guidelines**
 
 ### **Security-First Approach (All Stages)**
+
 ```typescript
 // ✅ DO: Always validate inputs with Zod
 const userInput = userSchema.parse(input);
@@ -41,6 +45,7 @@ const user = input; // Unsafe
 ```
 
 ### **Stage-Appropriate Error Handling**
+
 ```typescript
 // ✅ Pre-MVP: Basic error handling
 try {
@@ -66,6 +71,7 @@ try {
 ## **Decision Framework**
 
 ### **Feature Priority Questions**
+
 1. **Stage Check**: What project stage are we in?
 2. **Security Impact**: Does this affect user data or system security?
 3. **Core Functionality**: Is this essential for primary user goals?
@@ -73,6 +79,7 @@ try {
 5. **Technical Debt**: Can we defer this to post-MVP?
 
 ### **Code Quality Standards**
+
 - **Pre-MVP**: Focus on readable, working code with security
 - **MVP+**: Add testing for user-facing features
 - **Production**: Full quality standards and documentation
@@ -81,22 +88,27 @@ try {
 ## **Status Documentation**
 
 ### **Required in CLAUDE.md**
+
 ```markdown
 ## Project Status: [Stage Name]
 
 **Current Stage**: [Pre-MVP | MVP | Production | Enterprise]
 
 **DO NOT care about:**
+
 - [List based on stage]
 
 **DO care about:**
+
 - [List based on stage]
 
 **Next Stage Goals:**
+
 - [Key milestones to reach next stage]
 ```
 
 ### **Regular Updates**
+
 - Update status when deploying to production
 - Reassess priorities quarterly or at major milestones
 - Document stage transition criteria
@@ -105,6 +117,7 @@ try {
 ## **Examples by Stage**
 
 ### **Pre-MVP Example: Authentication Feature**
+
 ```typescript
 // ✅ FOCUS: Core login flow with security
 export const loginUser = publicProcedure
@@ -121,6 +134,7 @@ export const loginUser = publicProcedure
 ```
 
 ### **Production Example: Authentication Feature**
+
 ```typescript
 // ✅ COMPREHENSIVE: Full feature with testing, accessibility, monitoring
 export const loginUser = publicProcedure
@@ -130,14 +144,17 @@ export const loginUser = publicProcedure
       await rateLimiter.check(ctx.ip);
       const user = await verifyCredentials(input);
       const session = await createSession(user.id);
-      
+
       logger.info('User login successful', { userId: user.id });
       await auditLog.record('USER_LOGIN', { userId: user.id });
-      
+
       return { success: true, sessionId: session.id };
     } catch (error) {
       logger.warn('Login attempt failed', { ip: ctx.ip, error });
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid credentials' });
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Invalid credentials',
+      });
     }
   });
 ```

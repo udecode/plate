@@ -68,6 +68,7 @@
     "p:tsup": "cd $INIT_CWD && tsup --config=${PROJECT_CWD}/tooling/config/tsup.config.ts",
     "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.json",
     "r": "yarn workspace www r",
+    "rc": "turbo --filter=www rc",
     "rd": "yarn workspace www rd",
     "release": "yarn build && yarn changeset publish",
     "shadcn:build": "yarn workspace www shadcn:build",
@@ -81,6 +82,10 @@
     "translate": "ts-node tooling/scripts/translate.mjs",
     "typecheck": "yarn g:typecheck",
     "typecheck:all": "yarn g:typecheck:all"
+  },
+  "resolutions": {
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2"
   },
   "devDependencies": {
     "@app/eslint": "workspace:^",
@@ -101,13 +106,15 @@
     "@types/lodash": "4.17.17",
     "@types/node": "24.0.0",
     "@types/prismjs": "1.26.5",
+    "@types/prompts": "2.4.9",
     "@types/raf": "3.4.3",
-    "@types/react": "19.1.7",
-    "@types/react-dom": "19.1.6",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "@types/validator": "13.15.1",
     "app-root-path": "3.1.0",
     "autoprefixer": "10.4.21",
     "barrelsby": "2.8.1",
+    "commander": "14.0.1",
     "concurrently": "9.1.2",
     "cross-env": "7.0.3",
     "dotenv": "16.5.0",
@@ -117,9 +124,10 @@
     "openai": "5.3.0",
     "patch-package": "8.0.0",
     "prettier": "3.5.3",
-    "react": "19.1.0",
+    "prompts": "2.4.2",
+    "react": "19.2.0",
     "react-dnd-test-backend": "16.0.1",
-    "react-dom": "19.1.0",
+    "react-dom": "19.2.0",
     "rimraf": "6.0.1",
     "slate-test-utils": "1.3.2",
     "tailwindcss": "4.1.8",
@@ -128,7 +136,8 @@
     "tsup": "8.5.0",
     "turbo": "2.5.4",
     "turbowatch": "2.29.4",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "zod": "4.1.12"
   },
   "packageManager": "yarn@4.6.0",
   "engines": {
