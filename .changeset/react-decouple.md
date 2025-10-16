@@ -1,23 +1,8 @@
 ---
 '@platejs/core': patch
-'@platejs/media': patch
-'@platejs/ai': patch
 ---
 
-Decouple React from @platejs/core
+Decouple `createSlateEditor` from React:
 
-**Breaking Changes:**
-- `createZustandStore` is no longer exported from `@platejs/core`. Import it from `@platejs/core/react` or `platejs/react` instead.
-
-**Migration:**
-```diff
-- import { createZustandStore } from '@platejs/core';
-+ import { createZustandStore } from '@platejs/core/react';
-// or
-+ import { createZustandStore } from 'platejs/react';
-```
-
-**Details:**
-- The core package now exports `createVanillaStore` for non-React usage
-- React-specific functionality is moved to a separate export path: `@platejs/core/react`
-- Added `optionsStoreFactory` parameter to allow React version to provide its own store factory
+- `createZustandStore` from `@platejs/core` (or `platejs`) is now a vanilla store without React-specific functionality (hooks).
+- The previous behavior of `createZustandStore` is now available in `@platejs/core/react` (or `platejs/react`). This is not part of our public API so it won't be a breaking change, but if you're using it, you'll need to import it from `@platejs/core/react` (or `platejs/react`) instead.

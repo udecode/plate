@@ -87,9 +87,9 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    */
   nodeId?: NodeIdConfig['options'] | boolean;
   /**
-   * Factory used to create the per-plugin options store. Defaults to the
-   * vanilla store factory so the core lib stays React-free, while the React
-   * entry can provide a store with hook helpers.
+   * Factory used to create the per-plugin options store
+   *
+   * @default createVanillaStore from zustand-x/vanilla
    */
   optionsStoreFactory?: PluginStoreFactory;
   // override?: {

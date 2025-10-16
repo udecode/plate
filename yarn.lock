@@ -23910,20 +23910,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand-x@workspace:packages/zustand-x":
-  version: 0.0.0-use.local
-  resolution: "zustand-x@workspace:packages/zustand-x"
-  dependencies:
-    immer: "npm:^10.0.3"
-    lodash.mapvalues: "npm:^4.6.0"
-    mutative: "npm:1.1.0"
-    react-tracked: "npm:^1.7.11"
-    use-sync-external-store: "npm:1.4.0"
-  peerDependencies:
-    zustand: ">=5.0.2"
-  languageName: unknown
-  linkType: soft
-
 "zustand@npm:^4.3.2":
   version: 4.5.7
   resolution: "zustand@npm:4.5.7"
