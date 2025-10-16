@@ -272,7 +272,7 @@ export const withSlate = <
 
     return (store.get as any)(key, ...args);
   };
-  editor.setOption = (plugin: any, key: any, value: any) => {
+  editor.setOption = (plugin: any, key: any, ...args: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
@@ -285,14 +285,7 @@ export const withSlate = <
       return;
     }
 
-    if (typeof value === 'function') {
-      store.set('state', (draft: any) => {
-        draft[key] = value;
-      });
-      return;
-    }
-
-    store.set(key as any, value);
+    (store.set as any)(key, ...args);
   };
   editor.setOptions = (plugin: any, options: any) => {
     const store = editor.getOptionsStore(plugin);
