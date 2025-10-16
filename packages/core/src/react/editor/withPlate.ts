@@ -3,7 +3,6 @@ import { type Editor, type Value, createEditor } from '@platejs/slate';
 import type { AnyPlatePlugin } from '../plugin';
 import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
-import { createZustandStore } from '../libs/zustand';
 
 import {
   type AnyPluginConfig,
@@ -12,6 +11,7 @@ import {
   type InferPlugins,
   withSlate,
 } from '../../lib';
+import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
 export type PlateCorePlugin =
@@ -71,21 +71,17 @@ export type WithPlateOptions<
 export const withPlate = <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
-
 >(
   e: Editor,
   options: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
-  const { plugins = [], optionsStoreFactory, ...rest } = options;
+  const { optionsStoreFactory, plugins = [], ...rest } = options;
 
-  const editor = withSlate<V, P>(
-    e,
-    {
-      ...rest,
-      optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
-      plugins: [...getPlateCorePlugins(), ...plugins],
-    } as any
-  ) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
+  const editor = withSlate<V, P>(e, {
+    ...rest,
+    optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
+    plugins: [...getPlateCorePlugins(), ...plugins],
+  } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
   return editor;
 };
