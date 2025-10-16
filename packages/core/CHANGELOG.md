@@ -1,5 +1,14 @@
 # @platejs/core
 
+## 50.3.7
+
+### Patch Changes
+
+- [#4689](https://github.com/udecode/plate/pull/4689) by [@felixfeng33](https://github.com/felixfeng33) – Decouple `createSlateEditor` from React:
+
+  - `createZustandStore` from `@platejs/core` (or `platejs`) is now a vanilla store without React-specific functionality (hooks).
+  - The previous behavior of `createZustandStore` is now available in `@platejs/core/react` (or `platejs/react`). This is not part of our public API so it won't be a breaking change, but if you're using it, you'll need to import it from `@platejs/core/react` (or `platejs/react`) instead.
+
 ## 49.2.21
 
 ### Patch Changes

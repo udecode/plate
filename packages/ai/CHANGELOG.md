@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 50.3.7
+
+### Patch Changes
+
+- [#4689](https://github.com/udecode/plate/pull/4689) by [@felixfeng33](https://github.com/felixfeng33) – Import `createZustandStore` from `platejs/react`
+
 ## 50.3.5
 
 ### Patch Changes
