@@ -1,8 +1,7 @@
 ---
-'@platejs/core': major
+'@platejs/core': minor
 '@platejs/media': patch
 '@platejs/ai': patch
-'www': patch
 ---
 
 Decouple React from @platejs/core
