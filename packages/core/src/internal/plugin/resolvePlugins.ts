@@ -5,7 +5,7 @@ import {
 } from '@platejs/slate';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
-import { createZustandStore } from 'zustand-x';
+import { createVanillaStore } from 'zustand-x/vanilla';
 
 import type { SlateEditor, SlatePlugin, SlatePlugins } from '../../lib';
 
@@ -18,9 +18,12 @@ import { resolvePlugin } from './resolvePlugin';
  * the editor's plugins, resolving core and custom plugins, and applying any
  * overrides specified in the plugins.
  */
+export type PluginStoreFactory = typeof createVanillaStore;
+
 export const resolvePlugins = (
   editor: SlateEditor,
-  plugins: SlatePlugins = []
+  plugins: SlatePlugins = [],
+  createStore: PluginStoreFactory = createVanillaStore
 ) => {
   editor.plugins = {};
   editor.meta.pluginList = [];
@@ -71,7 +74,7 @@ export const resolvePlugins = (
 
   resolvePluginOverrides(editor);
 
-  resolvePluginStores(editor);
+  resolvePluginStores(editor, createStore);
 
   // Last pass
   editor.meta.pluginList.forEach((plugin: SlatePlugin) => {
@@ -186,10 +189,13 @@ export const resolvePlugins = (
   return editor;
 };
 
-const resolvePluginStores = (editor: SlateEditor) => {
+const resolvePluginStores = (
+  editor: SlateEditor,
+  createStore: PluginStoreFactory
+) => {
   // Create zustand stores for each plugin
   editor.meta.pluginList.forEach((plugin) => {
-    let store = createZustandStore(plugin.options, {
+    let store = createStore(plugin.options, {
       mutative: true,
       name: plugin.key,
     });

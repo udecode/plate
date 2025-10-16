@@ -13,6 +13,7 @@ import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
+import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
@@ -95,6 +96,12 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * functionality and define custom behavior.
    */
   plugins?: P[];
+  /**
+   * Factory used to create the per-plugin options store. Defaults to the
+   * vanilla store factory so the core lib stays React-free, while the React
+   * entry can provide a store with hook helpers.
+   */
+  optionsStoreFactory?: PluginStoreFactory;
   /**
    * Editor read-only initial state. For dynamic read-only control, use the
    * `Plate.readOnly` prop instead.
@@ -210,6 +217,7 @@ export const withSlate = <
     skipInitialization,
     value,
     onReady,
+    optionsStoreFactory,
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
 ): TSlateEditor<V, InferPlugins<P[]>> => {
@@ -320,7 +328,7 @@ export const withSlate = <
     rootPluginInstance = rootPlugin(rootPluginInstance) as any;
   }
 
-  resolvePlugins(editor, [rootPluginInstance]);
+  resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
   const normalizeNode = editor.tf.normalizeNode;

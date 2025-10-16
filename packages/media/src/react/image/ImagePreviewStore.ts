@@ -1,4 +1,4 @@
-import { createZustandStore } from 'platejs';
+import { createZustandStore } from 'platejs/react';
 
 export interface PreviewItem {
   url: string;
