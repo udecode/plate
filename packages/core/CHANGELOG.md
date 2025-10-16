@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 50.3.8
+
+### Patch Changes
+
+- [#4691](https://github.com/udecode/plate/pull/4691) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `editor.setOption` to properly handle function values
+
 ## 50.3.7
 
 ### Patch Changes
