@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { Paintbrush } from 'lucide-react';
-import { createZustandStore } from 'platejs';
+import { createZustandStore } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { THEME_LIST } from '@/lib/themes';

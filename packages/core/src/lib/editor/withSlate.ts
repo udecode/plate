@@ -6,6 +6,7 @@ import {
 } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
+import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { ChunkingConfig } from '../plugins/chunking';
@@ -85,6 +86,12 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
   nodeId?: NodeIdConfig['options'] | boolean;
+  /**
+   * Factory used to create the per-plugin options store
+   *
+   * @default createVanillaStore from zustand-x/vanilla
+   */
+  optionsStoreFactory?: PluginStoreFactory;
   // override?: {
   //   components?: Partial<
   //     Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
@@ -202,6 +209,7 @@ export const withSlate = <
     chunking = true,
     maxLength,
     nodeId,
+    optionsStoreFactory,
     plugins = [],
     readOnly = false,
     rootPlugin,
@@ -264,7 +272,7 @@ export const withSlate = <
 
     return (store.get as any)(key, ...args);
   };
-  editor.setOption = (plugin: any, key: any, ...args: any) => {
+  editor.setOption = (plugin: any, key: any, value: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
@@ -277,7 +285,14 @@ export const withSlate = <
       return;
     }
 
-    (store.set as any)(key, ...args);
+    if (typeof value === 'function') {
+      store.set('state', (draft: any) => {
+        draft[key] = value;
+      });
+      return;
+    }
+
+    store.set(key as any, value);
   };
   editor.setOptions = (plugin: any, options: any) => {
     const store = editor.getOptionsStore(plugin);
@@ -320,7 +335,7 @@ export const withSlate = <
     rootPluginInstance = rootPlugin(rootPluginInstance) as any;
   }
 
-  resolvePlugins(editor, [rootPluginInstance]);
+  resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
   const normalizeNode = editor.tf.normalizeNode;

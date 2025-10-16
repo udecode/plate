@@ -11,6 +11,7 @@ import {
   type InferPlugins,
   withSlate,
 } from '../../lib';
+import { createZustandStore } from '../libs/zustand';
 import { getPlateCorePlugins } from './getPlateCorePlugins';
 
 export type PlateCorePlugin =
@@ -72,10 +73,13 @@ export const withPlate = <
   P extends AnyPluginConfig = PlateCorePlugin,
 >(
   e: Editor,
-  { plugins = [], ...options }: WithPlateOptions<V, P> = {}
+  options: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
+  const { optionsStoreFactory, plugins = [], ...rest } = options;
+
   const editor = withSlate<V, P>(e, {
-    ...options,
+    ...rest,
+    optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
     plugins: [...getPlateCorePlugins(), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
