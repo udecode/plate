@@ -39,7 +39,6 @@ jobs:
           allowed_tools: |
             Bash
             Edit
-            mcp__task_master_ai__*
             mcp__plate__*
             mcp_browser-tools_*
             mcp_memory_*

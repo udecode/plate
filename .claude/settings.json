@@ -1,27 +1,31 @@
 {
   "permissions": {
-    "allow": ["Bash", "Edit", "mcp__task_master_ai__*"]
+    "allow": ["Bash", "Edit"]
   },
   "enableAllProjectMcpServers": true,
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DATA=$(cat); TRANSCRIPT=$(echo \"$DATA\" | jq -r '.transcript_path'); TITLE=$(grep -m1 '\"type\":\"summary\"' \"$TRANSCRIPT\" 2>/dev/null | jq -r '.summary' 2>/dev/null || echo \"Claude Code\"); terminal-notifier -message \"Claude finished responding\" -title \"$TITLE\" -sound Ping"
-          }
-        ]
+  "extraKnownMarketplaces": {
+    "dotai": {
+      "source": {
+        "source": "github",
+        "repo": "udecode/dotai"
       }
-    ],
-    "PreCompact": [
+    }
+  },
+  "enabledPlugins": {
+    "ctx@dotai": true,
+    "dotai@dotai": true,
+    "fb@dotai": true,
+    "notification@dotai": true,
+    "codex@dotai": true
+  },
+  "hooks": {
+    "SessionStart": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "DATA=$(cat); TRANSCRIPT=$(echo \"$DATA\" | jq -r '.transcript_path'); TITLE=$(grep -m1 '\"type\":\"summary\"' \"$TRANSCRIPT\" 2>/dev/null | jq -r '.summary' 2>/dev/null || echo \"Claude Code\"); terminal-notifier -message \"Compacting conversation...\" -title \"$TITLE\" -sound Bottle"
+            "command": "if [ -d \".claude/flashback\" ]; then if command -v flashback &> /dev/null; then flashback session-start --context; elif [ -f \"$HOME/.claude/flashbacker/lib/cli.js\" ]; then node \"$HOME/.claude/flashbacker/lib/cli.js\" session-start --context; fi; fi"
           }
         ]
       }

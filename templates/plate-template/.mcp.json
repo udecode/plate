@@ -1,11 +1,5 @@
 {
   "mcpServers": {
-    "taskmaster-ai": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
-      "env": {}
-    },
     "plate": {
       "description": "Plate editors, plugins and components",
       "type": "stdio",

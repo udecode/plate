@@ -1,10 +1,10 @@
 # Playground Template
 
-A Next.js 15 template with [Plate](https://platejs.org/) AI, plugins and components.
+A Next.js template with [Plate](https://platejs.org/) AI, plugins and components.
 
 ## Features
 
-- Next.js 15 App Directory
+- Next.js 16
 - [Plate](https://platejs.org/) editor
 - [shadcn/ui](https://ui.shadcn.com/)
 - [MCP](https://platejs.org/docs/components/mcp)
@@ -12,7 +12,7 @@ A Next.js 15 template with [Plate](https://platejs.org/) AI, plugins and compone
 ## Requirements
 
 - Node.js 20+
-- pnpm 9+
+- pnpm
 
 ## Installation
 
@@ -42,7 +42,7 @@ cp .env.example .env.local
 
 Configure `.env.local`:
 
-- `OPENAI_API_KEY` – OpenAI API key ([get one here](https://platform.openai.com/account/api-keys))
+- `AI_GATEWAY_API_KEY` – AI Gateway API key ([get one here](https://vercel.com/ai-gateway))
 - `UPLOADTHING_TOKEN` – UploadThing API key ([get one here](https://uploadthing.com/dashboard))
 
 Start the development server:
