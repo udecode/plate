@@ -1,5 +1,5 @@
 ---
-'@platejs/core': minor
+'@platejs/core': patch
 '@platejs/media': patch
 '@platejs/ai': patch
 ---
