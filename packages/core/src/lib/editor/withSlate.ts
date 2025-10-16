@@ -6,6 +6,7 @@ import {
 } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
+import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { ChunkingConfig } from '../plugins/chunking';
@@ -13,7 +14,6 @@ import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
-import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
@@ -86,6 +86,12 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
   nodeId?: NodeIdConfig['options'] | boolean;
+  /**
+   * Factory used to create the per-plugin options store. Defaults to the
+   * vanilla store factory so the core lib stays React-free, while the React
+   * entry can provide a store with hook helpers.
+   */
+  optionsStoreFactory?: PluginStoreFactory;
   // override?: {
   //   components?: Partial<
   //     Record<KeyofNodePlugins<InferPlugins<P[]>>, NodeComponent | null>
@@ -96,12 +102,6 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * functionality and define custom behavior.
    */
   plugins?: P[];
-  /**
-   * Factory used to create the per-plugin options store. Defaults to the
-   * vanilla store factory so the core lib stays React-free, while the React
-   * entry can provide a store with hook helpers.
-   */
-  optionsStoreFactory?: PluginStoreFactory;
   /**
    * Editor read-only initial state. For dynamic read-only control, use the
    * `Plate.readOnly` prop instead.
@@ -209,6 +209,7 @@ export const withSlate = <
     chunking = true,
     maxLength,
     nodeId,
+    optionsStoreFactory,
     plugins = [],
     readOnly = false,
     rootPlugin,
@@ -217,7 +218,6 @@ export const withSlate = <
     skipInitialization,
     value,
     onReady,
-    optionsStoreFactory,
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
 ): TSlateEditor<V, InferPlugins<P[]>> => {
@@ -272,7 +272,7 @@ export const withSlate = <
 
     return (store.get as any)(key, ...args);
   };
-  editor.setOption = (plugin: any, key: any, ...args: any) => {
+  editor.setOption = (plugin: any, key: any, value: any) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
@@ -285,7 +285,14 @@ export const withSlate = <
       return;
     }
 
-    (store.set as any)(key, ...args);
+    if (typeof value === 'function') {
+      store.set('state', (draft: any) => {
+        draft[key] = value;
+      });
+      return;
+    }
+
+    store.set(key as any, value);
   };
   editor.setOptions = (plugin: any, options: any) => {
     const store = editor.getOptionsStore(plugin);
