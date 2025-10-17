@@ -8,6 +8,15 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
+### October 17 #26.8
+- **Static Components**: Updated all static component imports to use new `platejs/static` path
+  - `*-node-static` components: Updated imports from `@platejs/core/react` to `platejs/static`
+  - `editor-static`: Updated `PlateStatic` import path
+  - `export-toolbar-button`: Updated static utilities import path
+  - `import-toolbar-button`: Updated static utilities import path
+  - `slate-to-html/page`: Updated static rendering imports
+  - `comment-kit`, `suggestion-kit`: Updated static types imports
+
 ### October 6 #26.7
 - `api/ai/command/route.ts`: Fix poor AI generation quality when blockSelecting.
 
