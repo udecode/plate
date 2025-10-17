@@ -1,5 +1,7 @@
 # @platejs/list-classic
 
+## 51.0.0
+
 ## 49.1.0
 
 ### Minor Changes

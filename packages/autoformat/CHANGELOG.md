@@ -1,5 +1,7 @@
 # @platejs/autoformat
 
+## 51.0.0
+
 ## 49.0.0
 
 ### Major Changes

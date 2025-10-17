@@ -1,5 +1,22 @@
 # @platejs/core
 
+## 51.0.0
+
+### Major Changes
+
+- [#4695](https://github.com/udecode/plate/pull/4695) by [@felixfeng33](https://github.com/felixfeng33) – Moved static rendering functionality to `@platejs/core/static` / `platejs/static` to make `@platejs/core` / `platejs` React-free.
+
+  **Migration**
+  To migrate, update your imports from `platejs` to `platejs/static` for all static rendering features listed below:
+
+  - `createStaticEditor`, `CreateStaticEditorOptions` - Create static editor instance
+  - `serializeHtml`, `SerializeHtmlOptions` - Serialize editor content to HTML string
+  - `PlateStatic`, `PlateStaticProps` - Main static editor component
+  - `SlateElement`, `SlateElementProps` - Static element component
+  - `SlateText`, `SlateTextProps` - Static text component
+  - `SlateLeaf`, `SlateLeafProps` - Static leaf component
+  - `getEditorDOMFromHtmlString`
+
 ## 50.3.9
 
 ### Patch Changes

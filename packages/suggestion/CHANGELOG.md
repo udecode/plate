@@ -1,5 +1,7 @@
 # @platejs/suggestion
 
+## 51.0.0
+
 ## 50.3.3
 
 ### Patch Changes
