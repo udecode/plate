@@ -3,13 +3,11 @@ import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../../editor';
 import type { SlateRenderNodeProps } from '../types';
 
-import { pipeInjectNodeProps } from '../../../internal/plugin/pipeInjectNodeProps';
-import { type AnyEditorPlugin, getEditorPlugin } from '../../plugin';
-import { getSlateClass } from '../../utils';
-import { getPluginNodeProps } from '../../utils/getPluginNodeProps';
+import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
+import { type AnyEditorPlugin, type SlateEditor, getEditorPlugin, getPluginNodeProps, getSlateClass } from '../../lib';
+
 
 export const getRenderNodeStaticProps = ({
   attributes: nodeAttributes,

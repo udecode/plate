@@ -1,13 +1,12 @@
 import * as React from 'react';
 
+import type { TTableCellElement, TTableElement } from 'platejs';
 import type {
   SlateElementProps,
-  TTableCellElement,
-  TTableElement,
-} from 'platejs';
+} from 'platejs/static';
 
 import { BaseTablePlugin } from '@platejs/table';
-import { SlateElement } from 'platejs';
+import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 

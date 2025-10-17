@@ -15,8 +15,7 @@ import {
 } from '@platejs/slate';
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../../editor';
-import type { EditableProps } from '../../types/EditableProps';
+import type { EditableProps, SlateEditor } from '../../lib';
 import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';

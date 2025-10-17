@@ -3,12 +3,9 @@ import * as React from 'react';
 import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {
-  type Value,
-  createStaticEditor,
-  normalizeNodeId,
-  serializeHtml,
-} from 'platejs';
+import { type Value, normalizeNodeId } from 'platejs';
+
+import { createStaticEditor, serializeHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import {

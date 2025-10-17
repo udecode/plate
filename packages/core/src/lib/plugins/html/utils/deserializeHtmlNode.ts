@@ -1,7 +1,7 @@
 import type { SlateEditor } from '../../../editor';
 import type { DeserializeHtmlNodeReturnType } from '../types';
 
-import { isSlateNode } from '../../../static/deserialize/checkUtils';
+import { isSlateNode } from '../../../../static/deserialize/checkUtils';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';

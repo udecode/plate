@@ -6,16 +6,8 @@ import type { UnknownObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
 
-import type {
-  AnyPluginConfig,
-  PluginConfig,
-  SlatePluginContext,
-} from '../../plugin';
-import type {
-  RenderElementProps,
-  RenderLeafProps,
-  RenderTextProps,
-} from '../../types';
+import type { AnyPluginConfig, PluginConfig, RenderElementProps, RenderLeafProps, RenderTextProps, SlatePluginContext } from '../../lib';
+
 
 export const useNodeAttributes = (props: any, ref?: any) => {
   return {

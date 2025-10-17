@@ -1,4 +1,4 @@
-import { DOMPlugin } from '../../plugins';
+import { DOMPlugin } from '../../lib';
 import { getPlainText } from '../internal/getPlainText';
 import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
 import { getSelectedDomNode } from '../utils/getSelectedDomNode';

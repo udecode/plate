@@ -1,10 +1,9 @@
 import * as React from 'react';
 
+import type { RenderStaticNodeWrapper, TListElement } from 'platejs';
 import type {
-  RenderStaticNodeWrapper,
   SlateRenderElementProps,
-  TListElement,
-} from 'platejs';
+} from 'platejs/static';
 
 import { isOrderedList } from '@platejs/list';
 import { CheckIcon } from 'lucide-react';

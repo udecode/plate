@@ -4,11 +4,11 @@ import type { AnyObject } from '@udecode/utils';
 import type {
   AnyPluginConfig,
   PluginConfig,
+  RenderElementProps,
+  RenderLeafProps,
+  RenderTextProps,
   SlatePluginContext,
-} from '../plugin';
-import type { RenderElementProps } from '../types/RenderElementProps';
-import type { RenderLeafProps } from '../types/RenderLeafProps';
-import type { RenderTextProps } from '../types/RenderTextProps';
+} from '..';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
   as?: React.ElementType;

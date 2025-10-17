@@ -4,13 +4,13 @@ import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
+import { type ExtendConfig, type Path } from 'platejs';
+
 import {
-  type ExtendConfig,
-  type Path,
   isSlateEditor,
   isSlateElement,
   isSlateString,
-} from 'platejs';
+} from 'platejs/static';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { BlockSuggestion } from '@/registry/ui/block-suggestion';

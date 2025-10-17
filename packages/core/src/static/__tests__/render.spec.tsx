@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createSlateEditor } from '../../editor';
+import { createSlateEditor } from '../editor';
 import { createTSlatePlugin } from '../../plugin';
 import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor } from './create-static-editor';

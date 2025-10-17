@@ -1,4 +1,4 @@
-/* eslint-disable unicorn/prefer-module,@typescript-eslint/no-shadow */
+  
 import fs from 'node:fs';
 import path from 'node:path';
 import { convertPathToPattern } from 'tinyglobby';
@@ -20,10 +20,20 @@ const REACT_INPUT_FILE_PATH = fs.existsSync(REACT_TS_INPUT_FILE_PATH)
   ? REACT_TS_INPUT_FILE_PATH
   : REACT_TSX_INPUT_FILE_PATH;
 
+const STATIC_TS_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/static/index.ts');
+const STATIC_TSX_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/static/index.tsx');
+const STATIC_INPUT_FILE_PATH = fs.existsSync(STATIC_TS_INPUT_FILE_PATH)
+  ? STATIC_TS_INPUT_FILE_PATH
+  : STATIC_TSX_INPUT_FILE_PATH;
+
 const entry = [convertPathToPattern(INPUT_FILE)]
 
 if (fs.existsSync(REACT_INPUT_FILE_PATH)) {
   entry.push(convertPathToPattern(REACT_INPUT_FILE_PATH))
+}
+
+if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
+  entry.push(convertPathToPattern(STATIC_INPUT_FILE_PATH))
 }
 
 export default defineConfig((opts) => {
@@ -36,7 +46,8 @@ export default defineConfig((opts) => {
     splitting: false,
     ...(silent
       ? {
-          // eslint-disable-next-line @typescript-eslint/require-await
+           
+          silent: true,
           onSuccess: async () => {
             if (opts.watch) {
               console.info('Watching for changes...');
@@ -46,7 +57,6 @@ export default defineConfig((opts) => {
 
             console.info('Build succeeded!');
           },
-          silent: true,
         }
       : {}),
   };

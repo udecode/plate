@@ -1,8 +1,9 @@
 import React from 'react';
 
+import type { SlateRenderElementProps } from 'platejs/static';
+
 import {
   type PluginConfig,
-  type SlateRenderElementProps,
   type TElement,
   type TListElement,
   createTSlatePlugin,

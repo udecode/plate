@@ -8,7 +8,7 @@ import { useDeepCompareMemo } from 'use-deep-compare';
 import type { PlateProps } from '../components';
 
 import { type EditableProps, ChunkingPlugin } from '../../lib';
-import { pipeDecorate } from '../../lib/static/utils/pipeDecorate';
+import { pipeDecorate } from '../../static/utils/pipeDecorate';
 import { ContentVisibilityChunk } from '../components';
 import { useEditorRef, usePlateStore, usePluginOption } from '../stores';
 import { DOM_HANDLERS } from '../utils/dom-attributes';

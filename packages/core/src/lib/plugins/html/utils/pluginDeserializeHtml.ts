@@ -8,7 +8,7 @@ import type {
 } from '../../../plugin/SlatePlugin';
 
 import { getEditorPlugin } from '../../../plugin';
-import { isSlateNode } from '../../../static/deserialize/checkUtils';
+import { isSlateNode } from '../../../../static/deserialize/checkUtils';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 import { getDataNodeProps } from './getDataNodeProps';
 

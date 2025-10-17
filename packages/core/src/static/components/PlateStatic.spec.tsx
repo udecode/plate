@@ -6,8 +6,7 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin';
+import { createSlateEditor, createSlatePlugin } from '../../lib';
 // We assume these are your real components (memoized) imported:
 import { PlateStatic } from './PlateStatic';
 import { SlateElement, SlateLeaf } from './slate-nodes';

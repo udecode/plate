@@ -1,7 +1,7 @@
 import type { SlateEditor } from '../../../editor';
 import type { DeserializeHtmlChildren } from '../types';
 
-import { isSlateNode } from '../../../static/deserialize/checkUtils';
+import { isSlateNode } from '../../../../static/deserialize/checkUtils';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 export const deserializeHtmlNodeChildren = (

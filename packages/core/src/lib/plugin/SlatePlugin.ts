@@ -20,7 +20,7 @@ import type {
   SlateRenderElementProps,
   SlateRenderLeafProps,
   SlateRenderTextProps,
-} from '../static';
+} from '../../static';
 import type {
   AnyPluginConfig,
   BaseDeserializer,

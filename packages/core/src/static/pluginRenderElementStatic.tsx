@@ -1,8 +1,6 @@
 import React from 'react';
 
-import type { SlateEditor } from '../editor';
-import type { AnyEditorPlugin } from '../plugin';
-import type { RenderElementProps } from '../types/RenderElementProps';
+import type { AnyEditorPlugin, RenderElementProps, SlateEditor } from '../lib';
 
 import { SlateElement } from './components/slate-nodes';
 import { getPluginDataAttributes } from './utils';

@@ -7,7 +7,7 @@ import {
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
-import { isSlateString } from 'platejs';
+import { isSlateString } from 'platejs/static';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';

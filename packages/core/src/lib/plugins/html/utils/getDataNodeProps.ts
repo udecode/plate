@@ -4,7 +4,7 @@ import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
 import {
   isSlateLeaf,
   isSlatePluginNode,
-} from '../../../static/deserialize/checkUtils';
+} from '../../../../static/deserialize/checkUtils';
 
 const getDefaultNodeProps = ({
   element,

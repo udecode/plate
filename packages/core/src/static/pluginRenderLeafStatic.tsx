@@ -2,9 +2,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../editor';
-import type { SlatePlugin } from '../plugin';
-import type { RenderLeafProps } from '../types/RenderLeafProps';
+import type { RenderLeafProps, SlateEditor, SlatePlugin } from '../lib';
 
 import { SlateLeaf } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';

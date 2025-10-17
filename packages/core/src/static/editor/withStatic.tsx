@@ -1,13 +1,13 @@
 import { type Editor, type Value, createEditor } from '@platejs/slate';
 
-import type { AnyPluginConfig } from '../../plugin';
-import type { CorePlugin } from '../../plugins';
+import type { AnyPluginConfig } from '../../lib/plugin';
+import type { CorePlugin } from '../../lib/plugins';
 
 import {
   type CreateSlateEditorOptions,
   type WithSlateOptions,
   withSlate,
-} from '../../editor';
+} from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
 type CreateStaticEditorOptions<
