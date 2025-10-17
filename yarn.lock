@@ -3656,8 +3656,6 @@ __metadata:
     lodash: "npm:^4.17.21"
   peerDependencies:
     platejs: ">=50.3.7"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3669,8 +3667,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3681,8 +3677,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3693,8 +3687,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3705,8 +3697,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3718,8 +3708,6 @@ __metadata:
     react-textarea-autosize: "npm:^8.5.9"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3731,8 +3719,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3743,8 +3729,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3756,8 +3740,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3798,8 +3780,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3810,8 +3790,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3822,8 +3800,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3836,8 +3812,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3850,10 +3824,8 @@ __metadata:
     raf: "npm:^3.4.1"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
     react-dnd: ">=14.0.0"
     react-dnd-html5-backend: ">=14.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3865,8 +3837,6 @@ __metadata:
     validator: "npm:^13.15.15"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3880,8 +3850,6 @@ __metadata:
   peerDependencies:
     "@emoji-mart/data": ">=1.2.0"
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3895,8 +3863,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3907,8 +3873,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3921,8 +3885,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3933,8 +3895,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3946,8 +3906,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3958,8 +3916,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3971,8 +3927,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3984,8 +3938,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -3998,8 +3950,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4020,8 +3970,6 @@ __metadata:
     unified: "npm:^11.0.5"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4034,8 +3982,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4047,8 +3993,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4060,8 +4004,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4073,8 +4015,6 @@ __metadata:
   peerDependencies:
     "@playwright/test": ">=1.42.1"
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4085,8 +4025,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4098,8 +4036,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4111,8 +4047,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4137,8 +4071,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4150,8 +4082,6 @@ __metadata:
     tabbable: "npm:^6.2.0"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4164,8 +4094,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4176,8 +4104,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4198,8 +4124,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4212,8 +4136,6 @@ __metadata:
     platejs: "workspace:^"
   peerDependencies:
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
 
@@ -4240,8 +4162,6 @@ __metadata:
   peerDependencies:
     "@hocuspocus/provider": ^2.15.2
     platejs: ">=50.3.8"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
     y-webrtc: 10.3.0
   languageName: unknown
   linkType: soft
@@ -7590,9 +7510,6 @@ __metadata:
     "@radix-ui/react-primitive": "npm:^2.1.3"
     "@types/use-sync-external-store": "npm:0.0.6"
     use-sync-external-store: "npm:^1.5.0"
-  peerDependencies:
-    react: ^18 || ^19 || ^19.0.0-rc
-    react-dom: ^18 || ^19 || ^19.0.0-rc
   languageName: unknown
   linkType: soft
 
@@ -7603,8 +7520,6 @@ __metadata:
     "@udecode/react-utils": "npm:49.0.15"
   peerDependencies:
     class-variance-authority: ">=0.7.0"
-    react: ">=18.0.0"
-    react-dom: ">=18.0.0"
     tailwind-merge: ">=2.2.0"
   languageName: unknown
   linkType: soft

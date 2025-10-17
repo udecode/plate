@@ -62,9 +62,7 @@
     "ai": "5.0.28"
   },
   "peerDependencies": {
-    "platejs": ">=50.3.7",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "platejs": ">=50.3.7"
   },
   "publishConfig": {
     "access": "public"

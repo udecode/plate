@@ -55,9 +55,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=50.3.8",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "platejs": ">=50.3.8"
   },
   "publishConfig": {
     "access": "public"
