@@ -6,6 +6,7 @@ export * from './applyDeepToNodes';
 export * from './defaultsDeepToNodes';
 export * from './getInjectMatch';
 export * from './getInjectedPlugins';
+export * from './getNodeDataAttributeKeys';
 export * from './getPluginNodeProps';
 export * from './getSlateClass';
 export * from './hotkeys';

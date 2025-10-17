@@ -4,8 +4,9 @@ import type { AnyObject } from '@udecode/utils';
 import pick from 'lodash/pick.js';
 
 import type { AnyEditorPlugin } from '../plugin';
+import type { SlateRenderNodeProps } from '../static/types';
 
-import { type SlateRenderNodeProps, getNodeDataAttributeKeys } from '../static';
+import { getNodeDataAttributeKeys } from './getNodeDataAttributeKeys';
 
 export const getPluginNodeProps = ({
   attributes: nodeAttributes,
