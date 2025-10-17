@@ -12,8 +12,8 @@ Added `/static` export path for React-free static rendering functionality. Stati
 **Migration:**
 ```typescript
 // Before
-import { PlateStatic } from '@platejs/core/react';
+import { PlateStatic } from 'platejs';
 
 // After
-import { PlateStatic } from '@platejs/core/static';
+import { PlateStatic } from 'platejs/static';
 ```
