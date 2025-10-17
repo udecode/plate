@@ -19,7 +19,7 @@
     },
     {
       "path": "src/registry/ui/media-audio-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps, TAudioElement } from 'platejs';\n\nimport { SlateElement } from 'platejs';\n\nexport function AudioElementStatic(props: SlateElementProps<TAudioElement>) {\n  return (\n    <SlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { TAudioElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nexport function AudioElementStatic(props: SlateElementProps<TAudioElement>) {\n  return (\n    <SlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

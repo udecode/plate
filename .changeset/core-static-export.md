@@ -13,4 +13,4 @@ To migrate, update your imports from `platejs` to `platejs/static` for all stati
 - `SlateElement`, `SlateElementProps` - Static element component
 - `SlateText`, `SlateTextProps` - Static text component
 - `SlateLeaf`, `SlateLeafProps` - Static leaf component
-- `isSlateString`, `isSlateEditor`, `isSlateElement`, `getEditorDOMFromHtmlString`
+- `getEditorDOMFromHtmlString`

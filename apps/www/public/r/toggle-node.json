@@ -18,7 +18,7 @@
     },
     {
       "path": "src/registry/ui/toggle-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs';\n\nimport { ChevronRight } from 'lucide-react';\nimport { SlateElement } from 'platejs';\n\nexport function ToggleElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className=\"pl-6\">\n      <div\n        className=\"absolute top-0 -left-0.5 size-6 cursor-pointer items-center justify-center rounded-md p-px text-muted-foreground transition-colors select-none hover:bg-accent [&_svg]:size-4\"\n        contentEditable={false}\n      >\n        <ChevronRight className=\"rotate-0 transition-transform duration-75\" />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { ChevronRight } from 'lucide-react';\nimport { SlateElement } from 'platejs/static';\n\nexport function ToggleElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className=\"pl-6\">\n      <div\n        className=\"absolute top-0 -left-0.5 size-6 cursor-pointer items-center justify-center rounded-md p-px text-muted-foreground transition-colors select-none hover:bg-accent [&_svg]:size-4\"\n        contentEditable={false}\n      >\n        <ChevronRight className=\"rotate-0 transition-transform duration-75\" />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

@@ -6,8 +6,8 @@ import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
+import { isSlateEditor, isSlateElement, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
-import { isSlateEditor, isSlateElement, isSlateString } from 'platejs/static';
 
 import { BlockSuggestion } from '@/registry/ui/block-suggestion';
 import {

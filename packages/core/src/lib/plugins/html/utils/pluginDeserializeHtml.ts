@@ -7,8 +7,8 @@ import type {
   HtmlDeserializer,
 } from '../../../plugin/SlatePlugin';
 
-import { isSlateNode } from '../../../../static/deserialize/checkUtils';
 import { getEditorPlugin } from '../../../plugin';
+import { isSlateNode } from '../../../utils/checkUtils';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 import { getDataNodeProps } from './getDataNodeProps';
 
