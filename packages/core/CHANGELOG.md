@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 50.3.9
+
+### Patch Changes
+
+- [#4693](https://github.com/udecode/plate/pull/4693) by [@felixfeng33](https://github.com/felixfeng33) – Moved `getNodeDataAttributeKeys` and `keyToDataAttribute` functions from static utilities to regular utilities to decouple React dependencies.
+
 ## 50.3.8
 
 ### Patch Changes
