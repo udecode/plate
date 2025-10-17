@@ -1,5 +1,7 @@
 # @platejs/yjs
 
+## 51.0.0
+
 ## 50.3.6
 
 ### Patch Changes

@@ -1,5 +1,7 @@
 # @platejs/excalidraw
 
+## 51.0.0
+
 ## 50.3.0
 
 ### Minor Changes

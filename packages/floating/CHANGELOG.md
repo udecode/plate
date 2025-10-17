@@ -1,5 +1,7 @@
 # @platejs/floating
 
+## 51.0.0
+
 ## 50.3.2
 
 ### Patch Changes
