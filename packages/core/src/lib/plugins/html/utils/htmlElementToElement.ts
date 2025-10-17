@@ -4,7 +4,7 @@ import { jsx } from 'slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
 
-import { isSlateVoid } from '../../../static';
+import { isSlateVoid } from '../../../static/deserialize/checkUtils';
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 import { pipeDeserializeHtmlElement } from './pipeDeserializeHtmlElement';
 
