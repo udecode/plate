@@ -1,6 +1,6 @@
 import { type Descendant, ElementApi, NodeApi } from '@platejs/slate';
 
-import type { SlateEditor } from '../../editor';
+import type { SlateEditor } from '../../lib';
 
 export const getSelectedDomFragment = (editor: SlateEditor): Descendant[] => {
   const selection = window.getSelection();

@@ -1,11 +1,11 @@
 import type { TElement, TText } from '@platejs/slate';
 
-import type { SlateEditor } from '../../editor';
-
-import { type AnyEditorPlugin, getEditorPlugin } from '../../plugin';
 import {
+  type AnyEditorPlugin,
+  type SlateEditor,
+  getEditorPlugin,
   keyToDataAttribute,
-} from '../../utils/getNodeDataAttributeKeys';
+} from '../../lib';
 
 export const getNodeDataAttributes = (
   editor: SlateEditor,

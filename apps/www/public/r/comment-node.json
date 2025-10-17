@@ -18,7 +18,7 @@
     },
     {
       "path": "src/registry/ui/comment-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateLeafProps, TCommentText } from 'platejs';\n\nimport { SlateLeaf } from 'platejs';\n\nexport function CommentLeafStatic(props: SlateLeafProps<TCommentText>) {\n  return (\n    <SlateLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { TCommentText } from 'platejs';\nimport type { SlateLeafProps } from 'platejs/static';\n\nimport { SlateLeaf } from 'platejs/static';\n\nexport function CommentLeafStatic(props: SlateLeafProps<TCommentText>) {\n  return (\n    <SlateLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

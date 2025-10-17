@@ -5,8 +5,8 @@ it('TODO: serialize list to html', () => {
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseImagePlugin } from '@platejs/media';
 
-import { createSlateEditor } from '../../editor';
-import { BaseParagraphPlugin } from '../../plugins';
+import { createStaticEditor as createSlateEditor } from '../editor/withStatic';
+import { BaseParagraphPlugin } from '../../lib/plugins';
 import { serializeHtml } from '../serializeHtml';
 
 const plugins = [

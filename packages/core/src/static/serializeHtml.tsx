@@ -2,7 +2,7 @@ import React from 'react';
 
 import { decode } from 'html-entities';
 
-import type { SlateEditor } from '../editor';
+import type { SlateEditor } from '../lib';
 import type { PlateStaticProps } from './components/PlateStatic';
 
 import { PlateStatic } from './components/PlateStatic';

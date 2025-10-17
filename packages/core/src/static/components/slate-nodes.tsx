@@ -9,13 +9,11 @@ import { clsx } from 'clsx';
 import type {
   AnyPluginConfig,
   PluginConfig,
-  SlatePluginContext,
-} from '../../plugin';
-import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
-} from '../../types';
+  SlatePluginContext,
+} from '../../lib';
 
 export const useNodeAttributes = (props: any, ref?: any) => {
   return {

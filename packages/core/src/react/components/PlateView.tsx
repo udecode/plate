@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { type PlateStaticProps, PlateStatic } from '../../lib';
+import { type PlateStaticProps, PlateStatic } from '../../static';
 
 export type PlateViewProps = PlateStaticProps & {};
 

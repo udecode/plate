@@ -1,8 +1,10 @@
 import * as React from 'react';
 
-import type { SlateElementProps, TMentionElement } from 'platejs';
+import type { TMentionElement } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
 
-import { KEYS, SlateElement } from 'platejs';
+import { KEYS } from 'platejs';
+import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 

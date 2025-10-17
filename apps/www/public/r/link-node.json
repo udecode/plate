@@ -16,7 +16,7 @@
     },
     {
       "path": "src/registry/ui/link-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps, TLinkElement } from 'platejs';\n\nimport { getLinkAttributes } from '@platejs/link';\nimport { SlateElement } from 'platejs';\n\nexport function LinkElementStatic(props: SlateElementProps<TLinkElement>) {\n  return (\n    <SlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      attributes={{\n        ...props.attributes,\n        ...getLinkAttributes(props.editor, props.element),\n      }}\n    >\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { TLinkElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { getLinkAttributes } from '@platejs/link';\nimport { SlateElement } from 'platejs/static';\n\nexport function LinkElementStatic(props: SlateElementProps<TLinkElement>) {\n  return (\n    <SlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      attributes={{\n        ...props.attributes,\n        ...getLinkAttributes(props.editor, props.element),\n      }}\n    >\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

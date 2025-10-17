@@ -13,14 +13,14 @@ import type {
 } from '@platejs/slate';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
-import type { SlateEditor } from '../editor';
-import type { CorePluginApi, CorePluginTransforms } from '../plugins';
 import type {
   SlateElementProps,
   SlateRenderElementProps,
   SlateRenderLeafProps,
   SlateRenderTextProps,
-} from '../static';
+} from '../../static';
+import type { SlateEditor } from '../editor';
+import type { CorePluginApi, CorePluginTransforms } from '../plugins';
 import type {
   AnyPluginConfig,
   BaseDeserializer,

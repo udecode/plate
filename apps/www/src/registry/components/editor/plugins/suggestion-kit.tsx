@@ -1,16 +1,12 @@
 'use client';
 
+import type { ExtendConfig, Path } from 'platejs';
+
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
-import {
-  type ExtendConfig,
-  type Path,
-  isSlateEditor,
-  isSlateElement,
-  isSlateString,
-} from 'platejs';
+import { isSlateEditor, isSlateElement, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
 import { BlockSuggestion } from '@/registry/ui/block-suggestion';

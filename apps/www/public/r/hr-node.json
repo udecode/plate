@@ -14,7 +14,7 @@
     },
     {
       "path": "src/registry/ui/hr-node-static.tsx",
-      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs';\n\nimport { SlateElement } from 'platejs';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props}>\n      <div className=\"cursor-text py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'\n          )}\n        />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props}>\n      <div className=\"cursor-text py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'\n          )}\n        />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

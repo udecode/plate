@@ -3,6 +3,7 @@
  */
 
 export * from './applyDeepToNodes';
+export * from './checkUtils';
 export * from './defaultsDeepToNodes';
 export * from './getInjectMatch';
 export * from './getInjectedPlugins';

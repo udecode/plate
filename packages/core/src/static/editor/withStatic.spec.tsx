@@ -2,8 +2,7 @@
 import { type Value, createEditor } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
-import { DOMPlugin } from '../../plugins/dom/DOMPlugin';
+import { createSlatePlugin, DOMPlugin } from '../../lib';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 

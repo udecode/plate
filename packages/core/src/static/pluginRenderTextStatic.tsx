@@ -2,9 +2,7 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../editor';
-import type { SlatePlugin } from '../plugin';
-import type { RenderTextProps } from '../types/RenderTextProps';
+import type { RenderTextProps, SlateEditor, SlatePlugin } from '..';
 
 import { SlateText } from './components';
 import { getNodeDataAttributes } from './utils/getNodeDataAttributes';
