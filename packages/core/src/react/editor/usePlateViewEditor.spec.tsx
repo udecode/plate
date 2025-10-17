@@ -9,7 +9,7 @@ jsx;
 
 // Mock createStaticEditor
 let mockCreateStaticEditor: jest.Mock;
-jest.mock('../../lib/static/editor/withStatic', () => ({
+jest.mock('../../static/editor/withStatic', () => ({
   createStaticEditor: (options: any) => mockCreateStaticEditor(options),
 }));
 

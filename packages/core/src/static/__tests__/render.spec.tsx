@@ -1,10 +1,8 @@
 import React from 'react';
-
-import { createSlateEditor } from '../editor';
-import { createTSlatePlugin } from '../../plugin';
 import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor } from './create-static-editor';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { createTSlatePlugin, createSlateEditor } from '../../lib';
 
 describe('serializePlateStatic nodes', () => {
   it('should serialize render below nodes', async () => {
