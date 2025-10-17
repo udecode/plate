@@ -6,8 +6,13 @@ import clsx from 'clsx';
 import type { SlateRenderNodeProps } from '../types';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
-import { type AnyEditorPlugin, type SlateEditor, getEditorPlugin, getPluginNodeProps, getSlateClass } from '../../lib';
-
+import {
+  type AnyEditorPlugin,
+  type SlateEditor,
+  getEditorPlugin,
+  getPluginNodeProps,
+  getSlateClass,
+} from '../../lib';
 
 export const getRenderNodeStaticProps = ({
   attributes: nodeAttributes,

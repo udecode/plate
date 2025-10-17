@@ -1,8 +1,10 @@
 import type { NodeEntry, TRange } from '@platejs/slate';
 
-import { type EditableProps, type SlateEditor, getEditorPlugin } from '../../lib';
-
-
+import {
+  type EditableProps,
+  type SlateEditor,
+  getEditorPlugin,
+} from '../../lib';
 
 /**
  * @see {@link Decorate} .

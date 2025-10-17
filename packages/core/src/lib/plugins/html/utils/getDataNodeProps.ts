@@ -1,10 +1,10 @@
 import type { SlateEditor } from '../../../editor';
 
-import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
 import {
   isSlateLeaf,
   isSlatePluginNode,
 } from '../../../../static/deserialize/checkUtils';
+import { type AnyEditorPlugin, getEditorPlugin } from '../../../plugin';
 
 const getDefaultNodeProps = ({
   element,

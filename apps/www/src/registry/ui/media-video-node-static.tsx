@@ -1,11 +1,7 @@
 import * as React from 'react';
 
+import type { TCaptionElement, TResizableProps, TVideoElement } from 'platejs';
 import type { SlateElementProps } from 'platejs/static';
-import type {
-  TCaptionElement,
-  TResizableProps,
-  TVideoElement,
-} from 'platejs';
 
 import { NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';

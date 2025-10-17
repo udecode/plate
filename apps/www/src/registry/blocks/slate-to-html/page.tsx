@@ -4,7 +4,6 @@ import { cva } from 'class-variance-authority';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { type Value, normalizeNodeId } from 'platejs';
-
 import { createStaticEditor, serializeHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
