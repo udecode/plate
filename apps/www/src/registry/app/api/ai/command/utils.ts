@@ -113,7 +113,9 @@ export const buildStructuredPrompt = ({
     backgroundData &&
       dedent`
         Here is the background data you should reference when answering the user:
+        <backgroundData>
               ${backgroundData}
+        </backgroundData>
       `,
     rules &&
       dedent`
@@ -188,7 +190,6 @@ const SELECTION_END = '</Selection>';
 
 export const addSelection = (editor: SlateEditor) => {
   if (!editor.selection) return;
-
   if (editor.api.isExpanded()) {
     const [start, end] = RangeApi.edges(editor.selection);
 
@@ -216,7 +217,6 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
     const node = editor.api.block({ at: end.path });
 
     if (!node) return newText;
-
     if (editor.api.isVoid(node[0])) {
       const voidString = serializeMd(editor, { value: [node[0]] });
 
