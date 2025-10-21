@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 51.0.1
+
+### Patch Changes
+
+- [#4697](https://github.com/udecode/plate/pull/4697) by [@felixfeng33](https://github.com/felixfeng33) – Added `rejectAISuggestions` and `acceptAISuggestions` utility.
+
 ## 51.0.0
 
 ## 50.3.7
