@@ -16,7 +16,6 @@ import {
   type NodeEntry,
   type Path,
   type TElement,
-  type TSuggestionElement,
   type TSuggestionText,
   ElementApi,
   KEYS,
@@ -27,7 +26,6 @@ import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import {
   type TDiscussion,
   discussionPlugin,
@@ -77,23 +75,6 @@ const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [KEYS.video]: () => 'Video',
 };
 
-export function BlockSuggestion({ element }: { element: TSuggestionElement }) {
-  const suggestionData = element.suggestion;
-
-  if (suggestionData?.isLineBreak) return null;
-
-  const isRemove = suggestionData?.type === 'remove';
-
-  return (
-    <div
-      className={cn(
-        'pointer-events-none absolute inset-0 z-1 border-2 border-brand/[0.8] transition-opacity',
-        isRemove && 'border-gray-300'
-      )}
-      contentEditable={false}
-    />
-  );
-}
 
 export function BlockSuggestionCard({
   idx,
