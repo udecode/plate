@@ -69,7 +69,7 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
         suggestionVariants({
           insertActive: hasActive || hasHover,
           remove: hasRemove,
-          removeActive: hasActive || (hasHover && hasRemove),
+          removeActive: (hasActive || hasHover) && hasRemove,
         })
       )}
       attributes={{
