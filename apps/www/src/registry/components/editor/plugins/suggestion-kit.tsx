@@ -6,10 +6,9 @@ import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
-import { isSlateEditor, isSlateElement, isSlateString } from 'platejs';
+import { isSlateEditor, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
-import { BlockSuggestion } from '@/registry/ui/block-suggestion';
 import {
   SuggestionLeaf,
   SuggestionLineBreak,
@@ -43,20 +42,24 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       let leaf = event.target as HTMLElement;
       let isSet = false;
 
+      const isBlockLeaf = leaf.dataset.blockSuggestion === 'true';
+
       const unsetActiveSuggestion = () => {
         setOption('activeId', null);
         isSet = true;
       };
 
-      if (!isSlateString(leaf)) unsetActiveSuggestion();
+      if (!isSlateString(leaf) && !isBlockLeaf) {
+        unsetActiveSuggestion();
+      }
 
-      while (
-        leaf.parentElement &&
-        !isSlateElement(leaf.parentElement) &&
-        !isSlateEditor(leaf.parentElement)
-      ) {
-        if (leaf.classList.contains(`slate-${type}`)) {
-          const suggestionEntry = api.suggestion!.node({ isText: true });
+      while (leaf.parentElement && !isSlateEditor(leaf.parentElement)) {
+        const isBlockSuggestion = leaf.dataset.blockSuggestion === 'true';
+
+        if (leaf.classList.contains(`slate-${type}`) || isBlockSuggestion) {
+          const suggestionEntry = api.suggestion!.node({
+            isText: !isBlockSuggestion,
+          });
 
           if (!suggestionEntry) {
             unsetActiveSuggestion();
@@ -65,8 +68,8 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
           }
 
           const id = api.suggestion!.nodeId(suggestionEntry[0]);
-
           setOption('activeId', id ?? null);
+
           isSet = true;
 
           break;
@@ -81,13 +84,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
   render: {
     belowNodes: SuggestionLineBreak as any,
     node: SuggestionLeaf,
-    belowRootNodes: ({ api, element }) => {
-      if (!api.suggestion!.isBlockSuggestion(element)) {
-        return null;
-      }
-
-      return <BlockSuggestion element={element} />;
-    },
   },
 });
 

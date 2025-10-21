@@ -1,15 +1,12 @@
-import {
-  acceptSuggestion,
-  getSuggestionKey,
-  getTransientSuggestionKey,
-} from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
+
+
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { withAIBatch } from '../../../lib';
 import { AIPlugin } from '../../ai/AIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
+import { acceptAISuggestions } from '../utils/acceptAISuggestions';
 
 export const acceptAIChat = (editor: PlateEditor) => {
   const mode = editor.getOption(AIChatPlugin, 'mode');
@@ -38,39 +35,12 @@ export const acceptAIChat = (editor: PlateEditor) => {
 
   if (mode === 'chat') {
     withAIBatch(editor, () => {
-      acceptSuggestions(editor);
+      acceptAISuggestions(editor);
     });
 
     editor.getApi(AIChatPlugin).aiChat.hide();
   }
 };
 
-export const acceptSuggestions = (editor: PlateEditor) => {
-  const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
-    transient: true,
-  });
 
-  suggestions.forEach(([suggestionNode]) => {
-    const suggestionData = editor
-      .getApi(SuggestionPlugin)
-      .suggestion.suggestionData(suggestionNode);
 
-    if (!suggestionData) return;
-
-    const description = {
-      createdAt: new Date(suggestionData.createdAt),
-      keyId: getSuggestionKey(suggestionData.id),
-      suggestionId: suggestionData.id,
-      type: suggestionData.type,
-      userId: suggestionData.userId,
-    };
-
-    acceptSuggestion(editor, description);
-  });
-
-  editor.tf.unsetNodes([getTransientSuggestionKey()], {
-    at: [],
-    mode: 'all',
-    match: (n) => !!n[getTransientSuggestionKey()],
-  });
-};
