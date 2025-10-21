@@ -7,7 +7,7 @@ import { type SlateEditor, KEYS, PathApi, RangeApi } from 'platejs';
 import { withAIBatch } from '../../../lib';
 import { AIPlugin } from '../../ai/AIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
-import { acceptSuggestions } from './acceptAIChat';
+import { acceptAISuggestions } from '../utils';
 import { createFormattedBlocks } from './replaceSelectionAIChat';
 
 export const insertBelowAIChat = (
@@ -46,7 +46,7 @@ export const insertBelowAIChat = (
     at: nextPath,
     insertedCallback: () => {
       withAIBatch(editor, () => {
-        acceptSuggestions(editor);
+        acceptAISuggestions(editor);
       });
     },
   });
