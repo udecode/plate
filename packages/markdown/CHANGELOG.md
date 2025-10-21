@@ -1,5 +1,7 @@
 # @platejs/markdown
 
+## 51.0.0
+
 ## 50.2.0
 
 ### Minor Changes

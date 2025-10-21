@@ -1,5 +1,11 @@
 # @platejs/list
 
+## 51.0.0
+
+### Patch Changes
+
+- [#4695](https://github.com/udecode/plate/pull/4695) by [@felixfeng33](https://github.com/felixfeng33) – Updated import path for `SlateRenderElementProps` to use the new static export from `platejs/static`.
+
 ## 50.2.0
 
 ### Patch Changes

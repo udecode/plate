@@ -1,5 +1,7 @@
 # @platejs/media
 
+## 51.0.0
+
 ## 50.3.7
 
 ### Patch Changes

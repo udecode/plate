@@ -1,5 +1,7 @@
 # @platejs/layout
 
+## 51.0.0
+
 ## 49.2.1
 
 ### Patch Changes

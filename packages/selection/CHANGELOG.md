@@ -1,5 +1,7 @@
 # @platejs/selection
 
+## 51.0.0
+
 ## 50.3.4
 
 ### Patch Changes

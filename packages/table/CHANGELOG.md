@@ -1,5 +1,7 @@
 # @platejs/table
 
+## 51.0.0
+
 ## 49.1.13
 
 ### Patch Changes
