@@ -1489,7 +1489,7 @@ const createCommentChunks = (editor: PlateEditor) => {
   const indexes = Array.from(result).sort((a, b) => a - b);
 
   const chunks = indexes
-    .map((index) => {
+    .map((index, i) => {
       const block = blocks[index];
       if (!block) {
         return [];
@@ -1503,7 +1503,7 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${index === indexes.length - 1 ? 'finished' : 'streaming'}"},"type":"data-comment"}`,
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${i === indexes.length - 1 ? 'finished' : 'streaming'}"},"type":"data-comment"}`,
         },
       ];
     })
