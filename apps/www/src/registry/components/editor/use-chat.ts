@@ -118,7 +118,6 @@ export const useChat = () => {
 
       if (data.type === 'data-comment' && data.data) {
         if (data.data.status === 'finished') {
-          editor.getApi(AIChatPlugin).aiChat.hide();
           editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
 
           return;
