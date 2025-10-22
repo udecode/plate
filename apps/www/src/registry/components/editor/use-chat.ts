@@ -221,6 +221,7 @@ const fakeStreamText = ({
 
         if (sample === 'comment') {
           const commentChunks = createCommentChunks(editor);
+          console.log('🚀 ~ fakeStreamText ~ commentChunks:', commentChunks);
           return commentChunks;
         }
 
@@ -1502,7 +1503,7 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"type":"data-comment"}`,
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${index === indexes.length - 1 ? 'finished' : 'streaming'}"},"type":"data-comment"}`,
         },
       ];
     })
