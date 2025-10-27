@@ -120,5 +120,5 @@ function Caret({
 function addAlpha(hexColor: string, opacity: number): string {
   const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);
 
-  return hexColor + normalized.toString(16).toUpperCase();
+  return hexColor + normalized.toString(16).padStart(2, '0').toUpperCase();
 }
