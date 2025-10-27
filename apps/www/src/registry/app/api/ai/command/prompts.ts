@@ -29,7 +29,7 @@ export function getChooseToolPrompt({ messages }: { messages: ChatMessage[] }) {
       'User: "Can you review this text and give me feedback?" → Good: "comment" | Bad: "edit"',
       'User: "Add inline comments to this code to explain what it does" → Good: "comment" | Bad: "generate"',
     ],
-    history: formatTextFromMessages(messages),
+    history: messages ? formatTextFromMessages(messages): undefined,
     rules: dedent`
       - Default is "generate". Any open question, idea request, or creation request → "generate".
       - Only return "edit" if the user provides original text (or a selection of text) AND asks to change, rephrase, translate, or shorten it.
