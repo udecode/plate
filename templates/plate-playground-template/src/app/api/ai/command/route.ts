@@ -1,7 +1,4 @@
-import type {
-  ChatMessage,
-  ToolName,
-} from '@/components/editor/use-chat';
+import type { ChatMessage, ToolName } from '@/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
 import { createGateway } from '@ai-sdk/gateway';
@@ -30,7 +27,12 @@ import {
 } from './prompts';
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
+  const {
+    apiKey: key,
+    ctx,
+    messages: messagesRaw = [],
+    model,
+  } = await req.json();
 
   const { children, selection, toolName: toolNameParam } = ctx;
 

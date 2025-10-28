@@ -30,7 +30,12 @@ import {
 } from './prompts';
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
+  const {
+    apiKey: key,
+    ctx,
+    messages: messagesRaw = [],
+    model,
+  } = await req.json();
 
   const { children, selection, toolName: toolNameParam } = ctx;
 
