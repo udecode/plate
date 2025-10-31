@@ -58,10 +58,10 @@ Expose a streaming command endpoint that proxies your model provider:
 
 ### Configure Environment
 
-Set provider credentials locally:
+Set your AI Gateway key locally (replace with your provider secret if you are not using a gateway):
 
 ```bash title=".env.local"
-OPENAI_API_KEY="your-api-key"
+AI_GATEWAY_API_KEY="your-api-key"
 ```
 
 </Steps>
@@ -210,7 +210,7 @@ export async function POST(req: Request) {
   });
 
   const openai = createOpenAI({
-    apiKey: apiKey ?? process.env.OPENAI_API_KEY!,
+    apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
   });
 
   const result = streamText({
