@@ -191,9 +191,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ### 构建 API 路由
 
 在服务器上处理 `api.aiChat.submit` 请求。每个请求都包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 负载,其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
+[完整 API 示例](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
-import { createOpenAI } from '@ai-sdk/openai';
+import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
 import { createSlateEditor } from 'platejs';
 
@@ -209,14 +210,14 @@ export async function POST(req: Request) {
     value: ctx.children,
   });
 
-  const openai = createOpenAI({
+  const gateway = createGateway({
     apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
   });
 
   const result = streamText({
     experimental_transform: markdownJoinerTransform(),
     messages: convertToCoreMessages(messages),
-    model: openai(model ?? 'gpt-4o-mini'),
+    model: gateway(model ?? 'openai/gpt-4o-mini'),
     system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
   });
 
@@ -225,7 +226,7 @@ export async function POST(req: Request) {
 ```
 
 - `ctx.children` 和 `ctx.selection` 被重新水合到 Slate 编辑器中,以便你可以构建丰富的提示(参见[提示模板](#提示模板))。
-- 通过 `chatOptions.body` 转发提供商设置(模型、apiKey、温度、网关标志等);你添加的所有内容都会在 JSON 负载中原样传递。
+- 通过 `chatOptions.body` 转发提供商设置(模型、apiKey、温度、网关标志等);你添加的所有内容都会在 JSON 负载中原样传递,后端可以在调用 `createGateway` 前读取。
 - 始终从服务器读取密钥。客户端应仅发送不透明标识符或短期令牌。
 - 返回流式响应,以便 `useChat` 和 `useChatChunk` 可以逐步处理令牌。
 

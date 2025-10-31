@@ -191,9 +191,10 @@ Provide your own `render` components (toolbar button, floating menu, etc.) when 
 ### Build API Route
 
 Handle `api.aiChat.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload that contains the editor `children`, current `selection`, and last `toolName`.
+[Complete API example](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
-import { createOpenAI } from '@ai-sdk/openai';
+import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
 import { createSlateEditor } from 'platejs';
 
@@ -209,14 +210,14 @@ export async function POST(req: Request) {
     value: ctx.children,
   });
 
-  const openai = createOpenAI({
+  const gateway = createGateway({
     apiKey: apiKey ?? process.env.AI_GATEWAY_API_KEY!,
   });
 
   const result = streamText({
     experimental_transform: markdownJoinerTransform(),
     messages: convertToCoreMessages(messages),
-    model: openai(model ?? 'gpt-4o-mini'),
+    model: gateway(model ?? 'openai/gpt-4o-mini'),
     system: ctx.toolName === 'edit' ? 'You are an editor that rewrites user text.' : undefined,
   });
 
@@ -225,7 +226,7 @@ export async function POST(req: Request) {
 ```
 
 - `ctx.children` and `ctx.selection` are rehydrated into a Slate editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
-- Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload.
+- Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
 - Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
 - Return a streaming response so `useChat` and `useChatChunk` can process tokens incrementally.
 
