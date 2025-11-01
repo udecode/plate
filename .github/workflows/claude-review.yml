@@ -1,8 +1,9 @@
 name: Claude Review
 
 on:
-  pull_request:
-    types: [opened, ready_for_review]
+  # We have codex review.
+  # pull_request:
+  #   types: [opened, ready_for_review]
   issue_comment:
     types: [created]
 
@@ -10,15 +11,15 @@ jobs:
   review:
     # Auto-review zbeyens/felix PRs OR /review mentions by zbeyens/felix
     # Exclude branches starting with "claude/"
+    # (
+    #   (github.event_name == 'pull_request') &&
+    #   (github.event.pull_request.draft == false) &&
+    #   (!startsWith(github.event.pull_request.head.ref, 'claude/')) &&
+    #   (github.event.pull_request.user.login == 'zbeyens' ||
+    #    github.event.pull_request.user.login == 'felixfeng33')
+    # ) ||
     if: |
       (
-        (
-          (github.event_name == 'pull_request') &&
-          (github.event.pull_request.draft == false) &&
-          (!startsWith(github.event.pull_request.head.ref, 'claude/')) &&
-          (github.event.pull_request.user.login == 'zbeyens' ||
-           github.event.pull_request.user.login == 'felixfeng33')
-        ) ||
         (
           (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/review') && github.event.issue.pull_request) &&
           (
