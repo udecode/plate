@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 51.1.0
+
+### Minor Changes
+
+- [#4714](https://github.com/udecode/plate/pull/4714) by [@baptisteArno](https://github.com/baptisteArno) – Add sharedType option
+
 ## 51.0.0
 
 ## 50.3.6
