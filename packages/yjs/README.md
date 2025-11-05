@@ -206,6 +206,72 @@ This lets you create robust setups like:
 
 By default, content will be shown as soon as at least one provider is synced. If `waitForAllProviders` is set to `true`, content will only appear when all configured providers are in sync.
 
+### Using Nested Y.Doc Structures
+
+By default, the plugin uses `ydoc.get('content', Y.XmlText)` for storing editor content. However, you can use the `sharedType` option to work with nested structures from a parent Y.Doc:
+
+```typescript
+import { YjsPlugin } from '@platejs/yjs';
+import * as Y from 'yjs';
+
+// Create a parent document with multiple nested editors
+const parentDoc = new Y.Doc();
+
+// Create nested structures for different editors
+const editorsMap = parentDoc.getMap('editors');
+const mainEditorContent = new Y.XmlText();
+const sidebarEditorContent = new Y.XmlText();
+
+// Store them in the parent doc
+editorsMap.set('main', mainEditorContent);
+editorsMap.set('sidebar', sidebarEditorContent);
+
+// You can also store other data in the parent doc
+const metadata = parentDoc.getMap('metadata');
+metadata.set('title', 'My Document');
+metadata.set('author', 'John Doe');
+metadata.set('createdAt', Date.now());
+
+// Create the main editor with the nested shared type
+const mainEditor = createPlateEditor({
+  plugins: [
+    YjsPlugin.configure({
+      ydoc: parentDoc, // Pass the parent doc for provider sync
+      sharedType: mainEditorContent, // Use the specific nested content
+      providers: [
+        {
+          type: 'webrtc',
+          options: { roomName: 'my-document' },
+        },
+      ],
+    }),
+  ],
+});
+
+// Create a sidebar editor with its own nested shared type
+const sidebarEditor = createPlateEditor({
+  plugins: [
+    YjsPlugin.configure({
+      ydoc: parentDoc, // Same parent doc
+      sharedType: sidebarEditorContent, // Different nested content
+      providers: [], // Don't create new providers, parent is already synced
+    }),
+  ],
+});
+
+// Initialize with initial values - they'll be applied to the correct sharedTypes
+await mainEditor.api.yjs.init({
+  autoConnect: true,
+  value: [{ type: 'p', children: [{ text: 'Main editor content' }] }],
+});
+await sidebarEditor.api.yjs.init({
+  autoConnect: false,
+  value: [{ type: 'p', children: [{ text: 'Sidebar content' }] }],
+});
+```
+
+**Important:** When using a custom `sharedType`, the initial `value` passed to `init()` will be applied directly to that specific `sharedType`, not to the default `ydoc.get('content', Y.XmlText)`. This ensures each editor's initial content goes to the correct location in your nested structure.
+
 ### Cursor Support
 
 Collaborative cursors are enabled by default. You can customize their appearance and behavior:

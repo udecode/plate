@@ -119,6 +119,26 @@ export type YjsConfig = PluginConfig<
      */
     cursors?: WithCursorsOptions | null;
     /**
+     * Custom shared type to use for the editor content. If provided, this will
+     * be used instead of the default `ydoc.get('content', Y.XmlText)`. This
+     * allows you to use a nested Y.XmlText from a parent Y.Doc structure.
+     *
+     * @example
+     *   ```ts
+     *   const parentDoc = new Y.Doc();
+     *   const editorContent = parentDoc
+     *     .getMap('editors')
+     *     .get('main', Y.XmlText);
+     *
+     *   YjsPlugin.configure({
+     *     ydoc: parentDoc,
+     *     sharedType: editorContent,
+     *     // ...
+     *   });
+     *   ```;
+     */
+    sharedType?: Y.XmlText | null;
+    /**
      * Shared Y.Doc instance. If not provided by the user in the initial config,
      * a new one will be created and assigned here by the plugin.
      */

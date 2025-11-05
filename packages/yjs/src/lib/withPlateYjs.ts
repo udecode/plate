@@ -16,11 +16,18 @@ export const withPlateYjs: ExtendEditor<YjsConfig> = ({
     SlateEditor &
     YjsEditorProps;
 
-  const { awareness, cursors, localOrigin, positionStorageOrigin, ydoc } =
-    getOptions();
+  const {
+    awareness,
+    cursors,
+    localOrigin,
+    positionStorageOrigin,
+    sharedType: customSharedType,
+    ydoc,
+  } = getOptions();
 
-  // Get the shared document type from the Y.Doc
-  const sharedType = ydoc!.get('content', Y.XmlText) as Y.XmlText;
+  // Use custom shared type if provided, otherwise get the default from Y.Doc
+  const sharedType =
+    customSharedType ?? (ydoc!.get('content', Y.XmlText) as Y.XmlText);
 
   // Apply core Yjs binding first
   editor = withTYjs(editor, sharedType, {
