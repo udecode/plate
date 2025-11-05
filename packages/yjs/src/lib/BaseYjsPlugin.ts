@@ -1,4 +1,4 @@
-import { YjsEditor } from '@slate-yjs/core';
+import { slateNodesToInsertDelta, YjsEditor } from '@slate-yjs/core';
 import {
   type InitOptions,
   type Value,
@@ -197,6 +197,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         _providers,
         awareness,
         providers: providerConfigsOrInstances = [],
+        sharedType: customSharedType,
         ydoc,
       } = options;
 
@@ -222,13 +223,23 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
           initialNodes = editor.api.create.value();
         }
 
-        const initialDelta = await slateToDeterministicYjsState(
-          id ?? editor.id,
-          initialNodes
-        );
-        ydoc.transact(() => {
-          Y.applyUpdate(ydoc, initialDelta);
-        });
+        // Use custom sharedType if provided, otherwise use default 'content'
+        if (customSharedType) {
+          // Apply initial value directly to the custom shared type
+          const delta = slateNodesToInsertDelta(initialNodes);
+          ydoc.transact(() => {
+            customSharedType.applyDelta(delta);
+          });
+        } else {
+          // Use deterministic state for default 'content' key
+          const initialDelta = await slateToDeterministicYjsState(
+            id ?? editor.id,
+            initialNodes
+          );
+          ydoc.transact(() => {
+            Y.applyUpdate(ydoc, initialDelta);
+          });
+        }
       }
 
       // Final providers array that will contain both configured and custom providers

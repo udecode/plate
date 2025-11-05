@@ -259,10 +259,18 @@ const sidebarEditor = createPlateEditor({
   ],
 });
 
-// Initialize without auto-connecting (parent handles the connection)
-await mainEditor.api.yjs.init({ autoConnect: true });
-await sidebarEditor.api.yjs.init({ autoConnect: false });
+// Initialize with initial values - they'll be applied to the correct sharedTypes
+await mainEditor.api.yjs.init({
+  autoConnect: true,
+  value: [{ type: 'p', children: [{ text: 'Main editor content' }] }],
+});
+await sidebarEditor.api.yjs.init({
+  autoConnect: false,
+  value: [{ type: 'p', children: [{ text: 'Sidebar content' }] }],
+});
 ```
+
+**Important:** When using a custom `sharedType`, the initial `value` passed to `init()` will be applied directly to that specific `sharedType`, not to the default `ydoc.get('content', Y.XmlText)`. This ensures each editor's initial content goes to the correct location in your nested structure.
 
 ### Cursor Support
 
