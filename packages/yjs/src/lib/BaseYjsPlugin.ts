@@ -42,6 +42,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     localOrigin: null,
     positionStorageOrigin: null,
     providers: [],
+    sharedType: null,
     ydoc: null!,
     onConnect: () => {},
     onDisconnect: () => {},
