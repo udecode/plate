@@ -1,4 +1,5 @@
 import { isHotkeyModifier, mapKey } from './parseHotkeys';
+
 (() => {
   if (typeof document !== 'undefined') {
     document.addEventListener('keydown', (e) => {
@@ -53,15 +54,16 @@ export function pushToCurrentlyPressedKeys(key: string[] | string): void {
   Otherwise the set will hold all ever pressed keys while the meta key is down which leads to wrong results.
    */
   if (currentlyPressedKeys.has('meta')) {
-    currentlyPressedKeys.forEach(
-      (key) =>
-        !isHotkeyModifier(key) && currentlyPressedKeys.delete(key.toLowerCase())
-    );
+    for (const key of currentlyPressedKeys) {
+      if (!isHotkeyModifier(key)) {
+        currentlyPressedKeys.delete(key.toLowerCase());
+      }
+    }
   }
 
-  hotkeyArray.forEach((hotkey) =>
-    currentlyPressedKeys.add(hotkey.toLowerCase())
-  );
+  for (const hotkey of hotkeyArray) {
+    currentlyPressedKeys.add(hotkey.toLowerCase());
+  }
 }
 
 export function removeFromCurrentlyPressedKeys(key: string[] | string): void {
@@ -75,8 +77,8 @@ export function removeFromCurrentlyPressedKeys(key: string[] | string): void {
   if (key === 'meta') {
     currentlyPressedKeys.clear();
   } else {
-    hotkeyArray.forEach((hotkey) =>
-      currentlyPressedKeys.delete(hotkey.toLowerCase())
-    );
+    for (const hotkey of hotkeyArray) {
+      currentlyPressedKeys.delete(hotkey.toLowerCase());
+    }
   }
 }

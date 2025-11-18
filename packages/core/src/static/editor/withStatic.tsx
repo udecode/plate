@@ -27,7 +27,7 @@ const withStatic = <
   editor: Editor,
   options: WithStaticOptions<V, P> = {}
 ) => {
-  const { plugins = [], ...rest } = options;
+  const { plugins = [], ..._rest } = options;
 
   const staticPlugins = getStaticPlugins() as any;
 
@@ -42,6 +42,4 @@ export const createStaticEditor = <
 >({
   editor = createEditor(),
   ...options
-}: CreateStaticEditorOptions<V, P> = {}) => {
-  return withStatic<V, P>(editor, options);
-};
+}: CreateStaticEditorOptions<V, P> = {}) => withStatic<V, P>(editor, options);

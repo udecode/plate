@@ -22,7 +22,7 @@ describe('when deserializing p > test', () => {
         createPlateEditor({
           plugins: [ParagraphPlugin],
         }),
-        parseHtmlElement(`<p>test</p>`)
+        parseHtmlElement('<p>test</p>')
       )
     ).toEqual(output);
   });

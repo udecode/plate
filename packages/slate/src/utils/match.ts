@@ -1,7 +1,6 @@
 import type { Editor } from '../interfaces/editor/editor-type';
+import { ElementApi, type Path, PathApi, TextApi } from '../interfaces/index';
 import type { NodeOf, TNode } from '../interfaces/node';
-
-import { type Path, ElementApi, PathApi, TextApi } from '../interfaces/index';
 import { getAt } from './getAt';
 
 export type Predicate<T extends TNode> = PredicateFn<T> | PredicateObj;
@@ -52,11 +51,11 @@ export const getMatch = <E extends Editor>(
   // If empty option is true/false, match only empty/non-empty nodes
   if (empty !== undefined) {
     hasMatch = true;
-    matchFn = combineMatch(matchFn, (n) => {
-      return TextApi.isText(n)
+    matchFn = combineMatch(matchFn, (n) =>
+      TextApi.isText(n)
         ? n.text.length > 0 === !empty
-        : editor.api.isEmpty(n) === empty;
-    });
+        : editor.api.isEmpty(n) === empty
+    );
   }
   if (block !== undefined) {
     hasMatch = true;
@@ -64,9 +63,10 @@ export const getMatch = <E extends Editor>(
   }
   if (id !== undefined) {
     hasMatch = true;
-    matchFn = combineMatch(matchFn, (n) => {
-      return (id === true && !!n.id) || n.id === id;
-    });
+    matchFn = combineMatch(
+      matchFn,
+      (n) => (id === true && !!n.id) || n.id === id
+    );
   }
   // Handle object predicate matching first
   if (typeof matchObjOrFn === 'object') {
@@ -100,27 +100,26 @@ export const getQueryOptions = (
   };
 };
 
-export const combineMatch = <T extends TNode>(
-  match1: PredicateFn<T>,
-  match2?: PredicateFn<T>
-): PredicateFn<T> => {
-  return (node: T, path: Path) => {
-    return match1(node, path) && (!match2 || match2(node, path));
-  };
-};
+export const combineMatch =
+  <T extends TNode>(
+    match1: PredicateFn<T>,
+    match2?: PredicateFn<T>
+  ): PredicateFn<T> =>
+  (node: T, path: Path) =>
+    match1(node, path) && (!match2 || match2(node, path));
 
 /** Combine two match predicates into one. */
-export const combineMatchOptions = <E extends Editor>(
-  editor: E,
-  match1?: PredicateFn<NodeOf<E>>,
-  options?: any
-): PredicateFn<NodeOf<E>> => {
-  return (node: NodeOf<E>, path: Path) => {
+export const combineMatchOptions =
+  <E extends Editor>(
+    editor: E,
+    match1?: PredicateFn<NodeOf<E>>,
+    options?: any
+  ): PredicateFn<NodeOf<E>> =>
+  (node: NodeOf<E>, path: Path) => {
     const match2 = getMatch(editor, options);
 
     return (!match1 || match1(node, path)) && (!match2 || match2(node, path));
   };
-};
 
 /** Used by liftNodes, moveNodes, removeNodes, setNodes, unwrapNodes */
 export const combineTransformMatchOptions = <E extends Editor>(
@@ -134,15 +133,10 @@ export const combineTransformMatchOptions = <E extends Editor>(
         if (options?.at && PathApi.isPath(options.at)) {
           // matchPath: match the specific node at the path
           const [node] = editor.api.node(options.at) ?? [];
-          return (n: TNode) => {
-            return n === node;
-          };
-        } else {
-          // Default: match block elements
-          return (n: TNode) => {
-            return ElementApi.isElement(n) && editor.api.isBlock(n);
-          };
+          return (n: TNode) => n === node;
         }
+        // Default: match block elements
+        return (n: TNode) => ElementApi.isElement(n) && editor.api.isBlock(n);
       }
 
       return getMatch(editor, options);

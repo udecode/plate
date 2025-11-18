@@ -3,8 +3,8 @@
  */
 
 export * from './create-editor';
-export * from './slate-dom';
-export * from './types';
 export * from './interfaces/index';
+export * from './slate-dom';
 export * from './slate-history/index';
+export * from './types';
 export * from './utils/index';

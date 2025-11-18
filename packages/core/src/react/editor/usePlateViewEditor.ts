@@ -57,6 +57,6 @@ export function usePlateViewEditor<
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options && options.id, options && options.enabled, ...deps]
+    [options?.id, options?.enabled, ...deps]
   );
 }

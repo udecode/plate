@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { globSync } from 'glob';
-import { defineConfig, Expression } from 'turbowatch';
+import { defineConfig, type Expression } from 'turbowatch';
 
 const foundPackageJson = globSync('packages/*/package.json');
+const SRC_PATH_REGEX = /\/src\/.*/;
 
 type PathToPackageNameMap = Map<string, string>;
 
@@ -56,7 +57,7 @@ export default defineConfig({
         for (const file of files) {
           const pkgJsonPath = file.name
             .replace(`${process.cwd()}/`, '')
-            .replace(/\/src\/.*/, '/package.json');
+            .replace(SRC_PATH_REGEX, '/package.json');
 
           const packageName = allPackages.get(pkgJsonPath);
 

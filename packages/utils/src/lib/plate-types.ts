@@ -114,11 +114,11 @@ export interface TTableCellElement extends TElement {
   size?: number;
 }
 
-export interface TTableCellBorder {
+export type TTableCellBorder = {
   color?: string;
   size?: number;
   style?: string;
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props

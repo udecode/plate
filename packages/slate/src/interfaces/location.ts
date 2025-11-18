@@ -1,11 +1,10 @@
 import { Location as SlateLocation, Span as SlateSpan } from 'slate';
 
 import type { At } from '../types';
+import { NodeApi } from './node';
 import type { Path } from './path';
 import type { Point } from './point';
 import type { Range, TRange } from './range';
-
-import { NodeApi } from './node';
 
 /**
  * The `TLocation` interface is a union of the ways to refer to a specific

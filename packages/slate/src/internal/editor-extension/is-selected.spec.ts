@@ -1,6 +1,5 @@
-import type { Range, Value } from '../../interfaces';
-
 import { createEditor } from '../../create-editor';
+import type { Range, Value } from '../../interfaces';
 import { isSelected } from './is-selected';
 
 describe('isSelected', () => {

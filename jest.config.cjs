@@ -1,3 +1,4 @@
+'use strict';
 const appRoot = require('app-root-path');
 const { pathsToModuleNameMapper } = require('ts-jest');
 
@@ -9,13 +10,12 @@ const { compilerOptions: baseTsConfig } = require(
 
 // Take the paths from tsconfig automatically from base tsconfig.json
 // @link https://kulshekhar.github.io/ts-jest/docs/paths-mapping
-const getTsConfigBasePaths = () => {
-  return baseTsConfig.paths
+const getTsConfigBasePaths = () =>
+  baseTsConfig.paths
     ? pathsToModuleNameMapper(baseTsConfig.paths, {
         prefix: '<rootDir>/',
       })
     : {};
-};
 
 const aliases = require(`${appRoot}/tooling/config/aliases.cjs`);
 

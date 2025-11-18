@@ -1,10 +1,10 @@
-interface InputProps {
+type InputProps = {
   /**
    * Should we activate the onKeyDownCapture handler to preventDefault when the
    * user presses enter?
    */
   preventDefaultOnEnterKeydown?: boolean;
-}
+};
 
 /**
  * Hook to allow the user to spread a set of predefined props to the Div wrapper

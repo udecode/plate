@@ -1,6 +1,5 @@
-import type { EditorFragmentDeletionOptions } from 'slate/dist/interfaces/editor';
-
 import { deleteFragment as deleteFragmentBase } from 'slate';
+import type { EditorFragmentDeletionOptions } from 'slate/dist/interfaces/editor';
 
 import type { Editor } from '../../interfaces/editor/editor-type';
 

@@ -1,24 +1,24 @@
 import { isEmpty as isEmptyBase } from 'slate';
-
-import type { Editor } from '../../interfaces/editor/editor-type';
-import type { At } from '../../types';
-
 import {
   type EditorEmptyOptions,
   NodeApi,
   PathApi,
   TextApi,
 } from '../../interfaces';
+import type { Editor } from '../../interfaces/editor/editor-type';
+import type { At } from '../../types';
 
 export const isEmpty = <E extends Editor>(
   editor: E,
   target: At | null = [],
   options?: EditorEmptyOptions
 ) => {
-  if (target === null) return true;
+  let _target = target;
+
+  if (_target === null) return true;
   if (
-    (PathApi.isPath(target) && target.length === 0) ||
-    NodeApi.isEditor(target)
+    (PathApi.isPath(_target) && _target.length === 0) ||
+    NodeApi.isEditor(_target)
   ) {
     return (
       editor.children.length === 1 &&
@@ -26,12 +26,12 @@ export const isEmpty = <E extends Editor>(
     );
   }
   if (options?.after) {
-    const blockAbove = editor.api.block({ above: true, at: target });
+    const blockAbove = editor.api.block({ above: true, at: _target });
 
     if (!blockAbove) return false;
 
-    const point = editor.api.point(target)!;
-    const selectionParentEntry = editor.api.parent(target);
+    const point = editor.api.point(_target)!;
+    const selectionParentEntry = editor.api.parent(_target);
 
     if (!selectionParentEntry) return false;
 
@@ -57,18 +57,18 @@ export const isEmpty = <E extends Editor>(
 
     return true;
   }
-  if (PathApi.isPath(target)) {
-    return isEmptyBase(editor as any, editor.api.node(target)?.[0] as any);
+  if (PathApi.isPath(_target)) {
+    return isEmptyBase(editor as any, editor.api.node(_target)?.[0] as any);
   }
   if (options?.block) {
-    const block = editor.api.block({ at: target });
+    const block = editor.api.block({ at: _target });
 
     if (!block) return false;
 
-    target = block[0];
+    _target = block[0];
   }
-  if (!NodeApi.isNode(target)) {
-    const nodes = editor.api.nodes({ at: target, ...options });
+  if (!NodeApi.isNode(_target)) {
+    const nodes = editor.api.nodes({ at: _target, ...options });
 
     for (const node of nodes) {
       if (!isEmptyBase(editor as any, node[0] as any)) {
@@ -79,5 +79,5 @@ export const isEmpty = <E extends Editor>(
     return true;
   }
 
-  return isEmptyBase(editor as any, target as any);
+  return isEmptyBase(editor as any, _target as any);
 };

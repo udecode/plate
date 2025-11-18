@@ -1,10 +1,28 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "assist": {
+    "includes": ["!packages/**/index.ts"]
+  },
   "javascript": {
     "formatter": {
       "quoteStyle": "single"
-    }
+    },
+    "jsxRuntime": "reactClassic"
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!!node_modules/@opentelemetry",
+      "!!node_modules/@effect-ts",
+      "!!node_modules/pdf-lib",
+      "!!node_modules/fast-check",
+      "!!node_modules/puppeteer-core",
+      "!!**/.turbo",
+      "!!**/dist",
+      "!!templates",
+      "!!apps"
+    ]
   },
   "linter": {
     "rules": {
@@ -33,7 +51,8 @@
         "noUnknownAtRules": "off", // allow for Tailwind @ rules
         "noEmptyBlockStatements": "off", // chill
         "useAwait": "off", // chill
-        "noDocumentCookie": "off" // shadcn
+        "noDocumentCookie": "off", // shadcn,
+        "noConfusingVoidType": "off" // false +
       },
       "style": {
         "noMagicNumbers": "off", // chill
@@ -41,7 +60,7 @@
         "noNestedTernary": "off", // chill
         "noNonNullAssertion": "off", // ts chill
         "useDefaultSwitchClause": "off", // chill
-        "useBlockStatements": "off" // chill
+        "useBlockStatements": "off" // chill,
       },
       "nursery": {
         "noShadow": "off", // chill
@@ -65,8 +84,54 @@
       },
       "performance": {
         "noNamespaceImport": "off", // shadcn
-        "noImgElement": "off" // agnostic
+        "noImgElement": "off", // agnostic
+        "noBarrelFile": "off" // lib
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noReactForwardRef": "off" // react 18
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.spec.*", "**/*.test.*"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noUnusedExpressions": "off"
+          },
+          "correctness": {
+            "useJsxKeyInIterable": "off"
+          },
+          "style": {
+            "useImportType": "off"
+          },
+          "suspicious": {
+            "noThenProperty": "off",
+            "noSkippedTests": "off",
+            "noNonNullAssertedOptionalChain": "off"
+          },
+          "a11y": "off",
+          "performance": "off"
+        }
+      }
+    },
+    {
+      "includes": ["packages/udecode/depset/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ]
 }

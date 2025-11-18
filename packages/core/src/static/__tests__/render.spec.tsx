@@ -9,19 +9,14 @@ describe('serializePlateStatic nodes', () => {
     const renderBelowPlugin = createTSlatePlugin({
       key: 'test-list',
       render: {
-        belowNodes: (injectProps: any) => {
-          return function Component({
-            children,
-          }: {
-            children: React.ReactNode;
-          }) {
+        belowNodes: (_injectProps: any) =>
+          function Component({ children }: { children: React.ReactNode }) {
             return (
               <ul>
                 <li>{children}</li>
               </ul>
             );
-          };
-        },
+          },
       },
     });
 

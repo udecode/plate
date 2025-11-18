@@ -1,3 +1,4 @@
+'use strict';
 module.exports = {
   '@platejs/autoformat': 'autoformat',
   '@platejs/basic-nodes': 'basic-nodes',

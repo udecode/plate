@@ -127,7 +127,7 @@ describe('when deserializing all plugins', () => {
   const inlineTags = ['<a href="http://google.com">a</a>'];
 
   const elementTags = [
-    `<pre><code><div>code 1</div><div>code 2</div></code></pre>`,
+    '<pre><code><div>code 1</div><div>code 2</div></code></pre>',
     '<ul><li><p>ul-li-p</p></li></ul>',
     '<ol><li><p>ol-li-p</p></li></ol>',
     '<img alt="" src="https://i.imgur.com/removed.png" />',

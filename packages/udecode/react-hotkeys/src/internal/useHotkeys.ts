@@ -8,8 +8,14 @@ import {
   useRef,
   useState,
 } from 'react';
-
+import { useBoundHotkeysProxy } from './BoundHotkeysProxyProvider';
+import { useHotkeysContext } from './HotkeysProvider';
+import {
+  pushToCurrentlyPressedKeys,
+  removeFromCurrentlyPressedKeys,
+} from './isHotkeyPressed';
 import type { Key } from './key';
+import { mapKey, parseHotkey, parseKeysHookInput } from './parseHotkeys';
 import type {
   HotkeyCallback,
   Keys,
@@ -17,14 +23,6 @@ import type {
   OptionsOrDependencyArray,
   RefType,
 } from './types';
-
-import { useBoundHotkeysProxy } from './BoundHotkeysProxyProvider';
-import { useHotkeysContext } from './HotkeysProvider';
-import {
-  pushToCurrentlyPressedKeys,
-  removeFromCurrentlyPressedKeys,
-} from './isHotkeyPressed';
-import { mapKey, parseHotkey, parseKeysHookInput } from './parseHotkeys';
 import useDeepEqualMemo from './useDeepEqualMemo';
 import {
   isHotkeyEnabled,
@@ -67,7 +65,8 @@ export default function useHotkeys<T extends HTMLElement>(
           keyCombo.map((k) => k.toString()).join(_options?.splitKey || '+')
         )
         .join(_options?.delimiter || ',');
-    } else if (Array.isArray(keys)) {
+    }
+    if (Array.isArray(keys)) {
       return keys.join(_options?.delimiter || ',');
     }
 
@@ -214,7 +213,7 @@ export default function useHotkeys<T extends HTMLElement>(
     domNode.addEventListener('keydown', handleKeyDown as any);
 
     if (proxy) {
-      parseKeysHookInput(_keys, memoisedOptions?.delimiter).forEach((key) =>
+      for (const key of parseKeysHookInput(_keys, memoisedOptions?.delimiter)) {
         proxy.addHotkey(
           parseHotkey(
             key,
@@ -222,8 +221,8 @@ export default function useHotkeys<T extends HTMLElement>(
             memoisedOptions?.useKey,
             memoisedOptions?.description
           )
-        )
-      );
+        );
+      }
     }
 
     return () => {
@@ -231,7 +230,10 @@ export default function useHotkeys<T extends HTMLElement>(
       domNode.removeEventListener('keydown', handleKeyDown as any);
 
       if (proxy) {
-        parseKeysHookInput(_keys, memoisedOptions?.delimiter).forEach((key) =>
+        for (const key of parseKeysHookInput(
+          _keys,
+          memoisedOptions?.delimiter
+        )) {
           proxy.removeHotkey(
             parseHotkey(
               key,
@@ -239,8 +241,8 @@ export default function useHotkeys<T extends HTMLElement>(
               memoisedOptions?.useKey,
               memoisedOptions?.description
             )
-          )
-        );
+          );
+        }
       }
     };
   }, [ref, _keys, memoisedOptions, activeScopes]);

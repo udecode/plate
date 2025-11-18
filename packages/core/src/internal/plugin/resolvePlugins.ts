@@ -79,6 +79,7 @@ export const resolvePlugins = (
   // Last pass
   editor.meta.pluginList.forEach((plugin: SlatePlugin) => {
     if (plugin.extendEditor) {
+      // biome-ignore lint/style/noParameterAssign: Intentional editor extension pattern
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
 
       // Sync any editor methods that were modified by extendEditor
@@ -259,29 +260,26 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
             merge(plugin.transforms, newExtensions);
             assignLegacyTransforms(editor, newExtensions);
           }
-        } else {
-          // Handle APIs
-          if (isPluginSpecific) {
-            // Plugin-specific API
-            if (!(editor.api as any)[plugin.key]) {
-              (editor.api as any)[plugin.key] = {};
-            }
-            if (!(plugin.api as any)[plugin.key]) {
-              (plugin.api as any)[plugin.key] = {};
-            }
-
-            merge((editor.api as any)[plugin.key], newExtensions);
-            merge((plugin.api as any)[plugin.key], newExtensions);
-          } else {
-            // Editor-wide API
-            merge(editor.api, newExtensions);
-            merge(plugin.api, newExtensions);
-            assignLegacyApi(editor, editor.api);
+        } else if (isPluginSpecific) {
+          // Handle APIs - Plugin-specific API
+          if (!(editor.api as any)[plugin.key]) {
+            (editor.api as any)[plugin.key] = {};
           }
+          if (!(plugin.api as any)[plugin.key]) {
+            (plugin.api as any)[plugin.key] = {};
+          }
+
+          merge((editor.api as any)[plugin.key], newExtensions);
+          merge((plugin.api as any)[plugin.key], newExtensions);
+        } else {
+          // Handle APIs - Editor-wide API
+          merge(editor.api, newExtensions);
+          merge(plugin.api, newExtensions);
+          assignLegacyApi(editor, editor.api);
         }
       }
     );
-    delete plugin.__apiExtensions;
+    plugin.__apiExtensions = undefined;
   }
 };
 
@@ -316,13 +314,10 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
           const pluginSpecificApi = (plugin.api as any)?.[plugin.key];
 
           if (pluginSpecificTransforms?.[originalKey]) {
-            resolvedHotkey.handler = () => {
-              return pluginSpecificTransforms[originalKey]();
-            };
+            resolvedHotkey.handler = () =>
+              pluginSpecificTransforms[originalKey]();
           } else if (pluginSpecificApi?.[originalKey]) {
-            resolvedHotkey.handler = () => {
-              return pluginSpecificApi[originalKey]();
-            };
+            resolvedHotkey.handler = () => pluginSpecificApi[originalKey]();
           }
         }
 
@@ -510,8 +505,6 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
         plugins: applyOverrides(plugin.plugins || []),
       }));
   };
-
-  applyPluginsToEditor;
 
   editor.meta.pluginList = applyOverrides(editor.meta.pluginList as any);
   editor.plugins = Object.fromEntries(

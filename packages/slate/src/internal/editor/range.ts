@@ -1,14 +1,12 @@
 import { range as rangeBase } from 'slate';
-
-import type { Editor } from '../../interfaces/editor/editor-type';
-import type { At } from '../../types';
-
 import {
   type EditorBeforeOptions,
-  type TRange,
   PointApi,
   RangeApi,
+  type TRange,
 } from '../../interfaces';
+import type { Editor } from '../../interfaces/editor/editor-type';
+import type { At } from '../../types';
 import { getAt } from '../../utils';
 
 export const range = (

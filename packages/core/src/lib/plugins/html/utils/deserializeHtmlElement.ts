@@ -7,6 +7,4 @@ import { deserializeHtmlNode } from './deserializeHtmlNode';
 export const deserializeHtmlElement = (
   editor: SlateEditor,
   element: HTMLElement
-): DeserializeHtmlNodeReturnType => {
-  return deserializeHtmlNode(editor)(element);
-};
+): DeserializeHtmlNodeReturnType => deserializeHtmlNode(editor)(element);

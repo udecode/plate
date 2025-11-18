@@ -51,6 +51,7 @@ const COUNT_GAPS_REGEXP = /["#&(+./@[\\_{]/g,
   IS_GAP_REGEXP = /["#&(+./@[\\_{]/,
   IS_SPACE_REGEXP = /[\s-]/;
 
+// biome-ignore lint/nursery/useMaxParams: Performance-critical internal scoring function
 function commandScoreInner(
   string: any,
   abbreviation: any,
@@ -101,7 +102,7 @@ function commandScoreInner(
           .match(COUNT_GAPS_REGEXP);
 
         if (wordBreaks && stringIndex > 0) {
-          score *= Math.pow(PENALTY_SKIPPED, wordBreaks.length);
+          score *= PENALTY_SKIPPED ** wordBreaks.length;
         }
       } else if (IS_SPACE_REGEXP.test(string.charAt(index - 1))) {
         score *= SCORE_SPACE_WORD_JUMP;
@@ -110,13 +111,13 @@ function commandScoreInner(
           .match(COUNT_SPACE_REGEXP);
 
         if (spaceBreaks && stringIndex > 0) {
-          score *= Math.pow(PENALTY_SKIPPED, spaceBreaks.length);
+          score *= PENALTY_SKIPPED ** spaceBreaks.length;
         }
       } else {
         score *= SCORE_CHARACTER_JUMP;
 
         if (stringIndex > 0) {
-          score *= Math.pow(PENALTY_SKIPPED, index - stringIndex);
+          score *= PENALTY_SKIPPED ** (index - stringIndex);
         }
       }
       if (string.charAt(index) !== abbreviation.charAt(abbreviationIndex)) {
@@ -172,15 +173,13 @@ export function commandScore(
    * in the original, we used to do the lower-casing on each recursive call, but this meant that toLowerCase()
    * was the dominating cost in the algorithm, passing both is a little ugly, but considerably faster.
    */
-  string =
-    aliases && aliases.length > 0
-      ? `${string + ' ' + aliases.join(' ')}`
-      : string;
+  const searchString =
+    aliases && aliases.length > 0 ? `${string} ${aliases.join(' ')}` : string;
 
   return commandScoreInner(
-    string,
+    searchString,
     abbreviation,
-    formatInput(string),
+    formatInput(searchString),
     formatInput(abbreviation),
     0,
     0,

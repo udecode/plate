@@ -2,10 +2,8 @@ import type { Page } from '@playwright/test';
 import type { Path } from 'platejs';
 
 import { ElementApi } from 'platejs';
-
-import type { EditorHandle } from './types';
-
 import { getNodeByPath } from './getNodeByPath';
+import type { EditorHandle } from './types';
 
 export const getTypeAtPath = async (
   page: Page,

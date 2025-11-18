@@ -13,6 +13,6 @@ export const above = <N extends AncestorOf<E>, E extends Editor = Editor>(
   try {
     return aboveBase(editor as any, getQueryOptions(editor, options)) as any;
   } catch {
-    return undefined;
+    return;
   }
 };

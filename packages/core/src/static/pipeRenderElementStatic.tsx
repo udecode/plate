@@ -15,8 +15,8 @@ export const pipeRenderElementStatic = (
   }: {
     renderElement?: SlateRenderElement;
   } = {}
-): SlateRenderElement => {
-  return function render(props) {
+): SlateRenderElement =>
+  function render(props) {
     const plugin = getPluginByType(editor, props.element.type);
 
     if (plugin?.node.isElement) {
@@ -45,4 +45,3 @@ export const pipeRenderElementStatic = (
       </SlateElement>
     );
   };
-};

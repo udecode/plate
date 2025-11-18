@@ -48,7 +48,7 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
 
     if (isDefined(node._id)) {
       const id = node._id;
-      delete node._id;
+      node._id = undefined;
 
       if (!editor.api.some({ at: [], match: { [idKey]: id } })) {
         node[idKey] = id;
@@ -153,6 +153,7 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
 
         if (!disableInsertOverrides && node[idKey]) {
           if (!Object.isExtensible(node)) {
+            // biome-ignore lint/style/noParameterAssign: Need to clone and reassign if node is not extensible
             node = cloneDeep(node);
           }
 
@@ -175,6 +176,7 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
           nodes.map((node) => {
             if (!disableInsertOverrides && node[idKey]) {
               if (!Object.isExtensible(node)) {
+                // biome-ignore lint/style/noParameterAssign: Need to clone and reassign if node is not extensible
                 node = cloneDeep(node);
               }
 

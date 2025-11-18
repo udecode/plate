@@ -1,6 +1,5 @@
-import type React from 'react';
-
 import type { CxOptions } from 'class-variance-authority';
+import type React from 'react';
 
 import { cn } from './cn';
 import { withProps } from './withProps';

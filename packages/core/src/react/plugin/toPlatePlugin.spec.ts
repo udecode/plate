@@ -1,4 +1,4 @@
-import type { ExtendEditor, PlatePlugin } from './PlatePlugin';
+import type { PlatePlugin } from './PlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import {
@@ -160,9 +160,7 @@ describe('toPlatePlugin type tests', () => {
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       handlers: {},
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-      extendEditor: ({ editor }) => {
-        return editor;
-      },
+      extendEditor: ({ editor }) => editor,
     }).extendEditorApi(() => ({
       plugin: {
         getLanguage: () => 'javascript' as string,
@@ -315,8 +313,6 @@ describe('toPlatePlugin type tests', () => {
 // Type tests for toTPlatePlugin
 describe('toTPlatePlugin type tests', () => {
   it('should work with CodeBlockConfig for toTPlatePlugin', () => {
-    type ExtendEditor2 = ExtendEditor<CodeBlockConfig2>;
-
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
@@ -344,9 +340,7 @@ describe('toTPlatePlugin type tests', () => {
         },
       }))
       .extend({
-        extendEditor: ({ editor }) => {
-          return editor;
-        },
+        extendEditor: ({ editor }) => editor,
       });
 
     const editor = createPlateEditor({

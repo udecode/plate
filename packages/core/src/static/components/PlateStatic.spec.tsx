@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/no-render-in-lifecycle */
 // If your actual memoized components are named "ElementStatic" and "LeafStatic",
 // you can wrap them with a mock or rename them in test for clarity.
 
@@ -69,11 +68,11 @@ function ElementStaticMock(props: Parameters<typeof SlateElement>[0]) {
 }
 
 /** Expose the render count so our tests can read it */
-export function getElementRenderCount() {
+function getElementRenderCount() {
   return elementRenderCount;
 }
 
-export function resetElementRenderCount() {
+function resetElementRenderCount() {
   elementRenderCount = 0;
 }
 
@@ -85,11 +84,11 @@ function LeafStaticMock(props: Parameters<typeof SlateLeaf>[0]) {
   return <SlateLeaf {...props} />;
 }
 
-export function getLeafRenderCount() {
+function getLeafRenderCount() {
   return leafRenderCount;
 }
 
-export function resetLeafRenderCount() {
+function resetLeafRenderCount() {
   leafRenderCount = 0;
 }
 

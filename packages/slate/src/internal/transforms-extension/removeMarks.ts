@@ -3,11 +3,11 @@ import castArray from 'lodash/castArray.js';
 import {
   type Editor,
   type Path,
+  RangeApi,
   type RemoveMarksOptions,
   type TElement,
-  type TNode,
-  RangeApi,
   TextApi,
+  type TNode,
 } from '../../interfaces';
 
 export const removeMarks = (
@@ -67,6 +67,8 @@ export const removeMarks = (
     }
 
     // Slate does not export FLUSHING so we need to call onChange manually
-    shouldChange && editor.api.onChange();
+    if (shouldChange) {
+      editor.api.onChange();
+    }
   }
 };

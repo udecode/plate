@@ -182,9 +182,7 @@ describe('SlatePlugin store', () => {
         key: 'plugin1',
         options: { value: 1 },
       }).extendSelectors(({ getOptions }) => ({
-        doubleValue: () => {
-          return getOptions().value * 2;
-        },
+        doubleValue: () => getOptions().value * 2,
       }));
 
       const editor = createPlateEditor({ plugins: [p1] });
@@ -383,8 +381,8 @@ describe('PlatePlugin usePluginOption', () => {
 
       const TestHook = () => {
         // @ts-expect-error
-        let never = useEditorPluginOption(editor, p1, 'doubleValue');
-        never = 1;
+        let _never = useEditorPluginOption(editor, p1, 'doubleValue');
+        _never = 1;
         const doubleValue = useEditorPluginOption(editor, p1, 'doubleValue', 2);
 
         return <div data-testid="test-hook">{doubleValue}</div>;

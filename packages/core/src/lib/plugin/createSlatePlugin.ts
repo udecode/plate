@@ -331,12 +331,11 @@ export function createSlatePlugin<
     return createSlatePlugin(newPlugin);
   };
 
-  plugin.withComponent = (component) => {
-    return plugin.extend({
+  plugin.withComponent = (component) =>
+    plugin.extend({
       node: { component },
       render: { node: component },
     }) as any;
-  };
 
   return plugin;
 }

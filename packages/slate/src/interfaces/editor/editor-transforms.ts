@@ -10,18 +10,18 @@ import type { deleteForward } from '../../internal/editor/deleteForward';
 import type { deleteFragment } from '../../internal/editor/deleteFragment';
 import type { insertBreak } from '../../internal/editor/insertBreak';
 import type { withoutNormalizing } from '../../internal/editor/withoutNormalizing';
-import type { addMarks } from '../../internal/transforms-extension/addMarks';
-import type { duplicateNodes } from '../../internal/transforms-extension/duplicateNodes';
-import type { removeMarks } from '../../internal/transforms-extension/removeMarks';
-import type { reset } from '../../internal/transforms-extension/reset';
-import type { toggleBlock } from '../../internal/transforms-extension/toggleBlock';
-import type { toggleMark } from '../../internal/transforms-extension/toggleMark';
 import type { collapseSelection } from '../../internal/transforms/collapseSelection';
 import type { deleteText } from '../../internal/transforms/deleteText';
 import type { moveSelection } from '../../internal/transforms/moveSelection';
 import type { select } from '../../internal/transforms/select';
 import type { setPoint } from '../../internal/transforms/setPoint';
 import type { setSelection } from '../../internal/transforms/setSelection';
+import type { addMarks } from '../../internal/transforms-extension/addMarks';
+import type { duplicateNodes } from '../../internal/transforms-extension/duplicateNodes';
+import type { removeMarks } from '../../internal/transforms-extension/removeMarks';
+import type { reset } from '../../internal/transforms-extension/reset';
+import type { toggleBlock } from '../../internal/transforms-extension/toggleBlock';
+import type { toggleMark } from '../../internal/transforms-extension/toggleMark';
 import type { HistoryApi } from '../../slate-history/index';
 import type { At, TextUnit } from '../../types';
 import type { QueryNodeOptions } from '../../utils';
@@ -165,7 +165,7 @@ export type EditorTransforms<V extends Value = Value> = {
    *
    * @returns `true` if the event is handled, `false` otherwise.
    */
-  escape: () => boolean | void;
+  escape: () => boolean | undefined;
   /**
    * Insert of fragment of nodes at the specified location or (if not defined)
    * the current selection or (if not defined) the end of the document.
@@ -212,7 +212,7 @@ export type EditorTransforms<V extends Value = Value> = {
    *
    * @returns `true` if the event is handled, `false` otherwise.
    */
-  moveLine: (options: { reverse: boolean }) => boolean | void;
+  moveLine: (options: { reverse: boolean }) => boolean | undefined;
   /**
    * Move the nodes from an origin to a destination. A destination must be
    * specified in the `options`. If no origin is specified, move the selection.
@@ -255,7 +255,7 @@ export type EditorTransforms<V extends Value = Value> = {
    *
    * @returns `true` if the event is handled, `false` otherwise.
    */
-  selectAll: () => boolean | void;
+  selectAll: () => boolean | undefined;
   /**
    * Set properties of nodes at the specified location. If no location is
    * specified, use the selection.
@@ -277,7 +277,7 @@ export type EditorTransforms<V extends Value = Value> = {
    *
    * @returns `true` if the event is handled, `false` otherwise.
    */
-  tab: (options: { reverse: boolean }) => boolean | void;
+  tab: (options: { reverse: boolean }) => boolean | undefined;
   /** Undo to the previous saved state. */
   undo: () => void;
   /**
@@ -460,7 +460,7 @@ export type LiftNodesOptions<V extends Value = Value> = QueryOptions<V> &
   QueryMode &
   QueryVoids;
 
-export type MergeNodesOptions<V extends Value, E extends Editor = Editor> = {
+export type MergeNodesOptions<V extends Value, _E extends Editor = Editor> = {
   hanging?: boolean;
   /** Whether it's merging node from `deleteForward`. */
   reverse?: boolean;

@@ -25,7 +25,7 @@ describe('when children is a text', () => {
         createPlateEditor({
           plugins: [BoldPlugin],
         }),
-        parseHtmlElement(`<strong>test</strong>`)
+        parseHtmlElement('<strong>test</strong>')
       )
     ).toEqual(output);
   });
@@ -40,7 +40,7 @@ describe('when there is no plugins', () => {
         createPlateEditor({
           plugins: [createSlatePlugin({ key: 'a' })],
         }),
-        parseHtmlElement(`<strong>test</strong>`)
+        parseHtmlElement('<strong>test</strong>')
       )
     ).toEqual(output);
   });
@@ -64,7 +64,7 @@ describe('when there is a mark above multiple elements', () => {
         createPlateEditor({
           plugins: [BaseParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
         }),
-        parseHtmlElement(`<strong><li><p>test</p>test</li></strong>`)
+        parseHtmlElement('<strong><li><p>test</p>test</li></strong>')
       )
     ).toEqual(output);
   });

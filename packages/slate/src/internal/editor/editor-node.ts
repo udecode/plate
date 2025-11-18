@@ -1,16 +1,14 @@
 import { node as nodeBase } from 'slate';
-
-import type { Editor } from '../../interfaces/editor/editor-type';
-import type { NodeEntry } from '../../interfaces/node-entry';
-import type { AtOrDescendant } from '../../types';
-
 import {
   type DescendantOf,
   type EditorNodeOptions,
   type EditorNodesOptions,
-  type ValueOf,
   LocationApi,
+  type ValueOf,
 } from '../../interfaces';
+import type { Editor } from '../../interfaces/editor/editor-type';
+import type { NodeEntry } from '../../interfaces/node-entry';
+import type { AtOrDescendant } from '../../types';
 import { getAt } from '../../utils';
 
 export const node = <N extends DescendantOf<E>, E extends Editor = Editor>(
@@ -31,6 +29,6 @@ export const node = <N extends DescendantOf<E>, E extends Editor = Editor>(
 
     return nodeEntries.next().value as any;
   } catch {
-    return undefined;
+    return;
   }
 };

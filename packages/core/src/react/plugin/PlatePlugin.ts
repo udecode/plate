@@ -155,6 +155,7 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
 
 export type InferConfig<P> = P extends
   | PlatePlugin<infer C>
+  // biome-ignore lint/suspicious/noRedeclare: Intentional use of same type variable in union to extract config from either type
   | SlatePlugin<infer C>
   ? C
   : never;

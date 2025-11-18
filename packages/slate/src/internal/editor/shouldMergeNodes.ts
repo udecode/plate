@@ -1,6 +1,5 @@
+import { ElementApi, type NodeEntry, TextApi } from '../../interfaces';
 import type { Editor } from '../../interfaces/editor/editor-type';
-
-import { type NodeEntry, ElementApi, TextApi } from '../../interfaces';
 
 export const shouldMergeNodes = (
   editor: Editor,

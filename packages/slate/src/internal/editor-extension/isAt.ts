@@ -1,12 +1,13 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
-
 import {
   type EditorAboveOptions,
-  type TLocation,
   PathApi,
   PointApi,
   RangeApi,
+  type TLocation,
 } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
+
+const WHITESPACE_OR_END_REGEX = /^(?:\s|$)/;
 
 /**
  * Check if a location (point/range) is at a specific position.
@@ -64,7 +65,7 @@ export const isAt = <E extends Editor>(
       const afterRange = editor.api.range(at, after);
       const afterText = editor.api.string(afterRange);
 
-      return /^(?:\s|$)/.test(afterText);
+      return WHITESPACE_OR_END_REGEX.test(afterText);
     }
 
     return false;

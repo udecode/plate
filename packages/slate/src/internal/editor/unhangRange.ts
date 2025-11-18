@@ -4,9 +4,9 @@ import type { Editor } from '../../interfaces/editor/editor-type';
 
 import {
   type EditorUnhangRangeOptions,
-  type TRange,
   PathApi,
   RangeApi,
+  type TRange,
 } from '../../interfaces/index';
 
 export const unhangRange = (

@@ -7,6 +7,4 @@ import { getQueryOptions } from '../../utils';
 export const splitNodes = <E extends Editor>(
   editor: E,
   options?: SplitNodesOptions<ValueOf<E>>
-) => {
-  return splitNodesBase(editor as any, getQueryOptions(editor, options));
-};
+) => splitNodesBase(editor as any, getQueryOptions(editor, options));

@@ -1,17 +1,15 @@
-import React from 'react';
-
 import type { PluginConfig } from '@platejs/core';
-import type { Path, TElement } from '@platejs/slate';
-
 import {
-  type PlatePluginContext,
   createTPlatePlugin,
+  type PlatePluginContext,
   useEditorComposing,
   useEditorReadOnly,
   useEditorSelector,
   useFocused,
   usePluginOption,
 } from '@platejs/core/react';
+import type { Path, TElement } from '@platejs/slate';
+import React from 'react';
 
 import { KEYS } from '../../lib';
 
@@ -39,9 +37,7 @@ export const BlockPlaceholderPlugin =
       placeholders: {
         [KEYS.p]: 'Type something...',
       },
-      query: ({ path }) => {
-        return path.length === 1;
-      },
+      query: ({ path }) => path.length === 1,
     },
     useHooks: (ctx) => {
       const { editor, getOptions, setOption } = ctx;

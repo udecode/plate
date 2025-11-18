@@ -8,9 +8,8 @@ import type {
   TNode,
   ValueOf,
 } from '../../interfaces';
-import type { NodeProps } from '../../interfaces/node';
-
 import { PathApi, RangeApi, TextApi } from '../../interfaces';
+import type { NodeProps } from '../../interfaces/node';
 import { getAt, getQueryOptions } from '../../utils';
 
 export const setNodes = <N extends DescendantOf<E>, E extends Editor = Editor>(

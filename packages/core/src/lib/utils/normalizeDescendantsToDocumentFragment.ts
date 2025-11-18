@@ -22,8 +22,8 @@ const makeBlockLazy = (type: string) => (): Descendant => ({
 const hasDifferentChildNodes = (
   descendants: Descendant[],
   isInline: (node: Descendant) => boolean
-): boolean => {
-  return descendants.some((descendant, index, arr) => {
+): boolean =>
+  descendants.some((descendant, index, arr) => {
     const prevDescendant = arr[index - 1];
 
     if (index !== 0) {
@@ -32,7 +32,6 @@ const hasDifferentChildNodes = (
 
     return false;
   });
-};
 
 /**
  * Handles 3rd constraint: "Block nodes can only contain other blocks, or inline
@@ -90,13 +89,16 @@ const normalize = (
   isInline: (node: Descendant) => boolean,
   makeDefaultBlock: () => Descendant
 ): Descendant[] => {
+  // biome-ignore lint/style/noParameterAssign: Sequential transformation pipeline pattern
   descendants = normalizeEmptyChildren(descendants);
+  // biome-ignore lint/style/noParameterAssign: Sequential transformation pipeline pattern
   descendants = normalizeDifferentNodeTypes(
     descendants,
     isInline,
     makeDefaultBlock
   );
 
+  // biome-ignore lint/style/noParameterAssign: Sequential transformation pipeline pattern
   descendants = descendants.map((node) => {
     if (ElementApi.isElement(node)) {
       return {

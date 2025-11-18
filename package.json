@@ -63,6 +63,7 @@
     "p:clean": "cd $INIT_CWD && rimraf dist && jest --clear-cache",
     "p:lint": "biome check $INIT_CWD/src",
     "p:lint:fix": "biome check $INIT_CWD/src --fix",
+    "p:lint:report": "biome check $INIT_CWD/src --log-level=tracing --log-kind=json --log-file=tracing.json",
     "p:test": "cd $INIT_CWD && jest --config=${PROJECT_CWD}/jest.config.cjs --maxWorkers=1 --passWithNoTests $INIT_CWD ",
     "p:tsup": "cd $INIT_CWD && tsup --config=${PROJECT_CWD}/tooling/config/tsup.config.ts",
     "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.json",

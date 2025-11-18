@@ -1,4 +1,4 @@
-import { type InsertExitBreakOptions, createSlatePlugin } from '@platejs/core';
+import { createSlatePlugin, type InsertExitBreakOptions } from '@platejs/core';
 
 import { KEYS } from '../plate-keys';
 

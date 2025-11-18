@@ -91,7 +91,8 @@ describe('when plugin has deserialize attributeNames', () => {
 });
 
 describe('when element has a comment node', () => {
-  const html = `<html><body>test<!-- You will not be able to see this text. --></body></html>`;
+  const html =
+    '<html><body>test<!-- You will not be able to see this text. --></body></html>';
   const element = getHtmlDocument(html).body;
 
   const output = (
@@ -113,7 +114,7 @@ describe('when element has a comment node', () => {
 });
 
 describe('when element has pre without child', () => {
-  const html = `<html><body>test<pre /></body></html>`;
+  const html = '<html><body>test<pre /></body></html>';
   const element = getHtmlDocument(html).body;
 
   const output = (
@@ -130,7 +131,7 @@ describe('when element has pre without child', () => {
 });
 
 describe('when there is no plugins', () => {
-  const html = `<html><body><h1>test</h1></body></html>`;
+  const html = '<html><body><h1>test</h1></body></html>';
   const element = getHtmlDocument(html).body;
 
   const output = (
@@ -226,7 +227,7 @@ describe('when plugin has deserializer.parse', () => {
 });
 
 describe('when plugin has deserializer.rules.validNodeName', () => {
-  const html = `<html><body><p><b>strong</b></p></body></html>`;
+  const html = '<html><body><p><b>strong</b></p></body></html>';
 
   const editor = createPlateEditor({
     plugins: [

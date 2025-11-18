@@ -6,10 +6,14 @@ import {
 } from '../constants';
 import { traverseHtmlTexts } from './traverseHtmlTexts';
 
+const NEWLINE_WHITESPACE_REGEX = /^\n\s*$/;
+const NON_WHITESPACE_REGEX = /\S/;
+const LEADING_NEWLINES_REGEX = /^[\n\r]+/;
+
 export const cleanHtmlTextNodes = (rootNode: Node): void => {
   traverseHtmlTexts(rootNode, (textNode) => {
     if (
-      /^\n\s*$/.test(textNode.data) &&
+      NEWLINE_WHITESPACE_REGEX.test(textNode.data) &&
       (textNode.previousElementSibling || textNode.nextElementSibling)
     ) {
       textNode.remove();
@@ -25,7 +29,7 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
       textNode.data.includes(NO_BREAK_SPACE)
     ) {
       const hasSpace = textNode.data.includes(SPACE);
-      const hasNonWhitespace = /\S/.test(textNode.data);
+      const hasNonWhitespace = NON_WHITESPACE_REGEX.test(textNode.data);
       const hasLineFeed = textNode.data.includes(LINE_FEED);
 
       if (!(hasSpace || hasNonWhitespace) && !hasLineFeed) {
@@ -46,7 +50,7 @@ export const cleanHtmlTextNodes = (rootNode: Node): void => {
       ) {
         textNode.previousSibling.remove();
 
-        const matches = /^[\n\r]+/.exec(textNode.data);
+        const matches = LEADING_NEWLINES_REGEX.exec(textNode.data);
         const offset = matches ? matches[0].length : 0;
 
         textNode.data = textNode.data

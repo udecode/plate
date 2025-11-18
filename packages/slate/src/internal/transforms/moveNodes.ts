@@ -3,9 +3,9 @@ import { moveNodes as moveNodesBase } from 'slate';
 import {
   type Editor,
   type MoveNodesOptions,
+  NodeApi,
   type TElement,
   type ValueOf,
-  NodeApi,
 } from '../../interfaces';
 import { getQueryOptions } from '../../utils';
 

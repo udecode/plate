@@ -17,10 +17,5 @@ export const unsetNodes = <
   editor: E,
   props: (keyof NodeProps<N>)[] | keyof NodeProps<N>,
   options?: UnsetNodesOptions<ValueOf<E>>
-) => {
-  return unsetNodesBase(
-    editor as any,
-    props as any,
-    getQueryOptions(editor, options)
-  );
-};
+) =>
+  unsetNodesBase(editor as any, props as any, getQueryOptions(editor, options));

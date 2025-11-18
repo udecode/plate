@@ -67,6 +67,6 @@ export type PointEntry = [Point, 'anchor' | 'focus'];
  * belong to a range.
  */
 
-export interface PointTransformOptions {
+export type PointTransformOptions = {
   affinity?: TextDirection | null;
-}
+};

@@ -1,14 +1,12 @@
 import type { DOMElement, DOMNode, DOMText } from '@platejs/slate';
 
-const getDefaultView = (value: any): Window | null => {
-  return value?.ownerDocument?.defaultView || null;
-};
+const getDefaultView = (value: any): Window | null =>
+  value?.ownerDocument?.defaultView || null;
 
 /** Check if a DOM node is an element node. */
 
-const isDOMElement = (value: any): value is DOMElement => {
-  return isDOMNode(value) && value.nodeType === 1;
-};
+const isDOMElement = (value: any): value is DOMElement =>
+  isDOMNode(value) && value.nodeType === 1;
 
 /** Check if a value is a DOM node. */
 
@@ -18,9 +16,8 @@ const isDOMNode = (value: any): value is DOMNode => {
 };
 
 /** Check if a DOM node is an element node. */
-const isDOMText = (value: any): value is DOMText => {
-  return isDOMNode(value) && value.nodeType === 3;
-};
+const isDOMText = (value: any): value is DOMText =>
+  isDOMNode(value) && value.nodeType === 3;
 
 export const getPlainText = (domNode: DOMNode) => {
   let text = '';

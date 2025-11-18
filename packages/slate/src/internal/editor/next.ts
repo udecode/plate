@@ -1,13 +1,12 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
-import type { NodeEntry } from '../../interfaces/node-entry';
-
 import {
   type DescendantOf,
   type EditorNextOptions,
   type Path,
-  type Span,
   PathApi,
+  type Span,
 } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
+import type { NodeEntry } from '../../interfaces/node-entry';
 import { combineMatch, getAt, getMatch } from '../../utils';
 
 export const next = <N extends DescendantOf<E>, E extends Editor = Editor>(
@@ -36,9 +35,10 @@ export const next = <N extends DescendantOf<E>, E extends Editor = Editor>(
 
     if (fromNode) {
       start = path;
-      match = combineMatch((n, p) => {
-        return !PathApi.isAncestor(p, at) && !PathApi.equals(p, at);
-      }, match);
+      match = combineMatch(
+        (_n, p) => !PathApi.isAncestor(p, at) && !PathApi.equals(p, at),
+        match
+      );
     }
   }
   if (!start) {

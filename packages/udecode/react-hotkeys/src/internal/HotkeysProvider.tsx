@@ -1,15 +1,13 @@
 import React, {
-  type ReactNode,
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useState,
 } from 'react';
-
-import type { Hotkey } from './types';
-
 import BoundHotkeysProxyProviderProvider from './BoundHotkeysProxyProvider';
 import deepEqual from './deepEqual';
+import type { Hotkey } from './types';
 
 export type HotkeysContextType = {
   activeScopes: string[];
@@ -28,14 +26,12 @@ const HotkeysContext = createContext<HotkeysContextType>({
   toggleScope: () => {},
 });
 
-export const useHotkeysContext = () => {
-  return useContext(HotkeysContext);
-};
+export const useHotkeysContext = () => useContext(HotkeysContext);
 
-interface Props {
+type Props = {
   children: ReactNode;
   initiallyActiveScopes?: string[];
-}
+};
 
 export const HotkeysProvider = ({
   children,
@@ -57,22 +53,19 @@ export const HotkeysProvider = ({
   }, []);
 
   const disableScope = useCallback((scope: string) => {
-    setInternalActiveScopes((prev) => {
-      return prev.filter((s) => s !== scope);
-    });
+    setInternalActiveScopes((prev) => prev.filter((s) => s !== scope));
   }, []);
 
   const toggleScope = useCallback((scope: string) => {
     setInternalActiveScopes((prev) => {
       if (prev.includes(scope)) {
         return prev.filter((s) => s !== scope);
-      } else {
-        if (prev.includes('*')) {
-          return [scope];
-        }
-
-        return Array.from(new Set([scope, ...prev]));
       }
+      if (prev.includes('*')) {
+        return [scope];
+      }
+
+      return Array.from(new Set([scope, ...prev]));
     });
   }, []);
 

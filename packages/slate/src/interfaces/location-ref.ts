@@ -2,10 +2,9 @@ import { PointRef as SlatePointRef, RangeRef as SlateRangeRef } from 'slate';
 
 import type { TextDirection } from '../types';
 import type { Operation } from './operation';
+import { type Path, PathApi } from './path';
 import type { Point } from './point';
 import type { TRange } from './range';
-
-import { type Path, PathApi } from './path';
 
 /**
  * `PathRef` objects keep a specific path in a document synced over time as new

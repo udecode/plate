@@ -1,6 +1,5 @@
-import type { SelectionCollapseOptions } from 'slate/dist/interfaces/transforms/selection';
-
 import { collapse } from 'slate';
+import type { SelectionCollapseOptions } from 'slate/dist/interfaces/transforms/selection';
 
 import type { Editor } from '../../interfaces';
 

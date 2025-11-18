@@ -11,7 +11,9 @@ export const isType = (
   const keys = castArray(key);
   const types: string[] = [];
 
-  keys.forEach((_key) => types.push(editor.getType(_key)));
+  for (const _key of keys) {
+    types.push(editor.getType(_key));
+  }
 
   return types.includes(node?.type);
 };

@@ -72,6 +72,7 @@ bower_components
 !.vscode/settings.json
 
 # Logs
+tracing.json
 logs
 *.log
 npm-debug.log*

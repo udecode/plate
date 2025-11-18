@@ -101,9 +101,9 @@ export const pluginDeserializeHtml = (
 
             // Ignore if el style value is not included in rule style values (except *)
             if (!values.includes((el.style as any)[key]) && value !== '*')
-              return;
+              return false;
             // Ignore if el style value is falsy (for value *)
-            if (value === '*' && !(el.style as any)[key]) return;
+            if (value === '*' && !(el.style as any)[key]) return false;
 
             const defaultNodeValue = plugin.inject.nodeProps?.defaultNodeValue;
 
@@ -149,7 +149,7 @@ export const pluginDeserializeHtml = (
   }
   if (!parse)
     if (isElement) {
-      parse = ({ type }) => ({ type: type });
+      parse = ({ type }) => ({ type });
     } else if (isLeaf) {
       parse = ({ type }) => ({ [type!]: true });
     } else {

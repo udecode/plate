@@ -1,30 +1,26 @@
 #!/usr/bin/env node
 
+import { exec, execSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import { Command } from 'commander';
-import { z } from 'zod';
-import fs from 'fs/promises';
-import path from 'path';
-import { exec, execSync } from 'child_process';
-import { promisify } from 'util';
 import prompts from 'prompts';
-
-import { logger } from './utils/logger';
+import { z } from 'zod';
+import packageJson from '../package.json';
+import { getPackageManager } from './utils/get-package-manager';
 import { handleError } from './utils/handle-error';
+import { logger } from './utils/logger';
 import { spinner as createSpinner } from './utils/spinner';
-import {
-  getPackageManager,
-} from './utils/get-package-manager';
-import packageJson from "../package.json"
 
-process.on("SIGINT", () => process.exit(0))
-process.on("SIGTERM", () => process.exit(0))
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
 
 const execPromise = promisify(exec);
+const VERSION_PREFIX_REGEX = /^\D*/;
 
 const DepSyncOptionsSchema = z.object({
-  packageSpecifier: z
-    .string()
-    .min(1, 'Package specifier is required.'),
+  packageSpecifier: z.string().min(1, 'Package specifier is required.'),
   targetVersion: z.string().optional(),
   install: z.boolean().default(false),
   yes: z.boolean().default(false),
@@ -35,12 +31,17 @@ const DepSyncOptionsSchema = z.object({
 
 type DepSyncOptions = z.infer<typeof DepSyncOptionsSchema>;
 
-async function getPackageJson(cwd: string, options: Pick<DepSyncOptions, 'silent'>): Promise<any> {
+async function getPackageJson(
+  cwd: string,
+  options: Pick<DepSyncOptions, 'silent'>
+): Promise<any> {
   const targetPath = path.join(cwd, './package.json');
-  const sp = createSpinner(`Reading package.json from ${targetPath}`, { silent: options.silent })?.start();
+  const sp = createSpinner(`Reading package.json from ${targetPath}`, {
+    silent: options.silent,
+  })?.start();
   try {
     const fileContent = await fs.readFile(targetPath, 'utf8');
-    sp?.succeed(`Successfully read package.json`);
+    sp?.succeed('Successfully read package.json');
     return JSON.parse(fileContent);
   } catch (error) {
     sp?.fail(`Error reading package.json at ${targetPath}`);
@@ -51,7 +52,7 @@ async function getPackageJson(cwd: string, options: Pick<DepSyncOptions, 'silent
 
 async function fetchPackageVersion(
   pkg: string,
-  targetVersionString: string | undefined,
+  targetVersionString: string | undefined
 ): Promise<string | null> {
   try {
     const versionSpecifier = targetVersionString
@@ -62,7 +63,7 @@ async function fetchPackageVersion(
     );
     const versions = JSON.parse(stdout);
     const latestMatchingVersion = Array.isArray(versions)
-      ? versions[versions.length - 1]
+      ? versions.at(-1)
       : versions;
 
     if (latestMatchingVersion) {
@@ -88,14 +89,22 @@ async function fetchPackageVersions(
     : `Fetching latest package versions${specifierDisplay}`;
   logger.info(fetchingMessage);
 
-  const sp = createSpinner('Fetching package versions in parallel...', { silent: options.silent })?.start();
+  const sp = createSpinner('Fetching package versions in parallel...', {
+    silent: options.silent,
+  })?.start();
 
   const versionPromises = packagesToFetch.map(async (pkg) => {
     const version = await fetchPackageVersion(pkg, options.targetVersion);
     if (version) {
       const currentVersion =
-        currentPackageJson.dependencies?.[pkg]?.replace(/^\D*/, '') ||
-        currentPackageJson.devDependencies?.[pkg]?.replace(/^\D*/, '') ||
+        currentPackageJson.dependencies?.[pkg]?.replace(
+          VERSION_PREFIX_REGEX,
+          ''
+        ) ||
+        currentPackageJson.devDependencies?.[pkg]?.replace(
+          VERSION_PREFIX_REGEX,
+          ''
+        ) ||
         'Not installed';
       return [pkg, { currentVersion, version }];
     }
@@ -103,7 +112,10 @@ async function fetchPackageVersions(
   });
 
   const results = await Promise.all(versionPromises);
-  const versionMap = new Map<string, { currentVersion: string; version: string }>(results.filter(Boolean) as any);
+  const versionMap = new Map<
+    string,
+    { currentVersion: string; version: string }
+  >(results.filter(Boolean) as any);
   sp?.succeed('Finished fetching package versions.');
   return versionMap;
 }
@@ -128,21 +140,29 @@ async function preparePackageUpdates(
 
   for (const [name, versions] of Array.from(versionMap.entries())) {
     let changed = false;
-    if (newPackageJson.dependencies?.[name]) {
-      if (newPackageJson.dependencies[name].replace(/^\D*/, '') !== versions.version) {
-        newPackageJson.dependencies[name] = versions.version; // Or keep prefix if present: `^${versions.version}`
-        changed = true;
-      }
+    if (
+      newPackageJson.dependencies?.[name] &&
+      newPackageJson.dependencies[name].replace(VERSION_PREFIX_REGEX, '') !==
+        versions.version
+    ) {
+      newPackageJson.dependencies[name] = versions.version; // Or keep prefix if present: `^${versions.version}`
+      changed = true;
     }
-    if (newPackageJson.devDependencies?.[name]) {
-         if (newPackageJson.devDependencies[name].replace(/^\D*/, '') !== versions.version) {
-            newPackageJson.devDependencies[name] = versions.version;
-            changed = true;
-         }
+    if (
+      newPackageJson.devDependencies?.[name] &&
+      newPackageJson.devDependencies[name].replace(VERSION_PREFIX_REGEX, '') !==
+        versions.version
+    ) {
+      newPackageJson.devDependencies[name] = versions.version;
+      changed = true;
     }
 
     if (changed) {
-        updatedPackages.push({ name, currentVersion: versions.currentVersion, newVersion: versions.version });
+      updatedPackages.push({
+        name,
+        currentVersion: versions.currentVersion,
+        newVersion: versions.version,
+      });
     }
   }
   return {
@@ -152,7 +172,9 @@ async function preparePackageUpdates(
 }
 
 async function runSync(options: DepSyncOptions) {
-  let mainSpinner = createSpinner('Starting dependency synchronization...', { silent: options.silent })?.start();
+  let mainSpinner = createSpinner('Starting dependency synchronization...', {
+    silent: options.silent,
+  })?.start();
 
   let packageFilterFn: (pkgName: string) => boolean;
   let matchDescription: string;
@@ -166,7 +188,7 @@ async function runSync(options: DepSyncOptions) {
     !options.packageSpecifier.includes('/')
   ) {
     const scopeAsExact = options.packageSpecifier;
-    const scopeAsPrefix = options.packageSpecifier + '/';
+    const scopeAsPrefix = `${options.packageSpecifier}/`;
     packageFilterFn = (pkgName) =>
       pkgName.startsWith(scopeAsPrefix) || pkgName === scopeAsExact;
     matchDescription = `packages in scope "${options.packageSpecifier}"`;
@@ -184,27 +206,39 @@ async function runSync(options: DepSyncOptions) {
   if (!options.yes) {
     mainSpinner.stop();
     mainSpinner.clear();
-    mainSpinner = createSpinner('Processing packages...', { silent: options.silent })?.start();
+    mainSpinner = createSpinner('Processing packages...', {
+      silent: options.silent,
+    })?.start();
   }
 
   const currentPackageJson = await getPackageJson(options.cwd, options);
   if (!currentPackageJson) return; // Error handled in getPackageJson
 
   const allDependencies = {
-      ...(currentPackageJson.dependencies || {}),
-      ...(currentPackageJson.devDependencies || {}),
+    ...(currentPackageJson.dependencies || {}),
+    ...(currentPackageJson.devDependencies || {}),
   };
 
   const packagesToFetch = Object.keys(allDependencies).filter(packageFilterFn);
 
   if (packagesToFetch.length === 0) {
-    mainSpinner.warn(`No packages found in dependencies for ${matchDescription}.`);
-    if (options.packageSpecifier && !options.packageSpecifier.endsWith('*') && !options.packageSpecifier.includes('/')) {
-        logger.info(`Did you mean '${options.packageSpecifier}/*' or an exact package name like '${options.packageSpecifier}/some-package'?`);
+    mainSpinner.warn(
+      `No packages found in dependencies for ${matchDescription}.`
+    );
+    if (
+      options.packageSpecifier &&
+      !options.packageSpecifier.endsWith('*') &&
+      !options.packageSpecifier.includes('/')
+    ) {
+      logger.info(
+        `Did you mean '${options.packageSpecifier}/*' or an exact package name like '${options.packageSpecifier}/some-package'?`
+      );
     }
     return;
   }
-  logger.info(`Found ${packagesToFetch.length} package${packagesToFetch.length === 1 ? '' : 's'} to check: ${packagesToFetch.join(', ')}`);
+  logger.info(
+    `Found ${packagesToFetch.length} package${packagesToFetch.length === 1 ? '' : 's'} to check: ${packagesToFetch.join(', ')}`
+  );
 
   const versionMap = await fetchPackageVersions(
     packagesToFetch,
@@ -213,7 +247,9 @@ async function runSync(options: DepSyncOptions) {
   );
 
   if (versionMap.size === 0 && packagesToFetch.length > 0) {
-    mainSpinner.warn('Could not fetch versions for any of the targeted packages.');
+    mainSpinner.warn(
+      'Could not fetch versions for any of the targeted packages.'
+    );
     return;
   }
   if (versionMap.size === 0 && packagesToFetch.length === 0) {
@@ -247,9 +283,14 @@ async function runSync(options: DepSyncOptions) {
     }
 
     if (proceed) {
-      let writeSpinner = createSpinner('Updating package.json...', { silent: options.silent })?.start();
+      const writeSpinner = createSpinner('Updating package.json...', {
+        silent: options.silent,
+      })?.start();
       try {
-        await fs.writeFile(path.join(options.cwd, './package.json'), newPackageJsonString);
+        await fs.writeFile(
+          path.join(options.cwd, './package.json'),
+          newPackageJsonString
+        );
         writeSpinner?.succeed('package.json updated successfully.');
       } catch (error) {
         writeSpinner?.fail('Error writing to package.json.');
@@ -259,40 +300,53 @@ async function runSync(options: DepSyncOptions) {
 
       // Decide whether to run install
       let shouldRunInstall = false;
-      if (options.install) { // --install flag IS present
+      if (options.install) {
+        // --install flag IS present
         shouldRunInstall = true;
-      } else { // --install flag IS NOT present
-        if (!options.yes) { // --install is NOT present, --yes is NOT present
-          const { confirmInstall } = await prompts({
-            type: 'confirm',
-            name: 'confirmInstall',
-            message: 'Run package manager install command to apply these changes?',
-            initial: true,
-          });
-          shouldRunInstall = confirmInstall;
-        } else {
-          shouldRunInstall = true;
-        }
+      } else if (options.yes) {
+        // --install flag IS NOT present, but --yes IS present
+        shouldRunInstall = true;
+      } else {
+        // --install is NOT present, --yes is NOT present
+        const { confirmInstall } = await prompts({
+          type: 'confirm',
+          name: 'confirmInstall',
+          message:
+            'Run package manager install command to apply these changes?',
+          initial: true,
+        });
+        shouldRunInstall = confirmInstall;
       }
 
       if (shouldRunInstall) {
         const pm = await getPackageManager(options.cwd);
         const installCommand = `${pm} install`;
-        const installSpinner = createSpinner(`Running \`${installCommand}\`...`, { silent: options.silent })?.start();
+        const installSpinner = createSpinner(
+          `Running \`${installCommand}\`...`,
+          { silent: options.silent }
+        )?.start();
         try {
-          execSync(installCommand, { cwd: options.cwd, stdio: options.silent ? 'pipe' : 'inherit' });
+          execSync(installCommand, {
+            cwd: options.cwd,
+            stdio: options.silent ? 'pipe' : 'inherit',
+          });
           installSpinner?.succeed(`Successfully ran \`${installCommand}\``);
         } catch (error) {
           installSpinner?.fail(`Error running \`${installCommand}\``);
           handleError(error); // Will exit
           return;
         }
-      } else if (updatedPackages.length > 0 && !options.install && options.yes) {
-        logger.info('Skipping package installation as --install was not provided with --yes.');
+      } else if (
+        updatedPackages.length > 0 &&
+        !options.install &&
+        options.yes
+      ) {
+        logger.info(
+          'Skipping package installation as --install was not provided with --yes.'
+        );
       } else if (updatedPackages.length > 0 && !shouldRunInstall) {
         logger.info('Skipping package installation.');
       }
-
     } else {
       logger.info('Changes to package.json were not applied by user.');
     }
@@ -312,8 +366,8 @@ async function main() {
     )
     .version(
       packageJson.version || '0.1.0',
-      "-v, --version",
-      "display the version number"
+      '-v, --version',
+      'display the version number'
     )
     .argument(
       '[package-specifier]',
@@ -335,7 +389,11 @@ async function main() {
       process.cwd()
     )
     .option('-s, --silent', 'Silence all output except for errors', false)
-    .option('-L, --latest', 'Use the latest version, skip version prompt', false) // Added --latest option
+    .option(
+      '-L, --latest',
+      'Use the latest version, skip version prompt',
+      false
+    ) // Added --latest option
     .action(async (packageSpecifierArg, targetVersionArg, cliOpts) => {
       try {
         let pkgSpec = packageSpecifierArg;
@@ -346,7 +404,10 @@ async function main() {
             type: 'text',
             name: 'packageSpecifier',
             message: 'Enter the package name or pattern to synchronize:',
-            validate: value => value && value.trim().length > 0 ? true : 'Package specifier cannot be empty.'
+            validate: (value) =>
+              value && value.trim().length > 0
+                ? true
+                : 'Package specifier cannot be empty.',
           });
           if (!response.packageSpecifier) {
             logger.warn('Package specifier is required. Exiting.');
@@ -358,15 +419,17 @@ async function main() {
           process.exit(1);
         }
 
-        if (!targetVer && !cliOpts.yes && !cliOpts.latest) { // Skip if --latest is used
-            const versionResponse = await prompts({
-                type: 'text',
-                name: 'targetVersion',
-                message: 'Enter the target version (e.g., "1.2.3", or leave blank for latest):'
-            });
-            targetVer = versionResponse.targetVersion || undefined;
+        if (!targetVer && !cliOpts.yes && !cliOpts.latest) {
+          // Skip if --latest is used
+          const versionResponse = await prompts({
+            type: 'text',
+            name: 'targetVersion',
+            message:
+              'Enter the target version (e.g., "1.2.3", or leave blank for latest):',
+          });
+          targetVer = versionResponse.targetVersion || undefined;
         } else if (cliOpts.latest) {
-            targetVer = undefined; // Ensure targetVer is undefined if --latest is used
+          targetVer = undefined; // Ensure targetVer is undefined if --latest is used
         }
 
         // Merge CLI options with defaults from schema for parsing
@@ -381,25 +444,25 @@ async function main() {
         };
         const options = DepSyncOptionsSchema.parse(rawOptions);
         if (options.silent) {
-            // Suppress non-error console logs if silent is true
-            logger.info = () => {};
-            logger.success = () => {};
-            logger.warn = () => {};
-            logger.log = () => {};
-            logger.break = () => {};
+          // Suppress non-error console logs if silent is true
+          logger.info = () => {};
+          logger.success = () => {};
+          logger.warn = () => {};
+          logger.log = () => {};
+          logger.break = () => {};
         }
         await runSync(options);
       } catch (error) {
         // Ensure logger still works for handleError even if silenced
-        const originalLogger = { ...logger }; 
+        const originalLogger = { ...logger };
         if (cliOpts.silent) {
-            logger.error = console.error; // Fallback for errors
-            logger.break = () => console.log('');
+          logger.error = console.error; // Fallback for errors
+          logger.break = () => console.log('');
         }
         handleError(error);
         // Restore logger if it was modified
         if (cliOpts.silent) {
-            Object.assign(logger, originalLogger);
+          Object.assign(logger, originalLogger);
         }
       }
     });
@@ -407,5 +470,4 @@ async function main() {
   await program.parseAsync(process.argv);
 }
 
-main()
-
+main();

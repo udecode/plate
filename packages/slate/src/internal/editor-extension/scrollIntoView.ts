@@ -1,10 +1,9 @@
 import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed';
 
 import type { Editor } from '../../interfaces/editor';
+import { type Point, PointApi } from '../../interfaces/point';
 import type { ScrollIntoViewOptions } from '../../interfaces/scroll';
 import type { DOMRange } from '../../slate-dom';
-
-import { type Point, PointApi } from '../../interfaces/point';
 
 const defaultOptions: ScrollIntoViewOptions = {
   scrollMode: 'if-needed',
@@ -38,6 +37,8 @@ export function scrollIntoView(
       domRange.getBoundingClientRect.bind(domRange);
     scrollIntoViewIfNeeded(leafEl, options);
 
-    setTimeout(() => delete (leafEl as any).getBoundingClientRect, 0);
+    setTimeout(() => {
+      (leafEl as any).getBoundingClientRect = undefined;
+    }, 0);
   });
 }

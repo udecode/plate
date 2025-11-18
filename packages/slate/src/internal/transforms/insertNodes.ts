@@ -5,11 +5,11 @@ import {
   type Editor,
   type ElementOrTextOf,
   type InsertNodesOptions,
-  type ValueOf,
   NodeApi,
   PathApi,
+  type ValueOf,
 } from '../../interfaces';
-import { type QueryNodeOptions, getQueryOptions, queryNode } from '../../utils';
+import { getQueryOptions, type QueryNodeOptions, queryNode } from '../../utils';
 
 export const insertNodes = <
   N extends ElementOrTextOf<E>,

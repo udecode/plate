@@ -53,7 +53,7 @@ export const getPointBefore = (
           point = previousBeforePoint;
         }
 
-        return;
+        return false;
       }
       // stop looking outside of current block
       if (
@@ -69,7 +69,7 @@ export const getPointBefore = (
           point = previousBeforePoint;
         }
 
-        return;
+        return false;
       }
 
       const beforeString = editor.api.string({
@@ -119,9 +119,15 @@ export const getPointBefore = (
 
       count += 1;
 
-      if (!options.skipInvalid && (!matchString || count >= matchString.length))
-        return;
+      if (
+        !options.skipInvalid &&
+        (!matchString || count >= matchString.length)
+      ) {
+        return false;
+      }
     }
+    // Unreachable code, but required for linter
+    return false;
   });
 
   return point;

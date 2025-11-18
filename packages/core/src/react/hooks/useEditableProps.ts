@@ -34,12 +34,11 @@ export const useEditableProps = ({
   const storeRenderLeaf = useAtomStoreValue(store, 'renderLeaf');
   const storeRenderText = useAtomStoreValue(store, 'renderText');
 
-  const decorateMemo = React.useMemo(() => {
-    return pipeDecorate(
-      editor,
-      storeDecorate ?? (editableProps?.decorate as any)
-    );
-  }, [editableProps?.decorate, editor, storeDecorate]);
+  const decorateMemo = React.useMemo(
+    () =>
+      pipeDecorate(editor, storeDecorate ?? (editableProps?.decorate as any)),
+    [editableProps?.decorate, editor, storeDecorate]
+  );
 
   const decorate: typeof decorateMemo = React.useMemo(() => {
     if (!versionDecorate || !decorateMemo) return;
@@ -57,20 +56,24 @@ export const useEditableProps = ({
   const renderChunk =
     storeRenderChunk ?? editableProps?.renderChunk ?? defaultRenderChunk;
 
-  const renderElement = React.useMemo(() => {
-    return pipeRenderElement(
-      editor,
-      storeRenderElement ?? editableProps?.renderElement
-    );
-  }, [editableProps?.renderElement, editor, storeRenderElement]);
+  const renderElement = React.useMemo(
+    () =>
+      pipeRenderElement(
+        editor,
+        storeRenderElement ?? editableProps?.renderElement
+      ),
+    [editableProps?.renderElement, editor, storeRenderElement]
+  );
 
-  const renderLeaf = React.useMemo(() => {
-    return pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf);
-  }, [editableProps?.renderLeaf, editor, storeRenderLeaf]);
+  const renderLeaf = React.useMemo(
+    () => pipeRenderLeaf(editor, storeRenderLeaf ?? editableProps?.renderLeaf),
+    [editableProps?.renderLeaf, editor, storeRenderLeaf]
+  );
 
-  const renderText = React.useMemo(() => {
-    return pipeRenderText(editor, storeRenderText ?? editableProps?.renderText);
-  }, [editableProps?.renderText, editor, storeRenderText]);
+  const renderText = React.useMemo(
+    () => pipeRenderText(editor, storeRenderText ?? editableProps?.renderText),
+    [editableProps?.renderText, editor, storeRenderText]
+  );
 
   const props: EditableProps = useDeepCompareMemo(() => {
     const _props: EditableProps = {

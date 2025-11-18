@@ -10,7 +10,7 @@ export const AstPlugin = createSlatePlugin({
     format: 'application/x-slate-fragment',
     deserialize: ({ data }) => {
       const decoded = decodeURIComponent(window.atob(data));
-      let parsed;
+      let parsed: any;
 
       try {
         parsed = JSON.parse(decoded);

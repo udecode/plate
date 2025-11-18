@@ -5,8 +5,7 @@ import { vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import 'slate-test-utils/dist/cjs/mocks';
 
-window.MessageChannel = vi.fn().mockImplementation(() => {
-  return {
+window.MessageChannel = vi.fn().mockImplementation(() => ({
     port1: {
       addEventListener: vi.fn(),
       close: vi.fn(),
@@ -21,8 +20,7 @@ window.MessageChannel = vi.fn().mockImplementation(() => {
       removeEventListener: vi.fn(),
       start: vi.fn(),
     },
-  };
-});
+  }));
 
 global.TextEncoder = TextEncoder;
 
@@ -47,7 +45,7 @@ vi.mock('lucide-react', () => {
       __esModule: true,
     },
     {
-      get: function (_, prop) {
+      get(_, prop) {
         if (prop === '__esModule') return true;
 
         // Return a mock component for any icon request

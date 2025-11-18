@@ -61,9 +61,7 @@ export const addAnchorToken = (text: TText, token: AnchorToken) => {
 
 export const getAnchorOffset = (
   text: TText
-): [number, AnchorToken] | undefined => {
-  return ANCHOR.get(text);
-};
+): [number, AnchorToken] | undefined => ANCHOR.get(text);
 
 /** Add a focus token to the end of a text node. */
 
@@ -74,8 +72,5 @@ export const addFocusToken = (text: TText, token: FocusToken) => {
 
 /** Get the offset if a text node has an associated focus token. */
 
-export const getFocusOffset = (
-  text: TText
-): [number, FocusToken] | undefined => {
-  return FOCUS.get(text);
-};
+export const getFocusOffset = (text: TText): [number, FocusToken] | undefined =>
+  FOCUS.get(text);

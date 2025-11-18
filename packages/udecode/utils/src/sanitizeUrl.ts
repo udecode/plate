@@ -1,7 +1,7 @@
-export interface SanitizeUrlOptions {
+export type SanitizeUrlOptions = {
   allowedSchemes?: string[];
   permitInvalid?: boolean;
-}
+};
 
 export const sanitizeUrl = (
   url: string | undefined,

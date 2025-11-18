@@ -28,6 +28,4 @@ export const findHtmlElement = (
 export const someHtmlElement = (
   rootNode: Node,
   predicate: (node: HTMLElement) => boolean
-) => {
-  return !!findHtmlElement(rootNode, predicate);
-};
+) => !!findHtmlElement(rootNode, predicate);

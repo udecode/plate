@@ -1,9 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { Path } from 'platejs';
-
-import type { EditorHandle } from './types';
-
 import { getDOMNodeByPath } from './getDOMNodeByPath';
+import type { EditorHandle } from './types';
 
 export const clickAtPath = async (
   page: Page,

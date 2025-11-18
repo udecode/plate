@@ -1,15 +1,15 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
-import type { NodeEntry } from '../../interfaces/node-entry';
-
 import {
   type DescendantOf,
   type EditorNodesOptions,
   ElementApi,
   NodeApi,
+  type Path,
   PathApi,
   SpanApi,
   TextApi,
 } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
+import type { NodeEntry } from '../../interfaces/node-entry';
 import { getAt } from '../../utils';
 import { getMatch, getQueryOptions } from '../../utils/match';
 
@@ -17,10 +17,10 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
   editor: E,
   options: EditorNodesOptions<ValueOf<E>> = {}
 ): Generator<NodeEntry<N>, void, undefined> {
-  options = getQueryOptions(editor, options);
+  const _options = getQueryOptions(editor, options);
 
-  // if (options?.at) {
-  //   editor.api.unhangRange(options.at as any, options);
+  // if (_options?.at) {
+  //   editor.api.unhangRange(_options.at as any, _options);
   // }
 
   const {
@@ -29,9 +29,9 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
     reverse = false,
     universal = false,
     voids = false,
-  } = options;
-  const at = getAt(editor, options.at) ?? editor.selection;
-  let match = getMatch(editor, options);
+  } = _options;
+  const at = getAt(editor, _options.at) ?? editor.selection;
+  let match = getMatch(editor, _options);
 
   if (!match) {
     match = () => true;
@@ -40,8 +40,8 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
     return;
   }
 
-  let from;
-  let to;
+  let from: Path | undefined;
+  let to: Path | undefined;
 
   if (SpanApi.isSpan(at)) {
     from = at[0];
@@ -102,9 +102,8 @@ export function* nodes<N extends DescendantOf<E>, E extends Editor = Editor>(
       // means the match is not universal.
       if (universal && !isLower && TextApi.isText(node)) {
         return;
-      } else {
-        continue;
       }
+      continue;
     }
     // If there's a match and it's lower than the last, update the hit.
     if (mode === 'lowest' && isLower) {

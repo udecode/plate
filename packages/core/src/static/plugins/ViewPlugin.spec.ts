@@ -52,10 +52,6 @@ describe('ViewPlugin', () => {
   });
 
   describe('setFragmentData override', () => {
-    let mockGetSelectedDomBlocks: jest.Mock;
-    let mockGetSelectedDomNode: jest.Mock;
-    let mockIsSelectOutside: jest.Mock;
-    let mockGetPlainText: jest.Mock;
     let mockData: DataTransfer;
 
     beforeEach(() => {
@@ -111,8 +107,6 @@ describe('ViewPlugin', () => {
     });
 
     it('should handle copy with selection outside editor', () => {
-      const editor = createStaticEditor();
-
       // Mock selection outside editor
       const mockHtml = document.createElement('div');
       const editorDiv = document.createElement('div');

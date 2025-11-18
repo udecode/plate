@@ -6,14 +6,14 @@ import {
   type DescendantOf,
   type Editor,
   type EditorNodesOptions,
+  NodeApi,
   type NodeEntry,
   type NodeEntryOf,
   type Path,
-  type ValueOf,
-  NodeApi,
   PathApi,
   RangeApi,
   SpanApi,
+  type ValueOf,
 } from '../../interfaces';
 import { match } from '../../utils';
 
@@ -35,8 +35,8 @@ export const descendant = <
 
     if (!at) return;
 
-    let from;
-    let to;
+    let from: Path | undefined;
+    let to: Path | undefined;
 
     if (SpanApi.isSpan(at)) {
       [from, to] = at;
@@ -66,6 +66,6 @@ export const descendant = <
       }
     }
   } catch {
-    return undefined;
+    return;
   }
 };

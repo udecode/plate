@@ -1,6 +1,5 @@
-import type { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
-
 import { rangeRef } from 'slate';
+import type { EditorRangeRefOptions } from 'slate/dist/interfaces/editor';
 
 import type { Editor } from '../../interfaces/editor/editor-type';
 import type { TRange } from '../../interfaces/range';

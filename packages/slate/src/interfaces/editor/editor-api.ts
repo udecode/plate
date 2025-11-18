@@ -16,11 +16,6 @@ import type { toDOMRange } from '../../internal/dom-editor/toDOMRange';
 import type { toSlateNode } from '../../internal/dom-editor/toSlateNode';
 import type { toSlatePoint } from '../../internal/dom-editor/toSlatePoint';
 import type { toSlateRange } from '../../internal/dom-editor/toSlateRange';
-import type { hasMark } from '../../internal/editor-extension/hasMark';
-import type { isAt } from '../../internal/editor-extension/isAt';
-import type { isText } from '../../internal/editor-extension/isText';
-import type { scrollIntoView } from '../../internal/editor-extension/scrollIntoView';
-import type { some } from '../../internal/editor-extension/some';
 import type { createPathRef } from '../../internal/editor/createPathRef';
 import type { createPointRef } from '../../internal/editor/createPointRef';
 import type { createRangeRef } from '../../internal/editor/createRangeRef';
@@ -48,6 +43,11 @@ import type { isEndPoint } from '../../internal/editor/isEndPoint';
 import type { isStartPoint } from '../../internal/editor/isStartPoint';
 import type { range } from '../../internal/editor/range';
 import type { unhangRange } from '../../internal/editor/unhangRange';
+import type { hasMark } from '../../internal/editor-extension/hasMark';
+import type { isAt } from '../../internal/editor-extension/isAt';
+import type { isText } from '../../internal/editor-extension/isText';
+import type { scrollIntoView } from '../../internal/editor-extension/scrollIntoView';
+import type { some } from '../../internal/editor-extension/some';
 import type { HistoryApi } from '../../slate-history';
 import type {
   At,

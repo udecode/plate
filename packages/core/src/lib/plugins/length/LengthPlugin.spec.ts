@@ -5,12 +5,11 @@ import { createPlateEditor } from '../../../react';
 describe('LengthPlugin', () => {
   let editor: SlateEditor;
 
-  const createEditorWithLength = (maxLength: number) => {
-    return createPlateEditor({
+  const createEditorWithLength = (maxLength: number) =>
+    createPlateEditor({
       autoSelect: true,
       maxLength,
     });
-  };
 
   describe('when inserting text', () => {
     it('should allow inserting text within the maxLength', () => {

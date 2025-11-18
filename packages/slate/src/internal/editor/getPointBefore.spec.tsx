@@ -1,10 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-
-import type { Editor, LegacyEditorMethods } from '../../interfaces';
-
 import { createEditor } from '../../create-editor';
+import type { Editor, LegacyEditorMethods } from '../../interfaces';
 import { syncLegacyMethods } from '../../utils';
 
 jsxt;

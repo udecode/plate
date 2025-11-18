@@ -1,6 +1,6 @@
 import isPlainObject from 'lodash/isPlainObject.js';
 
-import { type Editor, type TNode, NodeApi } from '../interfaces';
+import { type Editor, NodeApi, type TNode } from '../interfaces';
 
 export const getAt = <T>(
   editor: Editor,

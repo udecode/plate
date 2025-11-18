@@ -1,8 +1,6 @@
 import { select as selectBase } from 'slate';
-
+import { type Editor, PathApi, type SelectOptions } from '../../interfaces';
 import type { At } from '../../types';
-
-import { type Editor, type SelectOptions, PathApi } from '../../interfaces';
 import { getAt } from '../../utils/getAt';
 
 export const select = (

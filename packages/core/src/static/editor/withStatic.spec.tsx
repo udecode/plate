@@ -1,31 +1,31 @@
 /** @jsx jsxt */
-import { type Value, createEditor } from "@platejs/slate";
-import { jsxt } from "@platejs/test-utils";
+import { type Value, createEditor } from '@platejs/slate';
+import { jsxt } from '@platejs/test-utils';
 
-import { createSlatePlugin, DOMPlugin } from "../../lib";
-import { ViewPlugin } from "../plugins/ViewPlugin";
-import { createStaticEditor } from "./withStatic";
+import { createSlatePlugin, DOMPlugin } from '../../lib';
+import { ViewPlugin } from '../plugins/ViewPlugin';
+import { createStaticEditor } from './withStatic';
 
 jsxt;
 
-describe("withStatic", () => {
-  describe("createStaticEditor", () => {
-    it("should create an editor with static plugins", () => {
-      const editor = createStaticEditor({ id: "1" });
+describe('withStatic', () => {
+  describe('createStaticEditor', () => {
+    it('should create an editor with static plugins', () => {
+      const editor = createStaticEditor({ id: '1' });
 
-      expect(editor.id).toBe("1");
+      expect(editor.id).toBe('1');
       expect(editor.plugins).toBeDefined();
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it("should include ViewPlugin in the plugin list", () => {
+    it('should include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
       const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).toContain(DOMPlugin.key);
     });
 
-    it("should have ViewPlugin override transforms", () => {
+    it('should have ViewPlugin override transforms', () => {
       const editor = createStaticEditor();
 
       // ViewPlugin overrides DOMPlugin, so we check the DOMPlugin has the override
@@ -37,38 +37,38 @@ describe("withStatic", () => {
     });
   });
 
-  describe("when plugins are provided", () => {
-    it("should add custom plugins after static plugins", () => {
-      const customPlugin = createSlatePlugin({ key: "custom" });
+  describe('when plugins are provided', () => {
+    it('should add custom plugins after static plugins', () => {
+      const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
       const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
-      expect(pluginKeys).toContain("custom");
+      expect(pluginKeys).toContain('custom');
       expect(pluginKeys).toContain(DOMPlugin.key);
 
       // Ensure custom plugin comes after static plugins
       const domIndex = pluginKeys.indexOf(DOMPlugin.key);
-      const customIndex = pluginKeys.indexOf("custom");
+      const customIndex = pluginKeys.indexOf('custom');
       expect(customIndex).toBeGreaterThan(domIndex);
     });
 
-    it("should allow multiple custom plugins", () => {
-      const plugin1 = createSlatePlugin({ key: "plugin1" });
-      const plugin2 = createSlatePlugin({ key: "plugin2" });
+    it('should allow multiple custom plugins', () => {
+      const plugin1 = createSlatePlugin({ key: 'plugin1' });
+      const plugin2 = createSlatePlugin({ key: 'plugin2' });
 
       const editor = createStaticEditor({
         plugins: [plugin1, plugin2],
       });
 
-      expect(editor.getPlugin({ key: "plugin1" })).toBeDefined();
-      expect(editor.getPlugin({ key: "plugin2" })).toBeDefined();
+      expect(editor.getPlugin({ key: 'plugin1' })).toBeDefined();
+      expect(editor.getPlugin({ key: 'plugin2' })).toBeDefined();
     });
   });
 
-  describe("when value is provided", () => {
-    it("should initialize editor with the provided value", () => {
+  describe('when value is provided', () => {
+    it('should initialize editor with the provided value', () => {
       const value = (
         <editor>
           <hp>
@@ -84,8 +84,8 @@ describe("withStatic", () => {
       expect(editor.children).toEqual(value.children);
     });
 
-    it("should handle HTML string values", () => {
-      const htmlString = "<p>Hello world</p>";
+    it('should handle HTML string values', () => {
+      const htmlString = '<p>Hello world</p>';
 
       const editor = createStaticEditor({
         value: htmlString,
@@ -93,15 +93,15 @@ describe("withStatic", () => {
 
       expect(editor.children).toEqual([
         {
-          children: [{ text: "Hello world" }],
-          type: "p",
+          children: [{ text: 'Hello world' }],
+          type: 'p',
         },
       ]);
     });
   });
 
-  describe("when selection is provided", () => {
-    it("should initialize editor with the provided selection", () => {
+  describe('when selection is provided', () => {
+    it('should initialize editor with the provided selection', () => {
       const value = (
         <editor>
           <hp>
@@ -124,8 +124,8 @@ describe("withStatic", () => {
     });
   });
 
-  describe("when autoSelect is provided", () => {
-    it("should auto-select start of document", () => {
+  describe('when autoSelect is provided', () => {
+    it('should auto-select start of document', () => {
       const value = (
         <editor>
           <hp>
@@ -135,7 +135,7 @@ describe("withStatic", () => {
       );
 
       const editor = createStaticEditor({
-        autoSelect: "start",
+        autoSelect: 'start',
         value: value.children as Value,
       });
 
@@ -146,7 +146,7 @@ describe("withStatic", () => {
       expect(editor.selection).toEqual(expectedSelection);
     });
 
-    it("should auto-select end of document", () => {
+    it('should auto-select end of document', () => {
       const value = (
         <editor>
           <hp>
@@ -156,7 +156,7 @@ describe("withStatic", () => {
       );
 
       const editor = createStaticEditor({
-        autoSelect: "end",
+        autoSelect: 'end',
         value: value.children as Value,
       });
 
@@ -168,34 +168,34 @@ describe("withStatic", () => {
     });
   });
 
-  describe("when using an existing editor", () => {
-    it("should enhance existing editor with static plugins", () => {
+  describe('when using an existing editor', () => {
+    it('should enhance existing editor with static plugins', () => {
       const existingEditor = createEditor();
-      existingEditor.id = "existing";
+      existingEditor.id = 'existing';
 
       const editor = createStaticEditor({
         editor: existingEditor,
       });
 
-      expect(editor.id).toBe("existing");
+      expect(editor.id).toBe('existing');
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it("should override existing editor id when new id is provided", () => {
+    it('should override existing editor id when new id is provided', () => {
       const existingEditor = createEditor();
-      existingEditor.id = "old";
+      existingEditor.id = 'old';
 
       const editor = createStaticEditor({
-        id: "new",
+        id: 'new',
         editor: existingEditor,
       });
 
-      expect(editor.id).toBe("new");
+      expect(editor.id).toBe('new');
     });
   });
 
-  describe("integration with withSlate", () => {
-    it("should properly integrate static plugins with core plugins", () => {
+  describe('integration with withSlate', () => {
+    it('should properly integrate static plugins with core plugins', () => {
       const editor = createStaticEditor();
 
       // Should have both core plugins from withSlate and static plugins
@@ -204,8 +204,8 @@ describe("withStatic", () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined(); // static plugin
     });
 
-    it("should maintain plugin order with static plugins first", () => {
-      const customPlugin = createSlatePlugin({ key: "custom" });
+    it('should maintain plugin order with static plugins first', () => {
+      const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
@@ -216,7 +216,7 @@ describe("withStatic", () => {
       const viewPluginIndex = pluginKeys.findIndex((key) =>
         editor.meta.pluginList.find((p) => p.key === key && p === ViewPlugin)
       );
-      const customIndex = pluginKeys.indexOf("custom");
+      const customIndex = pluginKeys.indexOf('custom');
 
       if (viewPluginIndex !== -1 && customIndex !== -1) {
         expect(viewPluginIndex).toBeLessThan(customIndex);
@@ -224,8 +224,8 @@ describe("withStatic", () => {
     });
   });
 
-  describe("edge cases", () => {
-    it("should handle empty plugins array", () => {
+  describe('edge cases', () => {
+    it('should handle empty plugins array', () => {
       const editor = createStaticEditor({
         plugins: [],
       });
@@ -233,14 +233,14 @@ describe("withStatic", () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it("should handle undefined options", () => {
+    it('should handle undefined options', () => {
       const editor = createStaticEditor();
 
       expect(editor).toBeDefined();
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it("should create unique ids for different editors", () => {
+    it('should create unique ids for different editors', () => {
       const editor1 = createStaticEditor();
       const editor2 = createStaticEditor();
 
@@ -250,15 +250,15 @@ describe("withStatic", () => {
     });
   });
 
-  describe("plugin functionality", () => {
-    it("should have setFragmentData transform from ViewPlugin", () => {
+  describe('plugin functionality', () => {
+    it('should have setFragmentData transform from ViewPlugin', () => {
       const editor = createStaticEditor();
 
       expect(editor.tf.setFragmentData).toBeDefined();
-      expect(typeof editor.tf.setFragmentData).toBe("function");
+      expect(typeof editor.tf.setFragmentData).toBe('function');
     });
 
-    it("should preserve other withSlate options", () => {
+    it('should preserve other withSlate options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
         value: [],
@@ -267,8 +267,8 @@ describe("withStatic", () => {
       // Should normalize empty value to have at least one paragraph
       expect(editor.children).toEqual([
         {
-          children: [{ text: "" }],
-          type: "p",
+          children: [{ text: '' }],
+          type: 'p',
         },
       ]);
     });
