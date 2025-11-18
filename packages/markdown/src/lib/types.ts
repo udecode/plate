@@ -1,5 +1,3 @@
-/* eslint-disable perfectionist/sort-object-types */
-
 export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';

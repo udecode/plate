@@ -1,5 +1,3 @@
-/* eslint-disable jest/valid-expect */
-/* eslint-disable jest/no-conditional-expect */
 import { UploadErrorCode } from '../type';
 import { bytesToFileSize, fileSizeToBytes } from './fileSizeToBytes';
 

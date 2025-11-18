@@ -1,5 +1,3 @@
-/* eslint-disable jest/valid-expect */
-/* eslint-disable jest/no-conditional-expect */
 import { type MediaItemConfig, UploadErrorCode } from '../type';
 import { validateFileItem } from './validateFileItem';
 

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/text-encoding-identifier-case */
 export const text = {
   'text/cache-manifest': {
     extensions: ['appcache', 'manifest'],

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/text-encoding-identifier-case */
 export const application = {
   'application/andrew-inset': {
     extensions: ['ez'],

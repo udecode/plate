@@ -1,5 +1,3 @@
-/* eslint-disable jest/valid-expect */
-/* eslint-disable jest/no-conditional-expect */
 import type { UploadConfig } from '../PlaceholderPlugin';
 
 import { UploadErrorCode } from '../type';
