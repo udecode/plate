@@ -1,7 +1,7 @@
-import type { Value } from 'platejs';
+import type { Value } from "platejs";
 
-import { slateNodesToInsertDelta } from '@slate-yjs/core';
-import * as Y from 'yjs';
+import { slateNodesToInsertDelta } from "@slate-yjs/core";
+import * as Y from "yjs";
 
 /**
  * Produce the canonical "initial update" from a Slate node array using a
@@ -25,7 +25,7 @@ export async function slateToDeterministicYjsState(
   tmp.clientID = deterministicClientId;
 
   const delta = slateNodesToInsertDelta(initialNodes);
-  const content = tmp.get('content', Y.XmlText) as Y.XmlText;
+  const content = tmp.get("content", Y.XmlText) as Y.XmlText;
   content.applyDelta(delta);
   const initialUpdate = Y.encodeStateAsUpdate(tmp);
   tmp.destroy();
@@ -39,7 +39,6 @@ function arrayBufferToClientId(buffer: ArrayBuffer): number {
   const int32 = dataView.getInt32(0, false); // false for big-endian
   // Take absolute value, modulo 2^31 - 1 to fit in signed 31 bits, and add 1 to ensure non-zero.
   // (2**31 - 1 is 0x7FFFFFFF)
-  // eslint-disable-next-line unicorn/number-literal-case
   return (Math.abs(int32) % 0x7f_ff_ff_ff) + 1;
 }
 
@@ -55,7 +54,7 @@ async function generateDeterministicClientId(
   const combinedString = `${guid}-${nodesString}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(combinedString);
-  const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
 
   return arrayBufferToClientId(hashBuffer);
 }

@@ -1,67 +1,39 @@
-import { configs, defineConfig, filePatterns } from '@app/eslint';
+import tsParser from "@typescript-eslint/parser";
+import { defineConfig } from "eslint/config";
+import reactHooks from "eslint-plugin-react-hooks";
 
-export default defineConfig(
+export default defineConfig([
+  {
+    ...reactHooks.configs.flat.recommended,
+    files: ["**/*.ts*"],
+    languageOptions: { parser: tsParser },
+  },
   {
     ignores: [
-      'scripts/**/*',
-      '.claude/**/*',
-      '**/.contentlayer/*',
-      '**/__registry__/*',
-      '**/build-registry.mts',
-      'packages/cli/src',
-      'packages/depset/tsup.config.ts',
-      'prisma/kysely',
-      'src/lib/db/types',
-      '**/*.mdx',
-      '**/blocks/fumadocs/**/*',
+      "scripts/**/*",
+      ".claude/**/*",
+      "**/.contentlayer/*",
+      "**/__registry__/*",
+      "**/build-registry.mts",
+      "packages/cli/src",
+      "packages/depset/tsup.config.ts",
+      "prisma/kysely",
+      "src/lib/db/types",
+      "**/*.mdx",
+      "**/blocks/fumadocs/**/*",
     ],
   },
-  ...configs.base,
-  // ...configs.getTailwind(),
-  ...configs.next,
-  // ...configs.prettier,
   {
-    languageOptions: {
-      parserOptions: {
-        project: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-  {
-    files: ['**/registry/**/*'],
-    rules: {
-      'jsx-a11y/iframe-has-title': 'off',
-      'jsx-a11y/media-has-caption': 'off',
-      'react/jsx-no-comment-textnodes': 'off',
-    },
-  },
-  {
-    files: ['**/*.spec.ts*', '**/*.spec.tsx'],
-    rules: {
-      'import/no-relative-packages': 'off',
-      'react/jsx-key': 'off',
-    },
-  },
-  {
-    // env: {
-    //   jest: true,
-    // },
-    // languageOptions: {
-    //   globals: {
-
-    //   }
-    // }
     files: filePatterns.test,
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      'no-restricted-imports': [
-        'error',
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-restricted-imports": [
+        "error",
         {
           paths: [],
         },
       ],
-      'react-hooks/rules-of-hooks': 'off',
+      "react-hooks/rules-of-hooks": "off",
     },
-  }
-);
+  },
+]);

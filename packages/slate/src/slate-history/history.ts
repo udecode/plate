@@ -1,13 +1,12 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { isPlainObject } from 'is-plain-object';
+import { isPlainObject } from "is-plain-object";
 
 import {
   type Editor,
   type Operation,
   type TRange,
   OperationApi,
-} from '../interfaces/index';
+} from "../interfaces/index";
 
 /** Weakmaps for attaching state to the editor. */
 

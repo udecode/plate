@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import type {
   AreaLocation,
@@ -8,9 +8,9 @@ import type {
   SelectionEvents,
   SelectionOptions,
   SelectionStore,
-} from './types';
+} from "./types";
 
-import { EventTarget } from './EventEmitter';
+import { EventTarget } from "./EventEmitter";
 import {
   type Frames,
   type SelectAllSelectors,
@@ -24,7 +24,7 @@ import {
   selectAll,
   shouldTrigger,
   simplifyEvent,
-} from './utils';
+} from "./utils";
 
 // Some var shorting for better compression and readability
 const { abs, ceil, max, min } = Math;
@@ -82,18 +82,18 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     super();
 
     this._options = {
-      boundaries: ['html'],
-      container: 'body',
+      boundaries: ["html"],
+      container: "body",
       document: window.document,
       selectables: [],
-      selectionAreaClass: 'selection-area',
-      startAreas: ['html'],
+      selectionAreaClass: "selection-area",
+      startAreas: ["html"],
       ...opt,
 
       behaviour: {
         // TODO: not implemented
-        intersect: 'touch',
-        overlap: 'invert',
+        intersect: "touch",
+        overlap: "invert",
         triggers: [0],
         ...opt.behaviour,
         scrolling: {
@@ -107,7 +107,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
           },
         },
         startThreshold: opt.behaviour?.startThreshold
-          ? typeof opt.behaviour.startThreshold === 'number'
+          ? typeof opt.behaviour.startThreshold === "number"
             ? opt.behaviour.startThreshold
             : { x: 4, y: 4, ...opt.behaviour.startThreshold }
           : { x: 4, y: 4 },
@@ -119,7 +119,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
         ...opt.features,
         singleTap: {
           allow: true,
-          intersect: 'native',
+          intersect: "native",
           ...opt.features?.singleTap,
         },
       },
@@ -128,13 +128,13 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     // Bind locale functions to instance
 
     for (const key of Object.getOwnPropertyNames(Object.getPrototypeOf(this))) {
-      if (typeof (this as any)[key] === 'function') {
+      if (typeof (this as any)[key] === "function") {
         (this as any)[key] = (this as any)[key].bind(this);
       }
     }
 
     const { document, selectionAreaClass } = this._options;
-    this._area = document.createElement('div');
+    this._area = document.createElement("div");
     // this._clippingElement = document.createElement('div');
     // this._clippingElement.appendChild(this._area);
 
@@ -143,9 +143,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     css(this._area, {
       left: 0,
-      position: 'absolute',
+      position: "absolute",
       top: 0,
-      willChange: 'top, left, bottom, right, width, height',
+      willChange: "top, left, bottom, right, width, height",
     });
 
     // css(this._clippingElement, {
@@ -160,7 +160,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._frame = frames((evt: MouseEvent | TouchEvent) => {
       this._recalculateSelectionAreaRect();
       this._updateElementSelection();
-      this._emitEvent('move', evt);
+      this._emitEvent("move", evt);
       this._redrawSelectionArea();
     });
 
@@ -171,10 +171,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { document, features } = this._options;
     const fn = activate ? on : off;
 
-    fn(document, 'mousedown', this._onTapStart);
+    fn(document, "mousedown", this._onTapStart);
 
     features.touch &&
-      fn(document, 'touchstart', this._onTapStart, {
+      fn(document, "touchstart", this._onTapStart, {
         passive: false,
       });
   }
@@ -191,29 +191,29 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     // Check pixel threshold
     if (
       // Single number for both coordinates
-      (typeof startThreshold === 'number' &&
+      (typeof startThreshold === "number" &&
         abs(x + y - (clientX + clientY)) >= startThreshold) ||
       // Different x and y threshold
-      (typeof startThreshold === 'object' &&
+      (typeof startThreshold === "object" &&
         abs(x - x1) >= (startThreshold as Coordinates).x) ||
       abs(y - y1) >= (startThreshold as Coordinates).y
     ) {
-      off(document, ['mousemove', 'touchmove'], this._delayedTapMove, {
+      off(document, ["mousemove", "touchmove"], this._delayedTapMove, {
         passive: false,
       });
 
-      if (this._emitEvent('beforedrag', evt) === false) {
-        off(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
+      if (this._emitEvent("beforedrag", evt) === false) {
+        off(document, ["mouseup", "touchcancel", "touchend"], this._onTapStop);
 
         return;
       }
 
-      on(document, ['mousemove', 'touchmove'], this._onTapMove, {
+      on(document, ["mousemove", "touchmove"], this._onTapMove, {
         passive: false,
       });
 
       // Make area element visible
-      css(this._area, 'display', 'block');
+      css(this._area, "display", "block");
 
       // Append selection-area to the dom
       this._container!.append(this._area);
@@ -223,11 +223,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       // An action is recognized as single-select until the user performed a multi-selection
       this._singleClick = false;
 
-      on(this._container, 'wheel', this._manualScroll, { passive: true });
+      on(this._container, "wheel", this._manualScroll, { passive: true });
 
       // Re-setup selection area and fire event
       this._setupSelectionArea();
-      this._emitEvent('start', evt);
+      this._emitEvent("start", evt);
       this._onTapMove(evt);
     }
 
@@ -267,7 +267,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const addedElements = selected.filter((el) => !stored.includes(el));
 
     switch (_options.behaviour.overlap) {
-      case 'drop': {
+      case "drop": {
         _selection.stored = [
           ...addedElements,
           ...stored.filter((el) => !touched.includes(el)), // Elements not touched
@@ -275,7 +275,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
         break;
       }
-      case 'invert': {
+      case "invert": {
         _selection.stored = [
           ...addedElements,
           ...stored.filter((el) => !changed.removed.includes(el)), // Elements not removed from selection
@@ -283,7 +283,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
         break;
       }
-      case 'keep': {
+      case "keep": {
         _selection.stored = [
           ...stored,
           ...selected.filter((el) => !stored.includes(el)), // Newly added
@@ -355,9 +355,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const e = simplifyEvent(evt);
     let target;
 
-    if (intersect === 'native') {
+    if (intersect === "native") {
       target = e.target;
-    } else if (intersect === 'touch') {
+    } else if (intersect === "touch") {
       this.resolveSelectables();
 
       const { x, y } = e;
@@ -389,7 +389,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Grab current store first in case it gets set back
     const { stored } = this._selection;
-    this._emitEvent('start', evt);
+    this._emitEvent("start", evt);
 
     if (evt.shiftKey && range && this._latestElement) {
       const reference = this._latestElement;
@@ -501,8 +501,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     if (!this._container) return;
     if (
       this._container.contains(target) &&
-      target.dataset.slateEditor !== 'true' &&
-      target.dataset.plateSelectable !== 'true'
+      target.dataset.slateEditor !== "true" &&
+      target.dataset.plateSelectable !== "true"
     )
       return;
 
@@ -532,14 +532,12 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     if (
       !this._container ||
-      // eslint-disable-next-line unicorn/prefer-array-some
       !startAreas.find((el) => evtPath.includes(el)) ||
-      // eslint-disable-next-line unicorn/prefer-array-some
       !resolvedBoundaries.find((el) => evtPath.includes(el))
     ) {
       return;
     }
-    if (!silent && this._emitEvent('beforestart', evt) === false) {
+    if (!silent && this._emitEvent("beforestart", evt) === false) {
       return;
     }
 
@@ -557,11 +555,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._singleClick = true;
     this.clearSelection(false, true);
 
-    on(document, ['touchmove', 'mousemove'], this._delayedTapMove, {
+    on(document, ["touchmove", "mousemove"], this._delayedTapMove, {
       passive: false,
     });
-    on(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
-    on(document, 'wheel', this._onScroll, { passive: false });
+    on(document, ["mouseup", "touchcancel", "touchend"], this._onTapStop);
+    on(document, "wheel", this._onScroll, { passive: false });
   }
 
   _onTapStop(evt: MouseEvent | TouchEvent | null, silent: boolean): void {
@@ -569,10 +567,10 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { _singleClick } = this;
 
     // Remove event handlers
-    off(document, ['mousemove', 'touchmove'], this._delayedTapMove);
-    off(document, ['touchmove', 'mousemove'], this._onTapMove);
-    off(document, ['mouseup', 'touchcancel', 'touchend'], this._onTapStop);
-    off(document, 'wheel', this._onScroll);
+    off(document, ["mousemove", "touchmove"], this._delayedTapMove);
+    off(document, ["touchmove", "mousemove"], this._onTapMove);
+    off(document, ["mouseup", "touchcancel", "touchend"], this._onTapStop);
+    off(document, "wheel", this._onScroll);
 
     // Keep selection until the next time
     this._keepSelection();
@@ -581,7 +579,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       this._onSingleTap(evt);
     } else if (!_singleClick && !silent) {
       this._updateElementSelection();
-      this._emitEvent('stop', evt);
+      this._emitEvent("stop", evt);
     }
 
     this._scrollSpeed.x = 0;
@@ -590,7 +588,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._scrollDelta.y = 0;
 
     // Unbind mouse scrolling listener
-    off(this._container, 'wheel', this._manualScroll, { passive: true });
+    off(this._container, "wheel", this._manualScroll, { passive: true });
 
     // Remove selection-area from dom
     this._area.remove();
@@ -599,7 +597,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     this._frame?.cancel();
 
     // Hide selection area
-    css(this._area, 'display', 'none');
+    css(this._area, "display", "none");
   }
 
   _recalculateSelectionAreaRect(): void {
@@ -719,13 +717,12 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const { selected, stored, touched } = _selection;
     const { intersect, overlap } = _options.behaviour;
 
-    const invert = overlap === 'invert';
+    const invert = overlap === "invert";
     const newlyTouched: Element[] = [];
     const added: Element[] = [];
     const removed: Element[] = [];
 
     // Find newly selected elements
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < _selectables.length; i++) {
       const node = _selectables[i];
 
@@ -762,9 +759,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     }
 
     // Check which elements where removed since last selection
-    const keep = overlap === 'keep';
+    const keep = overlap === "keep";
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < selected.length; i++) {
       const node = selected[i];
 
@@ -810,8 +806,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Fire event
     if (!quiet) {
-      this._emitEvent('move', null);
-      this._emitEvent('stop', null);
+      this._emitEvent("move", null);
+      this._emitEvent("stop", null);
     }
 
     // Reset state
@@ -852,8 +848,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Fire event
     if (!quiet) {
-      this._emitEvent('move', null);
-      this._emitEvent('stop', null);
+      this._emitEvent("move", null);
+      this._emitEvent("stop", null);
     }
   }
 
@@ -907,8 +903,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Fire event
     if (!quiet) {
-      this._emitEvent('move', null);
-      this._emitEvent('stop', null);
+      this._emitEvent("move", null);
+      this._emitEvent("stop", null);
     }
 
     return elements;
