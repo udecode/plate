@@ -9,19 +9,23 @@ export const validateFileItem = (
   config: MediaItemConfig,
   key: AllowedFileType
 ): UploadErrorCode | true => {
-  const { maxFileCount = Infinity, maxFileSize, minFileCount = 1 } = config;
+  const {
+    maxFileCount = Number.POSITIVE_INFINITY,
+    maxFileSize,
+    minFileCount = 1,
+  } = config;
 
   if (files.length < minFileCount)
     throw createUploadError(UploadErrorCode.TOO_LESS_FILES, {
-      files: files,
+      files,
       fileType: key,
-      minFileCount: minFileCount,
+      minFileCount,
     });
   if (files.length > maxFileCount)
     throw createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-      files: files,
+      files,
       fileType: key,
-      maxFileCount: maxFileCount,
+      maxFileCount,
     });
 
   for (const f of files) {

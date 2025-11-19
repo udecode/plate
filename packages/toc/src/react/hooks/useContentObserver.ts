@@ -5,13 +5,13 @@ import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
-interface UseContentObserver {
+type UseContentObserver = {
   editorContentRef: React.RefObject<HTMLElement | null>;
   isObserve: boolean;
   isScroll: boolean;
   rootMargin: string;
   status: number;
-}
+};
 
 export const useContentObserver = ({
   editorContentRef,
@@ -48,12 +48,15 @@ export const useContentObserver = ({
         if (headingElement.isIntersecting) visibleHeadings.push(key);
       });
       const lastKey = Object.keys(headingElementsRef.current).pop()!;
-      visibleHeadings.length > 0 && setActiveId(visibleHeadings[0] || lastKey);
+
+      if (visibleHeadings.length > 0) {
+        setActiveId(visibleHeadings[0] || lastKey);
+      }
       headingElementsRef.current = {};
     };
     const observer = new IntersectionObserver(callback, {
-      root: root,
-      rootMargin: rootMargin,
+      root,
+      rootMargin,
     });
 
     headingList.forEach((item) => {
@@ -65,7 +68,9 @@ export const useContentObserver = ({
 
       const element = editor.api.toDOMNode(node);
 
-      return element && observer.observe(element);
+      if (element) {
+        observer.observe(element);
+      }
     });
 
     return () => {

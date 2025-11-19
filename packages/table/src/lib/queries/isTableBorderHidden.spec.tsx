@@ -16,14 +16,13 @@ const createEditorInstance = ({
 }: {
   children?: any;
   selection?: any;
-}) => {
-  return createPlateEditor({
+}) =>
+  createPlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
     value: children,
   });
-};
 
 describe('isTableBorderHidden', () => {
   const input = (

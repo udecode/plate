@@ -10,9 +10,7 @@ import { convertNodesDeserialize } from './convertNodesDeserialize';
 export const mdastToSlate = (
   node: Root,
   options: DeserializeMdOptions
-): Descendant[] => {
-  return buildSlateRoot(node, options);
-};
+): Descendant[] => buildSlateRoot(node, options);
 
 const buildSlateRoot = (
   root: MdRoot,

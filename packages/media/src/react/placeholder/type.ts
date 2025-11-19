@@ -2,13 +2,16 @@ import type { KEYS } from 'platejs';
 
 import type { AllowedFileType } from './internal/mimes';
 
-export enum UploadErrorCode {
-  INVALID_FILE_TYPE = 400,
-  TOO_MANY_FILES = 402,
-  INVALID_FILE_SIZE = 403,
-  TOO_LESS_FILES = 405,
-  TOO_LARGE = 413,
-}
+export const UploadErrorCode = {
+  INVALID_FILE_TYPE: 400,
+  TOO_MANY_FILES: 402,
+  INVALID_FILE_SIZE: 403,
+  TOO_LESS_FILES: 405,
+  TOO_LARGE: 413,
+} as const;
+
+export type UploadErrorCode =
+  (typeof UploadErrorCode)[keyof typeof UploadErrorCode];
 
 export type FileSize = `${PowOf2}${SizeUnit}`;
 
@@ -33,20 +36,20 @@ export type SizeUnit = 'B' | 'GB' | 'KB' | 'MB';
 
 export type UploadError =
   | {
-      code: UploadErrorCode.INVALID_FILE_SIZE;
+      code: typeof UploadErrorCode.INVALID_FILE_SIZE;
       data: {
         files: File[];
       };
     }
   | {
-      code: UploadErrorCode.INVALID_FILE_TYPE;
+      code: typeof UploadErrorCode.INVALID_FILE_TYPE;
       data: {
         allowedTypes: string[];
         files: File[];
       };
     }
   | {
-      code: UploadErrorCode.TOO_LARGE;
+      code: typeof UploadErrorCode.TOO_LARGE;
       data: {
         files: File[];
         fileType: AllowedFileType;
@@ -54,7 +57,7 @@ export type UploadError =
       };
     }
   | {
-      code: UploadErrorCode.TOO_LESS_FILES;
+      code: typeof UploadErrorCode.TOO_LESS_FILES;
       data: {
         files: File[];
         fileType: AllowedFileType;
@@ -62,7 +65,7 @@ export type UploadError =
       };
     }
   | {
-      code: UploadErrorCode.TOO_MANY_FILES;
+      code: typeof UploadErrorCode.TOO_MANY_FILES;
       data: {
         files: File[];
         fileType: AllowedFileType | null;

@@ -4,9 +4,8 @@ import { UploadErrorCode } from '../type';
 import { groupFilesByType } from './groupFilesByType';
 
 describe('groupFilesByType', () => {
-  const createFile = (name: string, type: string): File => {
-    return new File([], name, { type });
-  };
+  const createFile = (name: string, type: string): File =>
+    new File([], name, { type });
 
   it('should group files by their types', () => {
     const files = [
@@ -18,7 +17,7 @@ describe('groupFilesByType', () => {
     const fileList = {
       length: files.length,
       item: (i: number) => files[i],
-      [Symbol.iterator]: function* () {
+      *[Symbol.iterator]() {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }
@@ -46,7 +45,7 @@ describe('groupFilesByType', () => {
     const fileList = {
       length: files.length,
       item: (i: number) => files[i],
-      [Symbol.iterator]: function* () {
+      *[Symbol.iterator]() {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }
@@ -71,7 +70,7 @@ describe('groupFilesByType', () => {
     const fileList = {
       length: files.length,
       item: (i: number) => files[i],
-      [Symbol.iterator]: function* () {
+      *[Symbol.iterator]() {
         for (let i = 0; i < this.length; i++) {
           yield this.item(i);
         }

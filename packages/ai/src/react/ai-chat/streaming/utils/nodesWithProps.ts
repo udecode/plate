@@ -10,20 +10,18 @@ export const nodesWithProps = (
   editor: PlateEditor,
   nodes: Descendant[],
   options: SteamInsertChunkOptions
-): Descendant[] => {
-  return nodes.map((node): Descendant => {
+): Descendant[] =>
+  nodes.map((node): Descendant => {
     if (ElementApi.isElement(node)) {
       return {
         ...getListNode(editor, node),
         ...options.elementProps,
         children: nodesWithProps(editor, node.children, options),
       };
-    } else {
-      return {
-        ...options.textProps,
-        ...node,
-        text: node.text,
-      };
     }
+    return {
+      ...options.textProps,
+      ...node,
+      text: node.text,
+    };
   });
-};

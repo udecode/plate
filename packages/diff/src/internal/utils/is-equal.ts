@@ -3,13 +3,13 @@ import type { UnknownObject } from 'platejs';
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';
 
-export interface IsEqualOptions {
+export type IsEqualOptions = {
   // Ignore props on all descendant objects
   ignoreDeep?: string[];
 
   // Ignore props only on top-level objects
   ignoreShallow?: string[];
-}
+};
 
 const without = (
   x: unknown,

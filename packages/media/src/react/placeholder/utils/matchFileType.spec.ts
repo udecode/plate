@@ -2,9 +2,8 @@ import { UploadErrorCode } from '../type';
 import { matchFileType } from './matchFileType';
 
 describe('matchFileType', () => {
-  const createFile = (name: string, type: string): File => {
-    return new File([], name, { type });
-  };
+  const createFile = (name: string, type: string): File =>
+    new File([], name, { type });
 
   it('should return blob if no mime type and blob is allowed', () => {
     const file = createFile('test.txt', '');

@@ -40,8 +40,8 @@ export const addMarkSuggestion = (
       {
         [key]: value,
         [getSuggestionKey(id)]: {
-          id: id,
-          createdAt: createdAt,
+          id,
+          createdAt,
           newProperties: {
             [key]: value,
           },

@@ -1,3 +1,5 @@
+const MSO_LIST_PATTERN = /mso-list:\s*l/i;
+
 export const isDocxList = (element: Element): boolean => {
   const styleAttribute = element.getAttribute('style');
 
@@ -5,7 +7,7 @@ export const isDocxList = (element: Element): boolean => {
     return false;
   }
 
-  const hasMsoListInStyle = /mso-list:\s*l/i.test(styleAttribute);
+  const hasMsoListInStyle = MSO_LIST_PATTERN.test(styleAttribute);
 
   if (!hasMsoListInStyle) {
     return false;

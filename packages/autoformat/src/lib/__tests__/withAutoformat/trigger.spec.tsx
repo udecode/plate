@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createPlateEditor, getEditorPlugin } from 'platejs/react';
+import { createPlateEditor } from 'platejs/react';
 import {
   BoldPlugin,
   ItalicPlugin,

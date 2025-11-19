@@ -78,7 +78,7 @@ export function codeBlockToDecorations(
   const language = block.lang;
   const effectiveLanguage = language || defaultLanguage;
 
-  let highlighted;
+  let highlighted: any;
   try {
     // Skip highlighting for plaintext or when no language is specified
     if (!effectiveLanguage || effectiveLanguage === 'plaintext') {

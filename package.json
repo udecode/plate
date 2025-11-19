@@ -52,7 +52,7 @@
     "g:typecheck:all": "turbo typecheck",
     "gen:package": "yarn plop --plopfile tooling/scripts/plop/plopfile.cjs package",
     "postinstall": "patch-package --patch-dir tooling/patches",
-    "lint": "yarn g:lint",
+    "lint": "biome check .",
     "lint:all": "turbo lint",
     "lint:fix": "yarn g:lint:fix",
     "lint:templates": "turbo --filter \"./templates/plate-playground-template/**\" lint",

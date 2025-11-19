@@ -119,7 +119,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     completion: '',
     debounceDelay: 0,
     error: null,
-    getNextWord: getNextWord,
+    getNextWord,
     isLoading: false,
     renderGhostText: null,
     shouldAbort: true,

@@ -11,7 +11,7 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
   protected rowsCount = 1;
   protected sectionsIds: T[] = [];
 
-  public addSection(
+  addSection(
     sectionId: T,
     section: IGridSection<R, T>,
     elements: GridElements
@@ -24,19 +24,19 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
     return this;
   }
 
-  public indexOf(sectionId: T) {
+  indexOf(sectionId: T) {
     return this.sectionsIds.indexOf(sectionId);
   }
 
-  public section(sectionId: T) {
+  section(sectionId: T) {
     return this.grid.get(sectionId)!;
   }
 
-  public sections() {
+  sections() {
     return Array.from(this.grid.values());
   }
 
-  public updateSection(sectionId: T, elements: SectionElements) {
+  updateSection(sectionId: T, elements: SectionElements) {
     if (this.grid.has(sectionId)) {
       const section = this.grid.get(sectionId);
       section!.updateElements(elements);
@@ -45,7 +45,7 @@ export class Grid<R, T extends SectionId = SectionId> implements IGrid<R, T> {
     return this;
   }
 
-  public get size() {
+  get size() {
     return this.grid.size;
   }
 }

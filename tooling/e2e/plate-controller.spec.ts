@@ -10,7 +10,8 @@ test.describe('PlateController', () => {
   const focusEditor = (page: Page, id: string) =>
     page.getByText(`Editor ${id}`, { exact: true }).click({ force: true });
 
-  const blurEditor = (page: Page) => page.getByRole('paragraph').first().click();
+  const blurEditor = (page: Page) =>
+    page.getByRole('paragraph').first().click();
 
   const expectActiveEditor = (page: Page, id: string) =>
     expect(page.getByTestId('active-editor')).toHaveText(id);

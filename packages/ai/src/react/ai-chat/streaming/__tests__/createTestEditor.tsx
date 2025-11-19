@@ -1,21 +1,16 @@
 /** @jsx jsxt */
-import {
-  BoldPlugin,
-  CodePlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-  BasicMarksPlugin,
-} from '@platejs/basic-nodes/react';
+import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { ListPlugin } from '@platejs/list/react';
 import { IndentPlugin } from '@platejs/indent/react';
 import { jsxt } from '@platejs/test-utils';
 import { ParagraphPlugin } from 'platejs/react';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+
+// biome-ignore lint/nursery/noUnusedExpressions: required to prevent removal by compiler
 jsxt;
 
 import { MarkdownKit } from '../../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
-import { createSlateEditor, SlateEditor } from 'platejs';
+import { createSlateEditor, type SlateEditor } from 'platejs';
 import { AIPlugin } from '../../../ai/AIPlugin';
 import { AIChatPlugin } from '../../AIChatPlugin';
 // Helper function to create input and editor with common configuration

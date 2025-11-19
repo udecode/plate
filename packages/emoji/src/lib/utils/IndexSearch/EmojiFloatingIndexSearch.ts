@@ -4,12 +4,14 @@ import { AIndexSearch } from './IndexSearch';
 
 export class EmojiFloatingIndexSearch extends AIndexSearch {
   protected static instance?: EmojiFloatingIndexSearch;
+  protected library: IEmojiLibrary;
 
-  private constructor(protected library: IEmojiLibrary) {
+  private constructor(library: IEmojiLibrary) {
     super(library);
+    this.library = library;
   }
 
-  public static getInstance(library: IEmojiLibrary) {
+  static getInstance(library: IEmojiLibrary) {
     if (!EmojiFloatingIndexSearch.instance) {
       EmojiFloatingIndexSearch.instance = new EmojiFloatingIndexSearch(library);
     }

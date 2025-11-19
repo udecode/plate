@@ -17,8 +17,8 @@ export const getPreviousList = <
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingListOptions<N, E>>
-): NodeEntry<N> | undefined => {
-  return getSiblingList(editor, entry, {
+): NodeEntry<N> | undefined =>
+  getSiblingList(editor, entry, {
     getPreviousEntry: ([, currPath]) => {
       const prevPath = PathApi.previous(currPath);
 
@@ -33,4 +33,3 @@ export const getPreviousList = <
     ...options,
     getNextEntry: undefined,
   });
-};

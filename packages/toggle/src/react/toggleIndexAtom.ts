@@ -28,9 +28,9 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
         ? elementIndent - 1
         : elementIndent;
 
-    const enclosingToggles = currentEnclosingToggles.filter(([_, indent]) => {
-      return indent < elementIndentWithListCorrection;
-    });
+    const enclosingToggles = currentEnclosingToggles.filter(
+      ([_, indent]) => indent < elementIndentWithListCorrection
+    );
     currentEnclosingToggles = enclosingToggles;
     result.set(
       element.id as string,

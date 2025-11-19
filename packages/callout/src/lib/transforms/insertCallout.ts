@@ -2,7 +2,7 @@ import type { InsertNodesOptions, SlateEditor, TCalloutElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
-export const CALLOUT_STORAGE_KEY = `plate-storage-callout`;
+export const CALLOUT_STORAGE_KEY = 'plate-storage-callout';
 
 export const insertCallout = (
   editor: SlateEditor,

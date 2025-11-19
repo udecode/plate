@@ -20,8 +20,11 @@
       "!!node_modules/puppeteer-core",
       "!!**/.turbo",
       "!!**/dist",
+      "!!**/public",
+      "!!**/.contentlayer",
+      "!!**/*.html",
       "!!templates",
-      "!!apps"
+      "!!packages"
     ]
   },
   "linter": {
@@ -52,6 +55,7 @@
         "noEmptyBlockStatements": "off", // chill
         "useAwait": "off", // chill
         "noDocumentCookie": "off", // shadcn,
+        "noBitwiseOperators": "off", // chill
         "noConfusingVoidType": "off" // false +
       },
       "style": {
@@ -111,7 +115,8 @@
             "useJsxKeyInIterable": "off"
           },
           "style": {
-            "useImportType": "off"
+            "useImportType": "off",
+            "noUnusedTemplateLiteral": "off"
           },
           "suspicious": {
             "noThenProperty": "off",

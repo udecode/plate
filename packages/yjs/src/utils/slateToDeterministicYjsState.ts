@@ -1,7 +1,7 @@
-import type { Value } from "platejs";
+import type { Value } from 'platejs';
 
-import { slateNodesToInsertDelta } from "@slate-yjs/core";
-import * as Y from "yjs";
+import { slateNodesToInsertDelta } from '@slate-yjs/core';
+import * as Y from 'yjs';
 
 /**
  * Produce the canonical "initial update" from a Slate node array using a
@@ -25,7 +25,7 @@ export async function slateToDeterministicYjsState(
   tmp.clientID = deterministicClientId;
 
   const delta = slateNodesToInsertDelta(initialNodes);
-  const content = tmp.get("content", Y.XmlText) as Y.XmlText;
+  const content = tmp.get('content', Y.XmlText) as Y.XmlText;
   content.applyDelta(delta);
   const initialUpdate = Y.encodeStateAsUpdate(tmp);
   tmp.destroy();
@@ -54,7 +54,7 @@ async function generateDeterministicClientId(
   const combinedString = `${guid}-${nodesString}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(combinedString);
-  const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+  const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
 
   return arrayBufferToClientId(hashBuffer);
 }

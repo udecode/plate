@@ -13,11 +13,12 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
   protected _root!: R;
   protected _rowsNum = 0;
   protected rows: GridRows = [];
+  protected _id: T;
+  protected perLine: number;
 
-  constructor(
-    protected _id: T,
-    protected perLine = 8
-  ) {
+  constructor(_id: T, perLine = 8) {
+    this._id = _id;
+    this.perLine = perLine;
     this.createRootRef();
   }
 
@@ -40,7 +41,7 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
 
   protected abstract createRootRef(): void;
 
-  public addElements(elements: SectionElements) {
+  addElements(elements: SectionElements) {
     this._rowsNum = Math.ceil(elements.length / this.perLine);
     this.initRows(elements);
 
@@ -51,13 +52,13 @@ export abstract class AGridSection<R extends Unknown, T = SectionId>
     return this.rows;
   }
 
-  public setIndexRowStart(start: number) {
+  setIndexRowStart(start: number) {
     this._indexRowStart = start;
 
     return this;
   }
 
-  public updateElements(elements: SectionElements) {
+  updateElements(elements: SectionElements) {
     this.rows = [];
     this.addElements(elements);
 

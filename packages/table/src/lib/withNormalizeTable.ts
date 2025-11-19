@@ -60,7 +60,7 @@ export const withNormalizeTable: OverrideEditor<TableConfig> = ({
           const tableEntry = editor.api.block({
             above: true,
             at: path,
-            match: { type: type },
+            match: { type },
           });
 
           if (tableEntry) {

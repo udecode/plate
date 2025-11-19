@@ -79,12 +79,10 @@ export const markdownToSlateNodes = (
 
       return toSlateProcessor
         .processSync(token.raw)
-        .result.map((result: any) => {
-          return {
-            _memo: token.raw,
-            ...result,
-          };
-        });
+        .result.map((result: any) => ({
+          _memo: token.raw,
+          ...result,
+        }));
     });
   }
 
@@ -130,7 +128,5 @@ declare module 'unified' {
 const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
   // TODO: options
   function (options = {}) {
-    this.compiler = function (node) {
-      return mdastToSlate(node as Root, options);
-    };
+    this.compiler = (node) => mdastToSlate(node as Root, options);
   };

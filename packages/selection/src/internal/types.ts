@@ -8,18 +8,18 @@ export type AreaLocation = {
   y2: number;
 };
 
-export interface Behaviour {
+export type Behaviour = {
   intersect: Intersection;
   overlap: OverlapMode;
   scrolling: Scrolling;
   startThreshold: Coordinates | number;
   triggers: Trigger[];
-}
+};
 
-export interface Coordinates {
+export type Coordinates = {
   x: number;
   y: number;
-}
+};
 
 export type DeepPartial<T> = T extends unknown[]
   ? T
@@ -27,11 +27,11 @@ export type DeepPartial<T> = T extends unknown[]
     ? T
     : { [P in keyof T]?: DeepPartial<T[P]> };
 
-export interface Features {
+export type Features = {
   range: boolean;
   singleTap: SingleTap;
   touch: boolean;
-}
+};
 
 export type Modifier = 'alt' | 'ctrl' | 'shift';
 
@@ -61,17 +61,17 @@ export interface ScrollEvent extends MouseEvent {
   deltaY: number;
 }
 
-export interface Scrolling {
+export type Scrolling = {
   manualSpeed: number;
   speedDivider: number;
   startScrollMargins: { x: number; y: number };
-}
+};
 
-export interface SelectionEvent {
+export type SelectionEvent = {
   event: MouseEvent | TouchEvent | null;
   selection: SelectionArea;
   store: SelectionStore;
-}
+};
 
 export type SelectionEvents = {
   beforedrag: (e: SelectionEvent) => boolean | void;
@@ -81,7 +81,7 @@ export type SelectionEvents = {
   stop: (e: SelectionEvent) => void;
 };
 
-export interface SelectionOptions {
+export type SelectionOptions = {
   behaviour: Behaviour;
   boundaries: Quantify<HTMLElement | string>;
   container: Quantify<HTMLElement | string>;
@@ -93,9 +93,9 @@ export interface SelectionOptions {
   selectionAreaClass: string;
 
   startAreas: Quantify<HTMLElement | string>;
-}
+};
 
-export interface SelectionStore {
+export type SelectionStore = {
   changed: {
     added: Element[];
     removed: Element[];
@@ -103,12 +103,12 @@ export interface SelectionStore {
   selected: Element[];
   stored: Element[];
   touched: Element[];
-}
+};
 
-export interface SingleTap {
+export type SingleTap = {
   allow: boolean;
   intersect: TapMode;
-}
+};
 
 export type TapMode = 'native' | 'touch';
 

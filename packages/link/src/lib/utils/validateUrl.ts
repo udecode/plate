@@ -2,6 +2,9 @@ import { type SlateEditor, sanitizeUrl } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
+// Markdown headings have a space after the # symbols
+const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
+
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
     editor.getOptions(BaseLinkPlugin);
@@ -13,9 +16,7 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
 
   // For strings starting with #, check if it's a markdown heading
   if (url.startsWith('#')) {
-    // Markdown headings have a space after the # symbols
-    const markdownHeadingPattern = /^#{1,6}\s+/;
-    if (markdownHeadingPattern.test(url)) {
+    if (MARKDOWN_HEADING_PATTERN.test(url)) {
       return false; // This is a markdown heading, not a valid link
     }
     return true; // This is an anchor link

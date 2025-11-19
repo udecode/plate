@@ -1,13 +1,16 @@
-export interface ILocalStorage<T> {
+export type ILocalStorage<T> = {
   get: () => T;
   set: (value: T) => void;
-}
+};
 
 export class LocalStorage<T> implements ILocalStorage<T> {
-  constructor(
-    protected key: string,
-    protected defaultValue: T
-  ) {}
+  protected key: string;
+  protected defaultValue: T;
+
+  constructor(key: string, defaultValue: T) {
+    this.key = key;
+    this.defaultValue = defaultValue;
+  }
 
   get(): T {
     let value = this.defaultValue;

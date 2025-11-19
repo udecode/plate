@@ -96,11 +96,10 @@ export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
                   if (!NodeApi.has(editor, cellPath)) {
                     if (getOptions().disableExpandOnInsert) {
                       return;
-                    } else {
-                      insert.tableRow({
-                        fromRow,
-                      });
                     }
+                    insert.tableRow({
+                      fromRow,
+                    });
                   }
                 }
 
@@ -117,11 +116,10 @@ export const withInsertFragmentTable: OverrideEditor<TableConfig> = ({
                     if (!NodeApi.has(editor, cellPath)) {
                       if (getOptions().disableExpandOnInsert) {
                         return;
-                      } else {
-                        insert.tableColumn({
-                          fromCell,
-                        });
                       }
+                      insert.tableColumn({
+                        fromCell,
+                      });
                     }
                   }
 

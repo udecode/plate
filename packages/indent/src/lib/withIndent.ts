@@ -15,57 +15,55 @@ export const withIndent: OverrideEditor<IndentConfig> = ({
   getOptions,
   plugin,
   tf: { normalizeNode, tab },
-}) => {
-  return {
-    transforms: {
-      normalizeNode([node, path]) {
-        const { indentMax } = getOptions();
+}) => ({
+  transforms: {
+    normalizeNode([node, path]) {
+      const { indentMax } = getOptions();
 
-        const element = node as TIndentElement;
-        const { type } = element;
+      const element = node as TIndentElement;
+      const { type } = element;
 
-        const match = getInjectMatch(editor, plugin);
+      const match = getInjectMatch(editor, plugin);
 
-        if (type) {
-          if (match(element, path)) {
-            if (indentMax && element.indent && element.indent > indentMax) {
-              editor.tf.setNodes({ indent: indentMax }, { at: path });
-
-              return;
-            }
-          } else if (element.indent) {
-            editor.tf.unsetNodes('indent', { at: path });
+      if (type) {
+        if (match(element, path)) {
+          if (indentMax && element.indent && element.indent > indentMax) {
+            editor.tf.setNodes({ indent: indentMax }, { at: path });
 
             return;
           }
+        } else if (element.indent) {
+          editor.tf.unsetNodes('indent', { at: path });
+
+          return;
+        }
+      }
+
+      return normalizeNode([node, path]);
+    },
+    tab: (options) => {
+      const apply = () => {
+        const match = getInjectMatch(editor, plugin);
+        const entry = editor.api.block();
+
+        if (!entry) return;
+
+        const [element, path] = entry;
+
+        if (!match(element, path)) return;
+
+        if (options.reverse) {
+          outdent(editor);
+        } else {
+          indent(editor);
         }
 
-        return normalizeNode([node, path]);
-      },
-      tab: (options) => {
-        const apply = () => {
-          const match = getInjectMatch(editor, plugin);
-          const entry = editor.api.block();
+        return true;
+      };
 
-          if (!entry) return;
+      if (apply()) return true;
 
-          const [element, path] = entry;
-
-          if (!match(element, path)) return;
-
-          if (options.reverse) {
-            outdent(editor);
-          } else {
-            indent(editor);
-          }
-
-          return true;
-        };
-
-        if (apply()) return true;
-
-        return tab(options);
-      },
+      return tab(options);
     },
-  };
-};
+  },
+});

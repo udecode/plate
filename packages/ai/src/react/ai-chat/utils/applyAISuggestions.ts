@@ -74,7 +74,7 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
         });
       }
       // Performance optimization
-      if (isSameString && isSameSuggestion && node.id == diffNode.id) {
+      if (isSameString && isSameSuggestion && node.id === diffNode.id) {
         return;
       }
 
@@ -111,8 +111,8 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
 const withProps = (
   diffNodes: Descendant[],
   chatNodes: Descendant[]
-): Descendant[] => {
-  return diffNodes.map((node, index) => {
+): Descendant[] =>
+  diffNodes.map((node, index) => {
     if (!ElementApi.isElement(node)) return node;
 
     const originalNode = chatNodes?.[index] as TElement | undefined;
@@ -123,27 +123,24 @@ const withProps = (
       children: node.children,
     };
   });
-};
 
-const withTransient = (diffNodes: Descendant[]): Descendant[] => {
-  return diffNodes.map((node) => {
+const withTransient = (diffNodes: Descendant[]): Descendant[] =>
+  diffNodes.map((node) => {
     if (TextApi.isText(node)) {
       return {
         ...node,
         [getTransientSuggestionKey()]: true,
       };
-    } else {
-      return {
-        ...node,
-        children: withTransient(node.children),
-        [getTransientSuggestionKey()]: true,
-      };
     }
+    return {
+      ...node,
+      children: withTransient(node.children),
+      [getTransientSuggestionKey()]: true,
+    };
   });
-};
 
-const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
-  return nodes.map((node) => {
+const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] =>
+  nodes.map((node) => {
     if (TextApi.isText(node)) {
       if (node[KEYS.suggestion] || node[KEYS.comment]) {
         return {
@@ -177,7 +174,6 @@ const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] => {
 
     return node;
   });
-};
 const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   /** Original document nodes */
   const chatNodes = withoutSuggestionAndComments(

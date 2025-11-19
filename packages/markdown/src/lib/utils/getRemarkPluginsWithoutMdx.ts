@@ -10,8 +10,5 @@ export const tagRemarkPlugin = (pluginFn: any, tag: string) => {
   return wrapped;
 };
 
-export const getRemarkPluginsWithoutMdx = (plugins: Plugin[]) => {
-  return plugins.filter((plugin) => {
-    return (plugin as any).__pluginTag !== REMARK_MDX_TAG;
-  });
-};
+export const getRemarkPluginsWithoutMdx = (plugins: Plugin[]) =>
+  plugins.filter((plugin) => (plugin as any).__pluginTag !== REMARK_MDX_TAG);

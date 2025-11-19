@@ -44,8 +44,8 @@ export const normalizeListStart = <
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingListOptions<N, E>>
-) => {
-  return editor.tf.withoutNormalizing(() => {
+) =>
+  editor.tf.withoutNormalizing(() => {
     const [node, path] = entry;
     const listStyleType = (node as any)[KEYS.listType];
     const listStart = node[KEYS.listStart] as number | undefined;
@@ -69,4 +69,3 @@ export const normalizeListStart = <
 
     return false;
   });
-};

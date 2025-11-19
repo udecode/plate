@@ -10,9 +10,8 @@ import {
 export const getListAbove = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
   options?: Omit<EditorAboveOptions, 'match'>
-): NodeEntry<N> | undefined => {
-  return editor.api.above({
+): NodeEntry<N> | undefined =>
+  editor.api.above({
     ...options,
     match: (node) => isDefined(node[KEYS.listType]),
   });
-};

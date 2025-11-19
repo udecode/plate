@@ -420,9 +420,7 @@ describe('withLink', () => {
             plugins: [
               BaseLinkPlugin.configure({
                 options: {
-                  getUrlHref: (_url) => {
-                    return 'http://google.com';
-                  },
+                  getUrlHref: (_url) => 'http://google.com',
                 },
               }),
             ],

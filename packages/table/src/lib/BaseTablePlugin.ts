@@ -218,8 +218,8 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     table: {
       getCellBorders: bindFirst(getTableCellBorders, editor),
       getCellSize: bindFirst(getTableCellSize, editor),
-      getColSpan: getColSpan,
-      getRowSpan: getRowSpan,
+      getColSpan,
+      getRowSpan,
       getCellChildren: (cell) => cell.children,
     },
   }))

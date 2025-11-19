@@ -1,8 +1,8 @@
-export interface Frames<F extends AnyFunction = AnyFunction> {
+export type Frames<F extends AnyFunction = AnyFunction> = {
   cancel: () => void;
 
   next: (...args: Parameters<F>) => void;
-}
+};
 
 type AnyFunction = (...args: any[]) => void;
 

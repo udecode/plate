@@ -180,7 +180,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     isSelectingSome: () => getOptions().selectedIds!.size > 0,
   }))
   .extendApi<Partial<BlockSelectionConfig['api']['blockSelection']>>(
-    ({ api, editor, getOption, getOptions, setOption }) => ({
+    ({ editor, getOption, getOptions, setOption }) => ({
       addOnContextMenu: bindFirst(addOnContextMenu, editor),
       moveSelection: bindFirst(moveSelection, editor),
       setSelectedIds: bindFirst(setSelectedIds, editor),
@@ -189,7 +189,9 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         const next = new Set(getOptions().selectedIds!);
 
         if (Array.isArray(id)) {
-          id.forEach((singleId) => next.add(singleId));
+          for (const singleId of id) {
+            next.add(singleId);
+          }
         } else {
           next.add(id);
         }
@@ -203,7 +205,9 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         const next = new Set(getOptions().selectedIds!);
 
         if (Array.isArray(id)) {
-          id.forEach((i) => next.delete(i));
+          for (const i of id) {
+            next.delete(i);
+          }
         } else {
           next.delete(id);
         }
@@ -234,17 +238,13 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: (options) => {
         const selectedIds = getOption('selectedIds');
 
-        let nodes = [];
-
-        nodes = editor.api.blocks<TIdElement>({
+        const nodes = editor.api.blocks<TIdElement>({
           at: [],
           match: (n) => !!n.id && selectedIds?.has(n.id as string),
         });
 
         if (options?.sort) {
-          nodes.sort(([, pathA], [, pathB]) => {
-            return PathApi.compare(pathA, pathB);
-          });
+          nodes.sort(([, pathA], [, pathB]) => PathApi.compare(pathA, pathB));
         }
 
         if (options?.collapseTableRows) {
@@ -365,6 +365,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getOptions,
       tf: {
         addMark,
+        // biome-ignore lint/suspicious/noShadowRestrictedNames: extending the escape transform
         escape,
         focus,
         selectAll,

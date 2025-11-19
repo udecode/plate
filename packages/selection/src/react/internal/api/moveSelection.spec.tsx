@@ -407,9 +407,11 @@ describe('moveSelection', () => {
       });
 
       // For testing, let's skip columns
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
-        return node.type !== 'column';
-      });
+      editor.setOption(
+        BlockSelectionPlugin,
+        'isSelectable',
+        (node) => node.type !== 'column'
+      );
     });
 
     it('should move to previous sibling when not first child', () => {
@@ -452,9 +454,11 @@ describe('moveSelection', () => {
 
     it('should handle deeper nesting with non-selectable parents', () => {
       // Make column_group1 not selectable as well
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
-        return node.type !== 'column' && node.type !== 'column_group';
-      });
+      editor.setOption(
+        BlockSelectionPlugin,
+        'isSelectable',
+        (node) => node.type !== 'column' && node.type !== 'column_group'
+      );
 
       // Select grandchild1
       editor.setOption(

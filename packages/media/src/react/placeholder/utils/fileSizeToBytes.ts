@@ -22,7 +22,7 @@ export const fileSizeToBytes = (fileSize: FileSize, file: File): number => {
 
   const sizeValue = Number.parseFloat(match[1]);
   const sizeUnit = match[3].toUpperCase() as FileSizeUnit;
-  const bytes = sizeValue * Math.pow(1024, FILESIZE_UNITS.indexOf(sizeUnit));
+  const bytes = sizeValue * 1024 ** FILESIZE_UNITS.indexOf(sizeUnit);
 
   return Math.floor(bytes);
 };
@@ -34,5 +34,5 @@ export const bytesToFileSize = (bytes: number) => {
 
   const i = Math.floor(Math.log(bytes) / Math.log(1000));
 
-  return `${(bytes / Math.pow(1000, i)).toFixed(2)}${FILESIZE_UNITS[i]}`;
+  return `${(bytes / 1000 ** i).toFixed(2)}${FILESIZE_UNITS[i]}`;
 };

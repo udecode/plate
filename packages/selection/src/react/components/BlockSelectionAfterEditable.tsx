@@ -167,7 +167,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           const [, path] = entry;
           editor.meta._forceFocus = true;
           editor.tf.focus({ at: path, edge: 'end' });
-          delete editor.meta._forceFocus;
+          editor.meta._forceFocus = undefined;
           e.preventDefault();
         }
 

@@ -30,13 +30,16 @@ export const getHeadingList = (editor: SlateEditor) => {
 
   if (!values) return [];
 
-  Array.from(values, ([node, path]) => {
+  for (const [node, path] of values) {
     const { type } = node;
     const title = NodeApi.string(node);
     const depth = headingDepth[type];
     const id = node.id as string;
-    title && headingList.push({ id, depth, path, title, type });
-  });
+
+    if (title) {
+      headingList.push({ id, depth, path, title, type });
+    }
+  }
 
   return headingList;
 };

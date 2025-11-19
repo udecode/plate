@@ -23,6 +23,7 @@ const testInsertText = (
 
   editor.tf.insertText('o');
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(expected.children);
 };
 
@@ -35,6 +36,7 @@ const testDeleteBackward = (input: any, expected: any) => {
 
   editor.tf.deleteBackward();
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(expected.children);
 };
 
@@ -47,6 +49,7 @@ const testDeleteForward = (input: any, expected: any) => {
 
   editor.tf.deleteForward();
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(expected.children);
 };
 

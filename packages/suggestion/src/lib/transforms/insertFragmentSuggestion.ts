@@ -17,7 +17,7 @@ export const insertFragmentSuggestion = (
   editor.tf.withoutNormalizing(() => {
     deleteFragmentSuggestion(editor);
 
-    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+    const { id, createdAt } = findSuggestionProps(editor, {
       at: editor.selection!,
       type: 'insert',
     });

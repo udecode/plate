@@ -13,7 +13,7 @@ import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBl
 import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
-  setCodeBlockToDecorations as setCodeBlockToDecorations,
+  setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
 import { withCodeBlock } from './withCodeBlock';
 
@@ -71,12 +71,9 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
     delete: {
       empty: 'reset',
     },
-    match: ({ editor, rule }) => {
-      return (
-        ['break.empty', 'delete.empty'].includes(rule) &&
-        isCodeBlockEmpty(editor)
-      );
-    },
+    match: ({ editor, rule }) =>
+      ['break.empty', 'delete.empty'].includes(rule) &&
+      isCodeBlockEmpty(editor),
   },
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     if (!getOptions().lowlight) return [];

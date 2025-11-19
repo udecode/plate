@@ -7,7 +7,7 @@ export function lookup(path: string): MimeType | false {
   }
 
   // get the extension ("ext" or ".ext" or full path)
-  const extension = extname('x.' + path)
+  const extension = extname(`x.${path}`)
     .toLowerCase()
     .slice(1) as FileExtension;
 

@@ -17,7 +17,7 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 type FormatType = 'all' | 'cell' | 'table';
 
-interface GetTableGridByRangeOptions<T extends FormatType> {
+type GetTableGridByRangeOptions<T extends FormatType> = {
   at: TRange;
 
   /**
@@ -27,16 +27,16 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
    * - Array of cells
    */
   format?: T;
-}
+};
 
 type GetTableGridReturnType<T> = T extends 'all'
   ? TableGridEntries
   : ElementEntry[];
 
-interface TableGridEntries {
+type TableGridEntries = {
   cellEntries: ElementEntry[];
   tableEntries: ElementEntry[];
-}
+};
 
 /**
  * Get sub table between 2 cell paths. Ensure that the selection is always a
@@ -154,10 +154,10 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       cellEntries.push([cell, cellPath]);
     }
     if (colIndex + 1 <= endColIndex) {
-      colIndex = colIndex + 1;
+      colIndex += 1;
     } else if (rowIndex + 1 <= endRowIndex) {
       colIndex = startColIndex;
-      rowIndex = rowIndex + 1;
+      rowIndex += 1;
     } else {
       break;
     }

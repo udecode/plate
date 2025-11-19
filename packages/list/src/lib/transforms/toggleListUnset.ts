@@ -17,7 +17,7 @@ export const toggleListUnset = (
 ) => {
   if (
     listStyleType === KEYS.listTodo &&
-    node.hasOwnProperty(KEYS.listChecked)
+    Object.hasOwn(node, KEYS.listChecked)
   ) {
     editor.tf.unsetNodes(KEYS.listChecked, { at: path });
     outdentList(editor as any, { listStyleType });

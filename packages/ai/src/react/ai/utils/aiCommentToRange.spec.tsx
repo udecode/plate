@@ -418,9 +418,9 @@ describe('applyAIReview', () => {
     ];
 
     const ranges: Range[] = [];
-    comments.forEach((aiComment) =>
-      ranges.push(aiCommentToRange(editor, aiComment)!)
-    );
+    for (const aiComment of comments) {
+      ranges.push(aiCommentToRange(editor, aiComment)!);
+    }
 
     expect(ranges).toMatchSnapshot();
   });

@@ -1,4 +1,5 @@
 const DOCX_INDENT_STEP = 36;
+const NON_NUMERIC_PATTERN = /[^\d,.]+/;
 
 /**
  * Convert a string to floating number. Negative values are ignored. Values
@@ -7,7 +8,7 @@ const DOCX_INDENT_STEP = 36;
 const extractNumber = (str: string) => {
   if (str.startsWith('-')) return 0;
 
-  let number = str.replace(/[^\d,.]+/, '');
+  let number = str.replace(NON_NUMERIC_PATTERN, '');
 
   if (number.startsWith('.')) {
     number = `0${number}`;

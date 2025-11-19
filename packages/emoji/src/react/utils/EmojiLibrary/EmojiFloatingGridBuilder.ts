@@ -12,13 +12,22 @@ import {
 
 export class EmojiFloatingGridBuilder {
   protected grid = new EmojiFloatingGrid();
+  protected localStorage: IFrequentEmojiStorage;
+  protected sections: EmojiCategoryList[];
+  protected elements: GridElements;
+  protected settings: EmojiSettingsType;
 
   constructor(
-    protected localStorage: IFrequentEmojiStorage,
-    protected sections: EmojiCategoryList[],
-    protected elements: GridElements,
-    protected settings: EmojiSettingsType
-  ) {}
+    localStorage: IFrequentEmojiStorage,
+    sections: EmojiCategoryList[],
+    elements: GridElements,
+    settings: EmojiSettingsType
+  ) {
+    this.localStorage = localStorage;
+    this.sections = sections;
+    this.elements = elements;
+    this.settings = settings;
+  }
 
   private addFrequent() {
     if (this.settings.showFrequent.value) {
@@ -33,7 +42,7 @@ export class EmojiFloatingGridBuilder {
     }
   }
 
-  public build() {
+  build() {
     if (this.elements.frequent) {
       this.addFrequent();
     }

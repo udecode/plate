@@ -94,14 +94,19 @@ export const useTocSideBar = ({
     navProps: {
       ref: tocRef,
       onMouseEnter: () => {
-        !mouseInToc && open && setMouseInToc(true);
+        if (!mouseInToc && open) {
+          setMouseInToc(true);
+        }
       },
       onMouseLeave: (
         e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>
       ) => {
         if (open) {
           const isIn = checkIn(e);
-          isIn !== mouseInToc && setMouseInToc(isIn);
+
+          if (isIn !== mouseInToc) {
+            setMouseInToc(isIn);
+          }
         }
       },
     },

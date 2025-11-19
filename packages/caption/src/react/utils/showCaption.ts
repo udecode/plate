@@ -7,6 +7,8 @@ export const showCaption = (editor: SlateEditor, element: TElement) => {
   editor.setOption(CaptionPlugin, 'visibleId', element.id as string);
 
   setTimeout(() => {
-    path && editor.setOption(CaptionPlugin, 'focusEndPath', path);
+    if (path) {
+      editor.setOption(CaptionPlugin, 'focusEndPath', path);
+    }
   }, 0);
 };

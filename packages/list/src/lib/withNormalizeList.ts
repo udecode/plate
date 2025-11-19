@@ -9,26 +9,24 @@ export const withNormalizeList: OverrideEditor<BaseListConfig> = ({
   editor,
   getOptions,
   tf: { normalizeNode },
-}) => {
-  return {
-    transforms: {
-      normalizeNode([node, path]) {
-        const normalized = editor.tf.withoutNormalizing(() => {
-          if (normalizeListNotIndented(editor, [node, path])) return true;
-          if (
-            normalizeListStart(
-              editor,
-              [node as TElement, path],
-              getOptions().getSiblingListOptions
-            )
+}) => ({
+  transforms: {
+    normalizeNode([node, path]) {
+      const normalized = editor.tf.withoutNormalizing(() => {
+        if (normalizeListNotIndented(editor, [node, path])) return true;
+        if (
+          normalizeListStart(
+            editor,
+            [node as TElement, path],
+            getOptions().getSiblingListOptions
           )
-            return true;
-        });
+        )
+          return true;
+      });
 
-        if (normalized) return;
+      if (normalized) return;
 
-        return normalizeNode([node, path]);
-      },
+      return normalizeNode([node, path]);
     },
-  };
-};
+  },
+});

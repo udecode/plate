@@ -55,13 +55,11 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
       const ch = data[i];
       if (inQuote) {
         if (ch === inQuote) inQuote = null;
-      } else {
-        if (ch === '"' || ch === "'") inQuote = ch;
-        else if (ch === '>') {
-          selfClosing = data[i - 1] === '/';
-          i++; // Include '>'
-          break;
-        }
+      } else if (ch === '"' || ch === "'") inQuote = ch;
+      else if (ch === '>') {
+        selfClosing = data[i - 1] === '/';
+        i++; // Include '>'
+        break;
       }
       i++;
     }

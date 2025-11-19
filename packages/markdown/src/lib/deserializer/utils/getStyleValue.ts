@@ -8,7 +8,7 @@ export const getStyleValue = (
     (attr) => 'name' in attr && attr.name === 'style'
   ) as any;
 
-  if (!styleAttribute?.value) return undefined;
+  if (!styleAttribute?.value) return;
 
   const styles = styleAttribute.value.split(';');
   for (const style of styles) {
@@ -17,5 +17,5 @@ export const getStyleValue = (
       return value;
     }
   }
-  return undefined;
+  return;
 };

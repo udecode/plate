@@ -1,12 +1,12 @@
-export interface TocSideBarProps {
+export type TocSideBarProps = {
   open?: boolean;
   rootMargin?: string;
   topOffset?: number;
-}
+};
 
-export interface UseContentController {
+export type UseContentController = {
   containerRef: React.RefObject<HTMLDivElement | null>;
   isObserve: boolean;
   rootMargin: string;
   topOffset: number;
-}
+};

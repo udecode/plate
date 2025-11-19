@@ -1,4 +1,4 @@
-import { type Path, type Point, type SlateEditor, PathApi } from "platejs";
+import { type Path, type Point, type SlateEditor, PathApi } from 'platejs';
 
 export const isPointNextToNode = (
   editor: SlateEditor,
@@ -14,7 +14,7 @@ export const isPointNextToNode = (
     at = editor.selection?.anchor;
   }
   if (!at) {
-    throw new Error("No valid selection point found");
+    throw new Error('No valid selection point found');
   }
 
   const selectedRange = editor.api.range(at.path)!;
@@ -29,13 +29,13 @@ export const isPointNextToNode = (
       isEnd = true;
     }
     if (isStart && isEnd) {
-      return "single";
+      return 'single';
     }
     if (isStart) {
-      return "start";
+      return 'start';
     }
     if (isEnd) {
-      return "end";
+      return 'end';
     }
 
     return null;
@@ -45,9 +45,9 @@ export const isPointNextToNode = (
 
   const adjacentPathFn = (path: Path) => {
     try {
-      if (reverse && boundary === "start") return PathApi.previous(path);
-      if (!reverse && boundary === "end") return PathApi.next(path);
-      if (boundary === "single") {
+      if (reverse && boundary === 'start') return PathApi.previous(path);
+      if (!reverse && boundary === 'end') return PathApi.next(path);
+      if (boundary === 'single') {
         return reverse ? PathApi.previous(path) : PathApi.next(path);
       }
     } catch {

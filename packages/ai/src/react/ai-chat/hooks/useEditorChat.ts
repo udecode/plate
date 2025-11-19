@@ -21,12 +21,11 @@ export type UseEditorChatOptions = {
 };
 
 export const useEditorChat = ({
-  chat,
   onOpenBlockSelection,
   onOpenChange,
   onOpenCursor,
   onOpenSelection,
-}: UseEditorChatOptions) => {
+}: Omit<UseEditorChatOptions, 'chat'>) => {
   const { editor } = useEditorPlugin(AIChatPlugin);
   const open = usePluginOption(AIChatPlugin, 'open');
 

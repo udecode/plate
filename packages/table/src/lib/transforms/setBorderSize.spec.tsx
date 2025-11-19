@@ -15,14 +15,13 @@ jsxt;
 // sets the border size for the given border,
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
-  const createEditorInstance = (input: any) => {
-    return createPlateEditor({
+  const createEditorInstance = (input: any) =>
+    createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
       value: input.children,
     });
-  };
 
   describe('when in cell 11', () => {
     it('should set border top', () => {

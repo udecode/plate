@@ -21,10 +21,10 @@ import type {
 export class HocuspocusProviderWrapper implements UnifiedProvider {
   private _isConnected = false;
   private _isSynced = false;
-  private onConnect?: () => void;
-  private onDisconnect?: () => void;
-  private onError?: (error: Error) => void;
-  private onSyncChange?: (isSynced: boolean) => void;
+  private readonly onConnect?: () => void;
+  private readonly onDisconnect?: () => void;
+  private readonly onError?: (error: Error) => void;
+  private readonly onSyncChange?: (isSynced: boolean) => void;
 
   destroy = () => {
     if (this._isConnected) {
@@ -44,7 +44,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       }
     }
   };
-  public provider: HocuspocusProvider;
+  provider: HocuspocusProvider;
 
   type: YjsProviderType = 'hocuspocus';
 
@@ -134,7 +134,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
   connect() {
     try {
       void this.provider.connect();
-    } catch (error) {
+    } catch (_error) {
       this._isConnected = false;
     }
   }

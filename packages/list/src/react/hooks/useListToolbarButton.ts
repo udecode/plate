@@ -5,7 +5,9 @@ import { someList } from '../../lib/queries/someList';
 
 export const useListToolbarButtonState = ({
   nodeType = ListStyleType.Disc,
-}: { nodeType?: string } = {}) => {
+}: {
+  nodeType?: string;
+} = {}) => {
   const pressed = useEditorSelector(
     (editor) => someList(editor, nodeType),
     [nodeType]

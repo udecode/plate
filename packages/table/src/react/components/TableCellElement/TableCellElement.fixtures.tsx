@@ -2,6 +2,7 @@
 
 import { jsx } from '@platejs/test-utils';
 
+// biome-ignore lint/nursery/noUnusedExpressions: test
 jsx;
 
 export const a = (

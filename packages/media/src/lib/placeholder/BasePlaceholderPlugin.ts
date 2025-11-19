@@ -12,18 +12,18 @@ import {
   insertVideoPlaceholder,
 } from './transforms';
 
-export interface MediaPlaceholderOptions {
+export type MediaPlaceholderOptions = {
   rules?: PlaceholderRule[];
-}
+};
 
 export type PlaceholderConfig = PluginConfig<
   'placeholder',
   MediaPlaceholderOptions
 >;
 
-export interface PlaceholderRule {
+export type PlaceholderRule = {
   mediaType: string;
-}
+};
 
 export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
   key: KEYS.placeholder,

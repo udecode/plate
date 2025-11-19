@@ -15,7 +15,7 @@ export const matchFileType = (
     if (allowedTypes.includes('blob')) return 'blob';
 
     throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
-      allowedTypes: allowedTypes,
+      allowedTypes,
       files: [file],
     });
   }
@@ -38,12 +38,11 @@ export const matchFileType = (
     // Blob is a catch-all for any file type not explicitly supported
     if (allowedTypes.includes('blob')) {
       return 'blob';
-    } else {
-      throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
-        allowedTypes: allowedTypes,
-        files: [file],
-      });
     }
+    throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
+      allowedTypes,
+      files: [file],
+    });
   }
 
   return type;

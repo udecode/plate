@@ -33,12 +33,12 @@ export const parseMediaUrl = (
       const { protocol } = new URL(embed.url);
 
       if (!allowedProtocols.has(protocol)) {
-        return undefined;
+        return;
       }
     } catch {
-      console.warn('Could not parse URL: ' + embed.url);
+      console.warn(`Could not parse URL: ${embed.url}`);
 
-      return undefined;
+      return;
     }
   }
 

@@ -133,7 +133,8 @@ export const useFloatingToolbar = ({
         (readOnly && !showWhenReadOnly)
       ) {
         return false;
-      } else if (
+      }
+      if (
         selectionText &&
         selectionExpanded &&
         (!waitForCollapsedSelection || readOnly)

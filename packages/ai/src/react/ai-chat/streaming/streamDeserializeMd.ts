@@ -20,7 +20,7 @@ export const streamDeserializeMd = (
 
   if (Array.isArray(value)) return value;
 
-  let blocks = [];
+  let blocks: TElement[] = [];
 
   blocks = editor.getApi(MarkdownPlugin).markdown.deserialize(input, {
     ...options,
@@ -107,24 +107,22 @@ const withoutDeserializeInMdx = (editor: PlateEditor, input: string) => {
     if (isMdxEnd) {
       editor.setOption(AIChatPlugin, '_mdxName', null);
       return false;
-    } else {
-      return [
-        {
-          children: [
-            {
-              text: input,
-            },
-          ],
-          type: getPluginType(editor, KEYS.p),
-        },
-      ];
     }
-  } else {
-    const newMdxName = statMdxTagRegex.exec(input)?.[1];
+    return [
+      {
+        children: [
+          {
+            text: input,
+          },
+        ],
+        type: getPluginType(editor, KEYS.p),
+      },
+    ];
+  }
+  const newMdxName = statMdxTagRegex.exec(input)?.[1];
 
-    // Avoid incorrect detection in the code block
-    if (input.startsWith(`<${newMdxName}`)) {
-      editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
-    }
+  // Avoid incorrect detection in the code block
+  if (input.startsWith(`<${newMdxName}`)) {
+    editor.setOption(AIChatPlugin, '_mdxName', newMdxName ?? null);
   }
 };

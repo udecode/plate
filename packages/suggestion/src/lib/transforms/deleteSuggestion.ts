@@ -34,7 +34,7 @@ export const deleteSuggestion = (
   editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
-    const { id, createdAt: createdAt } = findSuggestionProps(editor, {
+    const { id, createdAt } = findSuggestionProps(editor, {
       at: from,
       type: 'remove',
     });

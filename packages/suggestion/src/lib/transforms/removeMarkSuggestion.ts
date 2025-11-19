@@ -40,8 +40,8 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
     editor.tf.setNodes(
       {
         [getSuggestionKey(id)]: {
-          id: id,
-          createdAt: createdAt,
+          id,
+          createdAt,
           properties: {
             [key]: undefined,
           },

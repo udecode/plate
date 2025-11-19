@@ -9,10 +9,10 @@ import {
   KEYS,
 } from 'platejs';
 
-export interface GetSiblingListOptions<
+export type GetSiblingListOptions<
   N extends ElementOf<E>,
   E extends Editor = Editor,
-> {
+> = {
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
@@ -27,7 +27,7 @@ export interface GetSiblingListOptions<
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
   query?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
-}
+};
 
 /**
  * Get the next sibling indent list node. Default query: the sibling node should
@@ -37,7 +37,7 @@ export const getSiblingList = <
   N extends ElementOf<E>,
   E extends Editor = Editor,
 >(
-  editor: E,
+  _editor: E,
   [node, path]: ElementEntryOf<E>,
   {
     breakOnEqIndentNeqListStyleType = true,

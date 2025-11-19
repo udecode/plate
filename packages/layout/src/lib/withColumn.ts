@@ -9,7 +9,7 @@ import {
 
 export const withColumn: OverrideEditor = ({
   editor,
-  tf: { apply, normalizeNode, selectAll },
+  tf: { normalizeNode, selectAll },
   type,
 }) => ({
   transforms: {
@@ -110,7 +110,7 @@ export const withColumn: OverrideEditor = ({
         if (!at) return;
 
         const column = editor.api.above({
-          match: { type: type },
+          match: { type },
         });
 
         if (!column) return;

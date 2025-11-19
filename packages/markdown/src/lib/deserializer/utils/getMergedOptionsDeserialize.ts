@@ -26,11 +26,10 @@ export const getMergedOptionsDeserialize = (
     rules: PluginRules,
   } = editor.getOptions(MarkdownPlugin);
 
-  const mergedRules = Object.assign(
-    {},
-    buildRules(editor),
-    options?.rules ?? PluginRules
-  );
+  const mergedRules = {
+    ...buildRules(editor),
+    ...(options?.rules ?? PluginRules),
+  };
 
   const remarkPlugins = options?.remarkPlugins ?? PluginRemarkPlugins ?? [];
 

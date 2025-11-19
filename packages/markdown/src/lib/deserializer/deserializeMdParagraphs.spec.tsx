@@ -121,10 +121,10 @@ Paragaph followed by two empty paragraphts
       <fragment>
         <hp>Paragaph followed by two empty paragraphts</hp>
         <hp>
-          <htext></htext>
+          <htext />
         </hp>
         <hp>
-          <htext></htext>
+          <htext />
         </hp>
       </fragment>
     );

@@ -10,20 +10,18 @@ function createFontRule(propName: string) {
 
   return {
     mark: true,
-    serialize: (slateNode: any): MdMdxJsxTextElement => {
-      return {
-        attributes: [
-          {
-            name: 'style',
-            type: 'mdxJsxAttribute',
-            value: `${styleName}: ${slateNode[propName]};`,
-          },
-        ],
-        children: [{ type: 'text', value: slateNode.text }],
-        name: 'span',
-        type: 'mdxJsxTextElement',
-      };
-    },
+    serialize: (slateNode: any): MdMdxJsxTextElement => ({
+      attributes: [
+        {
+          name: 'style',
+          type: 'mdxJsxAttribute',
+          value: `${styleName}: ${slateNode[propName]};`,
+        },
+      ],
+      children: [{ type: 'text', value: slateNode.text }],
+      name: 'span',
+      type: 'mdxJsxTextElement',
+    }),
   };
 }
 

@@ -87,7 +87,7 @@ describe('streamSerializeMd', () => {
 
       const result = streamDeserializeMd(editor, chunk);
 
-      const output = streamSerializeMd(editor, { value: result }, chunk);
+      streamSerializeMd(editor, { value: result }, chunk);
     });
   });
 });

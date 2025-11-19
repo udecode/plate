@@ -1,5 +1,3 @@
-
-
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
@@ -41,6 +39,3 @@ export const acceptAIChat = (editor: PlateEditor) => {
     editor.getApi(AIChatPlugin).aiChat.hide();
   }
 };
-
-
-

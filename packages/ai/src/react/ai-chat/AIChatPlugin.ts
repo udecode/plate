@@ -112,84 +112,85 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       AIChatPluginConfig['api']['aiChat'],
       'node' | 'reset' | 'stop' | 'submit'
     >
-  >(({ editor, getOption, getOptions, setOption, type }) => {
-    return {
-      reset: bindFirst(resetAIChat, editor),
-      submit: bindFirst(submitAIChat, editor),
-      node: (options = {}) => {
-        const { anchor = false, streaming = false, ...rest } = options;
+  >(({ editor, getOption, getOptions, setOption, type }) => ({
+    reset: bindFirst(resetAIChat, editor),
+    submit: bindFirst(submitAIChat, editor),
+    node: (options = {}) => {
+      const { anchor = false, streaming = false, ...rest } = options;
 
-        if (anchor) {
-          return editor.api.node({
-            at: [],
-            match: (n) => ElementApi.isElement(n) && n.type === type,
-            ...rest,
-          });
-        }
-
-        if (streaming) {
-          if (!getOption('streaming')) return;
-
-          const path = getOption('_blockPath');
-          if (!path) return;
-
-          return editor.api.node({
-            at: path,
-            mode: 'lowest',
-            reverse: true,
-            match: (t) => !!t[getPluginType(editor, KEYS.ai)],
-            ...rest,
-          });
-        }
-
+      if (anchor) {
         return editor.api.node({
-          match: (n) => n[getPluginType(editor, KEYS.ai)],
+          at: [],
+          match: (n) => ElementApi.isElement(n) && n.type === type,
           ...rest,
         });
-      },
-      reload: () => {
-        const { chat, chatNodes, chatSelection } = getOptions();
+      }
 
-        editor.getTransforms(AIPlugin).ai.undo();
+      if (streaming) {
+        if (!getOption('streaming')) return;
 
-        if (chatSelection) {
-          editor.tf.setSelection(chatSelection);
-        } else {
-          editor
-            .getApi(BlockSelectionPlugin)
-            .blockSelection.set(chatNodes.map((node) => node.id as string));
-        }
+        const path = getOption('_blockPath');
+        if (!path) return;
 
-        const blocks = editor
-          .getApi(BlockSelectionPlugin)
-          .blockSelection.getNodes();
-
-        const selection =
-          blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
-
-        const ctx = {
-          children: editor.children,
-          selection: selection ?? null,
-          toolName: getOption('toolName'),
-        };
-
-        void chat.regenerate?.({
-          body: {
-            ctx,
-          },
+        return editor.api.node({
+          at: path,
+          mode: 'lowest',
+          reverse: true,
+          match: (t) => !!t[getPluginType(editor, KEYS.ai)],
+          ...rest,
         });
-      },
-      stop: () => {
-        setOption('streaming', false);
-        getOptions().chat.stop?.();
-      },
-    };
-  })
-  .extendApi(({ api, editor, getOptions, setOption, tf, type }) => ({
+      }
+
+      return editor.api.node({
+        match: (n) => n[getPluginType(editor, KEYS.ai)],
+        ...rest,
+      });
+    },
+    reload: () => {
+      const { chat, chatNodes, chatSelection } = getOptions();
+
+      editor.getTransforms(AIPlugin).ai.undo();
+
+      if (chatSelection) {
+        editor.tf.setSelection(chatSelection);
+      } else {
+        editor
+          .getApi(BlockSelectionPlugin)
+          .blockSelection.set(chatNodes.map((node) => node.id as string));
+      }
+
+      const blocks = editor
+        .getApi(BlockSelectionPlugin)
+        .blockSelection.getNodes();
+
+      const selection =
+        blocks.length > 0 ? editor.api.nodesRange(blocks) : editor.selection;
+
+      const ctx = {
+        children: editor.children,
+        selection: selection ?? null,
+        toolName: getOption('toolName'),
+      };
+
+      void chat.regenerate?.({
+        body: {
+          ctx,
+        },
+      });
+    },
+    stop: () => {
+      setOption('streaming', false);
+      getOptions().chat.stop?.();
+    },
+  }))
+  .extendApi(({ api, editor, getOptions, setOption, tf }) => ({
     hide: ({
       focus = true,
       undo = true,
-    }: { focus?: boolean; undo?: boolean } = {}) => {
+    }: {
+      focus?: boolean;
+      undo?: boolean;
+    } = {}) => {
       api.aiChat.reset({ undo });
 
       setOption('open', false);
@@ -205,7 +206,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       const lastBatch = editor.history.undos.at(-1) as AIBatch;
 
       if (lastBatch?.ai) {
-        delete lastBatch.ai;
+        lastBatch.ai = undefined;
       }
 
       tf.aiChat.removeAnchor();

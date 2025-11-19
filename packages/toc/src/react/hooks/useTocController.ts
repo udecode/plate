@@ -2,11 +2,11 @@ import React from 'react';
 
 import { useTocObserver } from './useTocObserver';
 
-interface UseTocController {
+type UseTocController = {
   activeId: string;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
-}
+};
 
 export const useTocController = ({
   activeId,
@@ -25,7 +25,7 @@ export const useTocController = ({
       const tocItemWrapper = tocRef.current?.querySelector('#toc_wrap');
       const top = (tocItemWrapper?.scrollTop as any) + offset;
 
-      tocItemWrapper?.scrollTo({ behavior: 'instant', top: top });
+      tocItemWrapper?.scrollTo({ behavior: 'instant', top });
     }
   }, [visible, offset, tocRef]);
 

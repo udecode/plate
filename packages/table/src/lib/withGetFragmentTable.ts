@@ -38,14 +38,13 @@ export const withGetFragmentTable: OverrideEditor<TableConfig> = ({
             newFragment.push(...(cellChildren[0].children as TElement[]));
 
             return;
-          } else {
-            const subTable = getTableGridAbove(editor);
+          }
+          const subTable = getTableGridAbove(editor);
 
-            if (subTable.length > 0) {
-              newFragment.push(subTable[0][0]);
+          if (subTable.length > 0) {
+            newFragment.push(subTable[0][0]);
 
-              return;
-            }
+            return;
           }
         }
 

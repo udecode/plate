@@ -8,7 +8,7 @@ export const useScaleInput = () => {
   const scale = useImagePreviewValue('scale');
   const isEditingScale = useImagePreviewValue('isEditingScale');
 
-  const [value, setValue] = useState(scale * 100 + '');
+  const [value, setValue] = useState(`${scale * 100}`);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export const useScaleInput = () => {
 
   return {
     props: {
-      value: value,
+      value,
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
       },

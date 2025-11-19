@@ -21,6 +21,7 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
 
   editor.tf.insertData(data);
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(expected.children);
 };
 

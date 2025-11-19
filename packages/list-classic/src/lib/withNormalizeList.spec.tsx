@@ -16,6 +16,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
 
   editor.tf.normalize({ force: true });
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(output.children);
 };
 

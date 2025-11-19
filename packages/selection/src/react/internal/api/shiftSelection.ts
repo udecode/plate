@@ -73,50 +73,44 @@ export const shiftSelection = (
       const [belowNode] = belowEntry;
 
       newSelected.add(belowNode.id as string);
-    } else {
+    } else if (topNode.id && topNode.id !== anchorId) {
       // anchor is not top => shrink from top-most
       // remove the top-most from selection unless it's the anchor.
-      if (topNode.id && topNode.id !== anchorId) {
-        newSelected.delete(topNode.id as string);
-      }
+      newSelected.delete(topNode.id as string);
     }
-  } else {
+  } else if (anchorIsBottom) {
     // SHIFT+UP
-    if (anchorIsBottom) {
-      // Expand up => add block above the top-most
-      const aboveEntry = editor.api.previous<TIdElement>({
-        at: topPath,
-        from: 'parent',
-        match: api.blockSelection.isSelectable,
-      });
+    // Expand up => add block above the top-most
+    const aboveEntry = editor.api.previous<TIdElement>({
+      at: topPath,
+      from: 'parent',
+      match: api.blockSelection.isSelectable,
+    });
 
-      if (!aboveEntry) return;
+    if (!aboveEntry) return;
 
-      const [aboveNode, abovePath] = aboveEntry;
+    const [aboveNode, abovePath] = aboveEntry;
 
-      if (PathApi.isAncestor(abovePath, topPath)) {
-        newSelected.forEach((id) => {
-          const entry = editor.api.node({ id, at: abovePath });
+    if (PathApi.isAncestor(abovePath, topPath)) {
+      newSelected.forEach((id) => {
+        const entry = editor.api.node({ id, at: abovePath });
 
-          if (!entry) return;
-          if (PathApi.isDescendant(entry[1], abovePath)) {
-            newSelected.delete(id);
+        if (!entry) return;
+        if (PathApi.isDescendant(entry[1], abovePath)) {
+          newSelected.delete(id);
 
-            if (id === anchorId) {
-              anchorId = aboveNode.id;
-              setOption('anchorId', anchorId);
-            }
+          if (id === anchorId) {
+            anchorId = aboveNode.id;
+            setOption('anchorId', anchorId);
           }
-        });
-      }
-
-      newSelected.add(aboveNode.id);
-    } else {
-      // anchor is not bottom => shrink from bottom-most
-      if (bottomNode.id && bottomNode.id !== anchorId) {
-        newSelected.delete(bottomNode.id as string);
-      }
+        }
+      });
     }
+
+    newSelected.add(aboveNode.id);
+  } else if (bottomNode.id && bottomNode.id !== anchorId) {
+    // anchor is not bottom => shrink from bottom-most
+    newSelected.delete(bottomNode.id as string);
   }
 
   // Always ensure the anchor remains selected

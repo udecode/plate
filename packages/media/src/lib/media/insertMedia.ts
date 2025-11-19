@@ -24,7 +24,8 @@ export const insertMedia = async <E extends SlateEditor>(
 ) => {
   const url = getUrl
     ? await getUrl()
-    : window.prompt(
+    : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
+      window.prompt(
         `Enter the URL of the ${type === KEYS.img ? KEYS.img : KEYS.mediaEmbed}`
       );
 

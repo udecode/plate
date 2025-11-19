@@ -1732,6 +1732,7 @@ describe('computeDiff', () => {
           ...options,
         });
 
+        // biome-ignore lint/suspicious/noMisplacedAssertion: assertion is inside itFn callback which is a test function
         expect(output).toEqual(expected);
       });
     }

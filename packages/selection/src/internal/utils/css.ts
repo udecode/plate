@@ -1,6 +1,5 @@
-const unitify = (val: number | string, unit = 'px'): string => {
-  return typeof val === 'number' ? val + unit : val;
-};
+const unitify = (val: number | string, unit = 'px'): string =>
+  typeof val === 'number' ? val + unit : val;
 
 /**
  * Add css to a DOM-Element or returns the current value of a property.
@@ -17,7 +16,9 @@ export function css(
 ): void {
   if (typeof attr === 'object') {
     for (const [key, value] of Object.entries(attr)) {
-      value !== undefined && (style[key as any] = unitify(value));
+      if (value !== undefined) {
+        style[key as any] = unitify(value);
+      }
     }
   } else if (val !== undefined) {
     style[attr as any] = unitify(val);

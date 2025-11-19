@@ -4,16 +4,13 @@ type EventMap = Record<string, AnyFunction>;
 export class EventTarget<Events extends EventMap> {
   private readonly _listeners = new Map<keyof Events, Set<AnyFunction>>();
 
-  public emit = this.dispatchEvent;
+  emit = this.dispatchEvent;
 
-  public off = this.removeEventListener;
+  off = this.removeEventListener;
 
-  public on = this.addEventListener;
+  on = this.addEventListener;
 
-  public addEventListener<K extends keyof Events>(
-    event: K,
-    cb: Events[K]
-  ): this {
+  addEventListener<K extends keyof Events>(event: K, cb: Events[K]): this {
     const set = this._listeners.get(event) ?? new Set();
     this._listeners.set(event, set);
     set.add(cb as AnyFunction);
@@ -22,7 +19,7 @@ export class EventTarget<Events extends EventMap> {
   }
 
   // Let's also support on, off and emit like node
-  public dispatchEvent<K extends keyof Events>(
+  dispatchEvent<K extends keyof Events>(
     event: K,
     ...data: Parameters<Events[K]>
   ): unknown {
@@ -34,15 +31,12 @@ export class EventTarget<Events extends EventMap> {
 
     return ok;
   }
-  public removeEventListener<K extends keyof Events>(
-    event: K,
-    cb: Events[K]
-  ): this {
+  removeEventListener<K extends keyof Events>(event: K, cb: Events[K]): this {
     this._listeners.get(event)?.delete(cb as AnyFunction);
 
     return this;
   }
-  public unbindAllListeners(): void {
+  unbindAllListeners(): void {
     this._listeners.clear();
   }
 }

@@ -50,26 +50,24 @@ export const useTocElementState = () => {
 export const useTocElement = ({
   editor,
   onContentScroll,
-}: ReturnType<typeof useTocElementState>) => {
-  return {
-    props: {
-      onClick: (
-        e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
-        item: Heading,
-        behavior: ScrollBehavior
-      ) => {
-        e.preventDefault();
-        const { id, path } = item;
-        const node = NodeApi.get(editor, path);
+}: ReturnType<typeof useTocElementState>) => ({
+  props: {
+    onClick: (
+      e: React.MouseEvent<HTMLElement, globalThis.MouseEvent>,
+      item: Heading,
+      behavior: ScrollBehavior
+    ) => {
+      e.preventDefault();
+      const { id, path } = item;
+      const node = NodeApi.get(editor, path);
 
-        if (!node) return;
+      if (!node) return;
 
-        const el = editor.api.toDOMNode(node);
+      const el = editor.api.toDOMNode(node);
 
-        if (!el) return;
+      if (!el) return;
 
-        onContentScroll(el, id, behavior);
-      },
+      onContentScroll(el, id, behavior);
     },
-  };
-};
+  },
+});

@@ -66,10 +66,10 @@ export const submitAIChat = (
 
   const selection = blocks.length > 0 ? blocksRange : editor.selection;
 
-  let chatNodes;
+  let chatNodes: TIdElement[];
 
   if (blocks.length > 0) {
-    chatNodes = blocks.map((block) => block[0]);
+    chatNodes = blocks.map((block) => block[0]) as TIdElement[];
   } else {
     const selectionBlocks = editor.api.blocks({ mode: 'highest' });
 
@@ -90,7 +90,7 @@ export const submitAIChat = (
   } = {
     children: editor.children,
     selection: selection ?? null,
-    toolName: toolName,
+    toolName,
   };
 
   void chat.sendMessage?.(

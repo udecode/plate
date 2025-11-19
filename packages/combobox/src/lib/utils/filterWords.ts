@@ -1,15 +1,17 @@
-export interface FilterWordsOptions {
+export type FilterWordsOptions = {
   prefixMode?: 'all-words' | 'last-word' | 'none';
   wordBoundary?: RegExp;
   wordQuantifier?: 'match-all' | 'match-any';
-}
+};
+
+const DEFAULT_WORD_BOUNDARY = /\s+/;
 
 export const filterWords = (
   haystack: string,
   needle: string,
   {
     prefixMode = 'last-word',
-    wordBoundary = /\s+/,
+    wordBoundary = DEFAULT_WORD_BOUNDARY,
     wordQuantifier = 'match-all',
   }: FilterWordsOptions = {}
 ): boolean => {

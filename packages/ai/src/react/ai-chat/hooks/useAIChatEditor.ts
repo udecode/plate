@@ -19,12 +19,11 @@ export const useAIChatEditor = (
   const { setOption } = useEditorPlugin(AIChatPlugin);
 
   editor.children = useMemo(
-    () => {
-      return editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
+    () =>
+      editor.getApi(MarkdownPlugin).markdown.deserialize(content, {
         memoize: true,
         parser,
-      });
-    },
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [content]
   );

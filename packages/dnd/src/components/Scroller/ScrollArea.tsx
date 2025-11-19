@@ -11,7 +11,7 @@ const getCoords = (e: any) => {
   return { x: e.clientX, y: e.clientY };
 };
 
-export interface ScrollAreaProps {
+export type ScrollAreaProps = {
   placement: 'bottom' | 'top';
   containerRef?: React.RefObject<any>;
   enabled?: boolean;
@@ -20,7 +20,7 @@ export interface ScrollAreaProps {
   scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
   strengthMultiplier?: number;
   zIndex?: number;
-}
+};
 
 export function ScrollArea({
   containerRef,
@@ -129,6 +129,7 @@ export function ScrollArea({
 
   // Hide the element if not enabled, so it doesn't interfere with clicking things under it.
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: drag and drop functionality requires these event handlers
     <div
       ref={ref as any}
       // touchmove events don't seem to work across siblings, so we unfortunately

@@ -12,14 +12,14 @@ const isValidCsv = (
   errors: Record<string, string>[][],
   errorTolerance: number
 ) => {
-  if (errorTolerance < 0) errorTolerance = 0;
+  const tolerance = errorTolerance < 0 ? 0 : errorTolerance;
 
   return !(
     !data ||
     data.length < 2 ||
     data[0].length < 2 ||
     data[1].length < 2 ||
-    (errors.length > 0 && errors.length > errorTolerance * data.length)
+    (errors.length > 0 && errors.length > tolerance * data.length)
   );
 };
 

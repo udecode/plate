@@ -1,6 +1,8 @@
+const digitRegex = /\d+/;
+
 // return '0' if value not valid
 export const toUnitLess = (value: string): string => {
-  const match = /\d+/.exec(value);
+  const match = digitRegex.exec(value);
 
   if (!match) return '0';
 

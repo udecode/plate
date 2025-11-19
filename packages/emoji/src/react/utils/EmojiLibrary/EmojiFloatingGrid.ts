@@ -16,7 +16,7 @@ export class EmojiFloatingGrid extends Grid<
   React.RefObject<HTMLDivElement | null>,
   EmojiCategoryList
 > {
-  public createRootRef() {
+  createRootRef() {
     return React.createRef<HTMLDivElement>();
   }
 }

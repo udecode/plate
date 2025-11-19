@@ -18,7 +18,7 @@ describe('deserializeMd - mention link format', () => {
       <hp>
         <htext>Hello </htext>
         <hmention key="john_doe" value="John Doe">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext>, how are you?</htext>
       </hp>,
@@ -35,7 +35,7 @@ describe('deserializeMd - mention link format', () => {
       <hp>
         <htext>CC: </htext>
         <hmention key="jane smith" value="Jane Smith">
-          <htext></htext>
+          <htext />
         </hmention>
       </hp>,
     ]);
@@ -51,15 +51,15 @@ describe('deserializeMd - mention link format', () => {
     expect(value).toEqual([
       <hp>
         <hmention value="alice">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext> mentioned </htext>
         <hmention key="bob_johnson" value="Bob Johnson">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext> and </htext>
         <hmention value="charlie">
-          <htext></htext>
+          <htext />
         </hmention>
       </hp>,
     ]);
@@ -75,11 +75,11 @@ describe('deserializeMd - mention link format', () => {
     expect(value).toEqual([
       <hp>
         <hmention key="team_lead" value="Team Lead">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext> assigned this to </htext>
         <hmention key="qa_team" value="QA Team">
-          <htext></htext>
+          <htext />
         </hmention>
       </hp>,
     ]);
@@ -95,11 +95,11 @@ describe('deserializeMd - mention link format', () => {
     expect(value).toEqual([
       <hp>
         <hmention key="user-123" value="User 123">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext> and </htext>
         <hmention key="dev.team" value="Dev Team">
-          <htext></htext>
+          <htext />
         </hmention>
       </hp>,
     ]);
@@ -108,7 +108,7 @@ describe('deserializeMd - mention link format', () => {
   it('should not convert regular links to mentions even with @ in text', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
-    const markdown = `[@mention](/docs/mention)`;
+    const markdown = '[@mention](/docs/mention)';
     const value = deserializeMd(editor, markdown);
 
     expect(value).toEqual([
@@ -123,7 +123,8 @@ describe('deserializeMd - mention link format', () => {
   it('should handle mixed links and mentions correctly', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
-    const markdown = `Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob`;
+    const markdown =
+      'Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob';
     const value = deserializeMd(editor, markdown);
 
     expect(value).toEqual([
@@ -134,11 +135,11 @@ describe('deserializeMd - mention link format', () => {
         </ha>
         <htext> and </htext>
         <hmention key="alice" value="Alice">
-          <htext></htext>
+          <htext />
         </hmention>
         <htext> plus </htext>
         <hmention value="bob">
-          <htext></htext>
+          <htext />
         </hmention>
       </hp>,
     ]);

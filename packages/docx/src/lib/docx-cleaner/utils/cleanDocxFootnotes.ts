@@ -3,9 +3,8 @@ import { traverseHtmlElements } from 'platejs';
 import { isDocxFootnote } from './isDocxFootnote';
 
 /** Gets "4" from "[4]", "A" from "[A]", etc. */
-const extractFootnoteNumber = (footnote: Element): string => {
-  return (footnote.textContent || '').trim().replaceAll(/[[\]]/g, '');
-};
+const extractFootnoteNumber = (footnote: Element): string =>
+  (footnote.textContent || '').trim().replaceAll(/[[\]]/g, '');
 
 /** Replace docx footnotes with sup element. */
 export const cleanDocxFootnotes = (rootNode: Node): void => {

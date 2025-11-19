@@ -1,8 +1,8 @@
 import { createAtomStore } from 'platejs/react';
 
-interface MediaStore {
+type MediaStore = {
   showCaption: boolean;
-}
+};
 
 export const {
   MediaProvider,

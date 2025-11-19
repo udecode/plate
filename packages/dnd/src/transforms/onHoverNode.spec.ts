@@ -18,11 +18,11 @@ jest.mock('platejs', () => ({
 
 jest.mock('../utils', () => ({
   getHoverDirection: jest.fn(),
-  getNewDirection: jest.fn((dropLine, direction) => direction),
+  getNewDirection: jest.fn((_dropLine, direction) => direction),
 }));
 
 jest.mock('./onDropNode', () => ({
-  getDropPath: jest.fn((editor, options) => ({
+  getDropPath: jest.fn((_editor, options) => ({
     direction: options.orientation === 'horizontal' ? 'left' : 'bottom',
     dragPath: [0],
     to: [1],

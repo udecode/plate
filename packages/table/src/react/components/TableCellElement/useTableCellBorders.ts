@@ -17,7 +17,8 @@ export function useTableCellBorders({
   const element = useElement<TTableCellElement>() ?? el;
   const cellIndices = useCellIndices();
 
-  return React.useMemo(() => {
-    return getTableCellBorders(editor, { cellIndices, element });
-  }, [editor, element, cellIndices]);
+  return React.useMemo(
+    () => getTableCellBorders(editor, { cellIndices, element }),
+    [editor, element, cellIndices]
+  );
 }
