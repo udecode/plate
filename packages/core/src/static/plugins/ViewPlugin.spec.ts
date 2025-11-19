@@ -64,12 +64,6 @@ describe('ViewPlugin', () => {
         ),
       } as any;
 
-      // Mock DOM utilities
-      mockGetSelectedDomBlocks = jest.fn();
-      mockGetSelectedDomNode = jest.fn();
-      mockIsSelectOutside = jest.fn();
-      mockGetPlainText = jest.fn();
-
       // Mock window.btoa
       global.window.btoa = jest.fn((str) => `base64-${str}`);
       global.encodeURIComponent = jest.fn((str) => `encoded-${str}`);
