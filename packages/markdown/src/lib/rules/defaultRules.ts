@@ -883,6 +883,7 @@ export const defaultRules: MdRules = {
   },
   table: {
     deserialize: (node, deco, options) => {
+      const paragraphType = getPluginType(options.editor!, KEYS.p);
       const rows =
         node.children?.map((row, rowIndex) => {
           return {
@@ -890,22 +891,38 @@ export const defaultRules: MdRules = {
               row.children?.map((cell) => {
                 const cellType = rowIndex === 0 ? 'th' : 'td';
 
-                return {
-                  children: convertChildrenDeserialize(
-                    cell.children,
-                    deco,
-                    options
-                  ).map((child) => {
-                    if (!child.type) {
-                      return {
-                        children: [child],
-                        type: getPluginType(options.editor!, KEYS.p),
-                      };
-                    }
+                const cellChildren = convertChildrenDeserialize(cell.children, deco, options);
+                const groupedChildren: any[] = [];
+                let currentParagraphChildren: any[] = [];
 
-                    return child;
-                  }),
-                  type: getPluginType(options.editor!, cellType),
+                for (const child of cellChildren) {
+                  // Text nodes or inline elements should be grouped into paragraphs
+                  if (!child.type || child.type === KEYS.inlineEquation) {
+                    currentParagraphChildren.push(child);
+                  } else {
+                    // Block-level elements should end the current paragraph and be added directly
+                    if (currentParagraphChildren.length > 0) {
+                      groupedChildren.push({
+                        children: currentParagraphChildren,
+                        type: paragraphType,
+                      });
+                      currentParagraphChildren = [];
+                    }
+                    groupedChildren.push(child);
+                  }
+                }
+
+                // Add any remaining paragraph child elements
+                if (currentParagraphChildren.length > 0) {
+                  groupedChildren.push({
+                    children: currentParagraphChildren,
+                    type: paragraphType,
+                  });
+                }
+
+                return {
+                  children: groupedChildren.length > 0 ? groupedChildren : [{ children: [{ text: '' }], type: paragraphType }],
+                  type: cellType,
                 };
               }) || [],
             type: getPluginType(options.editor!, KEYS.tr),
