@@ -118,7 +118,7 @@ const nextConfig = async (phase: string) => {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
 
           return packageJson.name;
-        } catch (error) {
+        } catch (_error) {
           return null;
         }
       })

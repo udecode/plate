@@ -568,18 +568,16 @@ export default function MarkdownStreamingDemo() {
               editor={editorStatic}
             />
           ) : (
-            <>
-              <Plate editor={editor}>
-                <EditorContainer className="h-[500px] overflow-y-auto rounded border">
-                  <Editor
-                    variant="demo"
-                    className="pb-[20vh]"
-                    placeholder="Type something..."
-                    spellCheck={false}
-                  />
-                </EditorContainer>
-              </Plate>
-            </>
+            <Plate editor={editor}>
+              <EditorContainer className="h-[500px] overflow-y-auto rounded border">
+                <Editor
+                  variant="demo"
+                  className="pb-[20vh]"
+                  placeholder="Type something..."
+                  spellCheck={false}
+                />
+              </EditorContainer>
+            </Plate>
           )}
         </div>
       </div>
@@ -691,7 +689,7 @@ const Tokens = ({
                 'mx-1 inline-block rounded border p-1',
                 activeIndex && c.index < activeIndex && 'bg-amber-400'
               )}
-              onClick={() => chunkClick && chunkClick(c.index + 1)}
+              onClick={() => chunkClick?.(c.index + 1)}
             >
               {space}
             </span>

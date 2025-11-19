@@ -136,39 +136,27 @@ export function BlockSuggestionCard({
 
         <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
-            {suggestion.type === 'remove' && (
-              <React.Fragment>
-                {suggestionText2Array(suggestion.text!).map((text, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      Delete:
-                    </span>
+            {suggestion.type === 'remove' &&
+              suggestionText2Array(suggestion.text!).map((text, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">Delete:</span>
 
-                    <span key={index} className="text-sm">
-                      {text}
-                    </span>
-                  </div>
-                ))}
-              </React.Fragment>
-            )}
+                  <span key={index} className="text-sm">
+                    {text}
+                  </span>
+                </div>
+              ))}
 
-            {suggestion.type === 'insert' && (
-              <React.Fragment>
-                {suggestionText2Array(suggestion.newText!).map(
-                  (text, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">
-                        Add:
-                      </span>
+            {suggestion.type === 'insert' &&
+              suggestionText2Array(suggestion.newText!).map((text, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">Add:</span>
 
-                      <span key={index} className="text-sm">
-                        {text || 'line breaks'}
-                      </span>
-                    </div>
-                  )
-                )}
-              </React.Fragment>
-            )}
+                  <span key={index} className="text-sm">
+                    {text || 'line breaks'}
+                  </span>
+                </div>
+              ))}
 
             {suggestion.type === 'replace' && (
               <div className="flex flex-col gap-2">

@@ -138,6 +138,17 @@
           }
         }
       }
+    },
+    {
+      "includes": [
+        "apps/www/src/components/ui/**",
+        "apps/www/src/registry/ui/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {}
+        }
+      }
     }
   ]
 }

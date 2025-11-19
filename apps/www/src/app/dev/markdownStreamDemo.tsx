@@ -11,6 +11,10 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
+
+const CAPITALIZE_REGEX = /([A-Z])/g;
+const TRAILING_NEWLINES_REGEX = /(\n+)$/;
+
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
@@ -350,7 +354,7 @@ export const MarkdownStreamDemo = () => {
             {Object.entries(testScenarios).map(([key]) => (
               <option key={key} value={key}>
                 {key
-                  .replace(/([A-Z])/g, ' $1')
+                  .replace(CAPITALIZE_REGEX, ' $1')
                   .replace(/^./, (str) => str.toUpperCase())}
               </option>
             ))}
@@ -361,7 +365,10 @@ export const MarkdownStreamDemo = () => {
         <div className="mb-4 flex gap-2">
           <Button onClick={onStreaming}>Start Streaming</Button>
 
-          <Button onClick={() => (isPauseRef.current = !isPauseRef.current)}>
+          <Button
+            // biome-ignore lint/suspicious/noAssignInExpressions: intentional toggle
+            onClick={() => (isPauseRef.current = !isPauseRef.current)}
+          >
             {isPauseRef.current ? 'Resume' : 'Pause'}
           </Button>
 
@@ -506,7 +513,7 @@ function splitChunksByLinebreak(chunks: string[]) {
     const chunk = chunks[i];
     current.push({ index: i, text: chunk });
 
-    const match = /(\n+)$/.exec(chunk);
+    const match = TRAILING_NEWLINES_REGEX.exec(chunk);
     if (match) {
       const linebreaks = match[1].length;
       result.push({

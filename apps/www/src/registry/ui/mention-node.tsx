@@ -58,18 +58,18 @@ export function MentionElement(
     >
       {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
-        <React.Fragment>
+        <>
           {props.children}
           {props.prefix}
           {element.value}
-        </React.Fragment>
+        </>
       ) : (
         // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
-        <React.Fragment>
+        <>
           {props.prefix}
           {element.value}
           {props.children}
-        </React.Fragment>
+        </>
       )}
     </PlateElement>
   );

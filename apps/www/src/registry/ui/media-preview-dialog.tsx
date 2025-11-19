@@ -112,7 +112,7 @@ export function MediaPreviewDialog() {
                     <span>%</span>
                   </>
                 ) : (
-                  <span {...scaleTextProps}>{scale * 100 + '%'}</span>
+                  <span {...scaleTextProps}>{`${scale * 100}%`}</span>
                 )}
               </div>
               <button

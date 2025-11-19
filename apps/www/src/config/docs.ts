@@ -9,10 +9,10 @@ import { uiComponents, uiNodes } from '@/registry/registry-ui';
 
 import { siteConfig } from './site';
 
-export interface DocsConfig {
+export type DocsConfig = {
   mainNav: MainNavItem[];
   sidebarNav: SidebarNavItem[];
-}
+};
 
 export const componentNavGroups: SidebarNavItem[] = [
   {
@@ -326,7 +326,7 @@ export const docsConfig: DocsConfig = {
 export const docsMap = navToObject(docsConfig.sidebarNav);
 
 export const getComponentNavItem = (id: string) =>
-  componentNavMap['/docs/components/' + id];
+  componentNavMap[`/docs/components/${id}`];
 
 export const getPluginNavItem = (id: string) =>
-  pluginNavMap['/docs/' + id] ?? {};
+  pluginNavMap[`/docs/${id}`] ?? {};

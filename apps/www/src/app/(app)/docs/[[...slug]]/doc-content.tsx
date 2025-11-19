@@ -31,7 +31,7 @@ const getItemVariant = (item: any) => {
     const url = new URL(item.route);
 
     if (allowedHosts.includes(url.hostname)) return 'plus';
-  } catch (error) {
+  } catch (_error) {
     // console.error('Invalid URL:', item.route, error);
   }
 
@@ -41,7 +41,7 @@ const getItemVariant = (item: any) => {
   return 'outline';
 };
 
-const searchCategories = {
+const _searchCategories = {
   api: 'Search API',
   component: 'Search components',
   example: 'Search examples',
@@ -64,11 +64,11 @@ export function DocContent({
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
-  const docSection = docSections[0].items!.find(
+  const _docSection = docSections[0].items!.find(
     (item) => item.value === category
   );
 
-  const items = useDedupeNavItems(categoryNavGroups[category]);
+  const _items = useDedupeNavItems(categoryNavGroups[category]);
 
   // v3
   const neighbours = getPagerForDoc(doc as any);

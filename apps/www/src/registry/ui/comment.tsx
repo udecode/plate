@@ -47,14 +47,14 @@ import {
 
 import { Editor, EditorContainer } from './editor';
 
-export interface TComment {
+export type TComment = {
   id: string;
   contentRich: Value;
   createdAt: Date;
   discussionId: string;
   isEdited: boolean;
   userId: string;
-}
+};
 
 export function Comment(props: {
   comment: TComment;

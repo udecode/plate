@@ -44,7 +44,7 @@ export const docSections: SidebarNavItem[] = [
 
 export const slugToCategory = (slug: string[]) => {
   const name = slug?.[0];
-  const path = '/docs/' + (slug?.join('/') || '');
+  const path = `/docs/${slug?.join('/') || ''}`;
 
   if (name === 'examples') return 'example';
   if (name === 'components') return 'component';

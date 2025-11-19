@@ -239,27 +239,25 @@ export const Pre = ({
   }
 
   return (
-    <>
-      <pre
-        className={cn(
-          'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
-          className
-        )}
-        {...props}
-      >
-        {props.children}
+    <pre
+      className={cn(
+        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
+        className
+      )}
+      {...props}
+    >
+      {props.children}
 
-        {__rawString__ && (
-          <CopyButton
-            variant="default"
-            className={cn('absolute top-4 right-4')}
-            value={__rawString__}
-            event={__event__}
-            src={__src__}
-          />
-        )}
-      </pre>
-    </>
+      {__rawString__ && (
+        <CopyButton
+          variant="default"
+          className={cn('absolute top-4 right-4')}
+          value={__rawString__}
+          event={__event__}
+          src={__src__}
+        />
+      )}
+    </pre>
   );
 };
 

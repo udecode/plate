@@ -26,7 +26,7 @@ export function fixImport(content: string) {
 
   const replacement = (
     match: string,
-    path: string,
+    _path: string,
     type: string,
     component: string
   ) => {
@@ -370,7 +370,7 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     try {
       raw = await fs.readFile(filePath, 'utf8');
       break;
-    } catch (error) {}
+    } catch (_error) {}
   }
 
   if (!raw) {

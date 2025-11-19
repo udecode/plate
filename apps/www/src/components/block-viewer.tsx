@@ -195,7 +195,7 @@ function BlockViewerProvider({
         className="group/block-view-wrapper flex min-w-0 flex-col items-stretch gap-4"
         style={
           {
-            '--height': (item.meta?.iframeHeight ?? 650) + 'px',
+            '--height': `${item.meta?.iframeHeight ?? 650}px`,
           } as React.CSSProperties
         }
         data-view={view}
@@ -321,7 +321,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
               defaultValue="100"
               onValueChange={(value) => {
                 if (resizablePanelRef?.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value));
+                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
                 }
               }}
               type="single"
@@ -481,10 +481,10 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
               <CopyNpmCommandButton
                 className="flex h-7 rounded-md bg-inherit px-1.5 text-inherit shadow-none lg:w-auto"
                 commands={{
-                  __bunCommand__: 'bun add ' + deps,
-                  __npmCommand__: 'npm install ' + deps,
-                  __pnpmCommand__: 'pnpm add ' + deps,
-                  __yarnCommand__: 'yarn add ' + deps,
+                  __bunCommand__: `bun add ${deps}`,
+                  __npmCommand__: `npm install ${deps}`,
+                  __pnpmCommand__: `pnpm add ${deps}`,
+                  __yarnCommand__: `yarn add ${deps}`,
                 }}
                 icon={<Package />}
               />

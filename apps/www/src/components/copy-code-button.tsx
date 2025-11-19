@@ -91,11 +91,11 @@ export function getThemeCode(theme: Theme | undefined, radius: number) {
     radius +
     'rem;\n' +
     Object.entries(theme.light)
-      .map((entry) => '  ' + entry[0] + ': ' + entry[1] + ';')
+      .map((entry) => `  ${entry[0]}: ${entry[1]};`)
       .join('\n') +
     '\n}\n\n.dark {\n' +
     Object.entries(theme.dark)
-      .map((entry) => '  ' + entry[0] + ': ' + entry[1] + ';')
+      .map((entry) => `  ${entry[0]}: ${entry[1]};`)
       .join('\n') +
     '\n}\n';
 

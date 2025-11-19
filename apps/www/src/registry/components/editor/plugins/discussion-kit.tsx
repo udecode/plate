@@ -6,14 +6,14 @@ import { createPlatePlugin } from 'platejs/react';
 
 import { BlockDiscussion } from '@/registry/ui/block-discussion';
 
-export interface TDiscussion {
+export type TDiscussion = {
   id: string;
   comments: TComment[];
   createdAt: Date;
   isResolved: boolean;
   userId: string;
   documentContent?: string;
-}
+};
 
 const discussionsData: TDiscussion[] = [
   {

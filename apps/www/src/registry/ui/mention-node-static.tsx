@@ -30,11 +30,9 @@ export function MentionElementStatic(
         'data-slate-value': element.value,
       }}
     >
-      <React.Fragment>
-        {props.children}
-        {prefix}
-        {element.value}
-      </React.Fragment>
+      {props.children}
+      {prefix}
+      {element.value}
     </SlateElement>
   );
 }

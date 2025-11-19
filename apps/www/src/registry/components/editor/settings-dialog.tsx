@@ -43,10 +43,10 @@ import { cn } from '@/lib/utils';
 
 import { aiChatPlugin } from './plugins/ai-kit';
 
-interface Model {
+type Model = {
   label: string;
   value: string;
-}
+};
 
 export const models: Model[] = [
   // OpenAI Models

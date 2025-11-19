@@ -35,7 +35,7 @@ export function ComponentSource({
     full = true;
   }
 
-  const displaySrc = title ?? src?.split('/').pop() ?? name + '.tsx';
+  const displaySrc = title ?? src?.split('/').pop() ?? `${name}.tsx`;
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   return (

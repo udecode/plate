@@ -33,7 +33,7 @@ type FilterFn = (
   search: string
 ) => boolean;
 
-interface InlineComboboxContextValue {
+type InlineComboboxContextValue = {
   filter: FilterFn | false;
   inputProps: UseComboboxInputResult['props'];
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -41,7 +41,7 @@ interface InlineComboboxContextValue {
   showTrigger: boolean;
   trigger: string;
   setHasEmpty: (hasEmpty: boolean) => void;
-}
+};
 
 const InlineComboboxContext = React.createContext<InlineComboboxContextValue>(
   null as unknown as InlineComboboxContextValue
@@ -60,7 +60,7 @@ const defaultFilter: FilterFn = (
   );
 };
 
-interface InlineComboboxProps {
+type InlineComboboxProps = {
   children: React.ReactNode;
   element: TElement;
   trigger: string;
@@ -69,7 +69,7 @@ interface InlineComboboxProps {
   showTrigger?: boolean;
   value?: string;
   setValue?: (value: string) => void;
-}
+};
 
 const InlineCombobox = ({
   children,
@@ -199,10 +199,13 @@ const InlineCombobox = ({
   );
 };
 
-const InlineComboboxInput = React.forwardRef<
-  HTMLInputElement,
-  React.HTMLAttributes<HTMLInputElement>
->(({ className, ...props }, propRef) => {
+const InlineComboboxInput = ({
+  className,
+  ref: propRef,
+  ...props
+}: React.HTMLAttributes<HTMLInputElement> & {
+  ref?: React.RefObject<HTMLInputElement | null>;
+}) => {
   const {
     inputProps,
     inputRef: contextRef,
@@ -248,7 +251,7 @@ const InlineComboboxInput = React.forwardRef<
       </span>
     </>
   );
-});
+};
 
 InlineComboboxInput.displayName = 'InlineComboboxInput';
 

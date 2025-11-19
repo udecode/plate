@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noDuplicateCustomProperties: shadcn */
 .theme-default .theme-container {
   --chart-1: var(--color-blue-300);
   --chart-2: var(--color-blue-500);

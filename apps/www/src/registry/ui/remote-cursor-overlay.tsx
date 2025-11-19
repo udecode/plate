@@ -51,7 +51,7 @@ function RemoteSelection({
   };
 
   return (
-    <React.Fragment>
+    <>
       {selectionRects.map((position, i) => (
         <div
           key={i}
@@ -60,7 +60,7 @@ function RemoteSelection({
         />
       ))}
       {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
-    </React.Fragment>
+    </>
   );
 }
 

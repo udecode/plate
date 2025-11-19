@@ -63,6 +63,7 @@ export async function GET(request: Request) {
           width={48}
           xmlns="http://www.w3.org/2000/svg"
         >
+          <title>Decorative icon</title>
           <path d="M5 12h14" />
         </svg>
       </div>

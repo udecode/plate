@@ -93,7 +93,7 @@ export function PlaygroundPreviewToolbar({
 
               setTimeout(() => {
                 if (resizablePanelRef.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value));
+                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
                 }
               }, 0);
             }}

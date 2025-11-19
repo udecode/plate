@@ -156,7 +156,7 @@ const DiffPlugin = toPlatePlugin(
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
 
-  const Component = (
+  const _Component = (
     {
       delete: 'del',
       insert: 'ins',
@@ -228,10 +228,10 @@ function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   );
 }
 
-interface DiffProps {
+type DiffProps = {
   current: Value;
   previous: Value;
-}
+};
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {

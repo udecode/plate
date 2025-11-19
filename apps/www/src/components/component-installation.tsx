@@ -14,7 +14,7 @@ import { ComponentPreview } from './component-preview';
 import { H2, H3, Step, Steps } from './typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-interface ComponentInstallationProps {
+type ComponentInstallationProps = {
   __dependencies__?: string;
   __highlightedFiles__?: string;
   __item__?: string;
@@ -29,7 +29,7 @@ interface ComponentInstallationProps {
   name?: string;
   tree?: any;
   usage?: string[];
-}
+};
 
 export function ComponentInstallation({
   __dependencies__: __registryDependencies__ = '[]',
