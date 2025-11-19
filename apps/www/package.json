@@ -12,7 +12,6 @@
     "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
     "dev": "concurrently \"contentlayer2 dev\" \"next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "lint": "yarn p:lint",
-    "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine yarn lint:fix",
     "lint:fix": "yarn p:lint:fix",
     "preview": "next build && next start",
     "r": "concurrently \"yarn build:registry\" \"yarn build:tw\"",

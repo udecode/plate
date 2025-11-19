@@ -228,7 +228,7 @@ describe('serializeMd', () => {
     });
   });
 
-  it(String.raw`should serialize the leading break at the end of a block qoute as a <br />`, () => {
+  it('should serialize the leading break at the end of a block qoute as a <br />', () => {
     const slateNodes = [
       {
         children: [{ text: 'Paragaph with a new Line' }, { text: '\n' }],
@@ -239,7 +239,7 @@ describe('serializeMd', () => {
     expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
   });
 
-  it(String.raw`should serialize paragraphs with only a new line to a <br />`, () => {
+  it('should serialize paragraphs with only a new line to a <br />', () => {
     const slateNodes = [
       {
         children: [{ text: '\n' }],

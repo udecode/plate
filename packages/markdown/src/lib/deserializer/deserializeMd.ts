@@ -57,9 +57,9 @@ export const markdownToSlateNodes = (
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
   // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
-  if (!options?.withoutMdx) {
-    data = data.replaceAll('<br>', '<br />');
-  }
+  const processedData = options?.withoutMdx
+    ? data
+    : data.replaceAll('<br>', '<br />');
 
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
@@ -69,24 +69,26 @@ export const markdownToSlateNodes = (
     .use(remarkToSlate, mergedOptions);
 
   if (options?.memoize) {
-    return parseMarkdownBlocks(data, options.parser).flatMap((token) => {
-      if (token.type === 'space') {
-        return {
-          ...editor.api.create.block(),
-          _memo: token.raw,
-        };
-      }
+    return parseMarkdownBlocks(processedData, options.parser).flatMap(
+      (token) => {
+        if (token.type === 'space') {
+          return {
+            ...editor.api.create.block(),
+            _memo: token.raw,
+          };
+        }
 
-      return toSlateProcessor
-        .processSync(token.raw)
-        .result.map((result: any) => ({
-          _memo: token.raw,
-          ...result,
-        }));
-    });
+        return toSlateProcessor
+          .processSync(token.raw)
+          .result.map((result: any) => ({
+            _memo: token.raw,
+            ...result,
+          }));
+      }
+    );
   }
 
-  return toSlateProcessor.processSync(data).result;
+  return toSlateProcessor.processSync(processedData).result;
 };
 
 export const deserializeMd = (
@@ -120,6 +122,7 @@ export const deserializeMd = (
 };
 
 declare module 'unified' {
+  // biome-ignore lint/style/useConsistentTypeDefinitions: module
   interface CompileResultMap {
     remarkToSlateNode: Descendant[];
   }

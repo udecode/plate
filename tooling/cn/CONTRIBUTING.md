@@ -109,7 +109,7 @@ apps
 
 ### 运行代码检查器
 
-我们使用 [ESLint](https://eslint.org/) 作为代码检查器。要运行代码检查器，请使用以下命令：
+我们使用 [Biome](https://biomejs.dev/) 作为代码检查器。要运行代码检查器，请使用以下命令：
 
 ```bash
 yarn lint
@@ -154,18 +154,18 @@ yarn e2e
 - 提交您的更改：
   - 运行 **`yarn brl`** 同步导出并自动更新索引文件。
   - 确保代码检查、测试和构建都通过。
-- 向 **`main`** 分支提交PR并**[添加一个changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**。
-- 合并PR，这将触发机器人创建一个发布PR。
-- 审查最终的changesets。
-- 合并发布PR，机器人将在npm上发布更新的包。
+- 向 **`main`** 分支提交 PR 并**[添加一个 changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**。
+- 合并 PR，这将触发机器人创建一个发布 PR。
+- 审查最终的 changesets。
+- 合并发布 PR，机器人将在 npm 上发布更新的包。
 
 ## 新功能请求
 
-如果您有新功能请求，请在GitHub上开启一个讨论。我们很乐意帮助您。
+如果您有新功能请求，请在 GitHub 上开启一个讨论。我们很乐意帮助您。
 
 ## 问题
 
-没有软件是没有bug的。如果您遇到问题，请按照以下步骤操作：
+没有软件是没有 bug 的。如果您遇到问题，请按照以下步骤操作：
 
 - 查看我们的**[问题列表](https://github.com/udecode/plate/issues?utf8=%E2%9C%93&q=)**，看看该问题是否已经存在。
   - 如果您找到与您的问题匹配的现有问题，请给它一个"点赞"反应。这有助于我们确定优先处理哪些问题！
@@ -173,7 +173,7 @@ yarn e2e
 
 ### 复现问题
 
-帮助我们理解和修复您的问题的最佳方式是提供问题的最小复现。您可以使用**[我们的CodeSandbox](https://codesandbox.io/p/github/udecode/plate-template/main)**来做到这一点。
+帮助我们理解和修复您的问题的最佳方式是提供问题的最小复现。您可以使用**[我们的 CodeSandbox](https://codesandbox.io/p/github/udecode/plate-template/main)**来做到这一点。
 
 ### 回答问题
 
@@ -187,28 +187,28 @@ yarn e2e
 - **领域** - **`plugin:x`**、**`plugin:list`**、**`plugin:common`**、**`ui`**等。
 - **状态** - **`needs reproduction`**等。
 
-所有问题都应该有一个**`type`**标签。**`dependencies`**用于保持包依赖关系的更新，**`maintenance`**是对任何类型的清理或重构的总称。它们还应该有一个或多个**`area`**/**`status`**标签。我们使用这些标签来过滤问题，以便我们可以看到特定领域的所有问题，并控制未解决问题的总数。有关更多信息，请参阅GitHub文档中的**[搜索问题](https://help.github.com/articles/searching-issues/)**。
+所有问题都应该有一个**`type`**标签。**`dependencies`**用于保持包依赖关系的更新，**`maintenance`**是对任何类型的清理或重构的总称。它们还应该有一个或多个**`area`**/**`status`**标签。我们使用这些标签来过滤问题，以便我们可以看到特定领域的所有问题，并控制未解决问题的总数。有关更多信息，请参阅 GitHub 文档中的**[搜索问题](https://help.github.com/articles/searching-issues/)**。
 
 如果一个问题是**`bug`**，并且没有您亲自确认的清晰复现，请标记为**`needs reproduction`**并要求作者尝试创建复现，或者自己尝试。
 
 ### 关闭问题
 
 - 重复的问题应该关闭并链接到原始问题。
-- 如果无法复现，则无法复现的问题应该被关闭。如果报告者离线，等待2周后关闭是合理的。
+- 如果无法复现，则无法复现的问题应该被关闭。如果报告者离线，等待 2 周后关闭是合理的。
 - 当问题修复并发布时，**`bug`**应该被关闭。
 - 当发布或者功能被认为不合适时，**`feature`**、**`maintenance`**应该被关闭。
 
 ## 拉取请求(PRs)
 
-我们欢迎所有贡献，有很多方式可以提供帮助。在提交新的PR之前，请运行**build**、**lint**和**test**。如果测试失败，请不要提交PR。如果您需要帮助，最好的方式是**[加入Plate的Discord并在#contributing频道提问](https://discord.gg/mAZRuBzGM3)**。
+我们欢迎所有贡献，有很多方式可以提供帮助。在提交新的 PR 之前，请运行**build**、**lint**和**test**。如果测试失败，请不要提交 PR。如果您需要帮助，最好的方式是**[加入 Plate 的 Discord 并在#contributing 频道提问](https://discord.gg/mAZRuBzGM3)**。
 
-您缺少时间/知识但仍想贡献？只需在Discord上打开一个PR或gist，我们会尝试帮助您。
+您缺少时间/知识但仍想贡献？只需在 Discord 上打开一个 PR 或 gist，我们会尝试帮助您。
 
-### 审查PRs
+### 审查 PRs
 
-**作为PR提交者**，如果有相关问题，您应该引用该问题，包括您贡献内容的简短描述，如果是代码更改，请提供手动测试的说明。如果您的PR被审查为只需要进行微小更改，并且您有提交权限，那么在进行这些更改后，您可以合并PR。
+**作为 PR 提交者**，如果有相关问题，您应该引用该问题，包括您贡献内容的简短描述，如果是代码更改，请提供手动测试的说明。如果您的 PR 被审查为只需要进行微小更改，并且您有提交权限，那么在进行这些更改后，您可以合并 PR。
 
-**作为PR审查者**，阅读更改并评论任何潜在问题。此外，按照测试说明手动测试更改。如果说明缺失、不清楚或过于复杂，请向提交者请求更好的说明。除非PR是草稿，如果您批准了审查，并且没有其他必要的讨论或更改，您也应该继续合并PR。
+**作为 PR 审查者**，阅读更改并评论任何潜在问题。此外，按照测试说明手动测试更改。如果说明缺失、不清楚或过于复杂，请向提交者请求更好的说明。除非 PR 是草稿，如果您批准了审查，并且没有其他必要的讨论或更改，您也应该继续合并 PR。
 
 ## 指南
 
@@ -238,10 +238,10 @@ yarn e2e
 
 创建新文档？
 
-- 在**`/docs`**中创建一个新的mdx文件
+- 在**`/docs`**中创建一个新的 mdx 文件
 - 将新文档添加到**`/apps/www/src/config/docs.ts`**
 
-### 如何：创建Plate包
+### 如何：创建 Plate 包
 
 使用以下命令并按照提示创建新包：
 
@@ -258,15 +258,15 @@ yarn build
 
 ### 如何：服务器打包
 
-主要打包是客户端的，并未在服务器环境中测试。通常，当包的使用依赖于`slate-react`或React时，需要服务器打包。在这种情况下，以下是创建服务器打包的方法：
+主要打包是客户端的，并未在服务器环境中测试。通常，当包的使用依赖于`slate-react`或 React 时，需要服务器打包。在这种情况下，以下是创建服务器打包的方法：
 
 - 将所有支持服务器的文件移至`/src/shared`
 - 将所有不支持服务器的文件移至`/src/client`
 - 在`/src/server.ts`中创建一个新的入口文件，使用以下内容导出：
 
 ```ts
-export * from './shared/index';
-export * from './server/index'; // If needed
+export * from "./shared/index";
+export * from "./server/index"; // If needed
 ```
 
 - （可选）如果需要，在`/src/server/`中创建服务器端版本。例如，`/src/server/withReact`中的`withReact`是`/src/client/withReact`的服务器端版本

@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-query-selector */
 'use client';
 
 import * as React from 'react';

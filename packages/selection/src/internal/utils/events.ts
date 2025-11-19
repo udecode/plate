@@ -21,16 +21,16 @@ const eventListener =
     let normalizedItems: (EventTarget | undefined)[];
     if (items instanceof HTMLCollection || items instanceof NodeList) {
       normalizedItems = Array.from(items);
-    } else if (!Array.isArray(items)) {
-      normalizedItems = [items];
-    } else {
+    } else if (Array.isArray(items)) {
       normalizedItems = items;
+    } else {
+      normalizedItems = [items];
     }
     let normalizedEvents: string[];
-    if (!Array.isArray(events)) {
-      normalizedEvents = [events];
-    } else {
+    if (Array.isArray(events)) {
       normalizedEvents = events;
+    } else {
+      normalizedEvents = [events];
     }
 
     for (const el of normalizedItems) {

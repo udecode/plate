@@ -174,7 +174,6 @@ it('should update bound hotkeys when useHotkeys changes its scopes', () => {
     initialProps: {
       scopes: ['foo'],
     },
-    // @ts-expect-error
     wrapper,
   });
 

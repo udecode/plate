@@ -45,13 +45,6 @@ const nextConfig = async (phase: string) => {
 
     transpilePackages: ['ts-morph'],
 
-    // typescript: {
-    //   ignoreBuildErrors: true,
-    // },
-    // eslint: {
-    //   ignoreDuringBuilds: true,
-    // },
-
     async redirects() {
       return [
         {

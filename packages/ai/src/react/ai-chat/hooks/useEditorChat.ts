@@ -2,19 +2,16 @@
 
 import { useEffect } from 'react';
 
-import type { UseChatHelpers } from '@ai-sdk/react';
 import type { NodeEntry } from 'platejs';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
-import type { ChatMessage } from '../internal/types';
-
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
   // @deprecated not used
-  chat?: any
+  chat?: any;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;

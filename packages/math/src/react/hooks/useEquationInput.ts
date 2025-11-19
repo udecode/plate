@@ -51,7 +51,11 @@ export const useEquationInput = ({
     // So we need to remove the inline equation focus in one times undo.
     // block equation will not block the undo process because it will not open the popover by focus.
     // The disadvantage of this approach for block equation is that the popover cannot be opened using the keyboard.
-    isInline ? editor.tf.withMerging(setExpression) : setExpression();
+    if (isInline) {
+      editor.tf.withMerging(setExpression);
+    } else {
+      setExpression();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expressionInput]);
 

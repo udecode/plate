@@ -5,13 +5,16 @@ import type { DeserializeMdOptions } from '../deserializeMd';
 import { MarkdownPlugin } from '../../MarkdownPlugin';
 import { stripMarkdownBlocks } from './stripMarkdown';
 
+const LEADING_SPACES_REGEX = /^\s*/;
+const TRAILING_SPACES_REGEX = /\s*$/;
+
 export const deserializeInlineMd = (
   editor: SlateEditor,
   text: string,
   options?: DeserializeMdOptions
 ) => {
-  const leadingSpaces = /^\s*/.exec(text)?.[0] || '';
-  const trailingSpaces = /\s*$/.exec(text)?.[0] || '';
+  const leadingSpaces = LEADING_SPACES_REGEX.exec(text)?.[0] || '';
+  const trailingSpaces = TRAILING_SPACES_REGEX.exec(text)?.[0] || '';
 
   const strippedText = stripMarkdownBlocks(text.trim());
 

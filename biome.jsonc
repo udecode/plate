@@ -25,7 +25,6 @@
       "!!**/*otf.json",
       "!!**/*.html",
       "!!templates",
-      "!!packages",
       "!**/__registry__",
       "!**/next-env.d.ts"
     ]
@@ -103,6 +102,9 @@
         "rules": {
           "nursery": {
             "noReactForwardRef": "off" // react 18
+          },
+          "correctness": {
+            "noUnusedPrivateClassMembers": "off" // false +
           }
         }
       }

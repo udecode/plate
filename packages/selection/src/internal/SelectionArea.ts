@@ -56,7 +56,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   // If a single click is being performed.
   private _scrollingActive = false;
 
-  private _scrollSpeed: Coordinates = { x: 0, y: 0 };
+  private readonly _scrollSpeed: Coordinates = { x: 0, y: 0 };
   private _selectables: Element[] = [];
 
   // Selection store
@@ -358,7 +358,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       singleTap: { intersect },
     } = this._options.features;
     const e = simplifyEvent(evt);
-    let target;
+    let target: Element | undefined;
 
     if (intersect === 'native') {
       target = e.target;
@@ -400,13 +400,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       const reference = this._latestElement;
 
       // Resolve correct range
-      // biome-ignore lint/suspicious/noBitwiseOperators: compareDocumentPosition returns bitmask flags
       const [preceding, following] =
         reference.compareDocumentPosition(target) & 4
           ? [target, reference]
           : [reference, target];
 
-      // biome-ignore lint/suspicious/noBitwiseOperators: compareDocumentPosition returns bitmask flags
       const rangeItems = [
         ...this._selectables.filter(
           (el) =>

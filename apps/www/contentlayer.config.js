@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,

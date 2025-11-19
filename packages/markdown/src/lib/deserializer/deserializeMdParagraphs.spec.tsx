@@ -132,7 +132,7 @@ Paragaph followed by two empty paragraphts
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it(String.raw`should collapse leading linebreak - collapsing break`, () => {
+  it('should collapse leading linebreak - collapsing break', () => {
     const input = `
 > Blockquote followed by emtpy lines
 >

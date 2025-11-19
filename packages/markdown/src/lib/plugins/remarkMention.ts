@@ -3,14 +3,15 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-export interface MentionNode {
+export type MentionNode = {
   children: { type: 'text'; value: string }[];
   type: 'mention';
   username: string;
   displayText?: string;
-}
+};
 
 declare module 'mdast' {
+  // biome-ignore lint/style/useConsistentTypeDefinitions: module augmentation requires interface
   interface StaticPhrasingContentMap {
     mention: MentionNode;
   }
@@ -77,8 +78,13 @@ export const remarkMention: Plugin = () => (tree: Node) => {
         [];
 
       // Find all @username mentions
-      let match;
-      while ((match = atMentionPattern.exec(text)) !== null) {
+      let match: RegExpExecArray | null;
+
+      while (true) {
+        match = atMentionPattern.exec(text);
+
+        if (!match) break;
+
         const mentionStart = match[0].startsWith(' ')
           ? match.index + 1
           : match.index;

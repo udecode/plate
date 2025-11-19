@@ -16,12 +16,9 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
   private _isSynced = false;
   private readonly doc: Y.Doc;
 
-  private onConnect?: () => void;
-  private onDisconnect?: () => void;
-  private onError?: (error: Error) => void;
   private readonly onSyncChange?: (isSynced: boolean) => void;
   // Create a fallback awareness instance for when provider is null
-  private provider: YWebrtcProvider | null = null;
+  private readonly provider: YWebrtcProvider | null = null;
 
   connect = () => {
     if (this.provider) {
@@ -78,9 +75,6 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
     awareness?: Awareness;
     doc?: Y.Doc;
   } & ProviderEventHandlers) {
-    this.onConnect = onConnect;
-    this.onDisconnect = onDisconnect;
-    this.onError = onError;
     this.onSyncChange = onSyncChange;
 
     this.doc = doc || new Y.Doc();

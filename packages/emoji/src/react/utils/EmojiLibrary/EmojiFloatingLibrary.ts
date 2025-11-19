@@ -21,8 +21,8 @@ export class EmojiFloatingLibrary
 {
   private static instance?: EmojiFloatingLibrary;
 
-  private categories: EmojiCategoryList[] = defaultCategories;
-  private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
+  private readonly categories: EmojiCategoryList[] = defaultCategories;
+  private readonly emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
   private readonly grid: EmojiFloatingGridType;
   protected settings: EmojiSettingsType;
   protected localStorage: IFrequentEmojiStorage;

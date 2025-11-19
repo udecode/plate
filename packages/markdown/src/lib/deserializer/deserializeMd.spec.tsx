@@ -142,7 +142,7 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it(String.raw`should convert in blockqoute line breaks into two breaks`, () => {
+  it('should convert in blockqoute line breaks into two breaks', () => {
     const input = `
 > Blockquote with multiple paragraphs:\\
 > \\

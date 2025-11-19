@@ -6,9 +6,6 @@ import { withProps } from './withProps';
 
 /**
  * Set default `className` with `cn`.
- *
- * - IntelliSense: add `withCn` to `classAttributes`
- * - ESLint: add `withCn` to `settings.tailwindcss.callees`
  */
 export function withCn<T extends React.ComponentType<any>>(
   Component: T,
