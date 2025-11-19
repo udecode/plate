@@ -66,7 +66,7 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
     updatedProps.push(key);
   });
 
-  const descriptionParts = [];
+  const descriptionParts: string[] = [];
 
   if (addedProps.length > 0) {
     descriptionParts.push(`Added ${addedProps.join(', ')}`);

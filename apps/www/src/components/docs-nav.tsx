@@ -21,6 +21,8 @@ import { useLocale } from '@/hooks/useLocale';
 import { cn } from '@/lib/utils';
 import { hrefWithLocale } from '@/lib/withLocale';
 
+const CN_PREFIX_REGEX = /^\/cn/;
+
 export function DocsNav({ config }: { config: DocsConfig }) {
   const locale = useLocale();
   const pathname = usePathname();
@@ -29,7 +31,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
 
   // Normalize pathname by removing /cn prefix if it exists
   const normalizedPathname = React.useMemo(
-    () => pathname?.replace(/^\/cn/, '') ?? '',
+    () => pathname?.replace(CN_PREFIX_REGEX, '') ?? '',
     [pathname]
   );
 
@@ -256,7 +258,7 @@ function DocsNavItems({
   const locale = useLocale();
 
   // Normalize pathname by removing /cn prefix if it exists
-  const normalizedPathname = pathname?.replace(/^\/cn/, '') ?? '';
+  const normalizedPathname = pathname?.replace(CN_PREFIX_REGEX, '') ?? '';
 
   return items?.length ? (
     <div

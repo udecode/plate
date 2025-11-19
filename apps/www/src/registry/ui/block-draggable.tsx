@@ -447,7 +447,9 @@ const createDragPreviewElements = (
     elements.push(wrapper);
   };
 
-  blocks.forEach((node, index) => resolveElement(node, index));
+  blocks.forEach((node, index) => {
+    resolveElement(node, index);
+  });
 
   editor.setOption(DndPlugin, 'draggingId', ids);
 

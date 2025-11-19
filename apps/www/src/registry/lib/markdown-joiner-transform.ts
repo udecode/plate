@@ -60,23 +60,31 @@ export const markdownJoinerTransform =
 const DEFAULT_DELAY_IN_MS = 10;
 const NEST_BLOCK_DELAY_IN_MS = 100;
 
+const BOLD_PATTERN = /\*\*.*?\*\*/;
+const CODE_LINE_PATTERN = /```[^\s]+/;
+const LINK_PATTERN = /^\[.*?\]\(.*?\)$/;
+const UNORDERED_LIST_PATTERN = /^[*-]\s+.+/;
+const TODO_LIST_PATTERN = /^[*-]\s+\[[ xX]\]\s+.+/;
+const ORDERED_LIST_PATTERN = /^\d+\.\s+.+/;
+const MDX_TAG_PATTERN = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
+const DIGIT_PATTERN = /^[0-9]$/;
+
 export class MarkdownJoiner {
+  delayInMs = DEFAULT_DELAY_IN_MS;
+
   private buffer = '';
   private documentCharacterCount = 0;
   private isBuffering = false;
   private streamingCodeBlock = false;
   private streamingLargeDocument = false;
   private streamingTable = false;
-  public delayInMs = DEFAULT_DELAY_IN_MS;
 
   private clearBuffer(): void {
     this.buffer = '';
     this.isBuffering = false;
   }
   private isCompleteBold(): boolean {
-    const boldPattern = /\*\*.*?\*\*/;
-
-    return boldPattern.test(this.buffer);
+    return BOLD_PATTERN.test(this.buffer);
   }
 
   private isCompleteCodeBlockEnd(): boolean {
@@ -84,34 +92,26 @@ export class MarkdownJoiner {
   }
 
   private isCompleteCodeBlockStart(): boolean {
-    const codeLinePattern = /```[^\s]+/;
-    return codeLinePattern.test(this.buffer);
+    return CODE_LINE_PATTERN.test(this.buffer);
   }
 
   private isCompleteLink(): boolean {
-    const linkPattern = /^\[.*?\]\(.*?\)$/;
-    return linkPattern.test(this.buffer);
+    return LINK_PATTERN.test(this.buffer);
   }
 
   private isCompleteList(): boolean {
-    const unorderedListPattern = /^[*-]\s+.+/;
-    const todoListPattern = /^[*-]\s+\[[ xX]\]\s+.+/;
-    const orderedListPattern = /^\d+\.\s+.+/;
-
-    if (unorderedListPattern.test(this.buffer) && this.buffer.includes('['))
-      return todoListPattern.test(this.buffer);
+    if (UNORDERED_LIST_PATTERN.test(this.buffer) && this.buffer.includes('['))
+      return TODO_LIST_PATTERN.test(this.buffer);
 
     return (
-      unorderedListPattern.test(this.buffer) ||
-      orderedListPattern.test(this.buffer) ||
-      todoListPattern.test(this.buffer)
+      UNORDERED_LIST_PATTERN.test(this.buffer) ||
+      ORDERED_LIST_PATTERN.test(this.buffer) ||
+      TODO_LIST_PATTERN.test(this.buffer)
     );
   }
 
   private isCompleteMdxTag(): boolean {
-    const mdxTagPattern = /<([A-Za-z][A-Za-z0-9\-_]*)>/;
-
-    return mdxTagPattern.test(this.buffer);
+    return MDX_TAG_PATTERN.test(this.buffer);
   }
 
   private isCompleteTableStart(): boolean {
@@ -132,7 +132,7 @@ export class MarkdownJoiner {
   }
 
   private isListStartChar(char: string): boolean {
-    return char === '-' || char === '*' || /^[0-9]$/.test(char);
+    return char === '-' || char === '*' || DIGIT_PATTERN.test(char);
   }
 
   private isTableExisted(): boolean {
@@ -210,23 +210,20 @@ export class MarkdownJoiner {
           output += this.buffer;
           this.clearBuffer();
         }
-      } else {
         // Check if we should start buffering
-
-        if (
-          char === '*' ||
-          char === '<' ||
-          char === '`' ||
-          char === '|' ||
-          char === '[' ||
-          this.isListStartChar(char)
-        ) {
-          this.buffer = char;
-          this.isBuffering = true;
-        } else {
-          // Pass through character directly
-          output += char;
-        }
+      } else if (
+        char === '*' ||
+        char === '<' ||
+        char === '`' ||
+        char === '|' ||
+        char === '[' ||
+        this.isListStartChar(char)
+      ) {
+        this.buffer = char;
+        this.isBuffering = true;
+      } else {
+        // Pass through character directly
+        output += char;
       }
     }
 

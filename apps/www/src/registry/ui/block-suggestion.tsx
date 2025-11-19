@@ -274,12 +274,11 @@ export const useResolveSuggestion = (
       }
 
       if (!nodes && lineBreakId !== id) {
-        return setOption('uniquePathMap', new Map(map).set(id, blockPath));
+        setOption('uniquePathMap', new Map(map).set(id, blockPath));
       }
-
-      return;
+    } else {
+      setOption('uniquePathMap', new Map(map).set(id, blockPath));
     }
-    setOption('uniquePathMap', new Map(map).set(id, blockPath));
   });
 
   const resolvedSuggestion: ResolvedSuggestion[] = React.useMemo(() => {
@@ -296,15 +295,19 @@ export const useResolveSuggestion = (
               (data) => data.type === 'update'
             );
 
-            if (!includeUpdate) return api.suggestion.nodeId(node);
+            if (!includeUpdate) {
+              return api.suggestion.nodeId(node) ?? [];
+            }
 
             return dataList
               .filter((data) => data.type === 'update')
               .map((d) => d.id);
           }
           if (ElementApi.isElement(node)) {
-            return api.suggestion.nodeId(node);
+            return api.suggestion.nodeId(node) ?? [];
           }
+
+          return [];
         })
         .filter(Boolean)
     );
@@ -345,35 +348,35 @@ export const useResolveSuggestion = (
           const dataList = api.suggestion.dataList(node);
 
           dataList.forEach((data) => {
-            if (data.id !== id) return;
+            if (data.id === id) {
+              switch (data.type) {
+                case 'insert': {
+                  newText += node.text;
 
-            switch (data.type) {
-              case 'insert': {
-                newText += node.text;
+                  break;
+                }
+                case 'remove': {
+                  text += node.text;
 
-                break;
+                  break;
+                }
+                case 'update': {
+                  properties = {
+                    ...properties,
+                    ...data.properties,
+                  };
+
+                  newProperties = {
+                    ...newProperties,
+                    ...data.newProperties,
+                  };
+
+                  newText += node.text;
+
+                  break;
+                }
+                // No default
               }
-              case 'remove': {
-                text += node.text;
-
-                break;
-              }
-              case 'update': {
-                properties = {
-                  ...properties,
-                  ...data.properties,
-                };
-
-                newProperties = {
-                  ...newProperties,
-                  ...data.newProperties,
-                };
-
-                newText += node.text;
-
-                break;
-              }
-              // No default
             }
           });
         } else {
@@ -381,15 +384,16 @@ export const useResolveSuggestion = (
             ? node.suggestion
             : undefined;
 
-          if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
-          if (lineBreakData.type === 'insert') {
-            newText += lineBreakData.isLineBreak
-              ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
-          } else if (lineBreakData.type === 'remove') {
-            text += lineBreakData.isLineBreak
-              ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
+          if (lineBreakData?.id === keyId2SuggestionId(id)) {
+            if (lineBreakData.type === 'insert') {
+              newText += lineBreakData.isLineBreak
+                ? BLOCK_SUGGESTION
+                : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
+            } else if (lineBreakData.type === 'remove') {
+              text += lineBreakData.isLineBreak
+                ? BLOCK_SUGGESTION
+                : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
+            }
           }
         }
       });
@@ -408,7 +412,7 @@ export const useResolveSuggestion = (
       const keyId = getSuggestionKey(id);
 
       if (nodeData.type === 'update') {
-        return res.push({
+        res.push({
           comments,
           createdAt,
           keyId,
@@ -419,9 +423,8 @@ export const useResolveSuggestion = (
           type: 'update',
           userId: nodeData.userId,
         });
-      }
-      if (newText.length > 0 && text.length > 0) {
-        return res.push({
+      } else if (newText.length > 0 && text.length > 0) {
+        res.push({
           comments,
           createdAt,
           keyId,
@@ -431,9 +434,8 @@ export const useResolveSuggestion = (
           type: 'replace',
           userId: nodeData.userId,
         });
-      }
-      if (newText.length > 0) {
-        return res.push({
+      } else if (newText.length > 0) {
+        res.push({
           comments,
           createdAt,
           keyId,
@@ -442,9 +444,8 @@ export const useResolveSuggestion = (
           type: 'insert',
           userId: nodeData.userId,
         });
-      }
-      if (text.length > 0) {
-        return res.push({
+      } else if (text.length > 0) {
+        res.push({
           comments,
           createdAt,
           keyId,

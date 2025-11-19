@@ -25,7 +25,9 @@
       "!!**/*otf.json",
       "!!**/*.html",
       "!!templates",
-      "!!packages"
+      "!!packages",
+      "!**/__registry__",
+      "!**/next-env.d.ts"
     ]
   },
   "linter": {
@@ -106,7 +108,7 @@
       }
     },
     {
-      "includes": ["**/*.spec.*", "**/*.test.*"],
+      "includes": ["**/*.spec.*", "**/*.test.*", "**/*-value.tsx"],
       "linter": {
         "rules": {
           "nursery": {
@@ -122,7 +124,8 @@
           "suspicious": {
             "noThenProperty": "off",
             "noSkippedTests": "off",
-            "noNonNullAssertedOptionalChain": "off"
+            "noNonNullAssertedOptionalChain": "off",
+            "noCommentText": "off"
           },
           "a11y": "off",
           "performance": "off"
@@ -140,13 +143,32 @@
       }
     },
     {
+      "includes": ["apps/www/src/registry/examples/values/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noTemplateCurlyInString": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": [
         "apps/www/src/components/ui/**",
         "apps/www/src/registry/ui/**"
       ],
       "linter": {
         "rules": {
-          "suspicious": {}
+          "a11y": {
+            "noSvgWithoutTitle": "off",
+            "noStaticElementInteractions": "off",
+            "useMediaCaption": "off",
+            "useKeyWithMouseEvents": "off",
+            "useAriaPropsSupportedByRole": "off"
+          },
+          "suspicious": {
+            "noAlert": "off"
+          }
         }
       }
     }

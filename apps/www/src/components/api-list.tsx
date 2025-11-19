@@ -269,17 +269,20 @@ export function APIList({
               </h3>
 
               {hasItems && (
-                <div
+                <button
+                  type="button"
                   className="cursor-pointer select-none text-muted-foreground text-sm"
                   onClick={() => {
-                    values.length === childCount
-                      ? setValues([])
-                      : setValues(newValues);
+                    if (values.length === childCount) {
+                      setValues([]);
+                    } else {
+                      setValues(newValues);
+                    }
                     setExpanded(!expanded);
                   }}
                 >
                   {values.length === childCount ? 'Collapse all' : 'Expand all'}
-                </div>
+                </button>
               )}
             </div>
 

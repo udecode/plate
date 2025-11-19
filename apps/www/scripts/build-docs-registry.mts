@@ -19,7 +19,7 @@ const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
 
-const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\\/ / g;
+const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
 const DOCS_PREFIX_REGEX = /^\/docs\//;
 
 async function getFiles(dir: string): Promise<string[]> {

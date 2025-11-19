@@ -14,6 +14,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const CAPITALIZE_REGEX = /([A-Z])/g;
 const TRAILING_NEWLINES_REGEX = /(\n+)$/;
+const FIRST_CHAR_REGEX = /^./;
 
 const testScenarios = {
   // Basic markdown with complete elements
@@ -355,7 +356,7 @@ export const MarkdownStreamDemo = () => {
               <option key={key} value={key}>
                 {key
                   .replace(CAPITALIZE_REGEX, ' $1')
-                  .replace(/^./, (str) => str.toUpperCase())}
+                  .replace(FIRST_CHAR_REGEX, (str) => str.toUpperCase())}
               </option>
             ))}
           </select>

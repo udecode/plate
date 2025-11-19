@@ -13,7 +13,8 @@ import type { ChatMessage } from '../internal/types';
 import { AIChatPlugin } from '../AIChatPlugin';
 
 export type UseEditorChatOptions = {
-  chat: UseChatHelpers<ChatMessage>;
+  // @deprecated not used
+  chat?: any
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
@@ -25,7 +26,7 @@ export const useEditorChat = ({
   onOpenChange,
   onOpenCursor,
   onOpenSelection,
-}: Omit<UseEditorChatOptions, 'chat'>) => {
+}: UseEditorChatOptions) => {
   const { editor } = useEditorPlugin(AIChatPlugin);
   const open = usePluginOption(AIChatPlugin, 'open');
 

@@ -111,7 +111,6 @@ export function AIMenu() {
   };
 
   useEditorChat({
-    chat,
     onOpenBlockSelection: (blocks: NodeEntry[]) => {
       show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
@@ -333,7 +332,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Discard',
     shortcut: 'Escape',
     value: 'discard',
-    onSelect: ({ editor, input }) => {
+    onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
       editor.getApi(AIChatPlugin).aiChat.hide();
     },
@@ -478,7 +477,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     icon: <CornerUpLeft />,
     label: 'Try again',
     value: 'tryAgain',
-    onSelect: ({ editor, input }) => {
+    onSelect: ({ editor }) => {
       void editor.getApi(AIChatPlugin).aiChat.reload();
     },
   },

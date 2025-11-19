@@ -27,6 +27,11 @@ import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from '../components/editor/editor-base-kit';
+
+const CAPITALIZE_REGEX = /([A-Z])/g;
+const FIRST_CHAR_REGEX = /^./;
+const TRAILING_NEWLINES_REGEX = /(\n+)$/;
+
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
@@ -455,8 +460,8 @@ export default function MarkdownStreamingDemo() {
             {Object.entries(testScenarios).map(([key]) => (
               <option key={key} value={key}>
                 {key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, (str) => str.toUpperCase())}
+                  .replace(CAPITALIZE_REGEX, ' $1')
+                  .replace(FIRST_CHAR_REGEX, (str) => str.toUpperCase())}
               </option>
             ))}
           </select>
@@ -623,7 +628,7 @@ function splitChunksByLinebreak(chunks: string[]) {
     const chunk = chunks[i];
     current.push({ index: i, text: chunk });
 
-    const match = /(\n+)$/.exec(chunk);
+    const match = TRAILING_NEWLINES_REGEX.exec(chunk);
     if (match) {
       const linebreaks = match[1].length;
       result.push({
@@ -685,6 +690,7 @@ const Tokens = ({
           return (
             <span
               key={j}
+              role="button"
               className={cn(
                 'mx-1 inline-block rounded border p-1',
                 activeIndex && c.index < activeIndex && 'bg-amber-400'

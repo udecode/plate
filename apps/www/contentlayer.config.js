@@ -17,7 +17,7 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 
 import 'dotenv/config';
 
-const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\\/ / g;
+const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
 const EVENT_META_REGEX = /event="([^"]*)"/;
 
 /** @type {import('contentlayer2/source-files').ComputedFields} */

@@ -184,13 +184,14 @@ const runCommand = async (
   }
 };
 
+// biome-ignore lint/nursery/useMaxParams: test function with multiple configuration parameters
 const testItemsGroup = async (
   itemNames: string[], // Items to install (e.g., ['image'] or ['table', 'resizable'])
   groupDirName: string, // Name for the directory under BASE_TEST_DIR (e.g., 'image' or 'table-resizable')
   // Also used for the .cache file name in CACHE_DIR (e.g., image.cache)
   baseTemplateSourceDir: string, // Source to clone from (TEMPLATE_DIR or a cached block dir)
   preserveOutputOnSuccess: boolean, // If true, targetDir is NOT rimraf'd on success
-  force,
+  force: boolean,
   task: ListrTaskWrapper<any, any, any>,
   baseBlockNameIfCloned?: string, // Name of the block used as base, if cloned
   runAdditionalScripts = false, // Whether to run additional scripts from config

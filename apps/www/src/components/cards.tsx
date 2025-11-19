@@ -61,7 +61,7 @@ export function Card({ description, icon, title, ...props }: CardProps) {
   const E = props.href ? (Link as any) : 'div';
 
   // Resolve icon if it's a string
-  let IconComponent = null;
+  let IconComponent: React.ReactNode = null;
   if (typeof icon === 'string') {
     const IconClass = iconRegistry[icon as keyof typeof iconRegistry];
     IconComponent = IconClass ? <IconClass /> : null;

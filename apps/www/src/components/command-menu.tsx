@@ -78,7 +78,7 @@ export function CommandItems({
   const invisibleSuffix = getInvisibleSuffix(parentKey);
 
   // Extract keywords from the item, including labels and parent title
-  const { keywords = [], ...itemWithoutKeywords } = item;
+  const { keywords = [] } = item;
   const allKeywords = [
     ...keywords,
     ...castArray(item.label),

@@ -272,7 +272,6 @@ Combine the helper with `useEditorChat` to keep the floating menu anchored corre
 import { useEditorChat } from '@platejs/ai/react';
 
 useEditorChat({
-  chat,
   onOpenChange: (open) => {
     if (!open) chat.stop?.();
   },
@@ -397,7 +396,6 @@ Connects `UseChatHelpers` to editor state so the AI menu knows whether to anchor
 
 <API name="useEditorChat">
 <APIParameters>
-  <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;">Helpers returned by `useChat`.</APIItem>
   <APIItem name="onOpenBlockSelection" type="(blocks: NodeEntry[]) => void" optional>Called when the menu opens on block selection.</APIItem>
   <APIItem name="onOpenChange" type="(open: boolean) => void" optional>Called whenever the menu opens or closes.</APIItem>
   <APIItem name="onOpenCursor" type="() => void" optional>Called when the menu opens at the cursor.</APIItem>

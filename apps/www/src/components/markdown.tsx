@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils';
 
 import { CodeBlock } from './ui/codeblock';
 
+const LANGUAGE_REGEX = /language-(\w+)/;
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
 export const Markdown = memo(
   PureMarkdown,
   (prevProps, nextProps) =>
@@ -40,12 +43,12 @@ function PureMarkdown({
             </Link>
           ),
           code({ children, className, node, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
+            const match = LANGUAGE_REGEX.exec(className || '');
 
             return match ? (
               <CodeBlock
                 key={Math.random()}
-                value={String(children).replace(/\n$/, '')}
+                value={String(children).replace(TRAILING_NEWLINE_REGEX, '')}
                 language={match?.[1] || ''}
                 {...props}
               />
