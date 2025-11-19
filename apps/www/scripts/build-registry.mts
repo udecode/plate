@@ -1,9 +1,9 @@
-import { exec } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { exec } from 'node:child_process';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 import { rimraf } from 'rimraf';
 import {
-  RegistryItem,
+  type RegistryItem,
   registryItemSchema,
   type Registry,
 } from 'shadcn/registry';
@@ -126,12 +126,10 @@ function sanitizeRegistry(registry: Registry): Registry {
       // Filter internal examples.
       .filter((item) => item.meta?.registry !== false)
       .map((item) => {
-        const files = item.files?.map((file) => {
-          return {
-            ...file,
-            path: `${BASE_URL}registry/${file.path}`,
-          };
-        });
+        const files = item.files?.map((file) => ({
+          ...file,
+          path: `${BASE_URL}registry/${file.path}`,
+        }));
 
         return {
           ...item,

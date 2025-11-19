@@ -93,14 +93,13 @@ export const EditorViewClient = () => {
         }),
         ...MarkdownKit,
       ],
-      value: value,
+      value,
     },
     []
   );
 
-  const getFileNodes = (text: string) => {
-    return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
-  };
+  const getFileNodes = (text: string) =>
+    editor.getApi(MarkdownPlugin).markdown.deserialize(text);
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],

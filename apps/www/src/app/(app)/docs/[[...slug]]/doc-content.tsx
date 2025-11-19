@@ -87,7 +87,7 @@ export function DocContent({
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-2">
               <div className="flex items-start justify-between">
-                <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
+                <h1 className="scroll-m-20 font-semibold text-4xl tracking-tight sm:text-3xl lg:text-4xl">
                   {title}
                 </h1>
                 <div className="flex items-center gap-2 pt-1.5">
@@ -120,7 +120,7 @@ export function DocContent({
                 </div>
               </div>
               {doc.description && (
-                <p className="text-[1.05rem] text-balance text-muted-foreground sm:text-base">
+                <p className="text-balance text-[1.05rem] text-muted-foreground sm:text-base">
                   {doc.description}
                 </p>
               )}

@@ -57,7 +57,7 @@ function RemoteSelection({
           key={i}
           className="pointer-events-none absolute"
           style={{ ...selectionStyle, ...position }}
-        ></div>
+        />
       ))}
       {caretPosition && <Caret data={data} caretPosition={caretPosition} />}
     </React.Fragment>
@@ -106,7 +106,7 @@ function Caret({
       style={isHover ? caretStyleHover : caretStyle}
     >
       <div
-        className="absolute top-0 rounded rounded-bl-none px-1.5 py-0.5 text-xs whitespace-nowrap text-white"
+        className="absolute top-0 whitespace-nowrap rounded rounded-bl-none px-1.5 py-0.5 text-white text-xs"
         style={isHover ? labelStyleHover : labelStyle}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

@@ -10,13 +10,10 @@ export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({
     options: {
       enableContextMenu: true,
-      isSelectable: (element) => {
-        return !getPluginTypes(editor, [
-          KEYS.column,
-          KEYS.codeLine,
-          KEYS.td,
-        ]).includes(element.type);
-      },
+      isSelectable: (element) =>
+        !getPluginTypes(editor, [KEYS.column, KEYS.codeLine, KEYS.td]).includes(
+          element.type
+        ),
       onKeyDownSelecting: (editor, e) => {
         if (isHotkey('mod+j')(e)) {
           editor.getApi(AIChatPlugin).aiChat.show();

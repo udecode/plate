@@ -12,7 +12,7 @@ function flattenNode(node: any) {
     p.push(_node.value);
   });
 
-  return p.join(``);
+  return p.join('');
 }
 
 interface Item {

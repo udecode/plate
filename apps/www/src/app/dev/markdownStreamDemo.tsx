@@ -337,7 +337,7 @@ export const MarkdownStreamDemo = () => {
       <div className="mb-10">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
+          <span className="mb-2 block font-medium text-sm">Test Scenario:</span>
           <select
             className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
@@ -465,7 +465,7 @@ export const MarkdownStreamDemo = () => {
         </div>
       </div>
 
-      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
+      <h2 className="mt-8 mb-4 font-semibold text-xl">Raw Token Comparison</h2>
       <div className="my-2 flex gap-10">
         <div className="w-1/2">
           <h3 className="mb-2 font-semibold">Original Chunks</h3>
@@ -552,34 +552,30 @@ const Tokens = ({
 }: {
   activeIndex: number;
   chunks: TChunks[];
-} & HTMLAttributes<HTMLDivElement>) => {
-  return (
-    <div
-      className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
-      {...props}
-    >
-      {chunks.map((chunk, index) => {
-        return (
-          <div key={index} className="py-1">
-            {chunk.chunks.map((c, j) => {
-              const lineBreak = c.text.replaceAll('\n', '⤶');
-              const space = lineBreak.replaceAll(' ', '␣');
+} & HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
+    {...props}
+  >
+    {chunks.map((chunk, index) => (
+      <div key={index} className="py-1">
+        {chunk.chunks.map((c, j) => {
+          const lineBreak = c.text.replaceAll('\n', '⤶');
+          const space = lineBreak.replaceAll(' ', '␣');
 
-              return (
-                <span
-                  key={j}
-                  className={cn(
-                    'mx-1 inline-block rounded border p-1',
-                    activeIndex && c.index < activeIndex && 'bg-amber-500'
-                  )}
-                >
-                  {space}
-                </span>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+          return (
+            <span
+              key={j}
+              className={cn(
+                'mx-1 inline-block rounded border p-1',
+                activeIndex && c.index < activeIndex && 'bg-amber-500'
+              )}
+            >
+              {space}
+            </span>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);

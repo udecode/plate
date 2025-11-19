@@ -28,7 +28,7 @@ function PureMarkdown({
   return (
     <div
       className={cn(
-        'prose prose-p:leading-relaxed prose-pre:p-0 max-w-none break-words',
+        'prose max-w-none break-words prose-pre:p-0 prose-p:leading-relaxed',
         className
       )}
     >

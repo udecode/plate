@@ -9,9 +9,9 @@ import { getAllBlocks } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
-const getCachedRegistryItem = React.cache(async (name: string) => {
-  return await getRegistryItem(name, true);
-});
+const getCachedRegistryItem = React.cache(
+  async (name: string) => await getRegistryItem(name, true)
+);
 
 export async function generateMetadata({
   params,

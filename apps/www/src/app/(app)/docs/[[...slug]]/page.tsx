@@ -46,12 +46,11 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   // For Chinese docs, look for .cn.mdx files
   if (locale === 'cn') {
     // First try to find the Chinese version with .cn.mdx
-    const cnDoc = allDocs.find((doc) => {
-      return (
+    const cnDoc = allDocs.find(
+      (doc) =>
         doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
         doc._raw.sourceFileName?.endsWith('.cn.mdx')
-      );
-    });
+    );
 
     if (cnDoc) {
       const path = slugParam?.join('/') || '';
@@ -73,7 +72,7 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
 
   // Only add locale param for Chinese
   if (locale === 'cn') {
-    doc.slug += `?locale=cn`;
+    doc.slug += '?locale=cn';
   }
 
   return doc;

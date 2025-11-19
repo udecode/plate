@@ -4,21 +4,21 @@ import '@testing-library/jest-dom';
 import 'slate-test-utils/dist/cjs/mocks';
 
 window.MessageChannel = jest.fn().mockImplementation(() => ({
-    port1: {
-      addEventListener: jest.fn(),
-      close: jest.fn(),
-      postMessage: jest.fn(),
-      removeEventListener: jest.fn(),
-      start: jest.fn(),
-    },
-    port2: {
-      addEventListener: jest.fn(),
-      close: jest.fn(),
-      postMessage: jest.fn(),
-      removeEventListener: jest.fn(),
-      start: jest.fn(),
-    },
-  }));
+  port1: {
+    addEventListener: jest.fn(),
+    close: jest.fn(),
+    postMessage: jest.fn(),
+    removeEventListener: jest.fn(),
+    start: jest.fn(),
+  },
+  port2: {
+    addEventListener: jest.fn(),
+    close: jest.fn(),
+    postMessage: jest.fn(),
+    removeEventListener: jest.fn(),
+    start: jest.fn(),
+  },
+}));
 
 global.TextEncoder = TextEncoder;
 

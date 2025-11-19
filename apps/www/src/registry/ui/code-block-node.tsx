@@ -43,7 +43,7 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
         </pre>
 
         <div
-          className="absolute top-1 right-1 z-10 flex gap-0.5 select-none"
+          className="absolute top-1 right-1 z-10 flex select-none gap-0.5"
           contentEditable={false}
         >
           {isLangSupported(element.lang) && (
@@ -63,7 +63,7 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
           <CopyButton
             size="icon"
             variant="ghost"
-            className="size-6 gap-1 text-xs text-muted-foreground"
+            className="size-6 gap-1 text-muted-foreground text-xs"
             value={() => NodeApi.string(element)}
           />
         </div>
@@ -98,7 +98,7 @@ function CodeBlockCombobox() {
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 justify-between gap-1 px-2 text-xs text-muted-foreground select-none"
+          className="h-6 select-none justify-between gap-1 px-2 text-muted-foreground text-xs"
           aria-expanded={open}
           role="combobox"
         >

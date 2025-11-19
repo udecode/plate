@@ -28,9 +28,10 @@ export function CopyCodeButton({
     }, 2000);
   }, [hasCopied]);
 
-  const themeCode = React.useMemo(() => {
-    return getThemeCode(activeTheme, config.radius);
-  }, [activeTheme, config.radius]);
+  const themeCode = React.useMemo(
+    () => getThemeCode(activeTheme, config.radius),
+    [activeTheme, config.radius]
+  );
 
   if (compact) {
     return (

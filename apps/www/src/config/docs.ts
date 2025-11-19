@@ -325,10 +325,8 @@ export const docsConfig: DocsConfig = {
 
 export const docsMap = navToObject(docsConfig.sidebarNav);
 
-export const getComponentNavItem = (id: string) => {
-  return componentNavMap['/docs/components/' + id];
-};
+export const getComponentNavItem = (id: string) =>
+  componentNavMap['/docs/components/' + id];
 
-export const getPluginNavItem = (id: string) => {
-  return pluginNavMap['/docs/' + id] ?? {};
-};
+export const getPluginNavItem = (id: string) =>
+  pluginNavMap['/docs/' + id] ?? {};

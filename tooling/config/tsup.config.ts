@@ -1,4 +1,3 @@
-  
 import fs from 'node:fs';
 import path from 'node:path';
 import { convertPathToPattern } from 'tinyglobby';
@@ -14,26 +13,38 @@ const INPUT_FILE = fs.existsSync(INPUT_TS_FILE_PATH)
   ? INPUT_TS_FILE_PATH
   : INPUT_TSX_FILE_PATH;
 
-const REACT_TS_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.ts');
-const REACT_TSX_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/react/index.tsx');
+const REACT_TS_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/react/index.ts'
+);
+const REACT_TSX_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/react/index.tsx'
+);
 const REACT_INPUT_FILE_PATH = fs.existsSync(REACT_TS_INPUT_FILE_PATH)
   ? REACT_TS_INPUT_FILE_PATH
   : REACT_TSX_INPUT_FILE_PATH;
 
-const STATIC_TS_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/static/index.ts');
-const STATIC_TSX_INPUT_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/static/index.tsx');
+const STATIC_TS_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/static/index.ts'
+);
+const STATIC_TSX_INPUT_FILE_PATH = path.join(
+  PACKAGE_ROOT_PATH,
+  'src/static/index.tsx'
+);
 const STATIC_INPUT_FILE_PATH = fs.existsSync(STATIC_TS_INPUT_FILE_PATH)
   ? STATIC_TS_INPUT_FILE_PATH
   : STATIC_TSX_INPUT_FILE_PATH;
 
-const entry = [convertPathToPattern(INPUT_FILE)]
+const entry = [convertPathToPattern(INPUT_FILE)];
 
 if (fs.existsSync(REACT_INPUT_FILE_PATH)) {
-  entry.push(convertPathToPattern(REACT_INPUT_FILE_PATH))
+  entry.push(convertPathToPattern(REACT_INPUT_FILE_PATH));
 }
 
 if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
-  entry.push(convertPathToPattern(STATIC_INPUT_FILE_PATH))
+  entry.push(convertPathToPattern(STATIC_INPUT_FILE_PATH));
 }
 
 export default defineConfig((opts) => {
@@ -46,7 +57,6 @@ export default defineConfig((opts) => {
     splitting: false,
     ...(silent
       ? {
-           
           silent: true,
           onSuccess: async () => {
             if (opts.watch) {

@@ -22,12 +22,11 @@ const computedFields = {
   slug: {
     type: 'string',
     resolve: (doc) =>
-      `/docs/${doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), '')}`,
+      `/docs/${doc._raw.flattenedPath.replace(/\(([^)]*)\)\\/ / g, '')}`,
   },
   slugAsParams: {
     type: 'string',
-    resolve: (doc) =>
-      doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), ''),
+    resolve: (doc) => doc._raw.flattenedPath.replace(/\(([^)]*)\)\\/ / g, ''),
   },
 };
 
@@ -95,7 +94,7 @@ export const Doc = defineDocumentType(() => ({
       type: 'boolean',
     },
   },
-  filePathPattern: `**/*.mdx`,
+  filePathPattern: '**/*.mdx',
   name: 'Doc',
 }));
 

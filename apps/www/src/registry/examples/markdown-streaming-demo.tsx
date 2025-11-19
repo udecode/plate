@@ -442,7 +442,7 @@ export default function MarkdownStreamingDemo() {
       <div className="mb-10 rounded bg-gray-100 p-4">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
+          <span className="mb-2 block font-medium text-sm">Test Scenario:</span>
           <select
             className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
@@ -473,12 +473,10 @@ export default function MarkdownStreamingDemo() {
               if (streaming) {
                 isPauseRef.current = !isPauseRef.current;
                 forceUpdate();
+              } else if (isPlateStatic) {
+                onStreamingStatic();
               } else {
-                if (isPlateStatic) {
-                  onStreamingStatic();
-                } else {
-                  onStreaming();
-                }
+                onStreaming();
               }
             }}
           >
@@ -504,7 +502,7 @@ export default function MarkdownStreamingDemo() {
         </div>
 
         <div className="mb-4 flex items-center gap-2">
-          <span className="block text-sm font-medium">Speed:</span>
+          <span className="block font-medium text-sm">Speed:</span>
           <select
             className="rounded border px-2 py-1"
             value={speed ?? 'default'}
@@ -528,7 +526,7 @@ export default function MarkdownStreamingDemo() {
               </option>
             ))}
           </select>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             The default speed is 10ms, but it adjusts to 100ms when streaming a
             table or code block.
           </span>
@@ -543,7 +541,7 @@ export default function MarkdownStreamingDemo() {
           />
         </div>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           PlateStatic offers more robust and flawless performance.
         </span>
       </div>
@@ -586,7 +584,7 @@ export default function MarkdownStreamingDemo() {
         </div>
       </div>
 
-      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
+      <h2 className="mt-8 mb-4 font-semibold text-xl">Raw Token Comparison</h2>
       <div className="my-2 flex gap-10">
         <div className="w-1/2">
           <h3 className="mb-2 font-semibold">Original Chunks</h3>
@@ -675,35 +673,31 @@ const Tokens = ({
   activeIndex: number;
   chunks: TChunks[];
   chunkClick?: (index: number) => void;
-} & HTMLAttributes<HTMLDivElement>) => {
-  return (
-    <div
-      className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
-      {...props}
-    >
-      {chunks.map((chunk, index) => {
-        return (
-          <div key={index} className="py-1">
-            {chunk.chunks.map((c, j) => {
-              const lineBreak = c.text.replaceAll('\n', '⤶');
-              const space = lineBreak.replaceAll(' ', '␣');
+} & HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
+    {...props}
+  >
+    {chunks.map((chunk, index) => (
+      <div key={index} className="py-1">
+        {chunk.chunks.map((c, j) => {
+          const lineBreak = c.text.replaceAll('\n', '⤶');
+          const space = lineBreak.replaceAll(' ', '␣');
 
-              return (
-                <span
-                  key={j}
-                  className={cn(
-                    'mx-1 inline-block rounded border p-1',
-                    activeIndex && c.index < activeIndex && 'bg-amber-400'
-                  )}
-                  onClick={() => chunkClick && chunkClick(c.index + 1)}
-                >
-                  {space}
-                </span>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+          return (
+            <span
+              key={j}
+              className={cn(
+                'mx-1 inline-block rounded border p-1',
+                activeIndex && c.index < activeIndex && 'bg-amber-400'
+              )}
+              onClick={() => chunkClick && chunkClick(c.index + 1)}
+            >
+              {space}
+            </span>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);

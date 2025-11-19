@@ -49,7 +49,7 @@ export function ComponentPreview({
 
     if (!Component) {
       return (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Component{' '}
           <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
             {name}
@@ -66,7 +66,7 @@ export function ComponentPreview({
   const mounted = useMounted();
 
   const loadingPreview = (
-    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-sm text-muted-foreground">
+    <div className="preview flex size-full min-h-[350px] items-center justify-center p-0 text-muted-foreground text-sm">
       <Icons.spinner className="mr-2 size-4 animate-spin" />
       Loading...
     </div>

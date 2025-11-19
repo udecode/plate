@@ -53,12 +53,12 @@ const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [KEYS.column]: () => 'Column',
   [KEYS.equation]: () => 'Equation',
   [KEYS.file]: () => 'File',
-  [KEYS.h1]: () => `Heading 1`,
-  [KEYS.h2]: () => `Heading 2`,
-  [KEYS.h3]: () => `Heading 3`,
-  [KEYS.h4]: () => `Heading 4`,
-  [KEYS.h5]: () => `Heading 5`,
-  [KEYS.h6]: () => `Heading 6`,
+  [KEYS.h1]: () => 'Heading 1',
+  [KEYS.h2]: () => 'Heading 2',
+  [KEYS.h3]: () => 'Heading 3',
+  [KEYS.h4]: () => 'Heading 4',
+  [KEYS.h5]: () => 'Heading 5',
+  [KEYS.h6]: () => 'Heading 6',
   [KEYS.hr]: () => 'Horizontal Rule',
   [KEYS.img]: () => 'Image',
   [KEYS.mediaEmbed]: () => 'Media',
@@ -74,7 +74,6 @@ const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
   [KEYS.toggle]: () => 'Toggle',
   [KEYS.video]: () => 'Video',
 };
-
 
 export function BlockSuggestionCard({
   idx,
@@ -125,10 +124,10 @@ export function BlockSuggestionCard({
             <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
             <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
           </Avatar>
-          <h4 className="mx-2 text-sm leading-none font-semibold">
+          <h4 className="mx-2 font-semibold text-sm leading-none">
             {userInfo?.name}
           </h4>
-          <div className="text-xs leading-none text-muted-foreground/80">
+          <div className="text-muted-foreground/80 text-xs leading-none">
             <span className="mr-1">
               {formatCommentDate(new Date(suggestion.createdAt))}
             </span>
@@ -141,7 +140,7 @@ export function BlockSuggestionCard({
               <React.Fragment>
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-muted-foreground text-sm">
                       Delete:
                     </span>
 
@@ -158,7 +157,7 @@ export function BlockSuggestionCard({
                 {suggestionText2Array(suggestion.newText!).map(
                   (text, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         Add:
                       </span>
 
@@ -190,7 +189,7 @@ export function BlockSuggestionCard({
                 {suggestionText2Array(suggestion.text!).map((text, index) => (
                   <React.Fragment key={index}>
                     <div key={index} className="flex items-start gap-2">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {index === 0 ? 'Replace:' : 'Delete:'}
                       </span>
                       <span className="text-sm">{text || 'line breaks'}</span>
@@ -202,7 +201,7 @@ export function BlockSuggestionCard({
 
             {suggestion.type === 'update' && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   {Object.keys(suggestion.properties).map((key) => (
                     <span key={key}>Un{key}</span>
                   ))}
@@ -343,9 +342,9 @@ export const useResolveSuggestion = (
       ];
 
       // move line break to the end
-      entries.sort(([, path1], [, path2]) => {
-        return PathApi.isChild(path1, path2) ? -1 : 1;
-      });
+      entries.sort(([, path1], [, path2]) =>
+        PathApi.isChild(path1, path2) ? -1 : 1
+      );
 
       let newText = '';
       let text = '';
@@ -484,6 +483,4 @@ export const useResolveSuggestion = (
 
 export const isResolvedSuggestion = (
   suggestion: ResolvedSuggestion | TDiscussion
-): suggestion is ResolvedSuggestion => {
-  return 'suggestionId' in suggestion;
-};
+): suggestion is ResolvedSuggestion => 'suggestionId' in suggestion;

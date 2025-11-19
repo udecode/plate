@@ -22,6 +22,7 @@
       "!!**/dist",
       "!!**/public",
       "!!**/.contentlayer",
+      "!!**/*otf.json",
       "!!**/*.html",
       "!!templates",
       "!!packages"

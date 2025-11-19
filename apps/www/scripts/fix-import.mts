@@ -4,19 +4,23 @@ export function fixImport(content: string) {
 
   const replacement = (
     match: string,
-    path: string,
+    _path: string,
     type: string,
     component: string
   ) => {
     if (type.endsWith('components') || type.endsWith('example')) {
       return `@/components/${component}`;
-    } else if (type.endsWith('ui')) {
+    }
+    if (type.endsWith('ui')) {
       return `@/components/ui/${component}`;
-    } else if (type.endsWith('hooks')) {
+    }
+    if (type.endsWith('hooks')) {
       return `@/hooks/${component}`;
-    } else if (type.endsWith('lib')) {
+    }
+    if (type.endsWith('lib')) {
       return `@/lib/${component}`;
-    } else if (type.endsWith('app')) {
+    }
+    if (type.endsWith('app')) {
       return `@/app/${component}`;
     }
 

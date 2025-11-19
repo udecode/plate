@@ -36,7 +36,7 @@ const popoverVariants = cva(
 );
 
 const inputVariants = cva(
-  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:ring-transparent focus-visible:outline-none md:text-sm'
+  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-transparent md:text-sm'
 );
 
 export function LinkFloatingToolbar({
@@ -50,8 +50,8 @@ export function LinkFloatingToolbar({
     'activeId'
   );
 
-  const floatingOptions: UseVirtualFloatingOptions = React.useMemo(() => {
-    return {
+  const floatingOptions: UseVirtualFloatingOptions = React.useMemo(
+    () => ({
       middleware: [
         offset(8),
         flip({
@@ -61,8 +61,9 @@ export function LinkFloatingToolbar({
       ],
       placement:
         activeSuggestionId || activeCommentId ? 'top-start' : 'bottom-start',
-    };
-  }, [activeCommentId, activeSuggestionId]);
+    }),
+    [activeCommentId, activeSuggestionId]
+  );
 
   const insertState = useFloatingLinkInsertState({
     ...state,

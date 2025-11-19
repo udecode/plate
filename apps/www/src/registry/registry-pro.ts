@@ -61,7 +61,7 @@ export const proExamples: Registry['items'] = [
   },
   {
     categories: ['pro'],
-    description: `- Beautifully crafted UI`,
+    description: '- Beautifully crafted UI',
     name: 'block-selection-pro',
     type: 'registry:example',
   },

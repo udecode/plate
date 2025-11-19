@@ -34,7 +34,7 @@ export function ViewOptions({ content, docUrl, title }: ViewOptionsProps) {
 
 `,
       category: 'q-a',
-      title: ``,
+      title: '',
     }
   )}`;
 

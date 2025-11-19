@@ -85,17 +85,11 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
   return descriptionParts.join('\n');
 };
 
-const InlineElement = ({ children, ...props }: PlateElementProps) => {
-  return (
-    <PlateElement
-      {...props}
-      as="span"
-      className="rounded-sm bg-slate-200/50 p-1"
-    >
-      {children}
-    </PlateElement>
-  );
-};
+const InlineElement = ({ children, ...props }: PlateElementProps) => (
+  <PlateElement {...props} as="span" className="rounded-sm bg-slate-200/50 p-1">
+    {children}
+  </PlateElement>
+);
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   const selected = useSelected();

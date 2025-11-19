@@ -111,16 +111,14 @@ export function getErrorMessage(err: unknown) {
   const unknownError = 'Something went wrong, please try again later.';
 
   if (err instanceof z.ZodError) {
-    const errors = err.issues.map((issue) => {
-      return issue.message;
-    });
+    const errors = err.issues.map((issue) => issue.message);
 
     return errors.join('\n');
-  } else if (err instanceof Error) {
-    return err.message;
-  } else {
-    return unknownError;
   }
+  if (err instanceof Error) {
+    return err.message;
+  }
+  return unknownError;
 }
 
 export function showErrorToast(err: unknown) {

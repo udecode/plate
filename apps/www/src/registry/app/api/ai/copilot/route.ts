@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       abortSignal: req.signal,
       maxOutputTokens: 50,
       model: `openai/${model}`,
-      prompt: prompt,
+      prompt,
       system,
       temperature: 0.7,
     });

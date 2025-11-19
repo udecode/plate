@@ -40,7 +40,7 @@ export const tocValue: any = (
 export const tocPlaygroundValue: any = (
   <fragment>
     <htoc>
-      <htext></htext>
+      <htext />
     </htoc>
     <hp>
       <htext>点击目录中的任何标题可以平滑滚动到该部分。</htext>

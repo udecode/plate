@@ -45,7 +45,7 @@ export function CalloutElement({
           control={
             <Button
               variant="ghost"
-              className="size-6 p-1 text-[18px] select-none hover:bg-muted-foreground/15"
+              className="size-6 select-none p-1 text-[18px] hover:bg-muted-foreground/15"
               style={{
                 fontFamily:
                   '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',

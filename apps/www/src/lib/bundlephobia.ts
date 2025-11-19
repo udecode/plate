@@ -8,9 +8,7 @@ export function formatBytes(bytes: number, decimals = 2) {
   const sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return (
-    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-  );
+  return Number.parseFloat((bytes / k ** i).toFixed(dm)) + ' ' + sizes[i];
 }
 
 export async function getPackageData(name: string) {

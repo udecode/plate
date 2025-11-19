@@ -45,7 +45,7 @@ export function ComponentSource({
           <Button
             size="sm"
             variant="ghost"
-            className="mb-0.5 w-fit px-4 py-1 text-sm font-medium text-foreground select-auto"
+            className="mb-0.5 w-fit select-auto px-4 py-1 font-medium text-foreground text-sm"
             onClick={() => {
               copyToClipboard(displaySrc, {
                 tooltip: 'Copied to clipboard',

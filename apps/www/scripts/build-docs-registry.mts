@@ -26,7 +26,8 @@ async function getFiles(dir: string): Promise<string[]> {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         return getFiles(fullPath);
-      } else if (
+      }
+      if (
         entry.name.endsWith('.mdx') &&
         // Ignore translated docs
         !entry.name.endsWith('.cn.mdx')
@@ -107,10 +108,7 @@ export async function buildDocsRegistry() {
       const pathWithoutExt = relativePath.replace('.mdx', '');
 
       // Apply the same (directory) pattern removal as contentlayer
-      const cleanPath = pathWithoutExt.replace(
-        new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-        ''
-      );
+      const cleanPath = pathWithoutExt.replace(/\(([^)]*)\)\\/ / g, '');
 
       const name = `${cleanPath
         .toLowerCase()
@@ -239,10 +237,7 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
     if (item.href) {
       const href = item.href.replace(/^\/docs\//, '');
       // Apply the same (directory) pattern removal as contentlayer
-      const cleanHref = href.replace(
-        new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-        ''
-      );
+      const cleanHref = href.replace(/\(([^)]*)\)\\/ / g, '');
       // Skip get-started section mapping except for installation
       if (
         !fullTitle.startsWith('get-started') ||
@@ -259,10 +254,7 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
 
         const href = subItem.href.replace(/^\/docs\//, '');
         // Apply the same (directory) pattern removal as contentlayer
-        const cleanHref = href.replace(
-          new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-          ''
-        );
+        const cleanHref = href.replace(/\(([^)]*)\)\\/ / g, '');
 
         // If subItem has its own items, it's a parent
         if (subItem.items) {
@@ -275,10 +267,7 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
           subItem.items.forEach((nestedItem) => {
             if (!nestedItem.href) return;
             const nestedHref = nestedItem.href.replace(/^\/docs\//, '');
-            const cleanNestedHref = nestedHref.replace(
-              new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-              ''
-            );
+            const cleanNestedHref = nestedHref.replace(/\(([^)]*)\)\\/ / g, '');
             pathMap.set(cleanNestedHref, `${fullTitle}/${subTitle}`);
           });
         } else {

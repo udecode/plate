@@ -54,7 +54,7 @@ export const tocValue: any = (
 export const tocPlaygroundValue: any = (
   <fragment>
     <htoc>
-      <htext></htext>
+      <htext />
     </htoc>
     <hp>
       <htext>

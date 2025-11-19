@@ -31,8 +31,8 @@ export function MobileNav({
         <Button
           variant="ghost"
           className={cn(
-            'extend-touch-target h-8 touch-manipulation items-center justify-start gap-2.5 !p-0 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent dark:hover:bg-transparent',
-            'mr-2 -ml-2 size-8 px-0 text-base md:hidden',
+            'extend-touch-target !p-0 h-8 touch-manipulation items-center justify-start gap-2.5 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent dark:hover:bg-transparent',
+            '-ml-2 mr-2 size-8 px-0 text-base md:hidden',
             className
           )}
         >
@@ -41,7 +41,7 @@ export function MobileNav({
               <span
                 className={cn(
                   'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
-                  open ? 'top-[0.4rem] -rotate-45' : 'top-1'
+                  open ? '-rotate-45 top-[0.4rem]' : 'top-1'
                 )}
               />
               <span
@@ -53,7 +53,7 @@ export function MobileNav({
             </div>
             <span className="sr-only">Toggle Menu</span>
           </div>
-          <span className="flex h-8 items-center text-lg leading-none font-medium">
+          <span className="flex h-8 items-center font-medium text-lg leading-none">
             Menu
           </span>
         </Button>
@@ -67,12 +67,12 @@ export function MobileNav({
       >
         <div className="flex flex-col gap-12 overflow-auto px-6 py-6">
           <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-muted-foreground">
+            <div className="font-medium text-muted-foreground text-sm">
               Menu
             </div>
             <div className="flex flex-col gap-3">
-              {items.map((item) => {
-                return (
+              {items.map(
+                (item) =>
                   item.href && (
                     <MobileLink
                       key={item.href}
@@ -81,20 +81,19 @@ export function MobileNav({
                     >
                       {item.title}
                       {item.label && (
-                        <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                        <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
                           {item.label}
                         </span>
                       )}
                     </MobileLink>
                   )
-                );
-              })}
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-8">
             {tree.map((item, index) => (
               <div key={index} className="flex flex-col gap-4">
-                <div className="text-sm font-medium text-muted-foreground">
+                <div className="font-medium text-muted-foreground text-sm">
                   {item.title}
                 </div>
                 <div className="flex flex-col gap-3">
@@ -115,7 +114,7 @@ export function MobileNav({
                               >
                                 {nestedItem.title}
                                 {nestedItem.label && (
-                                  <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                  <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
                                     {nestedItem.label}
                                   </span>
                                 )}
@@ -136,13 +135,13 @@ export function MobileNav({
                                 >
                                   {_item.title}
                                   {_item.label && (
-                                    <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                    <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
                                       {_item.label}
                                     </span>
                                   )}
                                 </MobileLink>
                               ) : (
-                                <div className="text-lg font-medium">
+                                <div className="font-medium text-lg">
                                   {_item.title}
                                 </div>
                               )}
@@ -155,13 +154,13 @@ export function MobileNav({
                                       {!nestedItem.disabled &&
                                         nestedItem.href && (
                                           <MobileLink
-                                            className="text-lg font-normal text-muted-foreground"
+                                            className="font-normal text-lg text-muted-foreground"
                                             onOpenChange={setOpen}
                                             href={nestedItem.href}
                                           >
                                             {nestedItem.title}
                                             {nestedItem.label && (
-                                              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-xs leading-none text-[#000000] no-underline group-hover:no-underline">
+                                              <span className="ml-2 rounded-md bg-[#adfa1d] px-1.5 py-0.5 text-[#000000] text-xs leading-none no-underline group-hover:no-underline">
                                                 {nestedItem.label}
                                               </span>
                                             )}
@@ -203,7 +202,7 @@ function MobileLink({
 
   return (
     <Link
-      className={cn('text-2xl font-medium', className)}
+      className={cn('font-medium text-2xl', className)}
       onClick={() => {
         router.push(href.toString());
         onOpenChange?.(false);

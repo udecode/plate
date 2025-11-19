@@ -138,6 +138,4 @@ export const setBlockType = (
   });
 };
 
-export const getBlockType = (block: TElement) => {
-  return block.type;
-};
+export const getBlockType = (block: TElement) => block.type;

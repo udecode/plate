@@ -13,9 +13,9 @@ export const basicBlocksValue: any = (
     </hblockquote>
     <hcodeblock lang="javascript">
       <hcodeline>// Use code blocks to showcase code snippets</hcodeline>
-      <hcodeline>{`function greet() {`}</hcodeline>
+      <hcodeline>{'function greet() {'}</hcodeline>
       <hcodeline>{`  console.info('Hello World!');`}</hcodeline>
-      <hcodeline>{`}`}</hcodeline>
+      <hcodeline>{'}'}</hcodeline>
     </hcodeblock>
   </fragment>
 );

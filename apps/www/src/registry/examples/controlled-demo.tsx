@@ -53,7 +53,7 @@ export default function ControlledEditorDemo() {
       </div>
 
       <hr className="my-8" />
-      <h2 className="mb-2 text-lg font-semibold">Async Controlled Editor</h2>
+      <h2 className="mb-2 font-semibold text-lg">Async Controlled Editor</h2>
       <AsyncControlledEditorDemo />
     </div>
   );

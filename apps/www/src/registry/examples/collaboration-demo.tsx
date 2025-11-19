@@ -52,7 +52,7 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
               {
                 options: {
                   maxConns: 9, // Limit to 10 total participants
-                  roomName: roomName,
+                  roomName,
                   signaling: [
                     process.env.NODE_ENV === 'production'
                       ? // Use public signaling server just for demo purposes
@@ -91,10 +91,10 @@ export default function CollaborativeEditingDemo(): React.ReactNode {
 
   return (
     <div className="flex flex-col">
-      <div className="rounded-md bg-muted p-4 text-sm text-muted-foreground">
+      <div className="rounded-md bg-muted p-4 text-muted-foreground text-sm">
         <div className="flex items-center gap-2">
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-medium" htmlFor="room-id">
+            <label className="mb-1 block font-medium text-xs" htmlFor="room-id">
               Room ID (share this to collaborate)
             </label>
             <div className="flex items-center gap-2">

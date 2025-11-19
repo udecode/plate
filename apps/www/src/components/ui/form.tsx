@@ -36,13 +36,11 @@ const FormField = <
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
-}: ControllerProps<TFieldValues, TName>) => {
-  return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
-      <Controller {...props} />
-    </FormFieldContext.Provider>
-  );
-};
+}: ControllerProps<TFieldValues, TName>) => (
+  <FormFieldContext.Provider value={{ name: props.name }}>
+    <Controller {...props} />
+  </FormFieldContext.Provider>
+);
 
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
@@ -129,7 +127,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       id={formDescriptionId}
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-sm', className)}
       data-slot="form-description"
       {...props}
     />
@@ -147,7 +145,7 @@ function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       id={formMessageId}
-      className={cn('text-sm text-destructive', className)}
+      className={cn('text-destructive text-sm', className)}
       data-slot="form-message"
       {...props}
     >

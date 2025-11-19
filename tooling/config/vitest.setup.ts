@@ -6,21 +6,21 @@ import '@testing-library/jest-dom/vitest';
 import 'slate-test-utils/dist/cjs/mocks';
 
 window.MessageChannel = vi.fn().mockImplementation(() => ({
-    port1: {
-      addEventListener: vi.fn(),
-      close: vi.fn(),
-      postMessage: vi.fn(),
-      removeEventListener: vi.fn(),
-      start: vi.fn(),
-    },
-    port2: {
-      addEventListener: vi.fn(),
-      close: vi.fn(),
-      postMessage: vi.fn(),
-      removeEventListener: vi.fn(),
-      start: vi.fn(),
-    },
-  }));
+  port1: {
+    addEventListener: vi.fn(),
+    close: vi.fn(),
+    postMessage: vi.fn(),
+    removeEventListener: vi.fn(),
+    start: vi.fn(),
+  },
+  port2: {
+    addEventListener: vi.fn(),
+    close: vi.fn(),
+    postMessage: vi.fn(),
+    removeEventListener: vi.fn(),
+    start: vi.fn(),
+  },
+}));
 
 global.TextEncoder = TextEncoder;
 

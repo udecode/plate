@@ -13,8 +13,8 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
         return false;
 
       return !editor.api.some({
-        match: (n) => {
-          return !!(
+        match: (n) =>
+          !!(
             (n.type &&
               [
                 KEYS.codeBlock,
@@ -23,8 +23,7 @@ export const TabbableKit = TabbablePlugin.configure(({ editor }) => ({
                 KEYS.table,
               ].includes(n.type as any)) ||
             n.listStyleType
-          );
-        },
+          ),
       });
     },
   },
