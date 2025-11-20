@@ -31,6 +31,9 @@ import {
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
+import { columnRules } from './columnRules';
+import { fontRules } from './fontRules';
+import { mediaRules } from './mediaRules';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
 
