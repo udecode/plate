@@ -1,5 +1,11 @@
 # @udecode/cn
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 49.0.15
 
 ## 49.0.13

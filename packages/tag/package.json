@@ -1,6 +1,6 @@
 {
   "name": "@platejs/tag",
-  "version": "51.0.0",
+  "version": "51.1.2",
   "description": "Tag plugin for Plate",
   "keywords": [
     "plate",
@@ -53,7 +53,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=51.0.0",
+    "platejs": ">=51.1.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

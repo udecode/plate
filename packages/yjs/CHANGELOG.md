@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.1.0
 
 ### Minor Changes
@@ -53,8 +59,8 @@
         /* ... */
       },
       hocuspocusProviderOptions: {
-        url: 'wss://hocuspocus.example.com',
-        name: 'document-1',
+        url: "wss://hocuspocus.example.com",
+        name: "document-1",
         // ... other Hocuspocus options
       },
     },
@@ -71,10 +77,10 @@
       },
       providers: [
         {
-          type: 'hocuspocus',
+          type: "hocuspocus",
           options: {
-            url: 'wss://hocuspocus.example.com',
-            name: 'document-1',
+            url: "wss://hocuspocus.example.com",
+            name: "document-1",
             // ... other Hocuspocus options
           },
         },
@@ -93,16 +99,16 @@
       },
       providers: [
         {
-          type: 'hocuspocus',
+          type: "hocuspocus",
           options: {
-            url: 'wss://hocuspocus.example.com',
-            name: 'document-1',
+            url: "wss://hocuspocus.example.com",
+            name: "document-1",
           },
         },
         {
-          type: 'webrtc',
+          type: "webrtc",
           options: {
-            roomName: 'document-1',
+            roomName: "document-1",
             // signaling: ['wss://signaling.example.com'], // Optional
           },
         },
