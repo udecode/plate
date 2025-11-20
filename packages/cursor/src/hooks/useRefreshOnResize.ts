@@ -15,17 +15,18 @@ export interface useRefreshOnResizeOptions
 export const useRefreshOnResize = ({
   containerRef,
   refreshOnResize,
-  selectionRectCache,
+  selectionRectCache: selectionRectCacheRef,
 }: useRefreshOnResizeOptions) => {
   const requestReRender = useRequestReRender();
 
   // Reset the selection rect cache and request re-render.
+  // ✅ Mutating ref inside callback is OK - callbacks run in response to events, not during render
   const refresh = React.useCallback(
     (sync = false) => {
-      selectionRectCache.current = new WeakMap();
+      selectionRectCacheRef.current = new WeakMap();
       requestReRender(sync);
     },
-    [requestReRender, selectionRectCache]
+    [requestReRender, selectionRectCacheRef]
   );
 
   // Refresh on container resize
