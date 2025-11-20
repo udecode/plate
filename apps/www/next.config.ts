@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/performance/useTopLevelRegex: lib */
 import type { NextConfig } from 'next';
 
 import { globSync } from 'glob';
