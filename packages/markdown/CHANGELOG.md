@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 51.1.1
+
+### Patch Changes
+
+- [#4729](https://github.com/udecode/plate/pull/4729) by [@tomdyqin](https://github.com/tomdyqin) – should deserialize table with math formula in cell
+
 ## 51.0.0
 
 ## 50.2.0
