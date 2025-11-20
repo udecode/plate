@@ -497,7 +497,9 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
           key={(file as any)?.path}
           className="[&_.line:before]:-translate-y-px relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
           data-rehype-pretty-code-fragment
-          dangerouslySetInnerHTML={{ __html: (file as any)?.highlightedContent ?? '' }}
+          dangerouslySetInnerHTML={{
+            __html: (file as any)?.highlightedContent ?? '',
+          }}
         />
       </div>
     </div>

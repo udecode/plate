@@ -33,7 +33,9 @@ export function rehypeComponent() {
 
         if (name) {
           if (node.name === 'ComponentPreviewPro') {
-            const registryItem = proExamples.find((item: any) => item.name === name);
+            const registryItem = proExamples.find(
+              (item: any) => item.name === name
+            );
             if (registryItem?.description) {
               node.attributes = [
                 ...(node.attributes || []),

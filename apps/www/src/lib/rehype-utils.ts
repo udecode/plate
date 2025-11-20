@@ -403,7 +403,10 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
     if ((file as any).type === 'registry:component') {
       target = (file as any).path.replace('src/registry/', '');
     }
-    if ((file as any).type === 'registry:block' || (file as any).type === 'registry:example') {
+    if (
+      (file as any).type === 'registry:block' ||
+      (file as any).type === 'registry:example'
+    ) {
       target = `components/${fileName}`;
     }
     if ((file as any).type === 'registry:ui') {

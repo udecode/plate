@@ -14,7 +14,10 @@ const eventSchema = z.object({
   ]),
   // declare type AllowedPropertyValues = string | number | boolean | null
   properties: z
-    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .record(
+      z.string(),
+      z.union([z.string(), z.number(), z.boolean(), z.null()])
+    )
     .optional(),
 });
 

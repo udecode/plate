@@ -66,7 +66,9 @@ import * as React from "react"
 
 export const Index: Record<string, any> = {`;
   for (const item of registry.items) {
-    const resolveFiles = item.files?.map((file: any) => `registry/${file.path}`);
+    const resolveFiles = item.files?.map(
+      (file: any) => `registry/${file.path}`
+    );
     if (!resolveFiles) {
       continue;
     }
