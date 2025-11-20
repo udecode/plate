@@ -72,12 +72,17 @@ export function ComponentPreview({
     </div>
   );
 
-  const item = props.item ?? JSON.parse(props.__item__ ?? '[]');
+  let item = props.item ?? JSON.parse(props.__item__ ?? '[]');
+
+  // Create new object instead of mutating
   if (name === 'potion-iframe-demo') {
-    if (!item.meta) {
-      item.meta = {};
-    }
-    item.meta.isPro = true;
+    item = {
+      ...item,
+      meta: {
+        ...item.meta,
+        isPro: true,
+      },
+    };
   }
 
   return (

@@ -375,6 +375,7 @@ export default function MarkdownStreamingDemo() {
 
     for (const chunk of transformedCurrentChunks) {
       output += chunk.chunk;
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for streaming visualization
       editorStatic.children = deserializeMd(editorStatic, output);
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
@@ -388,6 +389,7 @@ export default function MarkdownStreamingDemo() {
   const onReset = useCallback(() => {
     setActiveIndex(0);
     if (isPlateStatic) {
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for reset
       editorStatic.children = [];
       forceUpdate();
     } else {
@@ -410,6 +412,7 @@ export default function MarkdownStreamingDemo() {
           output += chunk.chunk;
         }
 
+        // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for navigation
         editorStatic.children = deserializeMd(editorStatic, output);
         setActiveIndex(targetIndex);
         forceUpdate();

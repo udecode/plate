@@ -188,6 +188,7 @@ export function SelectEditorCombobox() {
       <PopoverContent
         className="p-0 data-[state=open]:animate-none"
         style={{
+          // eslint-disable-next-line react-hooks/refs -- Reading ref for dynamic width calculation
           width: (containerRef.current?.offsetWidth ?? 0) + 8,
         }}
         onCloseAutoFocus={(e) => e.preventDefault()}

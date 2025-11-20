@@ -89,6 +89,7 @@ export function NavItemCard({
       <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+            {/* eslint-disable-next-line react-hooks/static-components -- Icon selection based on item type is intentional */}
             <Icon className="size-5 text-neutral-800" />
           </div>
           <div className="space-y-0">

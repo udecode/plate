@@ -225,6 +225,7 @@ export function Mdx({
     <div className="typography">
       <Provider>
         <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
+          {/* eslint-disable-next-line react-hooks/static-components -- useMDXComponent is designed to return dynamic MDX components */}
           <Component components={components as any} />
         </HydrateAtoms>
       </Provider>

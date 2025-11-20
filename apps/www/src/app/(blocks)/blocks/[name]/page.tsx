@@ -78,6 +78,7 @@ export default async function BlockPage({
         item.meta?.containerClassName ?? 'size-full'
       )}
     >
+      {/* eslint-disable-next-line react-hooks/static-components -- Dynamic block component loading is intentional */}
       <Component />
     </div>
   );

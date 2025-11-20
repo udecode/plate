@@ -287,6 +287,7 @@ export const MarkdownStreamDemo = () => {
   const [selectedScenario, setSelectedScenario] =
     useState<keyof typeof testScenarios>('columns');
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState(false);
   const isPauseRef = useRef(false);
   const streamSessionRef = useRef(0);
 
@@ -305,6 +306,7 @@ export const MarkdownStreamDemo = () => {
     streamSessionRef.current += 1;
     const sessionId = streamSessionRef.current;
 
+    setIsPaused(false);
     isPauseRef.current = false;
     setActiveIndex(0);
     // editor.tf.setValue([]);
@@ -367,10 +369,13 @@ export const MarkdownStreamDemo = () => {
           <Button onClick={onStreaming}>Start Streaming</Button>
 
           <Button
-            // biome-ignore lint/suspicious/noAssignInExpressions: intentional toggle
-            onClick={() => (isPauseRef.current = !isPauseRef.current)}
+            onClick={() => {
+              const newPauseState = !isPauseRef.current;
+              isPauseRef.current = newPauseState;
+              setIsPaused(newPauseState);
+            }}
           >
-            {isPauseRef.current ? 'Resume' : 'Pause'}
+            {isPaused ? 'Resume' : 'Pause'}
           </Button>
 
           <Button

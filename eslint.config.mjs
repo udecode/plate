@@ -4,36 +4,33 @@ import reactHooks from 'eslint-plugin-react-hooks';
 
 export default defineConfig([
   {
-    ...reactHooks.configs.flat.recommended,
-    files: ['**/*.ts*'],
-    languageOptions: { parser: tsParser },
-  },
-  {
     ignores: [
-      'scripts/**/*',
-      '.claude/**/*',
-      '**/.contentlayer/*',
-      '**/__registry__/*',
-      '**/build-registry.mts',
-      'packages/cli/src',
-      'packages/depset/tsup.config.ts',
-      'prisma/kysely',
-      'src/lib/db/types',
-      '**/*.mdx',
-      '**/blocks/fumadocs/**/*',
+      '**/.yarn/**',
+      '**/*.spec.*',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.next/**',
+      '**/build/**',
+      '**/.turbo/**',
+      '**/coverage/**',
+      '**/templates/**',
+      '**/.contentlayer/**',
+      '**/public/**',
+      '**/*.config.*',
+      '**/*.d.ts',
+      '.changeset/**',
+      'tooling/**',
     ],
   },
   {
-    files: filePatterns.test,
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [],
-        },
-      ],
-      'react-hooks/rules-of-hooks': 'off',
-    },
+    ...reactHooks.configs.flat.recommended,
+    // Only lint React component files (.tsx) and hook files (use*.ts)
+    files: [
+      'apps/**/src/**/*.tsx',
+      'apps/**/src/**/use*.ts',
+      'packages/**/src/**/*.tsx',
+      'packages/**/src/**/use*.ts',
+    ],
+    languageOptions: { parser: tsParser },
   },
 ]);

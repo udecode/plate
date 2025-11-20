@@ -423,7 +423,10 @@ function ColorDropdownMenu({
   );
 }
 
-export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
+export function TableRowElement({
+  children,
+  ...props
+}: PlateElementProps<TTableRowElement>) {
   const { element } = props;
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -469,7 +472,7 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
         </td>
       )}
 
-      {props.children}
+      {children}
     </PlateElement>
   );
 }

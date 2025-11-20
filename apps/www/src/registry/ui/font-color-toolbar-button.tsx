@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/refs -- Ref usage for color picker component refs */
 
 import React from 'react';
 
