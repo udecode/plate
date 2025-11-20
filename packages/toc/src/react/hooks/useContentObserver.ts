@@ -24,13 +24,15 @@ export const useContentObserver = ({
     Record<string, IntersectionObserverEntry>
   >({});
 
-  const root = isScroll ? editorContentRef.current : undefined;
   const editor = useEditorRef();
   const headingList = useEditorSelector(getHeadingList, []);
 
   const [activeId, setActiveId] = React.useState('');
 
   React.useEffect(() => {
+    // ✅ Access ref inside effect, not during render
+    const root = isScroll ? editorContentRef.current : undefined;
+
     const callback = (headings: IntersectionObserverEntry[]) => {
       if (!isObserve) return;
 
@@ -76,7 +78,15 @@ export const useContentObserver = ({
     return () => {
       observer.disconnect();
     };
-  }, [headingList, isObserve, editor, root, rootMargin, status]);
+  }, [
+    headingList,
+    isObserve,
+    editor,
+    editorContentRef,
+    isScroll,
+    rootMargin,
+    status,
+  ]);
 
   return { activeId };
 };

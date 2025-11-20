@@ -65,7 +65,8 @@ export function ScrollArea({
     }
   };
 
-  const startScrolling = () => {
+  // ✅ Wrap in useCallback to stabilize the reference
+  const startScrolling = React.useCallback(() => {
     const tick = () => {
       const scaleY = scaleYRef.current;
 
@@ -88,35 +89,44 @@ export function ScrollArea({
     };
 
     tick();
-  };
+  }, [containerRef, direction, strengthMultiplier]);
 
   // Update scaleY every 100ms or so
   // and start scrolling if necessary
-  const updateScrolling = throttle(
-    (e) => {
-      const container = ref.current;
-
-      if (!container) return;
-
-      const { height: h, top: y } = container.getBoundingClientRect();
-      const coords = getCoords(e);
-
-      const strength = Math.max(Math.max(coords.y - y, 0) / h, minStrength);
-
-      // calculate strength
-      scaleYRef.current = direction === -1 ? 1 - strength : strength;
-
-      // start scrolling if we need to
-      if (!frameRef.current && scaleYRef.current) {
-        startScrolling();
-      }
-    },
-    100,
-    { trailing: false }
+  // ✅ Store throttled function in ref - initialized in useEffect, refs accessed in event handlers are OK
+  const updateScrollingRef = React.useRef<((e: any) => void) | undefined>(
+    undefined
   );
 
+  React.useEffect(() => {
+    // Recreate throttled function when dependencies change
+    updateScrollingRef.current = throttle(
+      (e: any) => {
+        const container = ref.current;
+
+        if (!container) return;
+
+        const { height: h, top: y } = container.getBoundingClientRect();
+        const coords = getCoords(e);
+
+        const strength = Math.max(Math.max(coords.y - y, 0) / h, minStrength);
+
+        // calculate strength
+        scaleYRef.current = direction === -1 ? 1 - strength : strength;
+
+        // start scrolling if we need to
+        if (!frameRef.current && scaleYRef.current) {
+          startScrolling();
+        }
+      },
+      100,
+      { trailing: false }
+    );
+  }, [direction, minStrength, startScrolling]);
+
   const handleEvent = (e: any) => {
-    updateScrolling(e);
+    // Safety check: only call if initialized
+    updateScrollingRef.current?.(e);
   };
 
   React.useEffect(() => {
