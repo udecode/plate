@@ -1,6 +1,6 @@
 {
   "name": "@udecode/react-utils",
-  "version": "49.0.15",
+  "version": "51.1.2",
   "description": "React utils",
   "keywords": [
     "utils"
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
-    "@udecode/utils": "47.2.7",
+    "@udecode/utils": "51.1.2",
     "clsx": "^2.1.1"
   },
   "peerDependencies": {

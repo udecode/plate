@@ -1,5 +1,11 @@
 # @platejs/utils
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.0.0
 
 ## 50.3.9
@@ -87,7 +93,7 @@
       // import { TImageElement } from '@udecode/plate-media';
 
       // After
-      import { TImageElement } from 'platejs';
+      import { TImageElement } from "platejs";
       ```
 
   - Removed `structuralTypes` option from `useSelectionFragment` and `useSelectionFragmentProp`. These hooks now automatically use `plugin.node.isContainer` from enabled plugins.
@@ -102,9 +108,9 @@
       BlockPlaceholderPlugin.configure({
         options: {
           className:
-            'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
+            "before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]",
           placeholders: {
-            [ParagraphPlugin.key]: 'Type something...',
+            [ParagraphPlugin.key]: "Type something...",
             // ...other placeholders
           },
           query: ({ editor, path }) => {
@@ -128,7 +134,7 @@
     - Example Usage:
 
       ```ts
-      import { KEYS } from 'platejs';
+      import { KEYS } from "platejs";
 
       // Instead of: ParagraphPlugin.key
       // Use: KEYS.p

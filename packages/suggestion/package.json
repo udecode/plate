@@ -1,6 +1,6 @@
 {
   "name": "@platejs/suggestion",
-  "version": "51.0.0",
+  "version": "51.1.2",
   "description": "Plate plugin for suggestions",
   "keywords": [
     "plate",
@@ -50,14 +50,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/diff": "51.0.0",
+    "@platejs/diff": "51.1.2",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=51.0.0",
+    "platejs": ">=51.1.2",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

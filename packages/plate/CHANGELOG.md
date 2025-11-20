@@ -1,5 +1,11 @@
 # platejs
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.0.0
 
 ## 50.3.9
@@ -199,72 +205,72 @@
   - Either replace all `@udecode/plate` imports with the individual package imports, or export the following in a new file (e.g. `src/plate.ts`):
 
   ```ts
-  export * from '@udecode/plate-alignment';
-  export * from '@udecode/plate-autoformat';
-  export * from '@udecode/plate-basic-elements';
-  export * from '@udecode/plate-basic-marks';
-  export * from '@udecode/plate-block-quote';
-  export * from '@udecode/plate-break';
-  export * from '@udecode/plate-code-block';
-  export * from '@udecode/plate-combobox';
-  export * from '@udecode/plate-comments';
-  export * from '@udecode/plate-diff';
-  export * from '@udecode/plate-find-replace';
-  export * from '@udecode/plate-font';
-  export * from '@udecode/plate-heading';
-  export * from '@udecode/plate-highlight';
-  export * from '@udecode/plate-horizontal-rule';
-  export * from '@udecode/plate-indent';
-  export * from '@udecode/plate-indent-list';
-  export * from '@udecode/plate-kbd';
-  export * from '@udecode/plate-layout';
-  export * from '@udecode/plate-line-height';
-  export * from '@udecode/plate-link';
-  export * from '@udecode/plate-list';
-  export * from '@udecode/plate-media';
-  export * from '@udecode/plate-mention';
-  export * from '@udecode/plate-node-id';
-  export * from '@udecode/plate-normalizers';
-  export * from '@udecode/plate-reset-node';
-  export * from '@udecode/plate-select';
-  export * from '@udecode/plate-csv';
-  export * from '@udecode/plate-docx';
-  export * from '@udecode/plate-markdown';
-  export * from '@udecode/plate-slash-command';
-  export * from '@udecode/plate-suggestion';
-  export * from '@udecode/plate-tabbable';
-  export * from '@udecode/plate-table';
-  export * from '@udecode/plate-toggle';
-  export * from '@udecode/plate-trailing-block';
-  export * from '@udecode/plate-alignment/react';
-  export * from '@udecode/plate-autoformat/react';
-  export * from '@udecode/plate-basic-elements/react';
-  export * from '@udecode/plate-basic-marks/react';
-  export * from '@udecode/plate-block-quote/react';
-  export * from '@udecode/plate-break/react';
-  export * from '@udecode/plate-code-block/react';
-  export * from '@udecode/plate-combobox/react';
-  export * from '@udecode/plate-comments/react';
-  export * from '@udecode/plate-floating';
-  export * from '@udecode/plate-font/react';
-  export * from '@udecode/plate-heading/react';
-  export * from '@udecode/plate-highlight/react';
-  export * from '@udecode/plate-layout/react';
-  export * from '@udecode/plate-slash-command/react';
-  export * from '@udecode/plate-indent/react';
-  export * from '@udecode/plate-indent-list/react';
-  export * from '@udecode/plate-kbd/react';
-  export * from '@udecode/plate-line-height/react';
-  export * from '@udecode/plate-link/react';
-  export * from '@udecode/plate-list/react';
-  export * from '@udecode/plate-media/react';
-  export * from '@udecode/plate-reset-node/react';
-  export * from '@udecode/plate-selection';
-  export * from '@udecode/plate-suggestion/react';
-  export * from '@udecode/plate-tabbable/react';
-  export * from '@udecode/plate-table/react';
-  export * from '@udecode/plate-toggle/react';
-  export * from '@udecode/plate-resizable';
+  export * from "@udecode/plate-alignment";
+  export * from "@udecode/plate-autoformat";
+  export * from "@udecode/plate-basic-elements";
+  export * from "@udecode/plate-basic-marks";
+  export * from "@udecode/plate-block-quote";
+  export * from "@udecode/plate-break";
+  export * from "@udecode/plate-code-block";
+  export * from "@udecode/plate-combobox";
+  export * from "@udecode/plate-comments";
+  export * from "@udecode/plate-diff";
+  export * from "@udecode/plate-find-replace";
+  export * from "@udecode/plate-font";
+  export * from "@udecode/plate-heading";
+  export * from "@udecode/plate-highlight";
+  export * from "@udecode/plate-horizontal-rule";
+  export * from "@udecode/plate-indent";
+  export * from "@udecode/plate-indent-list";
+  export * from "@udecode/plate-kbd";
+  export * from "@udecode/plate-layout";
+  export * from "@udecode/plate-line-height";
+  export * from "@udecode/plate-link";
+  export * from "@udecode/plate-list";
+  export * from "@udecode/plate-media";
+  export * from "@udecode/plate-mention";
+  export * from "@udecode/plate-node-id";
+  export * from "@udecode/plate-normalizers";
+  export * from "@udecode/plate-reset-node";
+  export * from "@udecode/plate-select";
+  export * from "@udecode/plate-csv";
+  export * from "@udecode/plate-docx";
+  export * from "@udecode/plate-markdown";
+  export * from "@udecode/plate-slash-command";
+  export * from "@udecode/plate-suggestion";
+  export * from "@udecode/plate-tabbable";
+  export * from "@udecode/plate-table";
+  export * from "@udecode/plate-toggle";
+  export * from "@udecode/plate-trailing-block";
+  export * from "@udecode/plate-alignment/react";
+  export * from "@udecode/plate-autoformat/react";
+  export * from "@udecode/plate-basic-elements/react";
+  export * from "@udecode/plate-basic-marks/react";
+  export * from "@udecode/plate-block-quote/react";
+  export * from "@udecode/plate-break/react";
+  export * from "@udecode/plate-code-block/react";
+  export * from "@udecode/plate-combobox/react";
+  export * from "@udecode/plate-comments/react";
+  export * from "@udecode/plate-floating";
+  export * from "@udecode/plate-font/react";
+  export * from "@udecode/plate-heading/react";
+  export * from "@udecode/plate-highlight/react";
+  export * from "@udecode/plate-layout/react";
+  export * from "@udecode/plate-slash-command/react";
+  export * from "@udecode/plate-indent/react";
+  export * from "@udecode/plate-indent-list/react";
+  export * from "@udecode/plate-kbd/react";
+  export * from "@udecode/plate-line-height/react";
+  export * from "@udecode/plate-link/react";
+  export * from "@udecode/plate-list/react";
+  export * from "@udecode/plate-media/react";
+  export * from "@udecode/plate-reset-node/react";
+  export * from "@udecode/plate-selection";
+  export * from "@udecode/plate-suggestion/react";
+  export * from "@udecode/plate-tabbable/react";
+  export * from "@udecode/plate-table/react";
+  export * from "@udecode/plate-toggle/react";
+  export * from "@udecode/plate-resizable";
   ```
 
   - Replace all `'@udecode/plate'` and `'@udecode/plate/react'` with `'@/plate'` in your codebase.

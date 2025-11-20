@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.0.0
 
 ### Major Changes
@@ -78,10 +84,10 @@
     // Usage via Plate component
     <Plate
       onNodeChange={({ editor, node, operation, prevNode }) => {
-        console.log('Node changed:', { node, operation, prevNode });
+        console.log("Node changed:", { node, operation, prevNode });
       }}
       onTextChange={({ editor, node, operation, prevText, text }) => {
-        console.log('Text changed:', { text, prevText, operation });
+        console.log("Text changed:", { text, prevText, operation });
       }}
     />;
 
@@ -154,11 +160,11 @@
   - Added `normalizeNodeId` pure function to normalize node IDs in a value without using editor operations.
 
     ```ts
-    import { normalizeNodeId } from '@platejs/core';
+    import { normalizeNodeId } from "@platejs/core";
 
     // Normalize a value without editor operations
     const normalizedValue = normalizeNodeId(value, {
-      idKey: 'id',
+      idKey: "id",
       idCreator: () => nanoid(10),
       filterInline: true,
       filterText: true,
@@ -289,12 +295,12 @@
   ```ts
   const editor = usePlateEditor({
     value: async () => {
-      const response = await fetch('/api/document');
+      const response = await fetch("/api/document");
       const data = await response.json();
       return data.content;
     },
     onReady: ({ editor, value }) => {
-      console.info('Editor ready with value:', value);
+      console.info("Editor ready with value:", value);
     },
   });
   ```
@@ -349,7 +355,7 @@
         MyPlugin.configure({
           shortcuts: {
             myAction: {
-              keys: 'mod+s',
+              keys: "mod+s",
               preventDefault: false, // Example: Allow browser's default save dialog
             },
           },
@@ -794,7 +800,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: 'inlineVoid',
+    key: "inlineVoid",
     extendEditor: withInlineVoid,
   });
 
@@ -832,7 +838,7 @@
   };
 
   export const InlineVoidPlugin = createSlatePlugin({
-    key: 'inlineVoid',
+    key: "inlineVoid",
   }).overrideEditor(withInlineVoid);
   ```
 
@@ -1019,11 +1025,11 @@
 
   ```ts
   const ImagePlugin = createPlatePlugin({
-    key: 'image',
+    key: "image",
     node: {
       isElement: true,
       isVoid: true,
-      dangerouslyAllowAttributes: ['alt'],
+      dangerouslyAllowAttributes: ["alt"],
     },
   });
   ```
@@ -1033,7 +1039,7 @@
   ```ts
   const MyImagePlugin = ImagePlugin.extend({
     node: {
-      dangerouslyAllowAttributes: ['alt'],
+      dangerouslyAllowAttributes: ["alt"],
     },
   });
   ```
@@ -1069,7 +1075,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: 'test',
+    key: "test",
     options: { nested: { a: 1 } },
   }).extend({
     options: { nested: { b: 1 } },
@@ -1082,7 +1088,7 @@
 
   ```ts
   const plugin = createSlatePlugin({
-    key: 'test',
+    key: "test",
     options: { nested: { a: 1 } },
   }).extend(({ getOptions }) => ({
     options: {
@@ -1158,7 +1164,7 @@
 
   ```typescript
   const MyPluginFactory = createPluginFactory({
-    key: 'myPlugin',
+    key: "myPlugin",
     isElement: true,
     component: MyComponent,
   });
@@ -1169,7 +1175,7 @@
 
   ```typescript
   const plugin = createSlatePlugin({
-    key: 'myPlugin',
+    key: "myPlugin",
     node: {
       isElement: true,
       component: MyComponent,
@@ -1191,7 +1197,7 @@
       onKeyDown: onKeyDownToggleElement,
     },
     options: {
-      hotkey: ['mod+opt+0', 'mod+shift+0'],
+      hotkey: ["mod+opt+0", "mod+shift+0"],
     },
   });
   ```
@@ -1283,11 +1289,11 @@
     key: KEY_ALIGN,
     inject: {
       props: {
-        defaultNodeValue: 'start',
+        defaultNodeValue: "start",
         nodeKey: KEY_ALIGN,
-        styleKey: 'textAlign',
-        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
-        validTypes: ['p'],
+        styleKey: "textAlign",
+        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
+        validTypes: ["p"],
       },
     },
     then: (_, plugin) =>
@@ -1309,10 +1315,10 @@
   export const AlignPlugin = createSlatePlugin({
     inject: {
       nodeProps: {
-        defaultNodeValue: 'start',
-        nodeKey: 'align',
-        styleKey: 'textAlign',
-        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        defaultNodeValue: "start",
+        nodeKey: "align",
+        styleKey: "textAlign",
+        validNodeValues: ["start", "left", "center", "right", "end", "justify"],
       },
       targetPluginToInject: ({ editor, plugin }) => ({
         parsers: {
@@ -1329,7 +1335,7 @@
       }),
       targetPlugins: [ParagraphPlugin.key],
     },
-    key: 'align',
+    key: "align",
   });
   ```
 
@@ -1351,7 +1357,7 @@
   ```typescript
   type LinkConfig = PluginConfig<
     // key
-    'p',
+    "p",
     // options
     { defaultLinkAttributes?: any },
     // api
@@ -2195,15 +2201,15 @@
   ```tsx
   export interface PlateProviderProps<
     V extends Value = Value,
-    E extends PlateEditor<V> = PlateEditor<V>,
+    E extends PlateEditor<V> = PlateEditor<V>
   > extends PlateProviderEffectsProps<V, E>,
-      Partial<Pick<PlateStoreState<V, E>, 'id' | 'editor'>> {
+      Partial<Pick<PlateStoreState<V, E>, "id" | "editor">> {
     /**
      * Initial value of the editor.
      *
      * @default [{ children: [{ text: '' }] }]
      */
-    initialValue?: PlateStoreState<V>['value'];
+    initialValue?: PlateStoreState<V>["value"];
 
     /**
      * When `true`, it will normalize the initial value passed to the `editor`
@@ -2243,7 +2249,7 @@
   }
 
   export interface PlateEditableProps<V extends Value = Value>
-    extends Omit<TEditableProps<V>, 'id'>,
+    extends Omit<TEditableProps<V>, "id">,
       PlateEditableExtendedProps {}
   ```
 
@@ -2556,7 +2562,7 @@ Those Slate functions should be replaced by the new typed ones:
     P = PluginOptions,
     V extends Value = Value,
     E extends PlateEditor<V> = PlateEditor<V>,
-    EE extends E = E,
+    EE extends E = E
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
@@ -2950,7 +2956,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   // option 1: use the plugin factory
   let plugins = [
     createParagraphPlugin({
-      type: 'paragraph',
+      type: "paragraph",
     }),
   ];
 
@@ -2958,7 +2964,7 @@ Removing node props types in favor of element types (same props + extends `TElem
   plugins = createPlugins(plugins, {
     overrideByKey: {
       [ELEMENT_PARAGRAPH]: {
-        type: 'paragraph',
+        type: "paragraph",
       },
     },
   });
