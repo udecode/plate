@@ -1,6 +1,6 @@
 ---
 name: writing-changesets
-description: Use when creating changeset files for Plate releases - enforces concise shadcn style, forbids minor changesets for core dependencies to prevent dependency cascade, uses imperative voice and bullet points
+description: Use when creating changeset files for Plate releases
 alwaysApply: false
 ---
 
