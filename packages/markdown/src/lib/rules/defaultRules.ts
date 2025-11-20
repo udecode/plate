@@ -969,7 +969,7 @@ export const defaultRules: MdRules = {
   ...fontRules,
   ...mediaRules,
   ...columnRules,
-}
+};
 
 export const buildRules = (editor: SlateEditor) => {
   const keys = Object.keys(defaultRules);

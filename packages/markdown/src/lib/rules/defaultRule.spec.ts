@@ -130,30 +130,30 @@ describe('defaultRules', () => {
 
   it('should deserialize table with math formula in cell', () => {
     const editor = createTestEditor();
-    
+
     const result = deserializeMd(
-      editor, 
+      editor,
       '| 名称 | 公式 |\n|:-----|:-----|\n| 面积 | $a=b$ |'
     );
 
     // 检查结果是一个表格
     expect(result).toHaveLength(1);
     expect(result[0].type).toBe('table');
-    
+
     // 检查表格有2行
     const table = result[0];
     expect(table.children).toHaveLength(2);
-    
+
     // 检查第二行第二列包含数学公式
     const secondRow = table.children[1];
     expect(secondRow.children).toHaveLength(2);
-    
+
     const formulaCell = (secondRow as any).children?.[1];
     expect(formulaCell.children).toHaveLength(1);
-    
+
     const paragraph = formulaCell.children[0];
     expect(paragraph.children).toHaveLength(1);
-    
+
     const inlineEquation = paragraph.children[0];
     expect(inlineEquation.type).toBe('inline_equation');
     expect(inlineEquation.texExpression).toBe('a=b');
