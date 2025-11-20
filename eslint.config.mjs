@@ -39,6 +39,7 @@ export default defineConfig([
     rules: {
       'react-hooks/immutability': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/refs': 'off',
     },
   },
 ]);
