@@ -6,7 +6,7 @@ export function getRegistryTitle(item: Partial<RegistryItem>): string {
     item.name
       ?.replace('-demo', '')
       ?.split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word: any) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ') ??
     ''
   );
@@ -19,7 +19,7 @@ export function getDocTitle(item: { route?: string; title?: string }): string {
       ?.split('/')
       .pop()
       ?.split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word: any) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ') ??
     ''
   );

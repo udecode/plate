@@ -80,7 +80,7 @@ export function getAllFiles(
 
   seen.add(name);
 
-  const component: any = registryTarget.items.find((c) => c.name === name);
+  const component: any = registryTarget.items.find((c: any) => c.name === name);
 
   if (!component) {
     throw new Error(`File ${name} not found`);
@@ -110,7 +110,7 @@ function processFiles(files: ({ path: string; file?: string } | string)[]): {
   name: string;
   type: string;
 }[] {
-  return files.map((fileOrObj) => {
+  return files.map((fileOrObj: any) => {
     const file =
       typeof fileOrObj === 'string'
         ? fileOrObj
@@ -156,7 +156,7 @@ export function getAllDependencies(
 
   seen.add(name);
 
-  const component = registryTarget.items.find((c) => c.name === name);
+  const component = registryTarget.items.find((c: any) => c.name === name);
 
   if (!component) {
     throw new Error(`Dependency ${name} not found from ${registryTarget.name}`);
@@ -164,7 +164,7 @@ export function getAllDependencies(
 
   const deps = [
     ...(component.dependencies ?? []),
-    ...(component.registryDependencies ?? []).flatMap((dep) => {
+    ...(component.registryDependencies ?? []).flatMap((dep: any) => {
       const isDependencyShadcn = dep.includes('shadcn/');
 
       return getAllDependencies(
@@ -221,7 +221,7 @@ export function getAllDependencies(
 // }
 
 const memoizedIndex: typeof Index = Object.fromEntries(
-  Object.entries(Index).map(([style, items]) => [style, { ...items }])
+  Object.entries(Index).map(([style, items]: any) => [style, { ...items }])
 );
 
 export function getRegistryComponent(name: string) {
@@ -314,11 +314,11 @@ async function getAllItemFiles(
   }
 
   const registryTarget = isShadcn ? registryShadcn : registry;
-  const item = registryTarget.items.find((c) => c.name === name);
+  const item = registryTarget.items.find((c: any) => c.name === name);
 
   if (!item) return [];
 
-  let allFiles = [...(item.files ?? [])].map((file) => {
+  let allFiles = [...(item.files ?? [])].map((file: any) => {
     const filePath = typeof file === 'string' ? file : file.path;
     // Ensure path starts with src/registry/
     const normalizedPath = filePath.startsWith('src/registry/')
@@ -349,7 +349,7 @@ async function getAllItemFiles(
 
   // Remove duplicates based on path
   const uniqueFiles = Array.from(
-    new Map(allFiles.map((file) => [file.path, file])).values()
+    new Map(allFiles.map((file: any) => [file.path, file])).values()
   );
 
   return uniqueFiles;
@@ -358,10 +358,10 @@ async function getAllItemFiles(
 async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   // Try different path resolutions
   const possiblePaths = [
-    file.path,
-    file.path.replace('src/registry/', ''),
-    `src/registry/${file.path}`,
-  ].map((p) => path.join(process.cwd(), p));
+    (file as any).path,
+    (file as any).path.replace('src/registry/', ''),
+    `src/registry/${(file as any).path}`,
+  ].map((p: any) => path.join(process.cwd(), p));
 
   let raw: string | undefined;
 
@@ -374,14 +374,14 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   }
 
   if (!raw) {
-    throw new Error(`File not found: ${file.path}`);
+    throw new Error(`File not found: ${(file as any).path}`);
   }
 
   const project = new Project({
     compilerOptions: {},
   });
 
-  const tempFile = await createTempSourceFile(file.path);
+  const tempFile = await createTempSourceFile((file as any).path);
   const sourceFile = project.createSourceFile(tempFile, raw, {
     scriptKind: ScriptKind.TSX,
   });
@@ -395,24 +395,24 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
 }
 
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
-  let target = file.target;
+  let target = (file as any).target;
 
   if (!target || target === '') {
-    const fileName = file.path.split('/').pop();
+    const fileName = (file as any).path.split('/').pop();
 
-    if (file.type === 'registry:component') {
-      target = file.path.replace('src/registry/', '');
+    if ((file as any).type === 'registry:component') {
+      target = (file as any).path.replace('src/registry/', '');
     }
-    if (file.type === 'registry:block' || file.type === 'registry:example') {
+    if ((file as any).type === 'registry:block' || (file as any).type === 'registry:example') {
       target = `components/${fileName}`;
     }
-    if (file.type === 'registry:ui') {
+    if ((file as any).type === 'registry:ui') {
       target = `components/ui/${fileName}`;
     }
-    if (file.type === 'registry:hook') {
+    if ((file as any).type === 'registry:hook') {
       target = `hooks/${fileName}`;
     }
-    if (file.type === 'registry:lib') {
+    if ((file as any).type === 'registry:lib') {
       target = `lib/${fileName}`;
     }
   }
@@ -435,7 +435,7 @@ function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {
   const firstFilePath = files[0].path;
   const firstFilePathDir = path.dirname(firstFilePath);
 
-  return files.map((file) => ({
+  return files.map((file: any) => ({
     ...file,
     path: path.relative(firstFilePathDir, file.path),
     target: getFileTarget(file),

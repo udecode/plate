@@ -5,7 +5,7 @@ import { getRegistryTitle } from '@/lib/registry-utils';
 
 export function registryToNav(registry: Registry['items']): SidebarNavItem[] {
   return registry
-    .map((item) =>
+    .map((item: any) =>
       item.meta
         ? {
             description: item.description,

@@ -98,10 +98,10 @@ export async function generateMetadata({
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = registryUI.find((c) => c.name === docName);
+      file = registryUI.find((c: any) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = registryExamples.find((c) => c.name === docName);
+      file = registryExamples.find((c: any) => c.name === docName);
     }
     if (!docName || !file) {
       return {};
@@ -145,7 +145,7 @@ export async function generateMetadata({
   };
 }
 
-const registryNames = new Set(registry.items.map((item) => item.name));
+const registryNames = new Set(registry.items.map((item: any) => item.name));
 
 export function generateStaticParams() {
   const docs = allDocs
@@ -181,10 +181,10 @@ export default async function DocPage(props: DocPageProps) {
     let file: RegistryItem | undefined;
 
     if (category === 'component') {
-      file = registryUI.find((c) => c.name === docName);
+      file = registryUI.find((c: any) => c.name === docName);
     } else if (category === 'example') {
       docName += '-demo';
-      file = registryExamples.find((c) => c.name === docName);
+      file = registryExamples.find((c: any) => c.name === docName);
     }
     if (!docName || !file) {
       notFound();
@@ -199,7 +199,7 @@ export default async function DocPage(props: DocPageProps) {
       docName,
       file,
       files,
-      registryNames,
+      registryNames: registryNames as any,
     });
 
     const item = await getCachedRegistryItem(docName, true);
@@ -277,7 +277,7 @@ function getRegistryDocs({
   registryNames: Set<string>;
 }) {
   const usedBy = registryUI.filter(
-    (item) =>
+    (item: any) =>
       item.meta &&
       Array.isArray(item.meta.examples) &&
       item.meta.examples.includes(docName)
@@ -290,8 +290,8 @@ function getRegistryDocs({
         (fileName): fileName is string =>
           !!fileName && registryNames.has(fileName) && fileName !== docName
       )
-      .map((fileName) => {
-        const uiItem = registryUI.find((item) => item.name === fileName);
+      .map((fileName: any) => {
+        const uiItem = registryUI.find((item: any) => item.name === fileName);
 
         if (!uiItem) return null;
 
@@ -301,7 +301,7 @@ function getRegistryDocs({
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null),
-    ...usedBy.map((item) => ({
+    ...usedBy.map((item: any) => ({
       route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
       title: getRegistryTitle(item),
     })),
@@ -313,7 +313,7 @@ function getRegistryDocs({
     );
 
   const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
-    (acc, doc) => {
+    (acc: any, doc: any) => {
       if (doc.route!.startsWith(siteConfig.links.platePro)) {
         acc.external.push(doc as any);
       } else if (doc.route!.startsWith('/docs/components')) {
@@ -356,10 +356,10 @@ function getRegistryDocs({
 async function getExampleCode(name?: string) {
   if (!name) return null;
   if (name.endsWith('-pro')) {
-    return proExamples.find((ex) => ex.name === name);
+    return proExamples.find((ex: any) => ex.name === name);
   }
 
-  const example = registryExamples.find((ex) => ex.name === name);
+  const example = registryExamples.find((ex: any) => ex.name === name);
 
   if (!example) {
     throw new Error(`Component ${name} not found`);

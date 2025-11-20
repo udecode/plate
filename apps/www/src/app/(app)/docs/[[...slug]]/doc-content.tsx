@@ -68,7 +68,7 @@ export function DocContent({
     (item) => item.value === category
   );
 
-  const _items = useDedupeNavItems(categoryNavGroups[category]);
+  const _items = useDedupeNavItems(categoryNavGroups[category as keyof typeof categoryNavGroups]);
 
   // v3
   const neighbours = getPagerForDoc(doc as any);

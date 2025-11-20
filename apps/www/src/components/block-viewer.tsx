@@ -119,7 +119,7 @@ function BlockViewerProvider({
   >(highlightedFilesProp ?? []);
   const [activeFile, setActiveFile] = React.useState<
     BlockViewerContext['activeFile']
-  >(highlightedFiles?.[0]?.target ?? null);
+  >((highlightedFiles?.[0] as any)?.target ?? null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSettled, setIsSettled] = React.useState(false);
   const [hasError, setHasError] = React.useState(false); // Add error state
@@ -130,7 +130,7 @@ function BlockViewerProvider({
     if (
       view === 'code' &&
       highlightedFiles?.[1] &&
-      !highlightedFiles[1].content &&
+      !(highlightedFiles[1] as any).content &&
       !isLoading &&
       !hasError &&
       !isSettled
@@ -451,11 +451,11 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
   const deps = dependencies.join(' ');
 
   const file = React.useMemo(
-    () => highlightedFiles?.find((file) => file.target === activeFile),
+    () => highlightedFiles?.find((file: any) => file.target === activeFile),
     [highlightedFiles, activeFile]
   );
 
-  if (!file?.content && isLoading) {
+  if (!(file as any)?.content && isLoading) {
     return (
       <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
         <BlockViewerFileTree size={size} />
@@ -475,7 +475,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex h-12 items-center gap-2 border-zinc-700 border-b bg-zinc-900 px-4 font-medium text-sm">
           <File className="size-4" />
-          {file.target}
+          {(file as any).target}
           <div className="ml-auto flex items-center gap-2">
             {dependencies.length > 0 && (
               <CopyNpmCommandButton
@@ -494,10 +494,10 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
           </div>
         </div>
         <div
-          key={file?.path}
+          key={(file as any)?.path}
           className="[&_.line:before]:-translate-y-px relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
           data-rehype-pretty-code-fragment
-          dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
+          dangerouslySetInnerHTML={{ __html: (file as any)?.highlightedContent ?? '' }}
         />
       </div>
     </div>
@@ -602,11 +602,11 @@ function BlockCopyCodeButton() {
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   const file = React.useMemo(
-    () => highlightedFiles?.find((file) => file.target === activeFile),
+    () => highlightedFiles?.find((file: any) => file.target === activeFile),
     [activeFile, highlightedFiles]
   );
 
-  const content = file?.content;
+  const content = (file as any)?.content;
 
   if (!content) {
     return null;

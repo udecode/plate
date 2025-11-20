@@ -71,9 +71,9 @@ export const docsExamples: SidebarNavItem[] = [
   },
   ...registryToNav(
     demoExamples.filter(
-      (item) => !['basic-blocks-demo', 'basic-marks-demo'].includes(item.name)
+      (item: any) => !['basic-blocks-demo', 'basic-marks-demo'].includes(item.name)
     )
-  ).map((item) => ({
+  ).map((item: any) => ({
     ...item,
     title: item.title + (item.title?.includes(' Form') ? '' : ' Demo'),
   })),
