@@ -22,15 +22,23 @@ export default defineConfig([
       'tooling/**',
     ],
   },
+  // React Hooks config for apps/www (React 19 with React Compiler)
   {
     ...reactHooks.configs.flat.recommended,
-    // Only lint React component files (.tsx) and hook files (use*.ts)
     files: [
-      'apps/**/src/**/*.tsx',
-      'apps/**/src/**/use*.ts',
+      'apps/www/src/**/*.tsx',
+      'apps/www/src/**/use*.ts',
       'packages/**/src/**/*.tsx',
       'packages/**/src/**/use*.ts',
     ],
     languageOptions: { parser: tsParser },
+  },
+  // Disable React Compiler rules for packages (React 18 compatibility)
+  {
+    files: ['packages/**'],
+    rules: {
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+    },
   },
 ]);

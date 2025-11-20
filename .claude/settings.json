@@ -12,7 +12,6 @@
     }
   },
   "enabledPlugins": {
-    "ctx@dotai": true,
     "dotai@dotai": true,
     "fb@dotai": true,
     "notification@dotai": true,
