@@ -88,8 +88,11 @@ jobs:
       - name: 🏗 Build
         run: bun run build
 
-      - name: 🕵️ Typecheck + 🧪 Test (parallel)
-        run: bun run verify
+      - name: 🕵️ Typecheck
+        run: bun run typecheck
+
+      - name: 🧪 Test
+        run: bun run test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
