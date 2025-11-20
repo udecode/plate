@@ -40,56 +40,56 @@
 
 **Required sequence for type checking modified packages:**
 
-1. `yarn install` - Install all dependencies and update lockfile if needed
-2. `yarn turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
-3. `yarn turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
-4. `yarn turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
+1. `bun install` - Install all dependencies and update lockfile if needed
+2. `bun turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
+3. `bun turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
+4. `bun turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
 
 **For multiple modified packages:**
 
 ```bash
 # Build multiple specific packages and their dependencies
-yarn turbo build --filter=./packages/core --filter=./packages/utils
+bun turbo build --filter=./packages/core --filter=./packages/utils
 
 # Typecheck multiple packages
-yarn turbo typecheck --filter=./packages/core --filter=./packages/utils
+bun turbo typecheck --filter=./packages/core --filter=./packages/utils
 
 # Lint multiple packages
-yarn turbo lint:fix --filter=./packages/core --filter=./packages/utils
+bun turbo lint:fix --filter=./packages/core --filter=./packages/utils
 ```
 
 **Alternative approaches:**
 
 ```bash
 # Build since last commit (useful for PR changes)
-yarn turbo build --filter='[HEAD^1]'
+bun turbo build --filter='[HEAD^1]'
 
 # Build all changed packages in current branch
-yarn turbo build --filter='...[origin/main]'
+bun turbo build --filter='...[origin/main]'
 
 # For workspace-specific operations
-yarn workspace @platejs/core build
-yarn workspace @platejs/core typecheck
-yarn workspace @platejs/core lint:fix
+bun workspace @platejs/core build
+bun workspace @platejs/core typecheck
+bun workspace @platejs/core lint:fix
 ```
 
 **Full project commands (use only if needed, these are very slow):**
 
-- `yarn build` - Build all packages (only use when necessary)
+- `bun run build` - Build all packages (only use when necessary)
 
-- `yarn test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
+- `bun run test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
 
 ### Database
 
 <!-- Run /create-tech-stack to document your database commands -->
 <!-- Example: -->
-<!-- - `pnpm db:generate` - Generate database schema -->
-<!-- - `pnpm db:migrate` - Run database migrations -->
+<!-- - `bun db:generate` - Generate database schema -->
+<!-- - `bun db:migrate` - Run database migrations -->
 
 ### Testing
 
-- `yarn test` - Run all unit tests
-- `yarn workspace <package-name> test` - Run tests for a specific package
+- `bun run test` - Run all unit tests
+- `bun workspace <package-name> test` - Run tests for a specific package
 - See **@.cursor/rules/testing.mdc** for comprehensive testing guidelines
 
 ## Development Rules

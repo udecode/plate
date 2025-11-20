@@ -48,8 +48,8 @@ jobs:
 
             Please analyze the changes in this PR/issue and create or update the relevant tests accordingly.
             **Important Development Sequence:**
-            - Before running type checking, you must first run `yarn install` and build affected packages
-            - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
-            - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
-            - Use `yarn turbo lint:fix --filter=./packages/modified-package` for linting modified packages.
-            - Avoid full project commands (`yarn build`, `yarn typecheck`, `yarn lint:fix`), these are very slow
+            - Before running type checking, you must first run `bun install` and build affected packages
+            - Use `bun turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
+            - Use `bun turbo typecheck --filter=./packages/modified-package` for type checking modified packages
+            - Use `bun turbo lint:fix --filter=./packages/modified-package` for linting modified packages.
+            - Avoid full project commands (`bun run build`, `bun typecheck`, `bun lint:fix`), these are very slow

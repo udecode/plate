@@ -54,7 +54,12 @@ module.exports = {
   preset: 'ts-jest',
   setupFilesAfterEnv: ['<rootDir>/tooling/config/setupTests.ts'],
   testEnvironment: 'jsdom',
-  testPathIgnorePatterns: ['/playwright/', '/packages/cli/'],
+  testPathIgnorePatterns: [
+    '/playwright/',
+    '/packages/cli/',
+    '/tmp/',
+    '/tooling/e2e/',
+  ],
   testRegex: '(test|spec).tsx?$',
   transform: {
     '^.+\\.(t|j)sx?$': '@swc/jest',

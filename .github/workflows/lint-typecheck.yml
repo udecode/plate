@@ -9,8 +9,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'bun.lock'
       - 'biome.jsonc'
       - 'eslint*'
       - 'jest.config.js'
@@ -28,8 +27,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'bun.lock'
       - 'biome.jsonc'
       - 'eslint*'
       - 'jest.config.js'
@@ -52,18 +50,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: ♻️ Setup bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 📥 Install dependencies
+        run: bun install --frozen-lockfile
 
       - name: 🔬 Lint
-        run: yarn check
+        run: bun check
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -71,21 +83,21 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
       - name: 🏗 Build
-        run: yarn build
+        run: bun run build
 
       - name: 🕵️ Typecheck + 🧪 Test (parallel)
-        run: yarn verify
+        run: bun run verify
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
-      #     yarn playwright install-deps
-      #     yarn playwright install
+      #     bun playwright install-deps
+      #     bun playwright install
 
       # - name: 🎭 Run Playwright tests
-      #   run: yarn e2e
+      #   run: bun e2e
 
   notify-failure:
     name: Discord Notification
