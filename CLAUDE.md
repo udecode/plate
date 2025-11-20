@@ -67,10 +67,14 @@ bun turbo build --filter='[HEAD^1]'
 # Build all changed packages in current branch
 bun turbo build --filter='...[origin/main]'
 
-# For workspace-specific operations
-bun workspace @platejs/core build
-bun workspace @platejs/core typecheck
-bun workspace @platejs/core lint:fix
+# For workspace-specific operations (packages)
+bun --cwd packages/core run build
+bun --cwd packages/core run typecheck
+bun --cwd packages/core run lint:fix
+
+# For workspace-specific operations (apps)
+bun --cwd apps/www run build
+bun --cwd apps/www run dev
 ```
 
 **Full project commands (use only if needed, these are very slow):**
@@ -89,7 +93,7 @@ bun workspace @platejs/core lint:fix
 ### Testing
 
 - `bun run test` - Run all unit tests
-- `bun workspace <package-name> test` - Run tests for a specific package
+- `bun --cwd packages/<package-name> test` - Run tests for a specific package
 - See **@.cursor/rules/testing.mdc** for comprehensive testing guidelines
 
 ## Development Rules
