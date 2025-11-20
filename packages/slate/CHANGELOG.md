@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 49.2.21
 
 ### Patch Changes
@@ -61,10 +67,10 @@
 
     ```ts
     // Before
-    editor.api.fragment(editor.selection, { structuralTypes: ['table'] });
+    editor.api.fragment(editor.selection, { structuralTypes: ["table"] });
 
     // After
-    editor.api.fragment(editor.selection, { unwrap: ['table'] });
+    editor.api.fragment(editor.selection, { unwrap: ["table"] });
     ```
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.1.1
 
 ### Patch Changes
@@ -354,13 +360,13 @@
           mark: true,
           deserialize: (mdastNode) => ({
             bold: true,
-            text: node.value || '',
+            text: node.value || "",
           }),
         },
         // For elementRules
         [EquationPlugin.key]: {
           deserialize: (mdastNode, options) => ({
-            children: [{ text: '' }],
+            children: [{ text: "" }],
             texExpression: node.value,
             type: EquationPlugin.key,
           }),
@@ -405,15 +411,15 @@
               .getApi(SuggestionPlugin)
               .suggestion.suggestionData(node);
 
-            return suggestionData?.type === 'insert'
-              ? { type: 'text', value: '' }
-              : { type: 'text', value: node.text };
+            return suggestionData?.type === "insert"
+              ? { type: "text", value: "" }
+              : { type: "text", value: node.text };
           },
         },
         // For elementRules
         [EquationPlugin.key]: {
           serialize: (slateNode) => ({
-            type: 'math',
+            type: "math",
             value: node.texExpression,
           }),
         },

@@ -1,5 +1,11 @@
 # @platejs/list-classic
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.0.0
 
 ## 49.1.0
@@ -23,7 +29,7 @@
   createListPlugin();
 
   // Toggle task list
-  editor.tf.toggle.list({ listType: 'taskList' });
+  editor.tf.toggle.list({ listType: "taskList" });
   ```
 
 ## 49.0.0
@@ -36,10 +42,10 @@
     - Example:
       ```tsx
       BulletedListPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+alt+5' } },
+        shortcuts: { toggle: { keys: "mod+alt+5" } },
       });
       NumberedListPlugin.configure({
-        shortcuts: { toggle: { keys: 'mod+alt+6' } },
+        shortcuts: { toggle: { keys: "mod+alt+6" } },
       });
       ```
   - Package `@udecode/plate-list` has been moved to `@platejs/list-classic`.

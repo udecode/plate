@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 51.1.2
+
+### Patch Changes
+
+- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
+
 ## 51.1.1
 
 ## 51.0.1
@@ -94,9 +100,9 @@
   ```typescript
   // Convert AI comment to text range
   const range = aiCommentToRange(editor, {
-    blockId: 'block-1',
-    content: 'Selected text',
-    comment: 'Consider adding more detail here',
+    blockId: "block-1",
+    content: "Selected text",
+    comment: "Consider adding more detail here",
   });
   ```
 
@@ -194,10 +200,10 @@
         // ... other options
         shortcuts: {
           acceptNextWord: {
-            keys: 'mod+right',
+            keys: "mod+right",
           },
           triggerSuggestion: {
-            keys: 'ctrl+space',
+            keys: "ctrl+space",
           },
         },
       });
