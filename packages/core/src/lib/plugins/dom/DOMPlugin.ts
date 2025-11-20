@@ -49,9 +49,7 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
   },
 })
   .extendEditorApi(({ editor }) => ({
-    isScrolling: () => {
-      return AUTO_SCROLL.get(editor) ?? false;
-    },
+    isScrolling: () => AUTO_SCROLL.get(editor) ?? false,
   }))
   .extendEditorTransforms(({ editor }) => ({
     withScrolling: bindFirst(withScrolling, editor),

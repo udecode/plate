@@ -234,10 +234,11 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
 
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
   api: C['api'] & EditorApi & CorePluginApi;
-  setOptions: {
-    (options: (state: Draft<Partial<InferOptions<C>>>) => void): void;
-    (options: Partial<InferOptions<C>>): void;
-  };
+  setOptions: (
+    options:
+      | ((state: Draft<Partial<InferOptions<C>>>) => void)
+      | Partial<InferOptions<C>>
+  ) => void;
   tf: C['transforms'] & EditorTransforms & CorePluginTransforms;
   type: string;
   getOption: <
@@ -386,7 +387,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-export interface BreakRules {
+export type BreakRules = {
   /** Action when Enter is pressed in an empty block. */
   empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
   /**
@@ -407,19 +408,19 @@ export interface BreakRules {
   default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
   /** If true, the new block after splitting will be reset to the default type. */
   splitReset?: boolean;
-}
+};
 
-export interface MergeRules {
+export type MergeRules = {
   /** Whether to remove the node when it's empty. */
   removeEmpty?: boolean;
-}
+};
 
-export interface NormalizeRules {
+export type NormalizeRules = {
   /** Whether to remove nodes with empty text. */
   removeEmpty?: boolean;
-}
+};
 
-export interface DeleteRules {
+export type DeleteRules = {
   /**
    * Action when Backspace is pressed at the start of the block. This applies
    * whether the block is empty or not.
@@ -435,9 +436,9 @@ export interface DeleteRules {
   start?: 'default' | 'reset';
   /** Action when Backspace is pressed and the block is empty. */
   empty?: 'default' | 'reset';
-}
+};
 
-export interface SelectionRules {
+export type SelectionRules = {
   /**
    * Defines the selection behavior at the boundaries of nodes.
    *
@@ -450,7 +451,7 @@ export interface SelectionRules {
    * - `default`: Uses Slate's default behavior.
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
-}
+};
 
 export type MatchRules =
   | 'break.default'
@@ -507,7 +508,7 @@ export type ExtendConfig<
   transforms: C['transforms'] & ET;
 };
 
-export interface GetInjectNodePropsOptions {
+export type GetInjectNodePropsOptions = {
   /** Existing className. */
   className?: string;
 
@@ -519,12 +520,12 @@ export interface GetInjectNodePropsOptions {
 
   /** Style value or className key. */
   text?: TText;
-}
+};
 
-export interface GetInjectNodePropsReturnType extends AnyObject {
+export type GetInjectNodePropsReturnType = AnyObject & {
   className?: string;
   style?: CSSStyleDeclaration;
-}
+};
 
 export type InferKey<P> = P extends PluginConfig ? P['key'] : never;
 

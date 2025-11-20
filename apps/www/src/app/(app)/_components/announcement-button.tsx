@@ -22,7 +22,7 @@ export function AnnouncementButton() {
   return (
     <Button
       variant="link"
-      className="group mb-2 inline-flex h-5 flex-wrap items-center gap-0 rounded-lg !px-0.5 text-sm font-medium hover:no-underline"
+      className="group !px-0.5 mb-2 inline-flex h-5 flex-wrap items-center gap-0 rounded-lg font-medium text-sm hover:no-underline"
       onClick={() => {
         window.open('https://pro.platejs.org', '_blank');
       }}

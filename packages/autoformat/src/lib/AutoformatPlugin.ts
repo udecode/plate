@@ -72,7 +72,7 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
                 return textRule.mode === 'text' && textRule.format === char;
               }
 
-              return;
+              return false;
             });
 
             // abort if no matching substitution is found.

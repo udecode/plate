@@ -35,8 +35,7 @@ const nextConfig = async (phase: string) => {
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
     // slower compilation, so let's disable it in development for now
-    reactCompiler:
-      process.env.RC === 'true' || process.env.NODE_ENV === 'production',
+    reactCompiler: true,
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
@@ -44,13 +43,6 @@ const nextConfig = async (phase: string) => {
     staticPageGenerationTimeout: 1200,
 
     transpilePackages: ['ts-morph'],
-
-    // typescript: {
-    //   ignoreBuildErrors: true,
-    // },
-    // eslint: {
-    //   ignoreDuringBuilds: true,
-    // },
 
     async redirects() {
       return [
@@ -118,7 +110,7 @@ const nextConfig = async (phase: string) => {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
 
           return packageJson.name;
-        } catch (error) {
+        } catch (_error) {
           return null;
         }
       })

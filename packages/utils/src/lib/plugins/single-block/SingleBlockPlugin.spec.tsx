@@ -114,7 +114,7 @@ describe('SingleBlockPlugin', () => {
       (
         <editor>
           <hp>content</hp>
-          <hp></hp>
+          <hp />
           <hp>more content</hp>
         </editor>
       ) as any

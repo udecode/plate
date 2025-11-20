@@ -21,14 +21,11 @@ import { withPlateYjs } from './withPlateYjs';
 // Helper to check if an object is a provider config
 const isProviderConfig = (
   item: UnifiedProvider | YjsProviderConfig
-): item is YjsProviderConfig => {
-  return (
-    typeof item === 'object' &&
-    item !== null &&
-    'type' in item &&
-    'options' in item
-  );
-};
+): item is YjsProviderConfig =>
+  typeof item === 'object' &&
+  item !== null &&
+  'type' in item &&
+  'options' in item;
 
 export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   key: KEYS.yjs,
@@ -129,7 +126,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       try {
         YjsEditor.disconnect(editor as any);
-      } catch (error) {}
+      } catch (_error) {}
     },
     /**
      * Disconnect from all providers or specific provider types. For WebRTC
@@ -141,7 +138,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
      *   specified, disconnects from all providers.
      */
     disconnect: (type?: YjsProviderType | YjsProviderType[]) => {
-      const { editor, getOptions } = ctx;
+      const { editor: _editor, getOptions } = ctx;
       const { _providers } = getOptions();
 
       const typesToDisconnect = type

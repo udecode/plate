@@ -32,7 +32,7 @@ export const testValue = [
         suggestion: true,
         suggestion_suggestion1: {
           id: 'suggestion1',
-          createdAt: 1742652370104,
+          createdAt: 1_742_652_370_104,
           type: 'remove',
           userId: 'charlie',
         },
@@ -42,7 +42,7 @@ export const testValue = [
         suggestion: true,
         suggestion_suggestion1: {
           id: 'suggestion1',
-          createdAt: 1742652370104,
+          createdAt: 1_742_652_370_104,
           type: 'insert',
           userId: 'charlie',
         },

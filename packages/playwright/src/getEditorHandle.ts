@@ -1,10 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 import type { PlateEditor } from 'platejs/react';
-
-import type { EditorHandle } from './types';
-
 import { getEditable } from './getEditable';
 import { getAdapter } from './internal/getAdapter';
+import type { EditorHandle } from './types';
 
 export const getEditorHandle = async <E extends PlateEditor = PlateEditor>(
   page: Page,
@@ -23,7 +21,8 @@ export const getEditorHandle = async <E extends PlateEditor = PlateEditor>(
         );
 
     throw error;
-  } else if (editableCount > 1) {
+  }
+  if (editableCount > 1) {
     const error = editable
       ? new Error(
           'getEditorHandle: the given locator matched more than one element'

@@ -61,5 +61,5 @@ const plateMdxComponents = {
   MinusIcon,
   PackageInfo: EmptyComponent,
   SquareAsteriskIcon,
-  Steps: Steps,
+  Steps,
 };

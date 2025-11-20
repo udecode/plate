@@ -121,10 +121,10 @@ Paragaph followed by two empty paragraphts
       <fragment>
         <hp>Paragaph followed by two empty paragraphts</hp>
         <hp>
-          <htext></htext>
+          <htext />
         </hp>
         <hp>
-          <htext></htext>
+          <htext />
         </hp>
       </fragment>
     );
@@ -132,7 +132,7 @@ Paragaph followed by two empty paragraphts
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it(String.raw`should collapse leading linebreak - collapsing break`, () => {
+  it('should collapse leading linebreak - collapsing break', () => {
     const input = `
 > Blockquote followed by emtpy lines
 >

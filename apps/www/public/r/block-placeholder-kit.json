@@ -7,7 +7,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/block-placeholder-kit.tsx",
-      "content": "'use client';\n\nimport { KEYS } from 'platejs';\nimport { BlockPlaceholderPlugin } from 'platejs/react';\n\nexport const BlockPlaceholderKit = [\n  BlockPlaceholderPlugin.configure({\n    options: {\n      className:\n        'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',\n      placeholders: {\n        [KEYS.p]: 'Type something...',\n      },\n      query: ({ path }) => {\n        return path.length === 1;\n      },\n    },\n  }),\n];\n",
+      "content": "'use client';\n\nimport { KEYS } from 'platejs';\nimport { BlockPlaceholderPlugin } from 'platejs/react';\n\nexport const BlockPlaceholderKit = [\n  BlockPlaceholderPlugin.configure({\n    options: {\n      className:\n        'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',\n      placeholders: {\n        [KEYS.p]: 'Type something...',\n      },\n      query: ({ path }) => path.length === 1,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

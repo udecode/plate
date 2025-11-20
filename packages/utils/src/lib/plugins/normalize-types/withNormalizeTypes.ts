@@ -1,6 +1,6 @@
 import type { OverrideEditor } from '@platejs/core';
 
-import { type TElement, ElementApi, NodeApi } from '@platejs/slate';
+import { ElementApi, NodeApi, type TElement } from '@platejs/slate';
 
 import type { NormalizeTypesConfig } from './NormalizeTypesPlugin';
 

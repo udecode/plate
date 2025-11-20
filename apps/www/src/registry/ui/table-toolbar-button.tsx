@@ -234,32 +234,31 @@ function TablePicker() {
 
   return (
     <div
-      className="m-0 flex! flex-col p-0"
+      className="flex! m-0 flex-col p-0"
       onClick={() => {
         tf.insert.table(tablePicker.size, { select: true });
         editor.tf.focus();
       }}
+      role="button"
     >
       <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
         {tablePicker.grid.map((rows, rowIndex) =>
-          rows.map((value, columIndex) => {
-            return (
-              <div
-                key={`(${rowIndex},${columIndex})`}
-                className={cn(
-                  'col-span-1 size-3 border border-solid bg-secondary',
-                  !!value && 'border-current'
-                )}
-                onMouseMove={() => {
-                  onCellMove(rowIndex, columIndex);
-                }}
-              />
-            );
-          })
+          rows.map((value, columIndex) => (
+            <div
+              key={`(${rowIndex},${columIndex})`}
+              className={cn(
+                'col-span-1 size-3 border border-solid bg-secondary',
+                !!value && 'border-current'
+              )}
+              onMouseMove={() => {
+                onCellMove(rowIndex, columIndex);
+              }}
+            />
+          ))
         )}
       </div>
 
-      <div className="text-center text-xs text-current">
+      <div className="text-center text-current text-xs">
         {tablePicker.size.rowCount} x {tablePicker.size.colCount}
       </div>
     </div>

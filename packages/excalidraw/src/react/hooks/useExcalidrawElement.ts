@@ -72,19 +72,15 @@ export const useExcalidrawElement = ({
   );
 
   // Create mutable copies of initial data to ensure Excalidraw can modify them
-  const initialData = React.useMemo(() => {
-    return {
+  const initialData = React.useMemo(
+    () => ({
       appState: element.data?.state ? cloneDeep(element.data.state) : undefined,
       elements: element.data?.elements ? cloneDeep(element.data.elements) : [],
       libraryItems: cloneDeep(libraryItems),
       scrollToContent,
-    };
-  }, [
-    element.data?.state,
-    element.data?.elements,
-    libraryItems,
-    scrollToContent,
-  ]);
+    }),
+    [element.data?.state, element.data?.elements, libraryItems, scrollToContent]
+  );
 
   const excalidrawProps: TExcalidrawProps = {
     autoFocus: false,

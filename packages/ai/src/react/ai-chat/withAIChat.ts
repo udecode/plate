@@ -9,7 +9,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
   api,
   editor,
   getOptions,
-  tf: { apply, insertText, normalizeNode },
+  tf: { insertText, normalizeNode },
   type,
 }) => {
   const tf = editor.getTransforms(AIPlugin);

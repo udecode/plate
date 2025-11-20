@@ -10,7 +10,9 @@ export type MentionOnSelectItem<
 export const getMentionOnSelectItem =
   <TItem extends TMentionItemBase = TMentionItemBase>({
     key = KEYS.mention,
-  }: { key?: string } = {}): MentionOnSelectItem<TItem> =>
+  }: {
+    key?: string;
+  } = {}): MentionOnSelectItem<TItem> =>
   (editor, item, search = '') => {
     const { getOptions, tf } = getEditorPlugin<MentionConfig>(editor, {
       key: key as any,

@@ -31,17 +31,17 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])(
-    'should add a blank leaf to blocks without children',
-    ({ input, output }: any) => {
-      const editor = createPlateEditor();
+  ])('should add a blank leaf to blocks without children', ({
+    input,
+    output,
+  }: any) => {
+    const editor = createPlateEditor();
 
-      const result = normalizeDescendantsToDocumentFragment(editor, {
-        descendants: input,
-      });
-      expect(result).toEqual(output);
-    }
-  );
+    const result = normalizeDescendantsToDocumentFragment(editor, {
+      descendants: input,
+    });
+    expect(result).toEqual(output);
+  });
 
   it.each([
     {
@@ -99,19 +99,19 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])(
-    'should wrap inline blocks and text nodes in case they have a sibling block',
-    ({ input, output }: any) => {
-      const editor = createPlateEditor({
-        plugins: [LinkPlugin],
-      });
+  ])('should wrap inline blocks and text nodes in case they have a sibling block', ({
+    input,
+    output,
+  }: any) => {
+    const editor = createPlateEditor({
+      plugins: [LinkPlugin],
+    });
 
-      const result = normalizeDescendantsToDocumentFragment(editor, {
-        descendants: input,
-      });
-      expect(result).toEqual(output);
-    }
-  );
+    const result = normalizeDescendantsToDocumentFragment(editor, {
+      descendants: input,
+    });
+    expect(result).toEqual(output);
+  });
 
   it.each([
     {
@@ -173,23 +173,23 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])(
-    'should wrap inline blocks and text nodes in case they have a sibling block',
-    ({ input, output }: any) => {
-      const BaseBlockquotePlugin = createPlatePlugin({
-        key: 'blockquote',
-        node: { isElement: true },
-      });
+  ])('should wrap inline blocks and text nodes in case they have a sibling block', ({
+    input,
+    output,
+  }: any) => {
+    const BaseBlockquotePlugin = createPlatePlugin({
+      key: 'blockquote',
+      node: { isElement: true },
+    });
 
-      const editor = createPlateEditor({
-        plugins: [LinkPlugin],
-      });
+    const editor = createPlateEditor({
+      plugins: [LinkPlugin],
+    });
 
-      const result = normalizeDescendantsToDocumentFragment(editor, {
-        defaultElementPlugin: BaseBlockquotePlugin,
-        descendants: input,
-      });
-      expect(result).toEqual(output);
-    }
-  );
+    const result = normalizeDescendantsToDocumentFragment(editor, {
+      defaultElementPlugin: BaseBlockquotePlugin,
+      descendants: input,
+    });
+    expect(result).toEqual(output);
+  });
 });

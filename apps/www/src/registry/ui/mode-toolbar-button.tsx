@@ -65,17 +65,15 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
               setReadOnly(true);
 
               return;
-            } else {
-              setReadOnly(false);
             }
+            setReadOnly(false);
 
             if (newValue === 'suggestion') {
               editor.setOption(SuggestionPlugin, 'isSuggesting', true);
 
               return;
-            } else {
-              editor.setOption(SuggestionPlugin, 'isSuggesting', false);
             }
+            editor.setOption(SuggestionPlugin, 'isSuggesting', false);
 
             if (newValue === 'editing') {
               editor.tf.focus();

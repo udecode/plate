@@ -1,7 +1,11 @@
-import type { PlateEditor } from "platejs/react";
+import type { PlateEditor } from 'platejs/react';
 
-import { getSuggestionKey, getTransientSuggestionKey, rejectSuggestion } from "@platejs/suggestion";
-import { SuggestionPlugin } from "@platejs/suggestion/react";
+import {
+  getSuggestionKey,
+  getTransientSuggestionKey,
+  rejectSuggestion,
+} from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 export const rejectAISuggestions = (editor: PlateEditor) => {
   const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({

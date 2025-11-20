@@ -136,7 +136,7 @@ export const usePlateStore = (id?: string) => {
     }
 
     throw new Error(
-      `Plate hooks must be used inside a Plate or PlateController`
+      'Plate hooks must be used inside a Plate or PlateController'
     );
   }
   return store;
@@ -172,13 +172,11 @@ export const usePlateState = ((key, options) => {
 export const useEditorId = (): string =>
   useAtomStoreValue(usePlateStore(), 'editor').id;
 
-export const useEditorContainerRef = (id?: string) => {
-  return useAtomStoreValue(usePlateStore(id), 'containerRef');
-};
+export const useEditorContainerRef = (id?: string) =>
+  useAtomStoreValue(usePlateStore(id), 'containerRef');
 
-export const useEditorScrollRef = (id?: string) => {
-  return useAtomStoreValue(usePlateStore(id), 'scrollRef');
-};
+export const useEditorScrollRef = (id?: string) =>
+  useAtomStoreValue(usePlateStore(id), 'scrollRef');
 
 /** Returns the scrollRef if it exists, otherwise returns the containerRef. */
 export const useScrollRef = (id?: string) => {
@@ -188,22 +186,19 @@ export const useScrollRef = (id?: string) => {
   return scrollRef.current ? scrollRef : containerRef;
 };
 
-export const useEditorMounted = (id?: string): boolean => {
-  return !!useAtomStoreValue(usePlateStore(id), 'isMounted');
-};
+export const useEditorMounted = (id?: string): boolean =>
+  !!useAtomStoreValue(usePlateStore(id), 'isMounted');
 
 /**
  * Whether the editor is read-only. You can also use `useReadOnly` from
  * `slate-react` in node components.
  */
-export const useEditorReadOnly = (id?: string): boolean => {
-  return !!useAtomStoreValue(usePlateStore(id), 'readOnly');
-};
+export const useEditorReadOnly = (id?: string): boolean =>
+  !!useAtomStoreValue(usePlateStore(id), 'readOnly');
 
 /** Whether the editor is composing. */
-export const useEditorComposing = (id?: string): boolean => {
-  return !!useAtomStoreValue(usePlateStore(id), 'composing');
-};
+export const useEditorComposing = (id?: string): boolean =>
+  !!useAtomStoreValue(usePlateStore(id), 'composing');
 
 /**
  * Get a reference to the editor instance that remains stable across re-renders.
@@ -234,28 +229,23 @@ export const useEditorSelection = (id?: string) =>
 /** Get editor state which is updated on editor change. */
 export const useEditorState = <E extends PlateEditor = PlateEditor>(
   id?: string
-): E => {
-  return usePlateStore(id).useTrackedEditorValue().editor;
-};
+): E => usePlateStore(id).useTrackedEditorValue().editor;
 
 /** Version incremented on each editor change. */
-export const useEditorVersion = (id?: string) => {
-  return useAtomStoreValue(usePlateStore(id), 'versionEditor');
-};
+export const useEditorVersion = (id?: string) =>
+  useAtomStoreValue(usePlateStore(id), 'versionEditor');
 
 /** Version incremented on selection change. */
-export const useSelectionVersion = (id?: string) => {
-  return useAtomStoreValue(usePlateStore(id), 'versionSelection');
-};
+export const useSelectionVersion = (id?: string) =>
+  useAtomStoreValue(usePlateStore(id), 'versionSelection');
 
 /** Get the editor value (deeply memoized). */
 export const useEditorValue = (id?: string) =>
   usePlateStore(id).useTrackedValueValue().value;
 
 /** Version incremented on value change. */
-export const useValueVersion = (id?: string) => {
-  return useAtomStoreValue(usePlateStore(id), 'versionValue');
-};
+export const useValueVersion = (id?: string) =>
+  useAtomStoreValue(usePlateStore(id), 'versionValue');
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
 

@@ -26,9 +26,7 @@ export const registerProviderType = <T>(
 // Get a provider constructor by type
 export const getProviderClass = (
   type: YjsProviderType
-): ProviderConstructor | undefined => {
-  return providerRegistry[type];
-};
+): ProviderConstructor | undefined => providerRegistry[type];
 
 // Create a provider instance
 export const createProvider = ({

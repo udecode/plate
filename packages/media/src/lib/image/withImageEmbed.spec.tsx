@@ -33,9 +33,7 @@ describe('withImageEmbed', () => {
     });
 
     const data = {
-      getData: () => {
-        return 'https://i.imgur.com/removed.png';
-      },
+      getData: () => 'https://i.imgur.com/removed.png',
     };
     editor.tf.insertData(data as any);
 

@@ -1,6 +1,5 @@
+import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
 import type { QueryNodeOptions } from '@platejs/slate';
-
-import { type PluginConfig, createTSlatePlugin } from '@platejs/core';
 
 import { KEYS } from '../../plate-keys';
 import { withTrailingBlock } from './withTrailingBlock';

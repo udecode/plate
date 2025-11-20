@@ -28,10 +28,12 @@ const mappedKeys: Record<string, string> = {
   up: 'arrowup',
 };
 
+const KEY_PREFIX_REGEX = /key|digit|numpad/;
+
 export function mapKey(key: string): string {
   return (mappedKeys[key.trim()] || key.trim())
     .toLowerCase()
-    .replace(/key|digit|numpad/, '');
+    .replace(KEY_PREFIX_REGEX, '');
 }
 
 export function isHotkeyModifier(key: string) {

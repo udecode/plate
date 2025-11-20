@@ -10,8 +10,8 @@ export const withGetFragmentExcludeDiff: OverrideEditor = ({
       const fragment = cloneDeep(getFragment());
 
       const removeDiff = (node: Descendant) => {
-        if ('diff' in node) delete node.diff;
-        if ('diffOperation' in node) delete node.diffOperation;
+        if ('diff' in node) node.diff = undefined;
+        if ('diffOperation' in node) node.diffOperation = undefined;
         if ('children' in node)
           (node.children as Descendant[]).forEach(removeDiff);
       };

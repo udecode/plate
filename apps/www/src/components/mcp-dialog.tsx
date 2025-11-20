@@ -61,7 +61,7 @@ export function SetupMCPDialog() {
       <DialogContent className="flex max-h-[90vh] flex-col overflow-y-auto sm:max-w-3xl">
         <DialogHeader className="w-full">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold">Setup MCP</DialogTitle>
+            <DialogTitle className="font-bold text-xl">Setup MCP</DialogTitle>
           </div>
           <p className="mt-2 text-muted-foreground">
             <Link onClick={() => setOpen(false)} href="/docs/installation/mcp">

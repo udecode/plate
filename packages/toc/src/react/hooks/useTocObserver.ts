@@ -1,10 +1,10 @@
 import React from 'react';
 
-interface UseTocObserver {
+type UseTocObserver = {
   activeId: string;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
-}
+};
 
 export const useTocObserver = ({
   activeId,
@@ -47,7 +47,7 @@ export const useTocObserver = ({
 
   React.useEffect(() => {
     const observer = new IntersectionObserver(updateOffset, {
-      root: root,
+      root,
     });
 
     const element = root?.querySelectorAll('#toc_item_active')[0];

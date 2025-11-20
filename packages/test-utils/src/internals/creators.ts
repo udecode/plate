@@ -1,20 +1,20 @@
 import {
   type Descendant,
   type Editor,
-  type TElement,
-  type TNode,
-  type TRange,
-  type TText,
   ElementApi,
   NodeApi,
   RangeApi,
+  type TElement,
   TextApi,
+  type TNode,
+  type TRange,
+  type TText,
 } from '@platejs/slate';
 
 import {
+  AnchorToken,
   addAnchorToken,
   addFocusToken,
-  AnchorToken,
   FocusToken,
   getAnchorOffset,
   getFocusOffset,
@@ -38,13 +38,14 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 
     const prev = nodes.at(-1);
 
+    let node = child;
     if (typeof child === 'string') {
       const text = { text: child };
       STRINGS.add(text);
-      child = text;
+      node = text;
     }
-    if (TextApi.isText(child)) {
-      const c = child; // HACK: fix typescript complaining
+    if (TextApi.isText(node)) {
+      const c = node; // HACK: fix typescript complaining
 
       if (
         TextApi.isText(prev) &&
@@ -56,23 +57,23 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       } else {
         nodes.push(c);
       }
-    } else if (ElementApi.isElement(child)) {
-      nodes.push(child);
-    } else if (child instanceof Token) {
+    } else if (ElementApi.isElement(node)) {
+      nodes.push(node);
+    } else if (node instanceof Token) {
       let n = nodes.at(-1);
 
       if (!TextApi.isText(n)) {
         addChild('');
         n = nodes.at(-1) as TText;
       }
-      if (child instanceof AnchorToken) {
-        addAnchorToken(n, child);
-      } else if (child instanceof FocusToken) {
-        addFocusToken(n, child);
+      if (node instanceof AnchorToken) {
+        addAnchorToken(n, node);
+      } else if (node instanceof FocusToken) {
+        addFocusToken(n, node);
       }
     } else {
       throw new TypeError(
-        `Unexpected hyperscript child object: ${child as any}`
+        `Unexpected hyperscript child object: ${node as any}`
       );
     }
   };
@@ -86,19 +87,19 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 
 /** Create an anchor token. */
 export const createAnchor = (
-  tagName: string,
+  _tagName: string,
   attributes: Record<string, any>
 ): AnchorToken => new AnchorToken(attributes);
 
 /** Create an anchor and a focus token. */
 export const createCursor = (
-  tagName: string,
+  _tagName: string,
   attributes: Record<string, any>
 ): Token[] => [new AnchorToken(attributes), new FocusToken(attributes)];
 
 /** Create an `TElement` object. */
 export const createElement = (
-  tagName: string,
+  _tagName: string,
   attributes: Record<string, any>,
   children: any[]
 ): TElement => ({
@@ -108,21 +109,21 @@ export const createElement = (
 
 /** Create a focus token. */
 export const createFocus = (
-  tagName: string,
+  _tagName: string,
   attributes: Record<string, any>
 ): FocusToken => new FocusToken(attributes);
 
 /** Create a fragment. */
 export const createFragment = (
-  tagName: string,
-  attributes: Record<string, any>,
+  _tagName: string,
+  _attributes: Record<string, any>,
   children: any[]
 ): Descendant[] => resolveDescendants(children);
 
 /** Create a `Selection` object. */
 export const createSelection = (
-  tagName: string,
-  attributes: Record<string, any>,
+  _tagName: string,
+  _attributes: Record<string, any>,
   children: any[]
 ): TRange => {
   const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken)!;
@@ -130,12 +131,12 @@ export const createSelection = (
 
   if (!anchor?.offset || !anchor.path) {
     throw new Error(
-      `The <selection> hyperscript tag must have an <anchor> tag as a child with \`path\` and \`offset\` attributes defined.`
+      'The <selection> hyperscript tag must have an <anchor> tag as a child with `path` and `offset` attributes defined.'
     );
   }
   if (!focus?.offset || !focus.path) {
     throw new Error(
-      `The <selection> hyperscript tag must have a <focus> tag as a child with \`path\` and \`offset\` attributes defined.`
+      'The <selection> hyperscript tag must have a <focus> tag as a child with `path` and `offset` attributes defined.'
     );
   }
 
@@ -148,13 +149,13 @@ export const createSelection = (
       offset: focus.offset,
       path: focus.path,
     },
-    ...attributes,
+    ..._attributes,
   };
 };
 
 /** Create a `TText` object. */
 export const createText = (
-  tagName: string,
+  _tagName: string,
   attributes: Record<string, any>,
   children: any[]
 ): TText => {
@@ -189,7 +190,7 @@ export const createText = (
 export const createEditor =
   (makeEditor: () => Editor) =>
   (
-    tagName: string,
+    _tagName: string,
     attributes: Record<string, any>,
     children: any[]
   ): Editor => {
@@ -228,12 +229,12 @@ export const createEditor =
 
     if (selection.anchor && !selection.focus) {
       throw new Error(
-        `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<anchor />\`. For collapsed selections, use \`<cursor />\` instead.`
+        'Slate hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
       );
     }
     if (!selection.anchor && selection.focus) {
       throw new Error(
-        `Slate hyperscript ranges must have both \`<anchor />\` and \`<focus />\` defined if one is defined, but you only defined \`<focus />\`. For collapsed selections, use \`<cursor />\` instead.`
+        'Slate hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
       );
     }
     if (selectionChild != null) {

@@ -19,11 +19,10 @@ const renderComponentToHtml = <P extends {}>(
   ReactDOMServer: any,
   Component: React.ComponentType<P>,
   props: P
-): string => {
-  return decode(
+): string =>
+  decode(
     ReactDOMServer.renderToStaticMarkup(React.createElement(Component, props))
   );
-};
 
 export type SerializeHtmlOptions<
   T extends PlateStaticProps = PlateStaticProps,

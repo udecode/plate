@@ -49,31 +49,29 @@ export const init = (
 
   if (value === null) {
     onValueLoaded();
-  } else {
-    if (typeof value === 'string') {
-      editor.children = editor.api.html.deserialize({
-        element: value,
-      }) as Value;
-      onValueLoaded();
-    } else if (typeof value === 'function') {
-      const result = value(editor);
+  } else if (typeof value === 'string') {
+    editor.children = editor.api.html.deserialize({
+      element: value,
+    }) as Value;
+    onValueLoaded();
+  } else if (typeof value === 'function') {
+    const result = value(editor);
 
-      // Check if result is a promise (async function)
-      if (result && typeof result.then === 'function') {
-        result.then((resolvedValue: any) => {
-          editor.children = resolvedValue;
-          onValueLoaded(true);
-        });
-      } else {
-        // Synchronous function
-        editor.children = result;
-        onValueLoaded();
-      }
-    } else if (value) {
-      editor.children = value;
-      onValueLoaded();
+    // Check if result is a promise (async function)
+    if (result && typeof result.then === 'function') {
+      result.then((resolvedValue: any) => {
+        editor.children = resolvedValue;
+        onValueLoaded(true);
+      });
     } else {
+      // Synchronous function
+      editor.children = result;
       onValueLoaded();
     }
+  } else if (value) {
+    editor.children = value;
+    onValueLoaded();
+  } else {
+    onValueLoaded();
   }
 };

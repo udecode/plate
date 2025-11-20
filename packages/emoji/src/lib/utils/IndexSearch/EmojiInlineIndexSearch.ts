@@ -8,12 +8,14 @@ import { AIndexSearch } from './IndexSearch';
 
 export class EmojiInlineIndexSearch extends AIndexSearch {
   protected static instance?: EmojiInlineIndexSearch;
+  protected library: IEmojiLibrary;
 
-  private constructor(protected library: IEmojiLibrary) {
+  private constructor(library: IEmojiLibrary) {
     super(library);
+    this.library = library;
   }
 
-  public static getInstance(data: EmojiMartData = DEFAULT_EMOJI_LIBRARY) {
+  static getInstance(data: EmojiMartData = DEFAULT_EMOJI_LIBRARY) {
     if (!EmojiInlineIndexSearch.instance) {
       EmojiInlineIndexSearch.instance = new EmojiInlineIndexSearch(
         new EmojiInlineLibrary(data)

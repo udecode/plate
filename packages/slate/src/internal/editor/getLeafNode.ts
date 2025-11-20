@@ -1,6 +1,5 @@
-import type { EditorLeafOptions } from 'slate/dist/interfaces/editor';
-
 import { leaf } from 'slate';
+import type { EditorLeafOptions } from 'slate/dist/interfaces/editor';
 
 import type { TextOf } from '../../interfaces';
 import type { Editor } from '../../interfaces/editor/editor-type';

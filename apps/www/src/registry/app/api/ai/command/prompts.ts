@@ -176,7 +176,9 @@ export function getGeneratePrompt(
   editor: SlateEditor,
   { messages }: { messages: ChatMessage[] }
 ) {
-  !isMultiBlocks(editor) && addSelection(editor);
+  if (!isMultiBlocks(editor)) {
+    addSelection(editor);
+  }
 
   const selectingMarkdown = getMarkdownWithSelection(editor);
 

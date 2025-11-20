@@ -33,7 +33,7 @@ console.error(`Scanning ${files.length} files… (cutoff = ${DAYS} days)`);
 
 // 2) 查询最后提交时间并过滤
 const results = files
-  .filter(f => !f.endsWith('.cn.mdx')) // 过滤掉以.cn.mdx结尾的文件
+  .filter((f) => !f.endsWith('.cn.mdx')) // 过滤掉以.cn.mdx结尾的文件
   .flatMap((f) => {
     const out = spawnSync('git', ['log', '-1', '--format=%ci', '--', f], {
       encoding: 'utf8',
@@ -84,7 +84,7 @@ async function translateContent(content, targetLanguage) {
           role: 'system',
         },
         {
-          content: content,
+          content,
           role: 'user',
         },
       ],

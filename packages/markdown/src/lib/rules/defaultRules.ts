@@ -35,35 +35,33 @@ import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
 
+const LEADING_NEWLINE_REGEX = /^\n/;
+
 function isBoolean(value: any) {
   return (
     value === true ||
     value === false ||
     (!!value &&
-      typeof value == 'object' &&
-      Object.prototype.toString.call(value) == '[object Boolean]')
+      typeof value === 'object' &&
+      Object.prototype.toString.call(value) === '[object Boolean]')
   );
 }
 
 export const defaultRules: MdRules = {
   a: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: getPluginType(options.editor!, KEYS.a),
-        url: mdastNode.url,
-      };
-    },
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdLink['children'],
-        type: 'link',
-        url: node.url,
-      };
-    },
+    deserialize: (mdastNode, deco, options) => ({
+      children: convertChildrenDeserialize(mdastNode.children, deco, options),
+      type: getPluginType(options.editor!, KEYS.a),
+      url: mdastNode.url,
+    }),
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        node.children,
+        options
+      ) as MdLink['children'],
+      type: 'link',
+      url: node.url,
+    }),
   },
   blockquote: {
     deserialize: (mdastNode, deco, options) => {
@@ -151,9 +149,8 @@ export const defaultRules: MdRules = {
   },
   bold: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertTextsDeserialize(mdastNode, deco, options);
-    },
+    deserialize: (mdastNode, deco, options) =>
+      convertTextsDeserialize(mdastNode, deco, options),
   },
   br: {
     deserialize() {
@@ -161,24 +158,18 @@ export const defaultRules: MdRules = {
     },
   },
   break: {
-    deserialize: (mdastNode, deco) => {
-      return {
-        text: '\n',
-      };
-    },
-    serialize: () => {
-      return {
-        type: 'break',
-      };
-    },
+    deserialize: (_mdastNode, _deco) => ({
+      text: '\n',
+    }),
+    serialize: () => ({
+      type: 'break',
+    }),
   },
   callout: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: getPluginType(options.editor!, KEYS.callout),
-      };
-    },
+    deserialize: (mdastNode, deco, options) => ({
+      children: convertChildrenDeserialize(mdastNode.children, deco, options),
+      type: getPluginType(options.editor!, KEYS.callout),
+    }),
     serialize(slateNode, options): MdMdxJsxFlowElement {
       return {
         attributes: [],
@@ -190,38 +181,32 @@ export const defaultRules: MdRules = {
   },
   code: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        ...deco,
-        [getPluginType(options.editor!, KEYS.code) as 'code']: true,
-        text: mdastNode.value,
-      };
-    },
+    deserialize: (mdastNode, deco, options) => ({
+      ...deco,
+      [getPluginType(options.editor!, KEYS.code) as 'code']: true,
+      text: mdastNode.value,
+    }),
   },
   code_block: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        children: (mdastNode.value || '').split('\n').map((line) => ({
-          children: [{ text: line } as TText],
-          type: getPluginType(options.editor!, KEYS.codeLine),
-        })),
-        lang: mdastNode.lang ?? undefined,
-        type: getPluginType(options.editor!, KEYS.codeBlock),
-      };
-    },
-    serialize: (node) => {
-      return {
-        lang: node.lang,
-        type: 'code',
-        value: node.children
-          .map((child: any) =>
-            child?.children === undefined
-              ? child.text
-              : child.children.map((c: any) => c.text).join('')
-          )
-          .join('\n'),
-      };
-    },
+    deserialize: (mdastNode, _deco, options) => ({
+      children: (mdastNode.value || '').split('\n').map((line) => ({
+        children: [{ text: line } as TText],
+        type: getPluginType(options.editor!, KEYS.codeLine),
+      })),
+      lang: mdastNode.lang ?? undefined,
+      type: getPluginType(options.editor!, KEYS.codeBlock),
+    }),
+    serialize: (node) => ({
+      lang: node.lang,
+      type: 'code',
+      value: node.children
+        .map((child: any) =>
+          child?.children === undefined
+            ? child.text
+            : child.children.map((c: any) => c.text).join('')
+        )
+        .join('\n'),
+    }),
   },
   comment: {
     mark: true,
@@ -249,7 +234,7 @@ export const defaultRules: MdRules = {
     },
   },
   date: {
-    deserialize(mdastNode, deco, options) {
+    deserialize(mdastNode, _deco, options) {
       const dateValue = (mdastNode.children?.[0] as any)?.value || '';
       return {
         children: [{ text: '' }],
@@ -268,29 +253,24 @@ export const defaultRules: MdRules = {
   },
   del: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.strikethrough)]: true, ...deco },
         options
-      ) as any;
-    },
+      ) as any,
     // no serialize because it's mdx <del /> only
   },
   equation: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        children: [{ text: '' }],
-        texExpression: mdastNode.value,
-        type: getPluginType(options.editor!, KEYS.equation),
-      };
-    },
-    serialize: (node) => {
-      return {
-        type: 'math',
-        value: node.texExpression,
-      };
-    },
+    deserialize: (mdastNode, _deco, options) => ({
+      children: [{ text: '' }],
+      texExpression: mdastNode.value,
+      type: getPluginType(options.editor!, KEYS.equation),
+    }),
+    serialize: (node) => ({
+      type: 'math',
+      value: node.texExpression,
+    }),
   },
   // plate doesn't support footnoteDefinition and footnoteReference
   // so we need to convert them to p for now
@@ -357,13 +337,12 @@ export const defaultRules: MdRules = {
   },
   highlight: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.highlight)]: true, ...deco },
         options
-      ) as any;
-    },
+      ) as any,
     serialize(slateNode): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -374,32 +353,24 @@ export const defaultRules: MdRules = {
     },
   },
   hr: {
-    deserialize: (_, __, options) => {
-      return {
-        children: [{ text: '' } as TText],
-        type: getPluginType(options.editor!, KEYS.hr),
-      };
-    },
-    serialize: () => {
-      return { type: 'thematicBreak' };
-    },
+    deserialize: (_, __, options) => ({
+      children: [{ text: '' } as TText],
+      type: getPluginType(options.editor!, KEYS.hr),
+    }),
+    serialize: () => ({ type: 'thematicBreak' }),
   },
   html: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        text: (mdastNode.value || '').replaceAll('<br />', '\n'),
-      };
-    },
+    deserialize: (mdastNode, _deco, _options) => ({
+      text: (mdastNode.value || '').replaceAll('<br />', '\n'),
+    }),
   },
   img: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        caption: [{ text: mdastNode.alt } as TText],
-        children: [{ text: '' } as TText],
-        type: getPluginType(options.editor!, KEYS.img),
-        url: mdastNode.url,
-      };
-    },
+    deserialize: (mdastNode, _deco, options) => ({
+      caption: [{ text: mdastNode.alt } as TText],
+      children: [{ text: '' } as TText],
+      type: getPluginType(options.editor!, KEYS.img),
+      url: mdastNode.url,
+    }),
     serialize: ({ caption, url }) => {
       const image: MdImage = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
@@ -422,28 +393,24 @@ export const defaultRules: MdRules = {
         type: getPluginType(options.editor!, KEYS.inlineEquation),
       };
     },
-    serialize: (node) => {
-      return {
-        type: 'inlineMath',
-        value: node.texExpression,
-      };
-    },
+    serialize: (node) => ({
+      type: 'inlineMath',
+      value: node.texExpression,
+    }),
   },
   italic: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertTextsDeserialize(mdastNode, deco, options);
-    },
+    deserialize: (mdastNode, deco, options) =>
+      convertTextsDeserialize(mdastNode, deco, options),
   },
   kbd: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.kbd)]: true, ...deco },
         options
-      ) as any;
-    },
+      ) as any,
     serialize(slateNode): MdMdxJsxTextElement {
       return {
         attributes: [],
@@ -592,7 +559,7 @@ export const defaultRules: MdRules = {
       const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
       const serializeListItems = (children: any[]): any[] => {
-        const items = [];
+        const items: any[] = [];
         let currentItem: any = null;
 
         for (const child of children) {
@@ -660,15 +627,13 @@ export const defaultRules: MdRules = {
         type: getPluginType(options.editor!, KEYS.li),
       };
     },
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(node.children, options),
-        type: 'listItem',
-      };
-    },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(node.children, options),
+      type: 'listItem',
+    }),
   },
   mention: {
-    deserialize: (node: MentionNode, deco, options): TMentionElement => ({
+    deserialize: (node: MentionNode, _deco, options): TMentionElement => ({
       children: [{ text: '' }],
       type: getPluginType(options.editor!, KEYS.mention),
       value: node.displayText || node.username,
@@ -756,17 +721,15 @@ export const defaultRules: MdRules = {
               flushInlineNodes();
             }
           });
+        } else if (
+          child.text === '\n' &&
+          children.length > 1 &&
+          index === children.length - 1
+        ) {
+          // remove the last br of the paragraph if the previos element is not a br
+          // no op
         } else {
-          if (
-            child.text === '\n' &&
-            children.length > 1 &&
-            index === children.length - 1
-          ) {
-            // remove the last br of the paragraph if the previos element is not a br
-            // no op
-          } else {
-            inlineNodes.push(child);
-          }
+          inlineNodes.push(child);
         }
       });
 
@@ -814,20 +777,18 @@ export const defaultRules: MdRules = {
   },
   strikethrough: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertTextsDeserialize(mdastNode, deco, options);
-    },
+    deserialize: (mdastNode, deco, options) =>
+      convertTextsDeserialize(mdastNode, deco, options),
   },
   subscript: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.sub)]: true, ...deco },
         options
-      ) as any;
-    },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+      ) as any,
+    serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
@@ -865,14 +826,13 @@ export const defaultRules: MdRules = {
   },
   superscript: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.sup)]: true, ...deco },
         options
-      ) as any;
-    },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+      ) as any,
+    serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
@@ -885,132 +845,122 @@ export const defaultRules: MdRules = {
     deserialize: (node, deco, options) => {
       const paragraphType = getPluginType(options.editor!, KEYS.p);
       const rows =
-        node.children?.map((row, rowIndex) => {
-          return {
-            children:
-              row.children?.map((cell) => {
-                const cellType = rowIndex === 0 ? 'th' : 'td';
+        node.children?.map((row, rowIndex) => ({
+          children:
+            row.children?.map((cell) => {
+              const cellType = rowIndex === 0 ? 'th' : 'td';
 
-                const cellChildren = convertChildrenDeserialize(cell.children, deco, options);
-                const groupedChildren: any[] = [];
-                let currentParagraphChildren: any[] = [];
+              const cellChildren = convertChildrenDeserialize(
+                cell.children,
+                deco,
+                options
+              );
+              const groupedChildren: any[] = [];
+              let currentParagraphChildren: any[] = [];
 
-                for (const child of cellChildren) {
-                  // Text nodes or inline elements should be grouped into paragraphs
-                  if (!child.type || child.type === KEYS.inlineEquation) {
-                    currentParagraphChildren.push(child);
-                  } else {
-                    // Block-level elements should end the current paragraph and be added directly
-                    if (currentParagraphChildren.length > 0) {
-                      groupedChildren.push({
-                        children: currentParagraphChildren,
-                        type: paragraphType,
-                      });
-                      currentParagraphChildren = [];
-                    }
-                    groupedChildren.push(child);
+              for (const child of cellChildren) {
+                // Text nodes or inline elements should be grouped into paragraphs
+                if (!child.type || child.type === KEYS.inlineEquation) {
+                  currentParagraphChildren.push(child);
+                } else {
+                  // Block-level elements should end the current paragraph and be added directly
+                  if (currentParagraphChildren.length > 0) {
+                    groupedChildren.push({
+                      children: currentParagraphChildren,
+                      type: paragraphType,
+                    });
+                    currentParagraphChildren = [];
                   }
+                  groupedChildren.push(child);
                 }
+              }
 
-                // Add any remaining paragraph child elements
-                if (currentParagraphChildren.length > 0) {
-                  groupedChildren.push({
-                    children: currentParagraphChildren,
-                    type: paragraphType,
-                  });
-                }
+              // Add any remaining paragraph child elements
+              if (currentParagraphChildren.length > 0) {
+                groupedChildren.push({
+                  children: currentParagraphChildren,
+                  type: paragraphType,
+                });
+              }
 
-                return {
-                  children: groupedChildren.length > 0 ? groupedChildren : [{ children: [{ text: '' }], type: paragraphType }],
-                  type: cellType,
-                };
-              }) || [],
-            type: getPluginType(options.editor!, KEYS.tr),
-          };
-        }) || [];
+              return {
+                children:
+                  groupedChildren.length > 0
+                    ? groupedChildren
+                    : [{ children: [{ text: '' }], type: paragraphType }],
+                type: getPluginType(options.editor!, cellType),
+              };
+            }) || [],
+          type: getPluginType(options.editor!, KEYS.tr),
+        })) || [];
 
       return {
         children: rows,
         type: getPluginType(options.editor!, KEYS.table),
       };
     },
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdTable['children'],
-        type: 'table',
-      };
-    },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        node.children,
+        options
+      ) as MdTable['children'],
+      type: 'table',
+    }),
   },
   td: {
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdTableCell['children'],
-        type: 'tableCell',
-      };
-    },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        node.children,
+        options
+      ) as MdTableCell['children'],
+      type: 'tableCell',
+    }),
   },
   text: {
-    deserialize: (mdastNode, deco) => {
-      return {
-        ...deco,
-        text: mdastNode.value.replace(/^\n/, ''),
-      };
-    },
+    deserialize: (mdastNode, deco) => ({
+      ...deco,
+      text: mdastNode.value.replace(LEADING_NEWLINE_REGEX, ''),
+    }),
   },
   th: {
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdTableCell['children'],
-        type: 'tableCell',
-      };
-    },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        node.children,
+        options
+      ) as MdTableCell['children'],
+      type: 'tableCell',
+    }),
   },
   toc: {
-    deserialize: (mdastNode, deco, options) => {
-      return {
-        children: convertChildrenDeserialize(mdastNode.children, deco, options),
-        type: getPluginType(options.editor!, KEYS.toc),
-      };
-    },
-    serialize: (node, options): MdMdxJsxFlowElement => {
-      return {
-        attributes: [],
-        children: convertNodesSerialize(node.children, options) as any,
-        name: 'toc',
-        type: 'mdxJsxFlowElement',
-      };
-    },
+    deserialize: (mdastNode, deco, options) => ({
+      children: convertChildrenDeserialize(mdastNode.children, deco, options),
+      type: getPluginType(options.editor!, KEYS.toc),
+    }),
+    serialize: (node, options): MdMdxJsxFlowElement => ({
+      attributes: [],
+      children: convertNodesSerialize(node.children, options) as any,
+      name: 'toc',
+      type: 'mdxJsxFlowElement',
+    }),
   },
   tr: {
-    serialize: (node, options) => {
-      return {
-        children: convertNodesSerialize(
-          node.children,
-          options
-        ) as MdTableRow['children'],
-        type: 'tableRow',
-      };
-    },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        node.children,
+        options
+      ) as MdTableRow['children'],
+      type: 'tableRow',
+    }),
   },
   underline: {
     mark: true,
-    deserialize: (mdastNode, deco, options) => {
-      return convertChildrenDeserialize(
+    deserialize: (mdastNode, deco, options) =>
+      convertChildrenDeserialize(
         mdastNode.children,
         { [getPluginType(options.editor!, KEYS.underline)]: true, ...deco },
         options
-      ) as any;
-    },
-    serialize(slateNode, options): MdMdxJsxTextElement {
+      ) as any,
+    serialize(slateNode, _options): MdMdxJsxTextElement {
       return {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],

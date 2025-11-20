@@ -111,7 +111,7 @@ export function EditorClient({ value }: { value: any }) {
 export const EditorViewClient = ({ value }: { value: any }) => {
   const editor = usePlateViewEditor({
     plugins: BaseEditorKit,
-    value: value,
+    value,
   });
 
   return <EditorView variant="none" editor={editor} />;

@@ -33,19 +33,17 @@ export const inlineTag = (tag: string, content?: string | null) => {
 };
 
 // Sections split by double newlines
-export const sections = (sections: (boolean | string | null | undefined)[]) => {
-  return sections.filter(Boolean).join('\n\n');
-};
+export const sections = (sections: (boolean | string | null | undefined)[]) =>
+  sections.filter(Boolean).join('\n\n');
 
 // List items split by newlines
-export const list = (items: string[] | undefined) => {
-  return items
+export const list = (items: string[] | undefined) =>
+  items
     ? items
         .filter(Boolean)
         .map((item) => `- ${item}`)
         .join('\n')
     : '';
-};
 
 export type StructuredPromptSections = {
   backgroundData?: string;
@@ -243,6 +241,5 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 };
 
 /** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: SlateEditor) => {
-  return removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
-};
+export const getMarkdownWithSelection = (editor: SlateEditor) =>
+  removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));

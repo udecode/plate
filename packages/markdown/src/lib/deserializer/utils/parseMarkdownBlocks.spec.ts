@@ -24,7 +24,7 @@ describe('parseMarkdownBlocks', () => {
   });
 
   it('should not filter tokens when exclude is empty', () => {
-    const input = `# Heading\n \nParagraph`;
+    const input = '# Heading\n \nParagraph';
 
     const tokensWithSpace = parseMarkdownBlocks(input, { exclude: [] });
     const tokensWithoutSpace = parseMarkdownBlocks(input);

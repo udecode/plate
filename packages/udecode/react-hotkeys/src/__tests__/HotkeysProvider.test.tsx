@@ -1,11 +1,9 @@
 import React from 'react';
-import type { ReactNode } from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
-
-import type { HotkeysContextType } from '../internal/HotkeysProvider';
-
+import type { ReactNode } from 'react';
 import { HotkeysProvider, useHotkeys, useHotkeysContext } from '..';
+import type { HotkeysContextType } from '../internal/HotkeysProvider';
 
 it('should render children', () => {
   const { getByText } = render(
@@ -163,13 +161,11 @@ it('should update bound hotkeys when useHotkeys changes its scopes', () => {
     return useHotkeysContext();
   };
 
-  const wrapper = ({ children }: { children: ReactNode }) => {
-    return (
-      <HotkeysProvider initiallyActiveScopes={['foo']}>
-        {children}
-      </HotkeysProvider>
-    );
-  };
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <HotkeysProvider initiallyActiveScopes={['foo']}>
+      {children}
+    </HotkeysProvider>
+  );
 
   const { rerender, result } = renderHook<
     HotkeysContextType,
@@ -178,7 +174,6 @@ it('should update bound hotkeys when useHotkeys changes its scopes', () => {
     initialProps: {
       scopes: ['foo'],
     },
-    // @ts-ignore
     wrapper,
   });
 

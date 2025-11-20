@@ -65,15 +65,14 @@ export const acceptSuggestion = (
               return suggestionDataList.some(
                 (d) => d.id === description.suggestionId
               );
-            } else {
-              const suggestionData = getInlineSuggestionData(n);
-
-              if (suggestionData)
-                return (
-                  suggestionData.type === 'insert' &&
-                  suggestionData.id === description.suggestionId
-                );
             }
+            const suggestionData = getInlineSuggestionData(n);
+
+            if (suggestionData)
+              return (
+                suggestionData.type === 'insert' &&
+                suggestionData.id === description.suggestionId
+              );
 
             return false;
           }

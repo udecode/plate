@@ -62,7 +62,7 @@ export const getRenderNodeStaticProps = ({
   );
 
   if (newProps.style && Object.keys(newProps.style).length === 0) {
-    delete newProps.style;
+    newProps.style = undefined;
   }
 
   return newProps;

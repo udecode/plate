@@ -24,7 +24,7 @@ describe('deserializeMd', () => {
     const output = (
       <fragment>
         <hp>
-          <htext>{`<!DOCTYPE`}</htext>
+          <htext>{'<!DOCTYPE'}</htext>
         </hp>
       </fragment>
     );
@@ -106,70 +106,61 @@ describe('deserializeMd', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it(
-    String.raw`should deserialize two spaces followed by a \n in blockquotes`,
-    () => {
-      const input = `
+  it(String.raw`should deserialize two spaces followed by a \n in blockquotes`, () => {
+    const input = `
 > Blockquote line1  
 > Blockquote line2`;
 
-      const output = (
-        <fragment>
-          <hblockquote>
-            <htext>Blockquote line1</htext>
-            <htext>{'\n'}</htext>
-            <htext>Blockquote line2</htext>
-          </hblockquote>
-        </fragment>
-      );
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext>Blockquote line1</htext>
+          <htext>{'\n'}</htext>
+          <htext>Blockquote line2</htext>
+        </hblockquote>
+      </fragment>
+    );
 
-      expect(deserializeMd(editor, input)).toEqual(output);
-    }
-  );
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 
-  it(
-    String.raw`should deserialize a break followed by a \n to one line break - collapsing break`,
-    () => {
-      const input = `
+  it(String.raw`should deserialize a break followed by a \n to one line break - collapsing break`, () => {
+    const input = `
 > Blockquote line1<br>
 > Blockquote line2`;
 
-      const output = (
-        <fragment>
-          <hblockquote>
-            <htext>Blockquote line1</htext>
-            <htext>{'\n'}</htext>
-            <htext>Blockquote line2</htext>
-          </hblockquote>
-        </fragment>
-      );
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext>Blockquote line1</htext>
+          <htext>{'\n'}</htext>
+          <htext>Blockquote line2</htext>
+        </hblockquote>
+      </fragment>
+    );
 
-      expect(deserializeMd(editor, input)).toEqual(output);
-    }
-  );
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 
-  it(
-    String.raw`should convert in blockqoute line breaks into two breaks`,
-    () => {
-      const input = `
+  it('should convert in blockqoute line breaks into two breaks', () => {
+    const input = `
 > Blockquote with multiple paragraphs:\\
 > \\
 > This is the second paragraph in the blockquote.`;
 
-      const output = (
-        <fragment>
-          <hblockquote>
-            <htext>Blockquote with multiple paragraphs:</htext>
-            <htext>{'\n'}</htext>
-            <htext>{'\n'}</htext>
-            <htext>This is the second paragraph in the blockquote.</htext>
-          </hblockquote>
-        </fragment>
-      );
+    const output = (
+      <fragment>
+        <hblockquote>
+          <htext>Blockquote with multiple paragraphs:</htext>
+          <htext>{'\n'}</htext>
+          <htext>{'\n'}</htext>
+          <htext>This is the second paragraph in the blockquote.</htext>
+        </hblockquote>
+      </fragment>
+    );
 
-      expect(deserializeMd(editor, input)).toEqual(output);
-    }
-  );
+    expect(deserializeMd(editor, input)).toEqual(output);
+  });
 
   it('should deserialize paragraphs', () => {
     const input = `

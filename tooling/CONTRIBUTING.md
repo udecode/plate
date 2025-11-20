@@ -108,7 +108,7 @@ When adding or modifying components, please ensure that you update the documenta
 
 ### Run Linter
 
-We use [ESLint](https://eslint.org/) as our code linter. To run the linter, use the following command:
+We use [Biome](https://biomejs.dev/) as our code linter. To run the linter, use the following command:
 
 ```bash
 yarn lint
@@ -264,8 +264,8 @@ The main bundle is client-side and is not tested in server environments. In gene
 - Create a new entry file in `/src/server.ts`, export with the following:
 
 ```ts
-export * from './shared/index';
-export * from './server/index'; // If needed
+export * from "./shared/index";
+export * from "./server/index"; // If needed
 ```
 
 - (Optional) If needed, create server-side versions in `/src/server/`. For example, `withReact` in `/src/server/withReact` is a server-side version of `/src/client/withReact`

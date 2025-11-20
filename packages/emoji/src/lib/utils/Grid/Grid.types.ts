@@ -7,6 +7,7 @@ export type GridRow = {
 
 export type GridRows = GridRow[];
 
+// biome-ignore lint/style/useConsistentTypeDefinitions: uses `this` type
 export interface IGrid<R, T extends SectionId> {
   size: number;
   addSection: (
@@ -20,6 +21,7 @@ export interface IGrid<R, T extends SectionId> {
   updateSection: (sectionId: T, elements: SectionElements) => this;
 }
 
+// biome-ignore lint/style/useConsistentTypeDefinitions: uses `this` type
 export interface IGridSection<R, T> {
   id: T;
   root: R;

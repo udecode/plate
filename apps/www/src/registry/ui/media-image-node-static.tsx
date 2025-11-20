@@ -17,7 +17,7 @@ export function ImageElementStatic(
     <SlateElement {...props} className="py-2.5">
       <figure className="group relative m-0 inline-block" style={{ width }}>
         <div
-          className="relative max-w-full min-w-[92px]"
+          className="relative min-w-[92px] max-w-full"
           style={{ textAlign: align }}
         >
           <img

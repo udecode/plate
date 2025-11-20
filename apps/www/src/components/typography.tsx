@@ -14,7 +14,7 @@ export const H1 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h1
     className={cn(
-      'group mt-2 scroll-m-20 font-heading text-4xl font-bold',
+      'group mt-2 scroll-m-20 font-bold font-heading text-4xl',
       className
     )}
     {...props}
@@ -27,7 +27,7 @@ export const H2 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     className={cn(
-      'group mt-12 scroll-m-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight first:mt-0',
+      'group mt-12 scroll-m-20 border-b pb-2 font-heading font-semibold text-2xl tracking-tight first:mt-0',
       className
     )}
     {...props}
@@ -37,17 +37,15 @@ export const H2 = ({
 export const H3 = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) => {
-  return (
-    <h3
-      className={cn(
-        'group mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
-        className
-      )}
-      {...props}
-    />
-  );
-};
+}: React.HTMLAttributes<HTMLHeadingElement>) => (
+  <h3
+    className={cn(
+      'group mt-8 scroll-m-20 font-heading font-semibold text-xl tracking-tight',
+      className
+    )}
+    {...props}
+  />
+);
 
 export const H4 = ({
   className,
@@ -55,7 +53,7 @@ export const H4 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h4
     className={cn(
-      'group mt-8 scroll-m-20 font-heading text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 font-heading font-semibold text-lg tracking-tight',
       className
     )}
     {...props}
@@ -68,7 +66,7 @@ export const H5 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h5
     className={cn(
-      'group mt-8 scroll-m-20 text-lg font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 font-semibold text-lg tracking-tight',
       className
     )}
     {...props}
@@ -81,7 +79,7 @@ export const H6 = ({
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
   <h6
     className={cn(
-      'group mt-8 scroll-m-20 text-base font-semibold tracking-tight',
+      'group mt-8 scroll-m-20 font-semibold text-base tracking-tight',
       className
     )}
     {...props}
@@ -93,7 +91,7 @@ export const P = ({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) => (
   <p
-    className={cn('leading-7 not-first:mt-6 [&_code]:text-sm', className)}
+    className={cn('not-first:mt-6 leading-7 [&_code]:text-sm', className)}
     {...props}
   />
 );
@@ -104,7 +102,7 @@ export const UL = ({
 }: React.HTMLAttributes<HTMLUListElement>) => (
   <ul
     className={cn(
-      'group not-prose my-4 !ml-6 list-disc group-data-list:my-2 first:!mt-0',
+      'group not-prose !ml-6 first:!mt-0 my-4 list-disc group-data-list:my-2',
       className
     )}
     data-list
@@ -118,7 +116,7 @@ export const OL = ({
 }: React.HTMLAttributes<HTMLOListElement>) => (
   <ol
     className={cn(
-      'group my-4 ml-6 list-decimal group-data-list:my-2 first:!mt-0',
+      'group first:!mt-0 my-4 ml-6 list-decimal group-data-list:my-2',
       className
     )}
     data-list
@@ -241,35 +239,33 @@ export const Pre = ({
   }
 
   return (
-    <>
-      <pre
-        className={cn(
-          'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
-          className
-        )}
-        {...props}
-      >
-        {props.children}
+    <pre
+      className={cn(
+        'relative mt-6 mb-4 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 py-4 text-white dark:bg-zinc-900 *:[code]:bg-inherit',
+        className
+      )}
+      {...props}
+    >
+      {props.children}
 
-        {__rawString__ && (
-          <CopyButton
-            variant="default"
-            className={cn('absolute top-4 right-4')}
-            value={__rawString__}
-            event={__event__}
-            src={__src__}
-          />
-        )}
-      </pre>
-    </>
+      {__rawString__ && (
+        <CopyButton
+          variant="default"
+          className={cn('absolute top-4 right-4')}
+          value={__rawString__}
+          event={__event__}
+          src={__src__}
+        />
+      )}
+    </pre>
   );
 };
 
 export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
   <h3
     className={cn(
-      'mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight',
-      'first-child:mt-0 mt-8 mb-4 text-base font-semibold [counter-increment:step] before:absolute before:mt-[-4px] before:ml-[-50px] before:inline-flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:border-4 before:border-background before:bg-muted before:text-center before:-indent-px before:font-mono before:text-base before:font-medium before:[content:counter(step)]',
+      'mt-8 scroll-m-20 font-heading font-semibold text-xl tracking-tight',
+      'before:-indent-px mt-8 mb-4 font-semibold text-base [counter-increment:step] before:absolute before:mt-[-4px] before:ml-[-50px] before:inline-flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:border-4 before:border-background before:bg-muted before:text-center before:font-medium before:font-mono before:text-base first-child:mt-0 before:[content:counter(step)]',
       className
     )}
     {...props}

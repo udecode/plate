@@ -24,7 +24,7 @@ export const setListNodes = (
 
       let indent = (node[KEYS.indent] as number) ?? 0;
       indent =
-        node[KEYS.listType] || node.hasOwnProperty(KEYS.listChecked)
+        node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)
           ? indent
           : indent + 1;
 

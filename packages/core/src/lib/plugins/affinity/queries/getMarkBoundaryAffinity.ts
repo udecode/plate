@@ -13,13 +13,10 @@ export const getMarkBoundaryAffinity = (
   const { marks, selection } = editor;
   if (!selection) return;
 
-  const marksMatchLeaf = (leaf: TElement | TText) => {
-    return (
-      marks &&
-      isEqual(NodeApi.extractProps(leaf), marks) &&
-      Object.keys(marks).length > 1
-    );
-  };
+  const marksMatchLeaf = (leaf: TElement | TText) =>
+    marks &&
+    isEqual(NodeApi.extractProps(leaf), marks) &&
+    Object.keys(marks).length > 1;
 
   const [backwardLeafEntry, forwardLeafEntry] = markBoundary;
 

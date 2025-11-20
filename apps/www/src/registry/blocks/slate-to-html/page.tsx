@@ -115,5 +115,5 @@ export default async function SlateToHtmlBlock() {
 }
 
 const headingVariants = cva(
-  'group mt-8 scroll-m-20 font-heading text-xl font-semibold tracking-tight'
+  'group mt-8 scroll-m-20 font-heading font-semibold text-xl tracking-tight'
 );

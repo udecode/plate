@@ -110,7 +110,7 @@ describe('last', () => {
   });
 
   describe('when editor has no children', () => {
-    const input = createEditor((<editor></editor>) as any);
+    const input = createEditor((<editor />) as any);
 
     it('should return undefined when level is 0', () => {
       const res = input.api.last([], { level: 0 });
@@ -123,7 +123,7 @@ describe('last', () => {
     const input = createEditor(
       (
         <editor>
-          <element></element>
+          <element />
         </editor>
       ) as any
     );

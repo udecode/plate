@@ -90,7 +90,7 @@ export function TaskListItemElement(props: PlateElementProps) {
         )}
       >
         <div
-          className="-ms-5 me-1.5 flex w-fit items-start justify-center pt-[0.275em] select-none"
+          className="-ms-5 me-1.5 flex w-fit select-none items-start justify-center pt-[0.275em]"
           contentEditable={false}
         >
           <Checkbox {...checkboxProps} />

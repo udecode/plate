@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
-
 import { NodeApi } from 'platejs';
 import { type PlateEditor, useEditorRef } from 'platejs/react';
+import { useEffect } from 'react';
 
 import type { TPlatePlaywrightAdapter } from './types';
 

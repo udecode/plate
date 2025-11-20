@@ -2,8 +2,8 @@ import { useEditorSelector } from 'platejs/react';
 
 import { BaseCommentPlugin } from '../../lib';
 
-export const useCommentId = () => {
-  return useEditorSelector((editor) => {
+export const useCommentId = () =>
+  useEditorSelector((editor) => {
     if (!editor.selection) return;
     if (editor.api.isExpanded()) return;
     const api = editor.getApi(BaseCommentPlugin);
@@ -16,4 +16,3 @@ export const useCommentId = () => {
 
     return api.comment.nodeId(commentLeaf);
   }, []);
-};

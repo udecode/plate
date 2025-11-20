@@ -10,12 +10,14 @@ export function useBlockSelectionNodes() {
   const editor = useEditorRef();
   const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
 
-  return useMemo(() => {
-    return editor.api.blocks<TElement>({
-      at: [],
-      match: (n) => !!n.id && selectedIds?.has(n.id as string),
-    });
-  }, [editor, selectedIds]);
+  return useMemo(
+    () =>
+      editor.api.blocks<TElement>({
+        at: [],
+        match: (n) => !!n.id && selectedIds?.has(n.id as string),
+      }),
+    [editor, selectedIds]
+  );
 }
 
 export function useBlockSelectionFragment() {

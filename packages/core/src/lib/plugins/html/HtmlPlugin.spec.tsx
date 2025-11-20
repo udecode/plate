@@ -23,14 +23,13 @@ describe('when inserting html', () => {
       format === 'text/html' && '<html><body><h1>inserted</h1></body></html>',
   } as any;
 
-  const makeDataTransfer = (value: string): DataTransfer => {
-    return {
+  const makeDataTransfer = (value: string): DataTransfer =>
+    ({
       constructor: {
         name: 'DataTransfer',
       },
       getData: (format: string) => format === 'text/html' && value,
-    } as any;
-  };
+    }) as any;
 
   describe('when inserting h1 inside p (not empty)', () => {
     it('should just insert h1 text inside p', () => {
@@ -100,40 +99,42 @@ describe('when inserting html', () => {
   });
 
   describe('when inserting a text node surrounded by elements', () => {
-    const input = (
-      <editor>
-        <hp>
-          <cursor />
-        </hp>
-      </editor>
-    ) as any as SlateEditor;
+    it('should insert the text node surrounded by elements', () => {
+      const input = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-    const expected = (
-      <editor>
-        <hp>first element</hp>
-        <hp>second element</hp>
-        <hp>
-          text node in the end
-          <cursor />
-        </hp>
-      </editor>
-    ) as any;
+      const expected = (
+        <editor>
+          <hp>first element</hp>
+          <hp>second element</hp>
+          <hp>
+            text node in the end
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
 
-    const plugins = [BaseParagraphPlugin];
+      const plugins = [BaseParagraphPlugin];
 
-    const editor = createPlateEditor({
-      plugins,
-      selection: input.selection,
-      value: input.children,
+      const editor = createPlateEditor({
+        plugins,
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertData(
+        makeDataTransfer(
+          '<html><body><p>first element</p><p>second element</p>text node in the end</body></html>'
+        )
+      );
+
+      expect(editor.children).toEqual(expected.children);
     });
-
-    editor.tf.insertData(
-      makeDataTransfer(
-        '<html><body><p>first element</p><p>second element</p>text node in the end</body></html>'
-      )
-    );
-
-    expect(editor.children).toEqual(expected.children);
   });
 });
 

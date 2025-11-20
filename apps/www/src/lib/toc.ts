@@ -12,25 +12,25 @@ function flattenNode(node: any) {
     p.push(_node.value);
   });
 
-  return p.join(``);
+  return p.join('');
 }
 
-interface Item {
+type Item = {
   title: string;
   url: string;
   items?: Item[];
-}
+};
 
-interface Items {
+type Items = {
   items?: Item[];
-}
+};
 
 // New flat structure compatible with docs-toc.tsx
-export interface FlatTocItem {
+export type FlatTocItem = {
   depth: number;
   title: string;
   url: string;
-}
+};
 
 // Helper function to flatten nested items into flat structure with depth
 function flattenItems(items: Item[], depth = 2): FlatTocItem[] {

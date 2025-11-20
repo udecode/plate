@@ -6,17 +6,17 @@ export type EditorPrompt =
   | PromptConfig
   | string;
 
-export interface EditorPromptParams {
+export type EditorPromptParams = {
   editor: SlateEditor;
   isBlockSelecting: boolean;
   isSelecting: boolean;
-}
+};
 
-export interface PromptConfig {
+export type PromptConfig = {
   default: string;
   blockSelecting?: string;
   selecting?: string;
-}
+};
 
 const createPromptFromConfig = (
   config: PromptConfig,
@@ -26,11 +26,11 @@ const createPromptFromConfig = (
 
   if (isBlockSelecting && config.blockSelecting) {
     return config.blockSelecting ?? config.default;
-  } else if (isSelecting && config.selecting) {
-    return config.selecting ?? config.default;
-  } else {
-    return config.default;
   }
+  if (isSelecting && config.selecting) {
+    return config.selecting ?? config.default;
+  }
+  return config.default;
 };
 
 export const getEditorPrompt = (

@@ -342,9 +342,11 @@ describe('shiftSelection', () => {
       });
 
       // Let’s make only 'table' and 'tr' selectable
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
-        return node.type === 'table' || node.type === 'tr';
-      });
+      editor.setOption(
+        BlockSelectionPlugin,
+        'isSelectable',
+        (node) => node.type === 'table' || node.type === 'tr'
+      );
     });
 
     it('should NOT expand down from table1 => add tr1 if anchor=table1', () => {
@@ -426,16 +428,20 @@ describe('shiftSelection', () => {
       // SHIFT+DOWN => tries to find next block after tr2 => blockZ is next top-level
       shiftSelection(editor, 'down');
 
-      const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
+      const _selectedIds = editor.getOption(
+        BlockSelectionPlugin,
+        'selectedIds'
+      );
       // Now includes blockZ only if blockZ is selectable.
       // Since we only made 'table' or 'tr' selectable, blockZ might be skipped.
       // For this test let's assume blockZ is also selectable => let's set isSelectable accordingly.
       // We'll do that quickly:
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
-        return (
+      editor.setOption(
+        BlockSelectionPlugin,
+        'isSelectable',
+        (node) =>
           node.type === 'table' || node.type === 'tr' || node.id === 'blockZ'
-        );
-      });
+      );
       // Re-run shiftSelection to see if blockZ is included
       shiftSelection(editor, 'down');
 

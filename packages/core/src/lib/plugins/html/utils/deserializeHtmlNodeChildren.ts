@@ -8,8 +8,8 @@ export const deserializeHtmlNodeChildren = (
   editor: SlateEditor,
   node: ChildNode | HTMLElement,
   isSlateParent = false
-): DeserializeHtmlChildren[] => {
-  return Array.from(node.childNodes).flatMap((child) => {
+): DeserializeHtmlChildren[] =>
+  Array.from(node.childNodes).flatMap((child) => {
     if (
       child.nodeType === 1 &&
       !isSlateNode(child as HTMLElement) &&
@@ -24,4 +24,3 @@ export const deserializeHtmlNodeChildren = (
 
     return deserializeHtmlNode(editor)(child);
   }) as DeserializeHtmlChildren[];
-};

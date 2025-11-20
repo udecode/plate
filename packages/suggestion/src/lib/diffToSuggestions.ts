@@ -17,11 +17,10 @@ export function diffToSuggestions<E extends SlateEditor>(
   doc0: Descendant[],
   doc1: Descendant[],
   {
-    getDeleteProps = (node) => {
-      return getSuggestionProps(editor, node, {
+    getDeleteProps = (node) =>
+      getSuggestionProps(editor, node, {
         suggestionDeletion: true,
-      });
-    },
+      }),
     getInsertProps = (node) => getSuggestionProps(editor, node),
     getUpdateProps = (node, _properties, newProperties) =>
       getSuggestionProps(editor, node, {

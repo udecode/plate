@@ -50,7 +50,7 @@ export function PlaygroundPreviewToolbar({
       <Button
         asChild
         variant="link"
-        className="px-1 pb-0 whitespace-normal md:px-2"
+        className="whitespace-normal px-1 pb-0 md:px-2"
       >
         <a
           className="whitespace-nowrap"
@@ -93,7 +93,7 @@ export function PlaygroundPreviewToolbar({
 
               setTimeout(() => {
                 if (resizablePanelRef.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value));
+                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
                 }
               }, 0);
             }}

@@ -11,7 +11,7 @@ import { transformDiffDescendants } from '../internal/transforms/transformDiffDe
 import { dmp } from '../internal/utils/dmp';
 import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
-export interface ComputeDiffOptions {
+export type ComputeDiffOptions = {
   isInline: EditorApi['isInline'];
   getDeleteProps: (node: Descendant) => any;
   getInsertProps: (node: Descendant) => any;
@@ -26,7 +26,7 @@ export interface ComputeDiffOptions {
     element: TElement,
     nextElement: TElement
   ) => boolean | null;
-}
+};
 
 export const computeDiff = (
   doc0: Descendant[],

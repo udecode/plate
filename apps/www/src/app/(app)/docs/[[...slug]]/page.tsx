@@ -28,14 +28,14 @@ import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
 import { registryUI } from '@/registry/registry-ui';
 
-interface DocPageProps {
+type DocPageProps = {
   params: Promise<{
     slug: string[];
   }>;
   searchParams: Promise<{
     locale: string;
   }>;
-}
+};
 
 async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const locale = (await searchParams).locale;
@@ -46,22 +46,21 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   // For Chinese docs, look for .cn.mdx files
   if (locale === 'cn') {
     // First try to find the Chinese version with .cn.mdx
-    const cnDoc = allDocs.find((doc) => {
-      return (
+    const cnDoc = allDocs.find(
+      (doc) =>
         doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
         doc._raw.sourceFileName?.endsWith('.cn.mdx')
-      );
-    });
+    );
 
     if (cnDoc) {
       const path = slugParam?.join('/') || '';
-      cnDoc.slug = '/docs' + (path ? '/' + path : '') + '?locale=cn';
+      cnDoc.slug = `/docs${path ? `/${path}` : ''}?locale=cn`;
       return cnDoc;
     }
   }
 
   // Default behavior for non-Chinese or fallback
-  slug = `docs${slug ? '/' + slug : ''}`;
+  slug = `docs${slug ? `/${slug}` : ''}`;
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
   if (!doc) {
@@ -69,11 +68,11 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   }
 
   const path = slugParam?.join('/') || '';
-  doc.slug = '/docs' + (path ? '/' + path : '');
+  doc.slug = `/docs${path ? `/${path}` : ''}`;
 
   // Only add locale param for Chinese
   if (locale === 'cn') {
-    doc.slug += `?locale=cn`;
+    doc.slug += '?locale=cn';
   }
 
   return doc;
@@ -109,7 +108,7 @@ export async function generateMetadata({
     }
 
     const path = slugParam?.join('/') || '';
-    slug = '/docs' + (path ? '/' + path : '');
+    slug = `/docs${path ? `/${path}` : ''}`;
     title = file.title || docName;
     description = file.description;
   }
@@ -194,7 +193,7 @@ export default async function DocPage(props: DocPageProps) {
     const dependencies = getAllDependencies(docName);
     const files = getAllFiles(docName);
 
-    const slug = '/docs/' + params.slug?.join('/') || '';
+    const slug = `/docs/${params.slug?.join('/') ?? ''}`;
 
     const docs = getRegistryDocs({
       docName,
@@ -322,18 +321,16 @@ function getRegistryDocs({
       } else if (doc.route!.startsWith('/docs/api')) {
         acc.docs.push({
           ...doc,
-          title:
-            getRegistryTitle({
-              name: doc.title ?? doc.route?.split('/').pop(),
-            }) + ' API',
+          title: `${getRegistryTitle({
+            name: doc.title ?? doc.route?.split('/').pop(),
+          })} API`,
         } as any);
       } else if (doc.route!.startsWith('/docs/')) {
         acc.docs.push({
           ...doc,
-          title:
-            getRegistryTitle({
-              name: doc.title ?? doc.route?.split('/').pop(),
-            }) + ' Plugin',
+          title: `${getRegistryTitle({
+            name: doc.title ?? doc.route?.split('/').pop(),
+          })} Plugin`,
         } as any);
       } else {
         acc.docs.push(doc as any);

@@ -13,15 +13,14 @@ export const pipeInsertFragment = (
   { fragment, ...options }: ParserOptions & { fragment: Descendant[] }
 ) => {
   editor.tf.withoutNormalizing(() => {
-    injectedPlugins.some((p) => {
-      return (
+    injectedPlugins.some(
+      (p) =>
         p.parser?.preInsert?.({
           ...getEditorPlugin(editor, p as any),
           fragment,
           ...options,
         }) === true
-      );
-    });
+    );
 
     editor.tf.insertFragment(fragment);
   });

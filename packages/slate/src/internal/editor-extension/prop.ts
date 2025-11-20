@@ -9,11 +9,7 @@ export function prop({
 }: EditorPropOptions): string | undefined {
   if (nodes.length === 0) return defaultValue;
 
-  const getNodeValue =
-    getProp ??
-    ((node) => {
-      return node[key!]!;
-    });
+  const getNodeValue = getProp ?? ((node) => node[key!]!);
 
   let value: string | undefined;
 

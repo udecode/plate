@@ -7,6 +7,5 @@ export const useLocale = () => {
   return locale;
 };
 
-export const getLocalizedPath = (locale: string, href: string) => {
-  return locale === 'cn' ? `/cn${href}?locale=cn` : href;
-};
+export const getLocalizedPath = (locale: string, href: string) =>
+  locale === 'cn' ? `/cn${href}?locale=cn` : href;

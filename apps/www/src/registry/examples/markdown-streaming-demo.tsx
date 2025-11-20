@@ -27,6 +27,11 @@ import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer, EditorView } from '@/registry/ui/editor';
 
 import { BaseEditorKit } from '../components/editor/editor-base-kit';
+
+const CAPITALIZE_REGEX = /([A-Z])/g;
+const FIRST_CHAR_REGEX = /^./;
+const TRAILING_NEWLINES_REGEX = /(\n+)$/;
+
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
@@ -370,6 +375,7 @@ export default function MarkdownStreamingDemo() {
 
     for (const chunk of transformedCurrentChunks) {
       output += chunk.chunk;
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for streaming visualization
       editorStatic.children = deserializeMd(editorStatic, output);
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
@@ -383,6 +389,7 @@ export default function MarkdownStreamingDemo() {
   const onReset = useCallback(() => {
     setActiveIndex(0);
     if (isPlateStatic) {
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for reset
       editorStatic.children = [];
       forceUpdate();
     } else {
@@ -405,6 +412,7 @@ export default function MarkdownStreamingDemo() {
           output += chunk.chunk;
         }
 
+        // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for navigation
         editorStatic.children = deserializeMd(editorStatic, output);
         setActiveIndex(targetIndex);
         forceUpdate();
@@ -442,7 +450,7 @@ export default function MarkdownStreamingDemo() {
       <div className="mb-10 rounded bg-gray-100 p-4">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
+          <span className="mb-2 block font-medium text-sm">Test Scenario:</span>
           <select
             className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
@@ -455,8 +463,8 @@ export default function MarkdownStreamingDemo() {
             {Object.entries(testScenarios).map(([key]) => (
               <option key={key} value={key}>
                 {key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, (str) => str.toUpperCase())}
+                  .replace(CAPITALIZE_REGEX, ' $1')
+                  .replace(FIRST_CHAR_REGEX, (str) => str.toUpperCase())}
               </option>
             ))}
           </select>
@@ -473,12 +481,10 @@ export default function MarkdownStreamingDemo() {
               if (streaming) {
                 isPauseRef.current = !isPauseRef.current;
                 forceUpdate();
+              } else if (isPlateStatic) {
+                onStreamingStatic();
               } else {
-                if (isPlateStatic) {
-                  onStreamingStatic();
-                } else {
-                  onStreaming();
-                }
+                onStreaming();
               }
             }}
           >
@@ -504,7 +510,7 @@ export default function MarkdownStreamingDemo() {
         </div>
 
         <div className="mb-4 flex items-center gap-2">
-          <span className="block text-sm font-medium">Speed:</span>
+          <span className="block font-medium text-sm">Speed:</span>
           <select
             className="rounded border px-2 py-1"
             value={speed ?? 'default'}
@@ -528,7 +534,7 @@ export default function MarkdownStreamingDemo() {
               </option>
             ))}
           </select>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             The default speed is 10ms, but it adjusts to 100ms when streaming a
             table or code block.
           </span>
@@ -543,7 +549,7 @@ export default function MarkdownStreamingDemo() {
           />
         </div>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           PlateStatic offers more robust and flawless performance.
         </span>
       </div>
@@ -570,23 +576,21 @@ export default function MarkdownStreamingDemo() {
               editor={editorStatic}
             />
           ) : (
-            <>
-              <Plate editor={editor}>
-                <EditorContainer className="h-[500px] overflow-y-auto rounded border">
-                  <Editor
-                    variant="demo"
-                    className="pb-[20vh]"
-                    placeholder="Type something..."
-                    spellCheck={false}
-                  />
-                </EditorContainer>
-              </Plate>
-            </>
+            <Plate editor={editor}>
+              <EditorContainer className="h-[500px] overflow-y-auto rounded border">
+                <Editor
+                  variant="demo"
+                  className="pb-[20vh]"
+                  placeholder="Type something..."
+                  spellCheck={false}
+                />
+              </EditorContainer>
+            </Plate>
           )}
         </div>
       </div>
 
-      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
+      <h2 className="mt-8 mb-4 font-semibold text-xl">Raw Token Comparison</h2>
       <div className="my-2 flex gap-10">
         <div className="w-1/2">
           <h3 className="mb-2 font-semibold">Original Chunks</h3>
@@ -627,7 +631,7 @@ function splitChunksByLinebreak(chunks: string[]) {
     const chunk = chunks[i];
     current.push({ index: i, text: chunk });
 
-    const match = /(\n+)$/.exec(chunk);
+    const match = TRAILING_NEWLINES_REGEX.exec(chunk);
     if (match) {
       const linebreaks = match[1].length;
       result.push({
@@ -675,35 +679,32 @@ const Tokens = ({
   activeIndex: number;
   chunks: TChunks[];
   chunkClick?: (index: number) => void;
-} & HTMLAttributes<HTMLDivElement>) => {
-  return (
-    <div
-      className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
-      {...props}
-    >
-      {chunks.map((chunk, index) => {
-        return (
-          <div key={index} className="py-1">
-            {chunk.chunks.map((c, j) => {
-              const lineBreak = c.text.replaceAll('\n', '⤶');
-              const space = lineBreak.replaceAll(' ', '␣');
+} & HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
+    {...props}
+  >
+    {chunks.map((chunk, index) => (
+      <div key={index} className="py-1">
+        {chunk.chunks.map((c, j) => {
+          const lineBreak = c.text.replaceAll('\n', '⤶');
+          const space = lineBreak.replaceAll(' ', '␣');
 
-              return (
-                <span
-                  key={j}
-                  className={cn(
-                    'mx-1 inline-block rounded border p-1',
-                    activeIndex && c.index < activeIndex && 'bg-amber-400'
-                  )}
-                  onClick={() => chunkClick && chunkClick(c.index + 1)}
-                >
-                  {space}
-                </span>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+          return (
+            <span
+              key={j}
+              role="button"
+              className={cn(
+                'mx-1 inline-block rounded border p-1',
+                activeIndex && c.index < activeIndex && 'bg-amber-400'
+              )}
+              onClick={() => chunkClick?.(c.index + 1)}
+            >
+              {space}
+            </span>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);

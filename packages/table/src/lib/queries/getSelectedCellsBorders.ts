@@ -9,22 +9,22 @@ import { getRowSpan } from './getRowSpan';
 import { getSelectedCellsBoundingBox } from './getSelectedCellsBoundingBox';
 import { getTopTableCell } from './getTopTableCell';
 
-export interface GetSelectedCellsBordersOptions {
+export type GetSelectedCellsBordersOptions = {
   select?: {
     none?: boolean;
     outer?: boolean;
     side?: boolean;
   };
-}
+};
 
-export interface TableBorderStates {
+export type TableBorderStates = {
   bottom: boolean;
   left: boolean;
   none: boolean;
   outer: boolean;
   right: boolean;
   top: boolean;
-}
+};
 
 /**
  * Get all border states for the selected cells at once. Returns an object with
@@ -42,11 +42,13 @@ export const getSelectedCellsBorders = (
   const { select = { none: true, outer: true, side: true } } = options;
 
   // If no cells are selected, try to get the current cell
-  if (!selectedCells || selectedCells.length === 0) {
+  let cells = selectedCells;
+
+  if (!cells || cells.length === 0) {
     const cell = editor.api.block({ match: { type: getCellTypes(editor) } });
 
     if (cell) {
-      selectedCells = [cell[0]];
+      cells = [cell[0]];
     } else {
       return {
         bottom: true,
@@ -60,12 +62,12 @@ export const getSelectedCellsBorders = (
   }
 
   // Convert to TTableCellElement
-  const cells = selectedCells.map((cell) => cell as TTableCellElement);
+  const cellElements = cells.map((cell) => cell as TTableCellElement);
 
   // Get bounding box once
   const { maxCol, maxRow, minCol, minRow } = getSelectedCellsBoundingBox(
     editor,
-    cells
+    cellElements
   );
 
   // Track border states
@@ -79,7 +81,7 @@ export const getSelectedCellsBorders = (
   };
 
   // Single pass through cells to check all border conditions
-  for (const cell of cells) {
+  for (const cell of cellElements) {
     const { col, row } = getCellIndices(editor, cell);
     const cellPath = editor.api.findPath(cell);
     const cSpan = getColSpan(cell);

@@ -114,7 +114,7 @@ const createOrUpdateTemplate = async (force = false) => {
     );
 
     templateSpinner.text = kleur.cyan('Initializing shadcn...');
-    execSync(`npx shadcn@latest init --base-color neutral -y -s`, {
+    execSync('npx shadcn@latest init --base-color neutral -y -s', {
       cwd: TEMPLATE_DIR,
       stdio: 'pipe',
     });
@@ -165,11 +165,11 @@ const runCommand = async (
     let errorString = kleur.red(`Command failed: ${command}\n`);
 
     if (error.stdout?.toString().trim()) {
-      errorString += kleur.dim(error.stdout.toString().trim()) + '\n';
+      errorString += `${kleur.dim(error.stdout.toString().trim())}\n`;
     }
 
     if (error.stderr?.toString().trim()) {
-      errorString += kleur.dim(error.stderr.toString().trim()) + '\n';
+      errorString += `${kleur.dim(error.stderr.toString().trim())}\n`;
     }
 
     if (
@@ -184,13 +184,14 @@ const runCommand = async (
   }
 };
 
+// biome-ignore lint/nursery/useMaxParams: test function with multiple configuration parameters
 const testItemsGroup = async (
   itemNames: string[], // Items to install (e.g., ['image'] or ['table', 'resizable'])
   groupDirName: string, // Name for the directory under BASE_TEST_DIR (e.g., 'image' or 'table-resizable')
   // Also used for the .cache file name in CACHE_DIR (e.g., image.cache)
   baseTemplateSourceDir: string, // Source to clone from (TEMPLATE_DIR or a cached block dir)
   preserveOutputOnSuccess: boolean, // If true, targetDir is NOT rimraf'd on success
-  force = false,
+  force: boolean,
   task: ListrTaskWrapper<any, any, any>,
   baseBlockNameIfCloned?: string, // Name of the block used as base, if cloned
   runAdditionalScripts = false, // Whether to run additional scripts from config
@@ -284,7 +285,7 @@ const testItemsGroup = async (
             if (removedDeps.length > 0)
               depDiffMsg += ` (-${removedDeps.join(', ')})`;
             const message = kleur.yellow(depDiffMsg);
-            task.output = task.output ? task.output + '\n' + message : message;
+            task.output = task.output ? `${task.output}\n${message}` : message;
           }
 
           // 2. Compare registryDependencies (order-insensitive)
@@ -313,7 +314,7 @@ const testItemsGroup = async (
                 regDepDiffMsg += ` (-${removedRegDeps.join(', ')})`;
               const message = kleur.yellow(regDepDiffMsg);
               task.output = task.output
-                ? task.output + '\n' + message
+                ? `${task.output}\n${message}`
                 : message;
             }
           }
@@ -356,7 +357,7 @@ const testItemsGroup = async (
                     `Cache invalid: ${currentBlock.name} file changed\n${diffLines.join('\n')}`
                   );
                   task.output = task.output
-                    ? task.output + '\n' + message
+                    ? `${task.output}\n${message}`
                     : message;
                   break;
                 }
@@ -367,7 +368,7 @@ const testItemsGroup = async (
                 `Cache invalid: ${currentBlock.name} files count ${cachedFiles.length} → ${currentFiles.length}`
               );
               task.output = task.output
-                ? task.output + '\n' + message
+                ? `${task.output}\n${message}`
                 : message;
             }
           }
@@ -421,13 +422,13 @@ const testItemsGroup = async (
     return;
   }
 
-  const pinnedOutput = task.output ? task.output + '\n' : '';
+  const pinnedOutput = task.output ? `${task.output}\n` : '';
 
   try {
     const npxPrefix = 'npx -q';
     const pnpmTscCmd = 'pnpm tsc --noEmit';
 
-    task.output = pinnedOutput + kleur.dim(`Cleaning...`);
+    task.output = pinnedOutput + kleur.dim('Cleaning...');
     if (fs.existsSync(targetDir)) {
       await rimraf(targetDir);
     }
@@ -459,7 +460,7 @@ const testItemsGroup = async (
       }
     }
 
-    await runCommand(pnpmTscCmd, { cwd: targetDir }, task, `Type checking...`);
+    await runCommand(pnpmTscCmd, { cwd: targetDir }, task, 'Type checking...');
 
     // Run additional scripts if specified (only for blocks)
     if (runAdditionalScripts && additionalScripts.length > 0) {
@@ -489,7 +490,7 @@ const testItemsGroup = async (
         definitionsForCacheFile.push(definition);
       } else {
         task.output =
-          (task.output ? task.output + '\n' : '') +
+          (task.output ? `${task.output}\n` : '') +
           kleur.yellow(`Warning: ${itemName} not found in registry`);
       }
     }
@@ -512,8 +513,7 @@ const testItemsGroup = async (
   } catch (error) {
     // --- FAILURE PATH for this group ---
     // runCommand already sets task.output with detailed error.
-    task.output =
-      pinnedOutput + (task.output || '') + `\n` + kleur.red(`Test failed`);
+    task.output = `${pinnedOutput + (task.output || '')}\n${kleur.red('Test failed')}`;
 
     if (fs.existsSync(itemGroupCacheFile)) {
       try {
@@ -541,7 +541,7 @@ const loadConfig = (): Config => {
 
       const validationResult = ConfigSchema.safeParse(parsedConfig);
       if (!validationResult.success) {
-        console.warn(kleur.yellow(`Invalid config, using defaults`));
+        console.warn(kleur.yellow('Invalid config, using defaults'));
         validationResult.error.errors.forEach((err) => {
           console.warn(kleur.yellow(`${err.path.join('.')}: ${err.message}`));
         });
@@ -553,7 +553,6 @@ const loadConfig = (): Config => {
       return defaultConfig;
     }
   } else {
-    console.log(kleur.dim(`No config found, using defaults`));
     return defaultConfig;
   }
 };
@@ -577,9 +576,9 @@ const main = async () => {
     process.exit(1);
   }
 
-  let totalSuccessCount = 0;
+  let _totalSuccessCount = 0;
   let totalFailedCount = 0;
-  let totalSkippedCount = 0;
+  let _totalSkippedCount = 0;
 
   const listrOptions = {
     collectErrors: 'full' as const,
@@ -619,18 +618,10 @@ const main = async () => {
         ) {
           baseDirToClone = potentialCacheDir;
           baseBlockNameForCli = firstItem; // Set the base block name
-          console.log(kleur.dim(`Using cached ${firstItem} as base`));
         } else {
-          console.log(
-            kleur.dim(`No valid cache for ${firstItem}, using template`)
-          );
         }
       }
     }
-
-    console.log(
-      kleur.blue(`Running CLI specified test: ${kleur.bold(groupDirName)}`)
-    );
     const cliTask = {
       title: kleur.magenta(groupDirName),
       task: (_: any, taskWrapper: ListrTaskWrapper<any, any, any>) =>
@@ -649,17 +640,17 @@ const main = async () => {
     const listrCli = new Listr([cliTask], listrOptions);
     try {
       await listrCli.run();
-    } catch (error) {
+    } catch (_error) {
       // Listr handles error display
     }
     listrCli.tasks.forEach((task) => {
       if (task.isCompleted() && !task.hasFailed() && !task.isSkipped()) {
-        totalSuccessCount++;
+        _totalSuccessCount++;
       } else if (task.hasFailed()) {
         totalFailedCount++;
         failedGroupNames.push(groupDirName); // cliTask title is complex, use groupDirName
       } else if (task.isSkipped()) {
-        totalSkippedCount++;
+        _totalSkippedCount++;
       }
     });
   } else {
@@ -782,9 +773,6 @@ const main = async () => {
           items.length === 1 &&
           sourceBlockTasks.some((sbt) => sbt.id === items[0])
         ) {
-          console.log(
-            kleur.dim(`Skipping ${groupNameString} (already in source tests)`)
-          );
           return;
         }
 
@@ -845,11 +833,10 @@ const main = async () => {
     );
 
     if (sourceBlockTasks.length > 0) {
-      console.log(kleur.blue(`\n--- ${sourceBlockTasks.length} blocks ---`));
       const listrPhase1 = new Listr(sourceBlockTasks, listrOptions);
       try {
         await listrPhase1.run();
-      } catch (error) {
+      } catch (_error) {
         /* Handled by Listr */
       }
       listrPhase1.tasks.forEach((task) => {
@@ -862,28 +849,21 @@ const main = async () => {
           : task.title || 'Unnamed Task';
 
         if (task.isCompleted() && !task.hasFailed() && !task.isSkipped()) {
-          totalSuccessCount++;
+          _totalSuccessCount++;
         } else if (task.hasFailed()) {
           totalFailedCount++;
           failedGroupNames.push(nameForReporting);
         } else if (task.isSkipped()) {
-          totalSkippedCount++;
+          _totalSkippedCount++;
         }
       });
     }
 
     if (uniqueDependentGroupTasks.length > 0) {
-      console.log(
-        kleur.blue(
-          `\n--- ${uniqueDependentGroupTasks.length} group${
-            uniqueDependentGroupTasks.length === 1 ? '' : 's'
-          } ---`
-        )
-      );
       const listrPhase2 = new Listr(uniqueDependentGroupTasks, listrOptions);
       try {
         await listrPhase2.run();
-      } catch (error) {
+      } catch (_error) {
         /* Handled by Listr */
       }
       listrPhase2.tasks.forEach((task) => {
@@ -895,36 +875,22 @@ const main = async () => {
           : task.title || 'Unnamed Task';
 
         if (task.isCompleted() && !task.hasFailed() && !task.isSkipped()) {
-          totalSuccessCount++;
+          _totalSuccessCount++;
         } else if (task.hasFailed()) {
           totalFailedCount++;
           failedGroupNames.push(nameForReporting);
         } else if (task.isSkipped()) {
-          totalSkippedCount++;
+          _totalSkippedCount++;
         }
       });
     }
   }
-
-  console.log('\n---');
-  console.log(kleur.bold('Summary:'));
-  console.log(kleur.green(`✓ ${totalSuccessCount} passed`));
-  console.log(kleur.yellow(`⏭ ${totalSkippedCount} skipped`));
   if (totalFailedCount > 0) {
-    console.log(
-      kleur.red(
-        `✗ ${totalFailedCount} failed: ${kleur.bold(failedGroupNames.join(', '))}`
-      )
-    );
-    console.log('---\n');
     process.exit(1);
   } else {
-    console.log(kleur.red(`✗ 0 failed`)); // Keep dim for consistency if preferred: kleur.dim(`✗ 0`)
-    console.log('---');
   }
 };
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
 main().catch((error) => {
   console.error(
     kleur.red('✖ An unexpected error occurred in the test script:')

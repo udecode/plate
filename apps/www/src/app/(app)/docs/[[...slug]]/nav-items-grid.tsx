@@ -89,14 +89,15 @@ export function NavItemCard({
       <Card className="h-full bg-muted/30 p-0 transition-shadow duration-200 hover:shadow-md">
         <CardContent className="flex gap-2 p-2">
           <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-white">
+            {/* eslint-disable-next-line react-hooks/static-components -- Icon selection based on item type is intentional */}
             <Icon className="size-5 text-neutral-800" />
           </div>
           <div className="space-y-0">
-            <CardTitle className="mt-0.5 line-clamp-1 text-base font-medium">
+            <CardTitle className="mt-0.5 line-clamp-1 font-medium text-base">
               {item.title}
             </CardTitle>
             {item.description && (
-              <p className="line-clamp-1 text-sm text-muted-foreground">
+              <p className="line-clamp-1 text-muted-foreground text-sm">
                 {item.description}
               </p>
             )}
@@ -160,12 +161,12 @@ export function NavItemsGrid({
                 >
                   <a
                     className={cn(
-                      'opacity-0 group-hover:opacity-100 hover:opacity-100'
+                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
                     )}
                     onClick={(e) => e.stopPropagation()}
                     href={`#${group.title.toLowerCase().replace(/ /g, '-')}`}
                   >
-                    <div className="absolute top-1/2 -left-5 -translate-y-1/2 pr-1 leading-none">
+                    <div className="-left-5 -translate-y-1/2 absolute top-1/2 pr-1 leading-none">
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>

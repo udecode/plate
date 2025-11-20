@@ -49,20 +49,22 @@ export function LanguagesDropdownMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="z-60 py-1">
         <DropdownMenuItem asChild>
-          <div
+          <button
+            type="button"
             className="m-0 w-full cursor-pointer"
             onClick={() => handleClick()}
           >
             English
-          </div>
+          </button>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <div
+          <button
+            type="button"
             className="w-full cursor-pointer"
             onClick={() => handleClick('cn')}
           >
             中文
-          </div>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

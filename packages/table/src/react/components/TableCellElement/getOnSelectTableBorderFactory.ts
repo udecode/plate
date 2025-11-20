@@ -196,17 +196,19 @@ export const getOnSelectTableBorderFactory =
   (editor: SlateEditor, selectedCells: TElement[] | null) =>
   (border: BorderDirection | 'none' | 'outer') =>
   () => {
-    if (!selectedCells || selectedCells.length === 0) {
+    let cells = selectedCells;
+
+    if (!cells || cells.length === 0) {
       const cell = editor.api.block({ match: { type: getCellTypes(editor) } });
 
       if (cell) {
-        selectedCells = [cell[0]];
+        cells = [cell[0]];
       } else {
         return;
       }
     }
 
     // Convert them to TTableCellElement
-    const cellElems = selectedCells.map((v) => v as TTableCellElement);
+    const cellElems = cells.map((v) => v as TTableCellElement);
     setSelectedCellsBorder(editor, { border, cells: cellElems });
   };

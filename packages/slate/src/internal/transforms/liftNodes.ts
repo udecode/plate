@@ -7,6 +7,4 @@ import { getQueryOptions } from '../../utils';
 export const liftNodes = <E extends Editor>(
   editor: E,
   options?: LiftNodesOptions<ValueOf<E>>
-) => {
-  return liftNodesBase(editor as any, getQueryOptions(editor, options));
-};
+) => liftNodesBase(editor as any, getQueryOptions(editor, options));

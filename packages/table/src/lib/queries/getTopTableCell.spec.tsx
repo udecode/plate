@@ -8,14 +8,13 @@ import { getTopTableCell } from './getTopTableCell';
 
 jsxt;
 
-const createEditorInstance = (input: any) => {
-  return createSlateEditor({
+const createEditorInstance = (input: any) =>
+  createSlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
     value: input.children,
   });
-};
 
 describe('getTopTableCell', () => {
   const input = (

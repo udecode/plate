@@ -13,7 +13,7 @@ export type DOMHandler<C extends AnyPluginConfig = PluginConfig, EV = {}> = (
   }
 ) => HandlerReturnType;
 
-export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {
+export type DOMHandlers<C extends AnyPluginConfig = PluginConfig> = {
   // Media Events
   onAbort?: DOMHandler<C, React.SyntheticEvent>;
   onAbortCapture?: DOMHandler<C, React.SyntheticEvent>;
@@ -198,4 +198,4 @@ export interface DOMHandlers<C extends AnyPluginConfig = PluginConfig> {
   // Wheel Events
   onWheel?: DOMHandler<C, React.WheelEvent>;
   onWheelCapture?: DOMHandler<C, React.WheelEvent>;
-}
+};

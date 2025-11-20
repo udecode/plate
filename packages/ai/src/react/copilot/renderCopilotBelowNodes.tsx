@@ -18,13 +18,11 @@ export const renderCopilotBelowNodes = ({
 
   if (!GhostText) return;
 
-  return ({ children }: { children: React.ReactNode }) => {
-    return (
-      <React.Fragment>
-        {children}
+  return ({ children }: { children: React.ReactNode }) => (
+    <>
+      {children}
 
-        <GhostText />
-      </React.Fragment>
-    );
-  };
+      <GhostText />
+    </>
+  );
 };

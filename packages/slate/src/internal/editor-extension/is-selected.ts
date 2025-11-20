@@ -2,8 +2,8 @@ import {
   type Editor,
   type EditorIsSelectedOptions,
   type Path,
-  type TRange,
   RangeApi,
+  type TRange,
 } from '../../interfaces';
 
 export const isSelected = (

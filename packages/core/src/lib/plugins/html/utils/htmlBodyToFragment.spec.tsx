@@ -19,7 +19,7 @@ describe('when element is a body', () => {
     );
 
     const body = document.createElement('body');
-    body.append(parseHtmlElement(`<p>test</p>`));
+    body.append(parseHtmlElement('<p>test</p>'));
 
     expect(
       htmlBodyToFragment(
@@ -37,7 +37,7 @@ describe('when element is not a body', () => {
     expect(
       htmlBodyToFragment(
         createPlateEditor(),
-        parseHtmlElement(`<div>test</div>`)
+        parseHtmlElement('<div>test</div>')
       )
     ).toEqual(output);
   });

@@ -21,6 +21,5 @@ const removeAfterHtml = (html: string): string => {
 };
 
 /** Remove string before <html and after </html> */
-export const removeHtmlSurroundings = (html: string): string => {
-  return removeBeforeHtml(removeAfterHtml(html));
-};
+export const removeHtmlSurroundings = (html: string): string =>
+  removeBeforeHtml(removeAfterHtml(html));

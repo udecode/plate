@@ -1,9 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import 'shadcn-prose';
+@import "shadcn-prose";
 @import "./themes.css";
 
-@plugin 'tailwind-scrollbar-hide';
+@plugin "tailwind-scrollbar-hide";
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant fixed (&:is(.layout-fixed *));
@@ -36,7 +36,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  
+
   --breakpoint-3xl: 1600px;
   --breakpoint-4xl: 2000px;
   --color-sidebar: var(--sidebar);
@@ -59,16 +59,19 @@
   --color-brand: var(--brand);
   --color-highlight: var(--highlight);
 
-  --font-heading: 'var(--font-heading)', 'ui-sans-serif', '-apple-system',
-    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
-    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
-  --font-mono: 'var(--font-mono)', ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --font-sans: 'var(--font-sans)', 'ui-sans-serif', '-apple-system',
-    'BlinkMacSystemFont', 'Segoe UI Variable Display', 'Segoe UI', 'Helvetica',
-    'Apple Color Emoji', 'Arial', 'sans-serif', 'Segoe UI Emoji',
-    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-heading:
+    "var(--font-heading)", "ui-sans-serif", "-apple-system",
+    "BlinkMacSystemFont", "Segoe UI Variable Display", "Segoe UI", "Helvetica",
+    "Apple Color Emoji", "Arial", "sans-serif", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    "var(--font-mono)", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --font-sans:
+    "var(--font-sans)", "ui-sans-serif", "-apple-system",
+    "BlinkMacSystemFont", "Segoe UI Variable Display", "Segoe UI", "Helvetica",
+    "Apple Color Emoji", "Arial", "sans-serif", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 :root {
@@ -120,8 +123,8 @@
   --color-blue-700: oklch(0.488 0.243 264.376);
   --color-blue-800: oklch(0.419 0.243 267.218);
 
-  --brand: oklch(0.623 0.214 259.815);   /* Blue 500 */
-  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
+  --brand: oklch(0.623 0.214 259.815); /* Blue 500 */
+  --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
 }
 
 .dark {
@@ -165,8 +168,8 @@
   --selection: oklch(0.922 0 0);
   --selection-foreground: oklch(0.205 0 0);
 
-  --brand: oklch(0.707 0.165 254.624);   /* Blue 400 */
-  --highlight: oklch(0.852 0.199 91.936);   /* Yellow 400 */
+  --brand: oklch(0.707 0.165 254.624); /* Blue 400 */
+  --highlight: oklch(0.852 0.199 91.936); /* Yellow 400 */
 }
 
 @layer base {
@@ -186,6 +189,7 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* biome-ignore lint/a11y/useGenericFontNames: shadcn */
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {
     [data-wrapper] {
       @apply min-[1800px]:border-t;
@@ -196,7 +200,7 @@
   button:active {
     @apply opacity-60 md:opacity-100;
   }
-  
+
   /* Custom scrollbar styling (remove after sync). */
   ::-webkit-scrollbar {
     width: 5px;
@@ -236,13 +240,13 @@
 
 @utility container-wrapper {
   /* @apply 3xl:fixed:max-w-[calc(var(--breakpoint-2xl)+2rem)] mx-auto w-full px-2; */
-  
+
   @apply px-2 mx-auto w-full max-w-[calc(var(--breakpoint-xl)+2rem)];
 }
 
 @utility container {
   /* @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8; */
-  
+
   @apply mx-auto max-w-[calc(var(--breakpoint-xl)+2rem)] px-4 xl:px-6;
 }
 
@@ -364,6 +368,7 @@
     color: var(--shiki-light);
 
     @variant dark {
+      /* biome-ignore lint/suspicious/noDuplicateProperties: shiki */
       color: var(--shiki-dark) !important;
     }
   }
@@ -402,19 +407,19 @@
 /* MDX (remove after sync). */
 
 @layer base {
-  [data-theme='light'] {
+  [data-theme="light"] {
     display: block;
   }
 
-  [data-theme='dark'] {
+  [data-theme="dark"] {
     display: none;
   }
 
-  .dark [data-theme='light'] {
+  .dark [data-theme="light"] {
     display: none;
   }
 
-  .dark [data-theme='dark'] {
+  .dark [data-theme="dark"] {
     display: block;
   }
 

@@ -8,7 +8,6 @@ export const isPointNextToNode = (
     reverse?: boolean;
   }
 ): boolean => {
-  // eslint-disable-next-line prefer-const
   let { at, nodeType, reverse = false } = options;
 
   if (!at) {

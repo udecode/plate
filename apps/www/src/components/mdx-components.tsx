@@ -133,37 +133,33 @@ const components = {
     children,
     className,
     ...props
-  }: React.ComponentProps<typeof Table>) => {
-    return (
-      <Table className={cn('my-4', className)} {...props}>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Key</TableHead>
-            <TableHead>Description</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>{children}</TableBody>
-      </Table>
-    );
-  },
+  }: React.ComponentProps<typeof Table>) => (
+    <Table className={cn('my-4', className)} {...props}>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[100px]">Key</TableHead>
+          <TableHead>Description</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>{children}</TableBody>
+    </Table>
+  ),
   KeyTableItem: ({
     children,
     hotkey,
   }: {
     children: ReactNode;
     hotkey: string;
-  }) => {
-    return (
-      <TableRow>
-        <TableCell>
-          <kbd className="inline-flex min-w-[8px] items-center justify-center rounded bg-muted px-2 whitespace-nowrap shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
-            {hotkey}
-          </kbd>
-        </TableCell>
-        <TableCell>{children}</TableCell>
-      </TableRow>
-    );
-  },
+  }) => (
+    <TableRow>
+      <TableCell>
+        <kbd className="inline-flex min-w-[8px] items-center justify-center whitespace-nowrap rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
+          {hotkey}
+        </kbd>
+      </TableCell>
+      <TableCell>{children}</TableCell>
+    </TableRow>
+  ),
   LinkedCard: ({ className, ...props }: React.ComponentProps<typeof Link>) => (
     <Link
       className={cn(
@@ -182,7 +178,7 @@ const components = {
   }: React.ComponentProps<typeof TabsContent>) => (
     <TabsContent
       className={cn(
-        'relative [&_h3.font-heading]:text-base [&_h3.font-heading]:font-semibold',
+        'relative [&_h3.font-heading]:font-semibold [&_h3.font-heading]:text-base',
         className
       )}
       {...props}
@@ -229,6 +225,7 @@ export function Mdx({
     <div className="typography">
       <Provider>
         <HydrateAtoms initialValues={[[packageInfoAtom, packageInfo]]}>
+          {/* eslint-disable-next-line react-hooks/static-components -- useMDXComponent is designed to return dynamic MDX components */}
           <Component components={components as any} />
         </HydrateAtoms>
       </Provider>
@@ -334,7 +331,7 @@ function Callout({
     <div
       className={cn(
         calloutVariants({
-          type: type,
+          type,
         }),
         className
       )}

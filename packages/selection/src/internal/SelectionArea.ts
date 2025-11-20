@@ -42,21 +42,21 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
   private _container?: Element;
   private _containerRect?: DOMRect;
-  private _frame: Frames;
+  private readonly _frame: Frames;
   private _initScrollDelta: Coordinates = { x: 0, y: 0 };
   private _latestElement?: Element;
   // Options
   private readonly _options: SelectionOptions;
 
   // Is getting set on movement.
-  private _scrollAvailable = true;
+  private readonly _scrollAvailable = true;
 
   // The scroll distance of scrollElement (body or html) relative to the initial scroll position
-  private _scrollDelta: Coordinates = { x: 0, y: 0 };
+  private readonly _scrollDelta: Coordinates = { x: 0, y: 0 };
   // If a single click is being performed.
   private _scrollingActive = false;
 
-  private _scrollSpeed: Coordinates = { x: 0, y: 0 };
+  private readonly _scrollSpeed: Coordinates = { x: 0, y: 0 };
   private _selectables: Element[] = [];
 
   // Selection store
@@ -173,10 +173,11 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     fn(document, 'mousedown', this._onTapStart);
 
-    features.touch &&
+    if (features.touch) {
       fn(document, 'touchstart', this._onTapStart, {
         passive: false,
       });
+    }
   }
 
   _delayedTapMove(evt: MouseEvent | TouchEvent): void {
@@ -295,7 +296,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   }
 
   _manualScroll(evt: ScrollEvent): void {
-    this.wheelTimer && clearTimeout(this.wheelTimer);
+    if (this.wheelTimer) {
+      clearTimeout(this.wheelTimer);
+    }
 
     const { x, y } = simplifyEvent(evt);
 
@@ -314,7 +317,9 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
   _onScroll(evt: ScrollEvent): void {
     const { document } = this._options;
 
-    this.wheelTimer && clearTimeout(this.wheelTimer);
+    if (this.wheelTimer) {
+      clearTimeout(this.wheelTimer);
+    }
 
     const { x, y } = simplifyEvent(evt);
 
@@ -353,7 +358,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
       singleTap: { intersect },
     } = this._options.features;
     const e = simplifyEvent(evt);
-    let target;
+    let target: Element | undefined;
 
     if (intersect === 'native') {
       target = e.target;
@@ -532,9 +537,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     if (
       !this._container ||
-      // eslint-disable-next-line unicorn/prefer-array-some
       !startAreas.find((el) => evtPath.includes(el)) ||
-      // eslint-disable-next-line unicorn/prefer-array-some
       !resolvedBoundaries.find((el) => evtPath.includes(el))
     ) {
       return;
@@ -725,7 +728,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     const removed: Element[] = [];
 
     // Find newly selected elements
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    // biome-ignore lint/style/useForOf: performance-critical loop
     for (let i = 0; i < _selectables.length; i++) {
       const node = _selectables[i];
 
@@ -745,9 +748,8 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
             removed.push(node);
 
             continue;
-          } else {
-            added.push(node);
           }
+          added.push(node);
         } else if (stored.includes(node) && !touched.includes(node)) {
           touched.push(node);
         }
@@ -764,7 +766,7 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
     // Check which elements where removed since last selection
     const keep = overlap === 'keep';
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    // biome-ignore lint/style/useForOf: performance-critical loop
     for (let i = 0; i < selected.length; i++) {
       const node = selected[i];
 

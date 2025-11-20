@@ -9,7 +9,7 @@ export function parseAttributes(attributes: any[]): Record<string, any> {
 
         try {
           value = JSON.parse(attr.value);
-        } catch (error) {
+        } catch (_error) {
           value = attr.value;
         }
 

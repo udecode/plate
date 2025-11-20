@@ -53,7 +53,6 @@ export const setAffinitySelection = (
 
   if (ElementApi.isElement(after[0])) {
     return;
-  } else {
-    setMarks(NodeApi.extractProps(after[0]));
   }
+  setMarks(NodeApi.extractProps(after[0]));
 };

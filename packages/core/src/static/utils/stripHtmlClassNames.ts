@@ -1,4 +1,5 @@
 const classAttrRegExp = / class="([^"]*)"/g;
+const whitespaceRegExp = /\s+/;
 
 /**
  * Remove all class names that do not start with one of preserveClassNames
@@ -18,9 +19,9 @@ export const stripHtmlClassNames = (
 
   return html.replaceAll(
     classAttrRegExp,
-    (match: string, className: string) => {
+    (_match: string, className: string) => {
       const classesToKeep = className
-        .split(/\s+/)
+        .split(whitespaceRegExp)
         .filter((cn) => preserveRegExp.test(cn));
 
       return classesToKeep.length === 0

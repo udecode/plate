@@ -97,10 +97,10 @@ export const RangeApi: {
  */
 export type Range = TRange;
 
-export interface RangeEdgesOptions {
+export type RangeEdgesOptions = {
   reverse?: boolean;
-}
+};
 
-export interface RangeTransformOptions {
+export type RangeTransformOptions = {
   affinity?: RangeDirection | null;
-}
+};

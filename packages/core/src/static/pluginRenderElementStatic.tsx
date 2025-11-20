@@ -24,6 +24,7 @@ export const pluginRenderElementStatic = (
 
     const dataAttributes = getPluginDataAttributes(editor, plugin, element);
 
+    // biome-ignore lint/style/noParameterAssign: Intentional props accumulation pattern
     nodeProps = getRenderNodeStaticProps({
       attributes: {
         ...(element.attributes as any),

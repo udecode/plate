@@ -1,12 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error
 import { isPlainObject } from 'is-plain-object';
 
 import {
   type Editor,
   type Operation,
-  type TRange,
   OperationApi,
+  type TRange,
 } from '../interfaces/index';
 
 /** Weakmaps for attaching state to the editor. */
@@ -110,20 +109,20 @@ export const HistoryApi = {
   },
 };
 
-export interface History {
+export type History = {
   /** Redos of the editor. */
   redos: Batch[];
 
   /** Undos of the editor. */
   undos: Batch[];
-}
+};
 
 /**
  * `History` objects hold all of the operations that are applied to a value, so
  * they can be undone or redone as necessary.
  */
 
-interface Batch {
+type Batch = {
   operations: Operation[];
   selectionBefore: TRange | null;
-}
+};

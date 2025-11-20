@@ -8,6 +8,6 @@ export default function ImageProDemo() {
       className="size-full h-[350px]"
       title="media-controller"
       src={`${siteConfig.links.platePro}/iframe/media-controller`}
-    ></iframe>
+    />
   );
 }

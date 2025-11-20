@@ -19,6 +19,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 
   editor.tf.insertFragment(fragment);
 
+  // biome-ignore lint/suspicious/noMisplacedAssertion: helper function called inside tests
   expect(editor.children).toEqual(expected.children);
 };
 

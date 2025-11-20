@@ -9,7 +9,7 @@ import {
 
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MoveListItemSublistItemsToListItemSublistOptions {
+export type MoveListItemSublistItemsToListItemSublistOptions = {
   /** The list item to merge. */
   fromListItem: ElementEntry;
 
@@ -18,7 +18,7 @@ export interface MoveListItemSublistItemsToListItemSublistOptions {
 
   /** Move to the start of the list instead of the end. */
   start?: boolean;
-}
+};
 
 /**
  * Move fromListItem sublist list items to the end of `toListItem` sublist. If

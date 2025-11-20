@@ -81,10 +81,9 @@ export const addOnContextMenu = (
 export const useBlockSelectable = () => {
   const element = useElement();
   const path = usePath();
-  const { api, editor, getOption, getOptions, setOption } =
-    useEditorPlugin<BlockSelectionConfig>({
-      key: KEYS.blockSelection,
-    });
+  const { api, editor } = useEditorPlugin<BlockSelectionConfig>({
+    key: KEYS.blockSelection,
+  });
 
   return {
     props: api.blockSelection?.isSelectable(element, path)

@@ -40,7 +40,7 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   };
 
   const findListItemsWithContent = (first: Descendant): Descendant[] => {
-    let prev = null;
+    let prev: Descendant | null = null;
     let node = first;
 
     while (
@@ -92,15 +92,14 @@ export const withInsertFragmentList: OverrideEditor<ListConfig> = ({
   const wrapNodeIntoListItem = (
     node: Descendant,
     props?: Record<string, any>
-  ): TElement => {
-    return node.type === listItemType
+  ): TElement =>
+    node.type === listItemType
       ? (node as TElement)
       : ({
           children: [node],
           ...props,
           type: listItemType,
         } as TElement);
-  };
 
   /**
    * Checks if the fragment only consists of a single LIC in which case it is

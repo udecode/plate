@@ -12,11 +12,13 @@ export class FrequentEmojiStorage implements IFrequentEmojiStorage {
   protected limit = 8;
   protected localStorage;
   protected prefix = 'emoji';
+  protected defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI;
 
   constructor(
     props: FrequentEmojiStorageProps,
-    protected defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI
+    defaultValue = DEFAULT_FREQUENTLY_USED_EMOJI
   ) {
+    this.defaultValue = defaultValue;
     this.limit = props.limit ?? this.limit;
     const key = `${props.prefix ?? this.prefix}:${props.key ?? this.key}`;
     this.localStorage = new LocalStorage(key, defaultValue);

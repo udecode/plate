@@ -51,8 +51,9 @@ export const observeCategories = ({
     setVisibleSections(entries, visibleSections);
     const focusedSectionId = getSectionInFocus(visibleSections);
 
-    focusedSectionId &&
+    if (focusedSectionId) {
       setFocusedAndVisibleSections(visibleSections, focusedSectionId);
+    }
   }, observerOptions);
 
   for (const section of emojiLibrary.getGrid().sections()) {

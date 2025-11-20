@@ -70,26 +70,22 @@ function BaseElementStatic({
     attributes['data-slate-inline'] = true;
   }
 
-  return (
-    <React.Fragment>
-      {renderElement?.({ attributes, children, element })}
-    </React.Fragment>
-  );
+  return <>{renderElement?.({ attributes, children, element })}</>;
 }
 
-export const ElementStatic = React.memo(BaseElementStatic, (prev, next) => {
-  return (
+export const ElementStatic = React.memo(
+  BaseElementStatic,
+  (prev, next) =>
     (prev.element === next.element ||
       (prev.element._memo !== undefined &&
         prev.element._memo === next.element._memo)) &&
     isElementDecorationsEqual(prev.decorations, next.decorations)
-  );
-});
+);
 
 function BaseLeafStatic({
   decorations,
   editor,
-  text: text = { text: '' },
+  text = { text: '' },
 }: {
   decorations: DecoratedRange[];
   editor: SlateEditor;
@@ -145,7 +141,7 @@ function Children({
   editor: SlateEditor;
 }) {
   return (
-    <React.Fragment>
+    <>
       {children.map((child, i) => {
         const p = editor.api.findPath(child);
 
@@ -176,7 +172,7 @@ function Children({
           <LeafStatic key={i} decorations={ds} editor={editor} text={child} />
         );
       })}
-    </React.Fragment>
+    </>
   );
 }
 

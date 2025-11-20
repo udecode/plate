@@ -111,7 +111,6 @@ export function AIMenu() {
   };
 
   useEditorChat({
-    chat,
     onOpenBlockSelection: (blocks: NodeEntry[]) => {
       show(editor.api.toDOMNode(blocks.at(-1)![0])!);
     },
@@ -203,14 +202,14 @@ export function AIMenu() {
             toolName === 'generate' && <AIChatEditor content={content} />}
 
           {isLoading ? (
-            <div className="flex grow items-center gap-2 p-2 text-sm text-muted-foreground select-none">
+            <div className="flex grow select-none items-center gap-2 p-2 text-muted-foreground text-sm">
               <Loader2Icon className="size-4 animate-spin" />
               {messages.length > 1 ? 'Editing...' : 'Thinking...'}
             </div>
           ) : (
             <CommandPrimitive.Input
               className={cn(
-                'flex h-9 w-full min-w-0 border-input bg-transparent px-3 py-1 text-base transition-[color,box-shadow] outline-none placeholder:text-muted-foreground md:text-sm dark:bg-input/30',
+                'flex h-9 w-full min-w-0 border-input bg-transparent px-3 py-1 text-base outline-none transition-[color,box-shadow] placeholder:text-muted-foreground md:text-sm dark:bg-input/30',
                 'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
                 'border-b focus-visible:ring-transparent'
               )}
@@ -333,7 +332,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Discard',
     shortcut: 'Escape',
     value: 'discard',
-    onSelect: ({ editor, input }) => {
+    onSelect: ({ editor }) => {
       editor.getTransforms(AIPlugin).ai.undo();
       editor.getApi(AIChatPlugin).aiChat.hide();
     },
@@ -478,7 +477,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     icon: <CornerUpLeft />,
     label: 'Try again',
     value: 'tryAgain',
-    onSelect: ({ editor, input }) => {
+    onSelect: ({ editor }) => {
       void editor.getApi(AIChatPlugin).aiChat.reload();
     },
   },
@@ -599,7 +598,7 @@ export const AIMenuItems = ({
               onSelect={() => {
                 menuItem.onSelect?.({
                   aiEditor,
-                  editor: editor,
+                  editor,
                   input,
                 });
                 setInput('');
@@ -661,7 +660,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-muted-foreground shadow-md transition-all duration-300'
+          '-translate-x-1/2 absolute bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -686,7 +685,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'absolute bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-sm text-muted-foreground shadow-xl backdrop-blur-sm',
+          '-translate-x-1/2 absolute bottom-4 left-1/2 z-50 flex flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
           'p-3'
         )}
       >

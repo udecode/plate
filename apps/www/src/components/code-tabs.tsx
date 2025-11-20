@@ -8,9 +8,10 @@ import { useConfig } from '@/hooks/use-config';
 export function CodeTabs({ children }: React.ComponentProps<typeof Tabs>) {
   const [config, setConfig] = useConfig();
 
-  const installationType = React.useMemo(() => {
-    return config.installationType || 'cli';
-  }, [config]);
+  const installationType = React.useMemo(
+    () => config.installationType || 'cli',
+    [config]
+  );
 
   return (
     <Tabs

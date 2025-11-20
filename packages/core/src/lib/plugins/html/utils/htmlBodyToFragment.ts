@@ -6,8 +6,6 @@ import type { SlateEditor } from '../../../editor';
 
 import { deserializeHtmlNodeChildren } from './deserializeHtmlNodeChildren';
 
-jsx;
-
 /** Deserialize HTML body element to Fragment. */
 export const htmlBodyToFragment = (
   editor: SlateEditor,

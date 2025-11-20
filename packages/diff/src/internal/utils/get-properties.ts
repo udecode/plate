@@ -19,13 +19,11 @@ export function getProperties(goal: TText, before?: TText): any {
           props[x] = goal[x];
         }
         // continue
-      } else {
-        if (goal[x] !== before[x]) {
-          if (goal[x]) {
-            props[x] = goal[x];
-          } else {
-            props[x] = undefined; // remove property...
-          }
+      } else if (goal[x] !== before[x]) {
+        if (goal[x]) {
+          props[x] = goal[x];
+        } else {
+          props[x] = undefined; // remove property...
         }
       }
     }

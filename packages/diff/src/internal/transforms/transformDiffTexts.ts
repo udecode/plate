@@ -150,7 +150,7 @@ export function transformDiffTexts(
     diffTexts = diffTexts.map((n) => ({
       ...n,
       text: n.text
-        .replaceAll(insertedLineBreakProxyChar, lineBreakChar + '\n')
+        .replaceAll(insertedLineBreakProxyChar, `${lineBreakChar}\n`)
         .replaceAll(deletedLineBreakProxyChar, lineBreakChar),
     }));
   }
@@ -159,10 +159,10 @@ export function transformDiffTexts(
   return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
 }
 
-interface LineBreakCharsOptions {
+type LineBreakCharsOptions = {
   deletedLineBreakChar?: string;
   insertedLineBreakChar?: string;
-}
+};
 
 // Function to compute the text operations needed to transform string `a` into string `b`
 function slateTextDiff(
@@ -300,7 +300,7 @@ function splitTextNodes(
     const newProps = getProperties(nextPart);
 
     Object.keys(properties).forEach((key) => {
-      if (!newProps.hasOwnProperty(key)) {
+      if (!Object.hasOwn(newProps, key)) {
         newProps[key] = undefined;
       }
     });
@@ -339,8 +339,8 @@ function getKeysLength(obj: object | null | undefined): number {
   return Object.keys(obj).length;
 }
 
-interface Op {
+type Op = {
   offset: number;
   text: string;
   type: 'insert_text' | 'remove_text';
-}
+};

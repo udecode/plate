@@ -76,7 +76,7 @@ export const getRenderNodeProps = ({
     newProps.attributes?.style &&
     Object.keys(newProps.attributes.style).length === 0
   ) {
-    delete newProps.attributes.style;
+    newProps.attributes.style = undefined;
   }
 
   return newProps;

@@ -3,10 +3,8 @@
 import { createPlateEditor } from '@platejs/core/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { jsxt } from '@platejs/test-utils';
-
-import type { Editor, LegacyEditorMethods } from '../../interfaces';
-
 import { createEditor } from '../../create-editor';
+import type { Editor, LegacyEditorMethods } from '../../interfaces';
 
 jsxt;
 

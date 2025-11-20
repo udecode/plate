@@ -13,7 +13,7 @@ export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
 export const convertTextsSerialize = (
   slateTexts: readonly TText[],
   options: SerializeMdOptions,
-  key?: string
+  _key?: string
 ): MdMark[] => {
   const customLeaf: string[] = getCustomMark(options);
 

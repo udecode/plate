@@ -1583,7 +1583,7 @@ export const uiNodes: Registry['items'] = [
         { route: '/docs/multi-select' },
         // route: 'https://pro.platejs.org/docs/components/tag-node' },
       ],
-      examples: [`select-editor-demo`],
+      examples: ['select-editor-demo'],
     },
     name: 'tag-node',
     registryDependencies: [],

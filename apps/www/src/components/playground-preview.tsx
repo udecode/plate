@@ -108,7 +108,7 @@ export function PlaygroundPreview({
 
         <ResizableHandle
           className={cn(
-            'relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
+            'after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block',
             isLiftMode && 'invisible'
           )}
         />

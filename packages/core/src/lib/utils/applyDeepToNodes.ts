@@ -8,7 +8,7 @@ import {
   queryNode,
 } from '@platejs/slate';
 
-export interface ApplyDeepToNodesOptions<N extends TNode> {
+export type ApplyDeepToNodesOptions<N extends TNode> = {
   // Function to call on each node following the query.
   apply: (
     node: NodeOf<N>,
@@ -21,7 +21,7 @@ export interface ApplyDeepToNodesOptions<N extends TNode> {
   path?: Path;
   // Query to filter the nodes.
   query?: QueryNodeOptions;
-}
+};
 
 /** Recursively apply an operation to children nodes with a query. */
 export const applyDeepToNodes = <N extends TNode>({

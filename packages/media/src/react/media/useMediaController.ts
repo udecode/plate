@@ -11,13 +11,11 @@ export const useMediaControllerState = () => {
 
 export const useMediaController = ({
   setAlignOpen,
-}: ReturnType<typeof useMediaControllerState>) => {
-  return {
-    MediaControllerDropDownMenuProps: {
-      setAlignOpen: setAlignOpen,
-    },
-  };
-};
+}: ReturnType<typeof useMediaControllerState>) => ({
+  MediaControllerDropDownMenuProps: {
+    setAlignOpen,
+  },
+});
 
 export const useMediaControllerDropDownMenu = (props: {
   openState: {

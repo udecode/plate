@@ -42,7 +42,7 @@ export function TocElementStatic(props: SlateElementProps) {
             </Button>
           ))
         ) : (
-          <div className="text-sm text-gray-500">
+          <div className="text-gray-500 text-sm">
             Create a heading to display the table of contents.
           </div>
         )}
@@ -79,7 +79,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   if (!values) return [];
 
-  Array.from(values, ([node, path]) => {
+  Array.from(values).forEach(([node, path]) => {
     const { type } = node;
     const title = NodeApi.string(node);
     const depth = headingDepth[type];

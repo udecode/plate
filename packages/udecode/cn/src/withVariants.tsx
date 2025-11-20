@@ -1,6 +1,5 @@
-import React from 'react';
-
 import type { cva, VariantProps } from 'class-variance-authority';
+import React from 'react';
 
 import { cn } from './cn';
 
@@ -37,8 +36,8 @@ export function withVariants<
 
     return (
       <Component
-        ref={ref}
         className={cn(variants(variantProps), className)}
+        ref={ref}
         {...componentProps}
       />
     );

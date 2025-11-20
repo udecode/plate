@@ -9,7 +9,8 @@ type PossibleRef<T> = React.Ref<T> | undefined;
 const setRef = <T>(ref: PossibleRef<T>, value: T) => {
   if (typeof ref === 'function') {
     return ref(value);
-  } else if (ref !== null && ref !== undefined) {
+  }
+  if (ref !== null && ref !== undefined) {
     (ref as React.RefObject<T>).current = value;
   }
 };
@@ -33,7 +34,9 @@ export const composeRefs =
     // Return a cleanup function if any refs returned cleanup functions
     if (cleanups.length > 0) {
       return () => {
-        cleanups.forEach((cleanup) => cleanup?.());
+        for (const cleanup of cleanups) {
+          cleanup?.();
+        }
       };
     }
   };

@@ -15,14 +15,13 @@ jsxt;
 // sets the background color for the given cell or selection of cells,
 // and then checks if the output matches the expected output.
 describe('setCellBackground', () => {
-  const createEditorInstance = (input: any) => {
-    return createPlateEditor({
+  const createEditorInstance = (input: any) =>
+    createPlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
       value: input.children,
     });
-  };
 
   describe('when background color is not set', () => {
     it('should set background color for current cell', () => {

@@ -28,15 +28,11 @@ export const getSuggestionKeys = (node: TNode) => {
 export const getSuggestionUserIdByKey = (key?: string | null) =>
   isDefined(key) ? key.split(`${KEYS.suggestion}_`)[1] : null;
 
-export const getSuggestionUserIds = (node: TNode) => {
-  return getSuggestionKeys(node).map(
-    (key) => getSuggestionUserIdByKey(key) as string
-  );
-};
+export const getSuggestionUserIds = (node: TNode) =>
+  getSuggestionKeys(node).map((key) => getSuggestionUserIdByKey(key) as string);
 
-export const getSuggestionUserId = (node: TNode) => {
-  return getSuggestionUserIds(node)[0];
-};
+export const getSuggestionUserId = (node: TNode) =>
+  getSuggestionUserIds(node)[0];
 
 export const isCurrentUserSuggestion = (editor: SlateEditor, node: TText) => {
   const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);

@@ -30,7 +30,7 @@ export function OpenInPlus({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="text-base leading-tight font-semibold text-balance group-hover:underline">
+      <div className="text-balance font-semibold text-base leading-tight group-hover:underline">
         {content.buildYourEditor}
       </div>
       <div className="text-muted-foreground">{content.productionReady}</div>

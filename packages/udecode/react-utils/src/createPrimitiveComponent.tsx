@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { isDefined } from '@udecode/utils';
 import { clsx } from 'clsx';
+import React from 'react';
 
 import { createSlotComponent } from './createSlotComponent';
 import { useComposedRef } from './useComposedRef';
@@ -45,8 +44,8 @@ export const createPrimitiveComponent = <
   }: {
     propsHook?: PH;
     stateHook?: SH;
-  } = {}) => {
-    return React.forwardRef<
+  } = {}) =>
+    React.forwardRef<
       any,
       {
         as?: React.ElementType;
@@ -96,8 +95,8 @@ export const createPrimitiveComponent = <
 
         return (
           <Comp
-            ref={_ref}
             asChild={asChild}
+            ref={_ref}
             {...hookProps}
             className={className}
             style={style}
@@ -107,5 +106,4 @@ export const createPrimitiveComponent = <
         );
       }
     );
-  };
 };

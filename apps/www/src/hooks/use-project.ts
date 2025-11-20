@@ -45,9 +45,7 @@ export function useProject() {
   );
 
   const hasBlock = React.useCallback(
-    (block: string) => {
-      return project.blocks.includes(block);
-    },
+    (block: string) => project.blocks.includes(block),
     [project.blocks]
   );
 

@@ -24,7 +24,7 @@ export function Link({
         'relative inline-block h-5 font-medium text-foreground',
         !isExternal && 'underline underline-offset-4',
         isExternal &&
-          'no-underline hover:after:absolute hover:after:-bottom-1 hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-primary',
+          'hover:after:-bottom-1 no-underline hover:after:absolute hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-primary',
         // 'relative font-medium text-blue-600 hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-[1.5px] hover:after:w-[calc(100%-2px)] hover:after:bg-brand',
         className
       )}
@@ -33,7 +33,7 @@ export function Link({
       {...props}
     >
       {isSection && (
-        <div className="absolute top-1.5 -left-5 leading-none opacity-0 group-hover:opacity-100 hover:opacity-100">
+        <div className="-left-5 absolute top-1.5 leading-none opacity-0 hover:opacity-100 group-hover:opacity-100">
           <Icons.pragma className="size-4 text-muted-foreground" />
         </div>
       )}

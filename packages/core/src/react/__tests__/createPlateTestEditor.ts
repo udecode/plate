@@ -34,9 +34,8 @@ export const createPlateTestEditor = async <
     RenderEditorReturnTuple[1],
     RenderEditorReturnTuple[2],
   ]
-> => {
-  return buildTestHarness(PlateTest)({
+> =>
+  buildTestHarness(PlateTest)({
     editor: createPlateEditor(options),
     ...buildTestHarnessOptions,
   }) as any;
-};

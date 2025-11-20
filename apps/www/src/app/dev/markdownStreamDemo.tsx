@@ -11,6 +11,11 @@ import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
 import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
+
+const CAPITALIZE_REGEX = /([A-Z])/g;
+const TRAILING_NEWLINES_REGEX = /(\n+)$/;
+const FIRST_CHAR_REGEX = /^./;
+
 const testScenarios = {
   // Basic markdown with complete elements
   columns: [
@@ -282,6 +287,7 @@ export const MarkdownStreamDemo = () => {
   const [selectedScenario, setSelectedScenario] =
     useState<keyof typeof testScenarios>('columns');
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState(false);
   const isPauseRef = useRef(false);
   const streamSessionRef = useRef(0);
 
@@ -300,6 +306,7 @@ export const MarkdownStreamDemo = () => {
     streamSessionRef.current += 1;
     const sessionId = streamSessionRef.current;
 
+    setIsPaused(false);
     isPauseRef.current = false;
     setActiveIndex(0);
     // editor.tf.setValue([]);
@@ -337,7 +344,7 @@ export const MarkdownStreamDemo = () => {
       <div className="mb-10">
         {/* Scenario Selection */}
         <div className="mb-4">
-          <span className="mb-2 block text-sm font-medium">Test Scenario:</span>
+          <span className="mb-2 block font-medium text-sm">Test Scenario:</span>
           <select
             className="w-64 rounded border px-3 py-2"
             value={selectedScenario}
@@ -350,8 +357,8 @@ export const MarkdownStreamDemo = () => {
             {Object.entries(testScenarios).map(([key]) => (
               <option key={key} value={key}>
                 {key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, (str) => str.toUpperCase())}
+                  .replace(CAPITALIZE_REGEX, ' $1')
+                  .replace(FIRST_CHAR_REGEX, (str) => str.toUpperCase())}
               </option>
             ))}
           </select>
@@ -361,8 +368,14 @@ export const MarkdownStreamDemo = () => {
         <div className="mb-4 flex gap-2">
           <Button onClick={onStreaming}>Start Streaming</Button>
 
-          <Button onClick={() => (isPauseRef.current = !isPauseRef.current)}>
-            {isPauseRef.current ? 'Resume' : 'Pause'}
+          <Button
+            onClick={() => {
+              const newPauseState = !isPauseRef.current;
+              isPauseRef.current = newPauseState;
+              setIsPaused(newPauseState);
+            }}
+          >
+            {isPaused ? 'Resume' : 'Pause'}
           </Button>
 
           <Button
@@ -465,7 +478,7 @@ export const MarkdownStreamDemo = () => {
         </div>
       </div>
 
-      <h2 className="mt-8 mb-4 text-xl font-semibold">Raw Token Comparison</h2>
+      <h2 className="mt-8 mb-4 font-semibold text-xl">Raw Token Comparison</h2>
       <div className="my-2 flex gap-10">
         <div className="w-1/2">
           <h3 className="mb-2 font-semibold">Original Chunks</h3>
@@ -506,7 +519,7 @@ function splitChunksByLinebreak(chunks: string[]) {
     const chunk = chunks[i];
     current.push({ index: i, text: chunk });
 
-    const match = /(\n+)$/.exec(chunk);
+    const match = TRAILING_NEWLINES_REGEX.exec(chunk);
     if (match) {
       const linebreaks = match[1].length;
       result.push({
@@ -552,34 +565,30 @@ const Tokens = ({
 }: {
   activeIndex: number;
   chunks: TChunks[];
-} & HTMLAttributes<HTMLDivElement>) => {
-  return (
-    <div
-      className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
-      {...props}
-    >
-      {chunks.map((chunk, index) => {
-        return (
-          <div key={index} className="py-1">
-            {chunk.chunks.map((c, j) => {
-              const lineBreak = c.text.replaceAll('\n', '⤶');
-              const space = lineBreak.replaceAll(' ', '␣');
+} & HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className="my-1 h-[500px] overflow-y-auto rounded bg-gray-100 p-4 font-mono"
+    {...props}
+  >
+    {chunks.map((chunk, index) => (
+      <div key={index} className="py-1">
+        {chunk.chunks.map((c, j) => {
+          const lineBreak = c.text.replaceAll('\n', '⤶');
+          const space = lineBreak.replaceAll(' ', '␣');
 
-              return (
-                <span
-                  key={j}
-                  className={cn(
-                    'mx-1 inline-block rounded border p-1',
-                    activeIndex && c.index < activeIndex && 'bg-amber-500'
-                  )}
-                >
-                  {space}
-                </span>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+          return (
+            <span
+              key={j}
+              className={cn(
+                'mx-1 inline-block rounded border p-1',
+                activeIndex && c.index < activeIndex && 'bg-amber-500'
+              )}
+            >
+              {space}
+            </span>
+          );
+        })}
+      </div>
+    ))}
+  </div>
+);

@@ -47,13 +47,13 @@ type Group = {
   items: Item[];
 };
 
-interface Item {
+type Item = {
   icon: React.ReactNode;
   value: string;
   onSelect: (editor: any, value: string) => void;
   focusEditor?: boolean;
   label?: string;
-}
+};
 
 const groups: Group[] = [
   {

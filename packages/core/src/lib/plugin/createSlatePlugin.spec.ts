@@ -733,7 +733,7 @@ describe('createSlatePlugin', () => {
       const extendedPlugin = basePlugin.extend((ctx) => ({
         options: {
           ...ctx.plugin.options,
-          optionC: ctx.plugin.options.optionA + '1',
+          optionC: `${ctx.plugin.options.optionA}1`,
         },
       }));
 

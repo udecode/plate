@@ -195,7 +195,7 @@ function BlockViewerProvider({
         className="group/block-view-wrapper flex min-w-0 flex-col items-stretch gap-4"
         style={
           {
-            '--height': (item.meta?.iframeHeight ?? 650) + 'px',
+            '--height': `${item.meta?.iframeHeight ?? 650}px`,
           } as React.CSSProperties
         }
         data-view={view}
@@ -247,7 +247,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
 
       {block && (
         <Link
-          className="text-sm font-medium underline-offset-2 hover:underline"
+          className="font-medium text-sm underline-offset-2 hover:underline"
           href={description}
           target={description.startsWith('/') ? '_self' : '_blank'}
         >
@@ -295,7 +295,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
           <Link
             className={cn(
               buttonVariants(),
-              'group relative flex justify-start gap-2 overflow-hidden rounded-sm whitespace-pre',
+              'group relative flex justify-start gap-2 overflow-hidden whitespace-pre rounded-sm',
               'dark:bg-muted dark:text-foreground',
               'hover:ring-2 hover:ring-primary hover:ring-offset-2',
               'transition-all duration-300 ease-out',
@@ -306,7 +306,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
           >
             <span
               className={cn(
-                'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
+                '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
                 'bg-white opacity-10',
                 'transition-all duration-1000 ease-out'
               )}
@@ -321,7 +321,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
               defaultValue="100"
               onValueChange={(value) => {
                 if (resizablePanelRef?.current) {
-                  resizablePanelRef.current.resize(Number.parseInt(value));
+                  resizablePanelRef.current.resize(Number.parseInt(value, 10));
                 }
               }}
               type="single"
@@ -437,7 +437,7 @@ function BlockViewerView({
               />
             )}
           </ResizablePanel>
-          <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
+          <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
         </ResizablePanelGroup>
       </div>
@@ -450,9 +450,10 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
     useBlockViewer();
   const deps = dependencies.join(' ');
 
-  const file = React.useMemo(() => {
-    return highlightedFiles?.find((file) => file.target === activeFile);
-  }, [highlightedFiles, activeFile]);
+  const file = React.useMemo(
+    () => highlightedFiles?.find((file) => file.target === activeFile),
+    [highlightedFiles, activeFile]
+  );
 
   if (!file?.content && isLoading) {
     return (
@@ -472,7 +473,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
     <div className="mr-[14px] flex h-(--height) overflow-hidden rounded-xl bg-zinc-950 text-white group-data-[view=preview]/block-view-wrapper:hidden">
       <BlockViewerFileTree size={size} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-12 items-center gap-2 border-b border-zinc-700 bg-zinc-900 px-4 text-sm font-medium">
+        <div className="flex h-12 items-center gap-2 border-zinc-700 border-b bg-zinc-900 px-4 font-medium text-sm">
           <File className="size-4" />
           {file.target}
           <div className="ml-auto flex items-center gap-2">
@@ -480,10 +481,10 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
               <CopyNpmCommandButton
                 className="flex h-7 rounded-md bg-inherit px-1.5 text-inherit shadow-none lg:w-auto"
                 commands={{
-                  __bunCommand__: 'bun add ' + deps,
-                  __npmCommand__: 'npm install ' + deps,
-                  __pnpmCommand__: 'pnpm add ' + deps,
-                  __yarnCommand__: 'yarn add ' + deps,
+                  __bunCommand__: `bun add ${deps}`,
+                  __npmCommand__: `npm install ${deps}`,
+                  __pnpmCommand__: `pnpm add ${deps}`,
+                  __yarnCommand__: `yarn add ${deps}`,
                 }}
                 icon={<Package />}
               />
@@ -494,7 +495,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
         </div>
         <div
           key={file?.path}
-          className="relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:-translate-y-px [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
+          className="[&_.line:before]:-translate-y-px relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
           data-rehype-pretty-code-fragment
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />
@@ -514,10 +515,10 @@ export function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
     <div className={cn('w-[280px]', size === 'sm' && 'w-[240px]')}>
       <SidebarProvider className="flex min-h-full! flex-col">
         <Sidebar
-          className="w-full flex-1 overflow-x-hidden overflow-y-auto border-r border-zinc-700 bg-zinc-900 text-white"
+          className="w-full flex-1 overflow-y-auto overflow-x-hidden border-zinc-700 border-r bg-zinc-900 text-white"
           collapsible="none"
         >
-          <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-b border-zinc-700 bg-zinc-900 px-4 text-sm text-white">
+          <SidebarGroupLabel className="sticky top-0 z-10 h-12 rounded-none border-zinc-700 border-b bg-zinc-900 px-4 text-sm text-white">
             Files
           </SidebarGroupLabel>
           <SidebarGroup className="p-0">
@@ -543,7 +544,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
       <SidebarMenuItem>
         <SidebarMenuButton
           className={cn(
-            'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
+            'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus:bg-zinc-700 focus:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white'
           )}
           style={
             {
@@ -571,7 +572,7 @@ function Tree({ index, item }: { index: number; item: FileTree }) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             className={cn(
-              'overflow-x-auto rounded-none pl-(--index) whitespace-nowrap hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
+              'overflow-x-auto whitespace-nowrap rounded-none pl-(--index) hover:bg-zinc-700 hover:text-white focus-visible:bg-zinc-700 focus-visible:text-white active:bg-zinc-700 active:text-white data-[active=true]:bg-zinc-700 data-[active=true]:text-white data-[state=open]:hover:bg-zinc-700 data-[state=open]:hover:text-white'
             )}
             style={
               {
@@ -600,9 +601,10 @@ function BlockCopyCodeButton() {
   const { activeFile, highlightedFiles } = useBlockViewer();
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
-  const file = React.useMemo(() => {
-    return highlightedFiles?.find((file) => file.target === activeFile);
-  }, [activeFile, highlightedFiles]);
+  const file = React.useMemo(
+    () => highlightedFiles?.find((file) => file.target === activeFile),
+    [activeFile, highlightedFiles]
+  );
 
   const content = file?.content;
 

@@ -60,8 +60,8 @@ export const useSlateProps = ({
     [editor, onSelectionChangeProp, updateVersionSelection]
   );
 
-  return React.useMemo(() => {
-    return {
+  return React.useMemo(
+    () => ({
       key: editor.meta.key,
       editor,
       initialValue: editor.children,
@@ -69,6 +69,7 @@ export const useSlateProps = ({
       onChange,
       onSelectionChange,
       onValueChange,
-    };
-  }, [editor, onChange, onSelectionChange, onValueChange]);
+    }),
+    [editor, onChange, onSelectionChange, onValueChange]
+  );
 };

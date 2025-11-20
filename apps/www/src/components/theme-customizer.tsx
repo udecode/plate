@@ -26,18 +26,19 @@ export function ThemeCustomizer() {
   const activeTheme = themesConfig.activeTheme ?? THEMES['default-shadcn'];
   const { resolvedTheme: mode, setTheme: setMode } = useTheme();
 
-  const themeCode = React.useMemo(() => {
-    return getThemeCode(activeTheme, config.radius);
-  }, [activeTheme, config.radius]);
+  const themeCode = React.useMemo(
+    () => getThemeCode(activeTheme, config.radius),
+    [activeTheme, config.radius]
+  );
 
   return (
     <div className="flex h-full flex-col space-y-4 md:space-y-6">
       <div className="flex items-start justify-between px-6">
         <div className="space-y-1 pr-2">
-          <div className="leading-none font-semibold tracking-tight">
+          <div className="font-semibold leading-none tracking-tight">
             Customize
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-muted-foreground text-xs">
             Customize your components colors.
           </div>
         </div>
@@ -68,27 +69,25 @@ export function ThemeCustomizer() {
         <div className="space-y-1.5 px-6">
           <Label className="text-xs">Radius</Label>
           <div className="grid grid-cols-5 gap-2">
-            {['0', '0.3', '0.5', '0.75', '1.0'].map((value) => {
-              return (
-                <Button
-                  key={value}
-                  size="sm"
-                  variant="outline"
-                  className={cn(
-                    config.radius === Number.parseFloat(value) &&
-                      'border-2 border-primary'
-                  )}
-                  onClick={() => {
-                    setConfig({
-                      ...config,
-                      radius: Number.parseFloat(value),
-                    });
-                  }}
-                >
-                  {value}
-                </Button>
-              );
-            })}
+            {['0', '0.3', '0.5', '0.75', '1.0'].map((value) => (
+              <Button
+                key={value}
+                size="sm"
+                variant="outline"
+                className={cn(
+                  config.radius === Number.parseFloat(value) &&
+                    'border-2 border-primary'
+                )}
+                onClick={() => {
+                  setConfig({
+                    ...config,
+                    radius: Number.parseFloat(value),
+                  });
+                }}
+              >
+                {value}
+              </Button>
+            ))}
           </div>
         </div>
         <div className="space-y-1.5 px-6">

@@ -1,6 +1,6 @@
 {
   "permissions": {
-    "allow": ["Bash", "Edit"]
+    "allow": ["Bash", "Edit", "Skill"]
   },
   "enableAllProjectMcpServers": true,
   "extraKnownMarketplaces": {
@@ -12,20 +12,55 @@
     }
   },
   "enabledPlugins": {
-    "ctx@dotai": true,
     "dotai@dotai": true,
     "fb@dotai": true,
     "notification@dotai": true,
-    "codex@dotai": true
+    "media@dotai": false,
+    "codex@dotai": true,
+    "plan@dotai": true,
+    "agents@dotai": true,
+    "debug@dotai": true,
+    "test@dotai": true,
+    "skills@dotai": true,
+    "git@dotai": true
   },
   "hooks": {
-    "SessionStart": [
+    "UserPromptSubmit": [
       {
-        "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -d \".claude/flashback\" ]; then if command -v flashback &> /dev/null; then flashback session-start --context; elif [ -f \"$HOME/.claude/flashbacker/lib/cli.js\" ]; then node \"$HOME/.claude/flashbacker/lib/cli.js\" session-start --context; fi; fi"
+            "command": "if [ -f \".claude/scripts/user-prompt-submit.sh\" ]; then .claude/scripts/user-prompt-submit.sh; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \".claude/scripts/session-start.sh\" ]; then .claude/scripts/session-start.sh; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \".claude/scripts/post-compact.sh\" ]; then .claude/scripts/post-compact.sh; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx ultracite fix"
           }
         ]
       }

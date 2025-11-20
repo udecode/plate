@@ -40,7 +40,7 @@ export function Cards(props: HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       className={cn(
-        '@container grid grid-cols-2 gap-4 not-first:mt-4',
+        '@container not-first:mt-4 grid grid-cols-2 gap-4',
         props.className
       )}
     >
@@ -61,7 +61,7 @@ export function Card({ description, icon, title, ...props }: CardProps) {
   const E = props.href ? (Link as any) : 'div';
 
   // Resolve icon if it's a string
-  let IconComponent = null;
+  let IconComponent: React.ReactNode = null;
   if (typeof icon === 'string') {
     const IconClass = iconRegistry[icon as keyof typeof iconRegistry];
     IconComponent = IconClass ? <IconClass /> : null;
@@ -73,7 +73,7 @@ export function Card({ description, icon, title, ...props }: CardProps) {
     <E
       {...props}
       className={cn(
-        'block rounded-lg border bg-card p-4 text-card-foreground shadow-md transition-colors @max-lg:col-span-full',
+        '@max-lg:col-span-full block rounded-lg border bg-card p-4 text-card-foreground shadow-md transition-colors',
         props.href && 'hover:bg-accent/80',
         props.className
       )}
@@ -84,12 +84,12 @@ export function Card({ description, icon, title, ...props }: CardProps) {
           {IconComponent}
         </div>
       ) : null}
-      <h3 className="mb-1 text-sm font-medium">{title}</h3>
+      <h3 className="mb-1 font-medium text-sm">{title}</h3>
       {description ? (
-        <p className="!my-0 text-sm text-muted-foreground">{description}</p>
+        <p className="!my-0 text-muted-foreground text-sm">{description}</p>
       ) : null}
       {props.children ? (
-        <div className="text-sm text-muted-foreground **:leading-normal">
+        <div className="text-muted-foreground text-sm **:leading-normal">
           {props.children}
         </div>
       ) : null}

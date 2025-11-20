@@ -96,16 +96,12 @@ export type BaseEditor = EditorBase & {
     uid?: string;
   };
   plugins: Record<string, any>;
-  setOptions: {
-    <C extends AnyPluginConfig>(
-      plugin: WithRequiredKey<C>,
-      options: (state: Draft<Partial<InferOptions<C>>>) => void
-    ): void;
-    <C extends AnyPluginConfig>(
-      plugin: WithRequiredKey<C>,
-      options: Partial<InferOptions<C>>
-    ): void;
-  };
+  setOptions: <C extends AnyPluginConfig>(
+    plugin: WithRequiredKey<C>,
+    options:
+      | ((state: Draft<Partial<InferOptions<C>>>) => void)
+      | Partial<InferOptions<C>>
+  ) => void;
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InjectNodeProps<C>;

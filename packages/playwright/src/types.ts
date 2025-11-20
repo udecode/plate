@@ -4,7 +4,7 @@ import type { PlateEditor } from 'platejs/react';
 
 export type EditorHandle<E extends PlateEditor = PlateEditor> = JSHandle<E>;
 
-export interface TPlatePlaywrightAdapter {
+export type TPlatePlaywrightAdapter = {
   EDITABLE_TO_EDITOR: WeakMap<HTMLElement, PlateEditor>;
   getNode: typeof NodeApi.get;
-}
+};

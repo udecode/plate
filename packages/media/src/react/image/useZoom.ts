@@ -11,7 +11,9 @@ export const useZoom = () => {
     const targets = [0, 0.5, 1, 1.5, 2];
     const nextScale = targets.find((target) => scale < target);
 
-    nextScale && ImagePreviewStore.set('scale', nextScale);
+    if (nextScale) {
+      ImagePreviewStore.set('scale', nextScale);
+    }
   }, [scale]);
 
   const zoomOut = useCallback(() => {
@@ -24,7 +26,9 @@ export const useZoom = () => {
 
     if (previousScale === 1) ImagePreviewStore.set('translate', { x: 0, y: 0 });
 
-    previousScale && ImagePreviewStore.set('scale', previousScale);
+    if (previousScale !== undefined) {
+      ImagePreviewStore.set('scale', previousScale);
+    }
   }, [scale]);
 
   return { zoomIn, zoomOut };

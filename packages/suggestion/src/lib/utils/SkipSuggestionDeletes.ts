@@ -25,20 +25,18 @@ export const SkipSuggestionDeletes = (
   ) {
     if (ElementApi.isElement(node)) {
       return NodeApi.string(node);
-    } else {
-      if (!node[KEYS.suggestion]) return node.text;
-
-      const suggestionData = editor
-        .getApi(BaseSuggestionPlugin)
-        .suggestion.suggestionData(node as TSuggestionText);
-
-      if (suggestionData?.type === 'remove') return '';
-
-      return node.text;
     }
-  } else {
-    return node.children
-      .map((child) => SkipSuggestionDeletes(editor, child))
-      .join('');
+    if (!node[KEYS.suggestion]) return node.text;
+
+    const suggestionData = editor
+      .getApi(BaseSuggestionPlugin)
+      .suggestion.suggestionData(node as TSuggestionText);
+
+    if (suggestionData?.type === 'remove') return '';
+
+    return node.text;
   }
+  return node.children
+    .map((child) => SkipSuggestionDeletes(editor, child))
+    .join('');
 };

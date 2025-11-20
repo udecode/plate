@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": false,
+    "lib": ["ES2022"],
     "moduleResolution": "node",
     "noUnusedLocals": false,
     "noUnusedParameters": false,

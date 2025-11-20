@@ -164,7 +164,7 @@ describe('toggleColumnGroup', () => {
         type: 'column_group',
       },
     ];
-    const columnGroupPath: Path = [0];
+    const _columnGroupPath: Path = [0];
     // Select inside second column's paragraph
     editor.tf.select(editor.api.start([0, 1, 0, 0])!);
 

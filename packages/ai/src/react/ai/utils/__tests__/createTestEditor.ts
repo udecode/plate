@@ -1,18 +1,5 @@
-import { createSlateEditor, Value } from 'platejs';
-/** @ts-nocheck */
-import { getCommentKey } from '@platejs/comment';
-import {
-  convertChildrenDeserialize,
-  deserializeMd,
-  parseAttributes,
-} from '@platejs/markdown';
-import {
-  BaseParagraphPlugin,
-  getPluginType,
-  KEYS,
-  Range,
-  TextApi,
-} from 'platejs';
+import { createSlateEditor, type Value } from 'platejs';
+import { BaseParagraphPlugin } from 'platejs';
 
 import {
   BaseBlockquotePlugin,
@@ -75,9 +62,8 @@ const BasePlugins = [
   ...MarkdownKit,
 ];
 
-export const createTestEditor = (value: Value) => {
-  return createSlateEditor({
+export const createTestEditor = (value: Value) =>
+  createSlateEditor({
     plugins: BasePlugins,
-    value: value,
+    value,
   });
-};

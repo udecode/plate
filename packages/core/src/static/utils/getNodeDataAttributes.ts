@@ -16,25 +16,33 @@ export const getNodeDataAttributes = (
     isText,
   }: { isElement?: boolean; isLeaf?: boolean; isText?: boolean }
 ) => {
-  const dataAttributes = Object.keys(node).reduce((acc, key) => {
-    if (typeof node[key] === 'object') return acc;
-    if (isElement && key === 'children') return acc;
-    if ((isLeaf || isText) && key === 'text') return acc;
+  const dataAttributes = Object.keys(node).reduce(
+    (acc, key) => {
+      if (typeof node[key] === 'object') return acc;
+      if (isElement && key === 'children') return acc;
+      if ((isLeaf || isText) && key === 'text') return acc;
 
-    const plugin = editor.getPlugin({ key });
+      const plugin = editor.getPlugin({ key });
 
-    if (isLeaf && plugin?.node.isLeaf && plugin?.node.isDecoration !== true) {
+      if (isLeaf && plugin?.node.isLeaf && plugin?.node.isDecoration !== true) {
+        return acc;
+      }
+
+      if (
+        isText &&
+        plugin?.node.isLeaf &&
+        plugin?.node.isDecoration !== false
+      ) {
+        return acc;
+      }
+
+      const attributeName = keyToDataAttribute(key);
+
+      acc[attributeName] = node[key];
       return acc;
-    }
-
-    if (isText && plugin?.node.isLeaf && plugin?.node.isDecoration !== false) {
-      return acc;
-    }
-
-    const attributeName = keyToDataAttribute(key);
-
-    return { ...acc, [attributeName]: node[key] };
-  }, {});
+    },
+    {} as Record<string, any>
+  );
 
   return dataAttributes;
 };

@@ -31,7 +31,7 @@ const getItemVariant = (item: any) => {
     const url = new URL(item.route);
 
     if (allowedHosts.includes(url.hostname)) return 'plus';
-  } catch (error) {
+  } catch (_error) {
     // console.error('Invalid URL:', item.route, error);
   }
 
@@ -41,7 +41,7 @@ const getItemVariant = (item: any) => {
   return 'outline';
 };
 
-const searchCategories = {
+const _searchCategories = {
   api: 'Search API',
   component: 'Search components',
   example: 'Search examples',
@@ -64,11 +64,11 @@ export function DocContent({
   const title = doc?.title ?? getRegistryTitle(file);
   const hasToc = doc?.toc && toc;
 
-  const docSection = docSections[0].items!.find(
+  const _docSection = docSections[0].items!.find(
     (item) => item.value === category
   );
 
-  const items = useDedupeNavItems(categoryNavGroups[category]);
+  const _items = useDedupeNavItems(categoryNavGroups[category]);
 
   // v3
   const neighbours = getPagerForDoc(doc as any);
@@ -87,7 +87,7 @@ export function DocContent({
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-2">
               <div className="flex items-start justify-between">
-                <h1 className="scroll-m-20 text-4xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
+                <h1 className="scroll-m-20 font-semibold text-4xl tracking-tight sm:text-3xl lg:text-4xl">
                   {title}
                 </h1>
                 <div className="flex items-center gap-2 pt-1.5">
@@ -120,7 +120,7 @@ export function DocContent({
                 </div>
               </div>
               {doc.description && (
-                <p className="text-[1.05rem] text-balance text-muted-foreground sm:text-base">
+                <p className="text-balance text-[1.05rem] text-muted-foreground sm:text-base">
                   {doc.description}
                 </p>
               )}

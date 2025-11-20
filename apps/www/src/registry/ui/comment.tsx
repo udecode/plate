@@ -47,14 +47,14 @@ import {
 
 import { Editor, EditorContainer } from './editor';
 
-export interface TComment {
+export type TComment = {
   id: string;
   contentRich: Value;
   createdAt: Date;
   discussionId: string;
   isEdited: boolean;
   userId: string;
-}
+};
 
 export function Comment(props: {
   comment: TComment;
@@ -183,12 +183,12 @@ export function Comment(props: {
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
           <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
-        <h4 className="mx-2 text-sm leading-none font-semibold">
+        <h4 className="mx-2 font-semibold text-sm leading-none">
           {/* Replace to your own backend or refer to potion */}
           {userInfo?.name}
         </h4>
 
-        <div className="text-xs leading-none text-muted-foreground/80">
+        <div className="text-muted-foreground/80 text-xs leading-none">
           <span className="mr-1">
             {formatCommentDate(new Date(comment.createdAt))}
           </span>
@@ -230,7 +230,7 @@ export function Comment(props: {
       </div>
 
       {isFirst && showDocumentContent && (
-        <div className="text-subtle-foreground relative mt-1 flex pl-[32px] text-sm">
+        <div className="relative mt-1 flex pl-[32px] text-sm text-subtle-foreground">
           {discussionLength > 1 && (
             <div className="absolute top-[5px] left-3 h-full w-0.5 shrink-0 bg-muted" />
           )}

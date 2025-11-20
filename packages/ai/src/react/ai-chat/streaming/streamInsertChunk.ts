@@ -16,10 +16,10 @@ import { streamSerializeMd } from './streamSerializeMd';
 import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
-export interface SteamInsertChunkOptions {
+export type SteamInsertChunkOptions = {
   elementProps?: any;
   textProps?: any;
-}
+};
 
 const getNextPath = (path: Path, length: number) => {
   let result = path;
@@ -235,9 +235,8 @@ export const getCurrentBlockPath = (editor: SlateEditor) => {
     }
   };
 
-  const getFocusPath = (editor: SlateEditor): Path | undefined => {
-    return editor.selection?.focus.path.slice(0, 1);
-  };
+  const getFocusPath = (editor: SlateEditor): Path | undefined =>
+    editor.selection?.focus.path.slice(0, 1);
 
   const path = getAnchorPreviousPath(editor) ?? getFocusPath(editor) ?? [0];
 

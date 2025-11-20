@@ -1,18 +1,20 @@
 import {
-  type HyperscriptShorthands,
   createHyperscript as createHyperscriptBase,
   createText as createTestText,
+  type HyperscriptShorthands,
 } from 'slate-hyperscript';
 
 import { createText } from './internals/creators';
+// biome-ignore lint/style/noExportedImports: createHyperscript is used locally and also re-exported
 import { createHyperscript } from './internals/hyperscript';
 
 export { createEditor } from './internals/creators';
 export { createHyperscript };
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // biome-ignore lint/style/noNamespace: Required for TypeScript JSX typing
   namespace JSX {
+    // biome-ignore lint/style/useConsistentTypeDefinitions: JSX.IntrinsicElements must be an interface per TypeScript specification
     interface IntrinsicElements {
       anchor: any;
       cursor: any;

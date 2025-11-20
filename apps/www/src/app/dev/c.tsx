@@ -7,6 +7,8 @@ import { createTPlatePlugin, Plate, usePlateEditor } from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import { Button } from '@/components/ui/button';
+
+const CUSTOM_PREFIX_REGEX = /^custom-/;
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { BlockPlaceholderKit } from '@/registry/components/editor/plugins/block-placeholder-kit';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
@@ -21,7 +23,7 @@ const withCustomType = (value: any) => {
       const { children, type, ...rest } = item;
       return {
         children: children.map(addCustomType),
-        type: 'custom-' + type,
+        type: `custom-${type}`,
         ...rest,
       };
     }
@@ -29,14 +31,16 @@ const withCustomType = (value: any) => {
       const { text, ...rest } = item;
       const props: any = {};
       for (const key in rest) {
-        const value = rest[key];
-        const newKey = 'custom-' + key;
-        props[newKey] = value;
+        if (Object.hasOwn(rest, key)) {
+          const value = rest[key];
+          const newKey = `custom-${key}`;
+          props[newKey] = value;
+        }
       }
 
       return {
         ...props,
-        text: text.replace(/^custom-/, ''),
+        text: text.replace(CUSTOM_PREFIX_REGEX, ''),
       };
     }
   };
@@ -51,7 +55,7 @@ const withCustomPlugins = (plugins: any[]): any[] => {
     newPlugins.push(
       plugin.extend({
         node: {
-          type: 'custom-' + plugin.key,
+          type: `custom-${plugin.key}`,
         },
       })
     );
@@ -93,14 +97,13 @@ export const EditorViewClient = () => {
         }),
         ...MarkdownKit,
       ],
-      value: value,
+      value,
     },
     []
   );
 
-  const getFileNodes = (text: string) => {
-    return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
-  };
+  const getFileNodes = (text: string) =>
+    editor.getApi(MarkdownPlugin).markdown.deserialize(text);
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],
@@ -108,7 +111,7 @@ export const EditorViewClient = () => {
     onFilesSelected: async ({ plainFiles }) => {
       const text = await plainFiles[0].text();
 
-      const nodes = getFileNodes(text);
+      const _nodes = getFileNodes(text);
     },
   });
 
@@ -126,23 +129,11 @@ export const EditorViewClient = () => {
       </Plate>
 
       <div className="mt-10 flex gap-10 px-10">
-        <Button
-          onClick={() => {
-            console.log(editor.getApi(MarkdownPlugin).markdown.serialize());
-          }}
-        >
-          Serialize
-        </Button>
+        <Button onClick={() => {}}>Serialize</Button>
 
         <Button onClick={openMdFilePicker}>Deserialize</Button>
 
-        <Button
-          onClick={() => {
-            console.log(editor.children);
-          }}
-        >
-          Current Value
-        </Button>
+        <Button onClick={() => {}}>Current Value</Button>
       </div>
     </>
   );

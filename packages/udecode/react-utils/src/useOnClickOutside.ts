@@ -27,14 +27,14 @@ export type UseOnClickOutsideCallback<T extends Event = Event> = (
   event: T
 ) => void;
 
-export interface UseOnClickOutsideOptions {
+export type UseOnClickOutsideOptions = {
   detectIFrame?: boolean;
   disabled?: boolean;
   eventTypes?: string[];
   excludeScrollbar?: boolean;
   ignoreClass?: string[] | string;
   refs?: Refs;
-}
+};
 
 export type UseOnClickOutsideReturn = (element: El | null) => void;
 
@@ -94,9 +94,11 @@ export const useOnClickOutside = (
 
       const getEls = () => {
         const els: El[] = [];
-        (refsOpt || refsState).forEach(
-          ({ current }) => current && els.push(current)
-        );
+        for (const { current } of refsOpt || refsState) {
+          if (current) {
+            els.push(current);
+          }
+        }
 
         return els;
       };
@@ -124,13 +126,13 @@ export const useOnClickOutside = (
         }, 0);
 
       const removeEventListener = () => {
-        eventTypes.forEach((type) =>
+        for (const type of eventTypes) {
           document.removeEventListener(
             type,
             handler,
             getEventOptions(type) as any
-          )
-        );
+          );
+        }
 
         if (detectIFrame) window.removeEventListener('blur', blurHandler);
       };
@@ -141,9 +143,9 @@ export const useOnClickOutside = (
         return;
       }
 
-      eventTypes.forEach((type) =>
-        document.addEventListener(type, handler, getEventOptions(type))
-      );
+      for (const type of eventTypes) {
+        document.addEventListener(type, handler, getEventOptions(type));
+      }
 
       if (detectIFrame) window.addEventListener('blur', blurHandler);
 

@@ -1,16 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-/* eslint-disable no-fallthrough */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 'use client';
-
-import * as React from 'react';
-import type { JSX } from 'react';
 
 import * as RadixDialog from '@radix-ui/react-dialog';
 import { useId } from '@radix-ui/react-id';
 import { Primitive } from '@radix-ui/react-primitive';
+import type { JSX } from 'react';
+import * as React from 'react';
 import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 
 import { commandScore } from './internal/command-score';
@@ -183,12 +179,12 @@ const GROUP_ITEMS_SELECTOR = `[cmdk-group-items=""]`;
 const GROUP_HEADING_SELECTOR = `[cmdk-group-heading=""]`;
 const ITEM_SELECTOR = `[cmdk-item=""]`;
 const VALID_ITEM_SELECTOR = `${ITEM_SELECTOR}:not([aria-disabled="true"])`;
-const SELECT_EVENT = `cmdk-item-select`;
-const VALUE_ATTR = `data-value`;
+const SELECT_EVENT = 'cmdk-item-select';
+const VALUE_ATTR = 'data-value';
 const defaultFilter: CommandProps['filter'] = (value, search, keywords) =>
   commandScore(value, search, keywords);
 
-// @ts-ignore
+// @ts-expect-error
 const CommandContext = React.createContext<Context>(undefined);
 const useCommand = () => React.useContext(CommandContext);
 const StoreContext = React.createContext<Store>(undefined as any);
@@ -209,7 +205,7 @@ export const useCommandActions = () => {
   return context;
 };
 
-// @ts-ignore
+// @ts-expect-error
 const GroupContext = React.createContext<Group>(undefined);
 
 // const getId = (() => {
@@ -281,7 +277,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
     const store: Store = React.useMemo(() => {
       return {
         emit: () => {
-          listeners.current.forEach((l) => l());
+          for (const l of listeners.current) {
+            l();
+          }
         },
         setState: (key, value, opts) => {
           if (Object.is(state.current[key], value)) return;
@@ -311,9 +309,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
           // Notify subscribers that state has changed
           store.emit();
         },
-        snapshot: () => {
-          return state.current;
-        },
+        snapshot: () => state.current,
         subscribe: (cb) => {
           listeners.current.add(cb);
 
@@ -329,12 +325,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         labelId,
         listId,
         listInnerRef,
-        filter: () => {
-          return propsRef.current.shouldFilter!;
-        },
-        getDisablePointerSelection: () => {
-          return propsRef.current.disablePointerSelection!;
-        },
+        filter: () => propsRef.current.shouldFilter!,
+        getDisablePointerSelection: () =>
+          propsRef.current.disablePointerSelection!,
         // Track group lifecycle (mount, unmount)
         group: (id) => {
           if (!allGroups.current.has(id)) {
@@ -485,7 +478,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         (item) => item.getAttribute('aria-disabled') !== 'true'
       );
       const value = item?.getAttribute(VALUE_ATTR);
-      // @ts-ignore
+      // @ts-expect-error
       store.setState('value', value ?? undefined);
     }
 
@@ -595,7 +588,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       let group = selected?.closest(GROUP_SELECTOR);
       let item: HTMLElement;
 
-      // @ts-ignore
+      // @ts-expect-error
       while (group && !item) {
         group =
           change > 0
@@ -604,7 +597,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         item = group!.querySelector(VALID_ITEM_SELECTOR)!;
       }
 
-      // @ts-ignore
+      // @ts-expect-error
       if (item) {
         store.setState('value', item.getAttribute(VALUE_ATTR)!);
       } else {
@@ -658,8 +651,8 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
       store.setState('search', search);
     };
 
-    const actions: Actions = React.useMemo(() => {
-      return {
+    const actions: Actions = React.useMemo(
+      () => ({
         selectCurrentItem: selectItem,
         selectFirstItem,
         selectItem: updateSelectedToIndex,
@@ -669,8 +662,9 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         setSearch,
         selectNextGroup: () => updateSelectedByGroup(1),
         selectPrevGroup: () => updateSelectedByGroup(-1),
-      };
-    }, []);
+      }),
+      []
+    );
     // FORK END
 
     return (
@@ -678,6 +672,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
         ref={forwardedRef}
         tabIndex={-1}
         {...etc}
+        cmdk-root=""
         onKeyDown={(e) => {
           etc.onKeyDown?.(e);
 
@@ -715,6 +710,7 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
                     item.dispatchEvent(event);
                   }
                 }
+                break;
               }
               case 'Home': {
                 // First item
@@ -744,14 +740,13 @@ const Command = React.forwardRef<HTMLDivElement, CommandProps>(
             }
           }
         }}
-        cmdk-root=""
       >
         <label
-          id={context.labelId}
-          // Screen reader only
-          style={srOnlyStyles}
           cmdk-label=""
+          // Screen reader only
           htmlFor={context.inputId}
+          id={context.labelId}
+          style={srOnlyStyles}
         >
           {label}
         </label>
@@ -841,16 +836,16 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
         {...etc}
+        aria-disabled={Boolean(disabled)}
+        aria-selected={Boolean(selected)}
+        cmdk-item=""
+        data-disabled={Boolean(disabled)}
+        data-selected={Boolean(selected)}
         id={id}
         onClick={disabled ? undefined : onSelect}
         onPointerMove={
           disabled || context.getDisablePointerSelection() ? undefined : select
         }
-        aria-disabled={Boolean(disabled)}
-        aria-selected={Boolean(selected)}
-        data-disabled={Boolean(disabled)}
-        data-selected={Boolean(selected)}
-        cmdk-item=""
         role="option"
       >
         {props.children}
@@ -881,9 +876,7 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
             : true
     );
 
-    useLayoutEffect(() => {
-      return context.group(id);
-    }, []);
+    useLayoutEffect(() => context.group(id), []);
 
     useValue(id, ref, [props.value, props.heading, headingRef]);
 
@@ -902,10 +895,10 @@ const Group = React.forwardRef<HTMLDivElement, GroupProps>(
       >
         {heading && (
           <div
-            id={headingId}
-            ref={headingRef}
             aria-hidden
             cmdk-group-heading=""
+            id={headingId}
+            ref={headingRef}
           >
             {heading}
           </div>
@@ -981,15 +974,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <Primitive.input
         ref={forwardedRef}
         {...etc}
-        id={context.inputId}
-        value={isControlled ? props.value : search}
-        onChange={(e) => {
-          if (!isControlled) {
-            store.setState('search', e.target.value);
-          }
-
-          onValueChange?.(e.target.value);
-        }}
         aria-activedescendant={selectedItemId!}
         aria-autocomplete="list"
         aria-controls={context.listId}
@@ -998,9 +982,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         autoComplete="off"
         autoCorrect="off"
         cmdk-input=""
+        id={context.inputId}
+        onChange={(e) => {
+          if (!isControlled) {
+            store.setState('search', e.target.value);
+          }
+
+          onValueChange?.(e.target.value);
+        }}
         role="combobox"
         spellCheck={false}
         type="text"
+        value={isControlled ? props.value : search}
       />
     );
   }
@@ -1026,8 +1019,8 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
           animationFrame = requestAnimationFrame(() => {
             const height = el.offsetHeight;
             wrapper.style.setProperty(
-              `--cmdk-list-height`,
-              height.toFixed(1) + 'px'
+              '--cmdk-list-height',
+              `${height.toFixed(1)}px`
             );
           });
         });
@@ -1044,15 +1037,15 @@ const List = React.forwardRef<HTMLDivElement, ListProps>(
       <Primitive.div
         ref={mergeRefs([ref, forwardedRef])}
         {...etc}
-        id={context.listId}
         aria-label={label}
         cmdk-list=""
+        id={context.listId}
         role="listbox"
       >
         {SlottableWithNestedChildren(props, (child) => (
           <div
-            ref={mergeRefs([height, context.listInnerRef])}
             cmdk-list-sizer=""
+            ref={mergeRefs([height, context.listInnerRef])}
           >
             {child}
           </div>
@@ -1075,12 +1068,12 @@ const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
     } = props;
 
     return (
-      <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
+      <RadixDialog.Root onOpenChange={onOpenChange} open={open}>
         <RadixDialog.Portal container={container}>
           <RadixDialog.Overlay className={overlayClassName} cmdk-overlay="" />
           <RadixDialog.Content
-            className={contentClassName}
             aria-label={props.label}
+            className={contentClassName}
             cmdk-dialog=""
           >
             <Command ref={forwardedRef} {...etc} />
@@ -1282,7 +1275,9 @@ const useScheduleLayoutEffect = () => {
   const fns = useLazyRef(() => new Map<number | string, () => void>());
 
   useLayoutEffect(() => {
-    fns.current.forEach((f) => f());
+    for (const f of fns.current.values()) {
+      f();
+    }
     fns.current = new Map();
   }, [s]);
 
@@ -1298,9 +1293,9 @@ function renderChildren(children: React.ReactElement<any>) {
   // The children is a component
   if (typeof childrenType === 'function') return childrenType(children.props);
   // The children is a component with `forwardRef`
-  else if ('render' in childrenType) return childrenType.render(children.props);
+  if ('render' in childrenType) return childrenType.render(children.props);
   // It's a string, boolean, etc.
-  else return children;
+  return children;
 }
 
 function SlottableWithNestedChildren(

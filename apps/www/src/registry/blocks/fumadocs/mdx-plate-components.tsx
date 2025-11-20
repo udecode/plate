@@ -69,33 +69,33 @@ export function APIItem({ children, name, optional, required, type }: Item) {
     : undefined;
 
   return (
-    <div className="border-none select-text">
+    <div className="select-text border-none">
       <div className="group p-0 hover:no-underline">
         <li id={id} className="scroll-mt-20">
-          <h4 className="relative !my-0 py-2 text-start leading-none font-semibold tracking-tight">
+          <h4 className="!my-0 relative py-2 text-start font-semibold leading-none tracking-tight">
             {id && (
               <a
                 className={cn(
-                  'opacity-0 group-hover:opacity-100 hover:opacity-100'
+                  'opacity-0 hover:opacity-100 group-hover:opacity-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="absolute top-2 -left-5 pr-1 leading-none">
+                <div className="-left-5 absolute top-2 pr-1 leading-none">
                   <LinkIcon className="size-4 text-muted-foreground" />
                 </div>
               </a>
             )}
-            <span className="font-mono text-sm leading-none font-semibold group-hover:underline">
+            <span className="font-mono font-semibold text-sm leading-none group-hover:underline">
               {name}
             </span>
             {required && (
-              <span className="font-mono text-xs leading-none text-orange-500">
+              <span className="font-mono text-orange-500 text-xs leading-none">
                 {' '}
                 REQUIRED
               </span>
             )}
-            <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground">
+            <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none">
               {!required && optional && ' optional'} {type}
             </span>
           </h4>
@@ -205,17 +205,17 @@ export function APIList({
             <div className="flex items-center justify-between pb-4">
               <h3
                 id={id}
-                className="group relative !my-0 scroll-mt-20 text-lg leading-none font-medium tracking-tight"
+                className="group !my-0 relative scroll-mt-20 font-medium text-lg leading-none tracking-tight"
               >
                 {id && (
                   <a
                     className={cn(
-                      'opacity-0 group-hover:opacity-100 hover:opacity-100'
+                      'opacity-0 hover:opacity-100 group-hover:opacity-100'
                     )}
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="absolute top-0 -left-5 pr-1 leading-none">
+                    <div className="-left-5 absolute top-0 pr-1 leading-none">
                       <LinkIcon className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -223,7 +223,7 @@ export function APIList({
 
                 <span
                   className={cn(
-                    'inline-flex items-center rounded-md px-2 py-0.5 text-base font-medium',
+                    'inline-flex items-center rounded-md px-2 py-0.5 font-medium text-base',
                     'ring-1 ring-black/5 ring-inset dark:ring-white/5',
                     listTypeToBadgeStyles[listType]
                   )}
@@ -240,7 +240,7 @@ export function APIList({
                 </span>
 
                 {type && (
-                  <span className="ml-2 font-mono text-sm font-medium text-muted-foreground">
+                  <span className="ml-2 font-medium font-mono text-muted-foreground text-sm">
                     {type}
                   </span>
                 )}
@@ -255,7 +255,7 @@ export function APIList({
                 {childCount > 0 ? (
                   children
                 ) : (
-                  <div className="py-4 text-sm text-muted-foreground">
+                  <div className="py-4 text-muted-foreground text-sm">
                     No parameters.
                   </div>
                 )}
@@ -300,27 +300,27 @@ export function APISubListItem({
         {id && (
           <a
             className={cn(
-              'opacity-0 group-hover:opacity-100 hover:opacity-100'
+              'opacity-0 hover:opacity-100 group-hover:opacity-100'
             )}
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="absolute top-2 -left-5 pr-1 leading-none">
+            <div className="-left-5 absolute top-2 pr-1 leading-none">
               <LinkIcon className="size-4 text-muted-foreground" />
             </div>
           </a>
         )}
-        <span className="leading-none font-semibold text-muted-foreground">
+        <span className="font-semibold text-muted-foreground leading-none">
           {parent}.
         </span>
-        <span className="leading-none font-semibold">{name}</span>
+        <span className="font-semibold leading-none">{name}</span>
         {required && (
-          <span className="ml-1 font-mono text-xs leading-none text-orange-500">
+          <span className="ml-1 font-mono text-orange-500 text-xs leading-none">
             {' '}
             REQUIRED
           </span>
         )}
-        <span className="text-left font-mono text-sm leading-none font-medium text-muted-foreground group-hover:no-underline">
+        <span className="text-left font-medium font-mono text-muted-foreground text-sm leading-none group-hover:no-underline">
           {!required && optional && ' optional'} {type}
         </span>
       </h4>
@@ -373,8 +373,9 @@ function LinkIcon({ className }: { className?: string }) {
       width="24"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      <title>Link to section</title>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>
   );
 }
@@ -389,7 +390,7 @@ function Separator({
     <SeparatorPrimitive.Root
       orientation={orientation}
       className={cn(
-        'shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px',
+        'shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=vertical]:h-full data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px',
         className
       )}
       data-slot="separator-root"
@@ -430,7 +431,7 @@ function AccordionTrigger({
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         className={cn(
-          'flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left text-sm font-medium transition-all outline-none **:my-0 hover:underline focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180',
+          'flex flex-1 items-start justify-between gap-4 rounded-md py-4 text-left font-medium text-sm outline-none transition-all **:my-0 hover:underline focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180',
           className
         )}
         data-slot="accordion-trigger"
@@ -564,7 +565,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
   return (
     <th
       className={cn(
-        'h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'h-10 whitespace-nowrap px-2 text-left align-middle font-medium text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className
       )}
       data-slot="table-head"
@@ -577,7 +578,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
   return (
     <td
       className={cn(
-        'p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'whitespace-nowrap p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className
       )}
       data-slot="table-cell"
@@ -592,7 +593,7 @@ function TableCaption({
 }: React.ComponentProps<'caption'>) {
   return (
     <caption
-      className={cn('mt-4 text-sm text-muted-foreground', className)}
+      className={cn('mt-4 text-muted-foreground text-sm', className)}
       data-slot="table-caption"
       {...props}
     />
@@ -661,7 +662,7 @@ function AlertDescription({
   return (
     <div
       className={cn(
-        'col-start-2 grid justify-items-start gap-1 text-sm text-muted-foreground [&_p]:leading-relaxed',
+        'col-start-2 grid justify-items-start gap-1 text-muted-foreground text-sm [&_p]:leading-relaxed',
         className
       )}
       data-slot="alert-description"
@@ -701,7 +702,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
 function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('leading-none font-semibold', className)}
+      className={cn('font-semibold leading-none', className)}
       data-slot="card-title"
       {...props}
     />
@@ -711,7 +712,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
 function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-sm', className)}
       data-slot="card-description"
       {...props}
     />
@@ -765,19 +766,17 @@ export const KeyTable = ({
   children,
   className,
   ...props
-}: React.ComponentProps<typeof Table>) => {
-  return (
-    <Table className={cn('my-4', className)} {...props}>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">Key</TableHead>
-          <TableHead>Description</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>{children}</TableBody>
-    </Table>
-  );
-};
+}: React.ComponentProps<typeof Table>) => (
+  <Table className={cn('my-4', className)} {...props}>
+    <TableHeader>
+      <TableRow>
+        <TableHead className="w-[100px]">Key</TableHead>
+        <TableHead>Description</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>{children}</TableBody>
+  </Table>
+);
 
 export const KeyTableItem = ({
   children,
@@ -785,23 +784,19 @@ export const KeyTableItem = ({
 }: {
   children: React.ReactNode;
   hotkey: string;
-}) => {
-  return (
-    <TableRow>
-      <TableCell>
-        <kbd className="inline-flex min-w-[8px] items-center justify-center rounded bg-muted px-2 whitespace-nowrap shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
-          {hotkey}
-        </kbd>
-      </TableCell>
-      <TableCell>{children}</TableCell>
-    </TableRow>
-  );
-};
+}) => (
+  <TableRow>
+    <TableCell>
+      <kbd className="inline-flex min-w-[8px] items-center justify-center whitespace-nowrap rounded bg-muted px-2 shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]">
+        {hotkey}
+      </kbd>
+    </TableCell>
+    <TableCell>{children}</TableCell>
+  </TableRow>
+);
 
 export const EmptyComponent = ({
   children,
 }: {
   children?: React.ReactNode;
-}) => {
-  return <>{children}</>;
-};
+}) => <>{children}</>;

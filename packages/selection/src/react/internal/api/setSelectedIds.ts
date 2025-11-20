@@ -31,10 +31,18 @@ export const setSelectedIds = (
     const next = new Set(prev);
 
     if (added) {
-      extractSelectableIds(added).forEach((id) => id && next.add(id));
+      for (const id of extractSelectableIds(added)) {
+        if (id) {
+          next.add(id);
+        }
+      }
     }
     if (removed) {
-      extractSelectableIds(removed).forEach((id) => id && next.delete(id));
+      for (const id of extractSelectableIds(removed)) {
+        if (id) {
+          next.delete(id);
+        }
+      }
     }
 
     setOption('selectedIds', next);

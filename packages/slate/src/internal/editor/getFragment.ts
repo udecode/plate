@@ -11,10 +11,10 @@ const unwrapContainerNodes = (nodes: TElement[], types: string[]) => {
   const unwrap = (nodes: TElement[], acc: TElement[] = []): TElement[] => {
     nodes.forEach((node) => {
       if (types?.includes(node.type)) {
-        return unwrap(node.children as TElement[], acc);
+        unwrap(node.children as TElement[], acc);
+      } else {
+        acc.push(node);
       }
-
-      acc.push(node);
     });
 
     return acc;

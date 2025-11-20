@@ -7,8 +7,8 @@ export function useDedupeNavItems(items: SidebarNavItem[]) {
     const dedupeItems = (
       items: SidebarNavItem[],
       seen = new Set<string>()
-    ): SidebarNavItem[] => {
-      return items.map((item) => {
+    ): SidebarNavItem[] =>
+      items.map((item) => {
         const deduped = { ...item };
 
         if (deduped.items) {
@@ -25,7 +25,6 @@ export function useDedupeNavItems(items: SidebarNavItem[]) {
 
         return deduped;
       });
-    };
 
     return dedupeItems(items);
   }, [items]);

@@ -1,7 +1,6 @@
-import type { FormTags, Hotkey, Scopes, Trigger } from './types';
-
 import { isHotkeyPressed, isReadonlyArray } from './isHotkeyPressed';
 import { mapKey } from './parseHotkeys';
+import type { FormTags, Hotkey, Scopes, Trigger } from './types';
 
 export function maybePreventDefault(
   e: KeyboardEvent,
@@ -122,10 +121,12 @@ export const isHotkeyMatchingKeyboardEvent = (
   // If the key is set, we check for the key
   if (keys && keys.length === 1 && keys.includes(mappedCode)) {
     return true;
-  } else if (keys) {
+  }
+  if (keys) {
     // Check if all keys are present in pressedDownKeys set
     return isHotkeyPressed(keys);
-  } else if (!keys) {
+  }
+  if (!keys) {
     // If the key is not set, we only listen for modifiers, that check went alright, so we return true
     return true;
   }

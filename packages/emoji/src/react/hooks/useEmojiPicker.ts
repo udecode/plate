@@ -119,7 +119,11 @@ export const useEmojiPicker = ({
 
   const setSearch = React.useCallback(
     (value: string) => {
-      value ? handleSearchInput(value) : dispatch({ type: 'CLEAR_SEARCH' });
+      if (value) {
+        handleSearchInput(value);
+      } else {
+        dispatch({ type: 'CLEAR_SEARCH' });
+      }
     },
     [dispatch, handleSearchInput]
   );

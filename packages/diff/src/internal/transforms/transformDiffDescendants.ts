@@ -135,16 +135,15 @@ export function transformDiffDescendants(
           i += 2; // This consumed two entries from the diff array.
 
           continue;
-        } else {
-          // Plain delete of some nodes (with no insert immediately after)
-          for (const node of nodes) {
-            deleteNode(node);
-          }
-
-          i += 1; // Consumes only one entry from diff array.
-
-          continue;
         }
+        // Plain delete of some nodes (with no insert immediately after)
+        for (const node of nodes) {
+          deleteNode(node);
+        }
+
+        i += 1; // Consumes only one entry from diff array.
+
+        continue;
       }
       case OP_INSERT: {
         // insert new nodes.

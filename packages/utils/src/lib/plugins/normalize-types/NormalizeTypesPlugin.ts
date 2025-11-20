@@ -1,6 +1,5 @@
+import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
 import type { Path } from '@platejs/slate';
-
-import { type PluginConfig, createTSlatePlugin } from '@platejs/core';
 
 import { KEYS } from '../../plate-keys';
 import { withNormalizeTypes } from './withNormalizeTypes';
@@ -20,14 +19,14 @@ export type NormalizeTypesConfig = PluginConfig<
   }
 >;
 
-interface Rule {
+type Rule = {
   /** Path where the rule applies */
   path: Path;
   /** Force the type of the node at the given path */
   strictType?: string;
   /** Type of the inserted node at the given path if `strictType` is not provided */
   type?: string;
-}
+};
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({

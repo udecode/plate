@@ -21,16 +21,14 @@ export const splitTableCell = (editor: SlateEditor) => {
 
   editor.tf.withoutNormalizing(() => {
     // creating new object per iteration is essential here
-    const createEmptyCell = (children?: Descendant[]) => {
-      return {
-        ...api.create.tableCell({
-          children,
-          header: cellElem.type === editor.getType(KEYS.th),
-        }),
-        colSpan: 1,
-        rowSpan: 1,
-      };
-    };
+    const createEmptyCell = (children?: Descendant[]) => ({
+      ...api.create.tableCell({
+        children,
+        header: cellElem.type === editor.getType(KEYS.th),
+      }),
+      colSpan: 1,
+      rowSpan: 1,
+    });
 
     const tablePath = path.slice(0, -2);
 

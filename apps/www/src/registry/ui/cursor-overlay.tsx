@@ -40,22 +40,20 @@ function Cursor({
 
   return (
     <>
-      {selectionRects.map((position, i) => {
-        return (
-          <div
-            key={i}
-            className={cn(
-              'pointer-events-none absolute z-10',
-              id === 'selection' && 'bg-brand/25',
-              id === 'selection' && isCursor && 'bg-primary'
-            )}
-            style={{
-              ...selectionStyle,
-              ...position,
-            }}
-          />
-        );
-      })}
+      {selectionRects.map((position, i) => (
+        <div
+          key={i}
+          className={cn(
+            'pointer-events-none absolute z-10',
+            id === 'selection' && 'bg-brand/25',
+            id === 'selection' && isCursor && 'bg-primary'
+          )}
+          style={{
+            ...selectionStyle,
+            ...position,
+          }}
+        />
+      ))}
       {caretPosition && (
         <div
           className={cn(

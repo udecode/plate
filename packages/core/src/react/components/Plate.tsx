@@ -84,7 +84,7 @@ export function Plate<E extends PlateEditor = PlateEditor>(
 
   if (!props.editor) return null;
 
-  props.editor.meta.uid = 'e-' + id.replaceAll(':', '');
+  props.editor.meta.uid = `e-${id.replaceAll(':', '')}`;
 
   return (
     <PlateInner

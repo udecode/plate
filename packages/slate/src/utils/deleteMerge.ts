@@ -1,17 +1,16 @@
 import { Editor as EditorInterface } from 'slate';
 
 import type { Editor } from '../interfaces/editor/editor-type';
-import type { NodeEntry } from '../interfaces/node-entry';
-
 import {
   type LegacyEditorMethods,
   type Path,
-  type TLocation,
-  type TRange,
   PathApi,
   PointApi,
   RangeApi,
+  type TLocation,
+  type TRange,
 } from '../interfaces/index';
+import type { NodeEntry } from '../interfaces/node-entry';
 import { createPathRef } from '../internal/editor/createPathRef';
 import { createPointRef } from '../internal/editor/createPointRef';
 import { getEndPoint } from '../internal/editor/getEndPoint';

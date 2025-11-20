@@ -56,7 +56,7 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
           }
 
           return;
-        } catch (error) {}
+        } catch (_error) {}
       }
 
       // Handle plain text paste into code block only if there are line breaks

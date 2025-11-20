@@ -1,13 +1,12 @@
-import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
-import type { NodeEntry } from '../../interfaces/node-entry';
-
 import {
   type DescendantOf,
   type EditorPreviousOptions,
   type Path,
-  type Span,
   PathApi,
+  type Span,
 } from '../../interfaces';
+import type { Editor, ValueOf } from '../../interfaces/editor/editor-type';
+import type { NodeEntry } from '../../interfaces/node-entry';
 import { combineMatch, getAt, getMatch, getQueryOptions } from '../../utils';
 
 // Slate fork
@@ -30,7 +29,7 @@ const previousBase = (
   if (from === 'parent' && PathApi.isPath(at) && at.length > 1) {
     start = at;
 
-    match = combineMatch((n, p) => {
+    match = combineMatch((_n, p) => {
       // We want nodes that:
       // 1. Are not after our target path
       // 2. Are not the same as our target path

@@ -26,17 +26,20 @@ export function fixImport(content: string) {
 
   const replacement = (
     match: string,
-    path: string,
+    _path: string,
     type: string,
     component: string
   ) => {
     if (type.endsWith('components') || type.endsWith('example')) {
       return `@/components/${component}`;
-    } else if (type.endsWith('ui')) {
+    }
+    if (type.endsWith('ui')) {
       return `@/components/ui/${component}`;
-    } else if (type.endsWith('hooks')) {
+    }
+    if (type.endsWith('hooks')) {
       return `@/hooks/${component}`;
-    } else if (type.endsWith('lib')) {
+    }
+    if (type.endsWith('lib')) {
       return `@/lib/${component}`;
     }
 
@@ -125,13 +128,17 @@ function processFiles(files: ({ path: string; file?: string } | string)[]): {
 function getFileType(file: string): string {
   if (file.includes('components/')) {
     return 'components';
-  } else if (file.includes('ui/')) {
+  }
+  if (file.includes('ui/')) {
     return 'ui';
-  } else if (file.includes('hooks/')) {
+  }
+  if (file.includes('hooks/')) {
     return 'hooks';
-  } else if (file.includes('lib/')) {
+  }
+  if (file.includes('lib/')) {
     return 'lib';
-  } else if (file.includes('example/')) {
+  }
+  if (file.includes('example/')) {
     return 'example';
   }
 
@@ -363,10 +370,7 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     try {
       raw = await fs.readFile(filePath, 'utf8');
       break;
-    } catch (error) {
-      // Continue to next path
-      continue;
-    }
+    } catch (_error) {}
   }
 
   if (!raw) {
@@ -431,13 +435,11 @@ function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {
   const firstFilePath = files[0].path;
   const firstFilePathDir = path.dirname(firstFilePath);
 
-  return files.map((file) => {
-    return {
-      ...file,
-      path: path.relative(firstFilePathDir, file.path),
-      target: getFileTarget(file),
-    };
-  });
+  return files.map((file) => ({
+    ...file,
+    path: path.relative(firstFilePathDir, file.path),
+    target: getFileTarget(file),
+  }));
 }
 
 export type FileTree = {

@@ -40,58 +40,56 @@ export async function GET(request: Request) {
   const title = searchParams.get('title');
   const description = searchParams.get('description');
 
-  // eslint-disable-next-line unicorn/no-single-promise-in-promise-methods
   const [fonts] = await Promise.all([loadAssets()]);
 
   return new ImageResponse(
-    (
-      <div
-        style={{ fontFamily: 'Geist Sans' }}
-        tw="flex h-full w-full bg-black text-white"
-      >
-        <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 left-16 w-[1px]" />
-        <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 right-16 w-[1px]" />
-        <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] top-16" />
-        <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] bottom-16" />
-        <div tw="flex absolute flex-row bottom-24 right-24 text-white">
-          <svg
-            fill="none"
-            height={48}
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width={48}
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M5 12h14"></path>
-          </svg>
+    <div
+      style={{ fontFamily: 'Geist Sans' }}
+      tw="flex h-full w-full bg-black text-white"
+    >
+      <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 left-16 w-[1px]" />
+      <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 right-16 w-[1px]" />
+      <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] top-16" />
+      <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] bottom-16" />
+      <div tw="flex absolute flex-row bottom-24 right-24 text-white">
+        <svg
+          fill="none"
+          height={48}
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width={48}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Decorative icon</title>
+          <path d="M5 12h14" />
+        </svg>
+      </div>
+      <div tw="flex flex-col absolute w-[896px] justify-center inset-32">
+        <div
+          style={{
+            fontSize: title && title.length > 20 ? 64 : 80,
+            fontWeight: 600,
+            letterSpacing: '-0.04em',
+            textWrap: 'balance',
+          }}
+          tw="tracking-tight flex-grow-1 flex flex-col justify-center leading-[1.1]"
+        >
+          {title}
         </div>
-        <div tw="flex flex-col absolute w-[896px] justify-center inset-32">
-          <div
-            style={{
-              fontSize: title && title.length > 20 ? 64 : 80,
-              fontWeight: 600,
-              letterSpacing: '-0.04em',
-              textWrap: 'balance',
-            }}
-            tw="tracking-tight flex-grow-1 flex flex-col justify-center leading-[1.1]"
-          >
-            {title}
-          </div>
-          <div
-            style={{
-              fontWeight: 500,
-              textWrap: 'balance',
-            }}
-            tw="text-[40px] leading-[1.5] flex-grow-1 text-stone-400"
-          >
-            {description}
-          </div>
+        <div
+          style={{
+            fontWeight: 500,
+            textWrap: 'balance',
+          }}
+          tw="text-[40px] leading-[1.5] flex-grow-1 text-stone-400"
+        >
+          {description}
         </div>
       </div>
-    ),
+    </div>,
     {
       fonts,
       height: 628,

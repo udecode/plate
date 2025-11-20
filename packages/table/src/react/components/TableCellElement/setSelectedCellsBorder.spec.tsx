@@ -11,7 +11,7 @@ jest.mock('../../../lib/transforms/setBorderSize', () => ({
 }));
 
 jest.mock('../../../lib/utils', () => ({
-  getCellIndices: jest.fn((editor, element) => {
+  getCellIndices: jest.fn((_editor, element) => {
     switch (element.id) {
       case 'c11': {
         return { col: 0, row: 0 };

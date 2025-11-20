@@ -5,6 +5,5 @@ import type { TTableCellElement } from 'platejs';
  *
  * @default 1 if undefined.
  */
-export const getColSpan = (cellElem: TTableCellElement) => {
-  return cellElem.colSpan || Number(cellElem.attributes?.colspan) || 1;
-};
+export const getColSpan = (cellElem: TTableCellElement) =>
+  cellElem.colSpan || Number(cellElem.attributes?.colspan) || 1;

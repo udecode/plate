@@ -10,10 +10,10 @@ import isEqual from 'lodash/isEqual.js';
 import { unusedCharGenerator } from './unused-char-generator';
 
 export class StringCharMapping {
-  private _charGenerator = unusedCharGenerator();
-  private _mappedNodes: [Descendant, string][] = [];
+  private readonly _charGenerator = unusedCharGenerator();
+  private readonly _mappedNodes: [Descendant, string][] = [];
 
-  public charToNode(c: string): Descendant {
+  charToNode(c: string): Descendant {
     const entry = this._mappedNodes.find(([_node, c2]) => c2 === c);
 
     if (!entry) throw new Error(`No node found for char ${c}`);
@@ -21,11 +21,11 @@ export class StringCharMapping {
     return entry[0];
   }
 
-  public nodesToString(nodes: Descendant[]): string {
+  nodesToString(nodes: Descendant[]): string {
     return nodes.map(this.nodeToChar.bind(this)).join('');
   }
 
-  public nodeToChar(node: Descendant): string {
+  nodeToChar(node: Descendant): string {
     // Check for a previously assigned character
     for (const [n, c] of this._mappedNodes) {
       if (isEqual(n, node)) {
@@ -39,7 +39,7 @@ export class StringCharMapping {
     return c;
   }
 
-  public stringToNodes(s: string): Descendant[] {
+  stringToNodes(s: string): Descendant[] {
     return s.split('').map(this.charToNode.bind(this));
   }
 }

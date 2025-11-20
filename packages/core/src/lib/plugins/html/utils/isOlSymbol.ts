@@ -1,3 +1,4 @@
-export const isOlSymbol = (symbol: string): boolean => {
-  return /[\da-np-z]\S/.test(symbol.toLowerCase());
-};
+const OL_SYMBOL_REGEX = /[\da-np-z]\S/;
+
+export const isOlSymbol = (symbol: string): boolean =>
+  OL_SYMBOL_REGEX.test(symbol.toLowerCase());

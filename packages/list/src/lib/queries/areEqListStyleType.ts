@@ -5,7 +5,7 @@ import { KEYS } from 'platejs';
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
-  editor: Editor,
+  _editor: Editor,
   entries: NodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
@@ -19,7 +19,7 @@ export const areEqListStyleType = (
     const [block] = entry;
 
     if (listStyleType === KEYS.listTodo) {
-      if (!block.hasOwnProperty(KEYS.listChecked)) {
+      if (!Object.hasOwn(block, KEYS.listChecked)) {
         eqListStyleType = false;
 
         break;

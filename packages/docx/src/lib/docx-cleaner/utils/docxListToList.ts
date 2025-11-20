@@ -6,10 +6,10 @@ import { isDocxBookmark } from './isDocxBookmark';
 import { isDocxList } from './isDocxList';
 import { isDocxOl } from './isDocxOl';
 
-interface Result {
+type Result = {
   list: Element | null;
   nextSibling: Element | null;
-}
+};
 
 export const docxListToList = (element: Element): Result => {
   const listLevel = getDocxListIndent(element);

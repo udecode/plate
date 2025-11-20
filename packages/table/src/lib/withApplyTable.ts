@@ -26,7 +26,7 @@ import { computeCellIndices, getCellTypes } from './utils';
  *   start of table
  */
 export const withApplyTable: OverrideEditor<TableConfig> = ({
-  api,
+  api: _api,
   editor,
   getOptions,
   tf: { apply },

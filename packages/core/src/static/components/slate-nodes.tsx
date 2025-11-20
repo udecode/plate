@@ -1,4 +1,3 @@
-/* eslint-disable perfectionist/sort-jsx-props */
 import React from 'react';
 
 import type { Path, TElement, TText } from '@platejs/slate';
@@ -15,15 +14,13 @@ import type {
   SlatePluginContext,
 } from '../../lib';
 
-export const useNodeAttributes = (props: any, ref?: any) => {
-  return {
-    ...props.attributes,
-    className:
-      clsx((props.attributes as any).className, props.className) || undefined,
-    ref,
-    style: { ...(props.attributes as any).style, ...props.style },
-  };
-};
+export const useNodeAttributes = (props: any, ref?: any) => ({
+  ...props.attributes,
+  className:
+    clsx((props.attributes as any).className, props.className) || undefined,
+  ref,
+  style: { ...(props.attributes as any).style, ...props.style },
+});
 
 export type SlateElementProps<
   N extends TElement = TElement,

@@ -3,24 +3,22 @@ import { TextEncoder } from 'node:util';
 import '@testing-library/jest-dom';
 import 'slate-test-utils/dist/cjs/mocks';
 
-window.MessageChannel = jest.fn().mockImplementation(() => {
-  return {
-    port1: {
-      addEventListener: jest.fn(),
-      close: jest.fn(),
-      postMessage: jest.fn(),
-      removeEventListener: jest.fn(),
-      start: jest.fn(),
-    },
-    port2: {
-      addEventListener: jest.fn(),
-      close: jest.fn(),
-      postMessage: jest.fn(),
-      removeEventListener: jest.fn(),
-      start: jest.fn(),
-    },
-  };
-});
+window.MessageChannel = jest.fn().mockImplementation(() => ({
+  port1: {
+    addEventListener: jest.fn(),
+    close: jest.fn(),
+    postMessage: jest.fn(),
+    removeEventListener: jest.fn(),
+    start: jest.fn(),
+  },
+  port2: {
+    addEventListener: jest.fn(),
+    close: jest.fn(),
+    postMessage: jest.fn(),
+    removeEventListener: jest.fn(),
+    start: jest.fn(),
+  },
+}));
 
 global.TextEncoder = TextEncoder;
 
@@ -45,7 +43,7 @@ jest.mock('lucide-react', () => {
       __esModule: true,
     },
     {
-      get: function (_, prop) {
+      get(_, prop) {
         if (prop === '__esModule') return true;
 
         // Return a mock component for any icon request

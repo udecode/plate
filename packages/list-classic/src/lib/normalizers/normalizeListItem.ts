@@ -175,10 +175,11 @@ export const normalizeListItem = (
     blockPathRefs.forEach((pathRef) => {
       const path = pathRef.unref();
 
-      path &&
+      if (path) {
         editor.tf.removeNodes({
           at: path,
         });
+      }
     });
 
     if (blockPathRefs.length > 0) {
@@ -191,11 +192,12 @@ export const normalizeListItem = (
   invalidLiChildrenPathRefs.reverse().forEach((ref) => {
     const path = ref.unref();
 
-    path &&
+    if (path) {
       editor.tf.moveNodes({
         at: path,
         to: firstLiChildPath.concat([0]),
       });
+    }
   });
 
   return invalidLiChildrenPathRefs.length > 0;

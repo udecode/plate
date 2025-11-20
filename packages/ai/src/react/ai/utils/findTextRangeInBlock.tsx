@@ -46,7 +46,7 @@ export function findTextRangeInBlock({
   // If no exact match, try fuzzy matching
   if (matchStart === -1) {
     const maxDist = maxAllowedDistance(findText.length);
-    let bestMatch = { distance: Infinity, end: -1, start: -1 };
+    let bestMatch = { distance: Number.POSITIVE_INFINITY, end: -1, start: -1 };
 
     // Sliding window to find best fuzzy match
     for (let i = 0; i <= fullText.length - findText.length; i++) {
@@ -91,8 +91,6 @@ export function findTextRangeInBlock({
     charOffset: number,
     isEnd = false
   ): { offset: number; path: Path } => {
-    const accumulated = 0;
-
     // For start positions, if offset lands exactly at the beginning of a segment, use that segment
     if (!isEnd) {
       for (const segment of textSegments) {

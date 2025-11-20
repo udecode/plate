@@ -19,6 +19,7 @@ export const overridePluginsByKey = (
     } = overrideByKey[plugin.key];
 
     // Override plugin
+    // biome-ignore lint/style/noParameterAssign: Intentional plugin override pattern
     plugin = defaultsDeep({}, pluginOverrides, plugin);
 
     // Merge __extensions

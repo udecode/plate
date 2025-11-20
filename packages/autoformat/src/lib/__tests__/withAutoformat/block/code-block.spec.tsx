@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin } from 'platejs';
 import { createSlateEditor } from 'platejs';
 import { BaseCodeBlockPlugin, insertEmptyCodeBlock } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';

@@ -57,7 +57,7 @@ describe('when element is p, validAttribute', () => {
             html: {
               deserializer: {
                 isElement: true,
-                parse: parse,
+                parse,
                 rules: [
                   {
                     validAttribute: { title: '' },
@@ -84,7 +84,7 @@ describe('when element is p, validAttribute', () => {
             html: {
               deserializer: {
                 isElement: true,
-                parse: parse,
+                parse,
                 rules: [
                   {
                     validAttribute: { title: '' },
@@ -114,7 +114,7 @@ describe('when element is p with color and rule style is different', () => {
             html: {
               deserializer: {
                 isElement: true,
-                parse: parse,
+                parse,
                 rules: [
                   {
                     validStyle: {
@@ -146,7 +146,7 @@ describe('when element is p with same style color than rule', () => {
             html: {
               deserializer: {
                 isElement: true,
-                parse: parse,
+                parse,
                 rules: [
                   {
                     validStyle: {
@@ -178,7 +178,7 @@ describe('when element has style color and rule style color is *', () => {
             html: {
               deserializer: {
                 isElement: true,
-                parse: parse,
+                parse,
                 rules: [
                   {
                     validStyle: {

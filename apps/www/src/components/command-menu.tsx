@@ -78,7 +78,7 @@ export function CommandItems({
   const invisibleSuffix = getInvisibleSuffix(parentKey);
 
   // Extract keywords from the item, including labels and parent title
-  const { keywords = [], ...itemWithoutKeywords } = item;
+  const { keywords = [] } = item;
   const allKeywords = [
     ...keywords,
     ...castArray(item.label),
@@ -195,14 +195,14 @@ export function CommandMenu({ ...props }: DialogProps) {
       <Button
         variant="outline"
         className={cn(
-          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
+          'relative flex h-8 w-full items-center justify-start rounded-[0.5rem] bg-muted/50 font-normal text-muted-foreground text-sm shadow-none sm:pr-12 md:w-40 lg:w-56 xl:w-64'
         )}
         onClick={() => setOpen(true)}
         {...props}
       >
         <span className="hidden lg:inline-flex">Search documentation...</span>
         <span className="inline-flex lg:hidden">Search...</span>
-        <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
+        <kbd className="pointer-events-none absolute top-[0.3rem] right-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium font-mono text-[10px] opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
@@ -214,7 +214,7 @@ export function CommandMenu({ ...props }: DialogProps) {
 
         <DialogContent className="overflow-hidden p-0">
           <Command
-            className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
+            className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
             filter={(value, search, keywords) => {
               const searchValue = search.toLowerCase();
               if (
@@ -251,7 +251,7 @@ export function CommandMenu({ ...props }: DialogProps) {
 
                 return (
                   <CommandMenuGroup
-                    key={group.title + ':sidebar'}
+                    key={`${group.title}:sidebar`}
                     runCommand={runCommand}
                     {...group}
                   />

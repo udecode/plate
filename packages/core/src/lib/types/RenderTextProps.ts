@@ -3,7 +3,7 @@ import type React from 'react';
 import type { TText } from '@platejs/slate';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
-export interface RenderTextProps<N extends TText = TText> {
+export type RenderTextProps<N extends TText = TText> = {
   /** The text node being rendered. */
   text: N;
   /** The children (leaves) rendered within this text node. */
@@ -18,4 +18,4 @@ export interface RenderTextProps<N extends TText = TText> {
     className?: string;
     style?: React.CSSProperties;
   };
-}
+};

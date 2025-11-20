@@ -7,14 +7,12 @@ import {
   setNormalizing,
   shouldNormalize,
 } from 'slate';
-
-import type { Editor, Value } from './interfaces/editor/editor-type';
-
 import {
   type EditorApi,
   type LegacyEditorMethods,
   RangeApi,
 } from './interfaces';
+import type { Editor, Value } from './interfaces/editor/editor-type';
 import { blur } from './internal/dom-editor/blur';
 import { deselectDOM } from './internal/dom-editor/deselectDOM';
 import { findDocumentOrShadowRoot } from './internal/dom-editor/findDocumentOrShadowRoot';
@@ -38,20 +36,6 @@ import { toDOMRange } from './internal/dom-editor/toDOMRange';
 import { toSlateNode } from './internal/dom-editor/toSlateNode';
 import { toSlatePoint } from './internal/dom-editor/toSlatePoint';
 import { toSlateRange } from './internal/dom-editor/toSlateRange';
-import { edgeBlocks } from './internal/editor-extension/edge-blocks';
-import { block } from './internal/editor-extension/editor-block';
-import { blocks } from './internal/editor-extension/editor-blocks';
-import { descendant } from './internal/editor-extension/editor-descendant';
-import { mark } from './internal/editor-extension/editor-mark';
-import { hasMark } from './internal/editor-extension/hasMark';
-import { isSelected } from './internal/editor-extension/is-selected';
-import { isAt } from './internal/editor-extension/isAt';
-import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
-import { isText } from './internal/editor-extension/isText';
-import { nodesRange } from './internal/editor-extension/nodes-range';
-import { prop } from './internal/editor-extension/prop';
-import { scrollIntoView } from './internal/editor-extension/scrollIntoView';
-import { some } from './internal/editor-extension/some';
 import { above } from './internal/editor/above';
 import { addMark } from './internal/editor/addMark';
 import { createPathRef } from './internal/editor/createPathRef';
@@ -103,13 +87,20 @@ import { removeEditorMark } from './internal/editor/removeEditorMark';
 import { shouldMergeNodes } from './internal/editor/shouldMergeNodes';
 import { unhangRange } from './internal/editor/unhangRange';
 import { withoutNormalizing } from './internal/editor/withoutNormalizing';
-import { addMarks } from './internal/transforms-extension/addMarks';
-import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
-import { removeMarks } from './internal/transforms-extension/removeMarks';
-import { replaceNodes } from './internal/transforms-extension/replaceNodes';
-import { reset } from './internal/transforms-extension/reset';
-import { toggleBlock } from './internal/transforms-extension/toggleBlock';
-import { toggleMark } from './internal/transforms-extension/toggleMark';
+import { edgeBlocks } from './internal/editor-extension/edge-blocks';
+import { block } from './internal/editor-extension/editor-block';
+import { blocks } from './internal/editor-extension/editor-blocks';
+import { descendant } from './internal/editor-extension/editor-descendant';
+import { mark } from './internal/editor-extension/editor-mark';
+import { hasMark } from './internal/editor-extension/hasMark';
+import { isSelected } from './internal/editor-extension/is-selected';
+import { isAt } from './internal/editor-extension/isAt';
+import { isEditorEnd } from './internal/editor-extension/isEditorEnd';
+import { isText } from './internal/editor-extension/isText';
+import { nodesRange } from './internal/editor-extension/nodes-range';
+import { prop } from './internal/editor-extension/prop';
+import { scrollIntoView } from './internal/editor-extension/scrollIntoView';
+import { some } from './internal/editor-extension/some';
 import { collapseSelection } from './internal/transforms/collapseSelection';
 import { deleteText } from './internal/transforms/deleteText';
 import { deselect } from './internal/transforms/deselect';
@@ -130,6 +121,13 @@ import { splitNodes } from './internal/transforms/splitNodes';
 import { unsetNodes } from './internal/transforms/unsetNodes';
 import { unwrapNodes } from './internal/transforms/unwrapNodes';
 import { wrapNodes } from './internal/transforms/wrapNodes';
+import { addMarks } from './internal/transforms-extension/addMarks';
+import { duplicateNodes } from './internal/transforms-extension/duplicateNodes';
+import { removeMarks } from './internal/transforms-extension/removeMarks';
+import { replaceNodes } from './internal/transforms-extension/replaceNodes';
+import { reset } from './internal/transforms-extension/reset';
+import { toggleBlock } from './internal/transforms-extension/toggleBlock';
+import { toggleMark } from './internal/transforms-extension/toggleMark';
 import { HistoryApi } from './slate-history/history';
 import { syncLegacyMethods } from './utils/assignLegacyTransforms';
 
@@ -141,7 +139,7 @@ const noop: {
   () => {
     console.warn(
       `[OVERRIDE_MISSING] The method editor.${name}() has not been implemented or overridden. ` +
-        `This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.`
+        'This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.'
     );
 
     return returnValue;

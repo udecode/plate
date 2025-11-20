@@ -11,15 +11,13 @@ const BoundHotkeysProxyProvider = createContext<
   BoundHotkeysProxyProviderType | undefined
 >(undefined);
 
-export const useBoundHotkeysProxy = () => {
-  return useContext(BoundHotkeysProxyProvider);
-};
+export const useBoundHotkeysProxy = () => useContext(BoundHotkeysProxyProvider);
 
-interface Props {
+type Props = {
   children: ReactNode;
   addHotkey: (hotkey: Hotkey) => void;
   removeHotkey: (hotkey: Hotkey) => void;
-}
+};
 
 export default function BoundHotkeysProxyProviderProvider({
   addHotkey,

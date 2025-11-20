@@ -14,9 +14,9 @@ import {
   usePlateStore,
 } from '../stores';
 
-export interface PlateControllerEffectProps {
+export type PlateControllerEffectProps = {
   id?: string;
-}
+};
 
 export const PlateControllerEffect = ({
   id: idProp,

@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-conditional-expect */
 import { createPlateEditor } from '../../../react';
 import { createSlatePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';

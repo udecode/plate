@@ -18,24 +18,30 @@ const eventListener =
     options = {}
   ): EventBindingArgs => {
     // Normalize array
+    let normalizedItems: (EventTarget | undefined)[];
     if (items instanceof HTMLCollection || items instanceof NodeList) {
-      items = Array.from(items);
-    } else if (!Array.isArray(items)) {
-      items = [items];
+      normalizedItems = Array.from(items);
+    } else if (Array.isArray(items)) {
+      normalizedItems = items;
+    } else {
+      normalizedItems = [items];
     }
-    if (!Array.isArray(events)) {
-      events = [events];
+    let normalizedEvents: string[];
+    if (Array.isArray(events)) {
+      normalizedEvents = events;
+    } else {
+      normalizedEvents = [events];
     }
 
-    for (const el of items) {
+    for (const el of normalizedItems) {
       if (el) {
-        for (const ev of events) {
+        for (const ev of normalizedEvents) {
           el[method](ev, fn as EventListener, { capture: false, ...options });
         }
       }
     }
 
-    return [items, events, fn, options];
+    return [normalizedItems, normalizedEvents, fn, options];
   };
 
 /**

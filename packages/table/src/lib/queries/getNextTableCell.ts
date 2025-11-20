@@ -4,7 +4,7 @@ import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export const getNextTableCell = (
   editor: Editor,
-  currentCell: NodeEntry,
+  _currentCell: NodeEntry,
   currentPath: Path,
   currentRow: NodeEntry
 ): NodeEntry | undefined => {

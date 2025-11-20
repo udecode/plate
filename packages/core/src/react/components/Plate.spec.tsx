@@ -373,9 +373,7 @@ describe('Plate', () => {
         createPlatePlugin({
           key: 'a',
           render: {
-            aboveSlate: () => {
-              return null;
-            },
+            aboveSlate: () => null,
           },
         }),
       ];
@@ -432,11 +430,7 @@ describe('Plate', () => {
   });
 
   describe('User-defined attributes', () => {
-    const ParagraphElement = ({
-      attributes,
-      children,
-      ...props
-    }: PlateElementProps) => (
+    const ParagraphElement = ({ attributes, children }: PlateElementProps) => (
       <p {...attributes} data-testid="paragraph">
         {children}
       </p>

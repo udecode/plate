@@ -31,6 +31,9 @@ export function shouldTrigger(event: MouseEvent, triggers: Trigger[]): boolean {
           case 'shift': {
             return event.shiftKey;
           }
+          default: {
+            return false;
+          }
         }
       });
 

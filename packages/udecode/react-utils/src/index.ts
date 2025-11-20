@@ -13,7 +13,6 @@ export * from './createSlotComponent';
 export * from './useComposedRef';
 export * from './useEffectOnce';
 export * from './useIsomorphicLayoutEffect';
-export * from './useMemoOnce';
 export * from './useMemoizedSelector';
 export * from './useOnClickOutside';
 export * from './useStableFn';

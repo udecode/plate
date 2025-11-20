@@ -93,9 +93,9 @@ describe('ElementProvider', () => {
     );
   };
 
-  interface ConsumerProps {
+  type ConsumerProps = {
     label?: string;
-  }
+  };
 
   const NameElementConsumer = ({ label = '' }: ConsumerProps) => {
     const element = useElement<TNameElement>('name');

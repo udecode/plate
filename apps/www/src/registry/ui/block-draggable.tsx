@@ -149,7 +149,7 @@ function Draggable(props: PlateElementProps) {
               <Button
                 ref={handleRef}
                 variant="ghost"
-                className="absolute -left-0 h-6 w-full p-0"
+                className="-left-0 absolute h-6 w-full p-0"
                 style={{ top: `${dragButtonTop + 3}px` }}
                 data-plate-prevent-deselect
               >
@@ -167,7 +167,7 @@ function Draggable(props: PlateElementProps) {
 
       <div
         ref={previewRef}
-        className={cn('absolute -left-0 hidden w-full')}
+        className={cn('-left-0 absolute hidden w-full')}
         style={{ top: `${-previewTop}px` }}
         contentEditable={false}
       />
@@ -206,7 +206,7 @@ function Gutter({
       {...props}
       className={cn(
         'slate-gutterLeft',
-        'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
         getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
@@ -447,7 +447,9 @@ const createDragPreviewElements = (
     elements.push(wrapper);
   };
 
-  blocks.forEach((node, index) => resolveElement(node, index));
+  blocks.forEach((node, index) => {
+    resolveElement(node, index);
+  });
 
   editor.setOption(DndPlugin, 'draggingId', ids);
 

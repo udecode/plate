@@ -21,16 +21,23 @@ export class EmojiFloatingLibrary
 {
   private static instance?: EmojiFloatingLibrary;
 
-  private categories: EmojiCategoryList[] = defaultCategories;
-  private emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
-  private grid: EmojiFloatingGridType;
+  private readonly categories: EmojiCategoryList[] = defaultCategories;
+  private readonly emojis: Partial<Record<EmojiCategoryList, string[]>> = {};
+  private readonly grid: EmojiFloatingGridType;
+  protected settings: EmojiSettingsType;
+  protected localStorage: IFrequentEmojiStorage;
+  protected library: EmojiLibrary;
 
   private constructor(
-    protected settings: EmojiSettingsType,
-    protected localStorage: IFrequentEmojiStorage,
-    protected library: EmojiLibrary = DEFAULT_EMOJI_LIBRARY
+    settings: EmojiSettingsType,
+    localStorage: IFrequentEmojiStorage,
+    library: EmojiLibrary = DEFAULT_EMOJI_LIBRARY
   ) {
     super(library);
+
+    this.settings = settings;
+    this.localStorage = localStorage;
+    this.library = library;
 
     this.categories = settings.categories.value ?? this.categories;
 
@@ -44,7 +51,7 @@ export class EmojiFloatingLibrary
     ).build();
   }
 
-  public static getInstance(
+  static getInstance(
     settings: EmojiSettingsType,
     localStorage: IFrequentEmojiStorage,
     library = DEFAULT_EMOJI_LIBRARY
@@ -66,17 +73,17 @@ export class EmojiFloatingLibrary
     }
   }
 
-  public getGrid() {
+  getGrid() {
     return this.grid;
   }
 
-  public indexOf(focusedCategory: EmojiCategoryList) {
+  indexOf(focusedCategory: EmojiCategoryList) {
     const index = this.grid.indexOf(focusedCategory);
 
     return index < 1 ? 0 : index;
   }
 
-  public updateFrequentCategory(emojiId: string) {
+  updateFrequentCategory(emojiId: string) {
     this.localStorage.update(emojiId);
     this.grid.updateSection(
       EmojiCategory.Frequent,

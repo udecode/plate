@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 import { getHighlighter } from '@shikijs/compat';
 import {
   defineDocumentType,
@@ -17,17 +16,20 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 
 import 'dotenv/config';
 
+const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
+const EVENT_META_REGEX = /event="([^"]*)"/;
+
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {
     type: 'string',
     resolve: (doc) =>
-      `/docs/${doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), '')}`,
+      `/docs/${doc._raw.flattenedPath.replace(DIRECTORY_PATTERN_REGEX, '')}`,
   },
   slugAsParams: {
     type: 'string',
     resolve: (doc) =>
-      doc._raw.flattenedPath.replace(new RegExp('\\(([^)]*)\\\)\\/', 'g'), ''),
+      doc._raw.flattenedPath.replace(DIRECTORY_PATTERN_REGEX, ''),
   },
 };
 
@@ -95,7 +97,7 @@ export const Doc = defineDocumentType(() => ({
       type: 'boolean',
     },
   },
-  filePathPattern: `**/*.mdx`,
+  filePathPattern: '**/*.mdx',
   name: 'Doc',
 }));
 
@@ -117,12 +119,14 @@ export default makeSource({
             }
             if (codeEl.data?.meta) {
               // Extract event from meta and pass it down the tree.
-              const regex = /event="([^"]*)"/;
-              const match = codeEl.data?.meta.match(regex);
+              const match = codeEl.data?.meta.match(EVENT_META_REGEX);
 
               if (match) {
                 node.__event__ = match ? match[1] : null;
-                codeEl.data.meta = codeEl.data.meta.replace(regex, '');
+                codeEl.data.meta = codeEl.data.meta.replace(
+                  EVENT_META_REGEX,
+                  ''
+                );
               }
             }
 

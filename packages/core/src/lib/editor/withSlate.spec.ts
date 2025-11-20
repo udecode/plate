@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-conditional-expect */
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { type Value, createEditor } from '@platejs/slate';
 

@@ -1,6 +1,5 @@
-import type { SelectionMoveOptions } from 'slate/dist/interfaces/transforms/selection';
-
 import { move } from 'slate';
+import type { SelectionMoveOptions } from 'slate/dist/interfaces/transforms/selection';
 
 import type { Editor } from '../../interfaces';
 

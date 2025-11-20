@@ -12,9 +12,8 @@ export const withHistoryMark = (editor: PlateEditor, fn: () => void) => {
   historyMarks.set(editor, prev);
 };
 
-export const isHistoryMarking = (editor: PlateEditor): boolean => {
-  return historyMarks.get(editor) ?? false;
-};
+export const isHistoryMarking = (editor: PlateEditor): boolean =>
+  historyMarks.get(editor) ?? false;
 
 export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
   const index = editor.history.undos.findLastIndex(

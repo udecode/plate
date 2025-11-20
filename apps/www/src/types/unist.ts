@@ -1,11 +1,11 @@
 import type { Node } from 'unist';
 
-export interface NpmCommands {
+export type NpmCommands = {
   __bunCommand__?: string;
   __npmCommand__?: string;
   __pnpmCommand__?: string;
   __yarnCommand__?: string;
-}
+};
 
 export interface UnistNode extends Node {
   type: string;

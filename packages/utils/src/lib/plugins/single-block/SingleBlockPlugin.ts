@@ -17,7 +17,7 @@ export const SingleBlockPlugin = createSlatePlugin({
     },
 
     normalizeNode(entry) {
-      const [node, path] = entry;
+      const [_node, path] = entry;
 
       if (path.length === 0 && editor.children.length > 1) {
         editor.tf.withoutNormalizing(() => {

@@ -95,7 +95,7 @@ export function ThemesSwitcher({
                   <div className="size-6 overflow-hidden rounded-sm">
                     <div
                       className={cn(
-                        'grid size-12 -translate-x-1/4 -translate-y-1/4 grid-cols-2 overflow-hidden rounded-md transition-all ease-in-out group-hover:rotate-45',
+                        '-translate-x-1/4 -translate-y-1/4 grid size-12 grid-cols-2 overflow-hidden rounded-md transition-all ease-in-out group-hover:rotate-45',
                         isActive ? 'rotate-45 group-hover:rotate-0' : 'rotate-0'
                       )}
                     >

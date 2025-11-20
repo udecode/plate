@@ -58,13 +58,10 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   .overrideEditor(withSuggestion)
   .extendApi<BaseSuggestionConfig['api']['suggestion']>(
     ({ api, editor, getOption, setOption, type }) => ({
-      dataList: (node: TSuggestionText): TInlineSuggestionData[] => {
-        return Object.keys(node)
-          .filter((key) => {
-            return key.startsWith(`${KEYS.suggestion}_`);
-          })
-          .map((key) => node[key] as TInlineSuggestionData);
-      },
+      dataList: (node: TSuggestionText): TInlineSuggestionData[] =>
+        Object.keys(node)
+          .filter((key) => key.startsWith(`${KEYS.suggestion}_`))
+          .map((key) => node[key] as TInlineSuggestionData),
       isBlockSuggestion: (node): node is TSuggestionElement =>
         ElementApi.isElement(node) &&
         !editor.api.isInline(node) &&
@@ -120,11 +117,8 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
             ...options,
             at,
             mode: 'all',
-            match: (n) => {
-              return (
-                n[type] && (transient ? n[getTransientSuggestionKey()] : true)
-              );
-            },
+            match: (n) =>
+              n[type] && (transient ? n[getTransientSuggestionKey()] : true),
           }),
         ];
       },

@@ -1,4 +1,3 @@
-/* eslint-disable perfectionist/sort-imports */
 import type { AnyPluginConfig, PluginConfig } from '../plugin/BasePlugin';
 import type { SlatePlugin } from '../plugin/SlatePlugin';
 

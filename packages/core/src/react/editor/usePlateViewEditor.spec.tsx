@@ -202,9 +202,7 @@ describe('usePlateViewEditor', () => {
     });
 
     it('should create editor on remount', () => {
-      const { rerender, result, unmount } = renderHook(() =>
-        usePlateViewEditor()
-      );
+      const { result, unmount } = renderHook(() => usePlateViewEditor());
 
       const firstEditor = result.current;
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(1);
@@ -228,7 +226,6 @@ describe('usePlateViewEditor', () => {
       );
       // Should not be null
       if (enabledTrue.current) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(enabledTrue.current.id).toBeDefined();
       }
 
@@ -243,7 +240,6 @@ describe('usePlateViewEditor', () => {
       );
       // Should not be null
       if (enabledUndefined.current) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(enabledUndefined.current.id).toBeDefined();
       }
     });

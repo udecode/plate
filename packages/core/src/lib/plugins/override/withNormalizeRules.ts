@@ -23,8 +23,8 @@ export const withNormalizeRules: OverrideEditor = (ctx) => {
         overridePlugin.rules?.normalize &&
         overridePlugin.rules?.match?.({
           ...ctx,
-          node: node,
-          path: path,
+          node,
+          path,
           rule: rule as any,
         })
       ) {

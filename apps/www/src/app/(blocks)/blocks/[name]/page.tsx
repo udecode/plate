@@ -9,9 +9,9 @@ import { getAllBlocks } from '@/lib/blocks';
 import { getRegistryComponent, getRegistryItem } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
-const getCachedRegistryItem = React.cache(async (name: string) => {
-  return await getRegistryItem(name, true);
-});
+const getCachedRegistryItem = React.cache(
+  async (name: string) => await getRegistryItem(name, true)
+);
 
 export async function generateMetadata({
   params,
@@ -78,6 +78,7 @@ export default async function BlockPage({
         item.meta?.containerClassName ?? 'size-full'
       )}
     >
+      {/* eslint-disable-next-line react-hooks/static-components -- Dynamic block component loading is intentional */}
       <Component />
     </div>
   );

@@ -38,9 +38,11 @@
   "scripts": {
     "build": "yarn tsup",
     "build:watch": "yarn tsup --watch",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
     "clean": "yarn p:clean",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
     "@antfu/ni": "24.3.0",

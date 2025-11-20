@@ -20,46 +20,44 @@ const CodeBlock: FC<{
   fixedHeight?: boolean;
   name?: string;
   npm?: boolean;
-}> = memo(({ className, fixedHeight, language, npm, value }) => {
-  return (
-    <div className={cn('relative', className)}>
-      {npm ? (
-        <CopyNpmCommandButton
-          className="absolute top-4 right-4"
-          commands={{
-            __bunCommand__: 'bun add ' + value,
-            __npmCommand__: 'npm install ' + value,
-            __pnpmCommand__: 'pnpm add ' + value,
-            __yarnCommand__: 'yarn add ' + value,
-          }}
-        />
-      ) : (
-        <CopyButton className="absolute top-4 right-4" value={value} />
-      )}
-
-      <SyntaxHighlighter
-        className={cn(
-          'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border bg-zinc-950! font-sans dark:bg-zinc-900!',
-          fixedHeight && 'h-[650px]'
-        )}
-        style={customSyntaxHighlighterTheme as any}
-        codeTagProps={{
-          style: {
-            fontFamily:
-              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-            fontSize: '0.9rem',
-            textShadow: 'none',
-          },
+}> = memo(({ className, fixedHeight, language, npm, value }) => (
+  <div className={cn('relative', className)}>
+    {npm ? (
+      <CopyNpmCommandButton
+        className="absolute top-4 right-4"
+        commands={{
+          __bunCommand__: `bun add ${value}`,
+          __npmCommand__: `npm install ${value}`,
+          __pnpmCommand__: `pnpm add ${value}`,
+          __yarnCommand__: `yarn add ${value}`,
         }}
-        language={npm ? 'bash' : language}
-        PreTag="div"
-        showLineNumbers={false}
-      >
-        {npm ? 'npm install ' + value : value}
-      </SyntaxHighlighter>
-    </div>
-  );
-});
+      />
+    ) : (
+      <CopyButton className="absolute top-4 right-4" value={value} />
+    )}
+
+    <SyntaxHighlighter
+      className={cn(
+        'codeblock relative max-h-[650px] w-full overflow-auto rounded-lg border bg-zinc-950! font-sans dark:bg-zinc-900!',
+        fixedHeight && 'h-[650px]'
+      )}
+      style={customSyntaxHighlighterTheme as any}
+      codeTagProps={{
+        style: {
+          fontFamily:
+            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '0.9rem',
+          textShadow: 'none',
+        },
+      }}
+      language={npm ? 'bash' : language}
+      PreTag="div"
+      showLineNumbers={false}
+    >
+      {npm ? `npm install ${value}` : value}
+    </SyntaxHighlighter>
+  </div>
+));
 CodeBlock.displayName = 'CodeBlock';
 
 export { CodeBlock };

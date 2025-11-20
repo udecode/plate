@@ -15,12 +15,12 @@ export type DebugErrorType =
 export type LogLevel = 'error' | 'info' | 'log' | 'warn';
 
 export class PlateError extends Error {
-  constructor(
-    message: string,
-    public type: DebugErrorType = 'DEFAULT'
-  ) {
+  type: DebugErrorType;
+
+  constructor(message: string, type: DebugErrorType = 'DEFAULT') {
     super(`[${type}] ${message}`);
     this.name = 'PlateError';
+    this.type = type;
   }
 }
 
@@ -34,6 +34,7 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
       info: (message, type, details) =>
         console.info(`${type ? `[${type}] ` : ''}${message}`, details),
       log: (message, type, details) =>
+        // biome-ignore lint/suspicious/noConsole: lib
         console.log(`${type ? `[${type}] ` : ''}${message}`, details),
       warn: (message, type, details) =>
         console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
@@ -59,9 +60,8 @@ export const DebugPlugin = createTSlatePlugin<DebugConfig>({
     if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
       if (level === 'error' && options.throwErrors) {
         throw new PlateError(message, type);
-      } else {
-        options.logger[level]?.(message, type, details);
       }
+      options.logger[level]?.(message, type, details);
     }
   };
 

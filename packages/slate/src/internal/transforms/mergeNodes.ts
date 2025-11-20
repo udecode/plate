@@ -1,15 +1,15 @@
 import {
   type Editor,
-  type MergeNodesOptions,
-  type TElement,
-  type TNode,
-  type TText,
-  type ValueOf,
   ElementApi,
+  type MergeNodesOptions,
   NodeApi,
   PathApi,
   RangeApi,
+  type TElement,
   TextApi,
+  type TNode,
+  type TText,
+  type ValueOf,
 } from '../../interfaces';
 import { getQueryOptions } from '../../utils';
 
@@ -18,27 +18,27 @@ const hasSingleChildNest = (editor: Editor, node: TNode): boolean => {
     const element = node as TElement;
     if (editor.api.isVoid(node)) {
       return true;
-    } else if (element.children.length === 1) {
-      return hasSingleChildNest(editor, element.children[0] as any);
-    } else {
-      return false;
     }
-  } else if (NodeApi.isEditor(node)) {
+    if (element.children.length === 1) {
+      return hasSingleChildNest(editor, element.children[0] as any);
+    }
     return false;
-  } else {
-    return true;
   }
+  if (NodeApi.isEditor(node)) {
+    return false;
+  }
+  return true;
 };
 
 export const mergeNodes = <E extends Editor>(
   editor: E,
   options: MergeNodesOptions<ValueOf<E>, E> = {}
 ): void => {
-  options = getQueryOptions(editor, options);
+  const _options = getQueryOptions(editor, options);
 
   editor.tf.withoutNormalizing(() => {
-    let { at = editor.selection!, match } = options;
-    const { hanging = false, mode = 'lowest', voids = false } = options;
+    let { at = editor.selection!, match } = _options;
+    const { hanging = false, mode = 'lowest', voids = false } = _options;
 
     if (!at) {
       return;
@@ -47,9 +47,9 @@ export const mergeNodes = <E extends Editor>(
     if (match == null) {
       if (PathApi.isPath(at)) {
         const [parent] = editor.api.parent(at)!;
-        match = (n) => parent.children.includes(n as any);
+        match = (n: TNode) => parent.children.includes(n as any);
       } else {
-        match = (n) => ElementApi.isElement(n) && editor.api.isBlock(n);
+        match = (n: TNode) => ElementApi.isElement(n) && editor.api.isBlock(n);
       }
     }
 
@@ -66,7 +66,7 @@ export const mergeNodes = <E extends Editor>(
         editor.tf.delete({ at });
         at = pointRef.unref()!;
 
-        if (options.at == null) {
+        if (_options.at == null) {
           editor.tf.select(at);
         }
       }
@@ -106,8 +106,8 @@ export const mergeNodes = <E extends Editor>(
     });
 
     const emptyRef = emptyAncestor && editor.api.pathRef(emptyAncestor[1]);
-    let properties;
-    let position;
+    let properties: Partial<TText> | Partial<TElement>;
+    let position: number;
 
     // Ensure that the nodes are equivalent, and figure out what the position
     // and extra properties of the merge will be.
@@ -130,7 +130,7 @@ export const mergeNodes = <E extends Editor>(
     // !PATCH: shouldMergeNodes
     if (
       !editor.api.shouldMergeNodes(prev, current, {
-        reverse: options.reverse,
+        reverse: _options.reverse,
       })
     ) {
       return;

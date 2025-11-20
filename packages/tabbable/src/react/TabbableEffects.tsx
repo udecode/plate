@@ -64,7 +64,7 @@ export function TabbableEffects() {
         .map((domNode) => {
           const slateNode = editor.api.toSlateNode(domNode);
 
-          if (!slateNode) return;
+          if (!slateNode) return null;
 
           return {
             domNode,

@@ -191,9 +191,7 @@ describe('extendEditorApi method', () => {
           const api = editor.getApi(testPlugin);
 
           return {
-            method4: () => {
-              return api.method3();
-            },
+            method4: () => api.method3(),
           };
         }),
       ],

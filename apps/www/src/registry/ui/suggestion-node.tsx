@@ -120,9 +120,9 @@ function SuggestionLineBreakContent({
   const { setOption } = useEditorPlugin(suggestionPlugin);
 
   return (
-    <React.Fragment>
+    <>
       {isLineBreak ? (
-        <React.Fragment>
+        <>
           {children}
           <span
             ref={spanRef}
@@ -142,7 +142,7 @@ function SuggestionLineBreakContent({
           >
             <CornerDownLeftIcon className="mt-0.5 size-4" />
           </span>
-        </React.Fragment>
+        </>
       ) : (
         <div
           className={cn(
@@ -159,6 +159,6 @@ function SuggestionLineBreakContent({
           {children}
         </div>
       )}
-    </React.Fragment>
+    </>
   );
 }

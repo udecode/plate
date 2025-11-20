@@ -137,6 +137,5 @@ export const createPlateEditor = <
 >({
   editor = createEditor(),
   ...options
-}: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> => {
-  return withPlate<V, P>(editor, options);
-};
+}: CreatePlateEditorOptions<V, P> = {}): TPlateEditor<V, InferPlugins<P[]>> =>
+  withPlate<V, P>(editor, options);

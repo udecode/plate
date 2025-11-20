@@ -219,7 +219,6 @@ describe('withStatic', () => {
       const customIndex = pluginKeys.indexOf('custom');
 
       if (viewPluginIndex !== -1 && customIndex !== -1) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(viewPluginIndex).toBeLessThan(customIndex);
       }
     });

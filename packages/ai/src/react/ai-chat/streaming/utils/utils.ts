@@ -10,9 +10,8 @@ export const getChunkTrimmed = (
 
   if (direction === 'right') {
     return chunk.slice(str.length);
-  } else {
-    return chunk.slice(0, chunk.length - str.length);
   }
+  return chunk.slice(0, chunk.length - str.length);
 };
 
 export function isCompleteCodeBlock(str: string) {

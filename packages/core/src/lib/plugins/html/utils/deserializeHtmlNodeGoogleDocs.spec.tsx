@@ -50,7 +50,7 @@ describe('deserializeHtml - Google Docs', () => {
   it('should preserve BR tags within paragraphs', () => {
     const editor = createPlateEditor({ plugins: [] });
 
-    const html = `<p>Line 1<br />Line 2</p>`;
+    const html = '<p>Line 1<br />Line 2</p>';
     const element = getHtmlDocument(html).body;
 
     const output = (
@@ -111,7 +111,7 @@ describe('deserializeHtml - Google Docs', () => {
   it('should preserve BR tags within paragraphs as separate text nodes', () => {
     const editor = createPlateEditor({ plugins: [] });
 
-    const html = `<p><span>Hello</span><br /><span>World</span></p>`;
+    const html = '<p><span>Hello</span><br /><span>World</span></p>';
     const element = getHtmlDocument(html).body;
 
     const result = deserializeHtml(editor, { element });

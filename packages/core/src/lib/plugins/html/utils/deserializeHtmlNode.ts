@@ -11,7 +11,7 @@ import { inlineTagNames } from './inlineTagNames';
 import { isHtmlElement } from './isHtmlElement';
 
 /** Check if an element is a block-level element. */
-const isBlockElement = (element: Element | null): boolean => {
+const _isBlockElement = (element: Element | null): boolean => {
   if (!element) return false;
 
   return !inlineTagNames.has(element.tagName);

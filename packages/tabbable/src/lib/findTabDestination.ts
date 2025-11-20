@@ -2,11 +2,11 @@ import { type SlateEditor, PathApi } from 'platejs';
 
 import type { TabbableEntry, TabDestination } from './types';
 
-export interface FindTabDestinationOptions {
+export type FindTabDestinationOptions = {
   activeTabbableEntry: TabbableEntry | null;
   direction: 'backward' | 'forward';
   tabbableEntries: TabbableEntry[];
-}
+};
 
 export const findTabDestination = (
   editor: SlateEditor,

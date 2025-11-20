@@ -6,8 +6,4 @@ export const streamDeserializeInlineMd = (
   editor: PlateEditor,
   text: string,
   options?: DeserializeMdOptions
-) => {
-  return editor
-    .getApi(MarkdownPlugin)
-    .markdown.deserializeInline(text, options);
-};
+) => editor.getApi(MarkdownPlugin).markdown.deserializeInline(text, options);

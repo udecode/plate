@@ -221,7 +221,7 @@ describe('expandListItemsWithChildren', () => {
 
   describe('edge cases', () => {
     it('should handle empty input', () => {
-      const editor = createEditor((<editor></editor>) as any as SlateEditor);
+      const editor = createEditor((<editor />) as any as SlateEditor);
 
       const result = expandListItemsWithChildren(editor, []);
 

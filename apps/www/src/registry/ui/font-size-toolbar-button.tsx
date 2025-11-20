@@ -68,7 +68,10 @@ export function FontSizeToolbarButton() {
   const handleInputChange = () => {
     const newSize = toUnitLess(inputValue);
 
-    if (Number.parseInt(newSize) < 1 || Number.parseInt(newSize) > 100) {
+    if (
+      Number.parseInt(newSize, 10) < 1 ||
+      Number.parseInt(newSize, 10) > 100
+    ) {
       editor.tf.focus();
 
       return;

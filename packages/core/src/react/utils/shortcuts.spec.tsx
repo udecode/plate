@@ -113,7 +113,7 @@ describe('extend method with shortcuts', () => {
 
   it('should configure existing shortcuts in a plugin', () => {
     const originalCallback = jest.fn();
-    const newCallback = jest.fn();
+    const _newCallback = jest.fn();
 
     const testPlugin = createPlatePlugin({
       key: 'testPlugin',

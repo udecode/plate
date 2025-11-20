@@ -93,7 +93,7 @@ describe('copySelectedBlocks', () => {
       let stringCallIndex = 0;
       editor.api.string = jest.fn(() => stringResults[stringCallIndex++]);
 
-      mockCopyToClipboard.mockImplementation((text, options) => {
+      mockCopyToClipboard.mockImplementation((_text, options) => {
         if (options?.onCopy) {
           options.onCopy(mockDataTransfer as any);
         }
@@ -187,7 +187,7 @@ describe('copySelectedBlocks', () => {
       let stringCallIndex = 0;
       editor.api.string = jest.fn(() => stringResults[stringCallIndex++]);
 
-      mockCopyToClipboard.mockImplementation((text, options) => {
+      mockCopyToClipboard.mockImplementation((_text, options) => {
         if (options?.onCopy) {
           options.onCopy(mockDataTransfer as any);
         }

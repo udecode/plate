@@ -8,7 +8,7 @@ import {
 
 import { getListTypes } from '../queries/getListTypes';
 
-export interface MergeListItemIntoListOptions {
+export type MergeListItemIntoListOptions = {
   /**
    * Delete `fromListItem` sublist if true.
    *
@@ -31,7 +31,7 @@ export interface MergeListItemIntoListOptions {
 
   /** List position where to move the list items. */
   toListIndex?: number | null;
-}
+};
 
 /**
  * Move the list items of the sublist of `fromListItem` to `toList` (if

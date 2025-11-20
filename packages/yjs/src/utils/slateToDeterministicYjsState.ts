@@ -39,7 +39,6 @@ function arrayBufferToClientId(buffer: ArrayBuffer): number {
   const int32 = dataView.getInt32(0, false); // false for big-endian
   // Take absolute value, modulo 2^31 - 1 to fit in signed 31 bits, and add 1 to ensure non-zero.
   // (2**31 - 1 is 0x7FFFFFFF)
-  // eslint-disable-next-line unicorn/number-literal-case
   return (Math.abs(int32) % 0x7f_ff_ff_ff) + 1;
 }
 

@@ -53,7 +53,7 @@ export function CodeBlockWrapper({
         </CollapsibleContent>
         <div
           className={cn(
-            'absolute flex items-center justify-center bg-linear-to-b from-background/10 to-background to-90% px-2 py-1',
+            'absolute flex items-center justify-center bg-linear-to-b from-background/10 to-90% to-background px-2 py-1',
             isOpened ? 'inset-x-0 bottom-0 h-12 from-gray-900/30' : 'inset-0'
           )}
         >

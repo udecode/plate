@@ -1,4 +1,3 @@
-/* eslint-disable tailwindcss/no-custom-classname,react/button-has-type,jsx-a11y/no-noninteractive-tabindex */
 import React, {
   type DependencyList,
   type JSXElementConstructor,
@@ -17,6 +16,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { HotkeysProvider, Key, useHotkeys } from '..';
 import type {
   FormTags,
   HotkeyCallback,
@@ -24,13 +24,10 @@ import type {
   Options,
 } from '../internal/types';
 
-import { HotkeysProvider, Key, useHotkeys } from '..';
-
 const wrapper =
   (
     initialScopes: string[]
   ): JSXElementConstructor<{ children: ReactElement<any> }> =>
-  // eslint-disable-next-line react/display-name
   ({ children }: { children?: ReactNode }) => (
     <HotkeysProvider initiallyActiveScopes={initialScopes}>
       {children}
@@ -609,7 +606,7 @@ it("should ignore event when ignoreEventWhen's condition matches", async () => {
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button data-testid="test-button" className="ignore" />;
+    return <button className="ignore" data-testid="test-button" />;
   };
 
   const eventCondition = (e: KeyboardEvent) => {
@@ -644,7 +641,7 @@ it("shouldn't ignore event when ignoreEventWhen's condition doesn't match", asyn
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button data-testid="test-button" className="dont-ignore" />;
+    return <button className="dont-ignore" data-testid="test-button" />;
   };
 
   const eventCondition = (e: KeyboardEvent) => {
@@ -679,7 +676,7 @@ it('should call ignoreEventWhen callback only when event is a hotkey match', asy
   }) => {
     useHotkeys<HTMLDivElement>('a', cb, { ignoreEventWhen });
 
-    return <button data-testid="test-button" className="ignore" />;
+    return <button className="ignore" data-testid="test-button" />;
   };
 
   const { getByTestId } = render(
@@ -1298,27 +1295,35 @@ it.each([
   expect(callback).toHaveBeenCalledTimes(1);
 });
 
-it.each(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])(
-  `Should listen to number key %s`,
-  async (key) => {
-    const user = userEvent.setup();
-    const callback = jest.fn();
+it.each([
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+])('Should listen to number key %s', async (key) => {
+  const user = userEvent.setup();
+  const callback = jest.fn();
 
-    renderHook(() => useHotkeys(`shift+${key}`, callback));
+  renderHook(() => useHotkeys(`shift+${key}`, callback));
 
-    await user.keyboard(`{Shift>}${key}{/Shift}`);
+  await user.keyboard(`{Shift>}${key}{/Shift}`);
 
-    expect(callback).toHaveBeenCalledTimes(1);
-  }
-);
+  expect(callback).toHaveBeenCalledTimes(1);
+});
 
 it('should not call callback if meta is held down but other key is not present in combination is pressed', async () => {
   const user = userEvent.setup();
   const callback = jest.fn();
 
-  renderHook(() => useHotkeys(`meta+z`, callback));
+  renderHook(() => useHotkeys('meta+z', callback));
 
-  await user.keyboard(`{Meta>}Z`);
+  await user.keyboard('{Meta>}Z');
 
   expect(callback).toHaveBeenCalledTimes(1);
 
@@ -1441,27 +1446,30 @@ it('Should trigger only callback for combination', async () => {
     }
   };
 
-  renderHook(() => useHotkeys([`meta+z`, `z`], handleHotkey));
+  renderHook(() => useHotkeys(['meta+z', 'z'], handleHotkey));
 
-  await user.keyboard(`{Meta>}Z`);
+  await user.keyboard('{Meta>}Z');
 
   expect(combinationsCallback).toHaveBeenCalledTimes(1);
   expect(keysCallback).toHaveBeenCalledTimes(0);
 });
 
-it.each(['Shift', 'Alt', 'Meta', 'Ctrl', 'Control'])(
-  'Should listen to %s on keyup',
-  async (key) => {
-    const user = userEvent.setup();
-    const callback = jest.fn();
+it.each([
+  'Shift',
+  'Alt',
+  'Meta',
+  'Ctrl',
+  'Control',
+])('Should listen to %s on keyup', async (key) => {
+  const user = userEvent.setup();
+  const callback = jest.fn();
 
-    renderHook(() => useHotkeys(key, callback, { keyup: true }));
+  renderHook(() => useHotkeys(key, callback, { keyup: true }));
 
-    await user.keyboard(`{${key === 'Ctrl' ? 'Control' : key}}`);
+  await user.keyboard(`{${key === 'Ctrl' ? 'Control' : key}}`);
 
-    expect(callback).toHaveBeenCalledTimes(1);
-  }
-);
+  expect(callback).toHaveBeenCalledTimes(1);
+});
 
 it('Should listen to produced key and not to code', async () => {
   const user = userEvent.setup();
@@ -1469,13 +1477,13 @@ it('Should listen to produced key and not to code', async () => {
 
   renderHook(() => useHotkeys('!', callback));
 
-  await user.keyboard(`{Shift>}{!}{/Shift}`);
+  await user.keyboard('{Shift>}{!}{/Shift}');
 
   expect(callback).toHaveBeenCalledTimes(0);
 
   renderHook(() => useHotkeys('shift+1', callback));
 
-  await user.keyboard(`{Shift>}{1}{/Shift}`);
+  await user.keyboard('{Shift>}{1}{/Shift}');
 
   expect(callback).toHaveBeenCalledTimes(1);
 });
@@ -1484,9 +1492,9 @@ it('Should not check produced key if useKey is not set', async () => {
   const user = userEvent.setup();
   const callback = jest.fn();
 
-  renderHook(() => useHotkeys(`=`, callback));
+  renderHook(() => useHotkeys('=', callback));
 
-  await user.keyboard(`=`);
+  await user.keyboard('=');
 
   expect(callback).toHaveBeenCalledTimes(0);
 });
@@ -1495,9 +1503,9 @@ it('Should check produced key if useKey is true', async () => {
   const user = userEvent.setup();
   const callback = jest.fn();
 
-  renderHook(() => useHotkeys(`=`, callback, { useKey: true }));
+  renderHook(() => useHotkeys('=', callback, { useKey: true }));
 
-  await user.keyboard(`=`);
+  await user.keyboard('=');
 
   expect(callback).toHaveBeenCalledTimes(1);
 });

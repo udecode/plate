@@ -1,4 +1,4 @@
-import { type TElement, createEditor as makeEditor } from '@platejs/slate';
+import { createEditor as makeEditor, type TElement } from '@platejs/slate';
 
 import {
   createAnchor,
@@ -79,9 +79,12 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
     attributes?: object,
     ...children: any[]
   ): ReturnType<T[S]> => {
-    for (const key in attributes) {
+    let attrs = attributes;
+    let kids = children;
+
+    for (const key in attrs) {
       if (key.startsWith('__')) {
-        delete (attributes as any)[key];
+        delete (attrs as any)[key];
       }
     }
 
@@ -90,16 +93,16 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
     if (!creator) {
       throw new Error(`No hyperscript creator found for tag: <${tagName}>`);
     }
-    if (attributes == null) {
-      attributes = {};
+    if (attrs == null) {
+      attrs = {};
     }
-    if (!isPlainObject(attributes)) {
-      children = [attributes].concat(children);
-      attributes = {};
+    if (!isPlainObject(attrs)) {
+      kids = [attrs].concat(kids);
+      attrs = {};
     }
 
-    children = children.filter(Boolean).flat();
-    const ret = creator(tagName, attributes, children);
+    kids = kids.filter(Boolean).flat();
+    const ret = creator(tagName, attrs, kids);
 
     return ret;
   };
@@ -113,6 +116,10 @@ const normalizeElements = (elements: HyperscriptShorthands) => {
   const creators: HyperscriptCreators<TElement> = {};
 
   for (const tagName in elements) {
+    if (!Object.hasOwn(elements, tagName)) {
+      continue;
+    }
+
     const props = elements[tagName];
 
     if (typeof props !== 'object') {
@@ -122,7 +129,7 @@ const normalizeElements = (elements: HyperscriptShorthands) => {
     }
 
     creators[tagName] = (
-      tagName: string,
+      _tagName: string,
       attributes: Record<string, any>,
       children: any[]
     ) => {

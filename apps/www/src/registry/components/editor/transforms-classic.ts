@@ -134,10 +134,10 @@ export const setBlockType = (
 
     const entries = editor.api.blocks({ mode: 'lowest' });
 
-    entries.forEach((entry) => setEntry(entry));
+    entries.forEach((entry) => {
+      setEntry(entry);
+    });
   });
 };
 
-export const getBlockType = (block: TElement) => {
-  return block.type;
-};
+export const getBlockType = (block: TElement) => block.type;

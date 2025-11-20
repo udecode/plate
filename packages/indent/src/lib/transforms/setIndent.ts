@@ -2,7 +2,7 @@ import type { AnyObject, EditorNodesOptions, SlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
-export interface SetIndentOptions {
+export type SetIndentOptions = {
   /** GetNodeEntries options */
   getNodesOptions?: EditorNodesOptions;
 
@@ -18,7 +18,7 @@ export interface SetIndentOptions {
 
   /** Nodes props to unset when indent = 0. */
   unsetNodesProps?: string[];
-}
+};
 
 /** Add offset to the indentation of the selected blocks. */
 export const setIndent = (

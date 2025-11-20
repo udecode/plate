@@ -9,7 +9,8 @@ export const useCaptionString = () => {
   const { caption: nodeCaption = [{ children: [{ text: '' }] }] } =
     useElement<TCaptionElement>();
 
-  return React.useMemo(() => {
-    return NodeApi.string(nodeCaption[0] as any) || '';
-  }, [nodeCaption]);
+  return React.useMemo(
+    () => NodeApi.string(nodeCaption[0] as any) || '',
+    [nodeCaption]
+  );
 };

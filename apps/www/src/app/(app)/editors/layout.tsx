@@ -40,7 +40,7 @@ export default function BlocksLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative container">
+    <div className="container relative">
       <Suspense fallback={null}>
         <EditorDescription />
       </Suspense>

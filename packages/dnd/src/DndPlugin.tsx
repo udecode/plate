@@ -66,9 +66,7 @@ export const DndPlugin = createTPlatePlugin<DndConfig>({
       editor.setOption(plugin, 'isDragging', true);
       editor.setOption(plugin, '_isOver', true);
     },
-    onDrop: ({ getOptions, setOption }) => {
-      return getOptions().isDragging;
-    },
+    onDrop: ({ getOptions }) => getOptions().isDragging,
     onFocus: ({ editor, plugin }) => {
       editor.setOption(plugin, 'isDragging', false);
       editor.setOption(plugin, 'dropTarget', { id: null, line: '' });

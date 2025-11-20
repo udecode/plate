@@ -11,8 +11,8 @@ import type { unistLib } from '../types';
 export const wrapWithBlockId = (
   mdastNode: unistLib.Node,
   nodeId: string
-): unistLib.Node => {
-  return {
+): unistLib.Node =>
+  ({
     attributes: [
       {
         name: 'id',
@@ -26,5 +26,4 @@ export const wrapWithBlockId = (
     },
     name: 'block',
     type: 'mdxJsxFlowElement',
-  } as any;
-};
+  }) as any;

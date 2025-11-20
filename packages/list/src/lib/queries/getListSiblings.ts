@@ -39,7 +39,7 @@ export const getListSiblings = <
 
   const node = entry[0] as TElement;
 
-  if (!node[KEYS.listType] && !node.hasOwnProperty(KEYS.listChecked)) {
+  if (!node[KEYS.listType] && !Object.hasOwn(node, KEYS.listChecked)) {
     return siblings;
   }
 

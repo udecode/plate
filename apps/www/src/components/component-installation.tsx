@@ -14,7 +14,7 @@ import { ComponentPreview } from './component-preview';
 import { H2, H3, Step, Steps } from './typography';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
-interface ComponentInstallationProps {
+type ComponentInstallationProps = {
   __dependencies__?: string;
   __highlightedFiles__?: string;
   __item__?: string;
@@ -29,7 +29,7 @@ interface ComponentInstallationProps {
   name?: string;
   tree?: any;
   usage?: string[];
-}
+};
 
 export function ComponentInstallation({
   __dependencies__: __registryDependencies__ = '[]',
@@ -47,18 +47,11 @@ export function ComponentInstallation({
   const dependencies =
     props.dependencies ?? JSON.parse(__registryDependencies__) ?? [];
 
-  const item = React.useMemo(
-    () => props.item ?? JSON.parse(__itemProp__),
-    [__itemProp__, props.item]
-  );
-  const highlightedFiles = React.useMemo(
-    () => props.highlightedFiles ?? JSON.parse(__highlightedFilesProp__),
-    [__highlightedFilesProp__, props.highlightedFiles]
-  );
-  const tree = React.useMemo(
-    () => props.tree ?? JSON.parse(__treeProp__),
-    [__treeProp__, props.tree]
-  );
+  // Let React Compiler optimize these - no manual memoization needed
+  const item = props.item ?? JSON.parse(__itemProp__);
+  const highlightedFiles =
+    props.highlightedFiles ?? JSON.parse(__highlightedFilesProp__);
+  const tree = props.tree ?? JSON.parse(__treeProp__);
 
   const dependenciesString = dependencies.join(' ');
 

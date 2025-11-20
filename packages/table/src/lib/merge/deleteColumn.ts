@@ -49,18 +49,16 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     const rowNumber = table.children.length;
     const affectedCellsSet = new Set();
     // iterating by rows is important here to keep the order of affected cells
-    Array.from({ length: rowNumber }, (_, i) => i).forEach((rI) => {
-      return Array.from({ length: colsDeleteNumber }, (_, i) => i).forEach(
-        (cI) => {
-          const colIndex = deletingColIndex + cI;
-          const found = findCellByIndexes(editor, table, rI, colIndex);
+    for (const rI of Array.from({ length: rowNumber }, (_, i) => i)) {
+      for (const cI of Array.from({ length: colsDeleteNumber }, (_, i) => i)) {
+        const colIndex = deletingColIndex + cI;
+        const found = findCellByIndexes(editor, table, rI, colIndex);
 
-          if (found) {
-            affectedCellsSet.add(found);
-          }
+        if (found) {
+          affectedCellsSet.add(found);
         }
-      );
-    });
+      }
+    }
     const affectedCells = Array.from(affectedCellsSet) as TTableCellElement[];
 
     const { squizeColSpanCells } = affectedCells.reduce<{

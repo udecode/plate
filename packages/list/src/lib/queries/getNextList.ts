@@ -14,8 +14,8 @@ export const getNextList = <N extends ElementOf<E>, E extends Editor = Editor>(
   editor: E,
   entry: ElementEntryOf<E>,
   options?: Partial<GetSiblingListOptions<N, E>>
-): NodeEntry<N> | undefined => {
-  return getSiblingList(editor, entry, {
+): NodeEntry<N> | undefined =>
+  getSiblingList(editor, entry, {
     getNextEntry: ([, currPath]) => {
       const nextPath = PathApi.next(currPath);
       const nextNode = NodeApi.get<N>(editor, nextPath);
@@ -27,4 +27,3 @@ export const getNextList = <N extends ElementOf<E>, E extends Editor = Editor>(
     ...options,
     getPreviousEntry: undefined,
   });
-};

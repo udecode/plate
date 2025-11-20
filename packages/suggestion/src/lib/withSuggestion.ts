@@ -71,19 +71,18 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         );
 
         return;
-      } else {
-        // remove line break when across blocks
-        if (pointTarget) {
-          const isCrossBlock = editor.api.isAt({
-            at: { anchor: selection.anchor, focus: pointTarget },
-            blocks: true,
-          });
+      }
+      // remove line break when across blocks
+      if (pointTarget) {
+        const isCrossBlock = editor.api.isAt({
+          at: { anchor: selection.anchor, focus: pointTarget },
+          blocks: true,
+        });
 
-          if (isCrossBlock) {
-            editor.tf.unsetNodes([KEYS.suggestion], {
-              at: pointTarget,
-            });
-          }
+        if (isCrossBlock) {
+          editor.tf.unsetNodes([KEYS.suggestion], {
+            at: pointTarget,
+          });
         }
       }
 
@@ -176,17 +175,15 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
           return;
         }
 
-        const suggestionNodes = nodesArray.map((node) => {
-          return {
-            ...node,
-            [KEYS.suggestion]: {
-              id: nanoid(),
-              createdAt: Date.now(),
-              type: 'insert',
-              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
-            },
-          };
-        });
+        const suggestionNodes = nodesArray.map((node) => ({
+          ...node,
+          [KEYS.suggestion]: {
+            id: nanoid(),
+            createdAt: Date.now(),
+            type: 'insert',
+            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+          },
+        }));
 
         return insertNodes(suggestionNodes, options);
       }

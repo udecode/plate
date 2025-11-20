@@ -1,14 +1,16 @@
 import {
   type DeleteTextOptions,
   type Editor,
+  ElementApi,
   type NodeEntry,
   type Path,
-  ElementApi,
   PathApi,
   PointApi,
   RangeApi,
 } from '../../interfaces';
 import { getAt } from '../../utils';
+
+const THAI_SCRIPT_REGEX = /[\u0E00-\u0E7F]+/;
 
 export const deleteText = <E extends Editor>(
   editor: E,
@@ -162,13 +164,14 @@ export const deleteText = <E extends Editor>(
       }
     }
 
-    pathRefs
+    const paths = pathRefs
       .reverse()
       .map((r) => r.unref())
-      .filter((r): r is Path => r !== null)
-      .forEach((p) => {
-        return editor.tf.removeNodes({ at: p, voids });
-      });
+      .filter((r): r is Path => r !== null);
+
+    for (const p of paths) {
+      editor.tf.removeNodes({ at: p, voids });
+    }
 
     if (!endNonEditable) {
       const point = endRef.current!;
@@ -199,7 +202,7 @@ export const deleteText = <E extends Editor>(
       reverse &&
       unit === 'character' &&
       removedText.length > 1 &&
-      /[\u0E00-\u0E7F]+/.exec(removedText)
+      THAI_SCRIPT_REGEX.exec(removedText)
     ) {
       editor.tf.insertText(removedText.slice(0, removedText.length - distance));
     }

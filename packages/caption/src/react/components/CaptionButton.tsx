@@ -12,16 +12,16 @@ export const useCaptionButtonState = () => {
 export const useCaptionButton = ({
   editor,
   element,
-}: ReturnType<typeof useCaptionButtonState>) => {
-  return {
-    props: {
-      onClick: () => {
-        const path = editor.api.findPath(element);
-        editor.setOption(BaseCaptionPlugin, 'visibleId', element.id as string);
-        setTimeout(() => {
-          path && editor.setOption(BaseCaptionPlugin, 'focusEndPath', path);
-        }, 0);
-      },
+}: ReturnType<typeof useCaptionButtonState>) => ({
+  props: {
+    onClick: () => {
+      const path = editor.api.findPath(element);
+      editor.setOption(BaseCaptionPlugin, 'visibleId', element.id as string);
+      setTimeout(() => {
+        if (path) {
+          editor.setOption(BaseCaptionPlugin, 'focusEndPath', path);
+        }
+      }, 0);
     },
-  };
-};
+  },
+});

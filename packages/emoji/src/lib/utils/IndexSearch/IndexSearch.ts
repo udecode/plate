@@ -4,19 +4,22 @@ import type { IEmojiLibrary } from '../EmojiLibrary';
 
 import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 
-interface IIndexSearch {
+type IIndexSearch = {
   get: () => Emoji[];
   hasFound: () => boolean;
   search: (input: string) => void;
-}
+};
 
 export abstract class AIndexSearch implements IIndexSearch {
   protected input: string | undefined;
   protected maxResult = EMOJI_MAX_SEARCH_RESULT;
   protected result: string[] = [];
   protected scores = {};
+  protected library: IEmojiLibrary;
 
-  protected constructor(protected library: IEmojiLibrary) {}
+  protected constructor(library: IEmojiLibrary) {
+    this.library = library;
+  }
 
   private createSearchResult(value: string) {
     this.scores = {};
@@ -30,7 +33,9 @@ export abstract class AIndexSearch implements IIndexSearch {
       const emojiId = this.library!.getEmojiId(key);
       this.result.push(emojiId);
 
-      (this.scores as any)[emojiId] || ((this.scores as any)[emojiId] = 0);
+      if (!(this.scores as any)[emojiId]) {
+        (this.scores as any)[emojiId] = 0;
+      }
       (this.scores as any)[emojiId] += emojiId === value ? 0 : score + 1;
     }
   }
@@ -48,13 +53,15 @@ export abstract class AIndexSearch implements IIndexSearch {
     });
   }
 
-  get() {
-    const emojis = [];
+  get(): Emoji[] {
+    const emojis: Emoji[] = [];
 
     for (const key of this.result) {
       const emoji = this.library?.getEmoji(key);
-      emojis.push(emoji);
 
+      if (emoji) {
+        emojis.push(emoji);
+      }
       if (emojis.length >= this.maxResult) break;
     }
 

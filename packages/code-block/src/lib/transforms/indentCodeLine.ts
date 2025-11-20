@@ -1,10 +1,12 @@
 import type { Editor, ElementEntry } from 'platejs';
 
-export interface IndentCodeLineOptions {
+const nonWhitespaceRegex = /\S/;
+
+export type IndentCodeLineOptions = {
   codeBlock: ElementEntry;
   codeLine: ElementEntry;
   indentDepth?: number;
-}
+};
 
 /**
  * Indent if:
@@ -26,7 +28,7 @@ export const indentCodeLine = (
     const range = editor.api.range(codeLineStart, cursor);
     const text = editor.api.string(range);
 
-    if (/\S/.test(text)) {
+    if (nonWhitespaceRegex.test(text)) {
       editor.tf.insertText(indent, { at: editor.selection! });
 
       return;

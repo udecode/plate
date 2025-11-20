@@ -10,14 +10,13 @@ export const getListNode = (editor: PlateEditor, node: TElement): TElement => {
     // if previous node is also an indent list, don't need to do additional work
     if (previousNode?.listStyleType && previousNode?.listStart) {
       return node;
-    } else {
-      if (node.listStart === 1) return node;
-
-      return {
-        ...node,
-        listRestartPolite: node.listStart,
-      };
     }
+    if (node.listStart === 1) return node;
+
+    return {
+      ...node,
+      listRestartPolite: node.listStart,
+    };
   }
 
   return node;

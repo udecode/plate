@@ -217,9 +217,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     merge: {
       removeEmpty: false,
     },
-    match: ({ node }) => {
-      return isDefined(node[KEYS.listType]);
-    },
+    match: ({ node }) => isDefined(node[KEYS.listType]),
   },
 }).overrideEditor(withList);
 

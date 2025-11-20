@@ -5,7 +5,9 @@ import { someTodoList } from '../../lib/queries/someTodoList';
 
 export const useIndentTodoToolBarButtonState = ({
   nodeType = ListStyleType.Disc,
-}: { nodeType?: string } = {}) => {
+}: {
+  nodeType?: string;
+} = {}) => {
   const pressed = useEditorSelector(
     (editor) => someTodoList(editor),
     [nodeType]

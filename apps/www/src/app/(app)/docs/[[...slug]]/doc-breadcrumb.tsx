@@ -63,11 +63,11 @@ export function DocBreadcrumb({
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
-  const flatItems = React.useMemo(() => {
-    return items.flatMap((group) =>
-      group.items ? flattenItems(group.items) : []
-    );
-  }, [items]);
+  const flatItems = React.useMemo(
+    () =>
+      items.flatMap((group) => (group.items ? flattenItems(group.items) : [])),
+    [items]
+  );
 
   const selectedItem = flatItems.find(
     (item) => (item?.value ?? item?.href) === value
@@ -139,7 +139,7 @@ export function DocBreadcrumb({
                             {item.title}
                           </div>
                           {category && item.description && (
-                            <div className="line-clamp-1 text-xs text-muted-foreground">
+                            <div className="line-clamp-1 text-muted-foreground text-xs">
                               {item.description}
                             </div>
                           )}

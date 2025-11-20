@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/ui/fixed-toolbar.tsx",
-      "content": "'use client';\n\nimport { cn } from '@/lib/utils';\n\nimport { Toolbar } from './toolbar';\n\nexport function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {\n  return (\n    <Toolbar\n      {...props}\n      className={cn(\n        'sticky top-0 left-0 z-50 scrollbar-hide w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',\n        props.className\n      )}\n    />\n  );\n}\n",
+      "content": "'use client';\n\nimport { cn } from '@/lib/utils';\n\nimport { Toolbar } from './toolbar';\n\nexport function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {\n  return (\n    <Toolbar\n      {...props}\n      className={cn(\n        'scrollbar-hide sticky top-0 left-0 z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',\n        props.className\n      )}\n    />\n  );\n}\n",
       "type": "registry:ui"
     }
   ],

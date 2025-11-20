@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { renderHook } from '@testing-library/react';
+import React from 'react';
 
 import { composeRefs, useComposedRef } from './useComposedRef';
 
@@ -70,7 +69,7 @@ describe('useComposedRef', () => {
 
   it('should not return a function when no cleanup functions are returned', () => {
     const ref = React.createRef<HTMLDivElement>();
-    const callbackRef = jest.fn((node: HTMLDivElement | null) => {
+    const callbackRef = jest.fn((_node: HTMLDivElement | null) => {
       // Callback ref without cleanup
     });
 
@@ -125,9 +124,11 @@ describe('useComposedRef', () => {
       }
     });
 
-    const callbackRefWithoutCleanup = jest.fn((node: HTMLDivElement | null) => {
-      // No cleanup returned
-    });
+    const callbackRefWithoutCleanup = jest.fn(
+      (_node: HTMLDivElement | null) => {
+        // No cleanup returned
+      }
+    );
 
     const normalRef = React.createRef<HTMLDivElement>();
 

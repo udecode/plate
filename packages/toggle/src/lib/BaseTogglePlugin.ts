@@ -25,9 +25,7 @@ export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
   },
 })
   .extendSelectors<BaseToggleConfig['selectors']>(({ getOptions }) => ({
-    isOpen: (toggleId) => {
-      return getOptions().openIds!.has(toggleId);
-    },
+    isOpen: (toggleId) => getOptions().openIds!.has(toggleId),
     someClosed: (toggleIds) => {
       const { openIds } = getOptions();
 

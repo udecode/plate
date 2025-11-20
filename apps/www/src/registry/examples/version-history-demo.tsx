@@ -66,7 +66,7 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
     updatedProps.push(key);
   });
 
-  const descriptionParts = [];
+  const descriptionParts: string[] = [];
 
   if (addedProps.length > 0) {
     descriptionParts.push(`Added ${addedProps.join(', ')}`);
@@ -85,17 +85,11 @@ const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
   return descriptionParts.join('\n');
 };
 
-const InlineElement = ({ children, ...props }: PlateElementProps) => {
-  return (
-    <PlateElement
-      {...props}
-      as="span"
-      className="rounded-sm bg-slate-200/50 p-1"
-    >
-      {children}
-    </PlateElement>
-  );
-};
+const InlineElement = ({ children, ...props }: PlateElementProps) => (
+  <PlateElement {...props} as="span" className="rounded-sm bg-slate-200/50 p-1">
+    {children}
+  </PlateElement>
+);
 
 const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
   const selected = useSelected();
@@ -162,7 +156,7 @@ const DiffPlugin = toPlatePlugin(
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffOperation = props.leaf.diffOperation as DiffOperation;
 
-  const Component = (
+  const _Component = (
     {
       delete: 'del',
       insert: 'ins',
@@ -234,10 +228,10 @@ function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   );
 }
 
-interface DiffProps {
+type DiffProps = {
   current: Value;
   previous: Value;
-}
+};
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {

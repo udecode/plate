@@ -247,9 +247,7 @@ export const withSlate = <
 
     return nodeProps;
   };
-  editor.getOptionsStore = (plugin) => {
-    return editor.getPlugin(plugin).optionsStore;
-  };
+  editor.getOptionsStore = (plugin) => editor.getPlugin(plugin).optionsStore;
   editor.getOptions = (plugin) => {
     const store = editor.getOptionsStore(plugin);
 
@@ -407,6 +405,4 @@ export const createSlateEditor = <
 >({
   editor = createEditor(),
   ...options
-}: CreateSlateEditorOptions<V, P> = {}) => {
-  return withSlate<V, P>(editor, options);
-};
+}: CreateSlateEditorOptions<V, P> = {}) => withSlate<V, P>(editor, options);

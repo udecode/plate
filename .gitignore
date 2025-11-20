@@ -69,8 +69,10 @@ bower_components
 .settings/
 *.sublime-workspace
 .vscode/*
+!.vscode/settings.json
 
 # Logs
+tracing.json
 logs
 *.log
 npm-debug.log*

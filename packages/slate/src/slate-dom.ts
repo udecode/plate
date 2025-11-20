@@ -1,20 +1,6 @@
-export { withDOM } from 'slate-dom';
-
-export { TRIPLE_CLICK } from 'slate-dom';
-
 export {
-  type StringDiff,
-  type TextDiff,
   applyStringDiff,
-  mergeStringDiffs,
-  normalizePoint,
-  normalizeRange,
-  normalizeStringDiff,
-  targetRange,
-  verifyDiffState,
-} from 'slate-dom';
-
-export {
+  CAN_USE_DOM,
   type DOMElement,
   type DOMNode,
   type DOMPoint,
@@ -25,20 +11,8 @@ export {
   getActiveElement,
   getDefaultView,
   getSelection,
-  hasShadowRoot,
-  isAfter,
-  isBefore,
-  isDOMElement,
-  isDOMNode,
-  isDOMSelection,
-  isPlainTextOnlyPaste,
-  isTrackedMutation,
-  normalizeDOMPoint,
-} from 'slate-dom';
-
-export {
-  CAN_USE_DOM,
   HAS_BEFORE_INPUT_SUPPORT,
+  hasShadowRoot,
   IS_ANDROID,
   IS_CHROME,
   IS_FIREFOX,
@@ -47,6 +21,24 @@ export {
   IS_UC_MOBILE,
   IS_WEBKIT,
   IS_WECHATBROWSER,
+  isAfter,
+  isBefore,
+  isDOMElement,
+  isDOMNode,
+  isDOMSelection,
+  isElementDecorationsEqual,
+  isPlainTextOnlyPaste,
+  isTextDecorationsEqual,
+  isTrackedMutation,
+  mergeStringDiffs,
+  normalizeDOMPoint,
+  normalizePoint,
+  normalizeRange,
+  normalizeStringDiff,
+  type StringDiff,
+  type TextDiff,
+  TRIPLE_CLICK,
+  targetRange,
+  verifyDiffState,
+  withDOM,
 } from 'slate-dom';
-
-export { isElementDecorationsEqual, isTextDecorationsEqual } from 'slate-dom';

@@ -439,7 +439,7 @@ describe('applyPluginOverrides', () => {
             },
           },
           targetPlugins: ['plugin1', 'plugin2'],
-          targetPluginToInject: ({ targetPlugin }) => ({
+          targetPluginToInject: ({ targetPlugin: _targetPlugin }) => ({
             parsers: {
               html: {
                 deserializer: {

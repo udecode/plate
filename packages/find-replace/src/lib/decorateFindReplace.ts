@@ -28,7 +28,11 @@ export const decorateFindReplace: Decorate<FindReplaceConfig> = ({
   let start = 0;
   const matches: number[] = [];
 
-  while ((start = str.indexOf(searchLower, start)) !== -1) {
+  while (true) {
+    start = str.indexOf(searchLower, start);
+
+    if (start === -1) break;
+
     matches.push(start);
     start += searchLower.length;
   }

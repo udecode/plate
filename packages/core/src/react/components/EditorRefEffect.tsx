@@ -36,15 +36,13 @@ export function EditorRefEffect({ id }: { id?: string }) {
 
   return (
     <>
-      {editor.meta.pluginCache.useHooks.map((key) => {
-        return (
-          <EditorRefPluginEffect
-            id={id}
-            key={key}
-            plugin={getPlugin(editor, { key })}
-          />
-        );
-      })}
+      {editor.meta.pluginCache.useHooks.map((key) => (
+        <EditorRefPluginEffect
+          id={id}
+          key={key}
+          plugin={getPlugin(editor, { key })}
+        />
+      ))}
     </>
   );
 }

@@ -14,14 +14,11 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
   // Track connection and sync state
   private _isConnected = false;
   private _isSynced = false;
-  private doc: Y.Doc;
+  private readonly doc: Y.Doc;
 
-  private onConnect?: () => void;
-  private onDisconnect?: () => void;
-  private onError?: (error: Error) => void;
-  private onSyncChange?: (isSynced: boolean) => void;
+  private readonly onSyncChange?: (isSynced: boolean) => void;
   // Create a fallback awareness instance for when provider is null
-  private provider: YWebrtcProvider | null = null;
+  private readonly provider: YWebrtcProvider | null = null;
 
   connect = () => {
     if (this.provider) {
@@ -78,15 +75,12 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
     awareness?: Awareness;
     doc?: Y.Doc;
   } & ProviderEventHandlers) {
-    this.onConnect = onConnect;
-    this.onDisconnect = onDisconnect;
-    this.onError = onError;
     this.onSyncChange = onSyncChange;
 
     this.doc = doc || new Y.Doc();
     try {
       this.provider = new YWebrtcProvider(options.roomName, this.doc, {
-        awareness: awareness,
+        awareness,
         filterBcConns: options.filterBcConns,
         maxConns: options.maxConns,
         password: options.password,
@@ -109,17 +103,15 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
             this._isSynced = true;
             onSyncChange?.(true);
           }
-        } else {
           // Handle disconnection only if it was connected before
-          if (wasConnected) {
-            onDisconnect?.();
+        } else if (wasConnected) {
+          onDisconnect?.();
 
-            // Explicitly set synced to false on disconnect if it was true
-            // This ensures onSyncChange(false) is called reliably
-            if (this._isSynced) {
-              this._isSynced = false;
-              onSyncChange?.(false);
-            }
+          // Explicitly set synced to false on disconnect if it was true
+          // This ensures onSyncChange(false) is called reliably
+          if (this._isSynced) {
+            this._isSynced = false;
+            onSyncChange?.(false);
           }
         }
       });

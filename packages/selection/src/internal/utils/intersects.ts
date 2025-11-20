@@ -4,7 +4,7 @@ export function intersectsScroll(
   a: DOMRect,
   b: DOMRect,
   // TODO
-  _: Intersection = 'touch',
+  _: Intersection,
   container: HTMLElement
 ): boolean {
   const containerRect = container.getBoundingClientRect();

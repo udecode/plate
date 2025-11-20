@@ -11,7 +11,7 @@ export const toggleListSet = (
   [node, _path]: NodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions
 ) => {
-  if (node.hasOwnProperty(KEYS.listChecked) || node[KEYS.listType]) return;
+  if (Object.hasOwn(node, KEYS.listChecked) || node[KEYS.listType]) return;
   if (listStyleType === 'todo') {
     indentTodo(editor as any, {
       listStyleType,

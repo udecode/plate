@@ -1,5 +1,3 @@
-/* eslint-disable perfectionist/sort-object-types */
-
 export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';
@@ -341,6 +339,5 @@ export const mdastToPlate = <T extends StrictMdType>(
  * Get mdast node type from plate element type if the plateType is plate only
  * return the plateType itself.
  */
-export const plateToMdast = <T extends StrictPlateType>(plateType: T) => {
-  return PLATE_TO_MDAST[plateType] ?? plateType;
-};
+export const plateToMdast = <T extends StrictPlateType>(plateType: T) =>
+  PLATE_TO_MDAST[plateType] ?? plateType;

@@ -55,7 +55,7 @@ const trimEndHeading = (
       };
 
       return {
-        trimmedText: trimmedText,
+        trimmedText,
         value: [...value.slice(0, -1), newLastBlock],
       };
     }
@@ -75,7 +75,7 @@ export const streamSerializeMd = (
   let result = '';
 
   result = editor.getApi(MarkdownPlugin).markdown.serialize({
-    value: value,
+    value,
     ...restOptions,
   });
 

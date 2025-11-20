@@ -11,6 +11,4 @@ import type {
 export const some = <E extends Editor = Editor>(
   editor: E,
   options: EditorNodesOptions<ValueOf<E>>
-) => {
-  return !!editor.api.node(options);
-};
+) => !!editor.api.node(options);

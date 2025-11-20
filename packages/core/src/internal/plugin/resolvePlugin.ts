@@ -39,16 +39,16 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
 
     plugin = mergePlugins(plugin, configResult);
 
-    delete (plugin as any).__configuration;
+    (plugin as any).__configuration = undefined;
   }
   // Apply all stored extensions
   if (plugin.__extensions && plugin.__extensions.length > 0) {
-    plugin.__extensions.forEach((extension) => {
+    for (const extension of plugin.__extensions) {
       plugin = mergePlugins(
         plugin,
         extension(getEditorPlugin(editor, plugin as any))
       );
-    });
+    }
     plugin.__extensions = [];
   }
 

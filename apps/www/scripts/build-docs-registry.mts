@@ -19,6 +19,9 @@ const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
 const TARGET = `${TARGET_DIR}/${TARGET_FILE}`;
 
+const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
+const DOCS_PREFIX_REGEX = /^\/docs\//;
+
 async function getFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = await Promise.all(
@@ -26,7 +29,8 @@ async function getFiles(dir: string): Promise<string[]> {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         return getFiles(fullPath);
-      } else if (
+      }
+      if (
         entry.name.endsWith('.mdx') &&
         // Ignore translated docs
         !entry.name.endsWith('.cn.mdx')
@@ -69,7 +73,7 @@ export async function buildDocsRegistry() {
   const docsStructure = transformNavToFumadocs(docsConfig.sidebarNav);
 
   // Create meta.json content
-  const metaContent = {
+  const _metaContent = {
     description: 'Rich-text editor framework',
     pages: ['index', ...Object.keys(docsStructure)],
     root: true,
@@ -107,10 +111,7 @@ export async function buildDocsRegistry() {
       const pathWithoutExt = relativePath.replace('.mdx', '');
 
       // Apply the same (directory) pattern removal as contentlayer
-      const cleanPath = pathWithoutExt.replace(
-        new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-        ''
-      );
+      const cleanPath = pathWithoutExt.replace(DIRECTORY_PATTERN_REGEX, '');
 
       const name = `${cleanPath
         .toLowerCase()
@@ -237,12 +238,9 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
 
     // Map this item's href if it has one
     if (item.href) {
-      const href = item.href.replace(/^\/docs\//, '');
+      const href = item.href.replace(DOCS_PREFIX_REGEX, '');
       // Apply the same (directory) pattern removal as contentlayer
-      const cleanHref = href.replace(
-        new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-        ''
-      );
+      const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
       // Skip get-started section mapping except for installation
       if (
         !fullTitle.startsWith('get-started') ||
@@ -257,12 +255,9 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
       item.items.forEach((subItem) => {
         if (!subItem.href) return;
 
-        const href = subItem.href.replace(/^\/docs\//, '');
+        const href = subItem.href.replace(DOCS_PREFIX_REGEX, '');
         // Apply the same (directory) pattern removal as contentlayer
-        const cleanHref = href.replace(
-          new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
-          ''
-        );
+        const cleanHref = href.replace(DIRECTORY_PATTERN_REGEX, '');
 
         // If subItem has its own items, it's a parent
         if (subItem.items) {
@@ -274,9 +269,9 @@ function buildPathMap(nav: SidebarNavItem[], parentTitle?: string) {
           // Process its children
           subItem.items.forEach((nestedItem) => {
             if (!nestedItem.href) return;
-            const nestedHref = nestedItem.href.replace(/^\/docs\//, '');
+            const nestedHref = nestedItem.href.replace(DOCS_PREFIX_REGEX, '');
             const cleanNestedHref = nestedHref.replace(
-              new RegExp(String.raw`\(([^)]*)\)\/`, 'g'),
+              DIRECTORY_PATTERN_REGEX,
               ''
             );
             pathMap.set(cleanNestedHref, `${fullTitle}/${subTitle}`);
@@ -319,7 +314,7 @@ function transformNavToFumadocs(
   return result;
 }
 
-function generateMetaFiles(
+function _generateMetaFiles(
   nav: SidebarNavItem[],
   parentPath = ''
 ): { content: string; path: string; target: string }[] {

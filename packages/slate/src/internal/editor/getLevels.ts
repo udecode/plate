@@ -10,6 +10,5 @@ import { getQueryOptions } from '../../utils';
 export const getLevels = <N extends NodeOf<E>, E extends Editor = Editor>(
   editor: E,
   options?: EditorLevelsOptions<ValueOf<E>>
-): Generator<NodeEntry<N>, void, undefined> => {
-  return levels(editor as any, getQueryOptions(editor, options)) as any;
-};
+): Generator<NodeEntry<N>, void, undefined> =>
+  levels(editor as any, getQueryOptions(editor, options)) as any;
