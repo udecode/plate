@@ -27,9 +27,9 @@ export function SetupMCPDialog() {
 
   const componentsConfig = `{
   "registries": {
-    "@platejs": "https://platejs.org/r/{name}.json"
+    "@plate": "https://platejs.org/r/{name}.json"
   }
-}`
+}`;
   const claudeCodeConfig = `{
   "mcpServers": {
     "plate": {
@@ -149,9 +149,11 @@ export function SetupMCPDialog() {
               />
             </TabsContent>
             <TabsContent className="mt-0" value="codex">
-              <p>1. Open or create the file <Code>~/.codex/config.toml</Code></p>
-              
-              <p className='mt-2'>2. Add the following configuration:</p>
+              <p>
+                1. Open or create the file <Code>~/.codex/config.toml</Code>
+              </p>
+
+              <p className="mt-2">2. Add the following configuration:</p>
 
               <CodeBlock
                 className="mt-2 overflow-x-auto"
