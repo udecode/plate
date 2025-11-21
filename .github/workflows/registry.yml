@@ -51,7 +51,7 @@ jobs:
           key: packages-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
       - name: 🏗 Build Registry
-        run: bun run r && bun run build:tw
+        run: bun run rt
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4

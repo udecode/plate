@@ -163,9 +163,9 @@ async function buildRegistryJsonFile(items: RegistryItem[] = []) {
 
 async function buildRegistry() {
   return new Promise((resolve, reject) => {
-    const process = exec(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+    const process = exec(`bun run shadcn:${isDev ? 'dev' : 'build'}`);
 
-    console.info(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+    console.info(`bun run shadcn:${isDev ? 'dev' : 'build'}`);
 
     process.on('exit', (code) => {
       if (code === 0) {

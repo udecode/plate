@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "bun build:contentlayer",
-    "build": "bun prebuild && bun r && bun --bun next build --webpack",
+    "build": "bun prebuild && bun rt && bun --bun next build --webpack",
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "bunx tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
@@ -14,7 +14,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --fix",
     "preview": "bun --bun next build && bun --bun next start",
-    "r": "concurrently \"bun build:registry\" \"bun build:tw\"",
+    "rt": "concurrently \"bun build:registry\" \"bun build:tw\"",
     "rc": "concurrently \"contentlayer2 dev\" \"bun --bun next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "rd": "NODE_ENV=development tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
