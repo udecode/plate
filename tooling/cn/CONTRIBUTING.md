@@ -8,7 +8,7 @@
 
 本仓库是一个 monorepo。
 
-- 我们使用 [Bun](https://bun.sh) 和 [`workspaces`](https://bun.sh/docs/install/workspaces) 进行开发。
+- 我们使用 [pnpm](https://pnpm.io) 和 [`workspaces`](https://pnpm.io/workspaces) 进行开发。
 - 我们使用 [tsup](https://tsup.egoist.dev/) 作为我们的构建系统。
 - 我们使用 [changesets](https://github.com/changesets/changesets) 管理发布。
 
@@ -49,13 +49,13 @@ git clone git@github.com:udecode/plate.git
 ### Install
 
 ```bash
-bun install
+pnpm install
 ```
 
 ### Build
 
 ```bash
-bun run build
+pnpm build
 ```
 
 ### 运行工作区
@@ -78,10 +78,10 @@ turbo --filter=@platejs/core build
 
 ## 文档
 
-本项目的文档位于 `www` 工作区中。运行 `bun run build` 后，您可以通过运行以下命令在本地运行文档：
+本项目的文档位于 `www` 工作区中。运行 `pnpm build` 后，您可以通过运行以下命令在本地运行文档：
 
 ```bash
-bun run dev
+pnpm dev
 ```
 
 文档使用 [MDX](https://mdxjs.com) 编写。您可以在 `docs` 目录中找到文档文件。
@@ -90,7 +90,7 @@ bun run dev
 
 ```bash
 turbo --filter=[PACKAGE] build
-bun run dev
+pnpm dev
 ```
 
 ## 组件
@@ -112,9 +112,9 @@ apps
 我们使用 [Biome](https://biomejs.dev/) 作为代码检查器。要运行代码检查器，请使用以下命令：
 
 ```bash
-bun run lint
+pnpm lint
 # autofix with:
-bun run lint:fix
+pnpm lint:fix
 ```
 
 ## 测试
@@ -124,10 +124,10 @@ bun run lint:fix
 测试使用 [Jest](https://jestjs.io/) 编写。您可以从仓库的根目录运行所有测试。
 
 ```bash
-bun run test
+pnpm test
 ```
 
-运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`bun run test`**。
+运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`pnpm test`**。
 
 请确保在提交拉取请求时测试通过。如果您添加新功能，请包含测试。
 
@@ -138,11 +138,11 @@ bun run test
 要安装 Playwright 的浏览器和依赖项，请使用：
 
 ```bash
-bun playwright install # first time
+pnpm playwright install # first time
 ```
 
 To run all tests:
 
 ```bash
-bun run e2e
+pnpm e2e
 ```

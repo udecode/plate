@@ -40,32 +40,32 @@
 
 **Required sequence for type checking modified packages:**
 
-1. `bun install` - Install all dependencies and update lockfile if needed
-2. `bun turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
-3. `bun turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
-4. `bun turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
+1. `pnpm install` - Install all dependencies and update lockfile if needed
+2. `pnpm turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
+3. `pnpm turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
+4. `pnpm turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
 
 **For multiple modified packages:**
 
 ```bash
 # Build multiple specific packages and their dependencies
-bun turbo build --filter=./packages/core --filter=./packages/utils
+pnpm turbo build --filter=./packages/core --filter=./packages/utils
 
 # Typecheck multiple packages
-bun turbo typecheck --filter=./packages/core --filter=./packages/utils
+pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils
 
 # Lint multiple packages
-bun turbo lint:fix --filter=./packages/core --filter=./packages/utils
+pnpm turbo lint:fix --filter=./packages/core --filter=./packages/utils
 ```
 
 **Alternative approaches:**
 
 ```bash
 # Build since last commit (useful for PR changes)
-bun turbo build --filter='[HEAD^1]'
+pnpm turbo build --filter='[HEAD^1]'
 
 # Build all changed packages in current branch
-bun turbo build --filter='...[origin/main]'
+pnpm turbo build --filter='...[origin/main]'
 
 # For workspace-specific operations using Turbo filters
 turbo build --filter=@platejs/core
@@ -79,20 +79,20 @@ turbo dev --filter=www
 
 **Full project commands (use only if needed, these are very slow):**
 
-- `bun run build` - Build all packages (only use when necessary)
+- `pnpm build` - Build all packages (only use when necessary)
 
-- `bun run test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
+- `pnpm test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
 
 ### Database
 
 <!-- Run /create-tech-stack to document your database commands -->
 <!-- Example: -->
-<!-- - `bun db:generate` - Generate database schema -->
-<!-- - `bun db:migrate` - Run database migrations -->
+<!-- - `pnpm db:generate` - Generate database schema -->
+<!-- - `pnpm db:migrate` - Run database migrations -->
 
 ### Testing
 
-- `bun run test` - Run all unit tests
+- `pnpm test` - Run all unit tests
 - `turbo test --filter=<package-name>` - Run tests for a specific package
 - See **@.cursor/rules/testing.mdc** for comprehensive testing guidelines
 

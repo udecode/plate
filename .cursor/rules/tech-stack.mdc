@@ -8,7 +8,7 @@ Plate is a modern, extensible rich-text editor framework for React built as a so
 
 - **Frontend**: React 19.1.0, Next.js 15.3.3, TypeScript 5.8.3
 - **Styling**: Tailwind CSS 4.1.8, Radix UI, shadcn/ui patterns
-- **Build**: Bun workspaces, Turbo, tsup
+- **Build**: pnpm workspaces, Turbo, tsup
 - **Testing**: Jest, Playwright, Testing Library
 - **Deployment**: Vercel with automatic deployments
 - **Distribution**: npm packages under @platejs scope
@@ -32,7 +32,7 @@ Plate is a modern, extensible rich-text editor framework for React built as a so
 ### Node.js Runtime
 
 - **Required Version**: >= 18.12.0
-- **Package Manager**: Bun 1.3.2
+- **Package Manager**: pnpm 10.23.0
 - **Engine Enforcement**: Strict engine checking enabled
 
 ### Language Features
@@ -159,9 +159,9 @@ export async function POST(req: Request) {
 
 ### Package Manager
 
-- **Bun**: 1.3.2 for fast package management
+- **pnpm**: 10.23.0 for fast, disk space efficient package management
 - Configuration via `package.json` packageManager field
-- No additional configuration files needed
+- Workspace configuration in `pnpm-workspace.yaml`
 
 ### Code Quality Tools
 
@@ -186,13 +186,13 @@ export async function POST(req: Request) {
 
 ### Type Checking
 
-**Important**: Before running `bun run typecheck`, you must first run `bun install --frozen-lockfile`, then `bun run build` to ensure all packages are built and type definitions are available.
+**Important**: Before running `pnpm typecheck`, you must first run `pnpm install --frozen-lockfile`, then `pnpm build` to ensure all packages are built and type definitions are available.
 
 ```bash
 # Required sequence for type checking
-bun install --frozen-lockfile  # Install all dependencies
-bun run build                  # Build all packages (generates type definitions)
-bun run typecheck              # Check all packages
+pnpm install --frozen-lockfile  # Install all dependencies
+pnpm build                      # Build all packages (generates type definitions)
+pnpm typecheck                  # Check all packages
 ```
 
 ### Testing Strategy
@@ -219,14 +219,14 @@ bun run typecheck              # Check all packages
 
 ```bash
 # Required sequence for development
-bun install --frozen-lockfile  # Install dependencies
-bun run build                  # Build all packages first
-bun run typecheck              # Type checking (requires built packages)
+pnpm install --frozen-lockfile  # Install dependencies
+pnpm build                      # Build all packages first
+pnpm typecheck                  # Type checking (requires built packages)
 
 # Other development commands
-bun run dev                    # Start development server
-bun run test                   # Run tests
-bun run lint                   # Run Biome linter
+pnpm dev                        # Start development server
+pnpm test                       # Run tests
+pnpm lint                       # Run Biome linter
 ```
 
 These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages.

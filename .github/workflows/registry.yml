@@ -21,26 +21,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: ♻️ Setup bun cache
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+
+      - name: ♻️ Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-bun-
+            ${{ runner.os }}-pnpm-
 
       - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -48,10 +48,10 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🏗 Build Registry
-        run: bun run rt
+        run: pnpm rt
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4

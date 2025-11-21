@@ -9,7 +9,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
-      - 'bun.lock'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'jest.config.js'
@@ -27,7 +27,7 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/**'
-      - 'bun.lock'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'jest.config.js'
@@ -53,29 +53,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: ♻️ Setup bun cache
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.23.0
+
+      - name: ♻️ Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-bun-
+            ${{ runner.os }}-pnpm-
 
       - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: 🔬 Lint
-        run: bun check
+        run: pnpm check
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -83,24 +83,24 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🏗 Build
-        run: bun run build
+        run: pnpm build
 
       - name: 🕵️ Typecheck
-        run: bun run typecheck
+        run: pnpm typecheck
 
       - name: 🧪 Test
-        run: bun run test
+        run: pnpm test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
-      #     bun playwright install-deps
-      #     bun playwright install
+      #     pnpm playwright install-deps
+      #     pnpm playwright install
 
       # - name: 🎭 Run Playwright tests
-      #   run: bun e2e
+      #   run: pnpm e2e
 
   notify-failure:
     name: Discord Notification

@@ -20,7 +20,7 @@ Run `depset` using your preferred package manager:
   ```
 - **bun:**
   ```bash
-  bunx depset@latest [args...]
+  pnpm dlx depset@latest [args...]
   ```
 
 ## Usage
