@@ -49,6 +49,9 @@
     "test:watch": "jest --config=../../jest.config.cjs --watch",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "slate": "0.118.1"
+  },
   "devDependencies": {
     "lowlight": "^3.3.0",
     "platejs": "workspace:^"

@@ -42,7 +42,11 @@
     "test:watch": "jest --config=../../jest.config.cjs --watch",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "csstype": "^3.1.3"
+  },
   "devDependencies": {
+    "@types/react": "19.2.2",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

@@ -2,3 +2,7 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'packages/udecode/*'
+
+shamefullyHoist: true
+linkWorkspacePackages: true
+autoInstallPeers: true
