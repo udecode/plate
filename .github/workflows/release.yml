@@ -18,13 +18,26 @@ jobs:
           # To run comparison we need more than the latest commit
           fetch-depth: 0
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: ♻️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: 📦 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+      - name: ♻️ Setup bun cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
 
       # @link https://github.com/changesets/action
       - name: 🦋 Create Release Pull Request or Publish
@@ -33,7 +46,7 @@ jobs:
         with:
           cwd: ${{ github.workspace }}
           title: '[Release] Version packages'
-          publish: yarn release
+          publish: bun release
         env:
           # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}

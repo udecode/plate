@@ -51,14 +51,14 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "build": "tsup --config=../../tooling/config/tsup.config.ts",
+    "build:watch": "tsup --config=../../tooling/config/tsup.config.ts --watch",
+    "clean": "rimraf dist && jest --clear-cache",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --fix",
+    "test": "jest --config=../../jest.config.cjs --maxWorkers=1 --passWithNoTests",
+    "test:watch": "jest --config=../../jest.config.cjs --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@platejs/core": "51.1.3",

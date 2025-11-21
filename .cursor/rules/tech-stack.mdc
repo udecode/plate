@@ -8,7 +8,7 @@ Plate is a modern, extensible rich-text editor framework for React built as a so
 
 - **Frontend**: React 19.1.0, Next.js 15.3.3, TypeScript 5.8.3
 - **Styling**: Tailwind CSS 4.1.8, Radix UI, shadcn/ui patterns
-- **Build**: Yarn workspaces, Turbo, tsup
+- **Build**: Bun workspaces, Turbo, tsup
 - **Testing**: Jest, Playwright, Testing Library
 - **Deployment**: Vercel with automatic deployments
 - **Distribution**: npm packages under @platejs scope
@@ -32,7 +32,7 @@ Plate is a modern, extensible rich-text editor framework for React built as a so
 ### Node.js Runtime
 
 - **Required Version**: >= 18.12.0
-- **Package Manager**: Yarn 4.6.0 (using Plug'n'Play with node-modules linker)
+- **Package Manager**: Bun 1.3.2
 - **Engine Enforcement**: Strict engine checking enabled
 
 ### Language Features
@@ -159,12 +159,9 @@ export async function POST(req: Request) {
 
 ### Package Manager
 
-```yaml
-# .yarnrc.yml configuration
-nodeLinker: node-modules
-enableGlobalCache: false
-enableTelemetry: false
-```
+- **Bun**: 1.3.2 for fast package management
+- Configuration via `package.json` packageManager field
+- No additional configuration files needed
 
 ### Code Quality Tools
 
@@ -189,13 +186,13 @@ enableTelemetry: false
 
 ### Type Checking
 
-**Important**: Before running `yarn typecheck`, you must first run `yarn install --frozen-lockfile`, then `yarn build` to ensure all packages are built and type definitions are available.
+**Important**: Before running `bun run typecheck`, you must first run `bun install --frozen-lockfile`, then `bun run build` to ensure all packages are built and type definitions are available.
 
 ```bash
 # Required sequence for type checking
-yarn install --frozen-lockfile  # Install all dependencies and update lockfile if needed
-yarn build            # Build all packages (generates type definitions)
-yarn typecheck        # Check all packages
+bun install --frozen-lockfile  # Install all dependencies
+bun run build                  # Build all packages (generates type definitions)
+bun run typecheck              # Check all packages
 ```
 
 ### Testing Strategy
@@ -222,14 +219,14 @@ yarn typecheck        # Check all packages
 
 ```bash
 # Required sequence for development
-yarn install --frozen-lockfile  # Install dependencies and update lockfile if needed
-yarn build            # Build all packages first
-yarn typecheck        # Type checking (requires built packages)
+bun install --frozen-lockfile  # Install dependencies
+bun run build                  # Build all packages first
+bun run typecheck              # Type checking (requires built packages)
 
 # Other development commands
-yarn dev              # Start development server
-yarn test             # Run tests
-yarn lint             # Run ESLint
+bun run dev                    # Start development server
+bun run test                   # Run tests
+bun run lint                   # Run Biome linter
 ```
 
 These are root commands, but if you modified just a few packages, it's more efficient to run those commands in the modified packages.

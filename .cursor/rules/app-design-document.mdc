@@ -136,7 +136,7 @@ Tools and features specifically for developers:
 
 1. **First-Time Setup**
 
-   - Developer installs Plate via npm/yarn
+   - Developer installs Plate via bun
    - Copies components using shadcn CLI
    - Configures plugins for their use case
    - Deploys basic editor in minutes
@@ -524,7 +524,7 @@ Tools and features specifically for developers:
 
 1. **First-Time Setup**
 
-   - Developer installs Plate via npm/yarn
+   - Developer installs Plate via bun
    - Copies components using shadcn CLI
    - Configures plugins for their use case
    - Deploys basic editor in minutes

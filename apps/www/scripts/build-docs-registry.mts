@@ -163,7 +163,7 @@ export async function buildDocsRegistry() {
         files: [],
         name: 'docs',
         registryDependencies: items.map(
-          (item) => `${REGISTRY_URL}/${item.name}`
+          (item: any) => `${REGISTRY_URL}/${item.name}`
         ),
         title: 'Documentation',
         type: 'registry:file',

@@ -36,7 +36,7 @@ const registry: Registry = {
       ...registryInit,
       ...registryUI,
       ...registryComponents,
-      ...registryBlocks.map((block) => ({
+      ...registryBlocks.map((block: any) => ({
         ...block,
         registryDependencies: [
           'plate-ui',
@@ -49,7 +49,7 @@ const registry: Registry = {
       ...registryExamples,
     ].map((item) => ({
       ...item,
-      registryDependencies: item.registryDependencies?.map((dep) =>
+      registryDependencies: item.registryDependencies?.map((dep: any) =>
         dep.startsWith('shadcn/')
           ? dep.split('shadcn/')[1]
           : `${REGISTRY_URL}/${dep}`
@@ -66,7 +66,9 @@ import * as React from "react"
 
 export const Index: Record<string, any> = {`;
   for (const item of registry.items) {
-    const resolveFiles = item.files?.map((file) => `registry/${file.path}`);
+    const resolveFiles = item.files?.map(
+      (file: any) => `registry/${file.path}`
+    );
     if (!resolveFiles) {
       continue;
     }
@@ -82,7 +84,7 @@ export const Index: Record<string, any> = {`;
     description: "${item.description ?? ''}",
     type: "${item.type}",
     registryDependencies: ${JSON.stringify(item.registryDependencies)},
-    files: [${item.files?.map((file) => {
+    files: [${item.files?.map((file: any) => {
       const filePath = `${BASE_URL}registry/${typeof file === 'string' ? file : file.path}`;
       const resolvedFilePath = path.resolve(filePath);
       return typeof file === 'string'
@@ -122,9 +124,9 @@ function sanitizeRegistry(registry: Registry): Registry {
     ...registry,
     items: registry.items
       // Filter internal examples.
-      .filter((item) => item.meta?.registry !== false)
-      .map((item) => {
-        const files = item.files?.map((file) => ({
+      .filter((item: any) => item.meta?.registry !== false)
+      .map((item: any) => {
+        const files = item.files?.map((file: any) => ({
           ...file,
           path: `${BASE_URL}registry/${file.path}`,
         }));
@@ -161,9 +163,9 @@ async function buildRegistryJsonFile(items: RegistryItem[] = []) {
 
 async function buildRegistry() {
   return new Promise((resolve, reject) => {
-    const process = exec(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+    const process = exec(`bun run shadcn:${isDev ? 'dev' : 'build'}`);
 
-    console.info(`yarn shadcn:${isDev ? 'dev' : 'build'}`);
+    console.info(`bun run shadcn:${isDev ? 'dev' : 'build'}`);
 
     process.on('exit', (code) => {
       if (code === 0) {

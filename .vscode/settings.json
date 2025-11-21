@@ -1,6 +1,5 @@
 {
   "files.exclude": {
-    ".yarn": true,
     "templates": true,
     "docs/**/*cn.mdx": true
   },

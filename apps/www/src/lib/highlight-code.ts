@@ -27,7 +27,7 @@ export async function highlightFiles(
   }
 
   return await Promise.all(
-    files.map(async (file) => ({
+    files.map(async (file: any) => ({
       ...file,
       highlightedContent: await highlightCode(file.content ?? ''),
     }))
