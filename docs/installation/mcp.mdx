@@ -49,9 +49,33 @@ For teams working with Plate, integrating local documentation is key to maximizi
 
 ## Setup MCP
 
+Follow these steps to set up MCP with Plate:
+
+### Step 1: Start from our basic template
+
+Run this command to initialize your project with the basic editor template:
+
+```bash
+npx shadcn@latest add https://platejs.org/r/editor-basic
+```
+
+### Step 2: Add MCP config
+
+Configure your registry in your `components.json` file:
+
+```json
+{
+  "registries": {
+    "@platejs": "https://platejs.org/r/{name}.json"
+  }
+}
+```
+
+### Step 3: Configure your IDE
+
 Choose the configuration for your IDE:
 
-### Cursor
+#### Cursor
 
 Copy and paste into `.cursor/mcp.json`:
 
@@ -59,19 +83,19 @@ Copy and paste into `.cursor/mcp.json`:
 {
   "mcpServers": {
     "plate": {
-      "description": "Plate editors, plugins, components and documentation",
+      "description": "Plate editors, plugins and components",
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "https://platejs.org/r/registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }
 ```
 
-### VS Code
+#### VS Code
 
 Copy and paste into `.vscode/mcp.json` in your workspace:
 
@@ -81,15 +105,47 @@ Copy and paste into `.vscode/mcp.json` in your workspace:
     "plate": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "https://platejs.org/r/registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
-  },
-  "inputs": []
+  }
 }
 ```
+
+#### Claude
+
+Copy and paste into `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### CodeX
+
+1. Open or create the file `~/.codex/config.toml`
+2. Add the following configuration:
+
+```toml
+[mcp_servers.plate]
+command = "npx"
+args = ["shadcn@latest", "mcp"]
+```
+
+3. Restart CodeX to load the MCP server
 
 ## Best Practices
 

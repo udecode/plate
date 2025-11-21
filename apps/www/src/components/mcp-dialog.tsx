@@ -22,16 +22,38 @@ export function SetupMCPDialog() {
   const [open, setOpen] = useState(false);
 
   const initCommand = `npx shadcn@latest add ${siteConfig.registryUrl}editor-basic`;
+
+  const codeXConfig = `[mcp_servers.plate]\ncommand = "npx"\nargs = ["shadcn@latest", "mcp"]\n`;
+
+  const componentsConfig = `{
+  "registries": {
+    "@platejs": "https://platejs.org/r/{name}.json"
+  }
+}`
+  const claudeCodeConfig = `{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}`;
+
   const cursorConfig = `{
   "mcpServers": {
     "plate": {
       "description": "Plate editors, plugins and components",
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "${siteConfig.registryUrl}registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }`;
@@ -41,13 +63,12 @@ export function SetupMCPDialog() {
     "plate": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "${siteConfig.registryUrl}registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
-  },
-  "inputs": []
+  }
 }`;
 
   return (
@@ -79,10 +100,22 @@ export function SetupMCPDialog() {
           />
 
           <h3>Add MCP config</h3>
+          <p>
+            Configure your registry in your <Code>components.json</Code> file:
+          </p>
+
+          <CodeBlock
+            className="overflow-x-auto"
+            value={componentsConfig}
+            language="json"
+          />
+
           <Tabs className="mt-2" defaultValue="cursor">
             <TabsList>
               <TabsTrigger value="cursor">Cursor</TabsTrigger>
               <TabsTrigger value="vscode">VS Code</TabsTrigger>
+              <TabsTrigger value="claude">Claude</TabsTrigger>
+              <TabsTrigger value="codex">CodeX</TabsTrigger>
             </TabsList>
             <TabsContent className="mt-0" value="cursor">
               <p>
@@ -104,6 +137,29 @@ export function SetupMCPDialog() {
                 value={vscodeConfig}
                 language="json"
               />
+            </TabsContent>
+            <TabsContent className="mt-0" value="claude">
+              <p>
+                Copy and paste the code into <Code>.mcp.json</Code>
+              </p>
+              <CodeBlock
+                className="mt-2 overflow-x-auto"
+                value={claudeCodeConfig}
+                language="json"
+              />
+            </TabsContent>
+            <TabsContent className="mt-0" value="codex">
+              <p>1. Open or create the file <Code>~/.codex/config.toml</Code></p>
+              
+              <p className='mt-2'>2. Add the following configuration:</p>
+
+              <CodeBlock
+                className="mt-2 overflow-x-auto"
+                value={codeXConfig}
+                language="bash"
+              />
+
+              <p>3. Restart Codex to load the MCP server</p>
             </TabsContent>
           </Tabs>
 
