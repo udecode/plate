@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "remote-cursor-overlay",
+  "type": "registry:ui",
+  "title": "Remote Cursor Overlay",
+  "description": "A cursor overlay to display multiplayer cursors in the yjs plugin.",
+  "dependencies": [
+    "@slate-yjs/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/remote-cursor-overlay.tsx",
+      "content": "'use client';\n\n// Lifted from slate-yjs https://github.com/BitPhinix/slate-yjs/blob/main/examples/frontend/src/pages/RemoteCursorOverlay/Overlay.tsx\n\nimport * as React from 'react';\n\nimport { YjsPlugin } from '@platejs/yjs/react';\nimport {\n  type CursorOverlayData,\n  useRemoteCursorOverlayPositions,\n} from '@slate-yjs/react';\nimport { useEditorContainerRef, usePluginOption } from 'platejs/react';\n\nexport function RemoteCursorOverlay() {\n  const isSynced = usePluginOption(YjsPlugin, '_isSynced');\n\n  if (!isSynced) {\n    return null;\n  }\n\n  return <RemoteCursorOverlayContent />;\n}\n\nfunction RemoteCursorOverlayContent() {\n  const containerRef: any = useEditorContainerRef();\n  const [cursors] = useRemoteCursorOverlayPositions<CursorData>({\n    containerRef,\n  });\n\n  return (\n    <>\n      {cursors.map((cursor) => (\n        <RemoteSelection key={cursor.clientId} {...cursor} />\n      ))}\n    </>\n  );\n}\n\nfunction RemoteSelection({\n  caretPosition,\n  data,\n  selectionRects,\n}: CursorOverlayData<CursorData>) {\n  if (!data) {\n    return null;\n  }\n\n  const selectionStyle: React.CSSProperties = {\n    // Add a opacity to the background color\n    backgroundColor: addAlpha(data.color, 0.5),\n  };\n\n  return (\n    <>\n      {selectionRects.map((position, i) => (\n        <div\n          key={i}\n          className=\"pointer-events-none absolute\"\n          style={{ ...selectionStyle, ...position }}\n        />\n      ))}\n      {caretPosition && <Caret data={data} caretPosition={caretPosition} />}\n    </>\n  );\n}\n\ntype CursorData = {\n  color: string;\n  name: string;\n};\n\nconst cursorOpacity = 0.7;\nconst hoverOpacity = 1;\n\nfunction Caret({\n  caretPosition,\n  data,\n}: Pick<CursorOverlayData<CursorData>, 'caretPosition' | 'data'>) {\n  const [isHover, setIsHover] = React.useState(false);\n\n  const handleMouseEnter = () => {\n    setIsHover(true);\n  };\n  const handleMouseLeave = () => {\n    setIsHover(false);\n  };\n  const caretStyle: React.CSSProperties = {\n    ...caretPosition,\n    background: data?.color,\n    opacity: cursorOpacity,\n    transition: 'opacity 0.2s',\n  };\n  const caretStyleHover = { ...caretStyle, opacity: hoverOpacity };\n\n  const labelStyle: React.CSSProperties = {\n    background: data?.color,\n    opacity: cursorOpacity,\n    transform: 'translateY(-100%)',\n    transition: 'opacity 0.2s',\n  };\n  const labelStyleHover = { ...labelStyle, opacity: hoverOpacity };\n\n  return (\n    <div\n      className=\"absolute w-0.5\"\n      style={isHover ? caretStyleHover : caretStyle}\n    >\n      <div\n        className=\"absolute top-0 whitespace-nowrap rounded rounded-bl-none px-1.5 py-0.5 text-white text-xs\"\n        style={isHover ? labelStyleHover : labelStyle}\n        onMouseEnter={handleMouseEnter}\n        onMouseLeave={handleMouseLeave}\n      >\n        {data?.name}\n      </div>\n    </div>\n  );\n}\n\nfunction addAlpha(hexColor: string, opacity: number): string {\n  const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255);\n\n  return hexColor + normalized.toString(16).padStart(2, '0').toUpperCase();\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/yjs"
+      }
+    ],
+    "examples": []
+  }
+}

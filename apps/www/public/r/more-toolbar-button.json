@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "more-toolbar-button",
+  "type": "registry:ui",
+  "title": "More Toolbar Button",
+  "description": "A menu for additional text formatting options.",
+  "dependencies": [],
+  "registryDependencies": [
+    "dropdown-menu",
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/more-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport {\n  KeyboardIcon,\n  MoreHorizontalIcon,\n  SubscriptIcon,\n  SuperscriptIcon,\n} from 'lucide-react';\nimport { KEYS } from 'platejs';\nimport { useEditorRef } from 'platejs/react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuGroup,\n  DropdownMenuItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function MoreToolbarButton(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const [open, setOpen] = React.useState(false);\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={open} tooltip=\"Insert\">\n          <MoreHorizontalIcon />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent\n        className=\"ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto\"\n        align=\"start\"\n      >\n        <DropdownMenuGroup>\n          <DropdownMenuItem\n            onSelect={() => {\n              editor.tf.toggleMark(KEYS.kbd);\n              editor.tf.collapse({ edge: 'end' });\n              editor.tf.focus();\n            }}\n          >\n            <KeyboardIcon />\n            Keyboard input\n          </DropdownMenuItem>\n\n          <DropdownMenuItem\n            onSelect={() => {\n              editor.tf.toggleMark(KEYS.sup, {\n                remove: KEYS.sub,\n              });\n              editor.tf.focus();\n            }}\n          >\n            <SuperscriptIcon />\n            Superscript\n            {/* (⌘+,) */}\n          </DropdownMenuItem>\n          <DropdownMenuItem\n            onSelect={() => {\n              editor.tf.toggleMark(KEYS.sub, {\n                remove: KEYS.sup,\n              });\n              editor.tf.focus();\n            }}\n          >\n            <SubscriptIcon />\n            Subscript\n            {/* (⌘+.) */}\n          </DropdownMenuItem>\n        </DropdownMenuGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "https://pro.platejs.org/docs/components/more-toolbar-button"
+      }
+    ],
+    "examples": [
+      "basic-marks-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

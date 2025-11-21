@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mode-toolbar-button",
+  "type": "registry:ui",
+  "title": "Mode Toolbar Button",
+  "description": "A menu for switching between editor modes.",
+  "dependencies": [],
+  "registryDependencies": [
+    "dropdown-menu",
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/mode-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { SuggestionPlugin } from '@platejs/suggestion/react';\nimport {\n  type DropdownMenuProps,\n  DropdownMenuItemIndicator,\n} from '@radix-ui/react-dropdown-menu';\nimport { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';\nimport { useEditorRef, usePlateState, usePluginOption } from 'platejs/react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ModeToolbarButton(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const [readOnly, setReadOnly] = usePlateState('readOnly');\n  const [open, setOpen] = React.useState(false);\n\n  const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');\n\n  let value = 'editing';\n\n  if (readOnly) value = 'viewing';\n\n  if (isSuggesting) value = 'suggestion';\n\n  const item: Record<string, { icon: React.ReactNode; label: string }> = {\n    editing: {\n      icon: <PenIcon />,\n      label: 'Editing',\n    },\n    suggestion: {\n      icon: <PencilLineIcon />,\n      label: 'Suggestion',\n    },\n    viewing: {\n      icon: <EyeIcon />,\n      label: 'Viewing',\n    },\n  };\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={open} tooltip=\"Editing mode\" isDropdown>\n          {item[value].icon}\n          <span className=\"hidden lg:inline\">{item[value].label}</span>\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent className=\"min-w-[180px]\" align=\"start\">\n        <DropdownMenuRadioGroup\n          value={value}\n          onValueChange={(newValue) => {\n            if (newValue === 'viewing') {\n              setReadOnly(true);\n\n              return;\n            }\n            setReadOnly(false);\n\n            if (newValue === 'suggestion') {\n              editor.setOption(SuggestionPlugin, 'isSuggesting', true);\n\n              return;\n            }\n            editor.setOption(SuggestionPlugin, 'isSuggesting', false);\n\n            if (newValue === 'editing') {\n              editor.tf.focus();\n\n              return;\n            }\n          }}\n        >\n          <DropdownMenuRadioItem\n            className=\"pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground\"\n            value=\"editing\"\n          >\n            <Indicator />\n            {item.editing.icon}\n            {item.editing.label}\n          </DropdownMenuRadioItem>\n\n          <DropdownMenuRadioItem\n            className=\"pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground\"\n            value=\"viewing\"\n          >\n            <Indicator />\n            {item.viewing.icon}\n            {item.viewing.label}\n          </DropdownMenuRadioItem>\n\n          <DropdownMenuRadioItem\n            className=\"pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground\"\n            value=\"suggestion\"\n          >\n            <Indicator />\n            {item.suggestion.icon}\n            {item.suggestion.label}\n          </DropdownMenuRadioItem>\n        </DropdownMenuRadioGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n\nfunction Indicator() {\n  return (\n    <span className=\"pointer-events-none absolute right-2 flex size-3.5 items-center justify-center\">\n      <DropdownMenuItemIndicator>\n        <CheckIcon />\n      </DropdownMenuItemIndicator>\n    </span>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
+}

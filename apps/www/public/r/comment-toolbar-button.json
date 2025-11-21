@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comment-toolbar-button",
+  "type": "registry:ui",
+  "title": "Comment Toolbar Button",
+  "description": "A toolbar button for adding inline comments.",
+  "dependencies": [
+    "@platejs/comment"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/comment-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/comment-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { MessageSquareTextIcon } from 'lucide-react';\nimport { useEditorRef } from 'platejs/react';\n\nimport { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function CommentToolbarButton() {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      onClick={() => {\n        editor.getTransforms(commentPlugin).comment.setDraft();\n      }}\n      data-plate-prevent-overlay\n      tooltip=\"Comment\"\n    >\n      <MessageSquareTextIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comment"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/comment-toolbar-button"
+      }
+    ],
+    "examples": [
+      "discussion-demo",
+      "floating-toolbar-demo",
+      "discussion-pro"
+    ]
+  }
+}

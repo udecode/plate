@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-basic",
+  "type": "registry:block",
+  "description": "A basic editor",
+  "dependencies": [
+    "@platejs/basic-nodes",
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/plate-ui",
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/basic-nodes-kit",
+    "https://platejs.org/r/basic-marks-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/blocks/editor-basic/page.tsx",
+      "content": "import { PlateEditor } from '@/registry/blocks/editor-basic/components/editor/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <PlateEditor />\n    </div>\n  );\n}\n",
+      "type": "registry:page",
+      "target": "app/editor/page.tsx"
+    },
+    {
+      "path": "src/registry/blocks/editor-basic/components/editor/plate-editor.tsx",
+      "content": "'use client';\n\nimport { normalizeNodeId } from 'platejs';\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nexport function PlateEditor() {\n  const editor = usePlateEditor({\n    plugins: BasicNodesKit,\n    value,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor variant=\"demo\" placeholder=\"Type...\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\nconst value = normalizeNodeId([\n  {\n    children: [{ text: 'Basic Editor' }],\n    type: 'h1',\n  },\n  {\n    children: [{ text: 'Heading 2' }],\n    type: 'h2',\n  },\n  {\n    children: [{ text: 'Heading 3' }],\n    type: 'h3',\n  },\n  {\n    children: [{ text: 'This is a blockquote element' }],\n    type: 'blockquote',\n  },\n  {\n    children: [\n      { text: 'Basic marks: ' },\n      { bold: true, text: 'bold' },\n      { text: ', ' },\n      { italic: true, text: 'italic' },\n      { text: ', ' },\n      { text: 'underline', underline: true },\n      { text: ', ' },\n      { strikethrough: true, text: 'strikethrough' },\n      { text: '.' },\n    ],\n    type: 'p',\n  },\n]);\n",
+      "type": "registry:component"
+    }
+  ],
+  "categories": [
+    "Editors"
+  ]
+}

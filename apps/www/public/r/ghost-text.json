@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ghost-text",
+  "type": "registry:ui",
+  "title": "Ghost Text",
+  "description": "A text suggestion system that displays AI-generated content after the cursor.",
+  "dependencies": [
+    "@platejs/ai"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/ghost-text.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { CopilotPlugin } from '@platejs/ai/react';\nimport { useElement, usePluginOption } from 'platejs/react';\n\nexport function GhostText() {\n  const element = useElement();\n\n  const isSuggested = usePluginOption(\n    CopilotPlugin,\n    'isSuggested',\n    element.id as string\n  );\n\n  if (!isSuggested) return null;\n\n  return <GhostTextContent />;\n}\n\nfunction GhostTextContent() {\n  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');\n\n  return (\n    <span\n      className=\"pointer-events-none text-muted-foreground/70 max-sm:hidden\"\n      contentEditable={false}\n    >\n      {suggestionText && suggestionText}\n    </span>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/copilot"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ghost-text"
+      }
+    ],
+    "examples": [
+      "copilot-demo",
+      "copilot-pro"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "forced-layout-docs",
+  "type": "registry:file",
+  "title": "Forced Layout",
+  "description": "Documentation for Forced Layout",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(functionality)/(utils)/forced-layout.mdx",
+      "content": "---\ntitle: Forced Layout\n---\n\n<PackageInfo>\n\n## Features\n\n- Automatically ensures the use of specified elements as required to maintain document structure (e.g., first block should be an H1 element).\n- To force a trailing block of a specific type, see [Trailing Block](/docs/trailing-block).\n\n</PackageInfo>\n\n## Usage\n\n```tsx\nimport { NormalizeTypesPlugin } from 'platejs';\n\nconst plugins = [\n  // ...otherPlugins\n  NormalizeTypesPlugin.configure({\n    options: {\n      rules: [{ path: [0], strictType: 'h1' }],\n    },\n  }),\n];\n```\n\n## Plugins\n\n### NormalizeTypesPlugin\n\n<API name=\"NormalizeTypesPlugin\">\n<APIOptions>\n<APIItem name=\"rules\" type=\"Rule[]\" optional>\nAn array of rule objects for normalizing types.\n\n- **Default:** `[]`\n</APIItem>\n</APIOptions>\n\n<APIOptions type=\"Rule\">\n  <APIItem name=\"path\" type=\"Path\">\n    Path where the rule applies.\n  </APIItem>\n  <APIItem name=\"strictType\" type=\"string\" optional>\n    Force the type of the node at the given path.\n  </APIItem>\n  <APIItem name=\"type\" type=\"string\" optional>\n    Type of inserted node if `strictType` is not provided.\n  </APIItem>\n</APIOptions>\n</API>\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(functionality)/(utils)/forced-layout.mdx"
+    }
+  ]
+}

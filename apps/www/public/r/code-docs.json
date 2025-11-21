@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-docs",
+  "type": "registry:file",
+  "title": "Code",
+  "description": "Documentation for Code",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/code.mdx",
+      "content": "---\ntitle: Code\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Format inline code snippets and technical terms\n- Keyboard shortcut support for quick formatting\n- Renders as `<code>` HTML element by default\n\n</PackageInfo>\n\n## Kit Usage\n\n<Steps>\n\n### Installation\n\nThe fastest way to add the code plugin is with the `BasicMarksKit`, which includes pre-configured `CodePlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.\n\n<ComponentSource name=\"basic-marks-kit\" />\n\n- [`CodeLeaf`](/docs/components/code-node): Renders inline code elements.\n\n### Add Kit\n\nAdd the kit to your plugins:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicMarksKit,\n  ],\n});\n```\n\n</Steps>\n\n## Manual Usage\n\n<Steps>\n\n### Installation\n\n```bash\nnpm install @platejs/basic-nodes\n```\n\n### Add Plugin\n\nInclude `CodePlugin` in your Plate plugins array when creating the editor.\n\n```tsx\nimport { CodePlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    CodePlugin,\n  ],\n});\n```\n\n### Configure Plugin\n\nYou can configure the `CodePlugin` with a custom component and keyboard shortcuts.\n\n```tsx\nimport { CodePlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\nimport { CodeLeaf } from '@/components/ui/code-node';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    CodePlugin.configure({\n      node: { component: CodeLeaf },\n      shortcuts: { toggle: { keys: 'mod+e' } },\n    }),\n  ],\n});\n```\n\n- `node.component`: Assigns [`CodeLeaf`](/docs/components/code-node) to render inline code elements.\n- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code formatting.\n\n### Add Toolbar Button\n\nYou can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle code formatting.\n\n</Steps>\n\n## Plugins\n\n### `CodePlugin`\n\nPlugin for inline code text formatting. Renders as `<code>` HTML element by default.\n\n## Transforms\n\n### `tf.code.toggle`\n\nToggles the code formatting for the selected text. ",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/code.mdx"
+    }
+  ]
+}

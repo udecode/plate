@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "controlled-demo",
+  "type": "registry:example",
+  "registryDependencies": [
+    "https://platejs.org/r/editor",
+    "button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/controlled-demo.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { Button } from '@/components/ui/button';\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nexport default function ControlledEditorDemo() {\n  const editor = usePlateEditor({\n    value: [\n      {\n        children: [{ text: 'Initial Value' }],\n        type: 'p',\n      },\n    ],\n  });\n\n  return (\n    <div>\n      <Plate editor={editor}>\n        <EditorContainer>\n          <Editor className=\"px-0\" />\n        </EditorContainer>\n      </Plate>\n\n      <div className=\"mt-4 flex flex-col gap-2\">\n        <Button\n          onClick={() => {\n            // Replace with HTML string\n            editor.tf.setValue([\n              {\n                children: [{ text: 'Replaced Value' }],\n                type: 'p',\n              },\n            ]);\n\n            editor.tf.focus({ edge: 'endEditor' });\n          }}\n        >\n          Replace Value\n        </Button>\n\n        <Button\n          onClick={() => {\n            editor.tf.reset();\n            editor.tf.focus();\n          }}\n        >\n          Reset Editor\n        </Button>\n      </div>\n\n      <hr className=\"my-8\" />\n      <h2 className=\"mb-2 font-semibold text-lg\">Async Controlled Editor</h2>\n      <AsyncControlledEditorDemo />\n    </div>\n  );\n}\n\nfunction AsyncControlledEditorDemo() {\n  const [initialValue, setInitialValue] = React.useState<\n    { children: { text: string }[]; type: string }[] | undefined\n  >(undefined);\n  const [loading, setLoading] = React.useState(true);\n  const editor = usePlateEditor({\n    skipInitialization: true,\n  });\n\n  React.useEffect(() => {\n    // Simulate async fetch\n    setTimeout(() => {\n      setInitialValue([\n        {\n          children: [{ text: 'Loaded async value!' }],\n          type: 'p',\n        },\n      ]);\n      setLoading(false);\n    }, 1000);\n  }, []);\n\n  React.useEffect(() => {\n    if (!loading && initialValue) {\n      editor.tf.init({ autoSelect: 'end', value: initialValue });\n    }\n  }, [loading, initialValue, editor]);\n\n  if (loading) return <div>Loading…</div>;\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor className=\"px-0\" />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    }
+  ]
+}

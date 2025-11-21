@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "copilot-demo",
+  "type": "registry:example",
+  "description": "Renders AI ghost text suggestions at the cursor position.",
+  "dependencies": [
+    "@platejs/ai",
+    "@platejs/markdown"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/copilot-kit",
+    "https://platejs.org/r/editor-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/copilot-demo.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { EditorKit } from '@/registry/components/editor/editor-kit';\nimport { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';\nimport { copilotValue } from '@/registry/examples/values/copilot-value';\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nexport default function CopilotDemo() {\n  const editor = usePlateEditor({\n    plugins: [...CopilotKit, ...EditorKit],\n    value: copilotValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer variant=\"demo\">\n        <Editor />\n      </EditorContainer>\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/copilot-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const copilotValue: any = (\n  <fragment>\n    <hh2>Copilot</hh2>\n    <hp indent={1} listStyleType=\"decimal\">\n      <htext>Position your cursor at the</htext>\n      <htext bold> end of a paragraph </htext>\n      <htext>where you want to add or modify text.</htext>\n    </hp>\n    <hp indent={1} listStart={2} listStyleType=\"decimal\">\n      <htext>Press Control + Space to trigger Copilot</htext>\n    </hp>\n    <hp indent={1} listStart={3} listStyleType=\"decimal\">\n      <htext>Copilot will</htext>\n      <htext bold> automatically</htext>\n      <htext> suggest completions as you type.</htext>\n    </hp>\n    <hp indent={1} listStart={4} listStyleType=\"decimal\">\n      <htext>Choose from the suggested completions:</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Tab</htext>:\n      <htext>Accept the entire suggested completion</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Command + Right Arrow</htext>\n      <htext>: Complete one character at a time</htext>\n    </hp>\n    <hp indent={2} listStyleType=\"disc\">\n      <htext bold>Escape</htext>\n      <htext>: Cancel the Copilot</htext>\n    </hp>\n  </fragment>\n);\n",
+      "type": "registry:example"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/copilot",
+        "title": "Copilot"
+      }
+    ]
+  }
+}

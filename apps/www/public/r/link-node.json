@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link-node",
+  "type": "registry:ui",
+  "title": "Link Element",
+  "description": "A component for rendering hyperlinks with hover states.",
+  "dependencies": [
+    "@platejs/link"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/link-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TInlineSuggestionData, TLinkElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { getLinkAttributes } from '@platejs/link';\nimport { SuggestionPlugin } from '@platejs/suggestion/react';\nimport { PlateElement } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function LinkElement(props: PlateElementProps<TLinkElement>) {\n  const suggestionData = props.editor\n    .getApi(SuggestionPlugin)\n    .suggestion.suggestionData(props.element) as\n    | TInlineSuggestionData\n    | undefined;\n\n  return (\n    <PlateElement\n      {...props}\n      as=\"a\"\n      className={cn(\n        'font-medium text-primary underline decoration-primary underline-offset-4',\n        suggestionData?.type === 'remove' && 'bg-red-100 text-red-700',\n        suggestionData?.type === 'insert' && 'bg-emerald-100 text-emerald-700'\n      )}\n      attributes={{\n        ...props.attributes,\n        ...getLinkAttributes(props.editor, props.element),\n        onMouseOver: (e) => {\n          e.stopPropagation();\n        },\n      }}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/link-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TLinkElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { getLinkAttributes } from '@platejs/link';\nimport { SlateElement } from 'platejs/static';\n\nexport function LinkElementStatic(props: SlateElementProps<TLinkElement>) {\n  return (\n    <SlateElement\n      {...props}\n      as=\"a\"\n      className=\"font-medium text-primary underline decoration-primary underline-offset-4\"\n      attributes={{\n        ...props.attributes,\n        ...getLinkAttributes(props.editor, props.element),\n      }}\n    >\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/link"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/link-node"
+      }
+    ],
+    "examples": [
+      "link-demo"
+    ]
+  }
+}

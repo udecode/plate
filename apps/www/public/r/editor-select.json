@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-select",
+  "type": "registry:block",
+  "description": "A multi-select editor",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/plate-ui",
+    "https://platejs.org/r/select-editor-demo"
+  ],
+  "files": [
+    {
+      "path": "src/registry/blocks/editor-select/page.tsx",
+      "content": "import EditorSelectForm from '@/registry/examples/select-editor-demo';\n\nexport default function Page() {\n  return (\n    <div className=\"flex h-screen w-full justify-center\">\n      <EditorSelectForm />\n    </div>\n  );\n}\n",
+      "type": "registry:page",
+      "target": "app/editor/page.tsx"
+    }
+  ],
+  "meta": {
+    "descriptionSrc": "/docs/multi-select"
+  },
+  "categories": [
+    "Editors"
+  ]
+}

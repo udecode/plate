@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hundreds-editors-demo",
+  "type": "registry:example",
+  "registryDependencies": [
+    "https://platejs.org/r/editor"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/hundreds-editors-demo.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { createMultiEditorsValue } from '@/registry/examples/values/multi-editors-value';\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\n\nconst values = createMultiEditorsValue();\n\nfunction WithPlate({ id, value }: any) {\n  const editor = usePlateEditor({\n    id,\n    // components: PlateUI,\n    // plugins: [BasicBlocksPlugin, BasicMarksPlugin],\n    value,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <EditorContainer>\n        <Editor spellCheck={false} />\n      </EditorContainer>\n    </Plate>\n  );\n}\n\n// function Element({ attributes, children, element }: any) {\n//   switch (element.type) {\n//     case 'h1':\n//       return <h1 {...attributes}>{children}</h1>;\n//     default:\n//       return <p {...attributes}>{children}</p>;\n//   }\n// }\n\n// function WithoutPlate({ initialValue }: any) {\n//   const [value, setValue] = useState(initialValue);\n//   const renderElement = useCallback((p) => <Element {...p} />, []);\n//   const editor = useMemo(() => withReact(createEditor() as ReactEditor), []);\n//\n//   return (\n//     <Slate\n//       editor={editor}\n//       value={value}\n//       onChange={useCallback((v) => setValue(v), [])}\n//     >\n//       <Editable renderElement={renderElement} />\n//     </Slate>\n//   );\n// }\n\nexport default function HundredsEditorsDemo() {\n  return (\n    <div className=\"flex flex-col\">\n      {values.map((value, idx) => {\n        return (\n          <div key={idx} className=\"p-10\">\n            <h3 className=\"mb-2 font-semibold\">#{idx + 1}</h3>\n            <WithPlate id={idx + 1} value={value} />\n            {/* <WithoutPlate initialValue={initialValue} id={idx} /> */}\n          </div>\n        );\n      })}\n    </div>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/multi-editors-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport type { Descendant } from 'platejs';\n\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const createMultiEditorsValue = () => {\n  const multiEditors: Descendant[][] = [];\n\n  for (let h = 0; h < 300; h++) {\n    const multiEditor: Descendant[] = [];\n    multiEditor.push(\n      (<hh1>Amet duis nisi ea enim laborum laboris.</hh1>) as any\n    );\n\n    for (let p = 0; p < 2; p++) {\n      multiEditor.push(\n        (\n          <hp>\n            Laborum dolor et tempor consectetur amet ullamco consectetur ullamco\n            irure incididunt reprehenderit ullamco nulla tempor. Laboris veniam\n            commodo id in ex ullamco incididunt nulla eu Lorem adipisicing\n            deserunt duis ad. Mollit magna enim exercitation amet proident\n            reprehenderit magna nulla officia ad in non. Magna magna adipisicing\n            fugiat cillum do esse eu adipisicing. Culpa dolor non Lorem. Dolore\n            non voluptate velit in eu culpa velit. Exercitation fugiat cupidatat\n            adipisicing duis veniam proident irure ea excepteur aliqua esse ad\n            cupidatat adipisicing id. Ut exercitation proident ea eiusmod enim\n            non minim proident Lorem aliqua officia voluptate ullamco culpa\n            Lorem. Exercitation eiusmod dolor nostrud qui excepteur. Dolor\n            commodo duis reprehenderit excepteur laboris do minim qui.\n          </hp>\n        ) as any\n      );\n    }\n\n    multiEditors.push(multiEditor);\n  }\n\n  return multiEditors;\n};\n",
+      "type": "registry:example"
+    }
+  ]
+}

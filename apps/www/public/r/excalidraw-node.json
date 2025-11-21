@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "excalidraw-node",
+  "type": "registry:ui",
+  "title": "Excalidraw Element",
+  "description": "A drawing component powered by Excalidraw.",
+  "dependencies": [
+    "@platejs/excalidraw"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/excalidraw-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TExcalidrawElement } from '@platejs/excalidraw';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useExcalidrawElement } from '@platejs/excalidraw/react';\nimport { PlateElement, useReadOnly } from 'platejs/react';\n\nimport '@excalidraw/excalidraw/index.css';\n\nexport function ExcalidrawElement(\n  props: PlateElementProps<TExcalidrawElement>\n) {\n  const { children, element } = props;\n  const readOnly = useReadOnly();\n\n  const { Excalidraw, excalidrawProps } = useExcalidrawElement({\n    element,\n  });\n\n  return (\n    <PlateElement {...props}>\n      <div contentEditable={false}>\n        <div className=\"mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border\">\n          {Excalidraw && (\n            <Excalidraw\n              {...(excalidrawProps as any)}\n              viewModeEnabled={readOnly}\n            />\n          )}\n        </div>\n      </div>\n      {children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/excalidraw"
+      }
+    ]
+  }
+}

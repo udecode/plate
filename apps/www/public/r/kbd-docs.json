@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd-docs",
+  "type": "registry:file",
+  "title": "Kbd",
+  "description": "Documentation for Kbd",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/kbd.mdx",
+      "content": "---\ntitle: Kbd\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Display keyboard shortcuts and key combinations\n- Keyboard shortcut support for quick formatting\n- Renders as `<kbd>` HTML element by default\n\n</PackageInfo>\n\n## Kit Usage\n\n<Steps>\n\n### Installation\n\nThe fastest way to add the kbd plugin is with the `BasicMarksKit`, which includes pre-configured `KbdPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.\n\n<ComponentSource name=\"basic-marks-kit\" />\n\n- [`KbdLeaf`](/docs/components/kbd-node): Renders keyboard shortcut elements.\n\n### Add Kit\n\nAdd the kit to your plugins:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicMarksKit,\n  ],\n});\n```\n\n</Steps>\n\n## Manual Usage\n\n<Steps>\n\n### Installation\n\n```bash\nnpm install @platejs/basic-nodes\n```\n\n### Add Plugin\n\nInclude `KbdPlugin` in your Plate plugins array when creating the editor.\n\n```tsx\nimport { KbdPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    KbdPlugin,\n  ],\n});\n```\n\n### Configure Plugin\n\nYou can configure the `KbdPlugin` with a custom component.\n\n```tsx\nimport { KbdPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\nimport { KbdLeaf } from '@/components/ui/kbd-node';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    KbdPlugin.withComponent(KbdLeaf),\n  ],\n});\n```\n\n- `withComponent`: Assigns [`KbdLeaf`](/docs/components/kbd-node) to render keyboard shortcut elements.\n\n### Add Toolbar Button\n\nYou can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle kbd formatting.\n\n</Steps>\n\n## Plugins\n\n### `KbdPlugin`\n\nPlugin for keyboard input text formatting. Renders as `<kbd>` HTML element by default.\n\n## Transforms\n\n### `tf.kbd.toggle`\n\nToggles the kbd formatting for the selected text. ",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/kbd.mdx"
+    }
+  ]
+}

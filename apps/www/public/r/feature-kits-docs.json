@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "feature-kits-docs",
+  "type": "registry:file",
+  "title": "Feature Kits",
+  "description": "Understand how to use Feature Kits for rapid editor setup with pre-configured plugins and UI components.",
+  "files": [
+    {
+      "path": "../../docs/(guides)/feature-kits.mdx",
+      "content": "---\ntitle: Feature Kits\ndescription: Understand how to use Feature Kits for rapid editor setup with pre-configured plugins and UI components.\n---\n\nFeature Kits bundle related plugins and their UI components. They provide the fastest way to add editor features.\n\n## What are Feature Kits?\n\nFeature Kits are pre-assembled packages. They include multiple plugins and components for specific editor features.\n\nFor example, `BasicBlocksKit` includes plugins for paragraphs, headings, blockquotes, and horizontal rules. It also includes their UI components.\n\n## Benefits of Using Kits\n\n- **Fast setup**: Add multiple features with one import\n- **Best practices**: Kits use sensible defaults and configurations\n- **UI included**: Most kits include [Plate UI](/docs/installation/plate-ui) components\n- **Simple dependencies**: Kits handle plugin dependencies automatically\n\n## Kit Usage vs Manual Usage\n\nPlugin documentation shows two approaches:\n\n- **Kit Usage**: Use a pre-configured kit. This is the recommended approach for most users.\n- **Manual Usage**: Install and configure each plugin individually. Use this when you need:\n  - Custom plugin options beyond kit defaults\n  - Different UI components or no UI (headless)\n  - Only specific plugins from a kit\n\nKits are mostly the same as manual setup, but pre-configured.\n\n## Finding Available Kits\n\nLook for \"Kit Usage\" sections in plugin documentation. These sections show which kit to use and include the kit's source code.\n\n## Example: BasicBlocksKit\n\nThe [`BasicBlocksKit`](/docs/basic-blocks#installation) includes these plugins and components:\n\n- `ParagraphPlugin` with `ParagraphElement`\n- `H1Plugin` with `H1Element`\n- `H2Plugin` with `H2Element`\n- `H3Plugin` with `H3Element`\n- `BlockquotePlugin` with `BlockquoteElement`\n- `HorizontalRulePlugin` with `HrElement`\n\nInstead of adding each plugin separately, use the kit:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicBlocksKit,\n  ],\n});\n```\n\nThis adds all block elements with their UI components.\n\n## When to Use Manual Setup\n\nUse manual setup when you need:\n\n- **Custom options**: Kit defaults don't meet your needs\n- **Custom UI**: You're not using [Plate UI](/docs/installation/plate-ui) components\n- **Minimal setup**: You only need one or two plugins from a kit\n- **Learning**: You want to understand how plugins work together\n\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(guides)/feature-kits.mdx"
+    }
+  ]
+}

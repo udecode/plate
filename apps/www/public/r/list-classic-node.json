@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-classic-node",
+  "type": "registry:ui",
+  "title": "List Nodes",
+  "description": "List (classic) nodes for ordered and unordered items.",
+  "dependencies": [
+    "@platejs/list-classic"
+  ],
+  "registryDependencies": [
+    "checkbox"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/list-classic-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from 'platejs/react';\n\nimport {\n  useTodoListElement,\n  useTodoListElementState,\n} from '@platejs/list-classic/react';\nimport { type VariantProps, cva } from 'class-variance-authority';\nimport { PlateElement } from 'platejs/react';\n\nimport { Checkbox } from '@/components/ui/checkbox';\nimport { cn } from '@/lib/utils';\n\nconst listVariants = cva('m-0 py-1 ps-6', {\n  variants: {\n    variant: {\n      ol: 'list-decimal',\n      ul: 'list-disc [&_ul]:list-[circle] [&_ul_ul]:list-[square]',\n    },\n  },\n});\n\nexport function ListElement({\n  variant,\n  ...props\n}: PlateElementProps & VariantProps<typeof listVariants>) {\n  return (\n    <PlateElement\n      as={variant!}\n      className={listVariants({ variant })}\n      {...props}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n\nexport function BulletedListElement(props: PlateElementProps) {\n  return <ListElement variant=\"ul\" {...props} />;\n}\n\nexport function NumberedListElement(props: PlateElementProps) {\n  return <ListElement variant=\"ol\" {...props} />;\n}\n\nexport function TaskListElement(props: PlateElementProps) {\n  return (\n    <PlateElement as=\"ul\" className=\"m-0 list-none! py-1 ps-6\" {...props}>\n      {props.children}\n    </PlateElement>\n  );\n}\n\nexport function ListItemElement(props: PlateElementProps) {\n  const isTaskList = 'checked' in props.element;\n\n  if (isTaskList) {\n    return <TaskListItemElement {...props} />;\n  }\n\n  return <BaseListItemElement {...props} />;\n}\n\nexport function BaseListItemElement(props: PlateElementProps) {\n  return (\n    <PlateElement as=\"li\" {...props}>\n      {props.children}\n    </PlateElement>\n  );\n}\n\nexport function TaskListItemElement(props: PlateElementProps) {\n  const { element } = props;\n  const state = useTodoListElementState({ element });\n  const { checkboxProps } = useTodoListElement(state);\n  const [firstChild, ...otherChildren] = React.Children.toArray(props.children);\n\n  return (\n    <BaseListItemElement {...props}>\n      <div\n        className={cn(\n          'flex items-stretch *:nth-[2]:flex-1 *:nth-[2]:focus:outline-none',\n          {\n            '*:nth-[2]:text-muted-foreground *:nth-[2]:line-through':\n              state.checked,\n          }\n        )}\n      >\n        <div\n          className=\"-ms-5 me-1.5 flex w-fit select-none items-start justify-center pt-[0.275em]\"\n          contentEditable={false}\n        >\n          <Checkbox {...checkboxProps} />\n        </div>\n\n        {firstChild}\n      </div>\n\n      {otherChildren}\n    </BaseListItemElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/list-classic"
+      }
+    ],
+    "examples": [
+      "list-classic-demo"
+    ]
+  }
+}

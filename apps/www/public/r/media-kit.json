@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-kit",
+  "type": "registry:component",
+  "description": "Media kit without API (see media-uploadthing-api for reference)",
+  "dependencies": [
+    "@platejs/caption",
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/media-base-kit",
+    "https://platejs.org/r/media-audio-node",
+    "https://platejs.org/r/media-embed-node",
+    "https://platejs.org/r/media-file-node",
+    "https://platejs.org/r/media-image-node",
+    "https://platejs.org/r/media-placeholder-node",
+    "https://platejs.org/r/media-preview-dialog",
+    "https://platejs.org/r/media-toolbar",
+    "https://platejs.org/r/media-upload-toast",
+    "https://platejs.org/r/media-video-node",
+    "https://platejs.org/r/media-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/media-kit.tsx",
+      "content": "'use client';\n\nimport { CaptionPlugin } from '@platejs/caption/react';\nimport {\n  AudioPlugin,\n  FilePlugin,\n  ImagePlugin,\n  MediaEmbedPlugin,\n  PlaceholderPlugin,\n  VideoPlugin,\n} from '@platejs/media/react';\nimport { KEYS } from 'platejs';\n\nimport { AudioElement } from '@/registry/ui/media-audio-node';\nimport { MediaEmbedElement } from '@/registry/ui/media-embed-node';\nimport { FileElement } from '@/registry/ui/media-file-node';\nimport { ImageElement } from '@/registry/ui/media-image-node';\nimport { PlaceholderElement } from '@/registry/ui/media-placeholder-node';\nimport { MediaPreviewDialog } from '@/registry/ui/media-preview-dialog';\nimport { MediaUploadToast } from '@/registry/ui/media-upload-toast';\nimport { VideoElement } from '@/registry/ui/media-video-node';\n\nexport const MediaKit = [\n  ImagePlugin.configure({\n    options: { disableUploadInsert: true },\n    render: { afterEditable: MediaPreviewDialog, node: ImageElement },\n  }),\n  MediaEmbedPlugin.withComponent(MediaEmbedElement),\n  VideoPlugin.withComponent(VideoElement),\n  AudioPlugin.withComponent(AudioElement),\n  FilePlugin.withComponent(FileElement),\n  PlaceholderPlugin.configure({\n    options: { disableEmptyPlaceholder: true },\n    render: { afterEditable: MediaUploadToast, node: PlaceholderElement },\n  }),\n  CaptionPlugin.configure({\n    options: {\n      query: {\n        allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],\n      },\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

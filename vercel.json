@@ -1,7 +1,4 @@
 {
-  "buildCommand": "bun run build && turbo build --filter=www",
-  "installCommand": "bun install",
-  "framework": "nextjs",
   "functions": {
     "app/**/*": {
       "maxDuration": 1

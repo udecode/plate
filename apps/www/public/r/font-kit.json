@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "font-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/basic-styles"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/font-base-kit",
+    "https://platejs.org/r/font-size-toolbar-button",
+    "https://platejs.org/r/font-color-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/font-kit.tsx",
+      "content": "'use client';\n\nimport type { PlatePluginConfig } from 'platejs/react';\n\nimport {\n  FontBackgroundColorPlugin,\n  FontColorPlugin,\n  FontFamilyPlugin,\n  FontSizePlugin,\n} from '@platejs/basic-styles/react';\nimport { KEYS } from 'platejs';\n\nconst options = {\n  inject: { targetPlugins: [KEYS.p] },\n} satisfies PlatePluginConfig;\n\nexport const FontKit = [\n  FontColorPlugin.configure({\n    inject: {\n      ...options.inject,\n      nodeProps: {\n        defaultNodeValue: 'black',\n      },\n    },\n  }),\n  FontBackgroundColorPlugin.configure(options),\n  FontSizePlugin.configure(options),\n  FontFamilyPlugin.configure(options),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

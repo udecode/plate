@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hr-node",
+  "type": "registry:ui",
+  "title": "Horizontal Rule Element",
+  "description": "A horizontal rule component with focus states.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/hr-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from 'platejs/react';\n\nimport {\n  PlateElement,\n  useFocused,\n  useReadOnly,\n  useSelected,\n} from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElement(props: PlateElementProps) {\n  const readOnly = useReadOnly();\n  const selected = useSelected();\n  const focused = useFocused();\n\n  return (\n    <PlateElement {...props}>\n      <div className=\"py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content',\n            selected && focused && 'ring-2 ring-ring ring-offset-2',\n            !readOnly && 'cursor-pointer'\n          )}\n        />\n      </div>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/hr-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nimport { cn } from '@/lib/utils';\n\nexport function HrElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props}>\n      <div className=\"cursor-text py-6\" contentEditable={false}>\n        <hr\n          className={cn(\n            'h-0.5 rounded-sm border-none bg-muted bg-clip-content'\n          )}\n        />\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/horizontal-rule"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/hr-node"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo"
+    ]
+  }
+}

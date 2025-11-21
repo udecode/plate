@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "use-is-touch-device",
+  "type": "registry:hook",
+  "files": [
+    {
+      "path": "src/registry/hooks/use-is-touch-device.ts",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nexport function useIsTouchDevice() {\n  const [isTouchDevice, setIsTouchDevice] = React.useState(false);\n\n  React.useEffect(() => {\n    function onResize() {\n      setIsTouchDevice(\n        'ontouchstart' in window ||\n          navigator.maxTouchPoints > 0 ||\n          navigator.maxTouchPoints > 0\n      );\n    }\n\n    window.addEventListener('resize', onResize);\n    onResize();\n\n    return () => {\n      window.removeEventListener('resize', onResize);\n    };\n  }, []);\n\n  return isTouchDevice;\n}\n",
+      "type": "registry:hook"
+    }
+  ]
+}

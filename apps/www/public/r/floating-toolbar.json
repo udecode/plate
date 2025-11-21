@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "floating-toolbar",
+  "type": "registry:ui",
+  "title": "Floating Toolbar",
+  "description": "A contextual toolbar that appears over selected text.",
+  "dependencies": [
+    "@udecode/cn",
+    "@platejs/floating"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/tailwind-scrollbar-hide"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/floating-toolbar.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  type FloatingToolbarState,\n  flip,\n  offset,\n  useFloatingToolbar,\n  useFloatingToolbarState,\n} from '@platejs/floating';\nimport { useComposedRef } from '@udecode/cn';\nimport { KEYS } from 'platejs';\nimport {\n  useEditorId,\n  useEventEditorValue,\n  usePluginOption,\n} from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Toolbar } from './toolbar';\n\nexport function FloatingToolbar({\n  children,\n  className,\n  state,\n  ...props\n}: React.ComponentProps<typeof Toolbar> & {\n  state?: FloatingToolbarState;\n}) {\n  const editorId = useEditorId();\n  const focusedEditorId = useEventEditorValue('focus');\n  const isFloatingLinkOpen = !!usePluginOption({ key: KEYS.link }, 'mode');\n  const isAIChatOpen = usePluginOption({ key: KEYS.aiChat }, 'open');\n\n  const floatingToolbarState = useFloatingToolbarState({\n    editorId,\n    focusedEditorId,\n    hideToolbar: isFloatingLinkOpen || isAIChatOpen,\n    ...state,\n    floatingOptions: {\n      middleware: [\n        offset(12),\n        flip({\n          fallbackPlacements: [\n            'top-start',\n            'top-end',\n            'bottom-start',\n            'bottom-end',\n          ],\n          padding: 12,\n        }),\n      ],\n      placement: 'top',\n      ...state?.floatingOptions,\n    },\n  });\n\n  const {\n    clickOutsideRef,\n    hidden,\n    props: rootProps,\n    ref: floatingRef,\n  } = useFloatingToolbar(floatingToolbarState);\n\n  const ref = useComposedRef<HTMLDivElement>(props.ref, floatingRef);\n\n  if (hidden) return null;\n\n  return (\n    <div ref={clickOutsideRef}>\n      <Toolbar\n        {...props}\n        {...rootProps}\n        ref={ref}\n        className={cn(\n          'scrollbar-hide absolute z-50 overflow-x-auto whitespace-nowrap rounded-md border bg-popover p-1 opacity-100 shadow-md print:hidden',\n          'max-w-[80vw]',\n          className\n        )}\n      >\n        {children}\n      </Toolbar>\n    </div>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/api/floating"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/floating-toolbar"
+      }
+    ],
+    "examples": [
+      "floating-toolbar-demo",
+      "floating-toolbar-pro"
+    ]
+  }
+}

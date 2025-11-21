@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "indent-toolbar-button",
+  "type": "registry:ui",
+  "title": "Indent Toolbar Buttons",
+  "description": "Toolbar controls for block indentation.",
+  "dependencies": [
+    "@platejs/indent"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/indent-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { useIndentButton, useOutdentButton } from '@platejs/indent/react';\nimport { IndentIcon, OutdentIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function IndentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { props: buttonProps } = useIndentButton();\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} tooltip=\"Indent\">\n      <IndentIcon />\n    </ToolbarButton>\n  );\n}\n\nexport function OutdentToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { props: buttonProps } = useOutdentButton();\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} tooltip=\"Outdent\">\n      <OutdentIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/indent"
+      }
+    ],
+    "examples": [
+      "indent-demo"
+    ]
+  }
+}

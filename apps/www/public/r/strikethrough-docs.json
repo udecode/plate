@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "strikethrough-docs",
+  "type": "registry:file",
+  "title": "Strikethrough",
+  "description": "Documentation for Strikethrough",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/strikethrough.mdx",
+      "content": "---\ntitle: Strikethrough\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Apply strikethrough formatting to indicate deleted or outdated content\n- Keyboard shortcut support for quick formatting\n- Renders as `<s>` HTML element by default\n\n</PackageInfo>\n\n## Kit Usage\n\n<Steps>\n\n### Installation\n\nThe fastest way to add the strikethrough plugin is with the `BasicMarksKit`, which includes pre-configured `StrikethroughPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.\n\n<ComponentSource name=\"basic-marks-kit\" />\n\n### Add Kit\n\nAdd the kit to your plugins:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicMarksKit,\n  ],\n});\n```\n\n</Steps>\n\n## Manual Usage\n\n<Steps>\n\n### Installation\n\n```bash\nnpm install @platejs/basic-nodes\n```\n\n### Add Plugin\n\nInclude `StrikethroughPlugin` in your Plate plugins array when creating the editor.\n\n```tsx\nimport { StrikethroughPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    StrikethroughPlugin,\n  ],\n});\n```\n\n### Configure Plugin\n\nYou can configure the `StrikethroughPlugin` with custom keyboard shortcuts.\n\n```tsx\nimport { StrikethroughPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    StrikethroughPlugin.configure({\n      shortcuts: { toggle: { keys: 'mod+shift+x' } },\n    }),\n  ],\n});\n```\n\n- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle strikethrough formatting.\n\n### Add Toolbar Button\n\nYou can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle strikethrough formatting.\n\n</Steps>\n\n## Plugins\n\n### `StrikethroughPlugin`\n\nPlugin for strikethrough text formatting. Renders as `<s>` HTML element by default.\n\n## Transforms\n\n### `tf.strikethrough.toggle`\n\nToggles the strikethrough formatting for the selected text.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/strikethrough.mdx"
+    }
+  ]
+}

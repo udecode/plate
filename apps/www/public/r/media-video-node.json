@@ -1,0 +1,47 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-video-node",
+  "type": "registry:ui",
+  "title": "Media Video Element",
+  "description": "A video player component with YouTube and file upload support.",
+  "dependencies": [
+    "@platejs/media",
+    "@platejs/resizable",
+    "react-player@3.3.1",
+    "react-lite-youtube-embed"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/media-toolbar",
+    "https://platejs.org/r/caption",
+    "https://platejs.org/r/resize-handle"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-video-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\nimport LiteYouTubeEmbed from 'react-lite-youtube-embed';\nimport ReactPlayer from 'react-player';\n\nimport type { TResizableProps, TVideoElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useDraggable } from '@platejs/dnd';\nimport { parseTwitterUrl, parseVideoUrl } from '@platejs/media';\nimport { useMediaState } from '@platejs/media/react';\nimport { ResizableProvider, useResizableValue } from '@platejs/resizable';\nimport { PlateElement, useEditorMounted, withHOC } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Caption, CaptionTextarea } from './caption';\nimport {\n  mediaResizeHandleVariants,\n  Resizable,\n  ResizeHandle,\n} from './resize-handle';\n\nexport const VideoElement = withHOC(\n  ResizableProvider,\n  function VideoElement(\n    props: PlateElementProps<TVideoElement & TResizableProps>\n  ) {\n    const {\n      align = 'center',\n      embed,\n      isUpload,\n      isYoutube,\n      readOnly,\n      unsafeUrl,\n    } = useMediaState({\n      urlParsers: [parseTwitterUrl, parseVideoUrl],\n    });\n    const width = useResizableValue('width');\n\n    const isEditorMounted = useEditorMounted();\n\n    const isTweet = true;\n\n    const { isDragging, handleRef } = useDraggable({\n      element: props.element,\n    });\n\n    return (\n      <PlateElement className=\"py-2.5\" {...props}>\n        <figure className=\"relative m-0 cursor-default\" contentEditable={false}>\n          <Resizable\n            className={cn(isDragging && 'opacity-50')}\n            align={align}\n            options={{\n              align,\n              maxWidth: isTweet ? 550 : '100%',\n              minWidth: isTweet ? 300 : 100,\n              readOnly,\n            }}\n          >\n            <div className=\"group/media\">\n              <ResizeHandle\n                className={mediaResizeHandleVariants({ direction: 'left' })}\n                options={{ direction: 'left' }}\n              />\n\n              <ResizeHandle\n                className={mediaResizeHandleVariants({ direction: 'right' })}\n                options={{ direction: 'right' }}\n              />\n\n              {!isUpload && isYoutube && (\n                <div ref={handleRef}>\n                  <LiteYouTubeEmbed\n                    id={embed!.id!}\n                    title=\"youtube\"\n                    wrapperClass={cn(\n                      'aspect-video rounded-sm',\n                      'relative block cursor-pointer bg-black bg-center bg-cover [contain:content]',\n                      '[&.lyt-activated]:before:absolute [&.lyt-activated]:before:top-0 [&.lyt-activated]:before:h-[60px] [&.lyt-activated]:before:w-full [&.lyt-activated]:before:bg-top [&.lyt-activated]:before:bg-repeat-x [&.lyt-activated]:before:pb-[50px] [&.lyt-activated]:before:[transition:all_0.2s_cubic-bezier(0,_0,_0.2,_1)]',\n                      '[&.lyt-activated]:before:bg-[url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAADGCAYAAAAT+OqFAAAAdklEQVQoz42QQQ7AIAgEF/T/D+kbq/RWAlnQyyazA4aoAB4FsBSA/bFjuF1EOL7VbrIrBuusmrt4ZZORfb6ehbWdnRHEIiITaEUKa5EJqUakRSaEYBJSCY2dEstQY7AuxahwXFrvZmWl2rh4JZ07z9dLtesfNj5q0FU3A5ObbwAAAABJRU5ErkJggg==)]',\n                      'after:block after:pb-[var(--aspect-ratio)] after:content-[\"\"]',\n                      '[&_>_iframe]:absolute [&_>_iframe]:top-0 [&_>_iframe]:left-0 [&_>_iframe]:size-full',\n                      '[&_>_.lty-playbtn]:z-1 [&_>_.lty-playbtn]:h-[46px] [&_>_.lty-playbtn]:w-[70px] [&_>_.lty-playbtn]:rounded-[14%] [&_>_.lty-playbtn]:bg-[#212121] [&_>_.lty-playbtn]:opacity-80 [&_>_.lty-playbtn]:[transition:all_0.2s_cubic-bezier(0,_0,_0.2,_1)]',\n                      '[&:hover_>_.lty-playbtn]:bg-[red] [&:hover_>_.lty-playbtn]:opacity-100',\n                      '[&_>_.lty-playbtn]:before:border-[transparent_transparent_transparent_#fff] [&_>_.lty-playbtn]:before:border-y-[11px] [&_>_.lty-playbtn]:before:border-r-0 [&_>_.lty-playbtn]:before:border-l-[19px] [&_>_.lty-playbtn]:before:content-[\"\"]',\n                      '[&_>_.lty-playbtn]:absolute [&_>_.lty-playbtn]:top-1/2 [&_>_.lty-playbtn]:left-1/2 [&_>_.lty-playbtn]:[transform:translate3d(-50%,-50%,0)]',\n                      '[&_>_.lty-playbtn]:before:absolute [&_>_.lty-playbtn]:before:top-1/2 [&_>_.lty-playbtn]:before:left-1/2 [&_>_.lty-playbtn]:before:[transform:translate3d(-50%,-50%,0)]',\n                      '[&.lyt-activated]:cursor-[unset]',\n                      '[&.lyt-activated]:before:pointer-events-none [&.lyt-activated]:before:opacity-0',\n                      '[&.lyt-activated_>_.lty-playbtn]:pointer-events-none [&.lyt-activated_>_.lty-playbtn]:opacity-0!'\n                    )}\n                  />\n                </div>\n              )}\n\n              {isUpload && isEditorMounted && (\n                <div ref={handleRef}>\n                  <ReactPlayer\n                    height=\"100%\"\n                    src={unsafeUrl}\n                    width=\"100%\"\n                    controls\n                  />\n                </div>\n              )}\n            </div>\n          </Resizable>\n\n          <Caption style={{ width }} align={align}>\n            <CaptionTextarea\n              readOnly={readOnly}\n              placeholder=\"Write a caption...\"\n            />\n          </Caption>\n        </figure>\n        {props.children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/media-video-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TCaptionElement, TResizableProps, TVideoElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { NodeApi } from 'platejs';\nimport { SlateElement } from 'platejs/static';\n\nexport function VideoElementStatic(\n  props: SlateElementProps<TVideoElement & TCaptionElement & TResizableProps>\n) {\n  const { align = 'center', caption, url, width } = props.element;\n\n  return (\n    <SlateElement className=\"py-2.5\" {...props}>\n      <div style={{ textAlign: align }}>\n        <figure\n          className=\"group relative m-0 inline-block cursor-default\"\n          style={{ width }}\n        >\n          <video\n            className=\"w-full max-w-full rounded-sm object-cover px-0\"\n            src={url}\n            controls\n          />\n          {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}\n        </figure>\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "/docs/api/resizable"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-video-node"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

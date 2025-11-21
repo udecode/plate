@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-slate-location-docs",
+  "type": "registry:file",
+  "title": "Location",
+  "description": "API reference for locations in Plate.",
+  "files": [
+    {
+      "path": "../../docs/api/slate/location.mdx",
+      "content": "---\ntitle: Location\ndescription: API reference for locations in Plate.\n---\n\nA Location is either a Path, Point or Range. Methods will often accept a Location instead of requiring only a Path, Point or Range.\n\n```typescript\ntype TLocation = Path | Point | TRange\n```\n\n- [Path](/docs/api/slate/path)\n- [PathRef](/docs/api/slate/location-ref#pathref)\n- [Point](/docs/api/slate/point)\n- [PointRef](/docs/api/slate/location-ref#pointref)\n- [Range](/docs/api/slate/range)\n- [RangeRef](/docs/api/slate/location-ref#rangeref)\n\n## `LocationApi`\n\n### `isAt`\n\nCheck if a value implements the `At` interface.\n\n<API name=\"isAt\">\n<APIParameters>\n  <APIItem name=\"value\" type=\"any\">\n    The value to check.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"boolean\">\n  `true` if the value is either a location or a node.\n</APIReturns>\n</API>\n\n### `isLocation`\n\nCheck if a value implements the `TLocation` interface.\n\n<API name=\"isLocation\">\n<APIParameters>\n  <APIItem name=\"value\" type=\"any\">\n    The value to check.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"boolean\">\n  `true` if the value is a `Path`, `Point`, or `TRange`.\n</APIReturns>\n</API>\n\n### `isSpan`\n\nCheck if a value implements the `Span` interface.\n\n<API name=\"isSpan\">\n<APIParameters>\n  <APIItem name=\"value\" type=\"any\">\n    The value to check.\n  </APIItem>\n</APIParameters>\n\n<APIReturns type=\"boolean\">\n  `true` if the value is a valid `Span`.\n</APIReturns>\n</API>\n\n## Types\n\n### `TLocation`\n\n`Location` is a type alias for `TLocation`.\n\n<API name=\"TLocation\">\n<APIAttributes>\n  <APIItem name=\"Path\" type=\"Path\">\n    An array of numbers representing a node's position.\n  </APIItem>\n  <APIItem name=\"Point\" type=\"Point\">\n    An object with `path` and `offset`.\n  </APIItem>\n  <APIItem name=\"TRange\" type=\"TRange\">\n    An object with `anchor` and `focus`.\n  </APIItem>\n</APIAttributes>\n</API>\n\n### `Span`\n\n<API name=\"Span\">\n<APIAttributes>\n  <APIItem name=\"[0]\" type=\"Path\">\n    The start path.\n  </APIItem>\n  <APIItem name=\"[1]\" type=\"Path\">\n    The end path.\n  </APIItem>\n</APIAttributes>\n</API>",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/slate/location.mdx"
+    }
+  ]
+}

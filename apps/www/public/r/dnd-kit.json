@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "dnd-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/dnd",
+    "@platejs/media",
+    "react-dnd",
+    "react-dnd-html5-backend"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-draggable"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/dnd-kit.tsx",
+      "content": "'use client';\n\nimport { DndProvider } from 'react-dnd';\nimport { HTML5Backend } from 'react-dnd-html5-backend';\n\nimport { DndPlugin } from '@platejs/dnd';\nimport { PlaceholderPlugin } from '@platejs/media/react';\n\nimport { BlockDraggable } from '@/registry/ui/block-draggable';\n\nexport const DndKit = [\n  DndPlugin.configure({\n    options: {\n      enableScroller: true,\n      onDropFiles: ({ dragItem, editor, target }) => {\n        editor\n          .getTransforms(PlaceholderPlugin)\n          .insert.media(dragItem.files, { at: target, nextBlock: false });\n      },\n    },\n    render: {\n      aboveNodes: BlockDraggable,\n      aboveSlate: ({ children }) => (\n        <DndProvider backend={HTML5Backend}>{children}</DndProvider>\n      ),\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

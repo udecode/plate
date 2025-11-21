@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-audio-node",
+  "type": "registry:ui",
+  "title": "Media Audio Element",
+  "description": "An audio player component with caption support.",
+  "dependencies": [
+    "@platejs/media",
+    "@platejs/resizable"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/caption"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-audio-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TAudioElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useMediaState } from '@platejs/media/react';\nimport { ResizableProvider } from '@platejs/resizable';\nimport { PlateElement, withHOC } from 'platejs/react';\n\nimport { Caption, CaptionTextarea } from './caption';\n\nexport const AudioElement = withHOC(\n  ResizableProvider,\n  function AudioElement(props: PlateElementProps<TAudioElement>) {\n    const { align = 'center', readOnly, unsafeUrl } = useMediaState();\n\n    return (\n      <PlateElement {...props} className=\"mb-1\">\n        <figure\n          className=\"group relative cursor-default\"\n          contentEditable={false}\n        >\n          <div className=\"h-16\">\n            <audio className=\"size-full\" src={unsafeUrl} controls />\n          </div>\n\n          <Caption style={{ width: '100%' }} align={align}>\n            <CaptionTextarea\n              className=\"h-20\"\n              readOnly={readOnly}\n              placeholder=\"Write a caption...\"\n            />\n          </Caption>\n        </figure>\n        {props.children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/media-audio-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TAudioElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nexport function AudioElementStatic(props: SlateElementProps<TAudioElement>) {\n  return (\n    <SlateElement {...props} className=\"mb-1\">\n      <figure className=\"group relative cursor-default\">\n        <div className=\"h-16\">\n          <audio className=\"size-full\" src={props.element.url} controls />\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-audio-node"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

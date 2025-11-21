@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "equation-toolbar-button",
+  "type": "registry:ui",
+  "title": "Equation Toolbar Button",
+  "description": "A toolbar button for inserting and editing equations.",
+  "dependencies": [
+    "@platejs/math"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/equation-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { insertInlineEquation } from '@platejs/math';\nimport { RadicalIcon } from 'lucide-react';\nimport { useEditorRef } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function InlineEquationToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditorRef();\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        insertInlineEquation(editor);\n      }}\n      tooltip=\"Mark as equation\"\n    >\n      <RadicalIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "http://localhost:3000/docs/equation",
+        "title": "Equation"
+      }
+    ],
+    "examples": [
+      "equation-demo",
+      "floating-toolbar-demo"
+    ]
+  }
+}

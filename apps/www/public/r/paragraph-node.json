@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "paragraph-node",
+  "type": "registry:ui",
+  "title": "Paragraph Element",
+  "description": "A paragraph block with background color support.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/paragraph-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { PlateElement } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElement(props: PlateElementProps) {\n  return (\n    <PlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/paragraph-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nimport { cn } from '@/lib/utils';\n\nexport function ParagraphElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement {...props} className={cn('m-0 px-0 py-1')}>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-blocks"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/paragraph-node"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

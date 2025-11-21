@@ -1,0 +1,39 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comment-node",
+  "type": "registry:ui",
+  "title": "Comment Leaf",
+  "description": "A text component for displaying comments with visual indicators.",
+  "dependencies": [
+    "@platejs/comment"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/highlight-style"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/comment-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TCommentText } from 'platejs';\nimport type { PlateLeafProps } from 'platejs/react';\n\nimport { getCommentCount } from '@platejs/comment';\nimport { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\nimport { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';\n\nexport function CommentLeaf(props: PlateLeafProps<TCommentText>) {\n  const { children, leaf } = props;\n\n  const { api, setOption } = useEditorPlugin(commentPlugin);\n  const hoverId = usePluginOption(commentPlugin, 'hoverId');\n  const activeId = usePluginOption(commentPlugin, 'activeId');\n\n  const isOverlapping = getCommentCount(leaf) > 1;\n  const currentId = api.comment.nodeId(leaf);\n  const isActive = activeId === currentId;\n  const isHover = hoverId === currentId;\n\n  return (\n    <PlateLeaf\n      {...props}\n      className={cn(\n        'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200',\n        (isHover || isActive) && 'border-b-highlight bg-highlight/25',\n        isOverlapping && 'border-b-2 border-b-highlight/[.7] bg-highlight/25',\n        (isHover || isActive) &&\n          isOverlapping &&\n          'border-b-highlight bg-highlight/45'\n      )}\n      attributes={{\n        ...props.attributes,\n        onClick: () => setOption('activeId', currentId ?? null),\n        onMouseEnter: () => setOption('hoverId', currentId ?? null),\n        onMouseLeave: () => setOption('hoverId', null),\n      }}\n    >\n      {children}\n    </PlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/comment-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TCommentText } from 'platejs';\nimport type { SlateLeafProps } from 'platejs/static';\n\nimport { SlateLeaf } from 'platejs/static';\n\nexport function CommentLeafStatic(props: SlateLeafProps<TCommentText>) {\n  return (\n    <SlateLeaf\n      {...props}\n      className=\"border-b-2 border-b-highlight/35 bg-highlight/15\"\n    >\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/comment"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/comment-node"
+      }
+    ],
+    "examples": [
+      "discussion-demo",
+      "discussion-pro"
+    ]
+  }
+}

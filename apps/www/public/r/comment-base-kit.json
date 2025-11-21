@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comment-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/comment"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/comment-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/comment-base-kit.tsx",
+      "content": "import { BaseCommentPlugin } from '@platejs/comment';\n\nimport { CommentLeafStatic } from '@/registry/ui/comment-node-static';\n\nexport const BaseCommentKit = [\n  BaseCommentPlugin.withComponent(CommentLeafStatic),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

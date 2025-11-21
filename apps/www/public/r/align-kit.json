@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "align-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/basic-styles"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/align-base-kit",
+    "https://platejs.org/r/align-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/align-kit.tsx",
+      "content": "'use client';\n\nimport { TextAlignPlugin } from '@platejs/basic-styles/react';\nimport { KEYS } from 'platejs';\n\nexport const AlignKit = [\n  TextAlignPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 'start',\n        nodeKey: 'align',\n        styleKey: 'textAlign',\n        validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],\n      },\n      targetPlugins: [...KEYS.heading, KEYS.p, KEYS.img, KEYS.mediaEmbed],\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

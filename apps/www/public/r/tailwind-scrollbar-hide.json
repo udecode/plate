@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tailwind-scrollbar-hide",
+  "type": "registry:style",
+  "dependencies": [
+    "tailwind-scrollbar-hide"
+  ],
+  "files": [],
+  "tailwind": {
+    "config": {
+      "plugins": [
+        "tailwind-scrollbar-hide"
+      ]
+    }
+  }
+}

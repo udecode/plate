@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-file-node",
+  "type": "registry:ui",
+  "title": "Media File Element",
+  "description": "A file attachment component with download capability and caption.",
+  "dependencies": [
+    "@platejs/media",
+    "@platejs/resizable"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/caption"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-file-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TFileElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useMediaState } from '@platejs/media/react';\nimport { ResizableProvider } from '@platejs/resizable';\nimport { FileUp } from 'lucide-react';\nimport { PlateElement, useReadOnly, withHOC } from 'platejs/react';\n\nimport { Caption, CaptionTextarea } from './caption';\n\nexport const FileElement = withHOC(\n  ResizableProvider,\n  function FileElement(props: PlateElementProps<TFileElement>) {\n    const readOnly = useReadOnly();\n    const { name, unsafeUrl } = useMediaState();\n\n    return (\n      <PlateElement className=\"my-px rounded-sm\" {...props}>\n        <a\n          className=\"group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted\"\n          contentEditable={false}\n          download={name}\n          href={unsafeUrl}\n          rel=\"noopener noreferrer\"\n          role=\"button\"\n          target=\"_blank\"\n        >\n          <div className=\"flex items-center gap-1 p-1\">\n            <FileUp className=\"size-5\" />\n            <div>{name}</div>\n          </div>\n\n          <Caption align=\"left\">\n            <CaptionTextarea\n              className=\"text-left\"\n              readOnly={readOnly}\n              placeholder=\"Write a caption...\"\n            />\n          </Caption>\n        </a>\n        {props.children}\n      </PlateElement>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/media-file-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TFileElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { FileUp } from 'lucide-react';\nimport { SlateElement } from 'platejs/static';\n\nexport function FileElementStatic(props: SlateElementProps<TFileElement>) {\n  const { name, url } = props.element;\n\n  return (\n    <SlateElement className=\"my-px rounded-sm\" {...props}>\n      <a\n        className=\"group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted\"\n        contentEditable={false}\n        download={name}\n        href={url}\n        rel=\"noopener noreferrer\"\n        role=\"button\"\n        target=\"_blank\"\n      >\n        <div className=\"flex items-center gap-1 p-1\">\n          <FileUp className=\"size-5\" />\n          <div>{name}</div>\n        </div>\n      </a>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/media-file-node"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-plate-docs",
+  "type": "registry:file",
+  "title": "Plate",
+  "description": "API reference for platejs.",
+  "files": [
+    {
+      "path": "../../docs/api/plate.mdx",
+      "content": "---\ntitle: Plate\ndescription: API reference for platejs.\n---\n\n`platejs` contains common types and functions for Plate:\n\n- [Slate](/docs/api/slate)\n- [Plate Core](/docs/api/core)\n- [Plate Utils](/docs/api/utils)\n- [React Utils](/docs/api/react-utils)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/plate.mdx"
+    }
+  ]
+}

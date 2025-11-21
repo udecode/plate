@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-block-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/code-block",
+    "lowlight"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-block-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/code-block-base-kit.tsx",
+      "content": "import {\n  BaseCodeBlockPlugin,\n  BaseCodeLinePlugin,\n  BaseCodeSyntaxPlugin,\n} from '@platejs/code-block';\nimport { all, createLowlight } from 'lowlight';\n\nimport {\n  CodeBlockElementStatic,\n  CodeLineElementStatic,\n  CodeSyntaxLeafStatic,\n} from '@/registry/ui/code-block-node-static';\n\nconst lowlight = createLowlight(all);\n\nexport const BaseCodeBlockKit = [\n  BaseCodeBlockPlugin.configure({\n    node: { component: CodeBlockElementStatic },\n    options: { lowlight },\n  }),\n  BaseCodeLinePlugin.withComponent(CodeLineElementStatic),\n  BaseCodeSyntaxPlugin.withComponent(CodeSyntaxLeafStatic),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

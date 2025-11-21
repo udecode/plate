@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-blocks-docs",
+  "type": "registry:file",
+  "title": "Basic Elements",
+  "description": "Commonly used block elements for structuring content.",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(elements)/basic-blocks.mdx",
+      "content": "---\ntitle: Basic Elements\ndescription: Commonly used block elements for structuring content.\n---\n\n<Cards>\n\n<Card icon=\"heading\" title=\"Heading\" href=\"/docs/heading\">\nCreate headings of various levels to structure content.\n</Card>\n\n<Card icon=\"blockquote\" title=\"Blockquote\" href=\"/docs/blockquote\">\nEmphasize important information with styled quotes.\n</Card>\n\n<Card icon=\"horizontal-rule\" title=\"Horizontal Rule\" href=\"/docs/horizontal-rule\">\nInsert horizontal lines to separate content.\n</Card>\n\n</Cards>\n\n<ComponentPreview name=\"basic-blocks-demo\" />\n\n## Kit Usage\n\n<Steps>\n\n### Installation\n\nThe `BasicBlocksKit` bundles plugins for Paragraphs, Headings (H1, H2, H3), Blockquotes, and Horizontal Rules, along with their respective UI components from [Plate UI](/docs/installation/plate-ui).\n\n<ComponentSource name=\"basic-blocks-kit\" />\n\n- [`ParagraphElement`](/docs/components/paragraph-node): Renders paragraph elements.\n- [`H1Element`](/docs/components/heading-node): Renders H1 elements.\n- [`H2Element`](/docs/components/heading-node): Renders H2 elements.\n- [`H3Element`](/docs/components/heading-node): Renders H3 elements.\n- [`BlockquoteElement`](/docs/components/blockquote-node): Renders blockquote elements.\n- [`HrElement`](/docs/components/hr-node): Renders horizontal rule elements.\n\n### Add Kit\n\nAdd the kit to your plugins:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicBlocksKit,\n  ],\n});\n```\n\n</Steps>\n\n## Manual Usage\n\n```bash\nnpm install @platejs/basic-nodes\n```\n\nFor individual plugin setup and configuration, see the specific plugin documentation pages linked above.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(elements)/basic-blocks.mdx"
+    }
+  ]
+}
