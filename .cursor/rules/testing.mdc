@@ -1,28 +1,41 @@
 ---
-description: Guidelines for writing unit tests in the Plate monorepo using Jest, React Testing Library, and Slate Hyperscript JSX.
+description: Guidelines for writing unit tests in the Plate monorepo using Bun test runner, React Testing Library, and Slate Hyperscript JSX.
 globs: packages/**/*.spec.{ts,tsx}, packages/**/*.test.{ts,tsx}
 alwaysApply: true
 ---
 
 - **Testing Framework and Setup:**
-  - Use Jest with TypeScript (`ts-jest`) and SWC transformer
-  - Tests run in `jsdom` environment
-  - Test files must end with `.spec.ts` or `.spec.tsx`
-  - Global setup includes `@testing-library/jest-dom` and Slate test utils
+  - Use Bun test runner with TypeScript support
+  - Tests run in Happy-DOM environment
+  - Test files: `.spec.ts`, `.spec.tsx`, or `.test.tsx` (udecode packages)
+  - Global setup via `tooling/config/bunTestSetup.ts` preload
   - Use `describe` blocks to group related tests
   - Use `it` or `test` for individual test cases
   - Use `beforeEach` for common setup between tests
   - E2E tests use Playwright (see `tooling/e2e/*.spec.ts`)
 
-- **Required Imports for Slate Hyperscript JSX:**
+- **Bun Test Imports:**
+  ```typescript
+  import { describe, expect, test as it, mock, spyOn, beforeEach, afterEach } from 'bun:test';
+  ```
+
+- **JSX Pragma (CRITICAL - MUST BE FIRST LINE):**
   ```typescript
   /** @jsx jsx */
+  import { describe, expect, test as it } from 'bun:test';
+
   import { jsx } from '@platejs/test-utils';
 
   jsx; // Required to prevent removal by compiler
   ```
-  
-  Or for typed JSX in docx tests:
+
+  **❌ WRONG - Imports before pragma:**
+  ```typescript
+  import { describe, expect, test as it } from 'bun:test';
+  /** @jsx jsx */  // ← Too late!
+  ```
+
+  For typed JSX in docx tests:
   ```typescript
   /** @jsx jsxt */
   import { jsxt } from '@platejs/test-utils';
@@ -149,22 +162,70 @@ alwaysApply: true
   });
   ```
 
-- **Mock Usage:**
+- **Mock Usage (Bun):**
   ```typescript
-  // ✅ DO: Mock external dependencies
-  jest.mock('nanoid', () => ({
-    nanoid: () => 'mock-id',
-  }));
+  import { mock, spyOn, beforeEach, afterEach } from 'bun:test';
 
-  // ✅ DO: Spy on console methods in setup
-  jest.spyOn(global.console, 'warn').mockImplementation(() => jest.fn());
-  
-  // ✅ DO: Mock specific functions
-  const mockOnChange = jest.fn();
-  const mockOnKeyDown = jest.fn();
-  
-  // ✅ DO: Mock complex objects
-  jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>mocked</fragment>);
+  // ✅ DO: Use mock() instead of jest.fn()
+  const mockOnChange = mock();
+  const mockOnKeyDown = mock();
+
+  // ✅ DO: Spy on module functions with cleanup
+  describe('MyComponent', () => {
+    let consoleSpy: ReturnType<typeof spyOn>;
+
+    beforeEach(async () => {
+      const consoleModule = await import('console');
+      consoleSpy = spyOn(global.console, 'warn').mockImplementation(mock());
+    });
+
+    afterEach(() => {
+      consoleSpy?.mockRestore(); // Always restore!
+    });
+  });
+  ```
+
+- **Matcher Selection:**
+  ```typescript
+  // ✅ DO: Use toMatchObject() for arrays (partial matching)
+  expect(children).toMatchObject([
+    { text: 'one' },
+    { text: 'two' },
+  ]);
+
+  // ✅ DO: Use toEqual() for exact matching
+  expect(editor.children).toEqual([
+    { children: [{ text: '' }], type: 'p' }
+  ]);
+
+  // ✅ DO: Cast values for type mismatches, not expect calls
+  const [node] = NodeApi.firstChild(editor, [0]) ?? [];
+  expect(node as any).toEqual({ text: 'one' });
+
+  // ❌ DON'T: Cast expected value
+  expect(children).toEqual([{ text: 'one' }] as any);
+
+  // ❌ DON'T: Use toMatchObject() for single objects (won't catch extra props)
+  expect(node).toMatchObject({ text: 'one' }); // Bad for validation
+  ```
+
+- **Jest to Bun Migration:**
+  ```typescript
+  // jest.fn() → mock()
+  const mockFn = mock();
+
+  // jest.spyOn() → spyOn() with async import and cleanup
+  let spy: ReturnType<typeof spyOn>;
+  beforeEach(async () => {
+    const module = await import('./module');
+    spy = spyOn(module, 'function').mockImplementation(mock());
+  });
+  afterEach(() => {
+    spy?.mockRestore(); // CRITICAL
+  });
+
+  // jest.mock() module mocking → Don't use, causes cross-file contamination
+  // Use spyOn pattern above instead
   ```
 
 - **Test Organization:**

@@ -1,0 +1,55 @@
+{
+  "beforeStart": [
+    {
+      "tag": "MANDATORY-FIRST-RESPONSE",
+      "header": "🚨 STOP - YOUR FIRST TOOL CALL MUST BE TodoWrite",
+      "instructions": [
+        "DO NOT analyze the task yet. DO NOT read files. DO NOT edit anything. DO NOT load skills yet.",
+        "YOUR FIRST ACTION: Call TodoWrite with the todo below, marking it as in_progress",
+        "Check if the todo's condition applies - if NO, mark completed immediately and proceed with normal work",
+        "If condition applies: work through all steps → mark completed → proceed with normal work",
+        "If you skip TodoWrite or jump straight to file operations, you have FAILED to follow instructions"
+      ],
+      "todos": [
+        "Skill analysis (SKIP if message contains 'quick'): (1) Check if rationalizing with thoughts like 'simple question', 'just checking files', 'don't need formal skill', 'overkill', 'might be relevant' - if YES to ANY, stop rationalizing; (2) List ALL available skills from context; (3) For EACH skill: Read its description and check for 'always load first' or foundational patterns - mark these ✓ IMMEDIATELY. Then ask 'Does this task involve [skill topic]?' If YES or MIGHT or MAYBE = mark ✓. Only mark ✗ if DEFINITELY not related; (4) Use Skill tool to load ALL marked ✓ IN ONE PARALLEL CALL - do NOT load one skill then wait to see if it tells you to load others. Load ALL potentially relevant skills upfront; (5) Output '[Skills checked: X available, Y loaded: name1, name2, ...]'. CRITICAL: 'Might be relevant' = MUST load. 'Could apply' = MUST load. '1% chance' = MUST load. Do NOT depend on one skill to tell you to load another."
+      ]
+    }
+  ],
+  "beforeComplete": [
+    {
+      "tag": "VERIFICATION-CHECKLIST",
+      "header": "Before claiming work is complete, fixed, or passing - NO completion claims without FRESH verification evidence:",
+      "instructions": [
+        "Create TodoWrite with ALL todos below (each has its own condition)",
+        "For EACH todo: Check if its condition applies - if NO, mark completed immediately and skip to next",
+        "If condition applies: mark in_progress → complete the check → mark completed",
+        "Work through every todo even if some don't apply (conditions are per-todo, not global)",
+        "We manually start session with `bun logs && bun typecheck:watch` as Background Bash Shell - read output when checking errors",
+        "Run `bun typecheck` only when Background Bash Shells are not visible/running",
+        "NEVER make git commits unless user explicitly asked",
+        "NEVER run `bun dev` or `bun run build` unless explicitly asked"
+      ],
+      "todos": [
+        "TypeScript check (ONLY if updated ts files): Verify no `any` used (pause and ask user if `any` seems required)",
+        "Typecheck (ONLY if updated ts files): Read typecheck:watch output OR run `bun typecheck` - verify passes",
+        "Lint: Run `bun lint:fix` - verify passes"
+      ]
+    }
+  ],
+  "afterCompact": [
+    {
+      "tag": "POST-COMPACT-RECOVERY",
+      "header": "🚨 CONTEXT WIPED - MANDATORY SKILL RELOAD REQUIRED",
+      "instructions": [
+        "STOP. Context compaction has DELETED all previously loaded skills. You have FORGOTTEN everything.",
+        "DO NOT proceed with any task until you complete skill reloading below",
+        "DO NOT assume you remember any skills - they are ALL gone from memory",
+        "YOUR IMMEDIATE ACTION: Complete the mandatory reload checklist below",
+        "Skipping this = GUARANTEED FAILURE because you lost all behavioral patterns"
+      ],
+      "todos": [
+        "Skill reload after compaction: (1) Check TodoWrite to identify what task you were working on; (2) List ALL available skills from context; (3) For EACH skill: Read its description and check for 'always load first' or foundational patterns - mark these ✓ IMMEDIATELY. Then ask 'Does this apply to my current task?' If YES or MIGHT or MAYBE = mark ✓. Only mark ✗ if DEFINITELY not related; (4) Use Skill tool to load ALL marked ✓ IN ONE PARALLEL CALL (REQUIRED - they were wiped) - do NOT load one skill then wait to see if it tells you to load others. Load ALL potentially relevant skills upfront; (5) ONLY after reloading skills, resume the task. CRITICAL: All previously loaded skills are GONE and MUST be reloaded. 'Might apply' = MUST load."
+      ]
+    }
+  ]
+}
