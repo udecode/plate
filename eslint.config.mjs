@@ -5,7 +5,6 @@ import reactHooks from 'eslint-plugin-react-hooks';
 export default defineConfig([
   {
     ignores: [
-      '**/.yarn/**',
       '**/*.spec.*',
       '**/node_modules/**',
       '**/dist/**',
