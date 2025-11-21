@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "bun build:contentlayer",
-    "build": "bun prebuild && bun r && bun --bun next build --no-turbopack",
+    "build": "bun prebuild && bun r && bun --bun next build --webpack",
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "bunx tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
