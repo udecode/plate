@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';
@@ -22,7 +24,7 @@ describe('EditorMethodsEffect and redecorate', () => {
   });
 
   // it('should trigger decorate when redecorate is called', () => {
-  //   const decorate = jest.fn(() => []);
+  //   const decorate = mock(() => []);
   //   const plugins = [createSlatePlugin({ decorate, key: 'test' })];
   //   const editor = createPlateEditor({ plugins });
   //

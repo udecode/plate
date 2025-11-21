@@ -1,3 +1,5 @@
+import { expect, test as it } from 'bun:test';
+
 import { cleanHtmlCrLf } from './cleanHtmlCrLf';
 
 const output = 'a\nb\nc\n';

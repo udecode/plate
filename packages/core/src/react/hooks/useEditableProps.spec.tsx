@@ -1,3 +1,5 @@
+import { describe, expect, mock, test as it } from 'bun:test';
+
 import React from 'react';
 
 import { render } from '@testing-library/react';
@@ -9,7 +11,7 @@ import { createPlateEditor } from '../editor';
 describe('useEditableProps', () => {
   describe('default', () => {
     it('should trigger decorate only once', () => {
-      const decorate = jest.fn();
+      const decorate = mock();
 
       const editor = createPlateEditor({
         plugins: [
@@ -36,7 +38,7 @@ describe('useEditableProps', () => {
 
   // describe('redecorate', () => {
   //   it('should trigger decorate twice', () => {
-  //     const decorate = jest.fn();
+  //     const decorate = mock();
   //
   //     const plugins: PlatePluginList = [
   //       {

@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, test as it } from 'bun:test';
 
 import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseTablePlugin } from '@platejs/table';

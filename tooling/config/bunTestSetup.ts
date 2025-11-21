@@ -25,7 +25,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
   Object.defineProperty(window.HTMLElement.prototype, 'isContentEditable', {
     configurable: true,
     enumerable: true,
-    get: function () {
+    get() {
       // Check if we have a custom value set
       const customValue = (this as any)._customIsContentEditable;
       if (customValue !== undefined) {
@@ -34,7 +34,7 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
       // Fall back to original behavior
       return originalDescriptor?.get?.call(this) ?? false;
     },
-    set: function (value: boolean) {
+    set(value: boolean) {
       // Store custom value
       (this as any)._customIsContentEditable = value;
     },

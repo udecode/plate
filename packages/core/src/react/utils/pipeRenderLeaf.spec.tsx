@@ -1,3 +1,6 @@
+/// <reference types="@testing-library/jest-dom" />
+import { expect, test as it } from 'bun:test';
+
 import React from 'react';
 
 import { render } from '@testing-library/react';
@@ -25,7 +28,10 @@ it('should render the default leaf', () => {
     </Leaf>
   );
 
-  expect(getByTestId('Leaf')).toHaveAttribute('data-slate-leaf', 'true');
+  (expect(getByTestId('Leaf')) as any).toHaveAttribute(
+    'data-slate-leaf',
+    'true'
+  );
 });
 
 it('should render with render.leaf and isDecoration=false', () => {
@@ -59,7 +65,7 @@ it('should render with render.leaf and isDecoration=false', () => {
     </Leaf>
   );
 
-  expect(getByTestId('leaf-wrapper')).toBeInTheDocument();
+  (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
 it('should render with render.leaf and isDecoration=true', () => {
@@ -93,7 +99,7 @@ it('should render with render.leaf and isDecoration=true', () => {
     </Leaf>
   );
 
-  expect(getByTestId('leaf-wrapper')).toBeInTheDocument();
+  (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
 it('should render with render.node', () => {
@@ -117,5 +123,8 @@ it('should render with render.node', () => {
     </Text>
   );
 
-  expect(getByTestId('Leaf')).toHaveAttribute('data-slate-leaf', 'true');
+  (expect(getByTestId('Leaf')) as any).toHaveAttribute(
+    'data-slate-leaf',
+    'true'
+  );
 });

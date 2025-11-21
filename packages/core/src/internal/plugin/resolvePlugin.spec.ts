@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin';
 

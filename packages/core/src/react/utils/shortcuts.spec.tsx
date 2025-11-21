@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, mock, test as it } from 'bun:test';
 
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { jsxt } from '@platejs/test-utils';
@@ -77,8 +78,8 @@ describe('extend method with shortcuts', () => {
   });
 
   it('should override existing shortcuts in a plugin', () => {
-    const originalCallback = jest.fn();
-    const newCallback = jest.fn();
+    const originalCallback = mock();
+    const newCallback = mock();
 
     const testPlugin = createPlatePlugin({
       key: 'testPlugin',
@@ -112,8 +113,8 @@ describe('extend method with shortcuts', () => {
   });
 
   it('should configure existing shortcuts in a plugin', () => {
-    const originalCallback = jest.fn();
-    const _newCallback = jest.fn();
+    const originalCallback = mock();
+    const _newCallback = mock();
 
     const testPlugin = createPlatePlugin({
       key: 'testPlugin',

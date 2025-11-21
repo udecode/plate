@@ -1,3 +1,12 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  mock,
+  test as it,
+} from 'bun:test';
+
 import { getSelectedDomBlocks } from './getSelectedDomBlocks';
 
 describe('getSelectedDomBlocks', () => {
@@ -11,23 +20,22 @@ describe('getSelectedDomBlocks', () => {
 
     // Create mock range
     mockRange = {
-      cloneContents: jest.fn(),
+      cloneContents: mock(),
     } as any;
 
     // Create mock selection
     mockSelection = {
-      getRangeAt: jest.fn(() => mockRange),
+      getRangeAt: mock(() => mockRange),
       rangeCount: 1,
     } as any;
 
     // Mock window.getSelection
-    window.getSelection = jest.fn(() => mockSelection);
+    window.getSelection = mock(() => mockSelection);
   });
 
   afterEach(() => {
     // Restore original getSelection
     window.getSelection = originalGetSelection;
-    jest.clearAllMocks();
   });
 
   describe('when selection exists', () => {
@@ -48,7 +56,7 @@ describe('getSelectedDomBlocks', () => {
       mockFragment.append(block1);
       mockFragment.append(block2);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -78,7 +86,7 @@ describe('getSelectedDomBlocks', () => {
       mockFragment.append(slateBlock);
       mockFragment.append(paragraph);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -101,7 +109,7 @@ describe('getSelectedDomBlocks', () => {
       parentBlock.append(childBlock);
       mockFragment.append(parentBlock);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -119,7 +127,7 @@ describe('getSelectedDomBlocks', () => {
 
       mockFragment.append(regularDiv);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -136,7 +144,7 @@ describe('getSelectedDomBlocks', () => {
 
       mockFragment.append(block);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -154,7 +162,7 @@ describe('getSelectedDomBlocks', () => {
 
       mockFragment.append(block);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -165,7 +173,7 @@ describe('getSelectedDomBlocks', () => {
 
     it('should handle empty fragment', () => {
       const mockFragment = document.createDocumentFragment();
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -176,7 +184,7 @@ describe('getSelectedDomBlocks', () => {
 
   describe('when selection does not exist', () => {
     it('should return undefined when getSelection returns null', () => {
-      window.getSelection = jest.fn(() => null);
+      window.getSelection = mock(() => null);
 
       const result = getSelectedDomBlocks();
 
@@ -196,7 +204,7 @@ describe('getSelectedDomBlocks', () => {
       (mockSelection as any).rangeCount = -1;
       // Mock cloneContents to return a valid fragment
       const mockFragment = document.createDocumentFragment();
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -222,7 +230,7 @@ describe('getSelectedDomBlocks', () => {
       mockFragment.append(textNode);
       mockFragment.append(elementNode);
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -233,7 +241,7 @@ describe('getSelectedDomBlocks', () => {
     });
 
     it('should handle getRangeAt throwing an error', () => {
-      mockSelection.getRangeAt = jest.fn(() => {
+      mockSelection.getRangeAt = mock(() => {
         throw new Error('Index out of bounds');
       });
 
@@ -242,7 +250,7 @@ describe('getSelectedDomBlocks', () => {
     });
 
     it('should handle cloneContents throwing an error', () => {
-      mockRange.cloneContents = jest.fn(() => {
+      mockRange.cloneContents = mock(() => {
         throw new Error('Failed to clone');
       });
 
@@ -271,7 +279,7 @@ describe('getSelectedDomBlocks', () => {
         mockFragment.append(wrapper.firstChild);
       }
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 
@@ -292,7 +300,7 @@ describe('getSelectedDomBlocks', () => {
         mockFragment.append(block);
       }
 
-      mockRange.cloneContents = jest.fn(() => mockFragment);
+      mockRange.cloneContents = mock(() => mockFragment);
 
       const result = getSelectedDomBlocks();
 

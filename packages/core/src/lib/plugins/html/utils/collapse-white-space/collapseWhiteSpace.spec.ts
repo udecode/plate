@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { htmlStringToDOMNode } from '../htmlStringToDOMNode';
 import { collapseWhiteSpace } from './collapseWhiteSpace';
 

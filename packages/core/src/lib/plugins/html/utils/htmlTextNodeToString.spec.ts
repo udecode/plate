@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { htmlTextNodeToString } from './htmlTextNodeToString';
 
 describe('htmlTextNodeToString', () => {

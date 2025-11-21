@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import React from 'react';
 
 import { renderHook } from '@testing-library/react';

@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 
@@ -206,7 +208,7 @@ describe('createSlatePlugin', () => {
         key: 'bbb',
       });
 
-      expect(aaaOptions).toEqual({ replaced: 1 });
+      expect(aaaOptions as any).toEqual({ replaced: 1 });
       expect(bbbOptions.a).toBe(1);
     });
   });
@@ -236,7 +238,7 @@ describe('createSlatePlugin', () => {
         plugins: [extendedPlugin],
       });
 
-      expect(editor.getOptions(childPlugin)).toEqual({
+      expect(editor.getOptions(childPlugin) as any).toEqual({
         childOption: 'child',
         extendedOption: 'extended child',
       });
@@ -653,8 +655,8 @@ describe('createSlatePlugin', () => {
       >({ key: 'child1' });
 
       expect(child1Plugin.key).toBe('child1');
-      expect(child1Options.initialValue).toBe('child1');
-      expect(child1Options.extendedValue).toBe('extended child1');
+      expect(child1Options.initialValue as any).toBe('child1');
+      expect(child1Options.extendedValue as any).toBe('extended child1');
     });
   });
 

@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, mock, test as it } from 'bun:test';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -10,7 +11,7 @@ jsxt;
 describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
   describe('moveLine', () => {
     it('should call moveLine with reverse: true on ArrowUp', async () => {
-      const moveLineMock = jest.fn().mockReturnValue(false);
+      const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -30,7 +31,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should call moveLine with reverse: false on ArrowDown', async () => {
-      const moveLineMock = jest.fn().mockReturnValue(false);
+      const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -50,7 +51,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should allow custom moveLine implementation to handle the event', async () => {
-      const moveLineMock = jest.fn().mockReturnValue(true);
+      const moveLineMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -71,7 +72,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should use default behavior when moveLine returns false', async () => {
-      const moveLineMock = jest.fn().mockReturnValue(false);
+      const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -94,7 +95,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
 
   describe('tab', () => {
     it('should call tab with reverse: false on Tab', async () => {
-      const tabMock = jest.fn().mockReturnValue(false);
+      const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -114,7 +115,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should call tab with reverse: true on Shift+Tab', async () => {
-      const tabMock = jest.fn().mockReturnValue(false);
+      const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -134,7 +135,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should allow custom tab implementation to handle the event', async () => {
-      const tabMock = jest.fn().mockReturnValue(true);
+      const tabMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -155,7 +156,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should use default behavior when tab returns false', async () => {
-      const tabMock = jest.fn().mockReturnValue(false);
+      const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -178,7 +179,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
 
   describe('selectAll', () => {
     it('should call selectAll on Mod+A', async () => {
-      const selectAllMock = jest.fn().mockReturnValue(false);
+      const selectAllMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -198,7 +199,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should allow custom selectAll implementation to handle the event', async () => {
-      const selectAllMock = jest.fn().mockReturnValue(true);
+      const selectAllMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -219,7 +220,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should use default behavior when selectAll returns false', async () => {
-      const selectAllMock = jest.fn().mockReturnValue(false);
+      const selectAllMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -242,7 +243,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
 
   describe('escape', () => {
     it('should call escape on Escape key', async () => {
-      const escapeMock = jest.fn().mockReturnValue(false);
+      const escapeMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -262,7 +263,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should allow custom escape implementation to handle the event', async () => {
-      const escapeMock = jest.fn().mockReturnValue(true);
+      const escapeMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -283,7 +284,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
     });
 
     it('should use default behavior when escape returns false', async () => {
-      const escapeMock = jest.fn().mockReturnValue(false);
+      const escapeMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
@@ -346,10 +347,10 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
 
   describe('integration', () => {
     it('should work with multiple custom implementations', async () => {
-      const moveLineMock = jest.fn().mockReturnValue(true);
-      const tabMock = jest.fn().mockReturnValue(false);
-      const selectAllMock = jest.fn().mockReturnValue(true);
-      const escapeMock = jest.fn().mockReturnValue(false);
+      const moveLineMock = mock().mockReturnValue(true);
+      const tabMock = mock().mockReturnValue(false);
+      const selectAllMock = mock().mockReturnValue(true);
+      const escapeMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',

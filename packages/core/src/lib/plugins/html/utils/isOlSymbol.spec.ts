@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { NO_BREAK_SPACE, SPACE } from '../constants';
 import { isOlSymbol } from './isOlSymbol';
 

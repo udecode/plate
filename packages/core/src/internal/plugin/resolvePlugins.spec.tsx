@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
+
 import type { SlateEditor } from '../../lib/editor';
 
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
@@ -490,8 +492,8 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should replace plugins with the same key and merge their APIs', () => {
-    const originalLogger = jest.fn();
-    const replacementLogger = jest.fn();
+    const originalLogger = mock();
+    const replacementLogger = mock();
 
     const editor = createPlateEditor({
       plugins: [
@@ -522,7 +524,7 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should allow overriding core plugins like DebugPlugin', () => {
-    const customLogger = jest.fn();
+    const customLogger = mock();
 
     const editor = createPlateEditor({
       plugins: [

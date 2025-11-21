@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, test as it } from 'bun:test';
 
 import { BaseH1Plugin } from '@platejs/basic-nodes';
 import { BaseListPlugin } from '@platejs/list';

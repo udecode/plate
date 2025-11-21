@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, mock, spyOn, test as it } from 'bun:test';
 
 import { NodeApi } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
@@ -11,7 +12,7 @@ import { SlateExtensionPlugin } from './SlateExtensionPlugin';
 describe('SlateExtensionPlugin', () => {
   describe('onNodeChange', () => {
     it('should call onNodeChange callback when a node operation occurs', () => {
-      const onNodeChange = jest.fn();
+      const onNodeChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -47,7 +48,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should not call onNodeChange for text operations', () => {
-      const onNodeChange = jest.fn();
+      const onNodeChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -72,7 +73,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should call onNodeChange for different node operations', () => {
-      const onNodeChange = jest.fn();
+      const onNodeChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -110,7 +111,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should provide different node and prevNode for set_node operations', () => {
-      const onNodeChange = jest.fn();
+      const onNodeChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -148,7 +149,7 @@ describe('SlateExtensionPlugin', () => {
 
   describe('onTextChange', () => {
     it('should call onTextChange callback when a text operation occurs', () => {
-      const onTextChange = jest.fn();
+      const onTextChange = mock();
 
       const editor = createSlateEditor({
         autoSelect: 'end',
@@ -188,7 +189,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should not call onTextChange for node operations', () => {
-      const onTextChange = jest.fn();
+      const onTextChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -216,7 +217,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should handle remove_text operations', () => {
-      const onTextChange = jest.fn();
+      const onTextChange = mock();
 
       const editor = createSlateEditor({
         plugins: [
@@ -261,7 +262,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should provide the parent node for text operations', () => {
-      const onTextChange = jest.fn();
+      const onTextChange = mock();
 
       const editor = createSlateEditor({
         autoSelect: 'end',
@@ -310,7 +311,7 @@ describe('SlateExtensionPlugin', () => {
       });
 
       // Spy on NodeApi.get to ensure it's not called
-      const getSpy = jest.spyOn(NodeApi, 'get');
+      const getSpy = spyOn(NodeApi, 'get');
 
       // Insert text (no handlers registered)
       editor.tf.insertText('hello');
@@ -322,7 +323,7 @@ describe('SlateExtensionPlugin', () => {
     });
 
     it('should capture state when handlers are registered', () => {
-      const onTextChange = jest.fn();
+      const onTextChange = mock();
 
       const editor = createSlateEditor({
         autoSelect: 'end',
@@ -342,7 +343,7 @@ describe('SlateExtensionPlugin', () => {
       });
 
       // Spy on NodeApi.get to ensure it IS called
-      const getSpy = jest.spyOn(NodeApi, 'get');
+      const getSpy = spyOn(NodeApi, 'get');
 
       // Insert text (handler is registered)
       editor.tf.insertText('hello');

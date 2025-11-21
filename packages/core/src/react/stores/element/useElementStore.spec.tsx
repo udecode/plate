@@ -1,3 +1,6 @@
+/// <reference types="@testing-library/jest-dom" />
+import { describe, expect, test as it } from 'bun:test';
+
 import React from 'react';
 
 import type { TElement } from '@platejs/slate';
@@ -144,9 +147,9 @@ describe('ElementProvider', () => {
       </PlateWrapper>
     );
 
-    expect(getByText('Name: Jane')).toBeInTheDocument();
-    expect(getByText('Age: 30')).toBeInTheDocument();
-    expect(getByText('Type: age')).toBeInTheDocument();
+    (expect(getByText('Name: Jane')) as any).toBeInTheDocument();
+    (expect(getByText('Age: 30')) as any).toBeInTheDocument();
+    (expect(getByText('Type: age')) as any).toBeInTheDocument();
   });
 
   it('returns the first ancestor of any type if given type does not match', () => {
@@ -160,7 +163,7 @@ describe('ElementProvider', () => {
       </PlateWrapper>
     );
 
-    expect(getByText('Type: name')).toBeInTheDocument();
+    (expect(getByText('Type: name')) as any).toBeInTheDocument();
   });
 
   it('propagates updated elements to consumers', () => {
@@ -183,23 +186,23 @@ describe('ElementProvider', () => {
       </PlateWrapper>
     );
 
-    expect(getByText('Age 1: 20')).toBeInTheDocument();
-    expect(getByText('Age 2: 140')).toBeInTheDocument();
+    (expect(getByText('Age 1: 20')) as any).toBeInTheDocument();
+    (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
     void act(() => getByText('updateAge1').click());
 
-    expect(getByText('Age 1: 30')).toBeInTheDocument();
-    expect(getByText('Age 2: 140')).toBeInTheDocument();
+    (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
+    (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
     void act(() => getByText('updateAge2').click());
 
-    expect(getByText('Age 1: 30')).toBeInTheDocument();
-    expect(getByText('Age 2: 150')).toBeInTheDocument();
+    (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
+    (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
 
     void act(() => getByText('updateAge1').click());
 
-    expect(getByText('Age 1: 40')).toBeInTheDocument();
-    expect(getByText('Age 2: 150')).toBeInTheDocument();
+    (expect(getByText('Age 1: 40')) as any).toBeInTheDocument();
+    (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
   });
 
   it('returns empty object if no ancestor exists', () => {
@@ -208,6 +211,6 @@ describe('ElementProvider', () => {
         <JsonConsumer />
       </PlateWrapper>
     );
-    expect(getByText('{}')).toBeInTheDocument();
+    (expect(getByText('{}')) as any).toBeInTheDocument();
   });
 });

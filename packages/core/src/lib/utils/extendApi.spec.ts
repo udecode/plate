@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { createPlateEditor } from '../../react';
 import {
   type PluginConfig,
@@ -221,7 +223,7 @@ describe('extendEditorApi method', () => {
       plugins: [basePlugin, overridePlugin],
     });
 
-    expect(editor.api.method()).toBe('override base');
+    expect(editor.api.method()).toBe('override base' as any);
   });
 
   it('should merge nested API properties', () => {
@@ -344,7 +346,7 @@ describe('extendEditorApi method', () => {
     expect(editor.api.combined()).toBe(60); // 40 + 20
 
     // Test method overriding
-    expect(editor.api.override()).toBe('overridden: base');
+    expect(editor.api.override()).toBe('overridden: base' as any);
 
     // Test that transforms and API methods are also available in the plugin
     const plugin = getSlatePlugin(editor, basePlugin);

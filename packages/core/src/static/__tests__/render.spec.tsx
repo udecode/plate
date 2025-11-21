@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import React from 'react';
 import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor } from './create-static-editor';

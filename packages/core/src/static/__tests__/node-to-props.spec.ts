@@ -1,3 +1,5 @@
+import { expect, test as it } from 'bun:test';
+
 it('TODO: serialize list to html', () => {
   expect(1).toBe(1);
 });

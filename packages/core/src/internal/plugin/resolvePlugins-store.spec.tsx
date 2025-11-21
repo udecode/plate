@@ -1,3 +1,6 @@
+/// <reference types="@testing-library/jest-dom" />
+import { describe, expect, test as it } from 'bun:test';
+
 import React from 'react';
 import { act } from 'react';
 
@@ -209,7 +212,7 @@ describe('PlatePlugin usePluginOption', () => {
     );
 
     // Initial render
-    expect(getByTestId('test-component')).toHaveTextContent('1');
+    (expect(getByTestId('test-component')) as any).toHaveTextContent('1');
 
     // Update store
     act(() => {
@@ -217,7 +220,7 @@ describe('PlatePlugin usePluginOption', () => {
     });
 
     // Check if component re-rendered with new value
-    expect(getByTestId('test-component')).toHaveTextContent('2');
+    (expect(getByTestId('test-component')) as any).toHaveTextContent('2');
   });
 
   describe('setOption', () => {
@@ -288,7 +291,7 @@ describe('PlatePlugin usePluginOption', () => {
 
       const { getByTestId } = render(<TestHook />);
 
-      expect(getByTestId('test-hook')).toHaveTextContent('1');
+      (expect(getByTestId('test-hook')) as any).toHaveTextContent('1');
     });
 
     it('should update when option value changes', () => {
@@ -299,13 +302,13 @@ describe('PlatePlugin usePluginOption', () => {
         <TestComponent editor={editor} plugin={p1 as any} />
       );
 
-      expect(getByTestId('test-component')).toHaveTextContent('1');
+      (expect(getByTestId('test-component')) as any).toHaveTextContent('1');
 
       act(() => {
         editor.setOption(p1, 'value', 2);
       });
 
-      expect(getByTestId('test-component')).toHaveTextContent('2');
+      (expect(getByTestId('test-component')) as any).toHaveTextContent('2');
     });
 
     it('should handle nested option values', () => {
@@ -319,13 +322,13 @@ describe('PlatePlugin usePluginOption', () => {
         <TestComponentNested editor={editor} plugin={p1 as any} />
       );
 
-      expect(getByTestId('test-nested')).toHaveTextContent('initial');
+      (expect(getByTestId('test-nested')) as any).toHaveTextContent('initial');
 
       act(() => {
         editor.setOptions(p1, { nested: { subValue: 'updated' } });
       });
 
-      expect(getByTestId('test-nested')).toHaveTextContent('updated');
+      (expect(getByTestId('test-nested')) as any).toHaveTextContent('updated');
     });
 
     it('should not cause unnecessary re-renders', () => {
@@ -352,7 +355,7 @@ describe('PlatePlugin usePluginOption', () => {
       });
 
       expect(renderCount).toBe(1);
-      expect(getByTestId('test-hook')).toHaveTextContent('1');
+      (expect(getByTestId('test-hook')) as any).toHaveTextContent('1');
     });
 
     it('should throw when setting an option that was undefined', () => {
@@ -390,13 +393,13 @@ describe('PlatePlugin usePluginOption', () => {
 
       const { getByTestId } = render(<TestHook />);
 
-      expect(getByTestId('test-hook')).toHaveTextContent('2');
+      (expect(getByTestId('test-hook')) as any).toHaveTextContent('2');
 
       act(() => {
         editor.setOption(p1, 'value', 2);
       });
 
-      expect(getByTestId('test-hook')).toHaveTextContent('4');
+      (expect(getByTestId('test-hook')) as any).toHaveTextContent('4');
     });
   });
 
@@ -428,8 +431,8 @@ describe('PlatePlugin usePluginOption', () => {
 
       const { getByTestId } = render(<TestHook />);
 
-      expect(getByTestId('test-value')).toHaveTextContent('1');
-      expect(getByTestId('test-other')).toHaveTextContent('test');
+      (expect(getByTestId('test-value')) as any).toHaveTextContent('1');
+      (expect(getByTestId('test-other')) as any).toHaveTextContent('test');
     });
   });
 });

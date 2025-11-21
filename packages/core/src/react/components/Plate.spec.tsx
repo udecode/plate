@@ -1,3 +1,6 @@
+/// <reference types="@testing-library/jest-dom" />
+import { describe, expect, mock, test as it } from 'bun:test';
+
 import React from 'react';
 
 import type { Value } from '@platejs/slate';
@@ -34,7 +37,7 @@ describe('Plate', () => {
         );
         const { result } = renderHook(() => useEditorRef(), { wrapper });
 
-        expect(result.current).toBe(editor);
+        expect(result.current as any).toBe(editor);
       });
     });
 
@@ -329,7 +332,7 @@ describe('Plate', () => {
 
   describe('when shouldNormalizeEditor false', () => {
     it('should not trigger normalize if shouldNormalizeEditor is not set to true', () => {
-      const fn = jest.fn((e, [node, path]) => {
+      const fn = mock((e, [node, path]) => {
         if (e.api.isBlock(node) && path?.length && !isEqual(node.path, path)) {
           e.tf.setNodes({ path }, { at: path });
         }
@@ -577,7 +580,7 @@ describe('Plate', () => {
         },
       ];
 
-      const onReadyMock = jest.fn();
+      const onReadyMock = mock();
 
       const AsyncEditor = () => {
         const editor = usePlateEditor({
@@ -600,7 +603,7 @@ describe('Plate', () => {
       const { getByTestId, queryByTestId, rerender } = render(<AsyncEditor />);
 
       // PlateContent should not be rendered initially (returns null)
-      expect(queryByTestId('plate-content')).not.toBeInTheDocument();
+      (expect(queryByTestId('plate-content')) as any).not.toBeInTheDocument();
       expect(onReadyMock).not.toHaveBeenCalled();
 
       // Wait for async value to resolve and trigger a rerender
@@ -608,7 +611,7 @@ describe('Plate', () => {
       rerender(<AsyncEditor />);
 
       // Now PlateContent should be rendered and onReady should have been called
-      expect(getByTestId('plate-content')).toBeInTheDocument();
+      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
       expect(onReadyMock).toHaveBeenCalledWith({
         editor: expect.any(Object),
         isAsync: true,
@@ -624,7 +627,7 @@ describe('Plate', () => {
         },
       ];
 
-      const onReadyMock = jest.fn();
+      const onReadyMock = mock();
 
       const SyncEditor = () => {
         const editor = usePlateEditor({
@@ -642,7 +645,7 @@ describe('Plate', () => {
       const { getByTestId } = render(<SyncEditor />);
 
       // PlateContent should be rendered immediately for sync values
-      expect(getByTestId('plate-content')).toBeInTheDocument();
+      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
       expect(onReadyMock).toHaveBeenCalledWith({
         editor: expect.any(Object),
         isAsync: false,
@@ -658,7 +661,7 @@ describe('Plate', () => {
         },
       ];
 
-      const onReadyMock = jest.fn();
+      const onReadyMock = mock();
 
       const StaticEditor = () => {
         const editor = usePlateEditor({
@@ -676,7 +679,7 @@ describe('Plate', () => {
       const { getByTestId } = render(<StaticEditor />);
 
       // PlateContent should be rendered immediately for static values
-      expect(getByTestId('plate-content')).toBeInTheDocument();
+      (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
       expect(onReadyMock).toHaveBeenCalledWith({
         editor: expect.any(Object),
         isAsync: false,

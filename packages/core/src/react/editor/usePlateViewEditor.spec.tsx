@@ -1,30 +1,43 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  mock,
+  spyOn,
+  test as it,
+} from 'bun:test';
+
 import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';
 
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import * as withStaticModule from '../../static/editor/withStatic';
 import { usePlateViewEditor } from './usePlateViewEditor';
 
 jsx;
 
 // Mock createStaticEditor
-let mockCreateStaticEditor: jest.Mock;
-jest.mock('../../static/editor/withStatic', () => ({
-  createStaticEditor: (options: any) => mockCreateStaticEditor(options),
-}));
+let mockCreateStaticEditor: ReturnType<typeof mock>;
+let createStaticEditorSpy: ReturnType<typeof spyOn>;
 
 describe('usePlateViewEditor', () => {
   beforeEach(() => {
-    mockCreateStaticEditor = jest.fn((options) => ({
+    mockCreateStaticEditor = mock((options) => ({
       id: options?.id || 'test-editor',
       children: options?.value || [],
       plugins: options?.plugins || [],
       ...options,
     }));
+    createStaticEditorSpy = spyOn(
+      withStaticModule,
+      'createStaticEditor'
+    ).mockImplementation(mockCreateStaticEditor);
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    createStaticEditorSpy?.mockRestore();
   });
 
   describe('basic functionality', () => {

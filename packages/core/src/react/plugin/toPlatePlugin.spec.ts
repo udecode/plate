@@ -1,3 +1,5 @@
+import { describe, expect, mock, test as it } from 'bun:test';
+
 import type { PlatePlugin } from './PlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
@@ -99,8 +101,8 @@ describe('toPlatePlugin', () => {
   });
 
   it('should add new handlers and API methods', () => {
-    const mockOnKeyDown = jest.fn();
-    const mockOnChange = jest.fn();
+    const mockOnKeyDown = mock();
+    const mockOnChange = mock();
 
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       handlers: {
