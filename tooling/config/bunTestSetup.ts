@@ -1,0 +1,94 @@
+import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { afterEach, expect } from 'bun:test';
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { cleanup } from '@testing-library/react';
+import { TextEncoder } from 'node:util';
+
+// Register DOM globals FIRST - this must happen before any code that uses document/window
+GlobalRegistrator.register();
+
+// Ensure document.body exists
+if (global.document && !global.document.body) {
+  const body = global.document.createElement('body');
+  global.document.documentElement.appendChild(body);
+}
+
+// Fix Happy-DOM readonly property issue with isContentEditable
+// slate-test-utils needs to set element.isContentEditable = true
+// but Happy-DOM makes this property readonly
+if (typeof window !== 'undefined' && window.HTMLElement) {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(
+    window.HTMLElement.prototype,
+    'isContentEditable'
+  );
+
+  Object.defineProperty(window.HTMLElement.prototype, 'isContentEditable', {
+    configurable: true,
+    enumerable: true,
+    get: function () {
+      // Check if we have a custom value set
+      const customValue = (this as any)._customIsContentEditable;
+      if (customValue !== undefined) {
+        return customValue;
+      }
+      // Fall back to original behavior
+      return originalDescriptor?.get?.call(this) ?? false;
+    },
+    set: function (value: boolean) {
+      // Store custom value
+      (this as any)._customIsContentEditable = value;
+    },
+  });
+}
+
+// Set up window.DataTransfer for slate-test-utils compatibility
+// Note: slate-test-utils mocks are not loaded in preload because they expect window to already exist
+// Tests that need slate-test-utils should import it directly in their test files
+if (typeof window !== 'undefined') {
+  (window as any).DataTransfer = class DataTransfer {
+    constructor() {}
+    effectAllowed = 'none';
+    dropEffect = 'none';
+    files = [] as any;
+    items = [] as any;
+    types = [] as string[];
+    clearData() {}
+    getData() {
+      return '';
+    }
+    setData() {}
+    setDragImage() {}
+  };
+}
+
+// Extend Bun's expect with Testing Library matchers
+expect.extend(matchers);
+
+// Cleanup after each test - removes rendered React components
+afterEach(() => {
+  cleanup();
+});
+
+// TextEncoder global (for Node compatibility)
+global.TextEncoder = TextEncoder as any;
+
+// Mock MessageChannel (Bun compatible)
+global.MessageChannel = class MessageChannel {
+  port1 = {
+    addEventListener: () => {},
+    close: () => {},
+    postMessage: () => {},
+    removeEventListener: () => {},
+    start: () => {},
+  };
+  port2 = {
+    addEventListener: () => {},
+    close: () => {},
+    postMessage: () => {},
+    removeEventListener: () => {},
+    start: () => {},
+  };
+} as any;
+
+// Note: For console warnings/errors, use spyOn in individual test files
+// instead of global mocks to avoid cross-test contamination

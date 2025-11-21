@@ -1,4 +1,6 @@
 /** @jsx jsxt */
+import { describe, expect, test as it } from 'bun:test';
+
 import { jsxt } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';

@@ -1,3 +1,5 @@
+import { describe, expect, spyOn, test as it } from 'bun:test';
+
 import { createEditor } from '../../create-editor';
 import type { TRange } from '../../interfaces/range';
 
@@ -27,7 +29,7 @@ describe('unhangRange', () => {
 
       // Mock editor.api.after to simulate point after start
       const pointAfter = { offset: 2, path: [0, 0] };
-      jest.spyOn(editor.api, 'after').mockImplementation(() => pointAfter);
+      spyOn(editor.api, 'after').mockImplementation(() => pointAfter);
 
       const result = editor.api.unhangRange(range, { character: true });
 
@@ -45,7 +47,7 @@ describe('unhangRange', () => {
 
       // Mock editor.api.before to simulate point before end
       const pointBefore = { offset: 0, path: [0, 1] };
-      jest.spyOn(editor.api, 'before').mockImplementation(() => pointBefore);
+      spyOn(editor.api, 'before').mockImplementation(() => pointBefore);
 
       const result = editor.api.unhangRange(range, { character: true });
 
@@ -62,7 +64,7 @@ describe('unhangRange', () => {
       };
 
       // Mock editor.api.after to return undefined
-      jest.spyOn(editor.api, 'after').mockImplementation((() => {}) as any);
+      spyOn(editor.api, 'after').mockImplementation((() => {}) as any);
 
       const result = editor.api.unhangRange(range, { character: true });
 

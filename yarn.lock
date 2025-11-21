@@ -2000,6 +2000,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@happy-dom/global-registrator@npm:20.0.10":
+  version: 20.0.10
+  resolution: "@happy-dom/global-registrator@npm:20.0.10"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    happy-dom: "npm:^20.0.10"
+  checksum: 10c0/b7aa52af592755eae4514a03328e27831bb43337236656e0f502ebafdf226194a4efcfc8060fa844ddda6303acd5d754712b2264760b5d687b7da0aec7243124
+  languageName: node
+  linkType: hard
+
 "@hocuspocus/common@npm:^2.15.2":
   version: 2.15.2
   resolution: "@hocuspocus/common@npm:2.15.2"
@@ -2070,6 +2080,13 @@ __metadata:
   version: 0.4.3
   resolution: "@humanwhocodes/retry@npm:0.4.3"
   checksum: 10c0/3775bb30087d4440b3f7406d5a057777d90e4b9f435af488a4923ef249e93615fb78565a85f173a186a076c7706a81d0d57d563a2624e4de2c5c9c66c486ce42
+  languageName: node
+  linkType: hard
+
+"@iarna/toml@npm:^2.2.5":
+  version: 2.2.5
+  resolution: "@iarna/toml@npm:2.2.5"
+  checksum: 10c0/d095381ad4554aca233b7cf5a91f243ef619e5e15efd3157bc640feac320545450d14b394aebbf6f02a2047437ced778ae598d5879a995441ab7b6c0b2c2f201
   languageName: node
   linkType: hard
 
@@ -6769,6 +6786,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bun@npm:1.3.2":
+  version: 1.3.2
+  resolution: "@types/bun@npm:1.3.2"
+  dependencies:
+    bun-types: "npm:1.3.2"
+  checksum: 10c0/1432d097d0cf635ec86538e96929d7f1f1164d465229ee011498344b5a598b51cfe48a471e24f19e92881ee4dee860115986aeed5a636c128b0d99a0bcbd4019
+  languageName: node
+  linkType: hard
+
 "@types/cookie@npm:^0.6.0":
   version: 0.6.0
   resolution: "@types/cookie@npm:0.6.0"
@@ -7022,6 +7048,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.0.0":
+  version: 20.19.25
+  resolution: "@types/node@npm:20.19.25"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/992f18cb03264e8dc2fd3cb64f428ee4997cb6d928dad68bf4b752eacac73062697ce7ce6a0e71a6d15af510814397a20597a72332dfec638e02fb3a382ad014
+  languageName: node
+  linkType: hard
+
 "@types/papaparse@npm:^5.3.16":
   version: 5.3.16
   resolution: "@types/papaparse@npm:5.3.16"
@@ -7156,6 +7191,13 @@ __metadata:
   version: 13.15.1
   resolution: "@types/validator@npm:13.15.1"
   checksum: 10c0/4d13ee084bd6736e22fcec421fc01f2b4436e6c7290f29e271e67dca5852368989b46377bc2858554f56c5b33498a4e647d6ae2cb2ef1c3143def89e8be56210
+  languageName: node
+  linkType: hard
+
+"@types/whatwg-mimetype@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "@types/whatwg-mimetype@npm:3.0.2"
+  checksum: 10c0/dad39d1e4abe760a0a963c84bbdbd26b1df0eb68aff83bdf6ecbb50ad781ead777f6906d19a87007790b750f7500a12e5624d31fc6a1529d14bd19b5c3a316d1
   languageName: node
   linkType: hard
 
@@ -7377,6 +7419,20 @@ __metadata:
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
+
+"@udecode/ruler@npm:0.4.0":
+  version: 0.4.0
+  resolution: "@udecode/ruler@npm:0.4.0"
+  dependencies:
+    "@iarna/toml": "npm:^2.2.5"
+    js-yaml: "npm:^4.1.0"
+    yargs: "npm:^18.0.0"
+    zod: "npm:^4.1.12"
+  bin:
+    ruler: dist/cli/index.js
+  checksum: 10c0/8844997f3f5280c67acaf92c6c5927e726450186ac839c5e1c3fbdf5e92c554a0c7a4417329cc00a65542cd60432ca309aa1e1cd5b274e3a286238408140a467
+  languageName: node
+  linkType: hard
 
 "@udecode/utils@npm:51.1.2, @udecode/utils@workspace:packages/udecode/utils":
   version: 0.0.0-use.local
@@ -8221,6 +8277,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bun-types@npm:1.3.2":
+  version: 1.3.2
+  resolution: "bun-types@npm:1.3.2"
+  dependencies:
+    "@types/node": "npm:*"
+  peerDependencies:
+    "@types/react": ^19
+  checksum: 10c0/ee78b88b1ed4a3dc2b885fe1a52dd65ca1afaa10ed14094de93b85921db745e64516b123cc7ba69859e3b102eca5e0d2f63a1d2cb1b4f26eb2a5b93e47715124
+  languageName: node
+  linkType: hard
+
 "bundle-require@npm:^5.1.0":
   version: 5.1.0
   resolution: "bundle-require@npm:5.1.0"
@@ -8641,6 +8708,17 @@ __metadata:
     strip-ansi: "npm:^6.0.1"
     wrap-ansi: "npm:^7.0.0"
   checksum: 10c0/4bda0f09c340cbb6dfdc1ed508b3ca080f12992c18d68c6be4d9cf51756033d5266e61ec57529e610dacbf4da1c634423b0c1b11037709cc6b09045cbd815df5
+  languageName: node
+  linkType: hard
+
+"cliui@npm:^9.0.1":
+  version: 9.0.1
+  resolution: "cliui@npm:9.0.1"
+  dependencies:
+    string-width: "npm:^7.2.0"
+    strip-ansi: "npm:^7.1.0"
+    wrap-ansi: "npm:^9.0.0"
+  checksum: 10c0/13441832e9efe7c7a76bd2b8e683555c478d461a9f249dc5db9b17fe8d4b47fa9277b503914b90bd00e4a151abb6b9b02b2288972ffe2e5e3ca40bcb1c2330d3
   languageName: node
   linkType: hard
 
@@ -11921,6 +11999,17 @@ __metadata:
   version: 0.5.2
   resolution: "hachure-fill@npm:0.5.2"
   checksum: 10c0/307e3b6f9f2d3c11a82099c3f71eecbb9c440c00c1f896ac1732c23e6dbff16a92bb893d222b8b721b89cf11e58649ca60b4c24e5663f705f877cefd40153429
+  languageName: node
+  linkType: hard
+
+"happy-dom@npm:^20.0.10":
+  version: 20.0.10
+  resolution: "happy-dom@npm:20.0.10"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    "@types/whatwg-mimetype": "npm:^3.0.2"
+    whatwg-mimetype: "npm:^3.0.0"
+  checksum: 10c0/3e05425f3db943885b1d2235d968c8aab08bd32cb0d21bc1c8006db604445f5f6c1364d19b3763395fd748193dc00efd40695e6711ab15e3b9578791c5ce4207
   languageName: node
   linkType: hard
 
@@ -17275,6 +17364,7 @@ __metadata:
     "@biomejs/biome": "npm:2.3.6"
     "@changesets/cli": "npm:2.27.11"
     "@changesets/get-github-info": "npm:0.6.0"
+    "@happy-dom/global-registrator": "npm:20.0.10"
     "@playwright/test": "npm:1.53.0"
     "@roarr/cli": "npm:5.12.4"
     "@swc/core": "npm:1.12.0"
@@ -17284,6 +17374,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:6.6.3"
     "@testing-library/react": "npm:16.3.0"
     "@testing-library/user-event": "npm:14.6.1"
+    "@types/bun": "npm:1.3.2"
     "@types/is-hotkey": "npm:0.1.10"
     "@types/jest": "npm:29.5.14"
     "@types/lodash": "npm:4.17.17"
@@ -17295,6 +17386,7 @@ __metadata:
     "@types/react-dom": "npm:19.2.2"
     "@types/validator": "npm:13.15.1"
     "@typescript-eslint/parser": "npm:^8.47.0"
+    "@udecode/ruler": "npm:0.4.0"
     app-root-path: "npm:3.1.0"
     autoprefixer: "npm:10.4.21"
     barrelsby: "npm:2.8.1"
@@ -20949,6 +21041,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
+  languageName: node
+  linkType: hard
+
 "undici-types@npm:~7.8.0":
   version: 7.8.0
   resolution: "undici-types@npm:7.8.0"
@@ -22099,6 +22198,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"yargs-parser@npm:^22.0.0":
+  version: 22.0.0
+  resolution: "yargs-parser@npm:22.0.0"
+  checksum: 10c0/cb7ef81759c4271cb1d96b9351dbbc9a9ce35d3e1122d2b739bf6c432603824fa02c67cc12dcef6ea80283379d63495686e8f41cc7b06c6576e792aba4d33e1c
+  languageName: node
+  linkType: hard
+
 "yargs@npm:^17.3.1, yargs@npm:^17.4.1, yargs@npm:^17.7.1, yargs@npm:^17.7.2":
   version: 17.7.2
   resolution: "yargs@npm:17.7.2"
@@ -22111,6 +22217,20 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
+  languageName: node
+  linkType: hard
+
+"yargs@npm:^18.0.0":
+  version: 18.0.0
+  resolution: "yargs@npm:18.0.0"
+  dependencies:
+    cliui: "npm:^9.0.1"
+    escalade: "npm:^3.1.1"
+    get-caller-file: "npm:^2.0.5"
+    string-width: "npm:^7.2.0"
+    y18n: "npm:^5.0.5"
+    yargs-parser: "npm:^22.0.0"
+  checksum: 10c0/bf290e4723876ea9c638c786a5c42ac28e03c9ca2325e1424bf43b94e5876456292d3ed905b853ebbba6daf43ed29e772ac2a6b3c5fb1b16533245d6211778f3
   languageName: node
   linkType: hard
 

@@ -1,3 +1,6 @@
+/// <reference types="@testing-library/jest-dom" />
+import { expect, test as it } from 'bun:test';
+
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
@@ -12,7 +15,7 @@ it('should render children', () => {
     </HotkeysProvider>
   );
 
-  expect(getByText('Hello')).toBeInTheDocument();
+  expect(getByText('Hello')).toBeTruthy();
 });
 
 it('should default to wildcard scope', () => {

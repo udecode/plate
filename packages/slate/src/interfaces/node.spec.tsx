@@ -1,4 +1,6 @@
 /** @jsx jsx */
+import { describe, expect, test as it } from 'bun:test';
+
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../create-editor';
@@ -21,7 +23,7 @@ describe('NodeApi', () => {
       );
 
       const [node] = NodeApi.firstChild(editor, [0]) ?? [];
-      expect(node).toEqual({ text: 'one' });
+      expect(node as any).toEqual({ text: 'one' });
     });
   });
 
@@ -41,7 +43,7 @@ describe('NodeApi', () => {
       );
 
       const [node] = NodeApi.firstText(editor) ?? [];
-      expect(node).toEqual({ text: 'one' });
+      expect(node as any).toEqual({ text: 'one' });
     });
   });
 
@@ -91,7 +93,7 @@ describe('NodeApi', () => {
       );
 
       const [node] = NodeApi.lastChild(editor, [0]) ?? [];
-      expect(node).toEqual({ text: 'two' });
+      expect(node as any).toEqual({ text: 'two' });
     });
   });
 });

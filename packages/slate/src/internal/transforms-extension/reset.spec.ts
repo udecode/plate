@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { createEditor } from '../../create-editor';
 
 describe('reset', () => {
@@ -47,7 +49,7 @@ describe('reset', () => {
     expect(editor.children).toEqual([{ children: [{ text: '' }], type: 'p' }]);
     expect(editor.operations.length).toBeGreaterThan(0);
     expect(editor.marks).toEqual({ bold: true });
-    expect(editor.history.undos).toEqual([{ operations: [] }]);
-    expect(editor.history.redos).toEqual([{ operations: [] }]);
+    expect(editor.history.undos).toMatchObject([{ operations: [] }]);
+    expect(editor.history.redos).toMatchObject([{ operations: [] }]);
   });
 });

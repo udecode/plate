@@ -1,4 +1,6 @@
 /** @jsx jsx */
+import { describe, expect, spyOn, test as it } from 'bun:test';
+
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';
@@ -114,7 +116,7 @@ describe('select', () => {
         ) as any
       );
 
-      const focusSpy = jest.spyOn(editor.tf, 'focus');
+      const focusSpy = spyOn(editor.tf, 'focus');
 
       editor.tf.select([], {
         edge: 'end',
@@ -145,7 +147,7 @@ describe('select', () => {
         ) as any
       );
 
-      const focusSpy = jest.spyOn(editor.tf, 'focus');
+      const focusSpy = spyOn(editor.tf, 'focus');
 
       editor.tf.select(
         {
@@ -221,7 +223,7 @@ describe('select', () => {
         ) as any
       );
 
-      const focusSpy = jest.spyOn(editor.tf, 'focus');
+      const focusSpy = spyOn(editor.tf, 'focus');
 
       editor.tf.select([1], { focus: true, previous: true });
 

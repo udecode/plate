@@ -1,4 +1,5 @@
 /** @jsx jsxt */
+import { describe, expect, test as it } from 'bun:test';
 
 import { createSlateEditor, createSlatePlugin } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';

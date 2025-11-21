@@ -1,3 +1,5 @@
+import { describe, expect, test as it } from 'bun:test';
+
 import { isUrl } from './isUrl';
 
 describe('is-url', () => {
