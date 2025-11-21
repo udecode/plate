@@ -8,7 +8,7 @@
 
 本仓库是一个 monorepo。
 
-- 我们使用 [yarn](https://yarnpkg.com/en/docs/install) 和 [`workspaces`](https://yarnpkg.com/features/workspaces) 进行开发。
+- 我们使用 [Bun](https://bun.sh) 和 [`workspaces`](https://bun.sh/docs/install/workspaces) 进行开发。
 - 我们使用 [tsup](https://tsup.egoist.dev/) 作为我们的构建系统。
 - 我们使用 [changesets](https://github.com/changesets/changesets) 管理发布。
 
@@ -49,13 +49,13 @@ git clone git@github.com:udecode/plate.git
 ### Install
 
 ```bash
-yarn install
+bun install
 ```
 
 ### Build
 
 ```bash
-yarn build
+bun run build
 ```
 
 ### 运行工作区
@@ -78,10 +78,10 @@ turbo --filter=@platejs/core build
 
 ## 文档
 
-本项目的文档位于 `www` 工作区中。运行 `yarn build` 后，您可以通过运行以下命令在本地运行文档：
+本项目的文档位于 `www` 工作区中。运行 `bun run build` 后，您可以通过运行以下命令在本地运行文档：
 
 ```bash
-yarn dev
+bun run dev
 ```
 
 文档使用 [MDX](https://mdxjs.com) 编写。您可以在 `docs` 目录中找到文档文件。
@@ -90,7 +90,7 @@ yarn dev
 
 ```bash
 turbo --filter=[PACKAGE] build
-yarn dev
+bun run dev
 ```
 
 ## 组件
@@ -112,9 +112,9 @@ apps
 我们使用 [Biome](https://biomejs.dev/) 作为代码检查器。要运行代码检查器，请使用以下命令：
 
 ```bash
-yarn lint
+bun run lint
 # autofix with:
-yarn lint:fix
+bun run lint:fix
 ```
 
 ## 测试
@@ -124,10 +124,10 @@ yarn lint:fix
 测试使用 [Jest](https://jestjs.io/) 编写。您可以从仓库的根目录运行所有测试。
 
 ```bash
-yarn test
+bun run test
 ```
 
-运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`yarn test`**。
+运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`bun run test`**。
 
 请确保在提交拉取请求时测试通过。如果您添加新功能，请包含测试。
 
@@ -138,13 +138,13 @@ yarn test
 要安装 Playwright 的浏览器和依赖项，请使用：
 
 ```bash
-yarn playwright install # first time
+bun playwright install # first time
 ```
 
 To run all tests:
 
 ```bash
-yarn e2e
+bun run e2e
 ```
 
 ## 发布指南
@@ -152,7 +152,7 @@ yarn e2e
 对于想要发布的人，请按照以下步骤操作：
 
 - 提交您的更改：
-  - 运行 **`yarn brl`** 同步导出并自动更新索引文件。
+  - 运行 **`bun run brl`** 同步导出并自动更新索引文件。
   - 确保代码检查、测试和构建都通过。
 - 向 **`main`** 分支提交 PR 并**[添加一个 changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**。
 - 合并 PR，这将触发机器人创建一个发布 PR。
@@ -216,12 +216,12 @@ yarn e2e
 
 - 在`apps/www/src/registry/ui`中创建您的组件
 - 将您的组件添加到`apps/www/src/registry/registry.ts`
-- 运行`yarn build:registry`
+- 运行`bun run build:registry`
 
 要在本地尝试安装您的组件：
 
 - `cd templates/plate-playground`
-- `yarn g:plate-ui add <component-name>`
+- `bunx shadcn add <component-name>`
 
 ### **如何：文档**
 
@@ -246,14 +246,14 @@ yarn e2e
 使用以下命令并按照提示创建新包：
 
 ```bash
-yarn gen:package
+bun run gen:package
 ```
 
 After creating your package, install and build it:
 
 ```bash
-yarn install
-yarn build
+bun install
+bun run build
 ```
 
 ### 如何：服务器打包
@@ -270,7 +270,7 @@ export * from "./server/index"; // If needed
 ```
 
 - （可选）如果需要，在`/src/server/`中创建服务器端版本。例如，`/src/server/withReact`中的`withReact`是`/src/client/withReact`的服务器端版本
-- 运行`yarn brl`来同步导出
+- 运行`bun run brl`来同步导出
 - 更新`package.json > exports`
 
 ```json
