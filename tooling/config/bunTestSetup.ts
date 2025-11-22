@@ -1,3 +1,5 @@
+/// <reference types="bun-types/test-globals" />
+
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import { afterEach, expect } from 'bun:test';
 import * as matchers from '@testing-library/jest-dom/matchers';
@@ -11,6 +13,17 @@ GlobalRegistrator.register();
 if (global.document && !global.document.body) {
   const body = global.document.createElement('body');
   global.document.documentElement.appendChild(body);
+}
+
+// Explicitly set DOMParser globally for module scope
+// Some built modules reference DOMParser directly without window prefix
+if (typeof window !== 'undefined' && window.DOMParser) {
+  // Force DOMParser to be globally available
+  Object.defineProperty(globalThis, 'DOMParser', {
+    value: window.DOMParser,
+    writable: true,
+    configurable: true,
+  });
 }
 
 // Fix Happy-DOM readonly property issue with isContentEditable

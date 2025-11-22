@@ -8,7 +8,7 @@ globs: "**/*.spec.{ts,tsx}"
 
 ## Overview
 
-Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first line. Use `toMatchObject()` for arrays, `toEqual()` for exact matching. **`mock.module()` is process-global** - use `spyOn()` instead.
+Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first line. Test globals (`describe`, `it`, `expect`, etc.) are global via `tooling/config/global.d.ts` - only import `mock`/`spyOn` when needed. Use `toMatchObject()` for arrays, `toEqual()` for exact matching. **`mock.module()` is process-global** - use `spyOn()` instead.
 
 ## When to Use
 
@@ -39,15 +39,17 @@ Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first lin
 
 ```typescript
 /** @jsx jsx */
-import { describe, expect, test as it } from 'bun:test';
 
 import { jsx } from '@platejs/test-utils';
 
 jsx; // Prevents removal
 
 // ❌ WRONG - imports before pragma
-import { describe } from 'bun:test';
+import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */  // Too late!
+
+// Note: describe, it, expect are global via tooling/config/global.d.ts
+// Only import mock/spyOn when needed for mocking
 ```
 
 ### Editor Creation
@@ -112,7 +114,8 @@ expect(node).toMatchObject({ text: 'one' });
 ### Mock Usage (Bun)
 
 ```typescript
-import { mock, spyOn, beforeEach, afterEach } from 'bun:test';
+// ONLY import mock/spyOn when needed - describe/it/expect are global
+import { mock, spyOn } from 'bun:test';
 
 // Replace jest.fn() with mock()
 const mockOnChange = mock();
@@ -161,15 +164,8 @@ describe("useUserPosts", () => {
 
 ```typescript
 // hooks/useUserPosts.spec.ts
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  test as it,
-  mock,
-  spyOn,
-} from "bun:test";
+// ONLY import mock/spyOn - describe/it/expect are global
+import { mock, spyOn } from "bun:test";
 import * as postsApiModule from "@/lib/services/api/postsApi";
 
 describe("useUserPosts", () => {
@@ -465,7 +461,7 @@ let spy: ReturnType<typeof spyOn>;
 
 For each new hook test file:
 
-- [ ] Import `mock`, `spyOn` from `bun:test`
+- [ ] Import `mock`, `spyOn` from `bun:test` (ONLY when mocking - describe/it/expect are global)
 - [ ] Import `renderHook`, `act` from `@testing-library/react`
 - [ ] Import modules as namespace for spyOn: `import * as module`
 - [ ] Declare mock variables with `ReturnType<typeof mock>`
@@ -500,11 +496,12 @@ Common elements for test data:
 
 ```typescript
 /** @jsx jsx */
-import { describe, expect, test as it } from 'bun:test';
 
 import { jsx } from '@platejs/test-utils';
 
 jsx; // Required
+
+// describe, it, expect are global - no imports needed
 
 const input = (
   <editor>
