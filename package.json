@@ -2,6 +2,7 @@
   "name": "plate",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -58,7 +59,7 @@
     "p:lint": "biome check $INIT_CWD",
     "p:lint:fix": "biome check $INIT_CWD --fix",
     "p:test": "cd $INIT_CWD && bun test",
-    "p:tsdown": "cd $INIT_CWD && tsdown --config=${PROJECT_CWD}/tooling/config/tsdown.config.ts",
+    "p:tsdown": "cd $INIT_CWD && tsdown --config=${PROJECT_CWD}/tooling/config/tsdown.config.ts --log-level warn",
     "p:typecheck": "cd $INIT_CWD && tsc -p $INIT_CWD/tsconfig.json",
     "r": "yarn workspace www r",
     "rc": "turbo --filter=www rc",

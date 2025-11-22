@@ -36,7 +36,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown --log-level warn",
     "build:watch": "tsdown --watch",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
