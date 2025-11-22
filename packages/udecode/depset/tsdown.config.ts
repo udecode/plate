@@ -4,6 +4,7 @@ export default defineConfig({
   entry: ['src/index.ts'],
   target: 'esnext',
   fixedExtension: false,
+  exports: true,
   external: [
     'commander',
     'prompts',

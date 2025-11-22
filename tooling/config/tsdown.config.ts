@@ -56,6 +56,6 @@ export default defineConfig((opts) => [
     tsconfig: 'tsconfig.build.json',
     sourcemap: enableSourcemaps,
     dts: { sourcemap: enableSourcemaps },
-    exports: true
+    exports: true,
   },
 ]);
