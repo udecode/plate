@@ -27,25 +27,18 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js"
     },
     "./react": {
       "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "module": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
+      "import": "./dist/react/index.js"
     },
     "./static": {
       "types": "./dist/static/index.d.ts",
-      "import": "./dist/static/index.mjs",
-      "module": "./dist/static/index.mjs",
-      "require": "./dist/static/index.js"
+      "import": "./dist/static/index.js"
     }
   },
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -74,5 +67,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "type": "module"
 }

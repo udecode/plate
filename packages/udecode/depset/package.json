@@ -36,8 +36,8 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "yarn tsup",
-    "build:watch": "yarn tsup --watch",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
     "clean": "yarn p:clean",
@@ -53,8 +53,7 @@
     "zod": "3.25.61"
   },
   "devDependencies": {
-    "@types/prompts": "2.4.9",
-    "tsup": "8.5.0"
+    "@types/prompts": "2.4.9"
   },
   "publishConfig": {
     "access": "public"

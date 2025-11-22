@@ -20,19 +20,14 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js"
     },
     "./react": {
       "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "module": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
+      "import": "./dist/react/index.js"
     }
   },
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -61,5 +56,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "type": "module"
 }
