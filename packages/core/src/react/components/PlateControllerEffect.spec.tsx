@@ -1,10 +1,12 @@
+/// <reference types="@testing-library/jest-dom" />
+
 import React from 'react';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
 
 import { createPlateEditor } from '../editor';
-import { useFocused } from '../slate-react';
+import * as slateReactModule from '../slate-react';
 import { PlateController, usePlateControllerLocalStore } from '../stores';
 import { Plate } from './Plate';
 import { PlateControllerEffect } from './PlateControllerEffect';
@@ -49,12 +51,11 @@ const UnmountablePlate = ({
   );
 };
 
+// Create a context for controlling focused state in tests
 const FocusedContext = React.createContext(false);
 
-jest.mock('../slate-react', () => ({
-  ...jest.requireActual('../slate-react'),
-  useFocused: () => React.useContext(FocusedContext),
-}));
+// Hook that uses the context value
+const useFocused = () => React.useContext(FocusedContext);
 
 const ControlledFocusedContext = ({
   children,
@@ -121,16 +122,18 @@ describe('PlateControllerEffect', () => {
 
       it('registers and unregisters the store', () => {
         const { getByText } = render(children);
-        expect(getByText('test: non-null')).toBeInTheDocument();
+        (expect(getByText('test: non-null')) as any).toBeInTheDocument();
         void act(() => getByText('unmountPlate').click());
-        expect(getByText('test: null')).toBeInTheDocument();
+        (expect(getByText('test: null')) as any).toBeInTheDocument();
         void act(() => getByText('mountPlate').click());
-        expect(getByText('test: non-null')).toBeInTheDocument();
+        (expect(getByText('test: non-null')) as any).toBeInTheDocument();
       });
 
       it('does not affect primaryEditorIds', () => {
         const { queryByText } = render(children);
-        expect(queryByText('primaryEditorId: test')).not.toBeInTheDocument();
+        (
+          expect(queryByText('primaryEditorId: test')) as any
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -139,6 +142,12 @@ describe('PlateControllerEffect', () => {
         const editor = createPlateEditor({
           id: 'test',
         });
+
+        // Spy on useFocused to use our context value
+        const useFocusedSpy = spyOn(
+          slateReactModule,
+          'useFocused'
+        ).mockImplementation(() => React.useContext(FocusedContext));
 
         const { getByText } = render(
           <PlateController>
@@ -151,9 +160,11 @@ describe('PlateControllerEffect', () => {
           </PlateController>
         );
 
-        expect(getByText('activeId: null')).toBeInTheDocument();
+        (expect(getByText('activeId: null')) as any).toBeInTheDocument();
         void act(() => getByText('focus').click());
-        expect(getByText('activeId: test')).toBeInTheDocument();
+        (expect(getByText('activeId: test')) as any).toBeInTheDocument();
+
+        useFocusedSpy.mockRestore();
       });
     });
   });
@@ -171,17 +182,21 @@ describe('PlateControllerEffect', () => {
         </PlateController>
       );
 
-      expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 3')).not.toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 1')) as any).toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 2')) as any).toBeInTheDocument();
+      (
+        expect(queryByText('primaryEditorId: 3')) as any
+      ).not.toBeInTheDocument();
       void act(() => getByText('mountPlate').click());
-      expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 3')).toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 1')) as any).toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 2')) as any).toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 3')) as any).toBeInTheDocument();
       void act(() => getByText('unmountPlate').click());
-      expect(queryByText('primaryEditorId: 1')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 2')).toBeInTheDocument();
-      expect(queryByText('primaryEditorId: 3')).not.toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 1')) as any).toBeInTheDocument();
+      (expect(queryByText('primaryEditorId: 2')) as any).toBeInTheDocument();
+      (
+        expect(queryByText('primaryEditorId: 3')) as any
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -194,7 +209,7 @@ describe('PlateControllerEffect', () => {
         </Plate>
       );
 
-      expect(getByText('No error')).toBeInTheDocument();
+      (expect(getByText('No error')) as any).toBeInTheDocument();
     });
   });
 });

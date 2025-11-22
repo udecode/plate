@@ -125,6 +125,7 @@
     "contentlayer2": "0.4.6",
     "crypto-browserify": "3.12.1",
     "date-fns": "4.1.0",
+    "dedent": "1.7.0",
     "dotenv": "16.5.0",
     "framer-motion": "12.17.0",
     "fumadocs-core": "15.5.1",

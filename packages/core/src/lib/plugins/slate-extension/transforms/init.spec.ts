@@ -3,21 +3,22 @@ import type { TSelection } from '@platejs/slate';
 import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin/createSlatePlugin';
 import { init } from './init';
+import * as pipeNormalizeModule from '../../../../internal/plugin/pipeNormalizeInitialValue';
 
-// Mock the pipeNormalizeInitialValue function
-jest.mock('../../../../internal/plugin/pipeNormalizeInitialValue', () => ({
-  pipeNormalizeInitialValue: jest.fn(),
-}));
-
-const mockPipeNormalizeInitialValue = jest.requireMock(
-  '../../../../internal/plugin/pipeNormalizeInitialValue'
-).pipeNormalizeInitialValue;
+let mockPipeNormalizeInitialValue: ReturnType<typeof mock>;
+let pipeNormalizeSpy: ReturnType<typeof spyOn>;
 
 describe('init', () => {
   let editor: any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Set up spy for pipeNormalizeInitialValue
+    mockPipeNormalizeInitialValue = mock();
+    pipeNormalizeSpy = spyOn(
+      pipeNormalizeModule,
+      'pipeNormalizeInitialValue'
+    ).mockImplementation(mockPipeNormalizeInitialValue);
+
     editor = createSlateEditor({
       plugins: [createSlatePlugin({ key: 'test' })],
     });
@@ -25,32 +26,34 @@ describe('init', () => {
     // Mock editor methods
     editor.api = {
       create: {
-        value: jest
-          .fn()
-          .mockReturnValue([{ children: [{ text: '' }], type: 'p' }]),
+        value: mock().mockReturnValue([
+          { children: [{ text: '' }], type: 'p' },
+        ]),
       },
-      end: jest.fn().mockReturnValue({ offset: 0, path: [0, 0] }),
+      end: mock().mockReturnValue({ offset: 0, path: [0, 0] }),
       html: {
-        deserialize: jest
-          .fn()
-          .mockReturnValue([
-            { children: [{ text: 'deserialized' }], type: 'p' },
-          ]),
+        deserialize: mock().mockReturnValue([
+          { children: [{ text: 'deserialized' }], type: 'p' },
+        ]),
       },
-      start: jest.fn().mockReturnValue({ offset: 0, path: [0, 0] }),
+      start: mock().mockReturnValue({ offset: 0, path: [0, 0] }),
     };
 
     editor.tf = {
-      normalize: jest.fn(),
-      select: jest.fn(),
+      normalize: mock(),
+      select: mock(),
     };
 
     editor.children = [];
   });
 
+  afterEach(() => {
+    pipeNormalizeSpy?.mockRestore();
+  });
+
   describe('when value is null', () => {
     it('should call onValueLoaded without setting children', () => {
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: null });
 
@@ -65,7 +68,7 @@ describe('init', () => {
   describe('when value is a string', () => {
     it('should deserialize HTML string and call onValueLoaded', () => {
       const htmlString = '<p>test content</p>';
-      const deserializeSpy = jest.spyOn(editor.api.html, 'deserialize');
+      const deserializeSpy = spyOn(editor.api.html, 'deserialize');
 
       init(editor, { value: htmlString });
 
@@ -80,7 +83,7 @@ describe('init', () => {
   describe('when value is a synchronous function', () => {
     it('should call the function and set children immediately', () => {
       const syncValue = [{ children: [{ text: 'sync result' }], type: 'p' }];
-      const syncFunction = jest.fn().mockReturnValue(syncValue);
+      const syncFunction = mock().mockReturnValue(syncValue);
 
       init(editor, { value: syncFunction });
 
@@ -90,8 +93,8 @@ describe('init', () => {
     });
 
     it('should handle sync function returning undefined', () => {
-      const syncFunction = jest.fn().mockReturnValue(undefined);
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const syncFunction = mock().mockReturnValue(undefined);
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: syncFunction });
 
@@ -106,7 +109,7 @@ describe('init', () => {
   describe('when value is an asynchronous function', () => {
     it('should handle async function and call onValueLoaded after resolution', async () => {
       const asyncValue = [{ children: [{ text: 'async result' }], type: 'p' }];
-      const asyncFunction = jest.fn().mockResolvedValue(asyncValue);
+      const asyncFunction = mock().mockResolvedValue(asyncValue);
 
       init(editor, { value: asyncFunction });
 
@@ -120,8 +123,8 @@ describe('init', () => {
     });
 
     it('should handle async function returning empty array', async () => {
-      const asyncFunction = jest.fn().mockResolvedValue([]);
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const asyncFunction = mock().mockResolvedValue([]);
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: asyncFunction });
 
@@ -136,14 +139,13 @@ describe('init', () => {
 
     it('should properly detect promise using duck typing', () => {
       const promiseLikeObject = {
-        then: jest.fn().mockImplementation((callback) => {
+        then: mock().mockImplementation((callback) => {
           callback([{ children: [{ text: 'promise-like' }], type: 'p' }]);
         }),
       };
 
-      const functionReturningPromiseLike = jest
-        .fn()
-        .mockReturnValue(promiseLikeObject);
+      const functionReturningPromiseLike =
+        mock().mockReturnValue(promiseLikeObject);
 
       init(editor, { value: functionReturningPromiseLike });
 
@@ -165,7 +167,7 @@ describe('init', () => {
     });
 
     it('should handle falsy values', () => {
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: false });
 
@@ -194,7 +196,7 @@ describe('init', () => {
     });
 
     it('should auto-select at end when autoSelect is true', () => {
-      const endSpy = jest.spyOn(editor.api, 'end');
+      const endSpy = spyOn(editor.api, 'end');
 
       init(editor, { autoSelect: true, value: null });
 
@@ -203,7 +205,7 @@ describe('init', () => {
     });
 
     it('should auto-select at end when autoSelect is "end"', () => {
-      const endSpy = jest.spyOn(editor.api, 'end');
+      const endSpy = spyOn(editor.api, 'end');
 
       init(editor, { autoSelect: 'end', value: null });
 
@@ -212,7 +214,7 @@ describe('init', () => {
     });
 
     it('should auto-select at start when autoSelect is "start"', () => {
-      const startSpy = jest.spyOn(editor.api, 'start');
+      const startSpy = spyOn(editor.api, 'start');
 
       init(editor, { autoSelect: 'start', value: null });
 
@@ -252,7 +254,7 @@ describe('init', () => {
 
     it('should not call pipeNormalizeInitialValue when children is empty', () => {
       editor.children = [];
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: null });
 
@@ -262,7 +264,7 @@ describe('init', () => {
     });
 
     it('should call editor normalize when shouldNormalizeEditor is true', () => {
-      const normalizeSpy = jest.spyOn(editor.tf, 'normalize');
+      const normalizeSpy = spyOn(editor.tf, 'normalize');
 
       init(editor, { shouldNormalizeEditor: true, value: null });
 
@@ -270,7 +272,7 @@ describe('init', () => {
     });
 
     it('should not call editor normalize when shouldNormalizeEditor is false', () => {
-      const normalizeSpy = jest.spyOn(editor.tf, 'normalize');
+      const normalizeSpy = spyOn(editor.tf, 'normalize');
 
       init(editor, { shouldNormalizeEditor: false, value: null });
 
@@ -281,13 +283,13 @@ describe('init', () => {
   describe('async function with selection and normalization', () => {
     it('should handle all options correctly after async resolution', async () => {
       const asyncValue = [{ children: [{ text: 'async content' }], type: 'p' }];
-      const asyncFunction = jest.fn().mockResolvedValue(asyncValue);
+      const asyncFunction = mock().mockResolvedValue(asyncValue);
       const selection: TSelection = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       };
 
-      const normalizeSpy = jest.spyOn(editor.tf, 'normalize');
+      const normalizeSpy = spyOn(editor.tf, 'normalize');
 
       init(editor, {
         autoSelect: true, // Should be ignored due to explicit selection
@@ -309,7 +311,7 @@ describe('init', () => {
 
   describe('onReady callback', () => {
     it('should call onReady with isAsync: false for sync initialization', () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
       const directValue = [{ children: [{ text: 'direct value' }], type: 'p' }];
 
       init(editor, { value: directValue, onReady: onReadySpy });
@@ -322,9 +324,9 @@ describe('init', () => {
     });
 
     it('should call onReady with isAsync: false for sync function', () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
       const syncValue = [{ children: [{ text: 'sync result' }], type: 'p' }];
-      const syncFunction = jest.fn().mockReturnValue(syncValue);
+      const syncFunction = mock().mockReturnValue(syncValue);
 
       init(editor, { value: syncFunction, onReady: onReadySpy });
 
@@ -336,7 +338,7 @@ describe('init', () => {
     });
 
     it('should call onReady with isAsync: false for string value', () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
       const htmlString = '<p>test content</p>';
 
       init(editor, { value: htmlString, onReady: onReadySpy });
@@ -349,9 +351,9 @@ describe('init', () => {
     });
 
     it('should call onReady with isAsync: true for async function', async () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
       const asyncValue = [{ children: [{ text: 'async result' }], type: 'p' }];
-      const asyncFunction = jest.fn().mockResolvedValue(asyncValue);
+      const asyncFunction = mock().mockResolvedValue(asyncValue);
 
       init(editor, { value: asyncFunction, onReady: onReadySpy });
 
@@ -366,18 +368,17 @@ describe('init', () => {
     });
 
     it('should call onReady with isAsync: true for promise-like object', () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
       const promiseValue = [
         { children: [{ text: 'promise result' }], type: 'p' },
       ];
       const promiseLikeObject = {
-        then: jest.fn().mockImplementation((callback) => {
+        then: mock().mockImplementation((callback) => {
           callback(promiseValue);
         }),
       };
-      const functionReturningPromise = jest
-        .fn()
-        .mockReturnValue(promiseLikeObject);
+      const functionReturningPromise =
+        mock().mockReturnValue(promiseLikeObject);
 
       init(editor, { value: functionReturningPromise, onReady: onReadySpy });
 
@@ -398,7 +399,7 @@ describe('init', () => {
     });
 
     it('should call onReady with isAsync: false for null value', () => {
-      const onReadySpy = jest.fn();
+      const onReadySpy = mock();
 
       init(editor, { value: null, onReady: onReadySpy });
 
@@ -412,8 +413,8 @@ describe('init', () => {
 
   describe('edge cases', () => {
     it('should handle value function that returns null', () => {
-      const nullFunction = jest.fn().mockReturnValue(null);
-      const createValueSpy = jest.spyOn(editor.api.create, 'value');
+      const nullFunction = mock().mockReturnValue(null);
+      const createValueSpy = spyOn(editor.api.create, 'value');
 
       init(editor, { value: nullFunction });
 
@@ -422,7 +423,7 @@ describe('init', () => {
     });
 
     it('should handle value function that throws an error', () => {
-      const errorFunction = jest.fn().mockImplementation(() => {
+      const errorFunction = mock().mockImplementation(() => {
         throw new Error('Test error');
       });
 

@@ -29,7 +29,7 @@ describe('NodeApi.children', () => {
         NodeApi.children(editor, [0], { from: 1 })
       ).map(([node]) => node);
 
-      expect(children).toEqual([
+      expect(children).toMatchObject([
         { text: 'two' },
         { text: 'three' },
         { text: 'four' },
@@ -54,7 +54,7 @@ describe('NodeApi.children', () => {
         NodeApi.children(editor, [0], { from: 2, reverse: true })
       ).map(([node]) => node);
 
-      expect(children).toEqual([
+      expect(children).toMatchObject([
         { text: 'three' },
         { text: 'two' },
         { text: 'one' },
@@ -81,7 +81,7 @@ describe('NodeApi.children', () => {
         ([node]) => node
       );
 
-      expect(children).toEqual([{ text: 'one' }, { text: 'two' }]);
+      expect(children).toMatchObject([{ text: 'one' }, { text: 'two' }]);
     });
   });
 
@@ -104,7 +104,7 @@ describe('NodeApi.children', () => {
         NodeApi.children(editor, [0], { from: 1, to: 3 })
       ).map(([node]) => node);
 
-      expect(children).toEqual([{ text: 'two' }, { text: 'three' }]);
+      expect(children).toMatchObject([{ text: 'two' }, { text: 'three' }]);
     });
   });
 

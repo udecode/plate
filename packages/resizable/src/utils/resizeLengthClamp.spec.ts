@@ -35,17 +35,23 @@ describe('resizeLengthClamp', () => {
   describe('when length is a number', () => {
     describe('when min and max are numbers', () => {
       it('should clamp the length', () => {
-        expect(resizeLengthClamp(3, 20, { max: 6, min: 4 })).toBe(4);
-        expect(resizeLengthClamp(5, 20, { max: 6, min: 4 })).toBe(5);
-        expect(resizeLengthClamp(7, 20, { max: 6, min: 4 })).toBe(6);
+        expect(resizeLengthClamp(3, 20, { max: 6, min: 4 }) as number).toBe(4);
+        expect(resizeLengthClamp(5, 20, { max: 6, min: 4 }) as number).toBe(5);
+        expect(resizeLengthClamp(7, 20, { max: 6, min: 4 }) as number).toBe(6);
       });
     });
 
     describe('when min and max are strings', () => {
       it('should clamp the length', () => {
-        expect(resizeLengthClamp(30, 100, { max: '60%', min: '40%' })).toBe(40);
-        expect(resizeLengthClamp(50, 100, { max: '60%', min: '40%' })).toBe(50);
-        expect(resizeLengthClamp(70, 100, { max: '60%', min: '40%' })).toBe(60);
+        expect(
+          resizeLengthClamp(30, 100, { max: '60%', min: '40%' }) as number
+        ).toBe(40);
+        expect(
+          resizeLengthClamp(50, 100, { max: '60%', min: '40%' }) as number
+        ).toBe(50);
+        expect(
+          resizeLengthClamp(70, 100, { max: '60%', min: '40%' }) as number
+        ).toBe(60);
       });
     });
   });
@@ -53,23 +59,29 @@ describe('resizeLengthClamp', () => {
   describe('when length is a string', () => {
     describe('when min and max are numbers', () => {
       it('should clamp the length', () => {
-        expect(resizeLengthClamp('30%', 100, { max: 60, min: 40 })).toBe('40%');
-        expect(resizeLengthClamp('50%', 100, { max: 60, min: 40 })).toBe('50%');
-        expect(resizeLengthClamp('70%', 100, { max: 60, min: 40 })).toBe('60%');
+        expect(
+          resizeLengthClamp('30%', 100, { max: 60, min: 40 }) as string
+        ).toBe('40%');
+        expect(
+          resizeLengthClamp('50%', 100, { max: 60, min: 40 }) as string
+        ).toBe('50%');
+        expect(
+          resizeLengthClamp('70%', 100, { max: 60, min: 40 }) as string
+        ).toBe('60%');
       });
     });
 
     describe('when min and max are strings', () => {
       it('should clamp the length', () => {
-        expect(resizeLengthClamp('30%', 100, { max: '60%', min: '40%' })).toBe(
-          '40%'
-        );
-        expect(resizeLengthClamp('50%', 100, { max: '60%', min: '40%' })).toBe(
-          '50%'
-        );
-        expect(resizeLengthClamp('70%', 100, { max: '60%', min: '40%' })).toBe(
-          '60%'
-        );
+        expect(
+          resizeLengthClamp('30%', 100, { max: '60%', min: '40%' }) as string
+        ).toBe('40%');
+        expect(
+          resizeLengthClamp('50%', 100, { max: '60%', min: '40%' }) as string
+        ).toBe('50%');
+        expect(
+          resizeLengthClamp('70%', 100, { max: '60%', min: '40%' }) as string
+        ).toBe('60%');
       });
     });
   });

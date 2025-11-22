@@ -21,7 +21,8 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "ESNext",
-    "types": ["node", "@testing-library/jest-dom"]
+    "types": ["node", "@testing-library/jest-dom", "bun-types"]
   },
+  "include": ["**/*", "tooling/config/global.d.ts"],
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]
 }

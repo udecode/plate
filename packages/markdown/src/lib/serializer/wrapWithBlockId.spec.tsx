@@ -34,7 +34,7 @@ describe('wrapWithBlockId', () => {
         },
         name: 'block',
         type: 'mdxJsxFlowElement',
-      });
+      } as any);
     });
 
     it('should convert numeric IDs to strings', () => {

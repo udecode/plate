@@ -3,6 +3,6 @@
   "compilerOptions": {
     "paths": {}
   },
-  "include": ["src"],
+  "include": ["src", "../../tooling/config/global.d.ts"],
   "exclude": []
 }

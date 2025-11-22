@@ -1,4 +1,5 @@
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';
@@ -99,7 +100,7 @@ describe('removeMarks', () => {
         ) as any
       );
 
-      const onChange = jest.fn();
+      const onChange = mock();
       editor.api.onChange = onChange;
       editor.marks = { bold: true };
 
@@ -121,7 +122,7 @@ describe('removeMarks', () => {
         ) as any
       );
 
-      const onChange = jest.fn();
+      const onChange = mock();
       editor.api.onChange = onChange;
       editor.marks = { bold: true };
 

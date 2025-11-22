@@ -10,17 +10,17 @@ describe('ReactPlugin', () => {
 
   beforeEach(() => {
     editor = createPlateEditor();
-    editor.api.isFocused = jest.fn();
-    editor.tf.focus = jest.fn();
+    editor.api.isFocused = mock();
+    editor.tf.focus = mock();
 
     // Reset mocks
-    (editor.api.isFocused as jest.Mock).mockReset();
-    (editor.tf.focus as jest.Mock).mockReset();
+    (editor.api.isFocused as ReturnType<typeof mock>).mockReset();
+    (editor.tf.focus as ReturnType<typeof mock>).mockReset();
   });
 
   it('both legacy and new api should be overriddable', () => {
-    const fn = jest.fn();
-    const fn2 = jest.fn();
+    const fn = mock();
+    const fn2 = mock();
     editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
@@ -61,7 +61,7 @@ describe('ReactPlugin', () => {
   });
 
   it('should override reset method', () => {
-    (editor.api.isFocused as jest.Mock).mockReturnValue(true);
+    (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(true);
 
     editor.tf.reset();
 
@@ -69,7 +69,7 @@ describe('ReactPlugin', () => {
   });
 
   it('should not focus editor if it was not focused before reset', () => {
-    (editor.api.isFocused as jest.Mock).mockReturnValue(false);
+    (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(false);
 
     editor.tf.reset();
 

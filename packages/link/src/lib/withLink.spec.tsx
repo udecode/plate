@@ -103,13 +103,17 @@ describe('withLink', () => {
         ) as any;
 
         it('should insert link', () => {
-          jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
+          const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
+            <fragment>docs</fragment>
+          );
 
           const editor = createTestEditor(input);
 
           editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
+
+          jsonParseSpy.mockRestore();
         });
       });
 
@@ -180,13 +184,17 @@ describe('withLink', () => {
             </editor>
           ) as any;
 
-          jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>docs</fragment>);
+          const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
+            <fragment>docs</fragment>
+          );
 
           const editor = createTestEditor(input);
 
           editor.tf.insertData(data);
 
           expect(editor.children).toEqual(output.children);
+
+          jsonParseSpy.mockRestore();
         });
       });
     });

@@ -1,7 +1,7 @@
 import { getHandler } from './getHandler';
 
 it('should be', () => {
-  const cb = jest.fn();
+  const cb = mock();
 
   getHandler(cb)();
 

@@ -1,18 +1,20 @@
+import * as getSelectedDomNodeModule from './getSelectedDomNode';
 import { isSelectOutside } from './isSelectOutside';
 
 describe('isSelectOutside', () => {
-  let mockGetSelectedDomNode: jest.Mock;
+  let mockGetSelectedDomNode: ReturnType<typeof mock>;
+  let getSelectedDomNodeSpy: ReturnType<typeof spyOn>;
 
   beforeEach(() => {
-    mockGetSelectedDomNode = jest.fn();
-    jest.doMock('./getSelectedDomNode', () => ({
-      getSelectedDomNode: mockGetSelectedDomNode,
-    }));
+    mockGetSelectedDomNode = mock();
+    getSelectedDomNodeSpy = spyOn(
+      getSelectedDomNodeModule,
+      'getSelectedDomNode'
+    ).mockImplementation(mockGetSelectedDomNode);
   });
 
   afterEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+    getSelectedDomNodeSpy?.mockRestore();
   });
 
   describe('when HTML element is provided', () => {
@@ -70,17 +72,7 @@ describe('isSelectOutside', () => {
       editorElement.dataset.slateEditor = 'true';
       mockDiv.append(editorElement);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
-
-      // Need to re-import after mocking
-      jest.resetModules();
-      jest.doMock('./getSelectedDomNode', () => ({
-        getSelectedDomNode: mockGetSelectedDomNode,
-      }));
-      const {
-        isSelectOutside: isSelectOutsideWithMock,
-      } = require('./isSelectOutside');
-
-      const result = isSelectOutsideWithMock();
+      const result = isSelectOutside();
 
       expect(result).toBe(true);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
@@ -88,17 +80,7 @@ describe('isSelectOutside', () => {
 
     it('should return false when getSelectedDomNode returns null', () => {
       mockGetSelectedDomNode.mockReturnValue(null);
-
-      // Need to re-import after mocking
-      jest.resetModules();
-      jest.doMock('./getSelectedDomNode', () => ({
-        getSelectedDomNode: mockGetSelectedDomNode,
-      }));
-      const {
-        isSelectOutside: isSelectOutsideWithMock,
-      } = require('./isSelectOutside');
-
-      const result = isSelectOutsideWithMock();
+      const result = isSelectOutside();
 
       expect(result).toBe(false);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
@@ -106,17 +88,7 @@ describe('isSelectOutside', () => {
 
     it('should return false when getSelectedDomNode returns undefined', () => {
       mockGetSelectedDomNode.mockReturnValue(undefined);
-
-      // Need to re-import after mocking
-      jest.resetModules();
-      jest.doMock('./getSelectedDomNode', () => ({
-        getSelectedDomNode: mockGetSelectedDomNode,
-      }));
-      const {
-        isSelectOutside: isSelectOutsideWithMock,
-      } = require('./isSelectOutside');
-
-      const result = isSelectOutsideWithMock();
+      const result = isSelectOutside();
 
       expect(result).toBe(false);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
@@ -128,17 +100,7 @@ describe('isSelectOutside', () => {
       paragraph.textContent = 'Regular content';
       mockDiv.append(paragraph);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
-
-      // Need to re-import after mocking
-      jest.resetModules();
-      jest.doMock('./getSelectedDomNode', () => ({
-        getSelectedDomNode: mockGetSelectedDomNode,
-      }));
-      const {
-        isSelectOutside: isSelectOutsideWithMock,
-      } = require('./isSelectOutside');
-
-      const result = isSelectOutsideWithMock();
+      const result = isSelectOutside();
 
       expect(result).toBe(false);
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
@@ -150,7 +112,7 @@ describe('isSelectOutside', () => {
       const mockDiv = document.createElement('div');
       // Override querySelector to throw an error
       const originalQuerySelector = mockDiv.querySelector;
-      mockDiv.querySelector = jest.fn(() => {
+      mockDiv.querySelector = mock(() => {
         throw new Error('Invalid selector');
       });
 

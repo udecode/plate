@@ -40,10 +40,6 @@
       "dependsOn": ["prebuild"],
       "outputs": []
     },
-    "lint:fix": {
-      "cache": false,
-      "dependsOn": []
-    },
     "prebuild": {
       "outputs": []
     },
@@ -54,15 +50,6 @@
     "www#typecheck": {
       "dependsOn": [],
       "outputs": []
-    },
-    "test": {
-      "dependsOn": [],
-      "outputs": []
-    },
-    "test:watch": {
-      "dependsOn": [],
-      "cache": false,
-      "persistent": true
     }
   }
 }

@@ -187,7 +187,7 @@ describe('when deserializing all plugins', () => {
         </htr>
       </htable>
       <hmediaembed url="https://player.vimeo.com/video/26689853">
-        {'</body></html>'}
+        <htext />
       </hmediaembed>
     </editor>
   ) as any;

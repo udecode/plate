@@ -56,7 +56,7 @@ describe('addMarkSuggestion', () => {
       id: '1',
       createdAt: Date.now(),
       newProperties: { bold: true },
-      type: 'update',
+      type: 'update' as const,
       userId: 'testId',
     };
 

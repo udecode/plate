@@ -6,8 +6,8 @@ import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { codeBlockToDecorations } from './setCodeBlockToDecorations';
 
 // Mock lowlight
-const mockHighlight = jest.fn();
-const mockHighlightAuto = jest.fn();
+const mockHighlight = mock();
+const mockHighlightAuto = mock();
 const mockLowlight = {
   highlight: mockHighlight,
   highlightAuto: mockHighlightAuto,
@@ -29,13 +29,13 @@ describe('codeBlockToDecorations', () => {
     // Add necessary API methods
     editor.api = {
       debug: {
-        error: jest.fn(),
+        error: mock(),
       },
       // Add other required API methods as needed
     } as any;
 
     // Add getOptions method
-    editor.getOptions = jest.fn().mockImplementation((plugin) => {
+    editor.getOptions = mock().mockImplementation((plugin) => {
       if (plugin === BaseCodeBlockPlugin) {
         return {
           defaultLanguage: 'javascript',

@@ -1,22 +1,14 @@
 import React, { useRef } from 'react';
 
 import { act, render } from '@testing-library/react';
-import { useHotkeys } from '@udecode/react-hotkeys';
+import * as reactHotkeysModule from '@udecode/react-hotkeys';
 
 import { createPlateEditor } from '../editor';
-import { useEditorRef } from '../stores';
+import * as storesModule from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 
-// Mock the useEditorRef hook
-jest.mock('../stores', () => ({
-  useEditorRef: jest.fn(),
-}));
-
-// Mock the useHotkeys hook
-jest.mock('@udecode/react-hotkeys', () => ({
-  ...jest.requireActual('@udecode/react-hotkeys'),
-  useHotkeys: jest.fn(),
-}));
+let useEditorRefSpy: ReturnType<typeof spyOn>;
+let useHotkeysSpy: ReturnType<typeof spyOn>;
 
 const SimpleComponent = ({ id }: { id?: string }) => {
   const editableRef = useRef<HTMLDivElement>(null);
@@ -30,8 +22,8 @@ const SimpleComponent = ({ id }: { id?: string }) => {
 
 describe('EditorHotkeysEffect', () => {
   let editor: any;
-  let setHotkeyRefMock: jest.Mock;
-  const hotkeyCallback = jest.fn();
+  let setHotkeyRefMock: ReturnType<typeof mock>;
+  const hotkeyCallback = mock();
 
   beforeEach(() => {
     editor = createPlateEditor({
@@ -42,13 +34,24 @@ describe('EditorHotkeysEffect', () => {
         },
         'mod+i': {
           keys: 'mod+i',
-          handler: jest.fn(),
+          handler: mock(),
         },
       },
     });
-    (useEditorRef as jest.Mock).mockReturnValue(editor);
-    setHotkeyRefMock = jest.fn();
-    (useHotkeys as jest.Mock).mockReturnValue(setHotkeyRefMock);
+
+    // Set up spies
+    useEditorRefSpy = spyOn(storesModule, 'useEditorRef').mockReturnValue(
+      editor
+    );
+    setHotkeyRefMock = mock();
+    useHotkeysSpy = spyOn(reactHotkeysModule, 'useHotkeys').mockReturnValue(
+      setHotkeyRefMock
+    );
+  });
+
+  afterEach(() => {
+    useEditorRefSpy?.mockRestore();
+    useHotkeysSpy?.mockRestore();
   });
 
   it('should render without crashing', () => {
@@ -58,13 +61,13 @@ describe('EditorHotkeysEffect', () => {
   it('should set up shortcuts for each configured hotkey', () => {
     render(<SimpleComponent />);
 
-    expect(useHotkeys).toHaveBeenCalledWith(
+    expect(useHotkeysSpy).toHaveBeenCalledWith(
       'mod+b',
       expect.any(Function),
       expect.objectContaining({ enableOnContentEditable: true }),
       []
     );
-    expect(useHotkeys).toHaveBeenCalledWith(
+    expect(useHotkeysSpy).toHaveBeenCalledWith(
       'mod+i',
       expect.any(Function),
       expect.objectContaining({ enableOnContentEditable: true }),
@@ -76,10 +79,9 @@ describe('EditorHotkeysEffect', () => {
     render(<SimpleComponent />);
 
     // Simulate setting up the hotkey
-    const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-      .calls[0];
+    const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
-    const mockEvent = { preventDefault: jest.fn() };
+    const mockEvent = { preventDefault: mock() };
 
     // Trigger the hotkey
     await act(async () => {
@@ -102,14 +104,14 @@ describe('EditorHotkeysEffect', () => {
 
     beforeEach(() => {
       mockEvent = {
-        preventDefault: jest.fn(),
+        preventDefault: mock(),
       };
       // Clear previous mock calls
-      (useHotkeys as jest.Mock).mockClear();
+      useHotkeysSpy.mockClear();
     });
 
     it('should NOT call preventDefault when handler returns false', async () => {
-      const handlerReturningFalse = jest.fn().mockReturnValue(false);
+      const handlerReturningFalse = mock().mockReturnValue(false);
       editor.meta.shortcuts = {
         'mod+x': {
           keys: 'mod+x',
@@ -119,8 +121,7 @@ describe('EditorHotkeysEffect', () => {
 
       render(<SimpleComponent />);
 
-      const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-        .calls[0];
+      const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
       await act(async () => {
         callbackPassedToUseHotkeys(mockEvent, {} as any);
@@ -131,7 +132,7 @@ describe('EditorHotkeysEffect', () => {
     });
 
     it('should call preventDefault when handler returns undefined (default behavior)', async () => {
-      const handlerReturningUndefined = jest.fn().mockReturnValue(undefined);
+      const handlerReturningUndefined = mock().mockReturnValue(undefined);
       editor.meta.shortcuts = {
         'mod+y': {
           keys: 'mod+y',
@@ -141,8 +142,7 @@ describe('EditorHotkeysEffect', () => {
 
       render(<SimpleComponent />);
 
-      const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-        .calls[0];
+      const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
       await act(async () => {
         callbackPassedToUseHotkeys(mockEvent, {} as any);
@@ -153,7 +153,7 @@ describe('EditorHotkeysEffect', () => {
     });
 
     it('should call preventDefault when handler returns true', async () => {
-      const handlerReturningTrue = jest.fn().mockReturnValue(true);
+      const handlerReturningTrue = mock().mockReturnValue(true);
       editor.meta.shortcuts = {
         'mod+z': {
           keys: 'mod+z',
@@ -163,8 +163,7 @@ describe('EditorHotkeysEffect', () => {
 
       render(<SimpleComponent />);
 
-      const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-        .calls[0];
+      const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
       await act(async () => {
         callbackPassedToUseHotkeys(mockEvent, {} as any);
@@ -175,7 +174,7 @@ describe('EditorHotkeysEffect', () => {
     });
 
     it('should NOT call preventDefault when preventDefault option is explicitly set to false', async () => {
-      const handlerReturningTrue = jest.fn().mockReturnValue(true);
+      const handlerReturningTrue = mock().mockReturnValue(true);
       editor.meta.shortcuts = {
         'mod+a': {
           keys: 'mod+a',
@@ -186,8 +185,7 @@ describe('EditorHotkeysEffect', () => {
 
       render(<SimpleComponent />);
 
-      const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-        .calls[0];
+      const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
       await act(async () => {
         callbackPassedToUseHotkeys(mockEvent, {} as any);
@@ -198,7 +196,7 @@ describe('EditorHotkeysEffect', () => {
     });
 
     it('should NOT call preventDefault when preventDefault option is explicitly set (regardless of handler return)', async () => {
-      const handlerReturningFalse = jest.fn().mockReturnValue(false);
+      const handlerReturningFalse = mock().mockReturnValue(false);
       editor.meta.shortcuts = {
         'mod+s': {
           keys: 'mod+s',
@@ -209,8 +207,7 @@ describe('EditorHotkeysEffect', () => {
 
       render(<SimpleComponent />);
 
-      const [, callbackPassedToUseHotkeys] = (useHotkeys as jest.Mock).mock
-        .calls[0];
+      const [, callbackPassedToUseHotkeys] = useHotkeysSpy.mock.calls[0];
 
       await act(async () => {
         callbackPassedToUseHotkeys(mockEvent, {} as any);

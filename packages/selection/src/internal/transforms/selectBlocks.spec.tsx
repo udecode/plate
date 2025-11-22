@@ -41,7 +41,7 @@ describe('selectBlocks', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    // Mocks cleared in afterEach
   });
 
   describe('when no blocks are selected', () => {

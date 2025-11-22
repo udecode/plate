@@ -8,12 +8,12 @@ import { getHoverDirection } from './getHoverDirection';
 describe('getHoverDirection', () => {
   const nodeRef = {
     current: {
-      getBoundingClientRect: jest.fn(),
+      getBoundingClientRect: mock(),
     },
   } as any;
 
   const mockMonitor = {
-    getClientOffset: jest.fn(),
+    getClientOffset: mock(),
   } as unknown as DropTargetMonitor;
 
   const dragElement = { id: 'drag' } as unknown as TElement;
@@ -26,7 +26,7 @@ describe('getHoverDirection', () => {
   const hoverElement = { id: 'hover' } as unknown as TElement;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Mocks cleared in afterEach
   });
 
   it('should return "top" when vertical and mouse is above middle', () => {

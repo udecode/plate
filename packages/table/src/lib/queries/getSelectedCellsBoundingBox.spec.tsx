@@ -5,54 +5,12 @@ import type { TElement } from 'platejs';
 import { jsx } from '@platejs/test-utils';
 import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
+import * as utilsModule from '../utils';
+import * as getColSpanModule from './getColSpan';
+import * as getRowSpanModule from './getRowSpan';
 import { getSelectedCellsBoundingBox } from './getSelectedCellsBoundingBox';
 
 jsx;
-
-jest.mock('../utils', () => ({
-  getCellIndices: jest.fn((_editor, element) => {
-    switch (element.id) {
-      case 'c11': {
-        return { col: 0, row: 0 };
-      }
-      case 'c12': {
-        return { col: 1, row: 0 };
-      }
-      case 'c13': {
-        return { col: 2, row: 0 };
-      }
-      case 'c21': {
-        return { col: 0, row: 1 };
-      }
-      case 'c22': {
-        return { col: 1, row: 1 };
-      }
-      case 'c23': {
-        return { col: 2, row: 1 };
-      }
-      case 'c31': {
-        return { col: 0, row: 2 };
-      }
-      case 'c32': {
-        return { col: 1, row: 2 };
-      }
-      case 'c33': {
-        return { col: 2, row: 2 };
-      }
-      default: {
-        return { col: 0, row: 0 };
-      }
-    }
-  }),
-}));
-
-jest.mock('./getColSpan', () => ({
-  getColSpan: jest.fn().mockReturnValue(1),
-}));
-
-jest.mock('./getRowSpan', () => ({
-  getRowSpan: jest.fn().mockReturnValue(1),
-}));
 
 /** Create a minimal editor with 3x3 table contents */
 const mockEditor = (
@@ -97,10 +55,57 @@ const mockEditor = (
 
 describe('getSelectedCellsBoundingBox', () => {
   let editor: PlateEditor;
+  let getCellIndicesSpy: ReturnType<typeof spyOn>;
+  let getColSpanSpy: ReturnType<typeof spyOn>;
+  let getRowSpanSpy: ReturnType<typeof spyOn>;
+  let getColSpanMock: ReturnType<typeof mock>;
+  let getRowSpanMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    const getCellIndicesMock = mock((_editor, element: any) => {
+      switch (element.id) {
+        case 'c11':
+          return { col: 0, row: 0 };
+        case 'c12':
+          return { col: 1, row: 0 };
+        case 'c13':
+          return { col: 2, row: 0 };
+        case 'c21':
+          return { col: 0, row: 1 };
+        case 'c22':
+          return { col: 1, row: 1 };
+        case 'c23':
+          return { col: 2, row: 1 };
+        case 'c31':
+          return { col: 0, row: 2 };
+        case 'c32':
+          return { col: 1, row: 2 };
+        case 'c33':
+          return { col: 2, row: 2 };
+        default:
+          return { col: 0, row: 0 };
+      }
+    });
+    getColSpanMock = mock().mockReturnValue(1);
+    getRowSpanMock = mock().mockReturnValue(1);
+
+    getCellIndicesSpy = spyOn(utilsModule, 'getCellIndices').mockImplementation(
+      getCellIndicesMock
+    );
+    getColSpanSpy = spyOn(getColSpanModule, 'getColSpan').mockImplementation(
+      getColSpanMock
+    );
+    getRowSpanSpy = spyOn(getRowSpanModule, 'getRowSpan').mockImplementation(
+      getRowSpanMock
+    );
+
     editor = createPlateEditor({ nodeId: true, value: mockEditor.children });
+  });
+
+  afterEach(() => {
+    getCellIndicesSpy?.mockRestore();
+    getColSpanSpy?.mockRestore();
+    getRowSpanSpy?.mockRestore();
   });
 
   it('should return correct bounding box for single cell', () => {
@@ -179,8 +184,8 @@ describe('getSelectedCellsBoundingBox', () => {
     const c22 = (editor as any).children[0].children[1].children[1] as TElement;
 
     // Mock a cell with colspan=2 and rowspan=2
-    jest.requireMock('./getColSpan').getColSpan.mockReturnValueOnce(2);
-    jest.requireMock('./getRowSpan').getRowSpan.mockReturnValueOnce(2);
+    getColSpanMock.mockReturnValueOnce(2);
+    getRowSpanMock.mockReturnValueOnce(2);
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c22]);
 
