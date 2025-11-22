@@ -59,6 +59,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: 📥 Monorepo install
         uses: ./.github/actions/yarn-nm-install
 
