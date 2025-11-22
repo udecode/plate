@@ -1,12 +1,3 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  spyOn,
-  test as it,
-} from 'bun:test';
-
 import * as htmlStringToDOMNodeModule from '../htmlStringToDOMNode';
 import { collapseWhiteSpace } from './collapseWhiteSpace';
 

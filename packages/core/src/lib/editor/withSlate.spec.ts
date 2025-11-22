@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { type Value, createEditor } from '@platejs/slate';
 

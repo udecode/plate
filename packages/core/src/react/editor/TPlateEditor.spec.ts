@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { type Value, createEditor } from '@platejs/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';

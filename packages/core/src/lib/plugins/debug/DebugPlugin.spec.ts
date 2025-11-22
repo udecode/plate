@@ -1,4 +1,4 @@
-import { describe, expect, mock, test as it } from 'bun:test';
+import { mock } from 'bun:test';
 
 import { createPlateEditor } from '../../../react';
 import { createSlatePlugin } from '../../plugin';

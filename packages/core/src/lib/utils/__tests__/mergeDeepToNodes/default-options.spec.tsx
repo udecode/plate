@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { expect, test as it } from 'bun:test';
 
 import { jsxt } from '@platejs/test-utils';
 import { type TNode, createEditor } from '@platejs/slate';

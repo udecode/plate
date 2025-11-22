@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
-
 import type { SlateEditor } from '../../lib/editor';
 
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';

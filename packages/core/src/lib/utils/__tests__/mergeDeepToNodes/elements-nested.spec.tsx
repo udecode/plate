@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { expect, test as it } from 'bun:test';
 
 import { ListItemPlugin } from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';

@@ -1,5 +1,5 @@
 /** @jsx jsxt */
-import { afterEach, describe, expect, spyOn, test as it } from 'bun:test';
+import { spyOn } from 'bun:test';
 
 import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { BoldPlugin } from '@platejs/basic-nodes/react';

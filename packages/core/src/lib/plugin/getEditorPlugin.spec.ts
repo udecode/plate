@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, test as it } from 'bun:test';
-
 import type { SlateEditor } from '../editor';
 import type { PluginConfig } from './BasePlugin';
 import type { AnySlatePlugin, SlatePluginContext } from './SlatePlugin';

@@ -1,5 +1,5 @@
 /** @jsx jsxt */
-import { describe, expect, mock, spyOn, test as it } from 'bun:test';
+import { mock, spyOn } from 'bun:test';
 
 import { NodeApi } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';

@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 

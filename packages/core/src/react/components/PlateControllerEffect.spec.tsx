@@ -1,5 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
-import { describe, expect, spyOn, test as it } from 'bun:test';
+import { spyOn } from 'bun:test';
 
 import React from 'react';
 

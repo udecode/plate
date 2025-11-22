@@ -1,5 +1,4 @@
 /// <reference types="@testing-library/jest-dom" />
-import { expect, test as it } from 'bun:test';
 
 import React from 'react';
 

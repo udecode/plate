@@ -1,5 +1,3 @@
-import { beforeEach, describe, expect, mock, test as it } from 'bun:test';
-
 import type { LegacyEditorMethods } from '@platejs/slate';
 
 import type { PlateEditor } from '../../editor/PlateEditor';

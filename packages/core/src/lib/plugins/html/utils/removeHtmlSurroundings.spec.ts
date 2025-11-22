@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { removeHtmlSurroundings } from './removeHtmlSurroundings';
 
 describe('removeHtmlSurroundings', () => {

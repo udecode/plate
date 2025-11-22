@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import type { NodeComponent, PluginConfig } from '../../lib';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';

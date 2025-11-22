@@ -1,5 +1,4 @@
 /// <reference types="@testing-library/jest-dom" />
-import { beforeEach, describe, expect, test as it } from 'bun:test';
 
 // If your actual memoized components are named "ElementStatic" and "LeafStatic",
 // you can wrap them with a mock or rename them in test for clarity.

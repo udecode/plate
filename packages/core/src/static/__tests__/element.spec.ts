@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { decode } from 'html-entities';
 
 import { serializeHtml } from '../serializeHtml';
