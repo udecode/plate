@@ -1,5 +1,3 @@
-import { mock, spyOn } from 'bun:test';
-
 import { createDataTransfer } from '@platejs/test-utils';
 
 import { createStaticEditor } from '../editor/withStatic';
@@ -65,8 +63,14 @@ describe('ViewPlugin', () => {
 
   describe('setFragmentData override', () => {
     let mockData: DataTransfer;
+    let originalBtoa: typeof window.btoa;
+    let originalEncodeURIComponent: typeof encodeURIComponent;
 
     beforeEach(() => {
+      // Save original global functions
+      originalBtoa = global.window.btoa;
+      originalEncodeURIComponent = global.encodeURIComponent;
+
       // Mock DataTransfer with spy
       const dataMap = new Map();
       mockData = {
@@ -79,6 +83,12 @@ describe('ViewPlugin', () => {
       // Mock window.btoa
       global.window.btoa = mock((str) => `base64-${str}`);
       global.encodeURIComponent = mock((str) => `encoded-${str}`);
+    });
+
+    afterEach(() => {
+      // Restore original global functions
+      global.window.btoa = originalBtoa;
+      global.encodeURIComponent = originalEncodeURIComponent;
     });
 
     it('should handle copy with no selection', () => {

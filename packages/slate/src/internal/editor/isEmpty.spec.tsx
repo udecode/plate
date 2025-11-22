@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { describe, expect, test as it } from 'bun:test';
 
 import { createPlateEditor } from '@platejs/core/react';
 import { LinkPlugin } from '@platejs/link/react';

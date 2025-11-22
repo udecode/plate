@@ -1,5 +1,3 @@
-import { mock, spyOn } from 'bun:test';
-
 import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */
 import { renderHook } from '@testing-library/react';

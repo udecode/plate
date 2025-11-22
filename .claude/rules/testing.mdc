@@ -8,7 +8,9 @@ globs: "**/*.spec.{ts,tsx}"
 
 ## Overview
 
-Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first line. Test globals (`describe`, `it`, `expect`, etc.) are global via `tooling/config/global.d.ts` - only import `mock`/`spyOn` when needed. Use `toMatchObject()` for arrays, `toEqual()` for exact matching. **`mock.module()` is process-global** - use `spyOn()` instead.
+Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first line. Test globals (`describe`, `it`, `expect`, `mock`, `spyOn`, etc.) are global via `tooling/config/global.d.ts` - no imports needed. Use `toMatchObject()` for arrays, `toEqual()` for exact matching. **`mock.module()` is process-global** - use `spyOn()` instead.
+
+**AI Agent Integration**: All test scripts include `CLAUDECODE=1` to enable quieter output - only test failures are shown in detail, passing tests are hidden to reduce context noise.
 
 ## When to Use
 
@@ -48,8 +50,8 @@ jsx; // Prevents removal
 import { jsx } from '@platejs/test-utils';
 /** @jsx jsx */  // Too late!
 
-// Note: describe, it, expect are global via tooling/config/global.d.ts
-// Only import mock/spyOn when needed for mocking
+// Note: describe, it, expect, mock, spyOn are global via tooling/config/global.d.ts
+// No test imports needed
 ```
 
 ### Editor Creation
@@ -114,9 +116,6 @@ expect(node).toMatchObject({ text: 'one' });
 ### Mock Usage (Bun)
 
 ```typescript
-// ONLY import mock/spyOn when needed - describe/it/expect are global
-import { mock, spyOn } from 'bun:test';
-
 // Replace jest.fn() with mock()
 const mockOnChange = mock();
 
@@ -145,7 +144,6 @@ describe('MyTest', () => {
 
 ```typescript
 // hooks/useUserPosts.spec.ts
-import { mock } from "bun:test";
 
 // This globally mocks the module for ALL test files
 mock.module("@/lib/services/api/postsApi", () => ({
@@ -164,8 +162,6 @@ describe("useUserPosts", () => {
 
 ```typescript
 // hooks/useUserPosts.spec.ts
-// ONLY import mock/spyOn - describe/it/expect are global
-import { mock, spyOn } from "bun:test";
 import * as postsApiModule from "@/lib/services/api/postsApi";
 
 describe("useUserPosts", () => {
@@ -374,6 +370,24 @@ bun test --coverage
 bun test --bail
 ```
 
+### AI Agent Integration
+
+Bun's test runner supports AI-friendly output via the `CLAUDECODE=1` environment variable. This is automatically included in all Plate test scripts to reduce context noise for AI coding assistants.
+
+**Behavior with `CLAUDECODE=1`**:
+- Only test failures are displayed in detail
+- Passing, skipped, and todo test indicators are hidden
+- Summary statistics remain intact
+- Improves readability and reduces output verbosity
+
+**Manual usage**:
+```bash
+# Already included in package.json scripts
+CLAUDECODE=1 bun test
+```
+
+This feature is enabled by default in all Plate test commands (`yarn test`, `yarn p:test`, etc.).
+
 ## Common Mistakes
 
 | Mistake                               | Problem                         | Fix                                        |
@@ -461,8 +475,8 @@ let spy: ReturnType<typeof spyOn>;
 
 For each new hook test file:
 
-- [ ] Import `mock`, `spyOn` from `bun:test` (ONLY when mocking - describe/it/expect are global)
-- [ ] Import `renderHook`, `act` from `@testing-library/react`
+- [ ] All test functions (describe, it, expect, mock, spyOn) are global - no imports needed
+- [ ] Import `renderHook`, `act` from `@testing-library/react` when testing hooks
 - [ ] Import modules as namespace for spyOn: `import * as module`
 - [ ] Declare mock variables with `ReturnType<typeof mock>`
 - [ ] Declare spy variables with `ReturnType<typeof spyOn>`
@@ -500,8 +514,6 @@ Common elements for test data:
 import { jsx } from '@platejs/test-utils';
 
 jsx; // Required
-
-// describe, it, expect are global - no imports needed
 
 const input = (
   <editor>

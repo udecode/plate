@@ -5,6 +5,11 @@ import type { TElement } from 'platejs';
 import { jsx } from '@platejs/test-utils';
 import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
+import * as utilsModule from '../utils';
+import * as getColSpanModule from './getColSpan';
+import * as getRowSpanModule from './getRowSpan';
+import * as getTopTableCellModule from './getTopTableCell';
+import * as getLeftTableCellModule from './getLeftTableCell';
 import {
   getSelectedCellsBorders,
   isSelectedCellBorder,
@@ -13,60 +18,6 @@ import {
 } from './getSelectedCellsBorders';
 
 jsx;
-
-jest.mock('../utils', () => ({
-  getCellIndices: jest.fn((_editor, element) => {
-    switch (element.id) {
-      case 'c11': {
-        return { col: 0, row: 0 };
-      }
-      case 'c12': {
-        return { col: 1, row: 0 };
-      }
-      case 'c13': {
-        return { col: 2, row: 0 };
-      }
-      case 'c21': {
-        return { col: 0, row: 1 };
-      }
-      case 'c22': {
-        return { col: 1, row: 1 };
-      }
-      case 'c23': {
-        return { col: 2, row: 1 };
-      }
-      case 'c31': {
-        return { col: 0, row: 2 };
-      }
-      case 'c32': {
-        return { col: 1, row: 2 };
-      }
-      case 'c33': {
-        return { col: 2, row: 2 };
-      }
-      default: {
-        return { col: 0, row: 0 };
-      }
-    }
-  }),
-  getCellTypes: jest.fn().mockReturnValue(['td']),
-}));
-
-jest.mock('./getColSpan', () => ({
-  getColSpan: jest.fn().mockReturnValue(1),
-}));
-
-jest.mock('./getRowSpan', () => ({
-  getRowSpan: jest.fn().mockReturnValue(1),
-}));
-
-jest.mock('./getTopTableCell', () => ({
-  getTopTableCell: jest.fn(),
-}));
-
-jest.mock('./getLeftTableCell', () => ({
-  getLeftTableCell: jest.fn(),
-}));
 
 /** Create a minimal editor with 3x3 table contents */
 const mockEditor = (
@@ -111,15 +62,82 @@ const mockEditor = (
 
 describe('getSelectedCellsBorders', () => {
   let editor: PlateEditor;
+  let getCellIndicesSpy: ReturnType<typeof spyOn>;
+  let getCellTypesSpy: ReturnType<typeof spyOn>;
+  let getColSpanSpy: ReturnType<typeof spyOn>;
+  let getRowSpanSpy: ReturnType<typeof spyOn>;
+  let getTopTableCellSpy: ReturnType<typeof spyOn>;
+  let getLeftTableCellSpy: ReturnType<typeof spyOn>;
+  let getTopTableCellMock: ReturnType<typeof mock>;
+  let getLeftTableCellMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    const getCellIndicesMock = mock((_editor, element: any) => {
+      switch (element.id) {
+        case 'c11':
+          return { col: 0, row: 0 };
+        case 'c12':
+          return { col: 1, row: 0 };
+        case 'c13':
+          return { col: 2, row: 0 };
+        case 'c21':
+          return { col: 0, row: 1 };
+        case 'c22':
+          return { col: 1, row: 1 };
+        case 'c23':
+          return { col: 2, row: 1 };
+        case 'c31':
+          return { col: 0, row: 2 };
+        case 'c32':
+          return { col: 1, row: 2 };
+        case 'c33':
+          return { col: 2, row: 2 };
+        default:
+          return { col: 0, row: 0 };
+      }
+    });
+    const getCellTypesMock = mock().mockReturnValue(['td']);
+    const getColSpanMock = mock().mockReturnValue(1);
+    const getRowSpanMock = mock().mockReturnValue(1);
+    getTopTableCellMock = mock();
+    getLeftTableCellMock = mock();
+
+    getCellIndicesSpy = spyOn(utilsModule, 'getCellIndices').mockImplementation(
+      getCellIndicesMock
+    );
+    getCellTypesSpy = spyOn(utilsModule, 'getCellTypes').mockImplementation(
+      getCellTypesMock
+    );
+    getColSpanSpy = spyOn(getColSpanModule, 'getColSpan').mockImplementation(
+      getColSpanMock
+    );
+    getRowSpanSpy = spyOn(getRowSpanModule, 'getRowSpan').mockImplementation(
+      getRowSpanMock
+    );
+    getTopTableCellSpy = spyOn(
+      getTopTableCellModule,
+      'getTopTableCell'
+    ).mockImplementation(getTopTableCellMock);
+    getLeftTableCellSpy = spyOn(
+      getLeftTableCellModule,
+      'getLeftTableCell'
+    ).mockImplementation(getLeftTableCellMock);
+
     editor = createPlateEditor({ nodeId: true, value: mockEditor.children });
+  });
+
+  afterEach(() => {
+    getCellIndicesSpy?.mockRestore();
+    getCellTypesSpy?.mockRestore();
+    getColSpanSpy?.mockRestore();
+    getRowSpanSpy?.mockRestore();
+    getTopTableCellSpy?.mockRestore();
+    getLeftTableCellSpy?.mockRestore();
   });
 
   describe('when no cells are selected', () => {
     it('should return default values when no current cell found', () => {
-      editor.api.block = jest.fn().mockReturnValue(null);
+      editor.api.block = mock().mockReturnValue(null);
 
       const result = getSelectedCellsBorders(editor);
 
@@ -150,16 +168,12 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 1 } }, // This provides left border for our cell
       } as unknown as TElement;
 
-      editor.api.block = jest.fn().mockReturnValue([cell]);
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.block = mock().mockReturnValue([cell]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       // Mock adjacent cells with borders
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove]);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue([cellLeft]);
+      getTopTableCellMock.mockReturnValue([cellAbove]);
+      getLeftTableCellMock.mockReturnValue([cellLeft]);
 
       const result = getSelectedCellsBorders(editor);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);
@@ -191,15 +205,11 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       // Mock adjacent cells to return null (no adjacent cells)
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue(null);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue(null);
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue(null);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);
@@ -213,15 +223,11 @@ describe('getSelectedCellsBorders', () => {
         id: 'c22',
         borders: { bottom: { size: 0 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       // Add mocks
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue(null);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue(null);
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue(null);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);
@@ -240,10 +246,8 @@ describe('getSelectedCellsBorders', () => {
         borders: { bottom: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove]);
+      editor.api.findPath = mock().mockReturnValue([0]);
+      getTopTableCellMock.mockReturnValue([cellAbove]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);
@@ -257,7 +261,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c22',
         borders: { bottom: { size: 1 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: false, outer: true, side: true },
@@ -278,15 +282,11 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       // First row/col cell doesn't need adjacent cells
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue(null);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue(null);
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue(null);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const outerResult = isSelectedCellBordersOuter(editor, [cell]);
@@ -305,15 +305,11 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       // First row/col cell doesn't need adjacent cells
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue(null);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue(null);
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue(null);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const outerResult = isSelectedCellBordersOuter(editor, [cell]);
@@ -339,13 +335,9 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 1 } },
       } as unknown as TElement;
 
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove]);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue([cellLeft]);
+      editor.api.findPath = mock().mockReturnValue([0]);
+      getTopTableCellMock.mockReturnValue([cellAbove]);
+      getLeftTableCellMock.mockReturnValue([cellLeft]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const outerResult = isSelectedCellBordersOuter(editor, [cell]);
@@ -364,7 +356,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: true, outer: false, side: true },
@@ -385,7 +377,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const cellAbove = {
         borders: { bottom: { size: 0 } },
@@ -394,12 +386,8 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 0 } },
       } as unknown as TElement;
 
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove]);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue([cellLeft]);
+      getTopTableCellMock.mockReturnValue([cellAbove]);
+      getLeftTableCellMock.mockReturnValue([cellLeft]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const topResult = isSelectedCellBorder(editor, [cell], 'top');
@@ -431,7 +419,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 1 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const topResult = isSelectedCellBorder(editor, [cell], 'top');
@@ -464,13 +452,9 @@ describe('getSelectedCellsBorders', () => {
         borders: { right: { size: 0 } },
       } as unknown as TElement;
 
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
-      jest
-        .requireMock('./getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove]);
-      jest
-        .requireMock('./getLeftTableCell')
-        .getLeftTableCell.mockReturnValue([cellLeft]);
+      editor.api.findPath = mock().mockReturnValue([0]);
+      getTopTableCellMock.mockReturnValue([cellAbove]);
+      getLeftTableCellMock.mockReturnValue([cellLeft]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const topResult = isSelectedCellBorder(editor, [cell], 'top');
@@ -496,7 +480,7 @@ describe('getSelectedCellsBorders', () => {
           top: { size: 0 },
         },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell], {
         select: { none: true, outer: true, side: false },
@@ -523,7 +507,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c12',
         borders: { right: { size: 0 }, top: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell1, cell2]);
       const outerResult = isSelectedCellBordersOuter(editor, [cell1, cell2]);
@@ -542,7 +526,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c21',
         borders: { bottom: { size: 0 }, right: { size: 1 } },
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell1, cell2]);
       const rightResult = isSelectedCellBorder(editor, [cell1, cell2], 'right');
@@ -571,7 +555,7 @@ describe('getSelectedCellsBorders', () => {
         id: 'c11',
         // No borders property at all
       } as unknown as TElement;
-      editor.api.findPath = jest.fn().mockReturnValue([0]);
+      editor.api.findPath = mock().mockReturnValue([0]);
 
       const result = getSelectedCellsBorders(editor, [cell]);
       const noneResult = isSelectedCellBordersNone(editor, [cell]);

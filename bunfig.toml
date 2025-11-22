@@ -4,5 +4,3 @@
 preload = ["./tooling/config/bunTestSetup.ts"]
 # Use test-specific tsconfig for path mappings (e.g., @/registry/*)
 tsconfig = "./tooling/config/tsconfig.test.json"
-# Exclude e2e tests (handled by Playwright)
-exclude = ["**/tooling/e2e/**"]

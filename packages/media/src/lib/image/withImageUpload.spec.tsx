@@ -56,7 +56,9 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('should run default insertData', () => {
-      jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>image.png</fragment>);
+      const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
+        <fragment>image.png</fragment>
+      );
 
       const editor = createPlateEditor({
         plugins: [BaseImagePlugin],
@@ -70,6 +72,8 @@ describe('withImageUpload', () => {
       editor.tf.insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
+
+      jsonParseSpy.mockRestore();
     });
   });
 
@@ -104,7 +108,7 @@ describe('withImageUpload', () => {
   });
 
   // it('should call uploadImage when provided', async () => {
-  //   const uploadSpy = jest.fn();
+  //   const uploadSpy = mock();
   //   const editor = pipe(
   //     input,
   //     withReact,

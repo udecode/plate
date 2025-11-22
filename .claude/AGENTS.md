@@ -23,7 +23,7 @@
 1. `yarn install` - Install all dependencies and update lockfile if needed
 2. `yarn turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
 3. `yarn turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
-4. `yarn turbo lint:fix --filter=./packages/modified-package` - Auto-fix linting issues for modified package
+4. `yarn lint:fix` - Auto-fix linting issues
 
 **For multiple modified packages:**
 
@@ -35,7 +35,7 @@ yarn turbo build --filter=./packages/core --filter=./packages/utils
 yarn turbo typecheck --filter=./packages/core --filter=./packages/utils
 
 # Lint multiple packages
-yarn turbo lint:fix --filter=./packages/core --filter=./packages/utils
+yarn lint:fix
 ```
 
 **Alternative approaches:**
@@ -57,4 +57,4 @@ yarn workspace @platejs/core lint:fix
 
 - `yarn build` - Build all packages (only use when necessary)
 
-- `yarn test` - Run tests (or `turbo test --filter=./packages/modified-package` for specific packages)
+- `yarn test` - Run tests

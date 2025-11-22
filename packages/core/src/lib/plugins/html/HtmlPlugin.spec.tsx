@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { spyOn } from 'bun:test';
 
 import { HeadingPlugin } from '@platejs/basic-nodes/react';
 import { BoldPlugin } from '@platejs/basic-nodes/react';

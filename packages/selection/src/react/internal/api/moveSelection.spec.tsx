@@ -11,19 +11,21 @@ import { moveSelection } from './moveSelection';
 
 jsxt;
 
-jest.mock('../../../lib', () => ({
-  ...jest.requireActual('../../../lib'),
-  querySelectorSelectable: (id: string) => ({
-    id,
-    dataset: { blockId: id },
-  }),
-}));
-
 describe('moveSelection', () => {
   let editor: PlateEditor;
+  let querySelectorSelectableSpy: ReturnType<typeof spyOn>;
+  let querySelectorSelectableMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    jest.spyOn(domUtils, 'querySelectorSelectable');
+    // Mock querySelectorSelectable
+    querySelectorSelectableMock = mock((id: string) => ({
+      id,
+      dataset: { blockId: id },
+    }));
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockImplementation(querySelectorSelectableMock);
 
     editor = createPlateEditor({
       plugins: [BlockSelectionPlugin],
@@ -48,7 +50,7 @@ describe('moveSelection', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    querySelectorSelectableSpy?.mockRestore();
   });
 
   describe('when pressing arrow down without shift', () => {

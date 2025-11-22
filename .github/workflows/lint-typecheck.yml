@@ -76,8 +76,11 @@ jobs:
       - name: 🏗 Build
         run: yarn build
 
-      - name: 🕵️ Typecheck + 🧪 Test (parallel)
-        run: yarn verify
+      - name: 🕵️ Typecheck
+        run: yarn typecheck
+
+      - name: 🧪 Test
+        run: yarn test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |

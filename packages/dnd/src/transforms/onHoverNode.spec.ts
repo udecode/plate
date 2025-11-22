@@ -6,65 +6,66 @@ import { createPlateEditor } from 'platejs/react';
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
+import * as onDropNodeModule from './onDropNode';
 import { onHoverNode } from './onHoverNode';
 
-jest.mock('platejs', () => ({
-  ...jest.requireActual('platejs'),
-  RangeApi: {
-    ...jest.requireActual('platejs').RangeApi,
-    isExpanded: jest.fn(),
-  },
-}));
-
-jest.mock('../utils', () => ({
-  getHoverDirection: jest.fn(),
-  getNewDirection: jest.fn((_dropLine, direction) => direction),
-}));
-
-jest.mock('./onDropNode', () => ({
-  getDropPath: jest.fn((_editor, options) => ({
-    direction: options.orientation === 'horizontal' ? 'left' : 'bottom',
-    dragPath: [0],
-    to: [1],
-  })),
-}));
-
 describe('onHoverNode', () => {
-  const editor = createPlateEditor();
-  editor.getOptions = jest.fn();
-  editor.selection = null;
-  editor.setOption = jest.fn();
-  editor.tf.collapse = jest.fn();
-  editor.tf.focus = jest.fn();
+  let editor: ReturnType<typeof createPlateEditor>;
+  let dragItem: DragItemNode;
 
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
   const dragElement = { id: 'drag' } as unknown as TElement;
-  const dragItem: DragItemNode = {
-    id: 'drag',
-    editorId: editor.id,
-    element: dragElement,
-  };
-
   const hoverElement = { id: 'hover' } as unknown as TElement;
 
+  let isExpandedSpy: ReturnType<typeof spyOn>;
+  let isExpandedMock: ReturnType<typeof mock>;
+  let getDropPathSpy: ReturnType<typeof spyOn>;
+  let getDropPathMock: ReturnType<typeof mock>;
+
   beforeEach(() => {
-    jest.clearAllMocks();
-    (editor.getOptions as jest.Mock).mockReturnValue({
+    editor = createPlateEditor();
+    editor.getOptions = mock();
+    editor.selection = null;
+    editor.setOption = mock();
+    editor.tf.collapse = mock();
+    editor.tf.focus = mock();
+
+    dragItem = {
+      id: 'drag',
+      editorId: editor.id,
+      element: dragElement,
+    };
+
+    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
+
+    isExpandedMock = mock();
+    isExpandedSpy = spyOn(RangeApi, 'isExpanded').mockImplementation(
+      isExpandedMock
+    );
+
+    getDropPathMock = mock();
+    getDropPathSpy = spyOn(onDropNodeModule, 'getDropPath').mockImplementation(
+      getDropPathMock
+    );
+  });
+
+  afterEach(() => {
+    isExpandedSpy?.mockRestore();
+    getDropPathSpy?.mockRestore();
   });
 
   it('should update plugin options when direction changes', () => {
-    const { getDropPath } = require('./onDropNode');
-    getDropPath.mockReturnValueOnce({
+    getDropPathMock.mockReturnValueOnce({
       direction: 'bottom',
       dragPath: [0],
       to: [1],
     });
 
-    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
+    isExpandedMock.mockReturnValue(false);
 
     onHoverNode(editor, {
       dragItem,
@@ -80,14 +81,13 @@ describe('onHoverNode', () => {
   });
 
   it('should collapse selection and focus editor if direction is returned and selection is expanded', () => {
-    const { getDropPath } = require('./onDropNode');
-    getDropPath.mockReturnValueOnce({
+    getDropPathMock.mockReturnValueOnce({
       direction: 'bottom',
       dragPath: [0],
       to: [1],
     });
 
-    (RangeApi.isExpanded as jest.Mock).mockReturnValue(true);
+    isExpandedMock.mockReturnValue(true);
 
     editor.selection = {
       anchor: { offset: 0, path: [0] },
@@ -106,14 +106,13 @@ describe('onHoverNode', () => {
   });
 
   it('should handle horizontal orientation', () => {
-    const { getDropPath } = require('./onDropNode');
-    getDropPath.mockReturnValueOnce({
+    getDropPathMock.mockReturnValueOnce({
       direction: 'left',
       dragPath: [0],
       to: [1],
     });
 
-    (RangeApi.isExpanded as jest.Mock).mockReturnValue(false);
+    isExpandedMock.mockReturnValue(false);
 
     onHoverNode(editor, {
       dragItem,
@@ -130,10 +129,9 @@ describe('onHoverNode', () => {
   });
 
   it('should clear dropTarget when no direction is returned', () => {
-    const { getDropPath } = require('./onDropNode');
-    getDropPath.mockReturnValueOnce(undefined);
+    getDropPathMock.mockReturnValueOnce(undefined);
 
-    (editor.getOptions as jest.Mock).mockReturnValue({
+    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
       dropTarget: { id: 'hover', line: 'bottom' },
     });
 

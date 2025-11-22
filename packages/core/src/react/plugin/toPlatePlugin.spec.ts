@@ -1,5 +1,3 @@
-import { mock } from 'bun:test';
-
 import type { PlatePlugin } from './PlatePlugin';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';

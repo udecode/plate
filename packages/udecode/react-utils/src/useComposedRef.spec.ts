@@ -1,4 +1,3 @@
-import { describe, expect, mock, test as it } from 'bun:test';
 import { renderHook } from '@testing-library/react';
 import React from 'react';
 
@@ -37,8 +36,8 @@ describe('useComposedRef', () => {
     const element = document.createElement('div');
     result.current(element);
 
-    expect(captured1).toBe(element);
-    expect(captured2).toBe(element);
+    expect(captured1 as any).toBe(element);
+    expect(captured2 as any).toBe(element);
   });
 
   it('should handle mixed ref types', () => {
@@ -55,7 +54,7 @@ describe('useComposedRef', () => {
     result.current(element);
 
     expect(ref.current).toBe(element);
-    expect(captured).toBe(element);
+    expect(captured as any).toBe(element);
   });
 
   it('should handle undefined refs', () => {

@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { mock } from 'bun:test';
 
 import { jsxt } from '@platejs/test-utils';
 

@@ -1,10 +1,12 @@
-/// <reference types="bun-types/test-globals" />
-
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
-import { afterEach, expect } from 'bun:test';
+import { afterEach, expect, mock, spyOn } from 'bun:test';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'node:util';
+
+// Make mock and spyOn globally available to avoid needing to import from bun:test
+(globalThis as any).mock = mock;
+(globalThis as any).spyOn = spyOn;
 
 // Register DOM globals FIRST - this must happen before any code that uses document/window
 GlobalRegistrator.register();

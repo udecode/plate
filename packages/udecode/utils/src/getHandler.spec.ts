@@ -1,5 +1,3 @@
-import { expect, mock, test as it } from 'bun:test';
-
 import { getHandler } from './getHandler';
 
 it('should be', () => {

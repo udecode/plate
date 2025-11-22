@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import { mock } from 'bun:test';
 
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { jsxt } from '@platejs/test-utils';

@@ -1,5 +1,3 @@
-import { describe, expect, test as it } from 'bun:test';
-
 import { sanitizeUrl } from './sanitizeUrl';
 
 describe('sanitizeUrl', () => {

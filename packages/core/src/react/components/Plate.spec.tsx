@@ -1,5 +1,4 @@
 /// <reference types="@testing-library/jest-dom" />
-import { mock } from 'bun:test';
 
 import React from 'react';
 

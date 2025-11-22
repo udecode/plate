@@ -1,5 +1,3 @@
-import { mock } from 'bun:test';
-
 import { getSelectedDomBlocks } from './getSelectedDomBlocks';
 
 describe('getSelectedDomBlocks', () => {

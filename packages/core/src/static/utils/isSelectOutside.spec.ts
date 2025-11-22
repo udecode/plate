@@ -1,5 +1,3 @@
-import { mock, spyOn } from 'bun:test';
-
 import * as getSelectedDomNodeModule from './getSelectedDomNode';
 import { isSelectOutside } from './isSelectOutside';
 

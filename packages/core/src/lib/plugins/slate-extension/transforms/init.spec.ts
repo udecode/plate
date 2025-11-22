@@ -1,5 +1,3 @@
-import { mock, spyOn } from 'bun:test';
-
 import type { TSelection } from '@platejs/slate';
 
 import { createSlateEditor } from '../../../editor';

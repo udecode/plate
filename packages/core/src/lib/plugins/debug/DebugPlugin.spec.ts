@@ -1,5 +1,3 @@
-import { mock } from 'bun:test';
-
 import { createPlateEditor } from '../../../react';
 import { createSlatePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';

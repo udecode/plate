@@ -1,12 +1,3 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  mock,
-  spyOn,
-  test as it,
-} from 'bun:test';
 import { createEditor } from '../../create-editor';
 import { deselectDOM } from '../dom-editor/deselectDOM';
 import { deselect } from './deselect';

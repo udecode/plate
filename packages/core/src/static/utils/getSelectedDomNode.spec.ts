@@ -1,5 +1,3 @@
-import { mock } from 'bun:test';
-
 import { getSelectedDomNode } from './getSelectedDomNode';
 
 describe('getSelectedDomNode', () => {

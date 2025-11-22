@@ -1,5 +1,3 @@
-import { describe, expect, spyOn, test as it } from 'bun:test';
-
 import { createEditor } from '../../create-editor';
 import type { TRange } from '../../interfaces/range';
 
