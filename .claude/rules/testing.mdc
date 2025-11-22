@@ -28,6 +28,8 @@ Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first lin
 | `mock()` not `jest.fn()`    | **Create mock function**           | Bun test API                             |
 | `spyOn()` + `afterEach`     | **Mock with cleanup**              | Always `spy.mockRestore()`               |
 | `renderHook()` + `act()`    | **Test hooks**                     | Wrap state changes in `act()`            |
+| `void act()`                | **Prevent warnings**               | Use with sync click/change events        |
+| `createWrapper()`           | **Reusable context**               | Custom wrapper for hook tests            |
 | `createEditor()`            | **Slate tests**                    | For pure Slate operations                |
 | `createPlateEditor()`       | **Plugin tests**                   | For React components with plugins        |
 
@@ -247,6 +249,20 @@ it("updates state correctly", async () => {
   expect(result.current.data).toEqual(expectedData);
   expect(result.current.loading).toBe(false);
 });
+
+// Use void to prevent unused promise warnings
+void act(() => getByText('button').click());
+```
+
+**Custom wrapper pattern** for context providers:
+
+```typescript
+const createWrapper = (props) => ({ children }: any) => (
+  <Provider {...props}>{children}</Provider>
+);
+
+const wrapper = createWrapper({ value: 'test' });
+const { result } = renderHook(() => useCustomHook(), { wrapper });
 ```
 
 ### Testing Async Operations in Hooks
@@ -587,6 +603,13 @@ it('should render component', () => {
 // For jest-dom matchers, add triple-slash reference
 /// <reference types="@testing-library/jest-dom" />
 expect(getByText('Hello')).toBeInTheDocument();
+
+// Type assertion workaround for jest-dom matchers
+(expect(getByText('Hello')) as any).toBeInTheDocument();
+
+// Query vs Get selectors
+const element = queryByTestId('optional'); // Returns null if not found
+const element2 = getByTestId('required');   // Throws if not found
 ```
 
 ## Test Organization Patterns
@@ -620,6 +643,9 @@ describe('when condition is true', () => {
 describe('when condition is false', () => {
   it('should behave another way', () => {});
 });
+
+// Skip tests temporarily
+it.skip('pending test', () => {});
 ```
 
 ## Best Practices

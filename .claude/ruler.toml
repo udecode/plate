@@ -28,8 +28,8 @@ enabled = true
 
 # MCP (Model Context Protocol) server configuration
 [mcp]
-enabled = true
-merge_strategy = "merge"
+enabled = false
+# merge_strategy = "merge"
 
 # --- MCP Server Definitions ---
 [mcp_servers.plate]

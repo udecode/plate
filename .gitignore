@@ -132,14 +132,12 @@ packages/plate/docs/
 
 CLAUDE.local.md
 .codex
+.mcp.json
 
 # START Ruler Generated Files
 /.claude/skills
-/.codex/config.json
 /.codex/config.toml
-/.cursor/mcp.json
 /.cursor/rules
-/.mcp.json
 /.skillz
 /AGENTS.md
 /CLAUDE.md
