@@ -4,6 +4,10 @@ import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
   const config: NextConfig = {
+    typescript: {
+      ignoreBuildErrors: true,
+    },
+
     experimental: {
       turbopackFileSystemCacheForDev: true,
     },

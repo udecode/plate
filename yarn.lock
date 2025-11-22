@@ -8928,6 +8928,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dedent@npm:1.7.0":
+  version: 1.7.0
+  resolution: "dedent@npm:1.7.0"
+  peerDependencies:
+    babel-plugin-macros: ^3.1.0
+  peerDependenciesMeta:
+    babel-plugin-macros:
+      optional: true
+  checksum: 10c0/c5e8a8beb5072bd5e520cb64b27a82d7ec3c2a63ee5ce47dbc2a05d5b7700cefd77a992a752cd0a8b1d979c1db06b14fb9486e805f3ad6088eda6e07cd9bf2d5
+  languageName: node
+  linkType: hard
+
 "deep-is@npm:^0.1.3":
   version: 0.1.4
   resolution: "deep-is@npm:0.1.4"
@@ -20053,6 +20065,7 @@ __metadata:
     contentlayer2: "npm:0.4.6"
     crypto-browserify: "npm:3.12.1"
     date-fns: "npm:4.1.0"
+    dedent: "npm:1.7.0"
     dotenv: "npm:16.5.0"
     framer-motion: "npm:12.17.0"
     fumadocs-core: "npm:15.5.1"

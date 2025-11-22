@@ -54,7 +54,7 @@ export const useChat = () => {
     transport: new DefaultChatTransport({
       api: options.api || '/api/ai/command',
       // Mock the API response. Remove it when you implement the route /api/ai/command
-      fetch: async (input, init) => {
+      fetch: (async (input, init) => {
         const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
 
         const initBody = JSON.parse(init?.body as string);
@@ -109,7 +109,7 @@ export const useChat = () => {
         }
 
         return res;
-      },
+      }) as typeof fetch,
     }),
     onData(data) {
       if (data.type === 'data-toolName') {
