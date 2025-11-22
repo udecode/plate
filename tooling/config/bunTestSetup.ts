@@ -41,26 +41,6 @@ if (typeof window !== 'undefined' && window.HTMLElement) {
   });
 }
 
-// Set up window.DataTransfer for slate-test-utils compatibility
-// Note: slate-test-utils mocks are not loaded in preload because they expect window to already exist
-// Tests that need slate-test-utils should import it directly in their test files
-if (typeof window !== 'undefined') {
-  (window as any).DataTransfer = class DataTransfer {
-    constructor() {}
-    effectAllowed = 'none';
-    dropEffect = 'none';
-    files = [] as any;
-    items = [] as any;
-    types = [] as string[];
-    clearData() {}
-    getData() {
-      return '';
-    }
-    setData() {}
-    setDragImage() {}
-  };
-}
-
 // Extend Bun's expect with Testing Library matchers
 expect.extend(matchers);
 
@@ -89,6 +69,3 @@ global.MessageChannel = class MessageChannel {
     start: () => {},
   };
 } as any;
-
-// Note: For console warnings/errors, use spyOn in individual test files
-// instead of global mocks to avoid cross-test contamination

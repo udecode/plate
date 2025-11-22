@@ -6,7 +6,7 @@ export const isSelectOutside = (html?: HTMLElement): boolean => {
 
   if (!domNodes) return false;
 
-  const selectOutside = !!domNodes?.querySelector('[data-slate-editor="true"');
+  const selectOutside = !!domNodes?.querySelector('[data-slate-editor="true"]');
 
   return selectOutside;
 };

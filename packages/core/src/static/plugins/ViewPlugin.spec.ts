@@ -1,9 +1,32 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  mock,
+  spyOn,
+  test as it,
+} from 'bun:test';
+
 import { createDataTransfer } from '@platejs/test-utils';
 
 import { createStaticEditor } from '../editor/withStatic';
+import * as getSelectedDomBlocksModule from '../utils/getSelectedDomBlocks';
+import * as getSelectedDomNodeModule from '../utils/getSelectedDomNode';
+import * as isSelectOutsideModule from '../utils/isSelectOutside';
 import { ViewPlugin } from './ViewPlugin';
 
 describe('ViewPlugin', () => {
+  let getSelectedDomBlocksSpy: ReturnType<typeof spyOn>;
+  let getSelectedDomNodeSpy: ReturnType<typeof spyOn>;
+  let isSelectOutsideSpy: ReturnType<typeof spyOn>;
+
+  afterEach(() => {
+    getSelectedDomBlocksSpy?.mockRestore();
+    getSelectedDomNodeSpy?.mockRestore();
+    isSelectOutsideSpy?.mockRestore();
+  });
+
   describe('integration with createStaticEditor', () => {
     it('should be included in static editor', () => {
       const editor = createStaticEditor();
@@ -30,21 +53,18 @@ describe('ViewPlugin', () => {
       const mockData = createDataTransfer();
 
       // Mock DOM utilities
-      const mockGetSelectedDomBlocks = jest.fn(() => []);
-      const mockGetSelectedDomNode = jest.fn(() => null);
-      const mockIsSelectOutside = jest.fn(() => false);
-
-      jest.doMock('../utils/getSelectedDomBlocks', () => ({
-        getSelectedDomBlocks: mockGetSelectedDomBlocks,
-      }));
-
-      jest.doMock('../utils/getSelectedDomNode', () => ({
-        getSelectedDomNode: mockGetSelectedDomNode,
-      }));
-
-      jest.doMock('../utils/isSelectOutside', () => ({
-        isSelectOutside: mockIsSelectOutside,
-      }));
+      getSelectedDomBlocksSpy = spyOn(
+        getSelectedDomBlocksModule,
+        'getSelectedDomBlocks'
+      ).mockReturnValue([]);
+      getSelectedDomNodeSpy = spyOn(
+        getSelectedDomNodeModule,
+        'getSelectedDomNode'
+      ).mockReturnValue(undefined);
+      isSelectOutsideSpy = spyOn(
+        isSelectOutsideModule,
+        'isSelectOutside'
+      ).mockReturnValue(false);
 
       // Should not throw when called
       expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
@@ -58,32 +78,29 @@ describe('ViewPlugin', () => {
       // Mock DataTransfer with spy
       const dataMap = new Map();
       mockData = {
-        getData: jest.fn((type: string) => dataMap.get(type) ?? ''),
-        setData: jest.fn((type: string, value: string) =>
+        getData: mock((type: string) => dataMap.get(type) ?? ''),
+        setData: mock((type: string, value: string) =>
           dataMap.set(type, value)
         ),
       } as any;
 
       // Mock window.btoa
-      global.window.btoa = jest.fn((str) => `base64-${str}`);
-      global.encodeURIComponent = jest.fn((str) => `encoded-${str}`);
-    });
-
-    afterEach(() => {
-      jest.resetModules();
-      jest.clearAllMocks();
+      global.window.btoa = mock((str) => `base64-${str}`);
+      global.encodeURIComponent = mock((str) => `encoded-${str}`);
     });
 
     it('should handle copy with no selection', () => {
       const editor = createStaticEditor();
 
       // Mock utilities to return null
-      jest.doMock('../utils/getSelectedDomBlocks', () => ({
-        getSelectedDomBlocks: () => null,
-      }));
-      jest.doMock('../utils/getSelectedDomNode', () => ({
-        getSelectedDomNode: () => null,
-      }));
+      getSelectedDomBlocksSpy = spyOn(
+        getSelectedDomBlocksModule,
+        'getSelectedDomBlocks'
+      ).mockReturnValue(undefined);
+      getSelectedDomNodeSpy = spyOn(
+        getSelectedDomNodeModule,
+        'getSelectedDomNode'
+      ).mockReturnValue(undefined);
 
       // Should not throw
       expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
@@ -107,27 +124,23 @@ describe('ViewPlugin', () => {
       editorDiv.dataset.slateEditor = 'true';
       mockHtml.append(editorDiv);
 
-      jest.doMock('../utils/getSelectedDomBlocks', () => ({
-        getSelectedDomBlocks: () => [],
-      }));
-      jest.doMock('../utils/getSelectedDomNode', () => ({
-        getSelectedDomNode: () => mockHtml,
-      }));
-      jest.doMock('../utils/isSelectOutside', () => ({
-        isSelectOutside: () => true,
-      }));
+      getSelectedDomBlocksSpy = spyOn(
+        getSelectedDomBlocksModule,
+        'getSelectedDomBlocks'
+      ).mockReturnValue([]);
+      getSelectedDomNodeSpy = spyOn(
+        getSelectedDomNodeModule,
+        'getSelectedDomNode'
+      ).mockReturnValue(mockHtml);
+      isSelectOutsideSpy = spyOn(
+        isSelectOutsideModule,
+        'isSelectOutside'
+      ).mockReturnValue(true);
 
-      // Require module after mocking
-      jest.resetModules();
-      const {
-        createStaticEditor: createStaticEditorMocked,
-      } = require('../editor/withStatic');
-      const editorMocked = createStaticEditorMocked();
+      const editor = createStaticEditor();
 
       // Should not throw
-      expect(() =>
-        editorMocked.tf.setFragmentData(mockData, 'copy')
-      ).not.toThrow();
+      expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
     });
   });
 });

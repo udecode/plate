@@ -3,8 +3,8 @@ import { describe, expect, test as it } from 'bun:test';
 import React from 'react';
 import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor } from './create-static-editor';
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { createTSlatePlugin, createSlateEditor } from '../../lib';
+import { BaseEditorKit } from '../../../../../apps/www/src/registry/components/editor/editor-base-kit';
 
 describe('serializePlateStatic nodes', () => {
   it('should serialize render below nodes', async () => {
