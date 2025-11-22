@@ -1,7 +1,6 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # Allow claude to read these files
-!.*
 apps/www/src/app/api/ai
 apps/www/public/rd
 **/tsconfig.tsbuildinfo
@@ -130,3 +129,18 @@ packages/plate/docs/
 /playwright/.cache/
 .turbo
 .vercel
+
+CLAUDE.local.md
+.codex
+
+# START Ruler Generated Files
+/.claude/skills
+/.codex/config.json
+/.codex/config.toml
+/.cursor/mcp.json
+/.cursor/rules
+/.mcp.json
+/.skillz
+/AGENTS.md
+/CLAUDE.md
+# END Ruler Generated Files

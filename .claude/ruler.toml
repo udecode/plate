@@ -28,8 +28,16 @@ enabled = true
 
 # MCP (Model Context Protocol) server configuration
 [mcp]
-enabled = false  # Disable for now - can enable later if needed
+enabled = true
 merge_strategy = "merge"
+
+# --- MCP Server Definitions ---
+[mcp_servers.plate]
+command = "npx"
+args = ["-y", "shadcn@canary", "registry:mcp"]
+
+[mcp_servers.plate.env]
+REGISTRY_URL = "http://localhost:3000/rd/registry.json"
 
 # --- Agent-Specific Configuration ---
 
