@@ -1,8 +1,6 @@
 ### Dependencies
 
 - `@antfu/ni`: cli
-- `@changesets/cli`: to test
-- `@changesets/get-github-info`: to test
 - `@excalidraw/excalidraw`: breaking
 - `contentlayer2@0.4.6`: issue with react-tweet css, etc.
 - `jest@29.7.0`: jest 30.0.0 is failing parallel tests while it succeeds individually
