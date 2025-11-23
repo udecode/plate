@@ -1,11 +1,5 @@
 # @platejs/dnd
 
-## 52.0.0
-
-### Major Changes
-
-- [#4742](https://github.com/udecode/plate/pull/4742) by [@zbeyens](https://github.com/zbeyens) – ESM-only
-
 ## 51.1.3
 
 ### Patch Changes

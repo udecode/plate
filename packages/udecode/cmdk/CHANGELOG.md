@@ -1,11 +1,5 @@
 # @udecode/cmdk
 
-## 1.0.0
-
-### Major Changes
-
-- [#4742](https://github.com/udecode/plate/pull/4742) by [@zbeyens](https://github.com/zbeyens) – ESM-only
-
 ## 0.2.2
 
 ### Patch Changes
