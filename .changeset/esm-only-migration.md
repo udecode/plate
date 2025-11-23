@@ -1,0 +1,54 @@
+---
+"@platejs/ai": major
+"@platejs/autoformat": major
+"@platejs/basic-nodes": major
+"@platejs/basic-styles": major
+"@platejs/callout": major
+"@platejs/caption": major
+"@platejs/code-block": major
+"@platejs/combobox": major
+"@platejs/comment": major
+"@platejs/core": major
+"@platejs/csv": major
+"@platejs/cursor": major
+"@platejs/date": major
+"@platejs/diff": major
+"@platejs/dnd": major
+"@platejs/docx": major
+"@platejs/emoji": major
+"@platejs/excalidraw": major
+"@platejs/find-replace": major
+"@platejs/floating": major
+"@platejs/indent": major
+"@platejs/juice": major
+"@platejs/layout": major
+"@platejs/link": major
+"@platejs/list": major
+"@platejs/list-classic": major
+"@platejs/markdown": major
+"@platejs/math": major
+"@platejs/media": major
+"@platejs/mention": major
+"@platejs/plate": major
+"@platejs/playwright": major
+"@platejs/resizable": major
+"@platejs/selection": major
+"@platejs/slash-command": major
+"@platejs/slate": major
+"@platejs/suggestion": major
+"@platejs/tabbable": major
+"@platejs/table": major
+"@platejs/tag": major
+"@platejs/test-utils": major
+"@platejs/toc": major
+"@platejs/toggle": major
+"@platejs/utils": major
+"@platejs/yjs": major
+"@udecode/cmdk": major
+"@udecode/cn": major
+"@udecode/react-hotkeys": major
+"@udecode/react-utils": major
+"@udecode/utils": major
+---
+
+Package is now ESM-only.

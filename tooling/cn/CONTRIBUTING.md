@@ -9,7 +9,7 @@
 本仓库是一个 monorepo。
 
 - 我们使用 [yarn](https://yarnpkg.com/en/docs/install) 和 [`workspaces`](https://yarnpkg.com/features/workspaces) 进行开发。
-- 我们使用 [tsup](https://tsup.egoist.dev/) 作为我们的构建系统。
+- 我们使用 [tsdown](https://tsdown.dev/) 作为我们的构建系统。
 - 我们使用 [changesets](https://github.com/changesets/changesets) 管理发布。
 
 ## 结构

@@ -9,7 +9,7 @@ This document will provide guidance to help streamline the process and make effi
 This repository is a monorepo.
 
 - We use [yarn](https://yarnpkg.com/en/docs/install) and [`workspaces`](https://yarnpkg.com/features/workspaces) for development.
-- We use [tsup](https://tsup.egoist.dev/) as our build system.
+- We use [tsdown](https://tsdown.dev/) as our build system.
 - We use [changesets](https://github.com/changesets/changesets) for managing releases.
 
 ## Structure
