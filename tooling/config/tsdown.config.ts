@@ -1,9 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { convertPathToPattern } from 'tinyglobby';
-import { type Options, defineConfig } from 'tsup';
-
-const silent = false;
+import { defineConfig } from 'tsdown';
 
 const PACKAGE_ROOT_PATH = process.cwd();
 
@@ -47,34 +45,17 @@ if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
   entry.push(convertPathToPattern(STATIC_INPUT_FILE_PATH));
 }
 
-export default defineConfig((opts) => {
-  const options: Options = {
+// Disable sourcemaps in CI to speed up builds
+const enableSourcemaps = !process.env.CI;
+
+export default defineConfig((opts) => [
+  {
     ...opts,
-    clean: true,
-    dts: true,
-    format: ['cjs', 'esm'],
-    sourcemap: true,
-    splitting: false,
-    ...(silent
-      ? {
-          silent: true,
-          onSuccess: async () => {
-            if (opts.watch) {
-              console.info('Watching for changes...');
-
-              return;
-            }
-
-            console.info('Build succeeded!');
-          },
-        }
-      : {}),
-  };
-
-  return [
-    {
-      ...options,
-      entry,
-    },
-  ];
-});
+    entry,
+    platform: 'neutral',
+    tsconfig: 'tsconfig.build.json',
+    sourcemap: enableSourcemaps,
+    dts: { sourcemap: enableSourcemaps },
+    exports: true,
+  },
+]);

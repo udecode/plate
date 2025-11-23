@@ -25,28 +25,13 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "module": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
-    },
-    "./static": {
-      "types": "./dist/static/index.d.ts",
-      "import": "./dist/static/index.mjs",
-      "module": "./dist/static/index.mjs",
-      "require": "./dist/static/index.js"
-    }
+    ".": "./dist/index.js",
+    "./react": "./dist/react/index.js",
+    "./static": "./dist/static/index.js",
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
@@ -74,5 +59,7 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "type": "module",
+  "module": "./dist/index.js"
 }
