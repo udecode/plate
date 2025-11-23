@@ -1,6 +1,6 @@
 {
   "name": "@platejs/math",
-  "version": "52.0.0",
+  "version": "51.1.2",
   "description": "Math plugin for Plate",
   "keywords": [
     "plate",
@@ -47,7 +47,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.0",
+    "platejs": ">=51.1.3",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

@@ -1,11 +1,5 @@
 # @udecode/react-utils
 
-## 52.0.0
-
-### Major Changes
-
-- [#4744](https://github.com/udecode/plate/pull/4744) by [@zbeyens](https://github.com/zbeyens) – ESM-only
-
 ## 51.1.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slate",
-  "version": "52.0.0",
+  "version": "51.1.2",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -37,7 +37,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/utils": "52.0.0",
+    "@udecode/utils": "51.1.2",
     "is-plain-object": "^5.0.0",
     "lodash": "^4.17.21",
     "slate": "0.118.1",
