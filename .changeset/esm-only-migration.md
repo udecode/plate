@@ -51,4 +51,4 @@
 "@udecode/utils": major
 ---
 
-Package is now ESM-only.
+ESM-only
