@@ -1,5 +1,16 @@
 # @platejs/cursor
 
+## 52.0.0
+
+### Major Changes
+
+- 6dd3e3f: ESM-only
+
+### Patch Changes
+
+- Updated dependencies [6dd3e3f]
+  - platejs@52.0.0
+
 ## 51.1.3
 
 ### Patch Changes

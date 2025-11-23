@@ -1,5 +1,11 @@
 # @udecode/cmdk
 
+## 1.0.0
+
+### Major Changes
+
+- 6dd3e3f: ESM-only
+
 ## 0.2.2
 
 ### Patch Changes

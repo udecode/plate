@@ -1,5 +1,11 @@
 # @udecode/react-hotkeys
 
+## 52.0.0
+
+### Major Changes
+
+- 6dd3e3f: ESM-only
+
 ## 51.1.3
 
 ### Patch Changes

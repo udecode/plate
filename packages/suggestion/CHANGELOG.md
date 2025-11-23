@@ -1,5 +1,17 @@
 # @platejs/suggestion
 
+## 52.0.0
+
+### Major Changes
+
+- 6dd3e3f: ESM-only
+
+### Patch Changes
+
+- Updated dependencies [6dd3e3f]
+  - @platejs/diff@52.0.0
+  - platejs@52.0.0
+
 ## 51.1.2
 
 ### Patch Changes

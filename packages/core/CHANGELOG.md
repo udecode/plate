@@ -1,5 +1,19 @@
 # @platejs/core
 
+## 52.0.0
+
+### Major Changes
+
+- 6dd3e3f: ESM-only
+
+### Patch Changes
+
+- Updated dependencies [6dd3e3f]
+  - @platejs/slate@52.0.0
+  - @udecode/react-hotkeys@52.0.0
+  - @udecode/react-utils@52.0.0
+  - @udecode/utils@52.0.0
+
 ## 51.1.3
 
 ## 51.1.2
