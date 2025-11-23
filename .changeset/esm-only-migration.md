@@ -29,7 +29,7 @@
 "@platejs/math": major
 "@platejs/media": major
 "@platejs/mention": major
-"@platejs/plate": major
+"platejs": major
 "@platejs/playwright": major
 "@platejs/resizable": major
 "@platejs/selection": major
