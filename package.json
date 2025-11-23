@@ -2,7 +2,6 @@
   "name": "plate",
   "private": true,
   "license": "MIT",
-  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -131,7 +130,7 @@
     "ultracite": "6.3.4",
     "zod": "4.1.12"
   },
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "yarn@4.12.0",
   "engines": {
     "node": ">=18.12.0",
     "npm": "please-use-yarn",
