@@ -1,6 +1,6 @@
 {
   "name": "@platejs/combobox",
-  "version": "51.1.2",
+  "version": "52.0.0",
   "description": "Combobox for Plate",
   "keywords": [
     "plate",
@@ -43,7 +43,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=51.1.3",
+    "platejs": ">=52.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

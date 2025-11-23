@@ -1,5 +1,11 @@
 # @platejs/toggle
 
+## 52.0.0
+
+### Major Changes
+
+- [#4747](https://github.com/udecode/plate/pull/4747) by [@zbeyens](https://github.com/zbeyens) – ESM-only
+
 ## 51.1.2
 
 ### Patch Changes

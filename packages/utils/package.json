@@ -1,6 +1,6 @@
 {
   "name": "@platejs/utils",
-  "version": "51.1.3",
+  "version": "52.0.0",
   "description": "Plate utils",
   "keywords": [
     "plate",
@@ -40,10 +40,10 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "51.1.3",
-    "@platejs/slate": "51.1.2",
-    "@udecode/react-utils": "51.1.2",
-    "@udecode/utils": "51.1.2",
+    "@platejs/core": "52.0.0",
+    "@platejs/slate": "52.0.0",
+    "@udecode/react-utils": "52.0.0",
+    "@udecode/utils": "52.0.0",
     "clsx": "^2.1.1",
     "lodash": "^4.17.21"
   },
