@@ -82,6 +82,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.6",
     "@changesets/cli": "2.29.7",
+    "@changesets/get-github-info": "0.6.0",
     "@happy-dom/global-registrator": "20.0.10",
     "@playwright/test": "1.53.0",
     "@roarr/cli": "5.12.4",
