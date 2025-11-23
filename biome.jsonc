@@ -24,6 +24,7 @@
       "!!**/.contentlayer",
       "!!**/*otf.json",
       "!!**/*.html",
+      "!!tooling/config/global.d.ts",
       "!!templates",
       "!**/__registry__",
       "!**/next-env.d.ts"
