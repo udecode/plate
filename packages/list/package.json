@@ -1,6 +1,6 @@
 {
   "name": "@platejs/list",
-  "version": "51.1.2",
+  "version": "52.0.0",
   "description": "List plugin for Plate",
   "keywords": [
     "plate",
@@ -40,14 +40,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/indent": "51.1.2",
+    "@platejs/indent": "52.0.0",
     "clsx": "^2.1.1"
   },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=51.1.3",
+    "platejs": ">=52.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
