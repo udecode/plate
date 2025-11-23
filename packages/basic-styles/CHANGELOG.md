@@ -1,5 +1,11 @@
 # @platejs/basic-styles
 
+## 52.0.0
+
+### Major Changes
+
+- [#4742](https://github.com/udecode/plate/pull/4742) by [@zbeyens](https://github.com/zbeyens) – ESM-only
+
 ## 51.1.2
 
 ### Patch Changes
