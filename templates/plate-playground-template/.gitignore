@@ -42,3 +42,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+CLAUDE.local.md
+.codex
+.mcp.json
+
+# START Ruler Generated Files
+/.claude/skills
+/.codex/config.toml
+/.cursor/rules
+/.skillz
+/AGENTS.md
+/CLAUDE.md
+# END Ruler Generated Files

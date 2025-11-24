@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable react-hooks/refs */
+
 import type { Emoji } from '@emoji-mart/data';
 import {
   type EmojiCategoryList,
@@ -338,7 +340,6 @@ function EmojiPickerContent({
 
   return (
     <div
-      // eslint-disable-next-line react-hooks/refs
       className={cn(
         'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-2',
         '[&::-webkit-scrollbar]:w-4',
@@ -349,7 +350,6 @@ function EmojiPickerContent({
       data-id="scroll"
       ref={refs.current.contentRoot}
     >
-      {/* eslint-disable-next-line react-hooks/refs */}
       <div className="h-full" ref={refs.current.content}>
         {isSearching ? SearchList() : EmojiList()}
       </div>
