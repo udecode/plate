@@ -1,6 +1,6 @@
 {
   "name": "@platejs/media",
-  "version": "52.0.0",
+  "version": "52.0.1",
   "description": "Plate Media plugin",
   "keywords": [
     "plate",
@@ -46,7 +46,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.0",
+    "platejs": ">=52.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
