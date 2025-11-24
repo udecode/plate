@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   ci:
-    name: Lint, Typecheck, Build
+    name: CI
     runs-on: ubuntu-latest
 
     steps:
