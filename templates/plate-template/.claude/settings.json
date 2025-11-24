@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": ["Bash", "Edit", "Skill"]
+  },
+  "enableAllProjectMcpServers": true,
+  "extraKnownMarketplaces": {
+    "dotai": {
+      "source": {
+        "source": "github",
+        "repo": "udecode/dotai"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "dotai@dotai": true,
+    "fb@dotai": true,
+    "notification@dotai": true,
+    "media@dotai": false,
+    "codex@dotai": true,
+    "plan@dotai": true,
+    "agents@dotai": true,
+    "debug@dotai": true,
+    "test@dotai": true,
+    "skills@dotai": true,
+    "git@dotai": true
+  }
+}
