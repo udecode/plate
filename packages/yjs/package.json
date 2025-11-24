@@ -1,6 +1,6 @@
 {
   "name": "@platejs/yjs",
-  "version": "52.0.0",
+  "version": "52.0.1",
   "description": "Yjs plugin for Plate",
   "keywords": [
     "plate",
@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "@hocuspocus/provider": "^2.15.2",
-    "platejs": ">=52.0.0",
+    "platejs": ">=52.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
     "y-webrtc": "10.3.0"
