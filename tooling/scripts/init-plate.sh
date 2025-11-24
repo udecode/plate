@@ -4,4 +4,4 @@
 rimraf tmp
 mkdir -p tmp/my-app
 chmod -R 777 ./tmp
-node ./packages/cli/dist/index.js init http://localhost:3000/r -c ./tmp --pm pnpm -d
+npx shadcn@latest init http://localhost:3000/r -c ./tmp --pm pnpm -d
