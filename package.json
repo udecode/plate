@@ -60,7 +60,7 @@
     "release": "yarn build && yarn changeset publish",
     "shadcn:build": "yarn workspace www shadcn:build",
     "templates:check": "cd templates/plate-template && bun lint && bun typecheck && cd ../plate-playground-template && bun lint && bun typecheck",
-    "templates:push": "./tooling/scripts/push-templates.sh \"templates/*\"",
+    "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
     "templates:basic": "./tooling/scripts/update-template.sh basic",
     "templates:ai": "./tooling/scripts/update-template.sh ai",
     "templates:update": "yarn templates:update:basic && yarn templates:update:ai",
