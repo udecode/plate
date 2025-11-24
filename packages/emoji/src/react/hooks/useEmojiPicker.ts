@@ -18,7 +18,10 @@ import {
   type SetFocusedAndVisibleSectionsType,
   observeCategories,
 } from '../utils';
-import { useEmojiPickerState, type MapEmojiCategoryList } from './useEmojiPickerState';
+import {
+  useEmojiPickerState,
+  type MapEmojiCategoryList,
+} from './useEmojiPickerState';
 
 export type MutableRefs = React.MutableRefObject<{
   content: React.RefObject<HTMLDivElement | null> | undefined;
