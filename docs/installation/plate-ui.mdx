@@ -21,7 +21,7 @@ This is the fastest way to integrate Plate UI's core dependencies and base style
 </Callout>
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/plate-ui
+npx shadcn@latest add @plate/plate-ui
 ```
 
 ### Basic Usage 
@@ -69,7 +69,7 @@ Add the following CSS variables to your global stylesheet:
 With Plate UI's core installed, you can now add individual Plate UI components to build your editor interface. For example, to add the `FixedToolbar` and a `MarkToolbarButton`:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+npx shadcn@latest add @plate/fixed-toolbar @plate/mark-toolbar-button
 ```
 
 Import and use them in your editor:
@@ -115,10 +115,10 @@ Feature kits are the easiest way to add complete functionality to your editor. T
 
 ```bash
 # Install the complete AI feature suite, including configuration and UI
-npx shadcn@latest add https://platejs.org/r/ai-kit
+npx shadcn@latest add @plate/ai-kit
 
 # Install drag and drop functionality with all its parts
-npx shadcn@latest add https://platejs.org/r/dnd-kit
+npx shadcn@latest add @plate/dnd-kit
 ```
 
 <Callout type="note">
@@ -133,10 +133,10 @@ These components are responsible for rendering specific types of content (elemen
 
 ```bash
 # Install the component for rendering blockquotes
-npx shadcn@latest add https://platejs.org/r/blockquote-node
+npx shadcn@latest add @plate/blockquote-node
 
 # Install the component for rendering code text
-npx shadcn@latest add https://platejs.org/r/code-node
+npx shadcn@latest add @plate/code-node
 ```
 
 #### Toolbar Components
@@ -145,13 +145,13 @@ Toolbar components add interactive controls like buttons and dropdowns to your e
 
 ```bash
 # Add an alignment dropdown for your toolbar
-npx shadcn@latest add https://platejs.org/r/align-toolbar-button
+npx shadcn@latest add @plate/align-toolbar-button
 
 # Add a toolbar button for AI features
-npx shadcn@latest add https://platejs.org/r/ai-toolbar-button
+npx shadcn@latest add @plate/ai-toolbar-button
 
 # Add a color picker dropdown for your toolbar
-npx shadcn@latest add https://platejs.org/r/font-color-toolbar-button
+npx shadcn@latest add @plate/font-color-toolbar-button
 ```
 
 #### Other Components
@@ -160,10 +160,10 @@ Finally, Plate UI includes more advanced editor components as overlays, menus, b
 
 ```bash
 # Install a menu for AI features
-npx shadcn@latest add https://platejs.org/r/ai-menu
+npx shadcn@latest add @plate/ai-menu
 
 # Install a draggable component for reordering blocks
-npx shadcn@latest add https://platejs.org/r/block-draggable
+npx shadcn@latest add @plate/block-draggable
 ```
 
 These components are typically included as part of their respective Feature Kits but can be installed individually for custom setups.
@@ -174,10 +174,10 @@ These are pre-configured editor setups, often tailored for specific use cases or
 
 ```bash
 # Install an AI-enabled editor template
-npx shadcn@latest add https://platejs.org/r/editor-ai
+npx shadcn@latest add @plate/editor-ai
 
 # Install a basic editor template
-npx shadcn@latest add https://platejs.org/r/editor-basic
+npx shadcn@latest add @plate/editor-basic
 ```
 
 ### API Routes
@@ -186,10 +186,10 @@ These items provide server-side components or API route handlers necessary for c
 
 ```bash
 # Install AI-related API routes
-npx shadcn@latest add https://platejs.org/r/ai-api
+npx shadcn@latest add @plate/ai-api
 
 # Install file upload API routes (e.g., for UploadThing)
-npx shadcn@latest add https://platejs.org/r/media-uploadthing-api
+npx shadcn@latest add @plate/media-uploadthing-api
 ```
 
 ### Documentation
@@ -198,10 +198,10 @@ Documentation files for various Plate features, guides, and API references can a
 
 ```bash
 # Add AI documentation
-npx shadcn@latest add https://platejs.org/r/ai-docs
+npx shadcn@latest add @plate/ai-docs
 
 # Add Plate Plugin documentation
-npx shadcn@latest add https://platejs.org/r/plugin-docs
+npx shadcn@latest add @plate/plugin-docs
 ```
 
 These items consists of Markdown files, which can be integrated into your own documentation system or made available for local search and AI consumption.
