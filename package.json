@@ -59,7 +59,7 @@
     "rd": "yarn workspace www rd",
     "release": "yarn build && yarn changeset publish",
     "shadcn:build": "yarn workspace www shadcn:build",
-    "templates:check": "cd templates/plate-template && bun lint && bun typecheck && cd templates/plate-playground-template && bun lint && bun typecheck",
+    "templates:check": "cd templates/plate-template && bun lint && bun typecheck && cd ../plate-playground-template && bun lint && bun typecheck",
     "templates:push": "./tooling/scripts/push-templates.sh \"templates/*\"",
     "templates:basic": "./tooling/scripts/update-template.sh basic",
     "templates:ai": "./tooling/scripts/update-template.sh ai",
