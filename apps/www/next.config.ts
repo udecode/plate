@@ -39,7 +39,7 @@ const nextConfig = async (phase: string) => {
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
     // slower compilation, so let's disable it in development for now
-    reactCompiler: false,
+    reactCompiler: true,
     // Configure domains to allow for optimized image loading.
     // https://nextjs.org/docs/api-reference/next.config.js/react-strict-mod
     reactStrictMode: true,
