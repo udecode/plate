@@ -170,18 +170,18 @@ export default defineConfig({
 
 ## Ensure Matching Plate Versions
 
-Say you're upgrading one package to `42.0.3`, double-check that all your `platejs*` packages are on the **latest version up to `42.0.3`** (one package could stay at `42.0.2` if it has no `42.0.3` release). Mixing versions often leads to mismatches.
+Say you're upgrading one package to `52.0.1`, double-check that all your `platejs*` packages are on the **latest version up to `52.0.1`** (one package could stay at `52.0.0` if it has no `52.0.1` release). Mixing versions often leads to mismatches.
 
-To easily manage and synchronize your `platejs*` package versions, you can use the `depset` CLI. For example, to ensure all your `@udecode` scope packages are aligned to the latest compatible with version `42.x.y`:
+To easily manage and synchronize your `platejs*` package versions, you can use the `depset` CLI. For example, to ensure all your `@platejs/*` scope packages are aligned to the latest compatible with version `52.x.y`:
 
 ```bash
-npx depset@latest @udecode 42
+npx depset@latest @platejs 52 && npx depset@latest platejs 52
 ```
 
-Or, for a specific version like `42.0.3` (this will set all packages in the scope to `42.0.3` if available, or the latest before it if not):
+Or, for a specific version like `52.0.1` (this will set all packages in the scope to `52.0.1` if available, or the latest before it if not):
 
 ```bash
-npx depset@latest @udecode 42.0.3
+npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
 ```
 
 This helps prevent version conflicts by ensuring all related Plate packages are on compatible versions.

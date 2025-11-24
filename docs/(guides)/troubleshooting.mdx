@@ -9,25 +9,25 @@ A common source of issues in projects using Plate is mismatched or conflicting v
 
 ### Managing Plate Package Versions with `depset`
 
-The recommended way to ensure all your ``@udecode/*`` packages (including Plate and its related plugins) are synchronized to a consistent and compatible set of versions is by using the [`depset`](https://npmjs.com/package/depset) command-line tool.
+The recommended way to ensure all your ``@platejs/*`` packages (including Plate and its related plugins) are synchronized to a consistent and compatible set of versions is by using the [`depset`](https://npmjs.com/package/depset) command-line tool.
 
 **Why `depset`?**
-- It simplifies upgrading or aligning multiple packages within the ``@udecode`` scope.
+- It simplifies upgrading or aligning multiple packages within the ``@platejs`` scope.
 - It helps prevent issues caused by having some Plate packages on one version and others on a different, potentially incompatible, version.
 
 **Usage:**
 
-To upgrade or align all packages in the ``@udecode`` scope to a specific target version (e.g., ``45.0.1``), run the following in your project root:
+To upgrade or align all packages in the ``@platejs`` scope to a specific target version (e.g., ``52.0.1``), run the following in your project root:
 ```bash
-npx depset@latest @udecode 45.0.1
+npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
 ```
 
-To upgrade all ``@udecode`` packages to the latest versions that are less than major version ``46`` (e.g., if ``45.x.y`` are the latest releases, it will pick those):
+To upgrade all ``@platejs`` packages to the latest versions that are less than major version ``46`` (e.g., if ``52.x.y`` are the latest releases, it will pick those):
 ```bash
-npx depset@latest @udecode 45
+npx depset@latest @platejs 52 && npx depset@latest platejs 52 
 ```
 
-- Replace ``<target_version>`` (e.g., ``45.0.1`` or ``45``) with your desired version specifier.
+- Replace ``<target_version>`` (e.g., ``52.0.1`` or ``52``) with your desired version specifier.
 - ``depset`` will update your ``package.json``.
 
 ### Example: Multiple Plate Instances
@@ -48,7 +48,7 @@ pnpm why @platejs/core
 ```
 
 **Solution:**
-The primary solution is to ensure all your ``@udecode/*`` packages are updated to their latest respective versions that are compatible and designed to work together. This prevents mismatches where one Plate package might be too old or too new for others in your project. Use the ``depset`` tool as described above.
+The primary solution is to ensure all your ``@platejs/*`` packages are updated to their latest respective versions that are compatible and designed to work together. This prevents mismatches where one Plate package might be too old or too new for others in your project. Use the ``depset`` tool as described above.
 
 ### Example: Multiple Slate Instances
 
