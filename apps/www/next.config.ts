@@ -118,7 +118,7 @@ const nextConfig = async (phase: string) => {
           return null;
         }
       })
-      .filter((pkg) => pkg?.startsWith('@udecode'));
+      .filter((pkg) => pkg?.startsWith('@udecode') || pkg?.includes('platejs'));
 
     config.transpilePackages = [
       ...(config.transpilePackages || []),
