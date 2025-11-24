@@ -4,3 +4,4 @@
 
 export * from './useEmojiDropdownMenuState';
 export * from './useEmojiPicker';
+export * from './useEmojiPickerState';

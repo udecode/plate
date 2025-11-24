@@ -35,7 +35,7 @@ const initialState: EmojiPickerStateProps = {
   visibleCategories: new Map(),
 };
 
-export const EmojiPickerState = (): [
+export const useEmojiPickerState = (): [
   EmojiPickerStateProps,
   React.Dispatch<EmojiPickerStateDispatch>,
 ] => {

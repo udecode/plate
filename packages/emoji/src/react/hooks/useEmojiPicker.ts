@@ -15,11 +15,10 @@ import {
 } from '../../lib';
 import {
   type IEmojiFloatingLibrary,
-  type MapEmojiCategoryList,
   type SetFocusedAndVisibleSectionsType,
-  EmojiPickerState,
   observeCategories,
 } from '../utils';
+import { useEmojiPickerState, type MapEmojiCategoryList } from './useEmojiPickerState';
 
 export type MutableRefs = React.MutableRefObject<{
   content: React.RefObject<HTMLDivElement | null> | undefined;
@@ -64,7 +63,7 @@ export const useEmojiPicker = ({
 }: UseEmojiPickerProps): Omit<UseEmojiPickerType, 'icons' | 'settings'> => {
   const editor = useEditorRef();
 
-  const [state, dispatch] = EmojiPickerState();
+  const [state, dispatch] = useEmojiPickerState();
   const refs = React.useRef({
     content: React.createRef<HTMLDivElement>(),
     contentRoot: React.createRef<HTMLDivElement>(),
