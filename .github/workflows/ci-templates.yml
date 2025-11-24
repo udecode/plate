@@ -1,4 +1,4 @@
-name: Build Templates
+name: CI Templates
 
 on:
   push:
@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: build
+  ci:
+    name: Lint, Typecheck, Build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,31 +32,32 @@ jobs:
       run:
         working-directory: templates/${{ matrix.template }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v2.4.1
-        name: Install pnpm
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
         with:
-          version: 8.6.1
-          run_install: false
+          bun-version: latest
 
-      - name: Setup Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Setup pnpm cache
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
+        name: ♻️ Setup bun cache
         with:
-          path: $(pnpm store path)
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-bun-
 
-      - name: 📥 Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: 📥 Install
+        run: bun install --frozen-lockfile
 
-      - name: 🏗 Build
-        run: pnpm build
+      - name: 🔬 Run Biome & ESLint
+        run: bun lint
+
+      - name: 🕵️ Typecheck & Build
+        run: bun run build

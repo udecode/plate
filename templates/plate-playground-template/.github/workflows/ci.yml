@@ -1,4 +1,4 @@
-name: Code Quality
+name: CI
 
 on:
   push:
@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint & Typecheck
+  ci:
+    name: Lint, Typecheck, Build
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +53,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: 🔬 Run Biome & ESLint
-        run: bunx biome check . && bunx eslint
+        run: bun lint
 
       - name: 🕵️ Typecheck & Build
         run: bun run build
