@@ -1,12 +1,10 @@
-import * as React from 'react';
-
+import type { TCodeBlockElement } from 'platejs';
 import {
-  type SlateElementProps,
-  type SlateLeafProps,
-  type TCodeBlockElement,
   SlateElement,
+  type SlateElementProps,
   SlateLeaf,
-} from 'platejs';
+  type SlateLeafProps,
+} from 'platejs/static';
 
 export function CodeBlockElementStatic(
   props: SlateElementProps<TCodeBlockElement>

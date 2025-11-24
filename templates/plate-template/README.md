@@ -12,7 +12,7 @@ A minimal template for building rich-text editors with [Plate](https://platejs.o
 ## Requirements
 
 - Node.js 20+
-- pnpm
+- bun
 
 ## Installation
 
@@ -21,7 +21,7 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor-basic
+npx shadcn@latest add @plate/editor-basic
 ```
 
 ### 2. Using Template
@@ -29,13 +29,13 @@ npx shadcn@latest add https://platejs.org/r/editor-basic
 [Use this template](https://github.com/udecode/plate-template/generate), then install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 ## Development
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 Visit http://localhost:3000/editor to see the editor in action.
@@ -45,5 +45,5 @@ Visit http://localhost:3000/editor to see the editor in action.
 Using the CLI, you can upgrade to `editor-ai` by running:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor-ai -o
+npx shadcn@latest add @plate/editor-ai -o
 ```

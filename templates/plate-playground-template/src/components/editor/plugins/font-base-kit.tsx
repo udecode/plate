@@ -1,11 +1,10 @@
-import type { SlatePluginConfig } from 'platejs';
-
 import {
   BaseFontBackgroundColorPlugin,
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
 } from '@platejs/basic-styles';
+import type { SlatePluginConfig } from 'platejs';
 import { KEYS } from 'platejs';
 
 const options = {

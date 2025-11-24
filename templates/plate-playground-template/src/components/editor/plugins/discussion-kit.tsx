@@ -1,19 +1,17 @@
 'use client';
 
+import { createPlatePlugin } from 'platejs/react';
+import { BlockDiscussion } from '@/components/ui/block-discussion';
 import type { TComment } from '@/components/ui/comment';
 
-import { createPlatePlugin } from 'platejs/react';
-
-import { BlockDiscussion } from '@/components/ui/block-discussion';
-
-export interface TDiscussion {
+export type TDiscussion = {
   id: string;
   comments: TComment[];
   createdAt: Date;
   isResolved: boolean;
   userId: string;
   documentContent?: string;
-}
+};
 
 const discussionsData: TDiscussion[] = [
   {

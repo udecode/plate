@@ -1,10 +1,9 @@
-import type { ChatMessage } from '@/components/editor/use-chat';
-import type { UIMessage } from 'ai';
-
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
+import type { UIMessage } from 'ai';
 import dedent from 'dedent';
-import { type SlateEditor, RangeApi } from 'platejs';
+import { RangeApi, type SlateEditor } from 'platejs';
+import type { ChatMessage } from '@/components/editor/use-chat';
 
 /**
  * Tag content split by newlines
@@ -33,19 +32,17 @@ export const inlineTag = (tag: string, content?: string | null) => {
 };
 
 // Sections split by double newlines
-export const sections = (sections: (boolean | string | null | undefined)[]) => {
-  return sections.filter(Boolean).join('\n\n');
-};
+export const sections = (sections: (boolean | string | null | undefined)[]) =>
+  sections.filter(Boolean).join('\n\n');
 
 // List items split by newlines
-export const list = (items: string[] | undefined) => {
-  return items
+export const list = (items: string[] | undefined) =>
+  items
     ? items
         .filter(Boolean)
         .map((item) => `- ${item}`)
         .join('\n')
     : '';
-};
 
 export type StructuredPromptSections = {
   backgroundData?: string;
@@ -113,7 +110,9 @@ export const buildStructuredPrompt = ({
     backgroundData &&
       dedent`
         Here is the background data you should reference when answering the user:
+        <backgroundData>
               ${backgroundData}
+        </backgroundData>
       `,
     rules &&
       dedent`
@@ -188,7 +187,6 @@ const SELECTION_END = '</Selection>';
 
 export const addSelection = (editor: SlateEditor) => {
   if (!editor.selection) return;
-
   if (editor.api.isExpanded()) {
     const [start, end] = RangeApi.edges(editor.selection);
 
@@ -216,7 +214,6 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
     const node = editor.api.block({ at: end.path });
 
     if (!node) return newText;
-
     if (editor.api.isVoid(node[0])) {
       const voidString = serializeMd(editor, { value: [node[0]] });
 
@@ -243,6 +240,5 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 };
 
 /** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: SlateEditor) => {
-  return removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
-};
+export const getMarkdownWithSelection = (editor: SlateEditor) =>
+  removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));

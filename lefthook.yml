@@ -1,6 +1,6 @@
 pre-commit:
   jobs:
-    - run: bunx ultracite fix
+    - run: yarn dlx ultracite fix
       glob:
         - '*.js'
         - '*.jsx'

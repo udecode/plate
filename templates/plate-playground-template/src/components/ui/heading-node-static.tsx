@@ -1,19 +1,18 @@
-import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
-import type { SlateElementProps } from 'platejs';
-
-import { type VariantProps, cva } from 'class-variance-authority';
-import { SlateElement } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
+import { SlateElement } from 'platejs/static';
+import type * as React from 'react';
 
 const headingVariants = cva('relative mb-1', {
   variants: {
     variant: {
-      h1: 'mt-[1.6em] pb-1 font-heading text-4xl font-bold',
-      h2: 'mt-[1.4em] pb-px font-heading text-2xl font-semibold tracking-tight',
-      h3: 'mt-[1em] pb-px font-heading text-xl font-semibold tracking-tight',
-      h4: 'mt-[0.75em] font-heading text-lg font-semibold tracking-tight',
-      h5: 'mt-[0.75em] text-lg font-semibold tracking-tight',
-      h6: 'mt-[0.75em] text-base font-semibold tracking-tight',
+      h1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',
+      h2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',
+      h3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',
+      h4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',
+      h5: 'mt-[0.75em] font-semibold text-lg tracking-tight',
+      h6: 'mt-[0.75em] font-semibold text-base tracking-tight',
     },
   },
 });

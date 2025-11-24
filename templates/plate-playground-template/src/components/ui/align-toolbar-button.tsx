@@ -1,11 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import type { Alignment } from '@platejs/basic-styles';
-import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
+import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   AlignCenterIcon,
   AlignJustifyIcon,
@@ -13,6 +10,7 @@ import {
   AlignRightIcon,
 } from 'lucide-react';
 import { useEditorPlugin, useSelectionFragmentProp } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -56,25 +54,25 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
     items.find((item) => item.value === value)?.icon ?? AlignLeftIcon;
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Align" isDropdown>
+        <ToolbarButton isDropdown pressed={open} tooltip="Align">
           <IconValue />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-0" align="start">
+      <DropdownMenuContent align="start" className="min-w-0">
         <DropdownMenuRadioGroup
-          value={value}
           onValueChange={(value) => {
             tf.textAlign.setNodes(value as Alignment);
             editor.tf.focus();
           }}
+          value={value}
         >
           {items.map(({ icon: Icon, value: itemValue }) => (
             <DropdownMenuRadioItem
-              key={itemValue}
               className="pl-2 data-[state=checked]:bg-accent *:first:[span]:hidden"
+              key={itemValue}
               value={itemValue}
             >
               <Icon />

@@ -12,7 +12,7 @@ A Next.js template with [Plate](https://platejs.org/) AI, plugins and components
 ## Requirements
 
 - Node.js 20+
-- pnpm
+- bun
 
 ## Installation
 
@@ -21,7 +21,7 @@ Choose one of these methods:
 ### 1. Using CLI (Recommended)
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor-ai
+npx shadcn@latest add @plate/editor-ai
 ```
 
 ### 2. Using Template
@@ -29,7 +29,7 @@ npx shadcn@latest add https://platejs.org/r/editor-ai
 [Use this template](https://github.com/udecode/plate-playground-template/generate), then install dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 ## Development
@@ -48,7 +48,7 @@ Configure `.env.local`:
 Start the development server:
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 Visit http://localhost:3000/editor to see the editor in action.
