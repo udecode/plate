@@ -1,63 +1,14 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import unusedImports from 'eslint-plugin-unused-imports';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import tsParser from '@typescript-eslint/parser';
+import { defineConfig } from 'eslint/config';
+import reactHooks from 'eslint-plugin-react-hooks';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
+export default defineConfig([
   {
-    ignores: ['.next'],
+    ignores: ['node_modules/**', '.next/**'],
   },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
-    plugins: {
-      'unused-imports': unusedImports,
-    },
-    rules: {
-      '@next/next/no-html-link-for-pages': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'import/no-anonymous-default-export': 'off',
-      'linebreak-style': ['error', 'unix'],
-      'no-case-declarations': 'off',
-      'no-duplicate-imports': 'off',
-      'no-empty-function': 'off',
-      'no-prototype-builtins': 'off',
-      'no-unused-vars': 'off',
-      'react/display-name': 'off',
-      'react/jsx-curly-brace-presence': [
-        'warn',
-        { children: 'never', props: 'never' },
-      ],
-      'react/jsx-newline': ['off'],
-      'react/no-unescaped-entities': ['error', { forbid: ['>'] }],
-      'react/no-unknown-property': 'off',
-      'react/prop-types': 'off',
-      'react/react-in-jsx-scope': 'off',
-      'spaced-comment': [
-        'error',
-        'always',
-        {
-          block: {
-            balanced: true,
-            exceptions: ['*'],
-            markers: ['!'],
-          },
-          line: {
-            exceptions: ['-', '+'],
-            markers: ['/'],
-          },
-        },
-      ],
-      'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': 'off',
-    },
+    ...reactHooks.configs.flat.recommended,
+    files: ['src/**/*.tsx', 'src/**/use*.ts'],
+    languageOptions: { parser: tsParser },
   },
-];
-
-export default eslintConfig;
+]);

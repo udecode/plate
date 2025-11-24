@@ -1,0 +1,77 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
+  "files": {
+    "includes": ["**", "!!node_modules", "!!.next", "!next-env.d.ts"]
+  },
+  "linter": {
+    "rules": {
+      "correctness": {
+        "useExhaustiveDependencies": "off", // eslint
+        "useHookAtTopLevel": "off", // eslint
+        "noUndeclaredVariables": "off", // ts
+        "noUnusedVariables": {
+          "level": "error",
+          "options": {
+            "ignoreRestSiblings": true
+          }
+        },
+        "useImageSize": "off" // className
+        // "noNestedComponentDefinitions": "off" // shadcn
+      },
+      "suspicious": {
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": ["assert", "error", "info", "warn"]
+          }
+        }
+        // "noExplicitAny": "off" // ts chill
+        // "noArrayIndexKey": "off", // chill
+        // "noUnknownAtRules": "off", // allow for Tailwind @ rules
+        // "noEmptyBlockStatements": "off", // chill
+        // "useAwait": "off", // chill
+        // "noDocumentCookie": "off", // shadcn,
+        // "noBitwiseOperators": "off", // chill
+        // "noConfusingVoidType": "off" // false +
+      },
+      "style": {
+        // "noMagicNumbers": "off", // chill
+        // "useFilenamingConvention": "off", // chill
+        // "noNestedTernary": "off", // chill
+        "noNonNullAssertion": "off" // ts chill
+        // "useDefaultSwitchClause": "off", // chill
+        // "useBlockStatements": "off" // chill,
+      },
+      "nursery": {
+        "noShadow": "off", // chill
+        "noIncrementDecrement": "off" // chill
+      },
+      "complexity": {
+        // "useSimplifiedLogicExpression": "off", // false +
+        // "noExcessiveCognitiveComplexity": "off", // chill
+        "noForEach": "off" // chill
+        // "noVoid": "off", // chill
+        // "noBannedTypes": "off" // chill
+      },
+      "a11y": {
+        // "noNoninteractiveElementInteractions": "off", // region role not supported
+        "useKeyWithClickEvents": "off", // shadcn
+        "useSemanticElements": "off", // shadcn
+        "useFocusableInteractive": "off" // shadcn
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off" // shadcn
+      },
+      "performance": {
+        "noNamespaceImport": "off", // shadcn
+        "noImgElement": "off" // agnostic
+      }
+    }
+  }
+}
