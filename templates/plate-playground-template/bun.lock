@@ -52,6 +52,7 @@
         "@radix-ui/react-toolbar": "^1.1.11",
         "@radix-ui/react-tooltip": "^1.2.8",
         "@udecode/cn": "^52.0.1",
+        "@udecode/ruler": "^0.4.3",
         "@uploadthing/react": "7.3.3",
         "ai": "5.0.28",
         "class-variance-authority": "^0.7.1",
@@ -91,7 +92,6 @@
         "@types/react": "19.2.7",
         "@types/react-dom": "19.2.3",
         "@typescript-eslint/parser": "^8.47.0",
-        "@udecode/ruler": "^0.4.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "eslint": "^9.39.1",
         "eslint-plugin-react-hooks": "7.0.1",
@@ -604,7 +604,7 @@
 
     "@udecode/react-utils": ["@udecode/react-utils@52.0.1", "", { "dependencies": { "@radix-ui/react-slot": "^1.2.3", "@udecode/utils": "52.0.1", "clsx": "^2.1.1" }, "peerDependencies": { "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-zdSfCfX7AWzut8J22Az7usrHM/uSwlzJXRX3jnidx4rhE+YzV2BJfq4q8w0SbHq8Y4Peg8VlP0r1y8z8p2HSUw=="],
 
-    "@udecode/ruler": ["@udecode/ruler@0.4.0", "", { "dependencies": { "@iarna/toml": "^2.2.5", "js-yaml": "^4.1.0", "yargs": "^18.0.0", "zod": "^4.1.12" }, "bin": { "ruler": "dist/cli/index.js" } }, "sha512-nNtu0wyUCeWP+Ea/1RY+lS8lgck5yVAHbG21qKJetfS3ZqAG9h12BK/5LnepPu7V85nUXp3753Ds/L0/y8ovuQ=="],
+    "@udecode/ruler": ["@udecode/ruler@0.4.3", "", { "dependencies": { "@iarna/toml": "^2.2.5", "js-yaml": "^4.1.0", "yargs": "^18.0.0", "zod": "^4.1.12" }, "bin": { "ruler": "dist/cli/index.js" } }, "sha512-qox00i0IK600i1s3RsD8Pd+jnTEzCVm6qFZI0jnyseUPD1bFtzKABO78tWc3QTk0M+pb/2+izH6THnIda4/bvw=="],
 
     "@udecode/utils": ["@udecode/utils@52.0.1", "", {}, "sha512-T/qa4++J2MMY9CbhZ05ONpcpkvsRV0uBvOfMhhYWKkAND4DSVAVzmZTV7WQ5fjGq81agAped0WQxcqsEg617uQ=="],
 

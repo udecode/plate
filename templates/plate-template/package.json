@@ -10,6 +10,7 @@
     "lint": "biome check . && eslint",
     "lint:fix": "biome check . --fix",
     "preview": "next build && next start",
+    "postinstall": "bunx @udecode/ruler@latest apply",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

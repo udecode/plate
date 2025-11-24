@@ -45,12 +45,13 @@ next-env.d.ts
 
 CLAUDE.local.md
 .codex
-.mcp.json
 
 # START Ruler Generated Files
 /.claude/skills
 /.codex/config.toml
+/.cursor/mcp.json
 /.cursor/rules
+/.mcp.json
 /.skillz
 /AGENTS.md
 /CLAUDE.md
