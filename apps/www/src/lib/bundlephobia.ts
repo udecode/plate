@@ -14,8 +14,8 @@ export function formatBytes(bytes: number, decimals = 2) {
 export async function getPackageData(name: string) {
   // export async function getPackageData(name, version) {
   const bundlephobiaResponse = await fetch(
-    // `https://bundlephobia.com/api/size?package=@udecode/${name}@${version}`
-    `https://bundlephobia.com/api/size?package=@udecode/${name}`
+    // `https://bundlephobia.com/api/size?package=@platejs/${name}@${version}`
+    `https://bundlephobia.com/api/size?package=@platejs/${name}`
   );
 
   // sometimes we get an empty response body

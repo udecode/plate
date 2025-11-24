@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import pluginBabel from '@rollup/plugin-babel';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
@@ -57,5 +58,16 @@ export default defineConfig((opts) => [
     sourcemap: enableSourcemaps,
     dts: { sourcemap: enableSourcemaps },
     exports: true,
+    plugins: [
+      pluginBabel({
+        babelHelpers: 'bundled',
+        parserOpts: {
+          sourceType: 'module',
+          plugins: ['jsx', 'typescript'],
+        },
+        plugins: ['babel-plugin-react-compiler'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      }),
+    ],
   },
 ]);
