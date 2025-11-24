@@ -48,7 +48,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
         isSet = true;
       };
 
-      if (!(isSlateString(leaf) || isBlockLeaf)) {
+      if (!isSlateString(leaf) && !isBlockLeaf) {
         unsetActiveSuggestion();
       }
 

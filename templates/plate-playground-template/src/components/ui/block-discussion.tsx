@@ -111,7 +111,7 @@ const BlockCommentContent = ({
     activeCommentId &&
     resolvedDiscussions.find((d) => d.id === activeCommentId);
 
-  const noneActive = !(activeSuggestion || activeDiscussion);
+  const noneActive = !activeSuggestion && !activeDiscussion;
 
   const sortedMergedData = [
     ...resolvedDiscussions,

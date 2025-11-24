@@ -135,7 +135,7 @@ export const PlaceholderElement = withHOC(
 
     return (
       <PlateElement className="my-1" {...props}>
-        {!(loading && isImage) && (
+        {(!loading || !isImage) && (
           <div
             className={cn(
               'flex cursor-pointer select-none items-center rounded-sm bg-muted p-3 pr-9 hover:bg-primary/10'

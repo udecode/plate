@@ -316,7 +316,7 @@ export const useResolveSuggestion = (
 
       const path = map.get(id);
 
-      if (!(path && PathApi.isPath(path))) return;
+      if (!path || !PathApi.isPath(path)) return;
       if (!PathApi.equals(path, blockPath)) return;
 
       const entries = [

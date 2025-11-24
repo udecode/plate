@@ -102,7 +102,7 @@ export const TableElement = withHOC(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );
-    const hasControls = !(readOnly || isSelectionAreaVisible);
+    const hasControls = !readOnly && !isSelectionAreaVisible;
     const {
       isSelectingCell,
       marginLeft,
@@ -433,7 +433,7 @@ export function TableRowElement({
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
   );
-  const hasControls = !(readOnly || isSelectionAreaVisible);
+  const hasControls = !readOnly && !isSelectionAreaVisible;
 
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,

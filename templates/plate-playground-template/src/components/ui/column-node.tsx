@@ -61,7 +61,7 @@ export const ColumnElement = withHOC(
 
     return (
       <div className="group/column relative" style={{ width: width ?? '100%' }}>
-        {!(readOnly || isSelectionAreaVisible) && (
+        {!readOnly && !isSelectionAreaVisible && (
           <div
             className={cn(
               '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
@@ -88,7 +88,7 @@ export const ColumnElement = withHOC(
           >
             {props.children}
 
-            {!(readOnly || isSelectionAreaVisible) && <DropLine />}
+            {!readOnly && !isSelectionAreaVisible && <DropLine />}
           </div>
         </PlateElement>
       </div>

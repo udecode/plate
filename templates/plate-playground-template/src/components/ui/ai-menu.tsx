@@ -122,7 +122,7 @@ export function AIMenu() {
     onOpenCursor: () => {
       const [ancestor] = editor.api.block({ highest: true })!;
 
-      if (!(editor.api.isAt({ end: true }) || editor.api.isEmpty(ancestor))) {
+      if (!editor.api.isAt({ end: true }) && !editor.api.isEmpty(ancestor)) {
         editor
           .getApi(BlockSelectionPlugin)
           .blockSelection.set(ancestor.id as string);
