@@ -1,16 +1,15 @@
 'use client';
 
-import * as React from 'react';
-
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
 import { AIChatPlugin, aiCommentToRange } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import { KEYS, NodeApi, nanoid, TextApi, type TNode } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
+import * as React from 'react';
 
 import { aiChatPlugin } from '@/components/editor/plugins/ai-kit';
 
@@ -54,7 +53,7 @@ export const useChat = () => {
     transport: new DefaultChatTransport({
       api: options.api || '/api/ai/command',
       // Mock the API response. Remove it when you implement the route /api/ai/command
-      fetch: async (input, init) => {
+      fetch: (async (input, init) => {
         const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
 
         const initBody = JSON.parse(init?.body as string);
@@ -109,7 +108,7 @@ export const useChat = () => {
         }
 
         return res;
-      },
+      }) as typeof fetch,
     }),
     onData(data) {
       if (data.type === 'data-toolName') {
@@ -118,7 +117,6 @@ export const useChat = () => {
 
       if (data.type === 'data-comment' && data.data) {
         if (data.data.status === 'finished') {
-          editor.getApi(AIChatPlugin).aiChat.hide();
           editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
 
           return;
@@ -228,17 +226,17 @@ const fakeStreamText = ({
         return [
           Array.from({ length: chunkCount }, () => ({
             delay: faker.number.int({ max: 100, min: 30 }),
-            texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
           })),
 
           Array.from({ length: chunkCount + 2 }, () => ({
             delay: faker.number.int({ max: 100, min: 30 }),
-            texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
           })),
 
           Array.from({ length: chunkCount + 4 }, () => ({
             delay: faker.number.int({ max: 100, min: 30 }),
-            texts: faker.lorem.words({ max: 3, min: 1 }) + ' ',
+            texts: `${faker.lorem.words({ max: 3, min: 1 })} `,
           })),
         ];
       })();
@@ -1489,7 +1487,7 @@ const createCommentChunks = (editor: PlateEditor) => {
   const indexes = Array.from(result).sort((a, b) => a - b);
 
   const chunks = indexes
-    .map((index) => {
+    .map((index, i) => {
       const block = blocks[index];
       if (!block) {
         return [];
@@ -1503,7 +1501,7 @@ const createCommentChunks = (editor: PlateEditor) => {
       return [
         {
           delay: faker.number.int({ max: 500, min: 200 }),
-          texts: `{"id":"${nanoid()}","data":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"type":"data-comment"}`,
+          texts: `{"id":"${nanoid()}","data":{"comment":{"blockId":"${block.id}","comment":"${faker.lorem.sentence()}","content":"${content}"},"status":"${i === indexes.length - 1 ? 'finished' : 'streaming'}"},"type":"data-comment"}`,
         },
       ];
     })

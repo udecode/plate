@@ -1,22 +1,20 @@
-import type { ChatMessage, ToolName } from '@/components/editor/use-chat';
-import type { NextRequest } from 'next/server';
-
 import { createGateway } from '@ai-sdk/gateway';
 import {
-  type LanguageModel,
-  type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateObject,
+  type LanguageModel,
   streamObject,
   streamText,
   tool,
+  type UIMessageStreamWriter,
 } from 'ai';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
+import { createSlateEditor, nanoid, type SlateEditor } from 'platejs';
 import { z } from 'zod';
-
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import type { ChatMessage, ToolName } from '@/components/editor/use-chat';
 import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
 
 import {
@@ -162,8 +160,8 @@ const getCommentTool = (
     model: LanguageModel;
     writer: UIMessageStreamWriter<ChatMessage>;
   }
-) => {
-  return tool({
+) =>
+  tool({
     description: 'Comment on the content',
     inputSchema: z.object({}),
     execute: async () => {
@@ -198,7 +196,7 @@ const getCommentTool = (
         writer.write({
           id: commentDataId,
           data: {
-            comment: comment,
+            comment,
             status: 'streaming',
           },
           type: 'data-comment',
@@ -215,4 +213,3 @@ const getCommentTool = (
       });
     },
   });
-};

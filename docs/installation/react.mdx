@@ -16,7 +16,7 @@ This guide walks you through incrementally building a Plate editor in your proje
 Start by adding the core [Editor](/docs/components/editor) component to your project:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor
+npx shadcn@latest add @plate/editor
 ```
 
 Next, create a basic editor in your main application file (e.g. `src/App.tsx`). This example sets up a simple editor within an `EditorContainer`.
@@ -50,7 +50,7 @@ export default function App() {
 Enhance your editor with text formatting. Add the **Basic Nodes Kit**, [FixedToolbar](/docs/components/fixed-toolbar) and [MarkToolbarButton](/docs/components/mark-toolbar-button) components:
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+npx shadcn@latest add @plate/basic-nodes-kit @plate/fixed-toolbar @plate/mark-toolbar-button
 ```
 
 <Callout type="info">
@@ -206,7 +206,7 @@ export default function App() {
 
   For a quicker start with common plugins and components pre-configured, use the `editor-basic` block:
   ```bash
-  npx shadcn@latest add https://platejs.org/r/editor-basic
+  npx shadcn@latest add @plate/editor-basic
   ```
   This handles much of the boilerplate for you.
 </Callout>
@@ -318,8 +318,8 @@ To further enhance your editor:
 *   **Explore Components:** Discover [Toolbars, Menus, Node components](/docs/components), and more.
 *   **Add Plugins:** Integrate features like [Tables](/docs/plugins/table), [Mentions](/docs/plugins/mention), [AI](/docs/plugins/ai), or [Markdown](/docs/plugins/markdown).
 *   **Use Editor Blocks:** Quickly set up pre-configured editors:
-    *   Basic editor: `npx shadcn@latest add https://platejs.org/r/editor-basic`
-    *   AI-powered editor: `npx shadcn@latest add https://platejs.org/r/editor-ai`
+    *   Basic editor: `npx shadcn@latest add @plate/editor-basic`
+    *   AI-powered editor: `npx shadcn@latest add @plate/editor-ai`
 *   **Learn More:**
     *   [Editor Configuration](/docs/editor)
     *   [Plugin Configuration](/docs/plugin)

@@ -1,7 +1,5 @@
 'use client';
 
-import type { PlateEditor } from 'platejs/react';
-
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
@@ -19,12 +17,13 @@ import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { TablePlugin } from '@platejs/table/react';
 import { insertToc } from '@platejs/toc';
 import {
+  KEYS,
   type NodeEntry,
   type Path,
-  type TElement,
-  KEYS,
   PathApi,
+  type TElement,
 } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 
@@ -187,7 +186,9 @@ export const setBlockType = (
 
     const entries = editor.api.blocks({ mode: 'lowest' });
 
-    entries.forEach((entry) => setEntry(entry));
+    entries.forEach((entry) => {
+      setEntry(entry);
+    });
   });
 };
 
@@ -195,11 +196,11 @@ export const getBlockType = (block: TElement) => {
   if (block[KEYS.listType]) {
     if (block[KEYS.listType] === KEYS.ol) {
       return KEYS.ol;
-    } else if (block[KEYS.listType] === KEYS.listTodo) {
-      return KEYS.listTodo;
-    } else {
-      return KEYS.ul;
     }
+    if (block[KEYS.listType] === KEYS.listTodo) {
+      return KEYS.listTodo;
+    }
+    return KEYS.ul;
   }
 
   return block.type;

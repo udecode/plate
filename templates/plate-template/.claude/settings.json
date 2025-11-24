@@ -1,0 +1,69 @@
+{
+  "permissions": {
+    "allow": ["Bash", "Edit", "Skill"]
+  },
+  "enableAllProjectMcpServers": true,
+  "extraKnownMarketplaces": {
+    "dotai": {
+      "source": {
+        "source": "github",
+        "repo": "udecode/dotai"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "dotai@dotai": true,
+    "fb@dotai": true,
+    "notification@dotai": true,
+    "media@dotai": false,
+    "codex@dotai": true,
+    "plan@dotai": true,
+    "agents@dotai": true,
+    "debug@dotai": true,
+    "test@dotai": true,
+    "skills@dotai": true,
+    "git@dotai": true
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \".claude/scripts/user-prompt-submit.sh\" ]; then .claude/scripts/user-prompt-submit.sh; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \".claude/scripts/session-start.sh\" ]; then .claude/scripts/session-start.sh; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \".claude/scripts/post-compact.sh\" ]; then .claude/scripts/post-compact.sh; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bunx ultracite fix"
+          }
+        ]
+      }
+    ]
+  }
+}

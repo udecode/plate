@@ -93,7 +93,7 @@ Create a new file called `components.json` in your docs directory with this cont
 Now, fetch the Plate documentation files and necessary MDX components.
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/fumadocs
+npx shadcn@latest add @plate/fumadocs
 ```
 
 <Callout type="warning" title="Version-Specific Documentation">
@@ -128,7 +128,7 @@ If you just want the documentation files without setting up a full site, you can
 
 ```bash
 # Run from your project root (wherever you want the docs)
-npx shadcn@latest add https://platejs.org/r/docs
+npx shadcn@latest add @plate/docs
 ```
 
 This will:
@@ -150,14 +150,13 @@ Enable AI tools to work with your local documentation by adding the Plate server
 ```json
 {
   "mcpServers": {
-    "plate": {
-      "description": "Plate editors, plugins, components and documentation",
-      "type": "stdio",
+    "shadcn": {
+      "description": "Shadcn and Plate MCP",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "https://platejs.org/r/registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }

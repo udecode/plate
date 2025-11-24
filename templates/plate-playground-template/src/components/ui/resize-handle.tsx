@@ -1,22 +1,21 @@
 'use client';
 
-import * as React from 'react';
-
-import type { VariantProps } from 'class-variance-authority';
-
 import {
-  type ResizeHandle as ResizeHandlePrimitive,
   Resizable as ResizablePrimitive,
+  type ResizeHandle as ResizeHandlePrimitive,
   useResizeHandle,
   useResizeHandleState,
 } from '@platejs/resizable';
+
+import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 export const mediaResizeHandleVariants = cva(
   cn(
-    'top-0 flex w-6 flex-col justify-center select-none',
+    'top-0 flex w-6 select-none flex-col justify-center',
     "after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:bg-ring after:opacity-0 after:content-['_'] group-hover:after:opacity-100"
   ),
   {

@@ -1,0 +1,1198 @@
+---
+description: React patterns with destructured props, compiler optimization, Effects, and Tailwind v4 syntax. ALWAYS use when using React.
+globs: *.tsx,**/globals.css
+alwaysApply: false
+---
+
+# React Patterns
+
+## Context
+
+When working with React components, types, and hooks.
+
+## Requirements
+
+- Always use destructured props in function parameters
+- Define TypeScript types inline with the destructured props
+- Avoid creating separate interfaces for component props
+- Avoid non-destructured props that require additional destructuring inside the component
+- Use available UI components from the component library
+- Use CSS variables from globals.css for consistent theming
+- Use Tailwind v4 syntax (see [Tailwind v4 Syntax](#tailwind-v4-syntax))
+- DO NOT add icon margin in Button, DropdownMenuItem: use gap-2 instead
+- Use `useEffectEvent` to extract non-reactive logic from Effects (see [Separating Events from Effects](#separating-events-from-effects))
+- NEVER suppress the dependency linter with `eslint-disable` - use `useEffectEvent` instead
+- Use custom breakpoint syntax for responsive design (see [App-Specific Rules](#app-specific-rules))
+
+## Tailwind v4 Syntax
+
+### Modern Opacity & Colors
+
+```tsx
+// ✅ v4 - Inline opacity with /
+<div className="bg-black/50 text-white/80" />
+
+// ❌ v3 - Separate opacity classes
+<div className="bg-black bg-opacity-50 text-white text-opacity-80" />
+```
+
+### Renamed Utilities
+
+- `shadow-sm` → `shadow-xs` (and `shadow` → `shadow-sm`)
+- `rounded-sm` → `rounded-xs` (and `rounded` → `rounded-sm`)
+- `blur-sm` → `blur-xs`, `drop-shadow-sm` → `drop-shadow-xs`
+
+### CSS Variables in Classes
+
+```tsx
+// ✅ v4 - Parentheses
+<div className="bg-(--brand-color)" />
+
+// ❌ v3 - Brackets
+<div className="bg-[--brand-color]" />
+```
+
+### Composable Variants
+
+```tsx
+// Chain variants together
+<div className="group-has-data-selected:opacity-100" />
+<button className="data-highlighted:ring-2 data-highlighted:ring-primary-500"
+        data-highlighted={highlighted ? "" : undefined} />
+```
+
+### Breaking Changes
+
+- Removed: `bg-opacity-*`, `text-opacity-*`, `border-opacity-*` → Use `/` syntax
+- Default border color now `currentColor` (was `gray-200`)
+- Default `ring` width now 1px (was 3px)
+
+## shadcn UI Components
+
+Standard shadcn/ui components available in `src/components/ui`.
+
+**USE PROACTIVELY**: Custom components that extend shadcn/ui patterns. All can be imported from `src/components/ui`.
+
+### ButtonGroup
+
+[button-group.tsx](mdc:src/components/ui/button-group.tsx) - Groups controls with seamless borders. Grouped buttons, split buttons, toolbars, pagination, search with button
+
+- Components: `ButtonGroup`, `ButtonGroupText`, `ButtonGroupSeparator` | Orientation: `horizontal`, `vertical`
+- Critical patterns: Split button (`Button` + `DropdownMenu`), nested groups, with Input/Select/InputGroup
+- Replace: Custom flex with manual borders, separate buttons with gaps
+
+### Empty
+
+[empty.tsx](mdc:src/components/ui/empty.tsx) - Empty/error state container. Empty states, error pages, 404s, no data scenarios, offline states
+
+- Components: `Empty`, `EmptyHeader`, `EmptyMedia`, `EmptyTitle`, `EmptyDescription`, `EmptyContent`
+- `EmptyMedia` variants: `default`, `icon` (bordered container)
+- CRITICAL: Use for error.tsx, not-found.tsx, and all empty data states
+- Replace: Custom empty divs, hardcoded error pages, inline messages
+
+### InputGroup
+
+[input-group.tsx](mdc:src/components/ui/input-group.tsx) - Enhanced input with addons. Inputs with buttons/icons/text prefix/suffix, copy buttons, validation icons
+
+- Components: `InputGroup`, `InputGroupAddon`, `InputGroupButton`, `InputGroupText`, `InputGroupInput`, `InputGroupTextarea`
+- Alignment: `inline-start`, `inline-end`, `block-start`, `block-end`
+- Critical: Addons auto-focus input, supports multiple per side, works with ButtonGroup
+- Replace: Input with separate buttons/icons, manual wrappers
+
+### Item
+
+[item.tsx](mdc:src/components/ui/item.tsx) - Flexible content container. Lists, cards, menus, profile items, settings sections, form fields (Radio/Checkbox/Switch/Select)
+
+- Components: `Item`, `ItemGroup`, `ItemSeparator`, `ItemMedia`, `ItemContent`, `ItemTitle`, `ItemDescription`, `ItemActions`, `ItemHeader`, `ItemFooter`
+- Variants: `default` (non-interactive items), `ghost` (interactive items with asChild), `outline`, `muted`, `destructive` | Sizes: `default`, `sm`
+- `ItemMedia` variants: `default`, `icon` (bordered icon container), `image` (rounded image container)
+- Use `asChild` with `variant="ghost"` to render as link/button (hover/focus states applied)
+- **ItemGroup separator prop**: CRITICAL - Use `separator` boolean prop for automatic separators between items
+- **When to use ItemGroup**: ALL content EXCEPT Input/Textarea - profile lists, user lists, contact lists, dropdown menus, popover menus, command palette items, notification items, search results, settings sections, team members, form fields (Radio, Checkbox, Switch, Select), any content with media+title+description pattern
+- **Critical patterns**:
+  - ItemGroup for lists: `<ItemGroup separator>{items.map((item) => <Item key={item.id}>...</Item>)}</ItemGroup>`
+  - ItemGroup for form fields: `<ItemGroup separator><Item><Radio /></Item><Item><Checkbox /></Item></ItemGroup>`
+  - Rich menu items: Wrap Item with `size="sm"` inside DropdownMenuItem/PopoverContent
+- **Replace**: Custom flex containers with hardcoded spacing/borders, plain text menu items, manual separator divs
+- **ItemGroup vs FieldGroup**: Use ItemGroup for ALL content EXCEPT Input/Textarea. Use FieldGroup ONLY for Input/Textarea fields.
+- **Item vs Field**: Use Field (from Form) if you need to display a form input (checkbox, input, radio, select). If you only need to display content (title, description, actions), use Item.
+
+### Kbd
+
+[kbd.tsx](mdc:src/components/ui/kbd.tsx) - Keyboard shortcut indicators. Keyboard shortcuts in buttons, tooltips, command palette, help docs
+
+- Use in buttons, tooltips, command palette, search inputs, help docs
+
+### Section
+
+[section.tsx](mdc:src/components/ui/section.tsx) - Settings/configuration layout container. Settings pages, configuration screens, account management, grouped sections
+
+- Components: `Section`, `SectionTitle`, `SectionDescription`
+- Use with Item components for structured settings pages
+- Critical: Supports inline links in SectionDescription
+- Replace: Card-based settings layouts, custom section wrappers
+
+# Component Patterns
+
+## Design Tokens
+
+Design tokens are semantic CSS variables that separate theme, context, and usage. Rather than hardcoding colors, use a semantic naming convention that creates layers of abstraction.
+
+### Variable Architecture
+
+```css
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+}
+```
+
+Common tokens:
+
+- `--background` - Page background color
+- `--foreground` - General text color
+- `--primary` - Main brand color
+- `--primary-foreground` - Text color against primary
+
+This creates a maintainable, flexible system that scales across applications.
+
+## Data Attribute Styling Patterns
+
+Shadcn/ui and Radix UI components use data attributes (`data-state`, `data-slot`) to enable flexible styling without prop explosion. Use these patterns when working with components that expose data attributes.
+
+### Styling with data-state
+
+Components expose their state through `data-state` attributes. Use Tailwind's arbitrary variant syntax to style based on component state:
+
+```tsx
+<Dialog
+  className={cn(
+    // Base styles
+    "rounded-lg border p-4",
+    // State-based styles
+    "data-[state=open]:animate-in data-[state=open]:fade-in",
+    "data-[state=closed]:animate-out data-[state=closed]:fade-out",
+    // Multiple attributes
+    "data-[state=open][data-side=top]:slide-in-from-top-2"
+  )}
+/>
+```
+
+For commonly-used states, extend Tailwind's configuration:
+
+```js title="tailwind.config.js"
+module.exports = {
+  theme: {
+    extend: {
+      data: {
+        open: 'state="open"',
+        closed: 'state="closed"',
+        active: 'state="active"',
+      },
+    },
+  },
+};
+```
+
+Then use shorthand:
+
+```tsx
+<Dialog className="data-open:opacity-100 data-closed:opacity-0" />
+```
+
+### Radix UI Data Attributes
+
+Radix UI automatically applies data attributes to its primitives:
+
+```tsx
+import * as Dialog from "@radix-ui/react-dialog";
+
+<Dialog.Root>
+  <Dialog.Trigger />
+  <Dialog.Portal>
+    {/* Radix automatically adds data-state="open" | "closed" */}
+    <Dialog.Overlay className="data-[state=open]:animate-in data-[state=closed]:animate-out" />
+    <Dialog.Content className="data-[state=open]:fade-in data-[state=closed]:fade-out" />
+  </Dialog.Portal>
+</Dialog.Root>;
+```
+
+Common Radix data attributes:
+
+- `data-state` - open/closed, active/inactive, on/off
+- `data-side` - top/right/bottom/left (for positioned elements)
+- `data-align` - start/center/end (for positioned elements)
+- `data-orientation` - horizontal/vertical
+- `data-disabled` - present when disabled
+- `data-placeholder` - present when showing placeholder
+
+### Common State Patterns
+
+Use data attributes for all kinds of component state:
+
+```tsx
+// Open/closed state
+<Accordion data-state={isOpen ? 'open' : 'closed'} />
+
+// Selected state
+<Tab data-state={isSelected ? 'active' : 'inactive'} />
+
+// Disabled state (in addition to disabled attribute)
+<Button data-disabled={isDisabled} disabled={isDisabled} />
+
+// Loading state
+<Button data-loading={isLoading} />
+
+// Orientation
+<Slider data-orientation="horizontal" />
+
+// Side/position
+<Tooltip data-side="top" />
+```
+
+### Using data-slot for Component Targeting
+
+Components use `data-slot` attributes for stable identifiers that can be targeted by parents.
+
+**Using `has-[]` for parent-aware styling:**
+
+```tsx
+<form
+  data-slot="form"
+  className={cn(
+    "space-y-4",
+    // Adjust spacing when specific slots are present
+    "has-[>[data-slot=form-section]]:space-y-6",
+    "has-[>[data-slot=inline-fields]]:space-y-2",
+    // Style based on slot states
+    "has-[[data-slot=submit-button][data-loading=true]]:opacity-50"
+  )}
+>
+  {children}
+</form>
+```
+
+**Using `[&_]` for descendant targeting:**
+
+```tsx
+<div
+  data-slot="card"
+  className={cn(
+    "rounded-lg border p-4",
+    // Target any descendant with data-slot
+    "[&_[data-slot=card-header]]:mb-4",
+    "[&_[data-slot=card-title]]:text-lg [&_[data-slot=card-title]]:font-semibold",
+    "[&_[data-slot=card-description]]:text-muted-foreground [&_[data-slot=card-description]]:text-sm",
+    "[&_[data-slot=card-footer]]:mt-4 [&_[data-slot=card-footer]]:border-t [&_[data-slot=card-footer]]:pt-4"
+  )}
+>
+  {children}
+</div>
+```
+
+### Global CSS with data-slot
+
+Use global CSS for theme-wide component styling:
+
+```css title="globals.css"
+/* Style all buttons within forms */
+[data-slot="form"] [data-slot="button"] {
+  @apply w-full @xl:w-auto;
+}
+
+/* Style submit buttons specifically */
+[data-slot="form"] [data-slot="submit-button"] {
+  @apply bg-primary text-primary-foreground;
+}
+
+/* Adjust inputs within inline layouts */
+[data-slot="inline-fields"] [data-slot="input"] {
+  @apply flex-1;
+}
+
+/* Style based on state combinations */
+[data-slot="dialog"][data-state="open"] [data-slot="dialog-content"] {
+  @apply animate-in fade-in;
+}
+```
+
+### data-slot Naming Conventions
+
+Follow these conventions for consistent `data-slot` naming:
+
+1. **Use kebab-case** - `data-slot="form-field"` not `data-slot="formField"`
+2. **Be specific** - `data-slot="submit-button"` not `data-slot="button"`
+3. **Match component purpose** - Name reflects what it does, not how it looks
+4. **Avoid implementation details** - `data-slot="user-avatar"` not `data-slot="rounded-image"`
+
+```tsx
+// ✅ Good examples
+data-slot="search-input"
+data-slot="navigation-menu"
+data-slot="error-message"
+data-slot="submit-button"
+data-slot="card-header"
+
+// ❌ Avoid
+data-slot="input"           // Too generic
+data-slot="blueButton"      // Includes styling
+data-slot="div-wrapper"     // Implementation detail
+data-slot="mainContent"     // Use kebab-case
+```
+
+### When to Use Data Attributes vs Props
+
+**Use `data-state` for:**
+
+- Visual states (open/closed, active/inactive, loading)
+- Layout states (orientation, side, alignment)
+- Interaction states (hover, focus, disabled when styling children)
+
+**Use `data-slot` for:**
+
+- Component identification with stable identifiers
+- Parent-child composition patterns
+- Theme-wide component styling
+- Variant-independent targeting
+
+**Use props for:**
+
+- Variants (primary, secondary, destructive)
+- Sizes (sm, md, lg)
+- Behavioral configuration (controlled/uncontrolled, defaults)
+- Event handlers (onClick, onChange)
+
+**Combined example:**
+
+```tsx
+const Button = ({ variant = 'primary', size = 'md', loading, disabled, className, ...props }) => (
+  <button
+    data-slot="button"
+    data-loading={loading}
+    data-disabled={disabled}
+    className={cn(buttonVariants({ variant, size }), className)}
+    disabled={disabled}
+    {...props}
+  />
+);
+
+// Usage
+<Button variant="primary" size="lg">Submit</Button>
+<form className="[&_[data-slot=button]]:w-full"><Button>Submit</Button></form>
+<Button loading={isLoading} className="data-[loading=true]:opacity-50">Submit</Button>
+```
+
+# React Compiler
+
+## Context
+
+This project uses React Compiler, which automatically optimizes your React code through automatic memoization at build time. Manual memoization with `useMemo`, `useCallback`, and `React.memo` is rarely needed and often introduces unnecessary complexity.
+
+## Core Principle
+
+**Write clean, idiomatic React code. Let the compiler optimize it.**
+
+React Compiler automatically applies optimal memoization based on data flow analysis. It can even optimize cases that manual memoization cannot handle, such as memoizing values after conditional returns or within complex control flow.
+
+## Requirements
+
+### DO NOT Use Manual Memoization
+
+- **NEVER** wrap components with `React.memo` unless you have a specific, documented reason
+- **NEVER** use `useMemo` for performance optimization - the compiler handles this
+- **NEVER** use `useCallback` for performance optimization - the compiler handles this
+- **NEVER** create inline functions and then wrap them in `useCallback` - this is redundant
+
+### When Manual Memoization IS Acceptable
+
+Manual memoization should only be used as an **escape hatch** for precise control in specific scenarios:
+
+1. **Effect Dependencies**: When a memoized value is used as a dependency in `useEffect` to prevent unnecessary effect re-runs
+2. **External Library Integration**: When passing callbacks to non-React libraries that don't handle reference changes well
+3. **Precise Control**: When you have profiled and verified that the compiler's automatic memoization is insufficient for a specific hotspot
+
+**CRITICAL**: If you use manual memoization, you MUST document why with a comment explaining the specific reason.
+
+## Examples
+
+### Component Memoization
+
+<example>
+```tsx
+// ✅ Good - Let the compiler optimize
+function ExpensiveComponent({ data, onClick }) {
+  const processedData = expensiveProcessing(data);
+
+const handleClick = (item) => {
+onClick(item.id);
+};
+
+return (
+
+<div>
+{processedData.map(item => (
+<Item key={item.id} onClick={() => handleClick(item)} />
+))}
+</div>
+);
+}
+
+````
+The compiler automatically memoizes components and values, ensuring optimal re-rendering without manual intervention.
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ Avoid - Unnecessary manual memoization
+const ExpensiveComponent = memo(function ExpensiveComponent({ data, onClick }) {
+  const processedData = useMemo(() => {
+    return expensiveProcessing(data);
+  }, [data]);
+
+  const handleClick = useCallback((item) => {
+    onClick(item.id);
+  }, [onClick]);
+
+  return (
+    <div>
+      {processedData.map(item => (
+        <Item key={item.id} onClick={() => handleClick(item)} />
+      ))}
+    </div>
+  );
+});
+````
+
+This manual memoization is redundant with React Compiler and adds unnecessary complexity.
+</example>
+
+### Event Handlers
+
+<example>
+```tsx
+// ✅ Good - Simple event handler
+function TodoList({ todos, onToggle }) {
+  const handleToggle = (id) => {
+    onToggle(id);
+  };
+
+return (
+
+<ul>
+{todos.map(todo => (
+<TodoItem
+key={todo.id}
+todo={todo}
+onToggle={() => handleToggle(todo.id)}
+/>
+))}
+</ul>
+);
+}
+
+````
+The compiler optimizes this correctly without `useCallback`.
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ Avoid - Unnecessary useCallback
+function TodoList({ todos, onToggle }) {
+  const handleToggle = useCallback((id) => {
+    onToggle(id);
+  }, [onToggle]);
+
+  return (
+    <ul>
+      {todos.map(todo => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          onToggle={() => handleToggle(todo.id)}
+        />
+      ))}
+    </ul>
+  );
+}
+````
+
+The `useCallback` is unnecessary and creates a subtle bug: the inline arrow function `() => handleToggle(todo.id)` creates a new function on every render anyway, breaking the memoization.
+</example>
+
+### Computed Values
+
+<example>
+```tsx
+// ✅ Good - Direct computation
+function UserProfile({ user }) {
+  const fullName = `${user.firstName} ${user.lastName}`;
+  const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+
+return (
+
+<div>
+<h1>{fullName}</h1>
+<Avatar initials={initials} />
+</div>
+);
+}
+
+````
+The compiler automatically memoizes these computations when appropriate.
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ Avoid - Unnecessary useMemo
+function UserProfile({ user }) {
+  const fullName = useMemo(
+    () => `${user.firstName} ${user.lastName}`,
+    [user.firstName, user.lastName]
+  );
+
+  const initials = useMemo(
+    () => `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
+    [user.firstName, user.lastName]
+  );
+
+  return (
+    <div>
+      <h1>{fullName}</h1>
+      <Avatar initials={initials} />
+    </div>
+  );
+}
+````
+
+These `useMemo` calls are redundant and make the code harder to read.
+</example>
+
+### Conditional Memoization
+
+<example>
+```tsx
+// ✅ Good - The compiler can memoize after early returns
+function ThemeProvider({ children, theme }) {
+  if (!children) {
+    return null;
+  }
+
+// The compiler memoizes this even after the conditional return
+const mergedTheme = mergeTheme(theme, defaultTheme);
+
+return (
+<ThemeContext.Provider value={mergedTheme}>
+{children}
+</ThemeContext.Provider>
+);
+}
+
+````
+The compiler can memoize values after conditional returns, which is impossible with manual memoization.
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ Avoid - Attempting manual memoization with early returns
+function ThemeProvider({ children, theme }) {
+  const mergedTheme = useMemo(
+    () => mergeTheme(theme, defaultTheme),
+    [theme]
+  );
+
+  if (!children) {
+    return null;
+  }
+
+  return (
+    <ThemeContext.Provider value={mergedTheme}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+````
+
+This forces the expensive merge to run even when returning null, whereas the compiler optimizes this correctly.
+</example>
+
+### Acceptable Use Case: Effect Dependencies
+
+<example>
+```tsx
+// ✅ Acceptable - useMemo for effect dependency control
+function DataFetcher({ filters }) {
+  // Documented reason: Prevent effect from re-running when filters object
+  // reference changes but values remain the same
+  const stableFilters = useMemo(
+    () => ({ ...filters }),
+    [filters.category, filters.status, filters.dateRange]
+  );
+
+useEffect(() => {
+fetchData(stableFilters);
+}, [stableFilters]);
+
+// ...
+}
+
+````
+This is an acceptable escape hatch with a clear, documented reason.
+</example>
+
+### Acceptable Use Case: External Library Integration
+
+<example>
+```tsx
+// ✅ Acceptable - useCallback for third-party library
+function MapComponent({ markers, onMarkerClick }) {
+  // Documented reason: GoogleMaps library doesn't handle reference changes well
+  // and re-attaches all event listeners on every render
+  const handleMarkerClick = useCallback((marker) => {
+    onMarkerClick(marker.id);
+  }, [onMarkerClick]);
+
+  useEffect(() => {
+    markers.forEach(marker => {
+      googleMapsApi.addClickListener(marker, handleMarkerClick);
+    });
+  }, [markers, handleMarkerClick]);
+
+  // ...
+}
+````
+
+This is an acceptable escape hatch for external library integration.
+</example>
+
+## Effects
+
+### Principle
+
+- Treat Effects as an escape hatch for synchronizing React with external systems (DOM APIs, network, imperative libraries). If no external system is involved, keep the logic in render or event handlers.
+- Rendering must stay pure. Event-driven work (buying, saving, submitting) belongs in the handler that caused it, not in an Effect.
+- React Compiler assumes idiomatic React semantics. Avoid manual memoization tricks to influence dependency stability; rely on actual values and let the compiler hoist what it can.
+- For mixing reactive and non-reactive logic, see [Separating Events from Effects](#separating-events-from-effects) for `useEffectEvent` patterns.
+
+### When to Add an Effect
+
+- Bridging React state to imperative APIs (media playback, map widgets, modals) where you must call imperative methods after paint.
+- Subscribing to external stores or browser events; prefer `useSyncExternalStore` when possible so React manages resubscription for you.
+- Performing work that must run because the component is visible (e.g., logging an analytics impression) with an understanding that it will run twice in development.
+
+### When _Not_ to Add an Effect
+
+- Deriving or filtering data for rendering. Compute it inline during render; React Compiler memoizes expensive branches.
+- Resetting or coordinating state between components. Use keys, derive state from props, or lift state up instead of chaining Effects.
+- Handling user interactions. Run imperative logic inside the event handler so React can batch updates and you avoid double execution.
+- Preventing Strict Mode double-invocation. Never guard Effects with refs or flags to stop re-execution; fix the underlying cleanup instead.
+
+### Cleanup and Strict Mode
+
+- Always return a cleanup when the Effect allocates resources (connections, listeners, timers). React calls cleanup before re-running the Effect and on unmount.
+- Expect every Effect to mount → cleanup → mount in development. Production runs once, but development ensures your Effect is resilient.
+- Avoid side-stepping cleanup by storing mutable singletons in refs. This leaves background work running across navigations and breaks invariants.
+
+### React Compiler Considerations
+
+- Because the compiler stabilizes values for you, do not introduce `useMemo`/`useCallback` purely to satisfy Effect dependency linting. Refactor the Effect so it depends on real inputs.
+- Let the dependency array express actual inputs. Suppressing ESLint warnings or omitting deps makes compiler output unreliable.
+- Prefer custom hooks (`useData`, `useOnlineStatus`) to bundle complex Effect logic once. This keeps call sites simple and lets the compiler optimize the hook body.
+
+<example>
+```tsx
+// ✅ Effect that syncs with an external API and cleans up
+export function VideoPlayer({ src, isPlaying }: Props) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+
+useEffect(() => {
+const node = ref.current;
+if (!node) {
+return;
+}
+
+    if (isPlaying) {
+      void node.play();
+    } else {
+      node.pause();
+    }
+
+    return () => {
+      node.pause();
+    };
+
+}, [isPlaying]);
+
+return <video ref={ref} src={src} playsInline loop />;
+}
+
+````
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ Avoid - deriving state and triggering events inside an Effect
+function ProductPage({ product }: Props) {
+  const [isInCart, setIsInCart] = useState(false);
+
+  useEffect(() => {
+    if (product.isInCart) {
+      setIsInCart(true); // Derivation should happen during render
+      notifyAdd(product.id); // Event logic belongs in the click handler
+    }
+  }, [product]);
+  // ...
+}
+````
+
+This mixes reactive synchronization with event-driven logic. Use `useEffectEvent` if you need to read current props without re-running the Effect. See [Separating Events from Effects](#separating-events-from-effects).
+</example>
+
+<critical>
+  - Use Effects only for external synchronization; keep render pure and events in handlers.
+  - Always implement cleanup so mount → cleanup → mount cycles in development behave identically to a single mount in production.
+  - Do not fight dependency linting with manual memoization; rely on actual inputs and let React Compiler optimize the rest.
+  - Prefer purpose-built hooks (`useSyncExternalStore`, custom hooks) for shared subscription or fetching logic.
+</critical>
+
+## Separating Events from Effects
+
+### Principle
+
+Event handlers and Effects serve different purposes in React:
+
+- **Event handlers**: Run in response to specific user interactions. Non-reactive logic.
+- **Effects**: Run when synchronization with external systems is needed. Reactive to dependencies.
+- **Effect Events** (`useEffectEvent`): Extract non-reactive logic from Effects when you need both behaviors.
+
+**CRITICAL DUAL-USE PATTERN**: When a function is needed in BOTH event handlers/props AND useEffect:
+
+1. Create a **regular function** for props/event handlers
+2. Wrap it in **`useEffectEvent`** for use inside Effects only
+3. Never pass Effect Events as props - they can ONLY be called inside Effects
+
+### Choosing Between Event Handlers and Effects
+
+Ask: "Does this run because of a specific interaction, or because the component needs to stay synchronized?"
+
+<example>
+```tsx
+// ✅ Good - Combines both patterns appropriately
+function ChatRoom({ roomId }) {
+  const [message, setMessage] = useState('');
+
+// Event handler: runs on user click
+function handleSendClick() {
+sendMessage(message);
+}
+
+// Effect: keeps connection synchronized with roomId
+useEffect(() => {
+const connection = createConnection(serverUrl, roomId);
+connection.connect();
+return () => connection.disconnect();
+}, [roomId]);
+
+return (
+<>
+
+<h1>Welcome to the {roomId} room!</h1>
+<input value={message} onChange={e => setMessage(e.target.value)} />
+<button onClick={handleSendClick}>Send</button>
+</>
+);
+}
+
+````
+</example>
+
+### Reactive Values and Reactive Logic
+
+**Reactive values** (props, state, derived values) can change on re-render. **Reactive logic** responds to these changes:
+
+- **Event handlers are NOT reactive**: Read reactive values but don't re-run when they change
+- **Effects ARE reactive**: Must declare reactive values as dependencies and re-run when they change
+
+### Extracting Non-Reactive Logic with useEffectEvent
+
+Use `useEffectEvent` to mix reactive and non-reactive logic:
+
+<example>
+```tsx
+// ❌ Without useEffectEvent - Reconnects on theme change
+function ChatRoom({ roomId, theme }) {
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.on('connected', () => {
+      showNotification('Connected!', theme); // Makes Effect reactive to theme
+    });
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId, theme]); // ❌ Unnecessary reconnection
+
+  return <h1>Welcome to the {roomId} room!</h1>;
+}
+
+// ✅ With useEffectEvent - Only reconnects on roomId change
+function ChatRoom({ roomId, theme }) {
+  const onConnected = useEffectEvent(() => {
+    showNotification('Connected!', theme); // Reads current theme, not reactive
+  });
+
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.on('connected', onConnected);
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId]); // ✅ Only roomId
+
+  return <h1>Welcome to the {roomId} room!</h1>;
+}
+````
+
+</example>
+
+### Reading Latest Props and State with Effect Events
+
+Effect Events always see latest values without causing re-runs. Pass reactive values as arguments for clarity:
+
+<example>
+```tsx
+// ✅ Common patterns with useEffectEvent
+
+// 1. Page visit logging - Only logs when url changes, not cart
+function Page({ url }) {
+const { itemCount } = useCart();
+
+const onVisit = useEffectEvent((visitedUrl) => {
+logVisit(visitedUrl, itemCount); // Reads latest itemCount
+});
+
+useEffect(() => {
+onVisit(url); // Pass url as argument for clarity
+}, [url]);
+}
+
+// 2. Event listener with current state
+function useEventListener(emitter, eventName, handler) {
+const stableHandler = useEffectEvent(handler);
+
+useEffect(() => {
+emitter.on(eventName, stableHandler);
+return () => emitter.off(eventName, stableHandler);
+}, [emitter, eventName]); // Handler always sees current state
+}
+
+// 3. Async operations - Stable trigger value, latest context
+function AnalyticsPage({ url }) {
+const { itemCount } = useCart();
+
+const onVisit = useEffectEvent((visitedUrl) => {
+setTimeout(() => {
+logVisit(visitedUrl, itemCount); // visitedUrl: stable, itemCount: latest
+}, 5000);
+});
+
+useEffect(() => {
+onVisit(url);
+}, [url]);
+}
+
+````
+</example>
+
+### Critical Rules and Limitations
+
+**Never suppress the dependency linter** - use `useEffectEvent` instead:
+
+<example>
+```tsx
+// ❌ Suppressing linter creates stale closure
+function Component() {
+  const [canMove, setCanMove] = useState(true);
+
+  function handleMove(e) {
+    if (canMove) { // Always sees initial value!
+      setPosition({ x: e.clientX, y: e.clientY });
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('pointermove', handleMove);
+    return () => window.removeEventListener('pointermove', handleMove);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+// ✅ Use Effect Event instead
+function Component() {
+  const [canMove, setCanMove] = useState(true);
+
+  const onMove = useEffectEvent((e) => {
+    if (canMove) { // Always sees current value
+      setPosition({ x: e.clientX, y: e.clientY });
+    }
+  });
+
+  useEffect(() => {
+    window.addEventListener('pointermove', onMove);
+    return () => window.removeEventListener('pointermove', onMove);
+  }, []);
+}
+````
+
+</example>
+
+**Effect Event limitations**:
+
+**CRITICAL**: Effect Events can ONLY be called from inside Effects (or other Effect Events). They:
+
+1. **CANNOT be returned from hooks** - ESLint will error if you try to return them
+2. **CANNOT be passed to other components or hooks** - ESLint will error if you try to pass them
+3. **CANNOT be passed as props** - Props must receive regular functions, not Effect Events
+4. **Must be declared locally** where the Effect uses them
+5. **Keep close to the Effect** using them
+
+### Pattern: Function Used in Both Props AND Effects
+
+**When a function is needed in BOTH event handlers/props AND useEffect:**
+
+1. Create a regular function for props/event handler use
+2. Wrap it in `useEffectEvent` for Effect use only
+3. Use the regular function in props, Effect Event in the Effect
+
+<example>
+```tsx
+// ✅ CORRECT - Dual use: props and Effect
+function Component({ editingMessage }) {
+  const store = useStore();
+
+// Regular function for props/event handlers
+const handleCancelEdit = () => {
+store.set('editingMessage', null);
+store.set('input', '');
+};
+
+// Effect Event wrapper for Effect use
+const onCancelEdit = useEffectEvent(handleCancelEdit);
+
+// Effect uses Effect Event version
+useEffect(() => {
+const handleKeyDown = (e: KeyboardEvent) => {
+if (e.key === 'Escape' && editingMessage) {
+onCancelEdit(); // Use Effect Event here
+}
+};
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+
+}, [editingMessage]); // No handleCancelEdit in deps!
+
+// Props use regular function
+return <Button onClick={handleCancelEdit}>Cancel</Button>;
+}
+
+````
+</example>
+
+<example type="invalid">
+```tsx
+// ❌ WRONG - Passing Effect Event as prop
+function Component() {
+  const handleClick = useEffectEvent(() => {
+    // ...
+  });
+
+  return <Button onClick={handleClick} />; // ESLint error!
+}
+
+// ❌ WRONG - No Effect Event wrapper causes stale closure
+function Component({ editingMessage }) {
+  const handleCancelEdit = () => {
+    // Without useCallback, this recreates every render
+    // causing the Effect to re-run constantly
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleCancelEdit(); // Stale closure!
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleCancelEdit]); // Effect re-runs every render!
+}
+````
+
+</example>
+
+<example>
+```tsx
+// ❌ WRONG - Cannot return Effect Events from hooks
+function useTimer(callback, delay) {
+  const onTick = useEffectEvent(callback);
+
+useEffect(() => {
+const id = setInterval(onTick, delay);
+return () => clearInterval(id);
+}, [delay]);
+
+return onTick; // ❌ ESLint error: Effect Events cannot be returned
+}
+
+// ❌ WRONG - Cannot pass Effect Events to components
+function Timer() {
+const onTick = useEffectEvent(() => setCount(count + 1));
+return <CustomTimer onTick={onTick} />; // ❌ ESLint error: Effect Events cannot be passed
+}
+
+// ✅ CORRECT - Effect Events only used inside Effects
+function useTimer(callback, delay) {
+const onTick = useEffectEvent(callback);
+
+useEffect(() => {
+const id = setInterval(onTick, delay);
+return () => clearInterval(id);
+}, [delay]);
+// No return - Effect Event stays internal
+}
+
+// ✅ CORRECT - Return regular function, use Effect Event internally
+function useScrollCheck(target, enabled) {
+const canCheck = useDebounce(enabled, 100);
+
+// Regular function for external use
+const scrollCheck = () => {
+if (!canCheck || !target) return;
+// ... scroll check logic
+};
+
+// Effect Event wrapper for internal Effect use
+const onScrollCheck = useEffectEvent(scrollCheck);
+
+useEffect(() => {
+onScrollCheck(); // Call Effect Event inside Effect
+}, [canCheck, target]);
+
+return { scrollCheck }; // Return regular function, not Effect Event
+}
+
+````
+
+</example>
+
+<critical>
+  - Use Effect Events to separate reactive and non-reactive logic in Effects
+  - Effect Events always see latest props/state without causing Effect re-runs
+  - NEVER suppress dependency linter - use useEffectEvent instead
+  - Only call Effect Events from inside Effects, never pass to other components or as props
+  - **Dual-use pattern**: If a function is needed in BOTH props/handlers AND Effects, create TWO versions: regular function for props, Effect Event wrapper for Effects
+  - Pass reactive values as arguments to Effect Events for clarity
+  - Common patterns: event listeners with current state, notifications with current theme, analytics with current context, keyboard shortcuts that need latest state
+</critical>
+
+## Common Patterns
+
+### Lists and Iteration
+
+<example>
+```tsx
+// ✅ Good - Clean iteration
+function ProductList({ products, onAddToCart }) {
+  return (
+    <div>
+      {products.map(product => {
+        const discountedPrice = product.price * (1 - product.discount);
+
+        return (
+          <ProductCard
+            key={product.id}
+            product={product}
+            finalPrice={discountedPrice}
+            onAddToCart={() => onAddToCart(product.id)}
+          />
+        );
+      })}
+    </div>
+
+);
+}
+
+````
+
+The compiler optimizes this correctly, including the computed `discountedPrice`.
+</example>
+
+### Derived State
+
+<example>
+```tsx
+// ✅ Good - Direct derivation
+function OrderSummary({ items }) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
+
+return (
+
+<div>
+<div>Subtotal: ${subtotal.toFixed(2)}</div>
+<div>Tax: ${tax.toFixed(2)}</div>
+<div>Total: ${total.toFixed(2)}</div>
+</div>
+);
+}
+
+```
+
+Let the compiler handle memoization of these calculations.
+</example>
+
+## Migration Guide
+
+### Removing Existing Memoization
+
+If you're working with existing code that has manual memoization:
+
+1. **Remove it** - React Compiler handles optimization automatically
+2. **Test thoroughly** - Verify functionality after removal
+3. **Trust the compiler** - It applies optimal memoization based on data flow analysis
+4. **Only keep if documented** - Manual memoization should only remain for the specific escape hatch scenarios documented above
+
+The compiler's output is designed to work with clean, idiomatic React code. Removing manual memoization improves readability and lets the compiler do its job correctly.
+
+### Adding New Code
+
+For all new code:
+
+- Write clean, idiomatic React without manual memoization
+- Let the compiler optimize automatically
+- Only add manual memoization if you have a specific, documented reason
+- Prefer simplicity over premature optimization
+
+<critical>
+  - DO NOT use `React.memo`, `useMemo`, or `useCallback` for performance optimization
+  - React Compiler automatically applies optimal memoization
+  - Manual memoization should only be used as a documented escape hatch
+  - Write clean, idiomatic React and let the compiler do its job
+  - The compiler can optimize cases that manual memoization cannot
+</critical>
+```

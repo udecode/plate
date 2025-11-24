@@ -1,13 +1,14 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Not needed in your project
-  turbopack: { root: __dirname },
+  // TEMPLATE ONLY
+  turbopack: { root: import.meta.dirname },
   reactCompiler: true,
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
 
+  // TEMPLATE ONLY
   async redirects() {
     return [
       {

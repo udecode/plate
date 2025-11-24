@@ -1,12 +1,11 @@
 'use client';
 
-import type { ExtendConfig, Path } from 'platejs';
-
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
   getDraftCommentKey,
 } from '@platejs/comment';
+import type { ExtendConfig, Path } from 'platejs';
 import { isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 

@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/yarn-nm-install
 
       - name: 🔬 Lint
-        run: yarn check
+        run: yarn lint
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4

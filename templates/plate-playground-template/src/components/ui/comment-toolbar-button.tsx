@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { MessageSquareTextIcon } from 'lucide-react';
 import { useEditorRef } from 'platejs/react';
 
@@ -14,10 +12,10 @@ export function CommentToolbarButton() {
 
   return (
     <ToolbarButton
+      data-plate-prevent-overlay
       onClick={() => {
         editor.getTransforms(commentPlugin).comment.setDraft();
       }}
-      data-plate-prevent-overlay
       tooltip="Comment"
     >
       <MessageSquareTextIcon />
