@@ -10,7 +10,7 @@
     "lint": "biome check . && eslint",
     "lint:fix": "biome check . --fix",
     "preview": "next build && next start",
-    "postinstall": "bunx @udecode/ruler@latest apply",
+    "postinstall": "bunx skiller@latest apply",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
@@ -36,8 +36,8 @@
     "@types/node": "^24.10.1",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "@typescript-eslint/parser": "^8.47.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "7.0.1",
     "lefthook": "^2.0.4",

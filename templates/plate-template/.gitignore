@@ -2,6 +2,7 @@
 
 .vscode/*
 !.vscode/settings.json
+!.vscode/extensions.json
 
 # dependencies
 /node_modules
@@ -49,7 +50,7 @@ next-env.d.ts
 CLAUDE.local.md
 .codex
 
-# START Ruler Generated Files
+# START Skiller Generated Files
 /.claude/skills
 /.codex/config.toml
 /.cursor/mcp.json
@@ -58,4 +59,4 @@ CLAUDE.local.md
 /.skillz
 /AGENTS.md
 /CLAUDE.md
-# END Ruler Generated Files
+# END Skiller Generated Files

@@ -69,6 +69,7 @@ bower_components
 *.sublime-workspace
 .vscode/*
 !.vscode/settings.json
+!.vscode/extensions.json
 
 # Logs
 tracing.json
@@ -132,9 +133,8 @@ packages/plate/docs/
 
 CLAUDE.local.md
 .codex
-.mcp.json
 
-# START Ruler Generated Files
+# START Skiller Generated Files
 /.claude/skills
 /.codex/config.toml
 /.cursor/mcp.json
@@ -143,4 +143,4 @@ CLAUDE.local.md
 /.skillz
 /AGENTS.md
 /CLAUDE.md
-# END Ruler Generated Files
+# END Skiller Generated Files

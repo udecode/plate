@@ -1,13 +1,7 @@
-# Ruler Configuration for Informed Medical
-# This project uses Ruler to manage AI agent instructions
-# Source: .ruler/ directory | Generated: root AGENTS.md, CLAUDE.md, etc.
-
 # Default agents to apply when --agents flag is not specified
 default_agents = ["claude", "codex", "cursor"]
 
 # --- Fork Configuration ---
-
-root_folder = ".claude"
 
 [rules]
 merge_strategy = "cursor"
@@ -17,7 +11,6 @@ enabled = false
 
 # --- Global Configuration ---
 
-# Skills support (manages .ruler/skills/ → .claude/skills/ propagation)
 [skills]
 enabled = true
 generate_from_rules = true

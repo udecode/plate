@@ -54,16 +54,6 @@
           }
         ]
       }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx ultracite fix"
-          }
-        ]
-      }
     ]
   }
 }

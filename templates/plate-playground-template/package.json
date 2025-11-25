@@ -9,7 +9,7 @@
     "dev": "next dev",
     "lint": "biome check . && eslint",
     "lint:fix": "biome check . --fix",
-    "postinstall": "bunx @udecode/ruler@latest apply",
+    "postinstall": "bunx skiller@latest apply",
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit"
@@ -63,7 +63,6 @@
     "@radix-ui/react-toolbar": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@udecode/cn": "^52.0.1",
-    "@udecode/ruler": "^0.4.3",
     "@uploadthing/react": "7.3.3",
     "ai": "5.0.28",
     "class-variance-authority": "^0.7.1",
