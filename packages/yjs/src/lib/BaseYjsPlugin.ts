@@ -205,7 +205,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       }
       // Apply initial value to Y.doc if provided
       // Use loose equality (!=) to check for both null and undefined
-      if (value != null) {
+      if (value !== null) {
         let initialNodes = value as Value;
 
         if (typeof value === 'string') {
