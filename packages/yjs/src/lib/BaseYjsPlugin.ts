@@ -126,7 +126,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       try {
         YjsEditor.disconnect(editor as any);
-      } catch (_error) {}
+      } catch {}
     },
     /**
      * Disconnect from all providers or specific provider types. For WebRTC
@@ -191,7 +191,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       const options = getOptions();
       const {
-        _providers,
         awareness,
         providers: providerConfigsOrInstances = [],
         sharedType: customSharedType,
@@ -204,9 +203,11 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
           'No providers specified. Please provide provider configurations or instances in the `providers` array.'
         );
       }
-
-      if (value !== null) {
+      // Apply initial value to Y.doc if provided
+      // Use loose equality (!=) to check for both null and undefined
+      if (value != null) {
         let initialNodes = value as Value;
+
         if (typeof value === 'string') {
           initialNodes = editor.api.html.deserialize({
             element: value,
@@ -219,7 +220,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         if (!initialNodes || initialNodes?.length === 0) {
           initialNodes = editor.api.create.value();
         }
-
         // Use custom sharedType if provided, otherwise use default 'content'
         if (customSharedType) {
           // Apply initial value directly to the custom shared type
@@ -242,19 +242,14 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       // Final providers array that will contain both configured and custom providers
       const finalProviders: UnifiedProvider[] = [];
 
-      // Connect the YjsEditor first to set up slate-yjs bindings.
-      YjsEditor.connect(editor as any);
-
-      editor.tf.init({
-        autoSelect,
-        selection,
-        // Skipped since YjsEditor.connect already normalizes the editor
-        shouldNormalizeEditor: false,
-        value: null,
-        onReady,
+      // Track if first sync has occurred (to initialize editor after sync)
+      let hasSynced = false;
+      let syncResolve: (() => void) | null = null;
+      const syncPromise = new Promise<void>((resolve) => {
+        syncResolve = resolve;
       });
 
-      // Then process and create providers
+      // Process and create providers FIRST (before connecting YjsEditor)
       for (const item of providerConfigsOrInstances) {
         if (isProviderConfig(item)) {
           // It's a configuration object, create the provider
@@ -264,6 +259,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
             console.warn(
               `[yjs] No options provided for provider type: ${type}`
             );
+
             continue;
           }
 
@@ -287,6 +283,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
                 const hasConnectedProvider = _providers.some(
                   (provider) => provider.isConnected
                 );
+
                 if (!hasConnectedProvider) {
                   setOption('_isConnected', false);
                 }
@@ -297,6 +294,12 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
               onSyncChange: (isSynced) => {
                 getOptions().onSyncChange?.({ isSynced, type });
                 setOption('_isSynced', isSynced);
+
+                // Resolve sync promise on first sync
+                if (isSynced && !hasSynced) {
+                  hasSynced = true;
+                  syncResolve?.();
+                }
               },
             });
             finalProviders.push(provider);
@@ -339,9 +342,18 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       // Update provider counts after creation
       setOption('_providers', finalProviders);
 
-      // Finally, connect providers if autoConnect is true
+      // Initialize editor with placeholder content first (so it can render)
+      // This content is NOT synced to Y.doc because YjsEditor is not connected yet
+      editor.tf.init({
+        autoSelect: false,
+        selection: null,
+        shouldNormalizeEditor: true,
+        value: null,
+      });
+
+      // Connect providers to start sync with backend
       if (autoConnect) {
-        _providers.forEach((provider) => {
+        finalProviders.forEach((provider) => {
           try {
             provider.connect();
           } catch (error) {
@@ -352,5 +364,27 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
           }
         });
       }
+
+      // Wait for first sync to complete before connecting YjsEditor
+      // This ensures the Y.doc has content from backend before editor initialization
+      // which prevents adding empty paragraphs that merge with actual content
+      await syncPromise;
+
+      // NOW connect YjsEditor after sync is complete
+      // The Y.doc already has content from backend, so no empty paragraph will be added
+      // YjsEditor.connect() will replace editor.children with Y.doc content
+      YjsEditor.connect(editor as any);
+
+      // Apply autoSelect and selection after Y.doc content is loaded
+      if (autoSelect) {
+        const edge = autoSelect === 'start' ? 'start' : 'end';
+        const target =
+          edge === 'start' ? editor.api.start([]) : editor.api.end([]);
+        editor.tf.select(target);
+      } else if (selection) {
+        editor.tf.setSelection(selection);
+      }
+
+      onReady?.({ editor, isAsync: true, value: editor.children });
     },
   }));
