@@ -368,7 +368,13 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       // Wait for first sync to complete before connecting YjsEditor
       // This ensures the Y.doc has content from backend before editor initialization
       // which prevents adding empty paragraphs that merge with actual content
-      await syncPromise;
+      // Only wait for sync when:
+      // 1. No initial value provided (the case that needs the fix)
+      // 2. Auto-connect is enabled (providers will actually connect)
+      // 3. There are providers to connect (avoid deadlock with no providers)
+      if (!value && autoConnect && finalProviders.length > 0) {
+        await syncPromise;
+      }
 
       // NOW connect YjsEditor after sync is complete
       // The Y.doc already has content from backend, so no empty paragraph will be added
