@@ -48,7 +48,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "@hocuspocus/provider": "^2.15.2",
+    "@hocuspocus/provider": "^3.4.0",
     "platejs": ">=52.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
