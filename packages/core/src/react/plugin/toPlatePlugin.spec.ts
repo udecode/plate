@@ -99,8 +99,8 @@ describe('toPlatePlugin', () => {
   });
 
   it('should add new handlers and API methods', () => {
-    const mockOnKeyDown = jest.fn();
-    const mockOnChange = jest.fn();
+    const mockOnKeyDown = mock();
+    const mockOnChange = mock();
 
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       handlers: {

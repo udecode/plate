@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Allow claude to read these files
-!.*
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # dependencies
 /node_modules
@@ -45,3 +46,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+CLAUDE.local.md
+.codex
+
+# START Skiller Generated Files
+/.claude/skills
+/.codex/config.toml
+/.cursor/mcp.json
+/.cursor/rules
+/.mcp.json
+/.skillz
+/AGENTS.md
+/CLAUDE.md
+# END Skiller Generated Files

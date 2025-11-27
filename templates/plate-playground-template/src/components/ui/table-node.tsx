@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
@@ -19,6 +15,7 @@ import {
   useTableElement,
   useTableMergeState,
 } from '@platejs/table/react';
+import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cva } from 'class-variance-authority';
 import {
@@ -36,21 +33,22 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  KEYS,
+  PathApi,
   type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  KEYS,
-  PathApi,
 } from 'platejs';
 import {
-  type PlateElementProps,
   PlateElement,
+  type PlateElementProps,
   useComposedRef,
   useEditorPlugin,
   useEditorRef,
   useEditorSelector,
   useElement,
+  useElementSelector,
   useFocusedLast,
   usePluginOption,
   useReadOnly,
@@ -58,7 +56,7 @@ import {
   useSelected,
   withHOC,
 } from 'platejs/react';
-import { useElementSelector } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -166,14 +164,14 @@ function TableFloatingToolbar({
 
   return (
     <Popover
-      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
       modal={false}
+      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
     >
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
-        onOpenAutoFocus={(e) => e.preventDefault()}
         contentEditable={false}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
         <Toolbar
@@ -309,12 +307,12 @@ function TableBordersDropdownMenuContent(
 
   return (
     <DropdownMenuContent
+      align="start"
       className="min-w-[220px]"
       onCloseAutoFocus={(e) => {
         e.preventDefault();
         editor.tf.focus();
       }}
-      align="start"
       side="right"
       sideOffset={0}
       {...props}
@@ -399,7 +397,7 @@ function ColorDropdownMenu({
   }, [selectedCells, editor]);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
       </DropdownMenuTrigger>
@@ -423,7 +421,10 @@ function ColorDropdownMenu({
   );
 }
 
-export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
+export function TableRowElement({
+  children,
+  ...props
+}: PlateElementProps<TTableRowElement>) {
   const { element } = props;
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -454,13 +455,13 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
   return (
     <PlateElement
       {...props}
-      ref={useComposedRef(props.ref, previewRef)}
       as="tr"
-      className={cn('group/row', isDragging && 'opacity-50')}
       attributes={{
         ...props.attributes,
         'data-selected': selected ? 'true' : undefined,
       }}
+      className={cn('group/row', isDragging && 'opacity-50')}
+      ref={useComposedRef(props.ref, previewRef)}
     >
       {hasControls && (
         <td className="w-2 select-none" contentEditable={false}>
@@ -469,7 +470,7 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
         </td>
       )}
 
-      {props.children}
+      {children}
     </PlateElement>
   );
 }
@@ -480,16 +481,16 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
 
   return (
     <Button
-      ref={dragRef}
-      variant="outline"
       className={cn(
-        'absolute top-1/2 left-0 z-51 h-6 w-4 -translate-y-1/2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+        '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
         'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-has-data-[resizing="true"]/row:opacity-0'
       )}
       onClick={() => {
         editor.tf.select(element);
       }}
+      ref={dragRef}
+      variant="outline"
     >
       <GripVertical className="text-muted-foreground" />
     </Button>
@@ -548,17 +549,22 @@ export function TableCellElement({
     <PlateElement
       {...props}
       as={isHeader ? 'th' : 'td'}
+      attributes={{
+        ...props.attributes,
+        colSpan: api.table.getColSpan(element),
+        rowSpan: api.table.getRowSpan(element),
+      }}
       className={cn(
         'h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-(--cellBackground)' : 'bg-background',
         isHeader && 'text-left *:m-0',
         'before:size-full',
         selected && 'before:z-10 before:bg-brand/5',
-        "before:absolute before:box-border before:content-[''] before:select-none",
-        borders.bottom?.size && `before:border-b before:border-b-border`,
-        borders.right?.size && `before:border-r before:border-r-border`,
-        borders.left?.size && `before:border-l before:border-l-border`,
-        borders.top?.size && `before:border-t before:border-t-border`
+        "before:absolute before:box-border before:select-none before:content-['']",
+        borders.bottom?.size && 'before:border-b before:border-b-border',
+        borders.right?.size && 'before:border-r before:border-r-border',
+        borders.left?.size && 'before:border-l before:border-l-border',
+        borders.top?.size && 'before:border-t before:border-t-border'
       )}
       style={
         {
@@ -567,11 +573,6 @@ export function TableCellElement({
           minWidth: width || 120,
         } as React.CSSProperties
       }
-      attributes={{
-        ...props.attributes,
-        colSpan: api.table.getColSpan(element),
-        rowSpan: api.table.getRowSpan(element),
-      }}
     >
       <div
         className="relative z-20 box-border h-full px-3 py-2"
@@ -597,7 +598,7 @@ export function TableCellElement({
               {!hiddenLeft && (
                 <ResizeHandle
                   {...leftProps}
-                  className="top-0 -left-1 w-2"
+                  className="-left-1 top-0 w-2"
                   data-resizer-left={colIndex === 0 ? 'true' : undefined}
                 />
               )}
@@ -614,7 +615,7 @@ export function TableCellElement({
                   className={cn(
                     'absolute top-0 z-30 h-full w-1 bg-ring',
                     'left-[-1.5px]',
-                    'hidden animate-in fade-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
+                    'fade-in hidden animate-in group-has-[[data-resizer-left]:hover]/table:block group-has-[[data-resizer-left][data-resizing="true"]]/table:block'
                   )}
                 />
               )}
@@ -636,7 +637,7 @@ export function TableCellHeaderElement(
   return <TableCellElement {...props} isHeader />;
 }
 
-const columnResizeVariants = cva('hidden animate-in fade-in', {
+const columnResizeVariants = cva('fade-in hidden animate-in', {
   variants: {
     colIndex: {
       0: 'group-has-[[data-col="0"]:hover]/table:block group-has-[[data-col="0"][data-resizing="true"]]/table:block',

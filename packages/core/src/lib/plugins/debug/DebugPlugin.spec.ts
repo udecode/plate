@@ -4,7 +4,7 @@ import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
   it('should create an editor with combined plugin APIs', () => {
-    const mockLogger = jest.fn();
+    const mockLogger = mock();
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
@@ -37,9 +37,9 @@ describe('DebugPlugin', () => {
   });
 
   it('should respect log levels', () => {
-    const warnLogger = jest.fn();
-    const logLogger = jest.fn();
-    const infoLogger = jest.fn();
+    const warnLogger = mock();
+    const logLogger = mock();
+    const infoLogger = mock();
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
@@ -99,7 +99,7 @@ describe('DebugPlugin', () => {
   });
 
   it('should not log in production mode', () => {
-    const mockLogger = jest.fn();
+    const mockLogger = mock();
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({

@@ -1,0 +1,118 @@
+# Default agents to apply when --agents flag is not specified
+default_agents = ["claude", "codex", "cursor"]
+
+# --- Fork Configuration ---
+
+[rules]
+merge_strategy = "cursor"
+
+[backup]
+enabled = false
+
+# --- Global Configuration ---
+
+[skills]
+enabled = true
+generate_from_rules = true
+
+# Automatic .gitignore management
+[gitignore]
+enabled = true
+
+# MCP (Model Context Protocol) server configuration
+[mcp]
+enabled = true
+merge_strategy = "merge"
+
+# --- MCP Server Definitions ---
+[mcp_servers.registries]
+command = "npx"
+args = ["-y", "shadcn@latest", "mcp"]
+
+# --- Agent-Specific Configuration ---
+
+# Claude Code (primary agent)
+[agents.claude]
+enabled = true
+output_path = "CLAUDE.md"
+
+# Cursor (secondary agent)
+[agents.cursor]
+enabled = true
+# Uses AGENTS.md by default
+
+# OpenAI Codex CLI
+[agents.codex]
+enabled = true
+output_path_config = ".codex/config.toml"
+# Uses AGENTS.md by default
+
+# Disable other agents
+[agents.copilot]
+enabled = false
+
+[agents.aider]
+enabled = false
+
+[agents.windsurf]
+enabled = false
+
+[agents.cline]
+enabled = false
+
+[agents.crush]
+enabled = false
+
+[agents.amp]
+enabled = false
+
+[agents.amazonqcli]
+enabled = false
+
+[agents.firebase]
+enabled = false
+
+[agents.gemini-cli]
+enabled = false
+
+[agents.jules]
+enabled = false
+
+[agents.junie]
+enabled = false
+
+[agents.kilocode]
+enabled = false
+
+[agents.opencode]
+enabled = false
+
+[agents.openhands]
+enabled = false
+
+[agents.goose]
+enabled = false
+
+[agents.qwen]
+enabled = false
+
+[agents.roo]
+enabled = false
+
+[agents.zed]
+enabled = false
+
+[agents.trae]
+enabled = false
+
+[agents.warp]
+enabled = false
+
+[agents.kiro]
+enabled = false
+
+[agents.firebender]
+enabled = false
+
+[agents.augmentcode]
+enabled = false

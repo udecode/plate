@@ -490,8 +490,8 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should replace plugins with the same key and merge their APIs', () => {
-    const originalLogger = jest.fn();
-    const replacementLogger = jest.fn();
+    const originalLogger = mock();
+    const replacementLogger = mock();
 
     const editor = createPlateEditor({
       plugins: [
@@ -522,7 +522,7 @@ describe('applyPluginOverrides', () => {
   });
 
   it('should allow overriding core plugins like DebugPlugin', () => {
-    const customLogger = jest.fn();
+    const customLogger = mock();
 
     const editor = createPlateEditor({
       plugins: [

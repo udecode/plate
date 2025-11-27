@@ -26,18 +26,16 @@
   "sideEffects": false,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
   "bin": "./dist/index.js",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
-    "build": "yarn tsup",
-    "build:watch": "yarn tsup --watch",
+    "build": "tsdown --log-level warn",
+    "build:watch": "tsdown --watch",
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
     "clean": "yarn p:clean",
@@ -53,10 +51,12 @@
     "zod": "3.25.61"
   },
   "devDependencies": {
-    "@types/prompts": "2.4.9",
-    "tsup": "8.5.0"
+    "@types/prompts": "2.4.9"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }

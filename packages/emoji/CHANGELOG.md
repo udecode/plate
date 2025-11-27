@@ -1,5 +1,23 @@
 # @platejs/emoji
 
+## 52.0.2
+
+### Patch Changes
+
+- [#4752](https://github.com/udecode/plate/pull/4752) by [@zbeyens](https://github.com/zbeyens) – Fix React Compiler hook ordering issues by converting EmojiPickerState to proper custom hook
+
+## 52.0.1
+
+### Patch Changes
+
+- [#4750](https://github.com/udecode/plate/pull/4750) by [@zbeyens](https://github.com/zbeyens) – Add React Compiler support.
+
+## 52.0.0
+
+### Major Changes
+
+- [#4747](https://github.com/udecode/plate/pull/4747) by [@zbeyens](https://github.com/zbeyens) – ESM-only
+
 ## 51.1.2
 
 ### Patch Changes

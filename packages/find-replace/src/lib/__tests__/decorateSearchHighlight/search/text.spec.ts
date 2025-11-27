@@ -30,7 +30,7 @@ it('should decorate matching text', () => {
       },
       search: 'test',
     },
-  ]);
+  ] as any);
 });
 
 it('should decorate matching text case-insensitively', () => {
@@ -60,7 +60,7 @@ it('should decorate matching text case-insensitively', () => {
       },
       search: 'Test',
     },
-  ]);
+  ] as any);
 });
 
 it('should decorate matching consecutive text nodes', () => {
@@ -105,7 +105,7 @@ it('should decorate matching consecutive text nodes', () => {
       },
       search: 't',
     },
-  ]);
+  ] as any);
 });
 
 it('should decorate matching multiple occurrences', () => {
@@ -193,5 +193,5 @@ it('should decorate matching multiple occurrences', () => {
       },
       search: 'est',
     },
-  ]);
+  ] as any);
 });

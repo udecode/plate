@@ -2,7 +2,7 @@ import { useFormInputProps } from './useFormInputProps';
 
 describe('useFormInputProps', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Mocks cleared in afterEach
   });
 
   it('will return an object with a props key regardless of whether the user provides a callback or sets preventDefaultOnEnterKeydown to true', () => {
@@ -21,7 +21,7 @@ describe('useFormInputProps', () => {
 
   it('will call event.preventDefault if the key is enter, and only if the key is enter', () => {
     // Define mock for preventdefault
-    const preventDefaultMock = jest.fn();
+    const preventDefaultMock = mock();
     // should trigger preventDefault
     const eventWithEKeyEnter = {
       key: 'Enter',

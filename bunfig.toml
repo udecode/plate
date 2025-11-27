@@ -1,0 +1,6 @@
+[test]
+# Preload scripts execute BEFORE any test file
+# Order matters: setup must come first for DOM globals
+preload = ["./tooling/config/bunTestSetup.ts"]
+# Use test-specific tsconfig for path mappings (e.g., @/registry/*)
+tsconfig = "./tooling/config/tsconfig.test.json"

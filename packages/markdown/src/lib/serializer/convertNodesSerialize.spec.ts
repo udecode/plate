@@ -183,7 +183,7 @@ describe('convertNodesSerialize', () => {
           children: [{ type: 'text', value: 'BoldItalic normal' }],
           type: 'paragraph',
         },
-      ]);
+      ] as any);
     });
 
     it('should only treat specified marks as plain text', () => {
@@ -213,7 +213,7 @@ describe('convertNodesSerialize', () => {
           ],
           type: 'paragraph',
         },
-      ]);
+      ] as any);
     });
   });
 

@@ -101,7 +101,7 @@ describe('expandListItemsWithChildren', () => {
         [input[0], [0]], // parent
         [input[1], [1]], // child 1
         [input[2], [2]], // child 2
-      ]);
+      ] as any);
     });
 
     it('should handle multiple list items with children', () => {
@@ -143,7 +143,7 @@ describe('expandListItemsWithChildren', () => {
         [input[2], [2]], // parent 2
         [input[3], [3]], // child 2.1
         [input[4], [4]], // grandchild 2.1.1
-      ]);
+      ] as any);
     });
 
     it('should avoid duplicates when children are already in input', () => {
@@ -178,7 +178,7 @@ describe('expandListItemsWithChildren', () => {
         [input[0], [0]], // parent
         [input[1], [1]], // child 1 (from input)
         [input[2], [2]], // child 2 (added)
-      ]);
+      ] as any);
     });
   });
 
@@ -215,7 +215,7 @@ describe('expandListItemsWithChildren', () => {
         [input[1], [1]], // list parent
         [input[2], [2]], // list child (added)
         [input[3], [3]], // heading (unchanged)
-      ]);
+      ] as any);
     });
   });
 
@@ -252,7 +252,7 @@ describe('expandListItemsWithChildren', () => {
       expect(result).toEqual([
         [input[0], [0]], // parent
         [input[1], [1]], // child
-      ]);
+      ] as any);
     });
 
     it('should handle deeply nested lists', () => {
@@ -290,7 +290,7 @@ describe('expandListItemsWithChildren', () => {
         [input[2], [2]], // level 3
         [input[3], [3]], // level 4
         [input[4], [4]], // level 5
-      ]);
+      ] as any);
     });
   });
 });

@@ -1,10 +1,8 @@
 'use client';
 
-import * as React from 'react';
+import { TablePlugin, useTableMergeState } from '@platejs/table/react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-
-import { TablePlugin, useTableMergeState } from '@platejs/table/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -19,6 +17,7 @@ import {
 } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditorPlugin, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -45,16 +44,16 @@ export function TableToolbarButton(props: DropdownMenuProps) {
   const mergeState = useTableMergeState();
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Table" isDropdown>
+        <ToolbarButton isDropdown pressed={open} tooltip="Table">
           <Table />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="flex w-[180px] min-w-0 flex-col"
         align="start"
+        className="flex w-[180px] min-w-0 flex-col"
       >
         <DropdownMenuGroup>
           <DropdownMenuSub>
@@ -234,32 +233,31 @@ function TablePicker() {
 
   return (
     <div
-      className="m-0 flex! flex-col p-0"
+      className="flex! m-0 flex-col p-0"
       onClick={() => {
         tf.insert.table(tablePicker.size, { select: true });
         editor.tf.focus();
       }}
+      role="button"
     >
       <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
         {tablePicker.grid.map((rows, rowIndex) =>
-          rows.map((value, columIndex) => {
-            return (
-              <div
-                key={`(${rowIndex},${columIndex})`}
-                className={cn(
-                  'col-span-1 size-3 border border-solid bg-secondary',
-                  !!value && 'border-current'
-                )}
-                onMouseMove={() => {
-                  onCellMove(rowIndex, columIndex);
-                }}
-              />
-            );
-          })
+          rows.map((value, columIndex) => (
+            <div
+              className={cn(
+                'col-span-1 size-3 border border-solid bg-secondary',
+                !!value && 'border-current'
+              )}
+              key={`(${rowIndex},${columIndex})`}
+              onMouseMove={() => {
+                onCellMove(rowIndex, columIndex);
+              }}
+            />
+          ))
         )}
       </div>
 
-      <div className="text-center text-xs text-current">
+      <div className="text-center text-current text-xs">
         {tablePicker.size.rowCount} x {tablePicker.size.colCount}
       </div>
     </div>

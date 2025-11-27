@@ -10,7 +10,7 @@ import {
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
-import { createPlateTestEditor } from '../../../react/__tests__/createPlateTestEditor';
+import { createPlateEditor } from '../../../react/editor';
 import { AffinityPlugin } from './AffinityPlugin';
 
 jsxt;
@@ -38,7 +38,7 @@ jsxt;
 describe('AffinityPlugin', () => {
   describe('applyClearOnEdge', () => {
     describe('Early returns', () => {
-      it('should return early when no clearOnEdge marks are configured', async () => {
+      it('should return early when no clearOnEdge marks are configured', () => {
         const input = (
           <editor>
             <hp>
@@ -58,7 +58,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             // Note: BaseBoldPlugin without clearOnEdge configuration
@@ -73,7 +73,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should return early when selection is expanded', async () => {
+      it('should return early when selection is expanded', () => {
         const input = (
           <editor>
             <hp>
@@ -97,7 +97,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -113,7 +113,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should return early when cursor is not at end of text node', async () => {
+      it('should return early when cursor is not at end of text node', () => {
         const input = (
           <editor>
             <hp>
@@ -136,7 +136,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -152,7 +152,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should return early when current text node has no clearOnEdge marks', async () => {
+      it('should return early when current text node has no clearOnEdge marks', () => {
         const input = (
           <editor>
             <hp>
@@ -174,7 +174,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -192,7 +192,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('Mark clearing behavior', () => {
-      it('should clear marks when next text node does not have the same mark', async () => {
+      it('should clear marks when next text node does not have the same mark', () => {
         const input = (
           <editor>
             <hp>
@@ -214,7 +214,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -230,7 +230,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should not clear marks when next text node has the same mark', async () => {
+      it('should not clear marks when next text node has the same mark', () => {
         const input = (
           <editor>
             <hp>
@@ -251,7 +251,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -267,7 +267,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should clear marks when at end of document', async () => {
+      it('should clear marks when at end of document', () => {
         const input = (
           <editor>
             <hp>
@@ -288,7 +288,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -304,7 +304,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should clear marks when at end of block', async () => {
+      it('should clear marks when at end of block', () => {
         const input = (
           <editor>
             <hp>
@@ -331,7 +331,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -347,7 +347,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should handle multiple marks correctly', async () => {
+      it('should handle multiple marks correctly', () => {
         const input = (
           <editor>
             <hp>
@@ -371,7 +371,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -390,7 +390,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should preserve marks that exist on both current and next text node', async () => {
+      it('should preserve marks that exist on both current and next text node', () => {
         const input = (
           <editor>
             <hp>
@@ -414,7 +414,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -437,7 +437,7 @@ describe('AffinityPlugin', () => {
 
   describe('Mark affinity', () => {
     describe('Cursor movement from left to right', () => {
-      it('should apply forward affinity when moving right at mark boundary', async () => {
+      it('should apply forward affinity when moving right at mark boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -461,7 +461,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -472,14 +472,13 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
-
+        editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should apply forward affinity when moving right at mark boundary and insert text when cross block', async () => {
+      it('should apply forward affinity when moving right at mark boundary and insert text when cross block', () => {
         const input = (
           <editor>
             <hp>
@@ -505,7 +504,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -516,14 +515,13 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
-
+        editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should apply forward affinity when moving left at mark boundary and insert text when cross block', async () => {
+      it('should apply forward affinity when moving left at mark boundary and insert text when cross block', () => {
         const input = (
           <editor>
             <hp>
@@ -550,7 +548,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -561,8 +559,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowLeft');
-
+        editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
@@ -570,7 +567,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('Cursor movement from right to left', () => {
-      it('should apply backward affinity when moving left at mark boundary', async () => {
+      it('should apply backward affinity when moving left at mark boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -595,7 +592,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -606,8 +603,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowLeft');
-
+        editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
@@ -615,7 +611,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('deleteBackward', () => {
-      it('should set backward affinity when deleting to mark', async () => {
+      it('should set backward affinity when deleting to mark', () => {
         const input = (
           <editor>
             <hp>
@@ -637,7 +633,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -655,7 +651,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should set forward affinity when deleting to mark boundary', async () => {
+      it('should set forward affinity when deleting to mark boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -680,7 +676,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -702,7 +698,7 @@ describe('AffinityPlugin', () => {
 
   describe('Element affinity', () => {
     describe('Cursor movement from left to right', () => {
-      it('should apply forward affinity when moving right at element boundary', async () => {
+      it('should apply forward affinity when moving right at element boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -730,14 +726,13 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
-
+        editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
@@ -745,7 +740,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('Cursor movement from right to left', () => {
-      it('should apply backward affinity when moving left at element boundary', async () => {
+      it('should apply backward affinity when moving left at element boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -774,14 +769,13 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowLeft');
-
+        editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
         expect(editor.children).toEqual(output.children);
@@ -789,7 +783,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('deleteBackward', () => {
-      it('should set backward affinity when deleting to mark', async () => {
+      it('should set backward affinity when deleting to mark', () => {
         const input = (
           <editor>
             <hp>
@@ -815,7 +809,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             AffinityPlugin,
             BaseLinkPlugin.configure({
@@ -833,7 +827,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should set forward affinity when deleting to mark boundary', async () => {
+      it('should set forward affinity when deleting to mark boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -862,7 +856,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
@@ -879,7 +873,7 @@ describe('AffinityPlugin', () => {
 
   describe('Hard edge movement', () => {
     describe('when moving around hard edge marks', () => {
-      it('should use offset movement when moving right at hard edge boundary', async () => {
+      it('should use offset movement when moving right at hard edge boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -906,7 +900,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -916,14 +910,14 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
+        editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('x');
 
         expect(editor.children).toEqual(output.children);
         expect(editor.selection).toEqual(output.selection);
       });
 
-      it('should use offset movement when moving left at hard edge boundary', async () => {
+      it('should use offset movement when moving left at hard edge boundary', () => {
         const input = (
           <editor>
             <hp>
@@ -950,7 +944,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -960,14 +954,14 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowLeft');
+        editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('x');
 
         expect(editor.children).toEqual(output.children);
         expect(editor.selection).toEqual(output.selection);
       });
 
-      it('should move block start', async () => {
+      it('should move block start', () => {
         const input = (
           <editor>
             <hp>1</hp>
@@ -998,7 +992,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -1009,7 +1003,7 @@ describe('AffinityPlugin', () => {
         });
 
         // Move left at the start should just change affinity
-        await triggerKeyboardEvent('ArrowLeft');
+        editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
 
         // Insert text should now go outside the code mark
         editor.tf.insertText('x');
@@ -1017,7 +1011,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should move block end', async () => {
+      it('should move block end', () => {
         const input = (
           <editor>
             <hp>
@@ -1042,7 +1036,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -1053,7 +1047,7 @@ describe('AffinityPlugin', () => {
         });
 
         // Move right at the end should just change affinity
-        await triggerKeyboardEvent('ArrowRight');
+        editor.tf.move({ distance: 1, unit: 'character' });
 
         // expect(editor.selection).toEqual(output.selection);
 
@@ -1063,7 +1057,7 @@ describe('AffinityPlugin', () => {
         expect(editor.children).toEqual(output.children);
       });
 
-      it('should handle multiple hard edge marks correctly', async () => {
+      it('should handle multiple hard edge marks correctly', () => {
         const input = (
           <editor>
             <hp>
@@ -1090,7 +1084,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -1100,12 +1094,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
+        editor.tf.move({ distance: 1, unit: 'character' });
 
         expect(editor.selection).toEqual(output.selection);
       });
 
-      it('should handle hard edge with regular marks correctly', async () => {
+      it('should handle hard edge with regular marks correctly', () => {
         const input = (
           <editor>
             <hp>
@@ -1132,7 +1126,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -1143,12 +1137,12 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
+        editor.tf.move({ distance: 1, unit: 'character' });
 
         expect(editor.selection).toEqual(output.selection);
       });
 
-      it('should not interfere with normal character movement inside hard edge marks', async () => {
+      it('should not interfere with normal character movement inside hard edge marks', () => {
         const input = (
           <editor>
             <hp>
@@ -1176,7 +1170,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const [editor, { triggerKeyboardEvent }] = await createPlateTestEditor({
+        const editor = createPlateEditor({
           plugins: [
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
@@ -1186,7 +1180,7 @@ describe('AffinityPlugin', () => {
           value: input.children,
         });
 
-        await triggerKeyboardEvent('ArrowRight');
+        editor.tf.move({ distance: 1, unit: 'character' });
 
         expect(editor.selection).toEqual(output.selection);
       });

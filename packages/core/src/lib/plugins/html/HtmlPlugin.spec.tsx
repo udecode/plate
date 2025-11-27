@@ -285,8 +285,16 @@ describe('when inserting plain text', () => {
     </editor>
   ) as any;
 
+  let jsonParseSpy: ReturnType<typeof spyOn>;
+
+  afterEach(() => {
+    jsonParseSpy?.mockRestore();
+  });
+
   it('should run default insert', () => {
-    jest.spyOn(JSON, 'parse').mockReturnValue(<fragment>inserted</fragment>);
+    jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
+      <fragment>inserted</fragment>
+    );
 
     const editor = createPlateEditor({
       plugins: [],

@@ -21,56 +21,56 @@ describe(getDocxTestName(name), () => {
       <editor>
         <hh1>
           <htext
-            color="rgb(52, 90, 138)"
-            fontFamily="'Calibri',sans-serif"
+            color="#345A8A"
+            fontFamily="Calibri, sans-serif"
             fontSize="18pt"
           >
             H1 + 18 pt
           </htext>
         </hh1>
         <hp>
-          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
+          <htext fontFamily="Cambria, serif" fontSize="12pt">
             Normal with{' '}
           </htext>
           <htext
             backgroundColor="yellow"
-            fontFamily="'Cambria',serif"
-            fontSize="12.0pt"
+            fontFamily="Cambria, serif"
+            fontSize="12pt"
           >
             background{' '}
           </htext>
           <htext
             color="red"
             backgroundColor="yellow"
-            fontFamily="'Cambria',serif"
-            fontSize="12.0pt"
+            fontFamily="Cambria, serif"
+            fontSize="12pt"
           >
             color
           </htext>
-          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
+          <htext fontFamily="Cambria, serif" fontSize="12pt">
             .
           </htext>
         </hp>
         <hp>
-          <htext fontFamily="'Cambria',serif" fontSize="18pt">
+          <htext fontFamily="Cambria, serif" fontSize="18pt">
             Normal + 18 pt and{' '}
           </htext>
-          <htext fontFamily="'Times New Roman', serif" fontSize="10pt">
+          <htext fontFamily='"Times New Roman", serif' fontSize="10pt">
             10 pt
           </htext>
-          <htext fontFamily="'Cambria',serif" fontSize="18pt">
+          <htext fontFamily="Cambria, serif" fontSize="18pt">
             .
           </htext>
         </hp>
         <hp>
-          <htext fontFamily="'Cambria',serif" fontSize="12.0pt">
+          <htext fontFamily="Cambria, serif" fontSize="12pt">
             Compact
           </htext>
         </hp>
         <hp>
           <htext
-            fontFamily="'Cambria', serif"
-            fontSize="12.0pt"
+            fontFamily="Cambria, serif"
+            fontSize="12pt"
             fontWeight="bold"
             bold
           >

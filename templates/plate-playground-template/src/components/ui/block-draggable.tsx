@@ -1,22 +1,21 @@
 'use client';
 
-import * as React from 'react';
-
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { expandListItemsWithChildren } from '@platejs/list';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
+import { getPluginByType, isType, KEYS, type TElement } from 'platejs';
 import {
+  MemoizedChildren,
   type PlateEditor,
   type PlateElementProps,
   type RenderNodeWrapper,
-  MemoizedChildren,
   useEditorRef,
   useElement,
   usePluginOption,
+  useSelected,
 } from 'platejs/react';
-import { useSelected } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -147,11 +146,11 @@ function Draggable(props: PlateElementProps) {
               )}
             >
               <Button
-                ref={handleRef}
-                variant="ghost"
-                className="absolute -left-0 h-6 w-full p-0"
-                style={{ top: `${dragButtonTop + 3}px` }}
+                className="-left-0 absolute h-6 w-full p-0"
                 data-plate-prevent-deselect
+                ref={handleRef}
+                style={{ top: `${dragButtonTop + 3}px` }}
+                variant="ghost"
               >
                 <DragHandle
                   isDragging={isDragging}
@@ -166,20 +165,20 @@ function Draggable(props: PlateElementProps) {
       )}
 
       <div
-        ref={previewRef}
-        className={cn('absolute -left-0 hidden w-full')}
-        style={{ top: `${-previewTop}px` }}
+        className={cn('-left-0 absolute hidden w-full')}
         contentEditable={false}
+        ref={previewRef}
+        style={{ top: `${-previewTop}px` }}
       />
 
       <div
-        ref={nodeRef}
         className="slate-blockWrapper flow-root"
         onContextMenu={(event) =>
           editor
             .getApi(BlockSelectionPlugin)
             .blockSelection.addOnContextMenu({ element, event })
         }
+        ref={nodeRef}
       >
         <MemoizedChildren>{children}</MemoizedChildren>
         <DropLine />
@@ -206,7 +205,7 @@ function Gutter({
       {...props}
       className={cn(
         'slate-gutterLeft',
-        'absolute top-0 z-50 flex h-full -translate-x-full cursor-text hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
         getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
@@ -240,6 +239,7 @@ const DragHandle = React.memo(function DragHandle({
       <TooltipTrigger asChild>
         <div
           className="flex size-full items-center justify-center"
+          data-plate-prevent-deselect
           onClick={(e) => {
             e.preventDefault();
             editor.getApi(BlockSelectionPlugin).blockSelection.focus();
@@ -322,7 +322,6 @@ const DragHandle = React.memo(function DragHandle({
           onMouseUp={() => {
             resetPreview();
           }}
-          data-plate-prevent-deselect
           role="button"
         >
           <GripVertical className="text-muted-foreground" />
@@ -447,7 +446,9 @@ const createDragPreviewElements = (
     elements.push(wrapper);
   };
 
-  blocks.forEach((node, index) => resolveElement(node, index));
+  blocks.forEach((node, index) => {
+    resolveElement(node, index);
+  });
 
   editor.setOption(DndPlugin, 'draggingId', ids);
 

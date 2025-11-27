@@ -1,18 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import type { TColumnElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
-
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import { setColumns } from '@platejs/layout';
 import { ResizableProvider } from '@platejs/resizable';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useComposedRef } from '@udecode/cn';
-import { type LucideProps, Trash2Icon } from 'lucide-react';
-import { GripHorizontal } from 'lucide-react';
+import { GripHorizontal, type LucideProps, Trash2Icon } from 'lucide-react';
+import type { TColumnElement } from 'platejs';
 import { PathApi } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
   useEditorRef,
@@ -25,6 +21,7 @@ import {
   useSelected,
   withHOC,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -66,12 +63,12 @@ export const ColumnElement = withHOC(
       <div className="group/column relative" style={{ width: width ?? '100%' }}>
         {!readOnly && !isSelectionAreaVisible && (
           <div
-            ref={handleRef}
             className={cn(
-              'absolute top-2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
+              '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
               'pointer-events-auto flex items-center',
               'opacity-0 transition-opacity group-hover/column:opacity-100'
             )}
+            ref={handleRef}
           >
             <ColumnDragHandle />
           </div>
@@ -79,13 +76,13 @@ export const ColumnElement = withHOC(
 
         <PlateElement
           {...props}
-          ref={useComposedRef(props.ref, previewRef)}
           className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
+          ref={useComposedRef(props.ref, previewRef)}
         >
           <div
             className={cn(
               'relative h-full border border-transparent p-1.5',
-              !readOnly && 'rounded-lg border-dashed border-border',
+              !readOnly && 'rounded-lg border-border border-dashed',
               isDragging && 'opacity-50'
             )}
           >
@@ -104,7 +101,7 @@ const ColumnDragHandle = React.memo(function ColumnDragHandle() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" className="h-5 !px-1">
+          <Button className="!px-1 h-5" variant="ghost">
             <GripHorizontal
               className="text-muted-foreground"
               onClick={(event) => {
@@ -132,9 +129,9 @@ function DropLine() {
         'slate-dropLine',
         'absolute bg-brand/50',
         dropLine === 'left' &&
-          'inset-y-0 left-[-10.5px] w-1 group-first/column:-left-1',
+          'group-first/column:-left-1 inset-y-0 left-[-10.5px] w-1',
         dropLine === 'right' &&
-          'inset-y-0 right-[-11px] w-1 group-last/column:-right-1'
+          'group-last/column:-right-1 inset-y-0 right-[-11px] w-1'
       )}
     />
   );
@@ -172,54 +169,54 @@ function ColumnFloatingToolbar({ children }: React.PropsWithChildren) {
   };
 
   return (
-    <Popover open={open} modal={false}>
+    <Popover modal={false} open={open}>
       <PopoverAnchor>{children}</PopoverAnchor>
       <PopoverContent
+        align="center"
         className="w-auto p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
-        align="center"
         side="top"
         sideOffset={10}
       >
         <div className="box-content flex h-8 items-center">
           <Button
-            variant="ghost"
             className="size-8"
             onClick={() => onColumnChange(['50%', '50%'])}
+            variant="ghost"
           >
             <DoubleColumnOutlined />
           </Button>
           <Button
-            variant="ghost"
             className="size-8"
             onClick={() => onColumnChange(['33%', '33%', '33%'])}
+            variant="ghost"
           >
             <ThreeColumnOutlined />
           </Button>
           <Button
-            variant="ghost"
             className="size-8"
             onClick={() => onColumnChange(['70%', '30%'])}
+            variant="ghost"
           >
             <RightSideDoubleColumnOutlined />
           </Button>
           <Button
-            variant="ghost"
             className="size-8"
             onClick={() => onColumnChange(['30%', '70%'])}
+            variant="ghost"
           >
             <LeftSideDoubleColumnOutlined />
           </Button>
           <Button
-            variant="ghost"
             className="size-8"
             onClick={() => onColumnChange(['25%', '50%', '25%'])}
+            variant="ghost"
           >
             <DoubleSideDoubleColumnOutlined />
           </Button>
 
-          <Separator orientation="vertical" className="mx-1 h-6" />
-          <Button variant="ghost" className="size-8" {...buttonProps}>
+          <Separator className="mx-1 h-6" orientation="vertical" />
+          <Button className="size-8" variant="ghost" {...buttonProps}>
             <Trash2Icon />
           </Button>
         </div>

@@ -1,7 +1,6 @@
 {
   "files.exclude": {
     ".yarn": true,
-    "templates": true,
     "docs/**/*cn.mdx": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -35,7 +34,8 @@
   "emmet.showExpandedAbbreviation": "never",
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",
-    "source.organizeImports.biome": "explicit"
+    "source.organizeImports.biome": "explicit",
+    "source.sortPackageJson": "explicit"
   },
   "eslint.enable": true,
   "eslint.validate": [

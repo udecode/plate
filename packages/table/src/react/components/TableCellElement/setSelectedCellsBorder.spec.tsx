@@ -1,56 +1,86 @@
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
 import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
+import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
+import * as utilsModule from '../../../lib/utils';
+import * as getTopTableCellModule from '../../../lib/queries/getTopTableCell';
+import * as getLeftTableCellModule from '../../../lib/queries/getLeftTableCell';
 import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 
 jsx;
 
-jest.mock('../../../lib/transforms/setBorderSize', () => ({
-  setBorderSize: jest.fn(),
-}));
-
-jest.mock('../../../lib/utils', () => ({
-  getCellIndices: jest.fn((_editor, element) => {
-    switch (element.id) {
-      case 'c11': {
-        return { col: 0, row: 0 };
-      }
-      case 'c12': {
-        return { col: 1, row: 0 };
-      }
-      case 'c21': {
-        return { col: 0, row: 1 };
-      }
-      case 'c22': {
-        return { col: 1, row: 1 };
-      }
-      default: {
-        return { col: 0, row: 0 };
-      }
-    }
-  }),
-  getCellTypes: jest.fn().mockReturnValue(['td']),
-}));
-
-jest.mock('../../../lib/queries/getTopTableCell', () => ({
-  getTopTableCell: jest.fn(),
-}));
-
-jest.mock('../../../lib/queries/getLeftTableCell', () => ({
-  getLeftTableCell: jest.fn(),
-}));
-
 describe('setSelectedCellsBorder', () => {
   let editor: PlateEditor;
-  const setBorderSize = jest.requireMock(
-    '../../../lib/transforms/setBorderSize'
-  ).setBorderSize;
+  let setBorderSizeSpy: ReturnType<typeof spyOn>;
+  let getCellIndicesSpy: ReturnType<typeof spyOn>;
+  let getCellTypesSpy: ReturnType<typeof spyOn>;
+  let getTopTableCellSpy: ReturnType<typeof spyOn>;
+  let getLeftTableCellSpy: ReturnType<typeof spyOn>;
+  let setBorderSizeMock: ReturnType<typeof mock>;
+  let getCellIndicesMock: ReturnType<typeof mock>;
+  let getCellTypesMock: ReturnType<typeof mock>;
+  let getTopTableCellMock: ReturnType<typeof mock>;
+  let getLeftTableCellMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Create mocks
+    setBorderSizeMock = mock();
+    getCellIndicesMock = mock((_editor, element: any) => {
+      switch (element.id) {
+        case 'c11': {
+          return { col: 0, row: 0 };
+        }
+        case 'c12': {
+          return { col: 1, row: 0 };
+        }
+        case 'c21': {
+          return { col: 0, row: 1 };
+        }
+        case 'c22': {
+          return { col: 1, row: 1 };
+        }
+        default: {
+          return { col: 0, row: 0 };
+        }
+      }
+    });
+    getCellTypesMock = mock(() => ['td']);
+    getTopTableCellMock = mock();
+    getLeftTableCellMock = mock();
+
+    // Create spies
+    setBorderSizeSpy = spyOn(
+      setBorderSizeModule,
+      'setBorderSize'
+    ).mockImplementation(setBorderSizeMock);
+    getCellIndicesSpy = spyOn(utilsModule, 'getCellIndices').mockImplementation(
+      getCellIndicesMock
+    );
+    getCellTypesSpy = spyOn(utilsModule, 'getCellTypes').mockImplementation(
+      getCellTypesMock
+    );
+    getTopTableCellSpy = spyOn(
+      getTopTableCellModule,
+      'getTopTableCell'
+    ).mockImplementation(getTopTableCellMock);
+    getLeftTableCellSpy = spyOn(
+      getLeftTableCellModule,
+      'getLeftTableCell'
+    ).mockImplementation(getLeftTableCellMock);
+
     editor = createPlateEditor({ nodeId: true });
-    editor.api.findPath = jest.fn().mockReturnValue([0]);
+    const findPathMock = mock(() => [0]);
+    (editor.api as any).findPath = findPathMock;
+  });
+
+  afterEach(() => {
+    setBorderSizeSpy?.mockRestore();
+    getCellIndicesSpy?.mockRestore();
+    getCellTypesSpy?.mockRestore();
+    getTopTableCellSpy?.mockRestore();
+    getLeftTableCellSpy?.mockRestore();
   });
 
   // describe('when border is "none"', () => {
@@ -116,11 +146,11 @@ describe('setSelectedCellsBorder', () => {
       });
 
       // Should set top borders for both cells
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 1, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 1, {
         at: [0],
         border: 'top',
       });
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 1, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 1, {
         at: [0],
         border: 'left',
       });
@@ -141,7 +171,7 @@ describe('setSelectedCellsBorder', () => {
         cells: [cell1, cell2],
       });
 
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 0, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 0, {
         at: [0],
         border: 'top',
       });
@@ -164,7 +194,7 @@ describe('setSelectedCellsBorder', () => {
         cells: [cell1, cell2],
       });
 
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 1, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 1, {
         at: [0],
         border: 'top',
       });
@@ -185,7 +215,7 @@ describe('setSelectedCellsBorder', () => {
         cells: [cell1, cell2],
       });
 
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 0, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 0, {
         at: [0],
         border: 'top',
       });
@@ -199,16 +229,14 @@ describe('setSelectedCellsBorder', () => {
       const cellAbove: any = {
         borders: { bottom: { size: 0 } },
       };
-      jest
-        .requireMock('../../../lib/queries/getTopTableCell')
-        .getTopTableCell.mockReturnValue([cellAbove, [0]]);
+      getTopTableCellMock.mockReturnValue([cellAbove, [0]]);
 
       setSelectedCellsBorder(editor, {
         border: 'top',
         cells: [cell],
       });
 
-      expect(setBorderSize).toHaveBeenCalledWith(editor, 1, {
+      expect(setBorderSizeMock).toHaveBeenCalledWith(editor, 1, {
         at: [0],
         border: 'bottom',
       });

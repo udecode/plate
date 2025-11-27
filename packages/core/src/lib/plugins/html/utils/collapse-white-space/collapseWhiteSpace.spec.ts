@@ -1,8 +1,8 @@
-import { htmlStringToDOMNode } from '../htmlStringToDOMNode';
+import * as htmlStringToDOMNodeModule from '../htmlStringToDOMNode';
 import { collapseWhiteSpace } from './collapseWhiteSpace';
 
 const expectCollapsedWhiteSpace = (input: string, expected: string) => {
-  const element = htmlStringToDOMNode(input);
+  const element = htmlStringToDOMNodeModule.htmlStringToDOMNode(input);
   const collapsedElement = collapseWhiteSpace(element);
   const output = collapsedElement.innerHTML;
   // biome-ignore lint/suspicious/noMisplacedAssertion: Test helper function pattern
@@ -10,6 +10,42 @@ const expectCollapsedWhiteSpace = (input: string, expected: string) => {
 };
 
 describe('collapseWhiteSpace', () => {
+  let htmlStringToDOMNodeSpy: ReturnType<typeof spyOn>;
+
+  beforeEach(() => {
+    // Mock htmlStringToDOMNode to match JSDom behavior
+    // JSDom strips leading newline from <pre>, <textarea>, <listing> elements
+    htmlStringToDOMNodeSpy = spyOn(
+      htmlStringToDOMNodeModule,
+      'htmlStringToDOMNode'
+    ).mockImplementation((rawHtml: string) => {
+      const node = document.createElement('body');
+      node.innerHTML = rawHtml;
+
+      // Strip leading newline from text nodes in <pre>, <textarea>, <listing> elements
+      // to match JSDom/HTML spec behavior that Happy-DOM doesn't implement
+      const preElements = node.querySelectorAll('pre, textarea, listing');
+
+      preElements.forEach((element) => {
+        const firstChild = element.firstChild;
+
+        if (firstChild?.nodeType === 3) {
+          const text = firstChild as Text;
+
+          if (text.textContent?.startsWith('\n')) {
+            text.textContent = text.textContent.slice(1);
+          }
+        }
+      });
+
+      return node;
+    });
+  });
+
+  afterEach(() => {
+    htmlStringToDOMNodeSpy?.mockRestore();
+  });
+
   describe('when there are no special block types or styles', () => {
     describe('when whitespace is already collapsed', () => {
       it('does not alter simple collapsed HTML', () => {

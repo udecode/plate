@@ -58,7 +58,7 @@ describe('removeMarkSuggestion', () => {
       id: '1',
       createdAt: Date.now(),
       properties: { italic: undefined },
-      type: 'update',
+      type: 'update' as const,
       userId: 'testId',
     };
 

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/test-utils",
-  "version": "51.1.2",
+  "version": "52.0.1",
   "description": "Testing utilities for Plate",
   "keywords": [
     "plate",
@@ -19,17 +19,13 @@
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
@@ -45,11 +41,12 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "51.1.2",
+    "@platejs/slate": "52.0.1",
     "slate": "0.118.1",
     "slate-hyperscript": "0.115.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "module": "./dist/index.js"
 }

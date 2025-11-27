@@ -44,12 +44,12 @@ jobs:
             mcp_github_*
             mcp_filesystem_*
           direct_prompt: |
-            CRITICAL: First read .cursor/rules/testing.mdc to understand all testing patterns and requirements.
+            CRITICAL: First read .claude/rules/testing.mdc to understand all testing patterns and requirements.
 
             Please analyze the changes in this PR/issue and create or update the relevant tests accordingly.
             **Important Development Sequence:**
             - Before running type checking, you must first run `yarn install` and build affected packages
             - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
             - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
-            - Use `yarn turbo lint:fix --filter=./packages/modified-package` for linting modified packages.
+            - Use `yarn lint:fix` for linting modified packages.
             - Avoid full project commands (`yarn build`, `yarn typecheck`, `yarn lint:fix`), these are very slow

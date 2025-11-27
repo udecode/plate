@@ -1,0 +1,32 @@
+import { defineConfig } from 'tsdown';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  target: 'esnext',
+  fixedExtension: false,
+  exports: true,
+  external: [
+    'commander',
+    'prompts',
+    'sisteransi',
+    'mimic',
+    'onetime',
+    'signal',
+    'cli',
+    'clone',
+    'defaults',
+    'wcwidth',
+    'readable',
+    'inherits',
+    'util',
+    'safe',
+    'string_decoder',
+    'bl',
+    'kleur',
+    'ora',
+    'restore',
+    'log',
+    'is',
+    'stdin',
+  ],
+});

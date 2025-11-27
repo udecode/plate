@@ -1,4 +1,5 @@
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';

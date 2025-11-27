@@ -2,8 +2,6 @@
 excluded_packages=$(cat << 'EOF' | jq -r '.[] | "!\(.)"'
 [
   "@antfu/ni",
-  "@changesets/cli",
-  "@changesets/get-github-info",
   "@excalidraw/excalidraw",
   "@shikijs/compat",
   "contentlayer2",

@@ -1,8 +1,7 @@
-import type { ChatMessage } from '@/components/editor/use-chat';
-import type { SlateEditor } from 'platejs';
-
 import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
+import type { SlateEditor } from 'platejs';
+import type { ChatMessage } from '@/components/editor/use-chat';
 
 import {
   addSelection,
@@ -176,7 +175,9 @@ export function getGeneratePrompt(
   editor: SlateEditor,
   { messages }: { messages: ChatMessage[] }
 ) {
-  !isMultiBlocks(editor) && addSelection(editor);
+  if (!isMultiBlocks(editor)) {
+    addSelection(editor);
+  }
 
   const selectingMarkdown = getMarkdownWithSelection(editor);
 
@@ -231,7 +232,6 @@ export function getEditPrompt(
 ) {
   if (!isSelecting)
     throw new Error('Edit tool is only available when selecting');
-
   if (isMultiBlocks(editor)) {
     const selectingMarkdown = getMarkdownWithSelection(editor);
 
@@ -246,19 +246,17 @@ export function getEditPrompt(
 
         // 3) Make it more concise without losing meaning
         'User: Make it more concise without losing meaning.\nbackgroundData: The purpose of this document is to provide an overview that explains, in detail, all the steps required to complete the installation.\nOutput:\nThis document provides a detailed overview of the installation steps.',
-
-        // 4) Translate
-        'User: Translate into French.\nbackgroundData: ## Features\n- Fast startup\n- Easy configuration\nOutput:\n## Fonctionnalités\n- Démarrage rapide\n- Configuration simple',
       ],
       history: formatTextFromMessages(messages),
       outputFormatting: 'markdown',
       rules: dedent`
-        - background data represents the full blocks of text the user has selected and wants to modify or ask about.
-        - Your response should be a direct replacement for the entire background data.
+        - Do not Write <backgroundData> tags in your response.
+        - <backgroundData> represents the full blocks of text the user has selected and wants to modify or ask about.
+        - Your response should be a direct replacement for the entire <backgroundData>.
         - Maintain the overall structure and formatting of the background data, unless explicitly instructed otherwise.
-        - CRITICAL: Provide only the content to replace background data. Do not add additional blocks or change the block structure unless specifically requested.
+        - CRITICAL: Provide only the content to replace <backgroundData>. Do not add additional blocks or change the block structure unless specifically requested.
       `,
-      task: `The following background data is user-provided Markdown content that needs improvement. Modify it according to the user's instruction.
+      task: `The following <backgroundData> is user-provided Markdown content that needs improvement. Modify it according to the user's instruction.
       Unless explicitly stated otherwise, your output should be a seamless replacement of the original content.`,
     });
   }

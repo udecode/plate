@@ -9,7 +9,7 @@
 本仓库是一个 monorepo。
 
 - 我们使用 [yarn](https://yarnpkg.com/en/docs/install) 和 [`workspaces`](https://yarnpkg.com/features/workspaces) 进行开发。
-- 我们使用 [tsup](https://tsup.egoist.dev/) 作为我们的构建系统。
+- 我们使用 [tsdown](https://tsdown.dev/) 作为我们的构建系统。
 - 我们使用 [changesets](https://github.com/changesets/changesets) 管理发布。
 
 ## 结构
@@ -271,21 +271,3 @@ export * from "./server/index"; // If needed
 
 - （可选）如果需要，在`/src/server/`中创建服务器端版本。例如，`/src/server/withReact`中的`withReact`是`/src/client/withReact`的服务器端版本
 - 运行`yarn brl`来同步导出
-- 更新`package.json > exports`
-
-```json
-"exports": {
-  ".": {
-    "types": "./dist/index.d.ts",
-    "import": "./dist/index.mjs",
-    "module": "./dist/index.mjs",
-    "require": "./dist/index.js"
-  },
-  "./server": {
-    "types": "./dist/server.d.ts",
-    "import": "./dist/server.mjs",
-    "module": "./dist/server.mjs",
-    "require": "./dist/server.js"
-  }
-},
-```

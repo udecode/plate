@@ -143,7 +143,7 @@ describe('withStatic', () => {
         anchor: editor.api.start([]),
         focus: editor.api.start([]),
       };
-      expect(editor.selection).toEqual(expectedSelection);
+      expect(editor.selection as any).toEqual(expectedSelection);
     });
 
     it('should auto-select end of document', () => {
@@ -164,7 +164,7 @@ describe('withStatic', () => {
         anchor: editor.api.end([]),
         focus: editor.api.end([]),
       };
-      expect(editor.selection).toEqual(expectedSelection);
+      expect(editor.selection as any).toEqual(expectedSelection);
     });
   });
 
@@ -265,7 +265,7 @@ describe('withStatic', () => {
       });
 
       // Should normalize empty value to have at least one paragraph
-      expect(editor.children).toEqual([
+      expect(editor.children as any).toEqual([
         {
           children: [{ text: '' }],
           type: 'p',

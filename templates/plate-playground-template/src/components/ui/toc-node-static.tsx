@@ -1,10 +1,8 @@
-import * as React from 'react';
-
-import type { SlateEditor, SlateElementProps, TElement } from 'platejs';
-
-import { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';
+import { BaseTocPlugin, type Heading, isHeading } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
-import { NodeApi, SlateElement } from 'platejs';
+import { NodeApi, type SlateEditor, type TElement } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
+import { SlateElement } from 'platejs/static';
 
 import { Button } from '@/components/ui/button';
 
@@ -31,17 +29,17 @@ export function TocElementStatic(props: SlateElementProps) {
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button
-              key={item.title}
-              variant="ghost"
               className={headingItemVariants({
                 depth: item.depth as 1 | 2 | 3,
               })}
+              key={item.title}
+              variant="ghost"
             >
               {item.title}
             </Button>
           ))
         ) : (
-          <div className="text-sm text-gray-500">
+          <div className="text-gray-500 text-sm">
             Create a heading to display the table of contents.
           </div>
         )}
@@ -78,7 +76,7 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   if (!values) return [];
 
-  Array.from(values, ([node, path]) => {
+  Array.from(values).forEach(([node, path]) => {
     const { type } = node;
     const title = NodeApi.string(node);
     const depth = headingDepth[type];

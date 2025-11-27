@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
-import copyToClipboard from 'copy-to-clipboard';
+import * as copyToClipboardModule from 'copy-to-clipboard';
 import { createPlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
@@ -9,16 +9,21 @@ import { copySelectedBlocks } from './copySelectedBlocks';
 
 jsx;
 
-jest.mock('copy-to-clipboard');
-
 describe('copySelectedBlocks', () => {
   let editor: any;
-  const mockCopyToClipboard = copyToClipboard as jest.MockedFunction<
-    typeof copyToClipboard
-  >;
+  let copyToClipboardSpy: ReturnType<typeof spyOn>;
+  let copyToClipboardMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    copyToClipboardMock = mock();
+    copyToClipboardSpy = spyOn(
+      copyToClipboardModule,
+      'default'
+    ).mockImplementation(copyToClipboardMock);
+  });
+
+  afterEach(() => {
+    copyToClipboardSpy?.mockRestore();
   });
 
   describe('when copying blocks with empty content', () => {
@@ -59,21 +64,21 @@ describe('copySelectedBlocks', () => {
 
     it('should copy empty blocks but not call setFragmentData for them', () => {
       const mockDataTransfer = {
-        getData: jest.fn((type: string) => {
+        getData: mock((type: string) => {
           if (type === 'text/plain') return 'mock plain text';
           if (type === 'text/html') return '<p>mock html</p>';
           return '';
         }),
-        setData: jest.fn(),
+        setData: mock(),
       };
 
-      const mockSetFragmentData = jest.fn();
+      const mockSetFragmentData = mock();
       editor.tf.setFragmentData = mockSetFragmentData;
 
       // Mock the blockSelection.getNodes to return the selected entries
-      editor.getApi = jest.fn().mockReturnValue({
+      editor.getApi = mock().mockReturnValue({
         blockSelection: {
-          getNodes: jest.fn().mockReturnValue([
+          getNodes: mock().mockReturnValue([
             [
               { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
               [0],
@@ -91,9 +96,9 @@ describe('copySelectedBlocks', () => {
       // Mock editor.api.string() to return the text content of each block
       const stringResults = ['First block', '', '   ', 'Last block'];
       let stringCallIndex = 0;
-      editor.api.string = jest.fn(() => stringResults[stringCallIndex++]);
+      editor.api.string = mock(() => stringResults[stringCallIndex++]);
 
-      mockCopyToClipboard.mockImplementation((_text, options) => {
+      copyToClipboardMock.mockImplementation((_text, options) => {
         if (options?.onCopy) {
           options.onCopy(mockDataTransfer as any);
         }
@@ -157,20 +162,20 @@ describe('copySelectedBlocks', () => {
 
     it('should copy all selected blocks with content', () => {
       const mockDataTransfer = {
-        getData: jest.fn((type: string) => {
+        getData: mock((type: string) => {
           if (type === 'text/plain') return 'mock plain text';
           if (type === 'text/html') return '<p>mock html</p>';
           return '';
         }),
-        setData: jest.fn(),
+        setData: mock(),
       };
 
-      const mockSetFragmentData = jest.fn();
+      const mockSetFragmentData = mock();
       editor.tf.setFragmentData = mockSetFragmentData;
 
-      editor.getApi = jest.fn().mockReturnValue({
+      editor.getApi = mock().mockReturnValue({
         blockSelection: {
-          getNodes: jest.fn().mockReturnValue([
+          getNodes: mock().mockReturnValue([
             [
               { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
               [0],
@@ -185,9 +190,9 @@ describe('copySelectedBlocks', () => {
 
       const stringResults = ['First block', 'Second block'];
       let stringCallIndex = 0;
-      editor.api.string = jest.fn(() => stringResults[stringCallIndex++]);
+      editor.api.string = mock(() => stringResults[stringCallIndex++]);
 
-      mockCopyToClipboard.mockImplementation((_text, options) => {
+      copyToClipboardMock.mockImplementation((_text, options) => {
         if (options?.onCopy) {
           options.onCopy(mockDataTransfer as any);
         }

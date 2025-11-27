@@ -1,6 +1,6 @@
 {
   "name": "@platejs/suggestion",
-  "version": "51.1.2",
+  "version": "52.0.1",
   "description": "Plate plugin for suggestions",
   "keywords": [
     "plate",
@@ -19,22 +19,12 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "module": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
-    }
+    ".": "./dist/index.js",
+    "./react": "./dist/react/index.js",
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
@@ -50,18 +40,20 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/diff": "51.1.2",
+    "@platejs/diff": "52.0.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=51.1.3",
+    "platejs": ">=52.0.1",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "type": "module",
+  "module": "./dist/index.js"
 }

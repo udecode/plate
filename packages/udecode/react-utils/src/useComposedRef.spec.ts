@@ -36,8 +36,8 @@ describe('useComposedRef', () => {
     const element = document.createElement('div');
     result.current(element);
 
-    expect(captured1).toBe(element);
-    expect(captured2).toBe(element);
+    expect(captured1 as any).toBe(element);
+    expect(captured2 as any).toBe(element);
   });
 
   it('should handle mixed ref types', () => {
@@ -54,7 +54,7 @@ describe('useComposedRef', () => {
     result.current(element);
 
     expect(ref.current).toBe(element);
-    expect(captured).toBe(element);
+    expect(captured as any).toBe(element);
   });
 
   it('should handle undefined refs', () => {
@@ -69,7 +69,7 @@ describe('useComposedRef', () => {
 
   it('should not return a function when no cleanup functions are returned', () => {
     const ref = React.createRef<HTMLDivElement>();
-    const callbackRef = jest.fn((_node: HTMLDivElement | null) => {
+    const callbackRef = mock((_node: HTMLDivElement | null) => {
       // Callback ref without cleanup
     });
 
@@ -83,16 +83,16 @@ describe('useComposedRef', () => {
   });
 
   it('should compose cleanup functions from callback refs', () => {
-    const cleanup1 = jest.fn();
-    const cleanup2 = jest.fn();
+    const cleanup1 = mock();
+    const cleanup2 = mock();
 
-    const callbackRef1 = jest.fn((node: HTMLDivElement | null) => {
+    const callbackRef1 = mock((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup1;
       }
     });
 
-    const callbackRef2 = jest.fn((node: HTMLDivElement | null) => {
+    const callbackRef2 = mock((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup2;
       }
@@ -116,19 +116,17 @@ describe('useComposedRef', () => {
   });
 
   it('should handle mixed refs with some returning cleanup functions', () => {
-    const cleanup = jest.fn();
+    const cleanup = mock();
 
-    const callbackRefWithCleanup = jest.fn((node: HTMLDivElement | null) => {
+    const callbackRefWithCleanup = mock((node: HTMLDivElement | null) => {
       if (node) {
         return cleanup;
       }
     });
 
-    const callbackRefWithoutCleanup = jest.fn(
-      (_node: HTMLDivElement | null) => {
-        // No cleanup returned
-      }
-    );
+    const callbackRefWithoutCleanup = mock((_node: HTMLDivElement | null) => {
+      // No cleanup returned
+    });
 
     const normalRef = React.createRef<HTMLDivElement>();
 

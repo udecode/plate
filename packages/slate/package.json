@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slate",
-  "version": "51.1.2",
+  "version": "52.0.1",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -17,16 +17,11 @@
   "license": "MIT",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "module": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
@@ -42,7 +37,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/utils": "51.1.2",
+    "@udecode/utils": "52.0.1",
     "is-plain-object": "^5.0.0",
     "lodash": "^4.17.21",
     "slate": "0.118.1",
@@ -50,5 +45,7 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "type": "module",
+  "module": "./dist/index.js"
 }

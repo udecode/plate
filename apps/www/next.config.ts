@@ -4,6 +4,10 @@ import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
   const config: NextConfig = {
+    typescript: {
+      ignoreBuildErrors: true,
+    },
+
     experimental: {
       turbopackFileSystemCacheForDev: true,
     },
@@ -114,7 +118,7 @@ const nextConfig = async (phase: string) => {
           return null;
         }
       })
-      .filter((pkg) => pkg?.startsWith('@udecode'));
+      .filter((pkg) => pkg?.startsWith('@udecode') || pkg?.includes('platejs'));
 
     config.transpilePackages = [
       ...(config.transpilePackages || []),

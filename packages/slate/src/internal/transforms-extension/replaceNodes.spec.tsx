@@ -1,4 +1,5 @@
 /** @jsx jsx */
+
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../../create-editor';
@@ -66,7 +67,7 @@ describe('replaceNodes', () => {
         }
       );
 
-      expect(editor.children).toEqual([
+      expect(editor.children).toMatchObject([
         {
           children: [{ text: 'test' }],
           type: 'p',

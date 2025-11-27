@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/refs */
 
 import * as React from 'react';
 
@@ -340,7 +341,6 @@ function EmojiPickerContent({
 
   return (
     <div
-      // eslint-disable-next-line react-hooks/refs
       ref={refs.current.contentRoot}
       className={cn(
         'h-full min-h-[50%] overflow-y-auto overflow-x-hidden px-2',
@@ -351,7 +351,6 @@ function EmojiPickerContent({
       )}
       data-id="scroll"
     >
-      {/* eslint-disable-next-line react-hooks/refs */}
       <div ref={refs.current.content} className="h-full">
         {isSearching ? SearchList() : EmojiList()}
       </div>

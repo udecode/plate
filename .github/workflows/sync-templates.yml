@@ -1,4 +1,4 @@
-name: Templates
+name: Sync Templates
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/actions/**'
       - '.github/workflows/sync-templates.yml'
-      - 'tooling/scripts/sync-templates.sh'
+      - 'tooling/scripts/push-template.sh'
       - 'templates/**'
 
 jobs:
@@ -25,34 +25,32 @@ jobs:
         working-directory: templates/${{ matrix.template }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v2.4.1
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
         with:
-          version: 8.6.1
-          run_install: false
+          bun-version: latest
 
-      - name: ♻️ Setup Node.js
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: 🔄 Setup pnpm cache
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
+        name: ♻️ Setup bun cache
         with:
-          path: $(pnpm store path)
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-bun-
 
-      - name: 📥 Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: 📥 Install
+        run: bun install --frozen-lockfile
 
       - name: 🏗 Build
-        run: pnpm build
+        run: bun run build
 
   sync:
     needs: build
@@ -71,5 +69,5 @@ jobs:
       - name: 🔄 Sync Templates
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-        run: ./tooling/scripts/sync-templates.sh "templates/${{ matrix.template }}"
+        run: ./tooling/scripts/push-template.sh "templates/${{ matrix.template }}"
         shell: bash

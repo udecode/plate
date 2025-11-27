@@ -102,7 +102,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([
         [output[0], [1]],
         [output[1], [2]],
-      ]);
+      ] as any);
     });
 
     it('should get nested children with multiple indent levels', () => {
@@ -152,7 +152,7 @@ describe('getListChildren', () => {
         [output[0], [1]],
         [output[1], [2]],
         [output[2], [3]],
-      ]);
+      ] as any);
     });
 
     it('should stop at item with equal indent', () => {
@@ -198,7 +198,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([
         [output[0], [1]],
         [output[1], [2]],
-      ]);
+      ] as any);
     });
 
     it('should stop at item with lower indent', () => {
@@ -244,7 +244,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([
         [output[0], [1]],
         [output[1], [2]],
-      ]);
+      ] as any);
     });
 
     it('should stop at non-list item', () => {
@@ -279,7 +279,7 @@ describe('getListChildren', () => {
       const entry = editor.api.block<TElement>();
       const children = getListChildren(editor, entry!);
 
-      expect(children).toEqual([[output[0], [1]]]);
+      expect(children).toEqual([[output[0], [1]]] as any);
     });
 
     it('should return empty array when no children exist', () => {
@@ -375,7 +375,7 @@ describe('getListChildren', () => {
         [output[0], [1]],
         [output[1], [2]],
         [output[2], [3]],
-      ]);
+      ] as any);
     });
 
     it('should work with todo lists', () => {
@@ -418,7 +418,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([
         [output[0], [1]],
         [output[1], [2]],
-      ]);
+      ] as any);
     });
   });
 });
