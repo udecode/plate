@@ -65,6 +65,9 @@ runs:
       working-directory: ${{ inputs.cwd }}
       run: corepack enable
 
+    - name: ⚙️ Setup Bun
+      uses: oven-sh/setup-bun@v2
+
     - name: ⚙️ Expose yarn config as "$GITHUB_OUTPUT"
       id: yarn-config
       shell: bash
