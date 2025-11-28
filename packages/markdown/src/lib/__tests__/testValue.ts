@@ -111,6 +111,49 @@ export const testValue = [
     ],
   },
   {
+    type: 'p',
+    indent: 1,
+    listStyleType: 'disc',
+    children: [
+      {
+        text: 'parent style change',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    indent: 2,
+    listStyleType: 'decimal',
+    listStart: 1,
+    children: [
+      {
+        text: 'child ordered style split',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    indent: 2,
+    listStyleType: 'disc',
+    listStart: 1,
+    children: [
+      {
+        text: 'child bullet style split',
+      },
+    ],
+  },
+  {
+    type: 'p',
+    indent: 2,
+    listStyleType: 'todo',
+    checked: true,
+    children: [
+      {
+        text: 'child todo style split',
+      },
+    ],
+  },
+  {
     children: [
       {
         children: [

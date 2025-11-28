@@ -262,4 +262,262 @@ describe('convertNodesSerialize', () => {
       ]);
     });
   });
+
+  describe('listStyleType handling', () => {
+    it('should split list blocks when listStyleType changes', () => {
+      const listNodes: Descendant[] = [
+        {
+          children: [{ text: 'unordered' }],
+          indent: 1,
+          listStart: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'todo' }],
+          indent: 1,
+          listStart: 1,
+          listStyleType: 'todo',
+          checked: false,
+          type: 'p',
+        },
+        {
+          children: [{ text: 'ordered' }],
+          indent: 1,
+          listStart: 1,
+          listStyleType: 'decimal',
+          type: 'p',
+        },
+      ];
+
+      const result = convertNodesSerialize(listNodes, baseOptions);
+
+      expect(result).toEqual([
+        {
+          children: [
+            {
+              checked: null,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'unordered' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'listItem',
+            },
+          ],
+          ordered: false,
+          spread: false,
+          start: 1,
+          type: 'list',
+        },
+        {
+          children: [
+            {
+              checked: false,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'todo' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'listItem',
+            },
+          ],
+          ordered: false,
+          spread: false,
+          start: 1,
+          type: 'list',
+        },
+        {
+          children: [
+            {
+              checked: null,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'ordered' }],
+                  type: 'paragraph',
+                },
+              ],
+              type: 'listItem',
+            },
+          ],
+          ordered: true,
+          spread: false,
+          start: 1,
+          type: 'list',
+        },
+      ] as any);
+    });
+
+    it('should split nested sibling lists when style changes at same indent', () => {
+      const listNodes: Descendant[] = [
+        {
+          children: [{ text: 'parent bullet' }],
+          indent: 1,
+          listStart: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'child ordered' }],
+          indent: 2,
+          listStart: 1,
+          listStyleType: 'decimal',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'child bullet' }],
+          indent: 2,
+          listStart: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ];
+
+      const result = convertNodesSerialize(listNodes, baseOptions);
+
+      expect(result).toEqual([
+        {
+          children: [
+            {
+              checked: null,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'parent bullet' }],
+                  type: 'paragraph',
+                },
+                {
+                  children: [
+                    {
+                      checked: null,
+                      children: [
+                        {
+                          children: [{ type: 'text', value: 'child ordered' }],
+                          type: 'paragraph',
+                        },
+                      ],
+                      type: 'listItem',
+                    },
+                  ],
+                  ordered: true,
+                  spread: false,
+                  start: 1,
+                  type: 'list',
+                },
+                {
+                  children: [
+                    {
+                      checked: null,
+                      children: [
+                        {
+                          children: [{ type: 'text', value: 'child bullet' }],
+                          type: 'paragraph',
+                        },
+                      ],
+                      type: 'listItem',
+                    },
+                  ],
+                  ordered: false,
+                  spread: false,
+                  start: 1,
+                  type: 'list',
+                },
+              ],
+              type: 'listItem',
+            },
+          ],
+          ordered: false,
+          spread: false,
+          start: 1,
+          type: 'list',
+        },
+      ] as any);
+    });
+
+    it('should split when listStyleType changes across indentation', () => {
+      const listNodes: Descendant[] = [
+        {
+          children: [{ text: 'parent bullet' }],
+          indent: 1,
+          listStart: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'child bullet' }],
+          indent: 2,
+          listStart: 1,
+          listStyleType: 'disc',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'child ordered' }],
+          indent: 2,
+          listStart: 1,
+          listStyleType: 'decimal',
+          type: 'p',
+        } as any,
+      ];
+
+      const result = convertNodesSerialize(listNodes, baseOptions);
+
+      expect(result).toEqual([
+        {
+          children: [
+            {
+              checked: null,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'parent bullet' }],
+                  type: 'paragraph',
+                },
+                {
+                  children: [
+                    {
+                      checked: null,
+                      children: [
+                        {
+                          children: [{ type: 'text', value: 'child bullet' }],
+                          type: 'paragraph',
+                        },
+                      ],
+                      type: 'listItem',
+                    },
+                  ],
+                  ordered: false,
+                  spread: false,
+                  start: 1,
+                  type: 'list',
+                },
+                {
+                  children: [
+                    {
+                      checked: null,
+                      children: [
+                        {
+                          children: [{ type: 'text', value: 'child ordered' }],
+                          type: 'paragraph',
+                        },
+                      ],
+                      type: 'listItem',
+                    },
+                  ],
+                  ordered: true,
+                  spread: false,
+                  start: 1,
+                  type: 'list',
+                },
+              ],
+              type: 'listItem',
+            },
+          ],
+          ordered: false,
+          spread: false,
+          start: 1,
+          type: 'list',
+        },
+      ] as any);
+    });
+  });
 });

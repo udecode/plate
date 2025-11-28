@@ -283,6 +283,40 @@ describe('listToMdastTree', () => {
     );
   });
 
+  it('should split sibling nested lists when style changes at same indent', () => {
+    const nodes = [
+      {
+        children: [{ text: 'parent bullet' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child ordered' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child bullet' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ];
+
+    const result = listToMdastTree(nodes as any, {
+      editor,
+    }) as any;
+
+    expect(result.ordered).toBe(false);
+    expect(result.children[0].children[1].ordered).toBe(true);
+    expect(result.children[0].children[2].ordered).toBe(false);
+  });
+
   it('should handle ordered lists with different start numbers', () => {
     const nodes = [
       {

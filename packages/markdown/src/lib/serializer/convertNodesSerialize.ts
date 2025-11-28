@@ -60,8 +60,14 @@ export const convertNodesSerialize = (
         const next = nodes[i + 1] as TElement;
         const isNextIndent =
           next && next.type === pType && 'listStyleType' in next;
+        const firstList = listBlock.at(0);
+        const hasDifferentListStyle =
+          isNextIndent &&
+          firstList &&
+          next.listStyleType !== firstList.listStyleType &&
+          next.indent === firstList.indent;
 
-        if (!isNextIndent) {
+        if (!isNextIndent || hasDifferentListStyle) {
           // Pass the original nodes and isBlock flag to listToMdastTree
           // so it can handle wrapping individual items with block IDs
           const result = listToMdastTree(listBlock as any, options, isBlock);
