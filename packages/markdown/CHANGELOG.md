@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.0.4
+
+### Patch Changes
+
+- [#4757](https://github.com/udecode/plate/pull/4757) by [@hhhjin](https://github.com/hhhjin) – Fix markdown serializer to split mixed-style lists correctly, preserve numbering/todo states
+
 ## 52.0.1
 
 ### Patch Changes
