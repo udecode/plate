@@ -312,8 +312,6 @@ describe('listToMdastTree', () => {
       editor,
     }) as any;
 
-    console.log(JSON.stringify(result, null, 2));
-
     expect(result.ordered).toBe(false);
     expect(result.children[0].children[1].ordered).toBe(true);
     expect(result.children[0].children[2].ordered).toBe(false);
