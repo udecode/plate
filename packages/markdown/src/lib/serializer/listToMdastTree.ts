@@ -35,7 +35,15 @@ export function listToMdastTree(
     indent: number;
     list: MdList;
     parent: MdListItem | null;
-  }[] = [{ indent: nodes[0].indent, list: root, parent: null }];
+    styleType: TListElement['listStyleType'];
+  }[] = [
+    {
+      indent: nodes[0].indent,
+      list: root,
+      parent: null,
+      styleType: nodes[0].listStyleType,
+    },
+  ];
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
@@ -49,9 +57,37 @@ export function listToMdastTree(
       indentStack.pop();
     }
 
-    const stackTop = indentStack.at(-1);
+    let stackTop = indentStack.at(-1);
     if (!stackTop) {
       throw new Error('Stack should never be empty');
+    }
+
+    const hasSameIndentStyleChange =
+      stackTop.indent === currentIndent &&
+      stackTop.styleType !== node.listStyleType &&
+      !!stackTop.parent;
+
+    if (hasSameIndentStyleChange) {
+      // Split sibling list when style switches at same indent
+      const siblingList: MdList = {
+        children: [],
+        ordered: node.listStyleType === 'decimal',
+        spread: options.spread ?? false,
+        start: node.listStart,
+        type: 'list',
+      };
+
+      // Attach sibling list under the same parent item
+      stackTop.parent!.children.push(siblingList);
+
+      indentStack[indentStack.length - 1] = {
+        indent: currentIndent,
+        list: siblingList,
+        parent: stackTop.parent,
+        styleType: node.listStyleType,
+      };
+
+      stackTop = indentStack.at(-1)!;
     }
 
     // Create the current list item
@@ -102,6 +138,7 @@ export function listToMdastTree(
         indent: nextNode.indent,
         list: nestedList,
         parent: listItem,
+        styleType: nextNode.listStyleType,
       });
     }
   }
