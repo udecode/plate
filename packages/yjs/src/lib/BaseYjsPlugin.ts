@@ -269,7 +269,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       setOption('_providers', finalProviders);
 
       // Connect providers to start sync
-      if (autoConnect) {
+      if (autoConnect && finalProviders.length > 0) {
         finalProviders.forEach((provider) => {
           try {
             provider.connect();
@@ -280,21 +280,24 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
             });
           }
         });
+
+        // Wait for first sync to complete (with timeout)
+        const SYNC_TIMEOUT = 5000;
+        await Promise.race([
+          syncPromise,
+          new Promise<void>((resolve) => {
+            setTimeout(() => {
+              syncResolve = null; // Clear to prevent late resolution
+              resolve();
+            }, SYNC_TIMEOUT);
+          }),
+        ]);
       }
 
-      // Wait for first sync to complete (with timeout)
-      const SYNC_TIMEOUT = 5000;
-      await Promise.race([
-        syncPromise,
-        new Promise<void>((resolve) => {
-          setTimeout(() => {
-            resolve();
-          }, SYNC_TIMEOUT);
-        }),
-      ]);
-
       // After sync, check if ydoc has content from server
-      const sharedRoot = ydoc.get('content', Y.XmlText) as Y.XmlText;
+      // Use custom sharedType if provided, otherwise use default 'content' key
+      const sharedRoot =
+        customSharedType ?? (ydoc.get('content', Y.XmlText) as Y.XmlText);
 
       // Only apply initial value if ydoc is empty (no content from server)
       if (sharedRoot.length === 0 && value !== null) {
