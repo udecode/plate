@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 52.0.5
+
+### Patch Changes
+
+- [#4759](https://github.com/udecode/plate/pull/4759) by [@felixfeng33](https://github.com/felixfeng33) – Revert https://github.com/udecode/plate/pull/4755 and fixes content duplicated.
+
 ## 52.0.3
 
 ### Patch Changes
