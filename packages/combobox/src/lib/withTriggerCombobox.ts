@@ -28,6 +28,7 @@ export const withTriggerCombobox: OverrideEditor<
       insertText(text, options) {
         const {
           createComboboxInput,
+          getUserId,
           triggerPreviousCharPattern,
           triggerQuery,
         } = getOptions();
@@ -53,6 +54,13 @@ export const withTriggerCombobox: OverrideEditor<
           const inputNode: TElement = createComboboxInput
             ? createComboboxInput(text)
             : { children: [{ text: '' }], type };
+
+          // Add userId for Yjs collaboration - only the creator sees the combobox
+          const userId = getUserId?.(editor as SlateEditor);
+
+          if (userId) {
+            (inputNode as any).userId = userId;
+          }
 
           return editor.tf.insertNodes(inputNode, options);
         }

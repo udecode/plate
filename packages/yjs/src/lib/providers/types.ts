@@ -101,6 +101,8 @@ export type YjsConfig = PluginConfig<
     _isConnected: boolean;
     /** Whether the plugin is currently synced. */
     _isSynced: boolean;
+    /** The current user ID. */
+    userId: string | null;
     /** Array of all active, instantiated providers. */
     _providers: UnifiedProvider[];
     /** The shared Awareness instance used by the plugin. */
