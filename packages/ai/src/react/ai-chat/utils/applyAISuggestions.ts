@@ -26,14 +26,11 @@ export const applyAISuggestions = (editor: SlateEditor, content: string) => {
     .getApi({ key: KEYS.cursorOverlay })
     ?.cursorOverlay?.removeCursor('selection');
 
-  const isBlockSelecting = editor.getOption(
-    BlockSelectionPlugin,
-    'isSelectingSome'
-  );
-
   const { chatNodes } = editor.getOptions(AIChatPlugin);
 
-  if (isBlockSelecting || editor.api.blocks({ mode: 'highest' }).length > 1) {
+  // Use chatNodes.length to determine if we're in multi-block edit mode
+  // instead of checking current selection state (which may have changed)
+  if (chatNodes.length > 1) {
     const setReplaceIds = (ids: string[]) => {
       editor.setOption(AIChatPlugin, '_replaceIds', ids);
     };
