@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 52.0.6
+
+### Patch Changes
+
+- [#4763](https://github.com/udecode/plate/pull/4763) by [@felixfeng33](https://github.com/felixfeng33) – Fix AI edit mode inserting nodes at wrong position when cursor moves during streaming.(https://github.com/udecode/plate/issues/4720)
+
 ## 52.0.4
 
 ## 52.0.1
