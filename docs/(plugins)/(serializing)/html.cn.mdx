@@ -21,7 +21,8 @@ toc: true
 ### 添加套件
 
 ```tsx
-import { createSlateEditor, serializeHtml } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createSlateEditor({
@@ -63,7 +64,8 @@ const html = await serializeHtml(editor);
 提供服务端编辑器实例并在编辑器创建时配置Plate组件。
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor, serializeHtml } from 'platejs'; // 基础导入
+import { createSlateEditor } from 'platejs';
+import { serializeHtml } from 'platejs/static'; // 静态导入
 // 导入基础插件（不从/react路径导入）
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 // 导入用于渲染的静态组件
@@ -148,7 +150,7 @@ async function getFullHtmlDocument() {
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
 
 // 示例静态段落组件
 export function ParagraphElementStatic(props: SlateElementProps) {

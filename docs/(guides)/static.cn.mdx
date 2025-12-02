@@ -40,7 +40,8 @@ description: 一个最小化、记忆化、只读版本的 Plate，支持 RSC/SS
 ### 添加 Kit
 
 ```tsx
-import { createSlateEditor, PlateStatic } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { PlateStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createSlateEditor({
@@ -98,7 +99,7 @@ const editor = createSlateEditor({
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
 
 export function ParagraphElementStatic(props: SlateElementProps) {
   return (
@@ -131,8 +132,8 @@ export const staticComponents = {
 使用 `<PlateStatic>` 组件，提供配置了组件的 `editor` 实例。
 
 ```tsx title="app/my-static-page/page.tsx (RSC 示例)"
-import { PlateStatic } from 'platejs';
 import { createSlateEditor } from 'platejs';
+import { PlateStatic } from 'platejs/static';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes'; // 等等
 import { staticComponents } from '@/components/static-components';
 
@@ -187,8 +188,7 @@ export default async function MyStaticPage() {
 ### 示例：具有两种静态视图的服务器组件
 
 ```tsx title="app/document/page.tsx"
-import { createStaticEditor } from 'platejs';
-import { PlateStatic } from 'platejs';
+import { createStaticEditor, PlateStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 import { InteractiveViewer } from './interactive-viewer';
 
@@ -267,8 +267,8 @@ export function InteractiveViewer({ value }) {
 在 Next.js App Router（或类似的 RSC 环境）中，`<PlateStatic>` 可以直接在服务器组件中使用：
 
 ```tsx title="app/preview/page.tsx (RSC)"
-import { PlateStatic } from 'platejs';
 import { createSlateEditor } from 'platejs';
+import { PlateStatic } from 'platejs/static';
 // 示例基础插件（确保非 /react 导入）
 // import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 import { staticComponents } from '@/components/static-components'; // 您的静态组件映射
@@ -302,7 +302,8 @@ export default async function Page() {
 要生成完整的 HTML 字符串（例如用于电子邮件、PDF 或外部系统），请使用 `serializeHtml`。它在内部使用 `<PlateStatic>`。
 
 ```ts title="lib/html-serializer.ts"
-import { createSlateEditor, serializeHtml } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { serializeHtml } from 'platejs/static';
 import { staticComponents } from '@/components/static-components';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 

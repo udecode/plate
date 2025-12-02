@@ -558,51 +558,7 @@ The `useCallback` is unnecessary and creates a subtle bug: the inline arrow func
 
 ### Computed Values
 
-<example>
-```tsx
-// ✅ Good - Direct computation
-function UserProfile({ user }) {
-  const fullName = `${user.firstName} ${user.lastName}`;
-  const initials = `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
-
-return (
-
-<div>
-<h1>{fullName}</h1>
-<Avatar initials={initials} />
-</div>
-);
-}
-
-````
-The compiler automatically memoizes these computations when appropriate.
-</example>
-
-<example type="invalid">
-```tsx
-// ❌ Avoid - Unnecessary useMemo
-function UserProfile({ user }) {
-  const fullName = useMemo(
-    () => `${user.firstName} ${user.lastName}`,
-    [user.firstName, user.lastName]
-  );
-
-  const initials = useMemo(
-    () => `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
-    [user.firstName, user.lastName]
-  );
-
-  return (
-    <div>
-      <h1>{fullName}</h1>
-      <Avatar initials={initials} />
-    </div>
-  );
-}
-````
-
-These `useMemo` calls are redundant and make the code harder to read.
-</example>
+See [Derived State](#derived-state-compute-during-render-not-in-effects) for the pattern. Compute inline during render; React Compiler handles memoization.
 
 ### Conditional Memoization
 
@@ -707,8 +663,8 @@ This is an acceptable escape hatch for external library integration.
 
 - Treat Effects as an escape hatch for synchronizing React with external systems (DOM APIs, network, imperative libraries). If no external system is involved, keep the logic in render or event handlers.
 - Rendering must stay pure. Event-driven work (buying, saving, submitting) belongs in the handler that caused it, not in an Effect.
-- **apps/www only:** React Compiler assumes idiomatic React semantics. Avoid manual memoization tricks to influence dependency stability; rely on actual values and let the compiler hoist what it can.
-- **apps/www only:** For mixing reactive and non-reactive logic, see [Separating Events from Effects](#separating-events-from-effects) for `useEffectEvent` patterns (React 19 feature).
+- React Compiler assumes idiomatic React semantics. Avoid manual memoization tricks to influence dependency stability; rely on actual values and let the compiler hoist what it can.
+- For mixing reactive and non-reactive logic, see [Separating Events from Effects](#separating-events-from-effects) for `useEffectEvent` patterns.
 
 ### When to Add an Effect
 
@@ -718,10 +674,187 @@ This is an acceptable escape hatch for external library integration.
 
 ### When _Not_ to Add an Effect
 
-- Deriving or filtering data for rendering. Compute it inline during render; **apps/www:** React Compiler memoizes expensive branches automatically. **packages:** Use `useMemo` where appropriate for expensive computations.
+- Deriving or filtering data for rendering. See [Derived State](#derived-state-compute-during-render-not-in-effects).
 - Resetting or coordinating state between components. Use keys, derive state from props, or lift state up instead of chaining Effects.
 - Handling user interactions. Run imperative logic inside the event handler so React can batch updates and you avoid double execution.
 - Preventing Strict Mode double-invocation. Never guard Effects with refs or flags to stop re-execution; fix the underlying cleanup instead.
+
+### Derived State: Compute During Render, Not in Effects
+
+**The most common unnecessary Effect is transforming data for rendering.** When you have data that can be computed from props or state, compute it directly during render:
+
+<example>
+```tsx
+// ❌ Anti-pattern: useState + useEffect for derived data
+function FilteredList({ items, filter }) {
+  const [filtered, setFiltered] = useState([]);
+
+useEffect(() => {
+setFiltered(items.filter(item => item.status === filter));
+}, [items, filter]);
+
+return <List items={filtered} />;
+}
+
+// ✅ Correct: Compute during render
+function FilteredList({ items, filter }) {
+const filtered = items.filter(item => item.status === filter);
+return <List items={filtered} />;
+}
+
+````
+</example>
+
+**Why this matters**: The Effect pattern causes an extra render pass with stale data, wastes cycles, and can cause visual flicker.
+
+### When setState in Effect IS Valid
+
+setState in an Effect is valid when the value **comes from an external source** that React can't observe:
+
+1. **DOM measurements** - Reading element dimensions after paint
+2. **External subscriptions** - Browser APIs, WebSocket, third-party stores
+3. **Resources with cleanup** - Object URLs, media streams, connections
+
+<example>
+```tsx
+// ✅ Valid: DOM measurement after paint
+function Tooltip({ children }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    if (ref.current) {
+      setHeight(ref.current.getBoundingClientRect().height);
+    }
+  }, []);
+
+  return <div ref={ref}>{children}</div>;
+}
+
+// ✅ Valid: External subscription
+function OnlineStatus() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handler = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', handler);
+    window.addEventListener('offline', handler);
+    return () => {
+      window.removeEventListener('online', handler);
+      window.removeEventListener('offline', handler);
+    };
+  }, []);
+
+  return <span>{isOnline ? 'Online' : 'Offline'}</span>;
+}
+
+// ✅ Valid: Resource with cleanup (Object URL)
+function ImagePreview({ file }: { file: File }) {
+  const objectUrl = useMemo(() => URL.createObjectURL(file), [file]);
+
+  useEffect(() => {
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [objectUrl]);
+
+  return <img src={objectUrl} alt={file.name} />;
+}
+````
+
+</example>
+
+### Ref Access Rules
+
+**Never read or write `ref.current` during render** except for lazy initialization:
+
+<example>
+```tsx
+// ❌ Invalid: Reading ref during render
+function Component() {
+  const ref = useRef(0);
+  const value = ref.current; // Don't read during render!
+  return <div>{value}</div>;
+}
+
+// ❌ Invalid: Writing ref during render
+function Component({ value }) {
+const ref = useRef(null);
+ref.current = value; // Don't write during render!
+return <div />;
+}
+
+// ✅ Valid: Read/write in Effects or handlers
+function Component() {
+const ref = useRef<HTMLDivElement>(null);
+
+useEffect(() => {
+if (ref.current) {
+console.log(ref.current.offsetWidth); // OK in effect
+}
+}, []);
+
+const handleClick = () => {
+console.log(ref.current); // OK in handler
+};
+
+return <div ref={ref} onClick={handleClick} />;
+}
+
+// ✅ Valid: Lazy initialization (read-then-write once)
+function Component() {
+const ref = useRef<ExpensiveValue | null>(null);
+
+if (ref.current === null) {
+ref.current = createExpensiveValue(); // OK - one-time init
+}
+
+return <div />;
+}
+
+```
+</example>
+
+### Decision Tree: Derived State vs Effects vs Refs
+
+```
+
+Need to transform/filter/derive data for display?
+├─ YES → Compute during render (no useState, no useEffect)
+│ const derived = items.filter(x => x.active);
+│
+├─ Need to cache expensive computation?
+│ └─ Let React Compiler handle it, or useMemo if profiled bottleneck
+│
+Need to sync with external system (DOM, network, browser API)?
+├─ YES → useEffect with setState IS valid
+│ useEffect(() => { setHeight(ref.current.offsetHeight) }, [])
+│
+Need to read ref.current?
+├─ During render → ❌ NEVER (except lazy init)
+├─ In Effect → ✅ OK
+├─ In handler → ✅ OK
+│
+Need to sync file/blob/stream with cleanup?
+└─ useMemo for creation + useEffect for cleanup
+const url = useMemo(() => URL.createObjectURL(file), [file]);
+useEffect(() => () => URL.revokeObjectURL(url), [url]);
+
+````
+
+### Red Flags - STOP Before "Fixing"
+
+If you're about to:
+- Replace `useState + useEffect` with `useMemo` that reads `ref.current` → STOP
+- Add `eslint-disable` for either rule → STOP, use decision tree
+- "Fix" one error and immediately get the other → STOP, you're cycling
+
+### Rationalization Table
+
+| Excuse | Reality |
+|--------|---------|
+| "useMemo fixes derived state" | Only if you don't read refs during render |
+| "I'll read ref in useMemo since it runs during render" | useMemo IS render. Ref rules still apply. |
+| "Effect was the problem" | Maybe, but check if you're now violating ref rules |
+| "This is simple, I know what to do" | The cycle happens because you skip the decision tree |
 
 ### Cleanup and Strict Mode
 
@@ -729,9 +862,7 @@ This is an acceptable escape hatch for external library integration.
 - Expect every Effect to mount → cleanup → mount in development. Production runs once, but development ensures your Effect is resilient.
 - Avoid side-stepping cleanup by storing mutable singletons in refs. This leaves background work running across navigations and breaks invariants.
 
-### React Compiler Considerations (apps/www only)
-
-**Note:** These guidelines apply ONLY to `apps/www` where React Compiler is enabled.
+### React Compiler Considerations
 
 - Because the compiler stabilizes values for you, do not introduce `useMemo`/`useCallback` purely to satisfy Effect dependency linting. Refactor the Effect so it depends on real inputs.
 - Let the dependency array express actual inputs. Suppressing ESLint warnings or omitting deps makes compiler output unreliable.
@@ -765,6 +896,7 @@ return <video ref={ref} src={src} playsInline loop />;
 }
 
 ````
+
 </example>
 
 <example type="invalid">
@@ -773,31 +905,31 @@ return <video ref={ref} src={src} playsInline loop />;
 function ProductPage({ product }: Props) {
   const [isInCart, setIsInCart] = useState(false);
 
-  useEffect(() => {
-    if (product.isInCart) {
-      setIsInCart(true); // Derivation should happen during render
-      notifyAdd(product.id); // Event logic belongs in the click handler
-    }
-  }, [product]);
-  // ...
+useEffect(() => {
+if (product.isInCart) {
+setIsInCart(true); // Derivation should happen during render
+notifyAdd(product.id); // Event logic belongs in the click handler
 }
+}, [product]);
+// ...
+}
+
 ````
 
 This mixes reactive synchronization with event-driven logic. Use `useEffectEvent` if you need to read current props without re-running the Effect. See [Separating Events from Effects](#separating-events-from-effects).
 </example>
 
 <critical>
+  - **Derived data**: Compute inline during render. No useState + useEffect.
+  - **External systems**: setState in Effect IS valid (DOM, browser APIs, subscriptions).
+  - **Refs**: Never read/write during render (except lazy init). Read in Effects/handlers.
+  - **Resources with cleanup**: useMemo for creation, useEffect for cleanup.
   - Use Effects only for external synchronization; keep render pure and events in handlers.
-  - Always implement cleanup so mount → cleanup → mount cycles in development behave identically to a single mount in production.
-  - **apps/www:** Do not fight dependency linting with manual memoization; rely on actual inputs and let React Compiler optimize the rest. **packages:** Use `useMemo`/`useCallback` appropriately for React 18 compatibility.
-  - Prefer purpose-built hooks (`useSyncExternalStore`, custom hooks) for shared subscription or fetching logic.
+  - Always implement cleanup so mount → cleanup → mount cycles behave correctly.
+  - Do not fight dependency linting with manual memoization; rely on actual inputs.
 </critical>
 
 ## Separating Events from Effects
-
-> **useEffectEvent Availability**
->
-> `useEffectEvent` is a React 19 feature and is ONLY available in `apps/www`. Do NOT use it in `packages/**` which must maintain React 18 compatibility.
 
 ### Principle
 
@@ -805,13 +937,7 @@ Event handlers and Effects serve different purposes in React:
 
 - **Event handlers**: Run in response to specific user interactions. Non-reactive logic.
 - **Effects**: Run when synchronization with external systems is needed. Reactive to dependencies.
-- **Effect Events** (`useEffectEvent`, apps/www only): Extract non-reactive logic from Effects when you need both behaviors.
-
-**CRITICAL DUAL-USE PATTERN**: When a function is needed in BOTH event handlers/props AND useEffect:
-
-1. Create a **regular function** for props/event handlers
-2. Wrap it in **`useEffectEvent`** for use inside Effects only
-3. Never pass Effect Events as props - they can ONLY be called inside Effects
+- **Effect Events** (`useEffectEvent`): Extract non-reactive logic from Effects when you need both behaviors.
 
 ### Choosing Between Event Handlers and Effects
 
@@ -846,6 +972,7 @@ return (
 }
 
 ````
+
 </example>
 
 ### Reactive Values and Reactive Logic
@@ -872,24 +999,25 @@ function ChatRoom({ roomId, theme }) {
     return () => connection.disconnect();
   }, [roomId, theme]); // ❌ Unnecessary reconnection
 
-  return <h1>Welcome to the {roomId} room!</h1>;
+return <h1>Welcome to the {roomId} room!</h1>;
 }
 
 // ✅ With useEffectEvent - Only reconnects on roomId change
 function ChatRoom({ roomId, theme }) {
-  const onConnected = useEffectEvent(() => {
-    showNotification('Connected!', theme); // Reads current theme, not reactive
-  });
+const onConnected = useEffectEvent(() => {
+showNotification('Connected!', theme); // Reads current theme, not reactive
+});
 
-  useEffect(() => {
-    const connection = createConnection(serverUrl, roomId);
-    connection.on('connected', onConnected);
-    connection.connect();
-    return () => connection.disconnect();
-  }, [roomId]); // ✅ Only roomId
+useEffect(() => {
+const connection = createConnection(serverUrl, roomId);
+connection.on('connected', onConnected);
+connection.connect();
+return () => connection.disconnect();
+}, [roomId]); // ✅ Only roomId
 
-  return <h1>Welcome to the {roomId} room!</h1>;
+return <h1>Welcome to the {roomId} room!</h1>;
 }
+
 ````
 
 </example>
@@ -941,6 +1069,7 @@ onVisit(url);
 }
 
 ````
+
 </example>
 
 ### Critical Rules and Limitations
@@ -953,34 +1082,35 @@ onVisit(url);
 function Component() {
   const [canMove, setCanMove] = useState(true);
 
-  function handleMove(e) {
-    if (canMove) { // Always sees initial value!
-      setPosition({ x: e.clientX, y: e.clientY });
-    }
-  }
+function handleMove(e) {
+if (canMove) { // Always sees initial value!
+setPosition({ x: e.clientX, y: e.clientY });
+}
+}
 
-  useEffect(() => {
-    window.addEventListener('pointermove', handleMove);
-    return () => window.removeEventListener('pointermove', handleMove);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+useEffect(() => {
+window.addEventListener('pointermove', handleMove);
+return () => window.removeEventListener('pointermove', handleMove);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 }
 
 // ✅ Use Effect Event instead
 function Component() {
-  const [canMove, setCanMove] = useState(true);
+const [canMove, setCanMove] = useState(true);
 
-  const onMove = useEffectEvent((e) => {
-    if (canMove) { // Always sees current value
-      setPosition({ x: e.clientX, y: e.clientY });
-    }
-  });
-
-  useEffect(() => {
-    window.addEventListener('pointermove', onMove);
-    return () => window.removeEventListener('pointermove', onMove);
-  }, []);
+const onMove = useEffectEvent((e) => {
+if (canMove) { // Always sees current value
+setPosition({ x: e.clientX, y: e.clientY });
 }
+});
+
+useEffect(() => {
+window.addEventListener('pointermove', onMove);
+return () => window.removeEventListener('pointermove', onMove);
+}, []);
+}
+
 ````
 
 </example>
@@ -1036,6 +1166,7 @@ return <Button onClick={handleCancelEdit}>Cancel</Button>;
 }
 
 ````
+
 </example>
 
 <example type="invalid">
@@ -1046,27 +1177,29 @@ function Component() {
     // ...
   });
 
-  return <Button onClick={handleClick} />; // ESLint error!
+return <Button onClick={handleClick} />; // ESLint error!
 }
 
 // ❌ WRONG - No Effect Event wrapper causes stale closure
 function Component({ editingMessage }) {
-  const handleCancelEdit = () => {
-    // Without useCallback, this recreates every render
-    // causing the Effect to re-run constantly
-  };
+const handleCancelEdit = () => {
+// Without useCallback, this recreates every render
+// causing the Effect to re-run constantly
+};
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCancelEdit(); // Stale closure!
-      }
-    };
+useEffect(() => {
+const handleKeyDown = (e: KeyboardEvent) => {
+if (e.key === 'Escape') {
+handleCancelEdit(); // Stale closure!
+}
+};
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCancelEdit]); // Effect re-runs every render!
+
+}, [handleCancelEdit]); // Effect re-runs every render!
 }
+
 ````
 
 </example>
@@ -1127,7 +1260,6 @@ return { scrollCheck }; // Return regular function, not Effect Event
 </example>
 
 <critical>
-  **apps/www only (useEffectEvent available in React 19):**
   - Use Effect Events to separate reactive and non-reactive logic in Effects
   - Effect Events always see latest props/state without causing Effect re-runs
   - NEVER suppress dependency linter - use useEffectEvent instead
@@ -1135,11 +1267,6 @@ return { scrollCheck }; // Return regular function, not Effect Event
   - **Dual-use pattern**: If a function is needed in BOTH props/handlers AND Effects, create TWO versions: regular function for props, Effect Event wrapper for Effects
   - Pass reactive values as arguments to Effect Events for clarity
   - Common patterns: event listeners with current state, notifications with current theme, analytics with current context, keyboard shortcuts that need latest state
-
-  **packages/** (useEffectEvent NOT available - React 18):
-  - Use standard React 18 patterns for managing Effect dependencies
-  - Use `useCallback` or `useMemo` when appropriate to stabilize dependencies
-  - Be careful with dependency arrays and understand re-execution implications
 </critical>
 
 ## Common Patterns
@@ -1169,43 +1296,20 @@ function ProductList({ products, onAddToCart }) {
 );
 }
 
-````
+```
 
 The compiler optimizes this correctly, including the computed `discountedPrice`.
 </example>
 
 ### Derived State
 
-<example>
-```tsx
-// ✅ Good - Direct derivation
-function OrderSummary({ items }) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
-
-return (
-
-<div>
-<div>Subtotal: ${subtotal.toFixed(2)}</div>
-<div>Tax: ${tax.toFixed(2)}</div>
-<div>Total: ${total.toFixed(2)}</div>
-</div>
-);
-}
-
-```
-
-Let the compiler handle memoization of these calculations.
-</example>
+See [Derived State: Compute During Render](#derived-state-compute-during-render-not-in-effects) in the Effects section.
 
 ## Migration Guide
 
-### Removing Existing Memoization (apps/www only)
+### Removing Existing Memoization
 
-**Note:** This section applies ONLY to `apps/www` where React Compiler is enabled. Do NOT remove manual memoization from `packages/**`.
-
-If you're working with existing code in **apps/www** that has manual memoization:
+If you're working with existing code that has manual memoization:
 
 1. **Remove it** - React Compiler handles optimization automatically
 2. **Test thoroughly** - Verify functionality after removal
@@ -1216,29 +1320,5 @@ The compiler's output is designed to work with clean, idiomatic React code. Remo
 
 ### Adding New Code
 
-For all new code in **apps/www** (where React Compiler is enabled):
-
-- Write clean, idiomatic React without manual memoization
-- Let the compiler optimize automatically
-- Only add manual memoization if you have a specific, documented reason
-- Prefer simplicity over premature optimization
-
-For **packages/** (where React Compiler is NOT enabled):
-
-- Use standard React patterns including `useMemo`, `useCallback`, and `React.memo` where appropriate
-- Follow React 18 best practices
-- Maintain compatibility with React 18
-
-<critical>
-  **apps/www only (React Compiler enabled):**
-  - DO NOT use `React.memo`, `useMemo`, or `useCallback` for performance optimization
-  - React Compiler automatically applies optimal memoization
-  - Manual memoization should only be used as a documented escape hatch
-  - Write clean, idiomatic React and let the compiler do its job
-  - The compiler can optimize cases that manual memoization cannot
-
-  **packages/** (React Compiler NOT enabled):
-  - Use `React.memo`, `useMemo`, `useCallback` where appropriate for optimization
-  - Follow standard React 18 patterns
-</critical>
+Write clean, idiomatic React without manual memoization. See [DO NOT Use Manual Memoization](#do-not-use-manual-memoization) for details.
 ```

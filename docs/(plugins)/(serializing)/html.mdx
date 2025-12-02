@@ -21,7 +21,8 @@ The fastest way to enable HTML serialization is with the `BaseEditorKit`, which 
 ### Add Kit
 
 ```tsx
-import { createSlateEditor, serializeHtml } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
 const editor = createSlateEditor({
@@ -63,7 +64,8 @@ Convert Plate editor content (Plate nodes) into an HTML string. This is often do
 Provide a server-side editor instance and configure your Plate components during editor creation.
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor, serializeHtml } from 'platejs'; // Base import
+import { createSlateEditor } from 'platejs';
+import { serializeHtml } from 'platejs/static'; // Static import
 // Import base plugins (NOT from /react paths)
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
 // Import your STATIC components for rendering
@@ -148,7 +150,7 @@ Refer to the [Static Rendering Guide](/docs/static) for detailed instructions on
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
 
 // Example static paragraph component
 export function ParagraphElementStatic(props: SlateElementProps) {
@@ -274,7 +276,7 @@ const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
     html: {
       deserializer: {
         // Inherit most rules and properties, then override or add
-        ...CodeBlockPlugin.parsers.html.deserializer,
+      o  ...CdeBlockPlugin.parsers.html.deserializer,
         parse: ({ element, editor }) => { // editor might be needed for getType
           const language = element.getAttribute('data-custom-lang') || element.className.match(/language-(?<lang>[^\s]+)/)?.groups?.lang;
           const textContent = element.textContent || '';

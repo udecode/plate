@@ -1,7 +1,7 @@
 ---
-name: testing
 description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun test patterns with JSX pragma, proper matchers, and spy cleanup
-globs: "**/*.spec.{ts,tsx}"
+globs: **/*.spec.*,**/*.test.*
+alwaysApply: false
 ---
 
 # Plate Testing Patterns with Bun
@@ -21,19 +21,19 @@ Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first lin
 
 ## Quick Reference
 
-| Pattern                     | Use Case                           | Example                                  |
-| --------------------------- | ---------------------------------- | ---------------------------------------- |
-| `/** @jsx jsx */` first     | **Slate hyperscript**              | Must be line 1, before all imports       |
-| `toMatchObject(array)`      | **Array partial match**            | Checks properties exist, allows extras   |
-| `toEqual()`                 | **Exact match**                    | Validates complete structure             |
-| `expect(val as any)`        | **Type mismatch**                  | Cast actual value, not expected          |
-| `mock()` not `jest.fn()`    | **Create mock function**           | Bun test API                             |
-| `spyOn()` + `afterEach`     | **Mock with cleanup**              | Always `spy.mockRestore()`               |
-| `renderHook()` + `act()`    | **Test hooks**                     | Wrap state changes in `act()`            |
-| `void act()`                | **Prevent warnings**               | Use with sync click/change events        |
-| `createWrapper()`           | **Reusable context**               | Custom wrapper for hook tests            |
-| `createEditor()`            | **Slate tests**                    | For pure Slate operations                |
-| `createPlateEditor()`       | **Plugin tests**                   | For React components with plugins        |
+| Pattern                  | Use Case                 | Example                                |
+| ------------------------ | ------------------------ | -------------------------------------- |
+| `/** @jsx jsx */` first  | **Slate hyperscript**    | Must be line 1, before all imports     |
+| `toMatchObject(array)`   | **Array partial match**  | Checks properties exist, allows extras |
+| `toEqual()`              | **Exact match**          | Validates complete structure           |
+| `expect(val as any)`     | **Type mismatch**        | Cast actual value, not expected        |
+| `mock()` not `jest.fn()` | **Create mock function** | Bun test API                           |
+| `spyOn()` + `afterEach`  | **Mock with cleanup**    | Always `spy.mockRestore()`             |
+| `renderHook()` + `act()` | **Test hooks**           | Wrap state changes in `act()`          |
+| `void act()`             | **Prevent warnings**     | Use with sync click/change events      |
+| `createWrapper()`        | **Reusable context**     | Custom wrapper for hook tests          |
+| `createEditor()`         | **Slate tests**          | For pure Slate operations              |
+| `createPlateEditor()`    | **Plugin tests**         | For React components with plugins      |
 
 ## Core Patterns
 
@@ -42,13 +42,13 @@ Bun's test runner for Plate monorepo. **Critical**: JSX pragma must be first lin
 ```typescript
 /** @jsx jsx */
 
-import { jsx } from '@platejs/test-utils';
+import { jsx } from "@platejs/test-utils";
 
 jsx; // Prevents removal
 
 // ❌ WRONG - imports before pragma
-import { jsx } from '@platejs/test-utils';
-/** @jsx jsx */  // Too late!
+import { jsx } from "@platejs/test-utils";
+/** @jsx jsx */ // Too late!
 
 // Note: describe, it, expect, mock, spyOn are global via tooling/config/global.d.ts
 // No test imports needed
@@ -60,13 +60,13 @@ import { jsx } from '@platejs/test-utils';
 // Slate operations - use createEditor
 const editor = createEditor();
 editor.children = initialValue;
-editor.tf.wrapNodes({ type: 'blockquote' }, { at: [0, 0] });
+editor.tf.wrapNodes({ type: "blockquote" }, { at: [0, 0] });
 
 // Plugin tests - use createPlateEditor
 const editor = createPlateEditor({
   plugins: [MyPlugin],
 });
-expect(editor.api.testMethod()).toBe('result');
+expect(editor.api.testMethod()).toBe("result");
 ```
 
 ### Transform Testing
@@ -75,15 +75,12 @@ expect(editor.api.testMethod()).toBe('result');
 const editor = createEditor();
 editor.children = [
   {
-    children: [{ text: 'test' }],
-    type: 'paragraph',
+    children: [{ text: "test" }],
+    type: "paragraph",
   },
 ];
 
-editor.tf.wrapNodes(
-  { children: [], type: 'blockquote' },
-  { at: [0, 0] }
-);
+editor.tf.wrapNodes({ children: [], type: "blockquote" }, { at: [0, 0] });
 
 expect(editor.children).toEqual(expectedValue);
 ```
@@ -92,25 +89,20 @@ expect(editor.children).toEqual(expectedValue);
 
 ```typescript
 // ✅ Array partial matching
-expect(children).toMatchObject([
-  { text: 'one' },
-  { text: 'two' },
-]);
+expect(children).toMatchObject([{ text: "one" }, { text: "two" }]);
 
 // ✅ Exact matching
-expect(editor.children).toEqual([
-  { children: [{ text: '' }], type: 'p' }
-]);
+expect(editor.children).toEqual([{ children: [{ text: "" }], type: "p" }]);
 
 // ✅ Cast actual value for type mismatches
 const [node] = NodeApi.firstChild(editor, [0]) ?? [];
-expect(node as any).toEqual({ text: 'one' });
+expect(node as any).toEqual({ text: "one" });
 
 // ❌ Don't cast expected value
-expect(children).toEqual([{ text: 'one' }] as any);
+expect(children).toEqual([{ text: "one" }] as any);
 
 // ❌ Don't use toMatchObject() for single objects (won't catch extra props)
-expect(node).toMatchObject({ text: 'one' });
+expect(node).toMatchObject({ text: "one" });
 ```
 
 ### Mock Usage (Bun)
@@ -120,12 +112,12 @@ expect(node).toMatchObject({ text: 'one' });
 const mockOnChange = mock();
 
 // Spy pattern with cleanup
-describe('MyTest', () => {
+describe("MyTest", () => {
   let spy: ReturnType<typeof spyOn>;
 
   beforeEach(async () => {
-    const module = await import('./module');
-    spy = spyOn(module, 'function').mockImplementation(mock());
+    const module = await import("./module");
+    spy = spyOn(module, "function").mockImplementation(mock());
   });
 
   afterEach(() => {
@@ -243,17 +235,18 @@ it("updates state correctly", async () => {
 });
 
 // Use void to prevent unused promise warnings
-void act(() => getByText('button').click());
+void act(() => getByText("button").click());
 ```
 
 **Custom wrapper pattern** for context providers:
 
 ```typescript
-const createWrapper = (props) => ({ children }: any) => (
-  <Provider {...props}>{children}</Provider>
-);
+const createWrapper =
+  (props) =>
+  ({ children }: any) =>
+    <Provider {...props}>{children}</Provider>;
 
-const wrapper = createWrapper({ value: 'test' });
+const wrapper = createWrapper({ value: "test" });
 const { result } = renderHook(() => useCustomHook(), { wrapper });
 ```
 
@@ -375,12 +368,14 @@ bun test --bail
 Bun's test runner supports AI-friendly output via the `CLAUDECODE=1` environment variable. This is automatically included in all Plate test scripts to reduce context noise for AI coding assistants.
 
 **Behavior with `CLAUDECODE=1`**:
+
 - Only test failures are displayed in detail
 - Passing, skipped, and todo test indicators are hidden
 - Summary statistics remain intact
 - Improves readability and reduces output verbosity
 
 **Manual usage**:
+
 ```bash
 # Already included in package.json scripts
 CLAUDECODE=1 bun test
@@ -390,15 +385,15 @@ This feature is enabled by default in all Plate test commands (`yarn test`, `yar
 
 ## Common Mistakes
 
-| Mistake                               | Problem                         | Fix                                        |
-| ------------------------------------- | ------------------------------- | ------------------------------------------ |
-| Imports before `/** @jsx jsx */`      | JSX transform fails             | Pragma must be line 1                      |
-| `toMatchObject()` for single objects  | Won't catch extra properties    | Use `toEqual()` or cast actual value       |
-| Casting expected value `as any`       | Hides type mismatches           | Cast actual value instead                  |
-| Using `mock.module()`                 | Cross-file contamination        | Use `spyOn()` + `afterEach` cleanup        |
-| Forgetting `spy.mockRestore()`        | Spies persist across tests      | Always restore in `afterEach`              |
-| `jest.fn()` / `jest.Mock`             | Wrong framework                 | Use `mock()` from `bun:test`               |
-| Forgetting `act()` around state       | React warnings, flaky tests     | Wrap state changes in `act()`              |
+| Mistake                              | Problem                      | Fix                                  |
+| ------------------------------------ | ---------------------------- | ------------------------------------ |
+| Imports before `/** @jsx jsx */`     | JSX transform fails          | Pragma must be line 1                |
+| `toMatchObject()` for single objects | Won't catch extra properties | Use `toEqual()` or cast actual value |
+| Casting expected value `as any`      | Hides type mismatches        | Cast actual value instead            |
+| Using `mock.module()`                | Cross-file contamination     | Use `spyOn()` + `afterEach` cleanup  |
+| Forgetting `spy.mockRestore()`       | Spies persist across tests   | Always restore in `afterEach`        |
+| `jest.fn()` / `jest.Mock`            | Wrong framework              | Use `mock()` from `bun:test`         |
+| Forgetting `act()` around state      | React warnings, flaky tests  | Wrap state changes in `act()`        |
 
 ## Debugging Test Failures
 
@@ -511,7 +506,7 @@ Common elements for test data:
 ```typescript
 /** @jsx jsx */
 
-import { jsx } from '@platejs/test-utils';
+import { jsx } from "@platejs/test-utils";
 
 jsx; // Required
 
@@ -530,10 +525,10 @@ const input = (
 ```typescript
 // Test plugin configuration
 const TestPlugin = createSlatePlugin({
-  key: 'test',
-  options: { testOption: 'value' },
+  key: "test",
+  options: { testOption: "value" },
 }).extendEditorApi(() => ({
-  testMethod: () => 'result',
+  testMethod: () => "result",
 }));
 
 const editor = createPlateEditor({
@@ -541,11 +536,11 @@ const editor = createPlateEditor({
 });
 
 // Test API methods
-expect(editor.api.testMethod()).toBe('result');
+expect(editor.api.testMethod()).toBe("result");
 
 // Test plugin retrieval
 const plugin = editor.getPlugin(TestPlugin);
-expect(plugin.options.testOption).toBe('value');
+expect(plugin.options.testOption).toBe("value");
 ```
 
 ### Fragment and Selection Testing
@@ -555,7 +550,8 @@ expect(plugin.options.testOption).toBe('value');
 const input = (
   <editor>
     <hp>
-      test<cursor />
+      test
+      <cursor />
     </hp>
   </editor>
 ) as any as SlateEditor;
@@ -569,19 +565,20 @@ const editor = createPlateEditor({
 ### DataTransfer Testing
 
 ```typescript
-import { createDataTransfer } from '@platejs/test-utils';
+import { createDataTransfer } from "@platejs/test-utils";
 
 // Method 1: Use createDataTransfer utility
-const dataTransfer = createDataTransfer(new Map([
-  ['text/html', '<p>Hello</p>'],
-  ['text/plain', 'Hello']
-]));
+const dataTransfer = createDataTransfer(
+  new Map([
+    ["text/html", "<p>Hello</p>"],
+    ["text/plain", "Hello"],
+  ])
+);
 
 // Method 2: Inline mock
 const dataTransfer = {
-  constructor: { name: 'DataTransfer' },
-  getData: (format: string) =>
-    format === 'text/html' && '<p>Hello</p>',
+  constructor: { name: "DataTransfer" },
+  getData: (format: string) => format === "text/html" && "<p>Hello</p>",
 } as any;
 
 editor.tf.insertData(dataTransfer);
@@ -590,9 +587,9 @@ editor.tf.insertData(dataTransfer);
 ### HTML Deserialization Testing
 
 ```typescript
-import { getHtmlDocument } from '@platejs/test-utils';
+import { getHtmlDocument } from "@platejs/test-utils";
 
-const html = '<div>test</div>';
+const html = "<div>test</div>";
 const element = getHtmlDocument(html).body;
 
 const result = deserializeHtml(editor, { element });
@@ -602,23 +599,23 @@ expect(result).toEqual(expectedOutput);
 ### Testing with React Testing Library
 
 ```typescript
-import { render } from '@testing-library/react';
+import { render } from "@testing-library/react";
 
-it('should render component', () => {
+it("should render component", () => {
   const { getByText } = render(<MyComponent />);
-  expect(getByText('Expected Text')).toBeTruthy();
+  expect(getByText("Expected Text")).toBeTruthy();
 });
 
 // For jest-dom matchers, add triple-slash reference
 /// <reference types="@testing-library/jest-dom" />
-expect(getByText('Hello')).toBeInTheDocument();
+expect(getByText("Hello")).toBeInTheDocument();
 
 // Type assertion workaround for jest-dom matchers
-(expect(getByText('Hello')) as any).toBeInTheDocument();
+(expect(getByText("Hello")) as any).toBeInTheDocument();
 
 // Query vs Get selectors
-const element = queryByTestId('optional'); // Returns null if not found
-const element2 = getByTestId('required');   // Throws if not found
+const element = queryByTestId("optional"); // Returns null if not found
+const element2 = getByTestId("required"); // Throws if not found
 ```
 
 ## Test Organization Patterns
@@ -626,15 +623,15 @@ const element2 = getByTestId('required');   // Throws if not found
 ### Grouping Related Tests
 
 ```typescript
-describe('FeatureName', () => {
-  describe('when condition A', () => {
-    it('should behavior X', () => {
+describe("FeatureName", () => {
+  describe("when condition A", () => {
+    it("should behavior X", () => {
       // test
     });
   });
 
-  describe('when condition B', () => {
-    it('should behavior Y', () => {
+  describe("when condition B", () => {
+    it("should behavior Y", () => {
       // test
     });
   });
@@ -645,16 +642,16 @@ describe('FeatureName', () => {
 
 ```typescript
 // Use describe blocks for different scenarios
-describe('when condition is true', () => {
-  it('should behave one way', () => {});
+describe("when condition is true", () => {
+  it("should behave one way", () => {});
 });
 
-describe('when condition is false', () => {
-  it('should behave another way', () => {});
+describe("when condition is false", () => {
+  it("should behave another way", () => {});
 });
 
 // Skip tests temporarily
-it.skip('pending test', () => {});
+it.skip("pending test", () => {});
 ```
 
 ## Best Practices
@@ -672,10 +669,10 @@ it.skip('pending test', () => {});
 
 ```typescript
 // ❌ DON'T: Use relative imports in tests
-import { myFunction } from '../src/myFunction';
+import { myFunction } from "../src/myFunction";
 
 // ✅ DO: Use package imports
-import { myFunction } from '@platejs/package-name';
+import { myFunction } from "@platejs/package-name";
 
 // ❌ DON'T: Test implementation details
 expect(privateFunction).toHaveBeenCalled();
