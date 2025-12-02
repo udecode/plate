@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 52.0.7
+
+### Patch Changes
+
+- [#4765](https://github.com/udecode/plate/pull/4765) by [@felixfeng33](https://github.com/felixfeng33) – Revert previous fixes
+
 ## 52.0.5
 
 ### Patch Changes
