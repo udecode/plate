@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 52.0.8
+
+### Patch Changes
+
+- [#4768](https://github.com/udecode/plate/pull/4768) by [@felixfeng33](https://github.com/felixfeng33) – Export `useSlateStatic` from `slate-react`
+
 ## 52.0.1
 
 ### Patch Changes
