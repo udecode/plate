@@ -15,4 +15,4 @@ export {
 } from 'slate-react';
 
 // Plugin
-export { withReact } from 'slate-react';
+export { withReact, useSlateStatic } from 'slate-react';
