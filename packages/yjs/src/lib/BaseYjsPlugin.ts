@@ -33,6 +33,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
   options: {
     _isConnected: false,
     _isSynced: false,
+    userId: null,
     _providers: [],
     awareness: null!,
     cursors: {},
