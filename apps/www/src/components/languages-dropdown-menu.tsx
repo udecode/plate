@@ -16,23 +16,26 @@ export function LanguagesDropdownMenu() {
 
   const handleClick = (locale?: string) => {
     const url = new URL(window.location.href);
+    const supportedLocales = ['cn', 'pt-br'];
+
+    if (!pathname) return;
+
+    const segments = pathname.split('/').filter((p) => !!p);
+    const currentLocale = supportedLocales.includes(segments[0])
+      ? segments[0]
+      : undefined;
+
+    // If the target locale is the same as the current, do nothing
+    if (locale === currentLocale) return;
+
+    // Remove the current locale from the segments if it exists
+    const newSegments = currentLocale ? segments.slice(1) : segments;
 
     if (locale) {
-      if (pathname?.includes(locale)) {
-        return;
-      }
-
-      url.pathname = `/${locale}${pathname}`;
+      url.pathname = `/${locale}/${newSegments.join('/')}`;
       url.searchParams.set('locale', locale);
     } else {
-      if (!pathname?.includes('cn')) return;
-      if (pathname) {
-        const segments = pathname.split('/').filter((p) => !!p);
-        const newSegments = segments.filter((segment) => segment !== 'cn');
-        url.pathname =
-          newSegments.length > 0 ? `/${newSegments.join('/')}` : '/';
-      }
-
+      url.pathname = `/${newSegments.join('/')}`;
       url.searchParams.delete('locale');
     }
 
@@ -64,6 +67,16 @@ export function LanguagesDropdownMenu() {
             onClick={() => handleClick('cn')}
           >
             中文
+          </button>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+         <button
+            type="button"
+            className="w-full cursor-pointer"
+            onClick={() => handleClick('pt-br')}
+          >
+            Português
+            <span className="text-xs text-muted-foreground">Beta</span>
           </button>
         </DropdownMenuItem>
       </DropdownMenuContent>

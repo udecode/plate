@@ -34,6 +34,13 @@ const i18n = {
     github: 'GitHub',
     potionDescription: 'A Notion-like AI template.',
   },
+  'pt-br': {
+    buildYourRichTextEditor: 'Construa seu editor de texto',
+    description: 'Framework · Plugins · Componentes · Temas',
+    getStarted: 'Começar',
+    github: 'GitHub',
+    potionDescription: 'Um template de IA similar ao Notion.',
+  },
 };
 
 const title = 'Build your rich-text editor';

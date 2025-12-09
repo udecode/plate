@@ -25,6 +25,9 @@ const i18n = {
   en: {
     description: 'An AI editor',
   },
+  'pt-br': {
+    description: 'Um editor de IA',
+  },
 };
 
 // TODO: sync

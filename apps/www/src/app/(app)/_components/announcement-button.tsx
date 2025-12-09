@@ -13,6 +13,9 @@ const i18n = {
   en: {
     description: 'MCP, AI, Upload, and more',
   },
+  'pt-br': {
+    description: 'MCP, IA, Upload, e mais',
+  },
 };
 
 export function AnnouncementButton() {

@@ -73,6 +73,14 @@ const nextConfig = async (phase: string) => {
           destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
           source: '/cn/:path*', // Match any path under /cn
         },
+        {
+          destination: '/?locale=pt-br',
+          source: '/pt-br',
+        },
+        {
+          destination: '/:path*?locale=pt-br', // Rewrite it to the corresponding path without /pt-br
+          source: '/pt-br/:path*', // Match any path under /pt-br
+        },
       ];
     },
 

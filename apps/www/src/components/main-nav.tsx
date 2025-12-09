@@ -27,6 +27,12 @@ const i18n = {
     editors: 'Editors',
     templates: 'Templates',
   },
+  'pt-br': {
+    components: 'Componentes',
+    docs: 'Documentação',
+    editors: 'Editores',
+    templates: 'Templates',
+  },
 };
 
 export function MainNav({

@@ -19,6 +19,11 @@ const i18n = {
     description: 'Beautifully designed. Copy and paste into your apps.',
     title: 'Building Editors for the Web',
   },
+  'pt-br': {
+    browseEditors: 'Navegar por Editores',
+    description: 'Desenhado elegantemente. Copie e cole em suas aplicações.',
+    title: 'Construindo Editores para a Web',
+  },
 };
 
 export function EditorDescription() {

@@ -17,6 +17,11 @@ const i18n = {
     getAccess: 'Get all-access',
     productionReady: 'Production-ready AI template and reusable components.',
   },
+  'pt-br': {
+    buildYourEditor: 'Construa seu editor',
+    getAccess: 'Obtenha acesso completo',
+    productionReady: 'Template de IA pronto para produção e componentes reutilizáveis.',
+  },
 };
 
 export function OpenInPlus({ className }: { className?: string }) {

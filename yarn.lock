@@ -3254,7 +3254,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/core@npm:52.0.1, @platejs/core@workspace:packages/core":
+"@platejs/core@npm:52.0.8, @platejs/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@platejs/core@workspace:packages/core"
   dependencies:
@@ -3713,11 +3713,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/utils@npm:52.0.1, @platejs/utils@workspace:packages/utils":
+"@platejs/utils@npm:52.0.8, @platejs/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@platejs/utils@workspace:packages/utils"
   dependencies:
-    "@platejs/core": "npm:52.0.1"
+    "@platejs/core": "npm:52.0.8"
     "@platejs/slate": "npm:52.0.1"
     "@udecode/react-utils": "npm:52.0.1"
     "@udecode/utils": "npm:52.0.1"
@@ -15728,9 +15728,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "platejs@workspace:packages/plate"
   dependencies:
-    "@platejs/core": "npm:52.0.1"
+    "@platejs/core": "npm:52.0.8"
     "@platejs/slate": "npm:52.0.1"
-    "@platejs/utils": "npm:52.0.1"
+    "@platejs/utils": "npm:52.0.8"
     "@udecode/react-hotkeys": "npm:52.0.1"
     "@udecode/react-utils": "npm:52.0.1"
     "@udecode/utils": "npm:52.0.1"
