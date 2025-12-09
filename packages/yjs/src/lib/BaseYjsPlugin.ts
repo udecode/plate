@@ -138,7 +138,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
      *   specified, disconnects from all providers.
      */
     disconnect: (type?: YjsProviderType | YjsProviderType[]) => {
-      const { editor: _editor, getOptions } = ctx;
+      const { getOptions } = ctx;
       const { _providers } = getOptions();
 
       const typesToDisconnect = type
@@ -205,7 +205,12 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         );
       }
 
-      if (value !== null) {
+      // Store initial value for potential later use (after sync)
+      let pendingInitialValue: Value | null = null;
+
+      // CRITICAL: Check for both null AND undefined to avoid creating default value
+      if (value != null) {
+        // != checks for both null and undefined
         let initialNodes = value as Value;
         if (typeof value === 'string') {
           initialNodes = editor.api.html.deserialize({
@@ -220,23 +225,8 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
           initialNodes = editor.api.create.value();
         }
 
-        // Use custom sharedType if provided, otherwise use default 'content'
-        if (customSharedType) {
-          // Apply initial value directly to the custom shared type
-          const delta = slateNodesToInsertDelta(initialNodes);
-          ydoc.transact(() => {
-            customSharedType.applyDelta(delta);
-          });
-        } else {
-          // Use deterministic state for default 'content' key
-          const initialDelta = await slateToDeterministicYjsState(
-            id ?? editor.id,
-            initialNodes
-          );
-          ydoc.transact(() => {
-            Y.applyUpdate(ydoc, initialDelta);
-          });
-        }
+        // Store for later - will apply after sync if Y.doc is empty
+        pendingInitialValue = initialNodes;
       }
 
       // Final providers array that will contain both configured and custom providers
@@ -245,14 +235,9 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       // Connect the YjsEditor first to set up slate-yjs bindings.
       YjsEditor.connect(editor as any);
 
-      editor.tf.init({
-        autoSelect,
-        selection,
-        // Skipped since YjsEditor.connect already normalizes the editor
-        shouldNormalizeEditor: false,
-        value: null,
-        onReady,
-      });
+      // CRITICAL: Don't call editor.tf.init yet - wait for first sync to complete
+      // This prevents editor.tf.init from adding an empty paragraph before server content arrives
+      let hasInitialized = false;
 
       // Then process and create providers
       for (const item of providerConfigsOrInstances) {
@@ -297,6 +282,57 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
               onSyncChange: (isSynced) => {
                 getOptions().onSyncChange?.({ isSynced, type });
                 setOption('_isSynced', isSynced);
+
+                // CRITICAL: Initialize editor AFTER first sync to avoid empty paragraph before server content
+                if (isSynced && !hasInitialized) {
+                  hasInitialized = true;
+
+                  // After first sync completes, apply initial value ONLY if Y.doc is still empty
+                  if (pendingInitialValue) {
+                    const sharedTypeToCheck =
+                      customSharedType || ydoc.get('content', Y.XmlText);
+                    const ydocHasContent =
+                      sharedTypeToCheck && sharedTypeToCheck.length > 0;
+
+                    if (ydocHasContent) {
+                      pendingInitialValue = null;
+                    } else {
+                      // Use custom sharedType if provided, otherwise use default 'content'
+                      if (customSharedType) {
+                        const delta =
+                          slateNodesToInsertDelta(pendingInitialValue);
+                        ydoc.transact(() => {
+                          customSharedType.applyDelta(delta);
+                        });
+                      } else {
+                        // For default 'content' key, use deterministic state
+                        slateToDeterministicYjsState(
+                          id ?? editor.id,
+                          pendingInitialValue
+                        )
+                          .then((initialDelta) => {
+                            ydoc.transact(() => {
+                              Y.applyUpdate(ydoc, initialDelta);
+                            });
+                          })
+                          .catch(() => {
+                            // Ignore errors applying pending value
+                          });
+                      }
+
+                      pendingInitialValue = null;
+                    }
+                  }
+
+                  // Now call editor.tf.init after Y.doc sync is complete
+                  editor.tf.init({
+                    autoSelect,
+                    selection,
+                    shouldNormalizeEditor: false,
+                    value: null,
+                    onReady,
+                  });
+                }
               },
             });
             finalProviders.push(provider);
@@ -328,12 +364,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
           // Add the custom provider to our providers array
           finalProviders.push(customProvider);
         }
-      }
-
-      if (finalProviders.length === 0) {
-        console.warn(
-          '[yjs] No providers were successfully created or provided.'
-        );
       }
 
       // Update provider counts after creation
