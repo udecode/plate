@@ -1,5 +1,11 @@
 # @platejs/yjs
 
+## 52.0.9
+
+### Patch Changes
+
+- [`e359d59`](https://github.com/udecode/plate/commit/e359d5981ca644352a9ae71b2b168b5a709a4d35) by [@felixfeng33](https://github.com/felixfeng33) – Fix yjs init.
+
 ## 52.0.7
 
 ### Patch Changes
