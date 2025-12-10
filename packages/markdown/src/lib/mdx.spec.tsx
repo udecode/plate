@@ -48,4 +48,20 @@ describe('roundTrip', () => {
     const md = serializeMd(editor, { value: input });
     expect(md).toMatchSnapshot();
   });
+
+  it('should serialize callout with icon attribute', () => {
+    const input = (
+      <fragment>
+        <hcallout icon="⚠️">
+          <hp>
+            <htext>Callout</htext>
+          </hp>
+        </hcallout>
+      </fragment>
+    );
+
+    const md = serializeMd(editor, { value: input });
+    const slate = deserializeMd(editor, md);
+    expect(slate).toEqual(input);
+  });
 });

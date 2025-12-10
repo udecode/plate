@@ -34,6 +34,7 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
+import { parseAttributes, propsToAttributes } from './utils';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
 
@@ -166,14 +167,19 @@ export const defaultRules: MdRules = {
     }),
   },
   callout: {
-    deserialize: (mdastNode, deco, options) => ({
-      children: convertChildrenDeserialize(mdastNode.children, deco, options),
-      type: getPluginType(options.editor!, KEYS.callout),
-    }),
-    serialize(slateNode, options): MdMdxJsxFlowElement {
+    deserialize: (mdastNode, deco, options) => {
+      const props = parseAttributes(mdastNode.attributes);
       return {
-        attributes: [],
-        children: convertNodesSerialize(slateNode.children, options) as any,
+        children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        type: getPluginType(options.editor!, KEYS.callout),
+        ...props,
+      };
+    },
+    serialize(slateNode, options): MdMdxJsxFlowElement {
+      const { children, type, ...rest } = slateNode;
+      return {
+        attributes: propsToAttributes(rest),
+        children: convertNodesSerialize(children, options) as any,
         name: 'callout',
         type: 'mdxJsxFlowElement',
       };
