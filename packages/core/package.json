@@ -1,6 +1,6 @@
 {
   "name": "@platejs/core",
-  "version": "52.0.8",
+  "version": "52.0.10",
   "description": "The core of Plate – a plugin system for slate",
   "keywords": [
     "contentEditable",
@@ -47,7 +47,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "52.0.1",
+    "@platejs/slate": "52.0.10",
     "@udecode/react-hotkeys": "52.0.1",
     "@udecode/react-utils": "52.0.1",
     "@udecode/utils": "52.0.1",
