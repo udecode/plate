@@ -1,7 +1,7 @@
 ---
-"@platejs/test-utils": minor
-"@platejs/slate": minor
-"@platejs/core": minor
+"@platejs/test-utils": patch
+"@platejs/slate": patch
+"@platejs/core": patch
 ---
 
 slate 0.120.0
