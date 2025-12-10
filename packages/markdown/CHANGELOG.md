@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.0.10
+
+### Patch Changes
+
+- [#4776](https://github.com/udecode/plate/pull/4776) by [@hhhjin](https://github.com/hhhjin) – Add support for callout serialization with icon attribute
+
 ## 52.0.4
 
 ### Patch Changes
