@@ -3254,7 +3254,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/core@npm:52.0.1, @platejs/core@workspace:packages/core":
+"@platejs/core@npm:52.0.8, @platejs/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@platejs/core@workspace:packages/core"
   dependencies:
@@ -3271,10 +3271,10 @@ __metadata:
     lodash: "npm:^4.17.21"
     nanoid: "npm:^5.1.5"
     optics-ts: "npm:2.4.1"
-    slate: "npm:0.118.1"
-    slate-dom: "npm:0.118.1"
-    slate-hyperscript: "npm:0.115.0"
-    slate-react: "npm:0.117.4"
+    slate: "npm:0.120.0"
+    slate-dom: "npm:0.119.0"
+    slate-hyperscript: "npm:0.100.0"
+    slate-react: "npm:0.120.0"
     use-deep-compare: "npm:^1.3.0"
     zustand: "npm:^5.0.5"
     zustand-x: "npm:6.2.1"
@@ -3619,8 +3619,8 @@ __metadata:
     "@udecode/utils": "npm:52.0.1"
     is-plain-object: "npm:^5.0.0"
     lodash: "npm:^4.17.21"
-    slate: "npm:0.118.1"
-    slate-dom: "npm:0.118.1"
+    slate: "npm:0.120.0"
+    slate-dom: "npm:0.119.0"
   languageName: unknown
   linkType: soft
 
@@ -3682,8 +3682,8 @@ __metadata:
   resolution: "@platejs/test-utils@workspace:packages/test-utils"
   dependencies:
     "@platejs/slate": "npm:52.0.1"
-    slate: "npm:0.118.1"
-    slate-hyperscript: "npm:0.115.0"
+    slate: "npm:0.120.0"
+    slate-hyperscript: "npm:0.100.0"
   languageName: unknown
   linkType: soft
 
@@ -3713,11 +3713,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/utils@npm:52.0.1, @platejs/utils@workspace:packages/utils":
+"@platejs/utils@npm:52.0.8, @platejs/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@platejs/utils@workspace:packages/utils"
   dependencies:
-    "@platejs/core": "npm:52.0.1"
+    "@platejs/core": "npm:52.0.8"
     "@platejs/slate": "npm:52.0.1"
     "@udecode/react-utils": "npm:52.0.1"
     "@udecode/utils": "npm:52.0.1"
@@ -15728,9 +15728,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "platejs@workspace:packages/plate"
   dependencies:
-    "@platejs/core": "npm:52.0.1"
+    "@platejs/core": "npm:52.0.8"
     "@platejs/slate": "npm:52.0.1"
-    "@platejs/utils": "npm:52.0.1"
+    "@platejs/utils": "npm:52.0.8"
     "@udecode/react-hotkeys": "npm:52.0.1"
     "@udecode/react-utils": "npm:52.0.1"
     "@udecode/utils": "npm:52.0.1"
@@ -17778,9 +17778,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-dom@npm:0.118.1":
-  version: 0.118.1
-  resolution: "slate-dom@npm:0.118.1"
+"slate-dom@npm:0.119.0":
+  version: 0.119.0
+  resolution: "slate-dom@npm:0.119.0"
   dependencies:
     "@juggle/resize-observer": "npm:^3.4.0"
     direction: "npm:^1.0.4"
@@ -17791,22 +17791,24 @@ __metadata:
     tiny-invariant: "npm:1.3.1"
   peerDependencies:
     slate: ">=0.99.0"
-  checksum: 10c0/f6cfc02f75d984c437513285bfdeb2c5ea04a9b3152bf10e83d30a0312d41d2666173fbd4e7d756d64cce0da30c8fbf3619d5267bc5d0ea52c6b77505f2c30e6
+  checksum: 10c0/ce0485ebecb26221faa844a8e05ebb042d25396e27076b070d41067f4be38ea20fae95c79658a3c7e71d356cdf7ed34f0f45bad1ccd4deaea96dfc14c5b90993
   languageName: node
   linkType: hard
 
-"slate-hyperscript@npm:0.115.0":
-  version: 0.115.0
-  resolution: "slate-hyperscript@npm:0.115.0"
+"slate-hyperscript@npm:0.100.0":
+  version: 0.100.0
+  resolution: "slate-hyperscript@npm:0.100.0"
+  dependencies:
+    is-plain-object: "npm:^5.0.0"
   peerDependencies:
-    slate: ">=0.114.3"
-  checksum: 10c0/d5b9eb813d8bb8abf8945c27c3f39c4815cae8f929fbdaee44fe686a18c58136dcb6ffdeff254284f1093a302510cfa0fc0c470d339266e32e905e699666f668
+    slate: ">=0.65.3"
+  checksum: 10c0/f57f5d5a9585728847473687927d4592f313b3fd14806ae7afbe1d86d7127a3d280b342706c49ed6c398b4a7603a163fe35490946a74fba007e36f38d324b73b
   languageName: node
   linkType: hard
 
-"slate-react@npm:0.117.4":
-  version: 0.117.4
-  resolution: "slate-react@npm:0.117.4"
+"slate-react@npm:0.120.0":
+  version: 0.120.0
+  resolution: "slate-react@npm:0.120.0"
   dependencies:
     "@juggle/resize-observer": "npm:^3.4.0"
     direction: "npm:^1.0.4"
@@ -17818,8 +17820,8 @@ __metadata:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     slate: ">=0.114.0"
-    slate-dom: ">=0.116.0"
-  checksum: 10c0/d7bd7eaa7ce37bbf3c63a4aab67d1125d9e08f936b29faed8e8cd8c6dbcf7bcef9354c6028c5bba9b5fc9a3719e3017be322d0b69c788f953d7447b3c45c3770
+    slate-dom: ">=0.119.0"
+  checksum: 10c0/12ddd34de61991fb9b1d0981f654be05cbde5f057edd93d53a2a4ef44c442920e7b0e70dad4a9a28f2c950ddbaee8718ea21e6d2b1064fe904c8bf1159d9451f
   languageName: node
   linkType: hard
 
@@ -17842,13 +17844,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate@npm:0.118.1":
-  version: 0.118.1
-  resolution: "slate@npm:0.118.1"
-  dependencies:
-    immer: "npm:^10.0.3"
-    tiny-warning: "npm:^1.0.3"
-  checksum: 10c0/5004e3cb455317755057158d5a9ff9913539d1222135a2012af7ef7788cf330f074d8423d16e5f1899fd77ad2286ec03975cf929f1f8fcf80a24c99d99758a52
+"slate@npm:0.120.0":
+  version: 0.120.0
+  resolution: "slate@npm:0.120.0"
+  checksum: 10c0/af83b41f2b076444eb441e4d8747f1d629a7a555b5234adf79cc12ea37b517a35722e779270a421eaec803b04b805a0a6f284e31f9da2b063b097ba99a4c9ecb
   languageName: node
   linkType: hard
 
@@ -18513,13 +18512,6 @@ __metadata:
   version: 1.3.3
   resolution: "tiny-invariant@npm:1.3.3"
   checksum: 10c0/65af4a07324b591a059b35269cd696aba21bef2107f29b9f5894d83cc143159a204b299553435b03874ebb5b94d019afa8b8eff241c8a4cfee95872c2e1c1c4a
-  languageName: node
-  linkType: hard
-
-"tiny-warning@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "tiny-warning@npm:1.0.3"
-  checksum: 10c0/ef8531f581b30342f29670cb41ca248001c6fd7975ce22122bd59b8d62b4fc84ad4207ee7faa95cde982fa3357cd8f4be650142abc22805538c3b1392d7084fa
   languageName: node
   linkType: hard
 

@@ -40,8 +40,8 @@
     "@udecode/utils": "52.0.1",
     "is-plain-object": "^5.0.0",
     "lodash": "^4.17.21",
-    "slate": "0.118.1",
-    "slate-dom": "0.118.1"
+    "slate": "0.120.0",
+    "slate-dom": "0.119.0"
   },
   "publishConfig": {
     "access": "public"

@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@platejs/slate": "52.0.1",
-    "slate": "0.118.1",
-    "slate-hyperscript": "0.115.0"
+    "slate": "0.120.0",
+    "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {
     "access": "public"
