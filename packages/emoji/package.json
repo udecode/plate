@@ -1,6 +1,6 @@
 {
   "name": "@platejs/emoji",
-  "version": "52.0.2",
+  "version": "52.0.11",
   "description": "Emoji plugin for Plate",
   "keywords": [
     "plate",
@@ -40,7 +40,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/combobox": "52.0.1",
+    "@platejs/combobox": "52.0.11",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "@emoji-mart/data": ">=1.2.0",
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

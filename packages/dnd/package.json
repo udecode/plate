@@ -1,6 +1,6 @@
 {
   "name": "@platejs/dnd",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "React drag and drop feature for Plate",
   "keywords": [
     "plate",
@@ -47,7 +47,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dnd": ">=14.0.0",
     "react-dnd-html5-backend": ">=14.0.0",

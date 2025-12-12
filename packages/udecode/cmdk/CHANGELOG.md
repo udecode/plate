@@ -1,5 +1,12 @@
 # @udecode/cmdk
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4784](https://github.com/udecode/plate/pull/4784) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed "Cannot find module 'react/compiler-runtime'" error for React 18 users
+
 ## 1.0.1
 
 ### Patch Changes
