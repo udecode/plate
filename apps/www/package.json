@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "yarn build:contentlayer",
-    "build": "yarn prebuild && yarn r && next build --experimental-debug-memory-usage",
+    "build": "yarn prebuild && yarn r && next build",
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
