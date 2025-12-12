@@ -10,6 +10,7 @@ const nextConfig = async (phase: string) => {
 
     experimental: {
       turbopackFileSystemCacheForDev: true,
+      webpackMemoryOptimizations: true,
     },
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
