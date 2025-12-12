@@ -1,6 +1,6 @@
 {
   "name": "@platejs/tabbable",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Tab into and out of void nodes and other elements",
   "keywords": [
     "plate",
@@ -47,7 +47,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

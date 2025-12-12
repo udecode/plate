@@ -1,6 +1,6 @@
 {
   "name": "@platejs/docx",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Docx serializer plugin for Plate",
   "keywords": [
     "docx",
@@ -48,7 +48,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
