@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "raf": "^3.4.1"
+    "raf": "^3.4.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

@@ -39,7 +39,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "juice": "^11.0.1"
+    "juice": "^11.0.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

@@ -40,6 +40,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "react-compiler-runtime": "^1.0.0",
     "tabbable": "^6.2.0"
   },
   "devDependencies": {

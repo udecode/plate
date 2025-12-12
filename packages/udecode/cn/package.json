@@ -36,7 +36,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "52.0.1"
+    "@udecode/react-utils": "52.0.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {
     "class-variance-authority": ">=0.7.0",

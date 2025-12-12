@@ -51,5 +51,8 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  }
 }

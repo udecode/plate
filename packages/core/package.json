@@ -60,6 +60,7 @@
     "lodash": "^4.17.21",
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",
+    "react-compiler-runtime": "^1.0.0",
     "slate": "0.120.0",
     "slate-dom": "0.119.0",
     "slate-hyperscript": "0.100.0",

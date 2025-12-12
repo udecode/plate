@@ -40,7 +40,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "copy-to-clipboard": "^3.3.3"
+    "copy-to-clipboard": "^3.3.3",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

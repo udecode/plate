@@ -40,7 +40,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/floating": "52.0.1"
+    "@platejs/floating": "52.0.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

@@ -51,7 +51,8 @@
     "@platejs/utils": "52.0.10",
     "@udecode/react-hotkeys": "52.0.1",
     "@udecode/react-utils": "52.0.1",
-    "@udecode/utils": "52.0.1"
+    "@udecode/utils": "52.0.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
