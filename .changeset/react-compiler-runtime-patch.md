@@ -41,6 +41,7 @@
 "@platejs/toggle": patch
 "@platejs/utils": patch
 "@platejs/yjs": patch
+"@udecode/cmdk": patch
 "@udecode/cn": patch
 "@udecode/react-hotkeys": patch
 "@udecode/react-utils": patch

@@ -6902,6 +6902,7 @@ __metadata:
     "@radix-ui/react-id": "npm:^1.1.1"
     "@radix-ui/react-primitive": "npm:^2.1.3"
     "@types/use-sync-external-store": "npm:0.0.6"
+    react-compiler-runtime: "npm:1.0.0"
     use-sync-external-store: "npm:^1.5.0"
   peerDependencies:
     react: ^18 || ^19 || ^19.0.0-rc
@@ -16290,7 +16291,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-compiler-runtime@npm:^1.0.0":
+"react-compiler-runtime@npm:1.0.0, react-compiler-runtime@npm:^1.0.0":
   version: 1.0.0
   resolution: "react-compiler-runtime@npm:1.0.0"
   peerDependencies:
