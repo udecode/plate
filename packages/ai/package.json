@@ -44,7 +44,8 @@
     "@platejs/selection": "52.0.1",
     "@platejs/suggestion": "52.0.1",
     "fastest-levenshtein": "1.0.16",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@ai-sdk/react": "2.0.28",

@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@platejs/table": "52.0.1",
-    "papaparse": "^5.5.3"
+    "papaparse": "^5.5.3",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@types/papaparse": "^5.3.16",

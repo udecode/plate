@@ -40,7 +40,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/combobox": "52.0.1"
+    "@platejs/combobox": "52.0.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",

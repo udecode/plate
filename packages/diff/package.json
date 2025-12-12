@@ -39,7 +39,8 @@
   },
   "dependencies": {
     "diff-match-patch-ts": "^0.6.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

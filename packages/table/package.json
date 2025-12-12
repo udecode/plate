@@ -41,7 +41,8 @@
   },
   "dependencies": {
     "@platejs/resizable": "52.0.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

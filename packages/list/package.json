@@ -41,7 +41,8 @@
   },
   "dependencies": {
     "@platejs/indent": "52.0.1",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"
