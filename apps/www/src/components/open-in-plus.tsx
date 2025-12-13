@@ -20,7 +20,8 @@ const i18n = {
   'pt-br': {
     buildYourEditor: 'Construa seu editor',
     getAccess: 'Obtenha acesso completo',
-    productionReady: 'Template de IA pronto para produção e componentes reutilizáveis.',
+    productionReady:
+      'Template de IA pronto para produção e componentes reutilizáveis.',
   },
 };
 

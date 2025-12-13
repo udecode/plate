@@ -16,8 +16,8 @@ export const linkValue: any = (
       adicionais usando o plugin Link.
     </hp>
     <hp>
-      Crie hiperlinks facilmente usando a barra de ferramentas ou colando uma URL enquanto
-      seleciona o texto desejado.
+      Crie hiperlinks facilmente usando a barra de ferramentas ou colando uma
+      URL enquanto seleciona o texto desejado.
     </hp>
   </fragment>
 );

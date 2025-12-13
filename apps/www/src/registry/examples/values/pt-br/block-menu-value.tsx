@@ -11,9 +11,9 @@ export const blockMenuValue: any = (
     <hp>Abrir o menu de bloco:</hp>
     <hp indent={1} listStyleType="disc">
       <htext>
-        Clique com o botão direito em qualquer bloco não selecionado para abrir o menu de contexto. Se você
-        clicar com o botão direito dentro de um bloco selecionado, verá o menu de contexto nativo do
-        navegador.
+        Clique com o botão direito em qualquer bloco não selecionado para abrir
+        o menu de contexto. Se você clicar com o botão direito dentro de um
+        bloco selecionado, verá o menu de contexto nativo do navegador.
       </htext>
     </hp>
     <hp>Opções disponíveis no menu de bloco:</hp>
@@ -31,4 +31,3 @@ export const blockMenuValue: any = (
     </hp>
   </fragment>
 );
-

@@ -8,8 +8,8 @@ export const codeBlockValue: any = (
   <fragment>
     <hh2>Blocos de Código</hh2>
     <hp>
-      Exiba seu código com destaque de sintaxe. Suporta múltiplas linguagens de programação
-      com formatação e indentação adequadas.
+      Exiba seu código com destaque de sintaxe. Suporta múltiplas linguagens de
+      programação com formatação e indentação adequadas.
     </hp>
     <hcodeblock lang="javascript">
       <hcodeline>// Exemplo JavaScript com async/await</hcodeline>
@@ -35,7 +35,9 @@ export const codeBlockValue: any = (
       <hcodeline>{'    def __init__(self) -> None:'}</hcodeline>
       <hcodeline>{'        self.tasks: List[str] = []'}</hcodeline>
       <hcodeline />
-      <hcodeline>{'    def adicionar_tarefa(self, task: str) -> None:'}</hcodeline>
+      <hcodeline>
+        {'    def adicionar_tarefa(self, task: str) -> None:'}
+      </hcodeline>
       <hcodeline>{`        """Adicionar uma nova tarefa à lista."""`}</hcodeline>
       <hcodeline>{'        self.tasks.append(task)'}</hcodeline>
       <hcodeline />

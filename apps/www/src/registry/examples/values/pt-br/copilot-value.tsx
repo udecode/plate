@@ -24,8 +24,7 @@ export const copilotValue: any = (
       <htext>Escolha entre as conclusões sugeridas:</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
-      <htext bold>Tab</htext>:
-      <htext>Aceita toda a conclusão sugerida</htext>
+      <htext bold>Tab</htext>:<htext>Aceita toda a conclusão sugerida</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext bold>Command + Seta Direita</htext>

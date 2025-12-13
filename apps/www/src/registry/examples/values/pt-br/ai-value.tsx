@@ -13,10 +13,15 @@ export const aiValue: any = (
       <htext>Pressione "⌘ + J".</htext>
     </hp>
     <hp indent={1} listStart={2} listStyleType="decimal">
-      <htext>Selecione o texto e clique em "Perguntar à IA" na barra de ferramentas flutuante</htext>
+      <htext>
+        Selecione o texto e clique em "Perguntar à IA" na barra de ferramentas
+        flutuante
+      </htext>
     </hp>
     <hp indent={1} listStart={3} listStyleType="decimal">
-      <htext>Clique com o botão direito em um bloco e selecione "Perguntar à IA"</htext>
+      <htext>
+        Clique com o botão direito em um bloco e selecione "Perguntar à IA"
+      </htext>
     </hp>
     <hp indent={1} listStart={4} listStyleType="decimal">
       <htext>Pressione espaço em um bloco vazio. Experimente:</htext>
@@ -87,7 +92,9 @@ export const aiValue: any = (
       <htext>Tentar novamente</htext>
     </hp>
     <hp>
-      <htext>Nota: o histórico do chat é preservado até que o menu seja fechado.</htext>
+      <htext>
+        Nota: o histórico do chat é preservado até que o menu seja fechado.
+      </htext>
     </hp>
   </fragment>
 );

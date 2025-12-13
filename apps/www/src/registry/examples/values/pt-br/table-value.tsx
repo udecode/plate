@@ -100,8 +100,8 @@ export const tableValue: any = (
   <fragment>
     <hh2>Tabela</hh2>
     <hp>
-      Crie tabelas personalizáveis com colunas e linhas redimensionáveis, permitindo que você
-      projete layouts estruturados.
+      Crie tabelas personalizáveis com colunas e linhas redimensionáveis,
+      permitindo que você projete layouts estruturados.
     </hp>
     {createTable()}
   </fragment>
@@ -111,7 +111,8 @@ export const tableMergeValue: any = (
   <fragment>
     <hh3>Mesclagem de Tabela</hh3>
     <hp>
-      Você pode desativar a mesclagem usando a opção <htext code>disableMerge: true</htext>. Experimente:
+      Você pode desativar a mesclagem usando a opção{' '}
+      <htext code>disableMerge: true</htext>. Experimente:
     </hp>
     {createTable(true)}
   </fragment>

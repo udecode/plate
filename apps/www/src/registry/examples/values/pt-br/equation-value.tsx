@@ -11,8 +11,8 @@ export const equationValue: any = (
     </hh2>
     <hp indent={1} listStyleType="decimal">
       <htext>
-        Equações permitem que você expresse conceitos matemáticos complexos em formatos
-        inline e bloco.
+        Equações permitem que você expresse conceitos matemáticos complexos em
+        formatos inline e bloco.
       </htext>
     </hp>
     <hp indent={1} listStart={2} listStyleType="decimal">
@@ -55,17 +55,17 @@ export const equationValue: any = (
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>
-        Clique em qualquer equação para editá-la. Pressione Esc para fechar o menu sem
-        editar.
+        Clique em qualquer equação para editá-la. Pressione Esc para fechar o
+        menu sem editar.
       </htext>
+    </hp>
+    <hp indent={2} listStyleType="disc">
+      <htext>Você pode navegar pela equação usando as teclas de seta</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>
-        Você pode navegar pela equação usando as teclas de seta
+        Use o comando de barra (/equation) para inserir uma nova equação
       </htext>
-    </hp>
-    <hp indent={2} listStyleType="disc">
-      <htext>Use o comando de barra (/equation) para inserir uma nova equação</htext>
     </hp>
     <hp indent={2} listStyleType="disc">
       <htext>
@@ -87,8 +87,8 @@ export const equationValue: any = (
     </hp>
     <hp>
       <htext>
-        Experimente diferentes tipos de equações e formatações para criar conteúdo
-        matemático rico em seus documentos.
+        Experimente diferentes tipos de equações e formatações para criar
+        conteúdo matemático rico em seus documentos.
       </htext>
     </hp>
   </fragment>

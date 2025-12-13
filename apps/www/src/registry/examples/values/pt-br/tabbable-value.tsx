@@ -8,13 +8,13 @@ export const tabbableValue: any = (
   <fragment>
     <hh2>Tabbable (Navegação por Tab)</hh2>
     <hp>
-      Garanta uma experiência de navegação por tab suave dentro do seu editor com o
-      plugin Tabbable.
+      Garanta uma experiência de navegação por tab suave dentro do seu editor
+      com o plugin Tabbable.
     </hp>
     <hp>
-      Lide corretamente com ordens de tabulação para nós vazios (void nodes), permitindo navegação
-      e interação contínuas. Sem este plugin, elementos DOM dentro de nós
-      vazios vêm após o editor na ordem de tabulação.
+      Lide corretamente com ordens de tabulação para nós vazios (void nodes),
+      permitindo navegação e interação contínuas. Sem este plugin, elementos DOM
+      dentro de nós vazios vêm após o editor na ordem de tabulação.
     </hp>
     <element type="tabbable">
       <htext />
@@ -40,16 +40,16 @@ export const tabbableValue: any = (
       <hcodeline>{'}'}</hcodeline>
     </hcodeblock>
     <hp>
-      Neste exemplo, o plugin está desativado quando o cursor está dentro de uma lista
-      ou um bloco de código. Você pode personalizar isso usando a opção{' '}
+      Neste exemplo, o plugin está desativado quando o cursor está dentro de uma
+      lista ou um bloco de código. Você pode personalizar isso usando a opção{' '}
       <htext code>query</htext>.
     </hp>
     <element type="tabbable">
       <htext />
     </element>
     <hp>
-      Quando você pressiona tab no final do editor, o foco deve ir para o
-      botão abaixo.
+      Quando você pressiona tab no final do editor, o foco deve ir para o botão
+      abaixo.
     </hp>
   </fragment>
 );

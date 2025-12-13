@@ -19,13 +19,14 @@ export const basicMarksValue: any = (
       desses estilos para ênfase.
     </hp>
     <hp>
-      Adicione <htext strikethrough>tachado</htext> para indicar conteúdo excluído,
-      use <htext code>código inline</htext> para termos técnicos, ou{' '}
+      Adicione <htext strikethrough>tachado</htext> para indicar conteúdo
+      excluído, use <htext code>código inline</htext> para termos técnicos, ou{' '}
       <htext highlight>destaque</htext> informações importantes.
     </hp>
     <hp>
-      Formate expressões matemáticas com texto <htext subscript>subscrito</htext>{' '}
-      e <htext superscript>sobrescrito</htext>.
+      Formate expressões matemáticas com texto{' '}
+      <htext subscript>subscrito</htext> e{' '}
+      <htext superscript>sobrescrito</htext>.
     </hp>
     <hp>
       Mostre atalhos de teclado como <htext kbd>⌘ + B</htext> para negrito ou{' '}

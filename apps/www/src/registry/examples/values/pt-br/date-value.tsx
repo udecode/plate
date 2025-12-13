@@ -10,8 +10,8 @@ export const dateValue: any = (
   <fragment>
     <hh2>Data</hh2>
     <hp>
-      Insira e exiba datas em seu texto usando elementos de data inline.
-      Essas datas podem ser facilmente selecionadas e modificadas usando uma interface
+      Insira e exiba datas em seu texto usando elementos de data inline. Essas
+      datas podem ser facilmente selecionadas e modificadas usando uma interface
       de calendário.
     </hp>
     <hp>

@@ -47,7 +47,8 @@ export const mediaPlaceholderValue: any = (
       <htext />
     </haudio>
     <hp indent={1} listStyleType="disc">
-      Limites de tamanho de arquivo configuráveis e configurações de upload em lote
+      Limites de tamanho de arquivo configuráveis e configurações de upload em
+      lote
     </hp>
     <hvideo
       align="center"
@@ -61,8 +62,8 @@ export const mediaPlaceholderValue: any = (
       Mensagens de erro claras para quaisquer problemas de upload
     </hp>
     <hp indent={1} listStyleType="disc">
-      Experimente agora - arraste uma imagem da sua área de trabalho ou clique no botão de upload na
-      barra de ferramentas
+      Experimente agora - arraste uma imagem da sua área de trabalho ou clique
+      no botão de upload na barra de ferramentas
     </hp>
   </fragment>
 );

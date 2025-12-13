@@ -16,7 +16,10 @@ export const slashCommandValue: any = (
       </htext>
     </hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Digite '/' em qualquer lugar do seu documento para abrir o menu de barra.</htext>
+      <htext>
+        Digite '/' em qualquer lugar do seu documento para abrir o menu de
+        barra.
+      </htext>
     </hp>
     <hp indent={1} listStyleType="disc">
       <htext>

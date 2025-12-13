@@ -7,11 +7,15 @@ jsx;
 export const dndValue: any = (
   <fragment>
     <hh2>Arrastar e Soltar</hh2>
-    <hp>Reorganize facilmente o conteúdo do seu documento usando arrastar e soltar.</hp>
+    <hp>
+      Reorganize facilmente o conteúdo do seu documento usando arrastar e
+      soltar.
+    </hp>
     <hp>Como usar:</hp>
     <hp indent={1} listStyleType="disc">
       <htext>
-        Passe o mouse sobre o lado esquerdo de um bloco para ver a alça de arrasto (seis pontos).
+        Passe o mouse sobre o lado esquerdo de um bloco para ver a alça de
+        arrasto (seis pontos).
       </htext>
     </hp>
     <hp indent={1} listStyleType="disc">

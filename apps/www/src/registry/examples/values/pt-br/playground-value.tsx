@@ -13,7 +13,7 @@ export const playgroundValue: Value = [
       { text: ' e ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {
-        text: ". Este playground mostra apenas uma parte das capacidades do Plate. ",
+        text: '. Este playground mostra apenas uma parte das capacidades do Plate. ',
       },
       {
         children: [{ text: 'Explore a documentação' }],
@@ -140,7 +140,9 @@ export const playgroundValue: Value = [
   },
   {
     children: [
-      { text: 'Editar texto existente (melhorar, corrigir gramática, mudar tom)' },
+      {
+        text: 'Editar texto existente (melhorar, corrigir gramática, mudar tom)',
+      },
     ],
     indent: 1,
     listStyleType: 'disc',
@@ -219,7 +221,9 @@ export const playgroundValue: Value = [
     children: [
       { children: [{ text: 'function hello() {' }], type: 'code_line' },
       {
-        children: [{ text: "  console.info('Blocos de código são suportados!');" }],
+        children: [
+          { text: "  console.info('Blocos de código são suportados!');" },
+        ],
         type: 'code_line',
       },
       { children: [{ text: '}' }], type: 'code_line' },
@@ -397,9 +401,7 @@ export const playgroundValue: Value = [
       {
         children: [
           {
-            children: [
-              { children: [{ text: 'Índice (TOC)' }], type: 'p' },
-            ],
+            children: [{ children: [{ text: 'Índice (TOC)' }], type: 'p' }],
             type: 'td',
           },
           {

@@ -8,12 +8,14 @@ export const floatingToolbarValue: any = (
   <fragment>
     <hh2>Barra de Ferramentas Flutuante</hh2>
     <hp>
-      A barra de ferramentas flutuante fornece acesso rápido a opções de formatação e
-      ações para o texto selecionado.
+      A barra de ferramentas flutuante fornece acesso rápido a opções de
+      formatação e ações para o texto selecionado.
     </hp>
     <hp>Como usar a barra de ferramentas flutuante:</hp>
     <hp indent={1} listStyleType="disc">
-      <htext>Selecione qualquer texto para invocar a barra de ferramentas flutuante.</htext>
+      <htext>
+        Selecione qualquer texto para invocar a barra de ferramentas flutuante.
+      </htext>
     </hp>
     <hp>Com a barra de ferramentas flutuante, você pode:</hp>
     <hp indent={1} listStyleType="disc">
@@ -27,12 +29,14 @@ export const floatingToolbarValue: any = (
     </hp>
     <hp indent={1} listStyleType="disc">
       <htext>
-        Aplicar formatação de texto: negrito, itálico, sublinhado, tachado, código
+        Aplicar formatação de texto: negrito, itálico, sublinhado, tachado,
+        código
       </htext>
     </hp>
     <hp>
       <htext>
-        Tente selecionar algum texto abaixo para ver a barra de ferramentas flutuante em ação:
+        Tente selecionar algum texto abaixo para ver a barra de ferramentas
+        flutuante em ação:
       </htext>
     </hp>
     <hp>

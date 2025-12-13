@@ -28,10 +28,14 @@ export const exitBreakValue: any = (
       ⌘⇧⏎ – Sair e inserir um novo bloco antes da estrutura atual
     </hp>
     <hp indent={1} listStyleType="disc">
-      Automático – Encontra o ancestral mais próximo que permite irmãos de parágrafo
+      Automático – Encontra o ancestral mais próximo que permite irmãos de
+      parágrafo
     </hp>
 
-    <hp>Quebras de saída funcionam de forma inteligente em estruturas aninhadas como tabelas:</hp>
+    <hp>
+      Quebras de saída funcionam de forma inteligente em estruturas aninhadas
+      como tabelas:
+    </hp>
     <hcolumngroup layout={[50, 50]}>
       <hcolumn width="50%">{createTable()}</hcolumn>
       <hcolumn width="50%">

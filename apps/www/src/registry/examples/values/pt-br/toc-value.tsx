@@ -11,8 +11,8 @@ export const tocValue: any = (
     </hh1>
     <hp>
       <htext>
-        O recurso de Índice (TOC) permite que você crie uma
-        visão geral atualizada automaticamente da estrutura do seu documento.
+        O recurso de Índice (TOC) permite que você crie uma visão geral
+        atualizada automaticamente da estrutura do seu documento.
       </htext>
     </hp>
     <hp>Como usar o Índice:</hp>
@@ -21,7 +21,8 @@ export const tocValue: any = (
     </hp>
     <hp indent={1} listStyleType="disc">
       <htext>
-        O TOC é atualizado automaticamente quando você modifica títulos no documento.
+        O TOC é atualizado automaticamente quando você modifica títulos no
+        documento.
       </htext>
     </hp>
     <htoc>
@@ -36,15 +37,15 @@ export const tocValue: any = (
     <hh3>Subseção</hh3>
     <hp>
       <htext>
-        Adicionar ou modificar títulos em seu documento atualizará automaticamente
-        o TOC.
+        Adicionar ou modificar títulos em seu documento atualizará
+        automaticamente o TOC.
       </htext>
     </hp>
     <hh2>Benefícios de Usar TOC</hh2>
     <hp>
       <htext>
-        Um Índice melhora a navegação do documento e fornece uma rápida
-        visão geral da estrutura do seu conteúdo.
+        Um Índice melhora a navegação do documento e fornece uma rápida visão
+        geral da estrutura do seu conteúdo.
       </htext>
     </hp>
   </fragment>

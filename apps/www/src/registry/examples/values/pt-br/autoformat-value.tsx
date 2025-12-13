@@ -8,13 +8,14 @@ export const autoformatValue: any = (
   <fragment>
     <hh2>Formatação Automática</hh2>
     <hp>
-      Potencialize sua experiência de escrita habilitando recursos de formatação automática. Adicione
-      atalhos estilo Markdown que aplicam formatação automaticamente enquanto você digita.
+      Potencialize sua experiência de escrita habilitando recursos de formatação
+      automática. Adicione atalhos estilo Markdown que aplicam formatação
+      automaticamente enquanto você digita.
     </hp>
     <hp>Enquanto digita, experimente estas regras de marcação:</hp>
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>**</htext> ou <htext code>__</htext> em ambos os lados do
-      seu texto para adicionar **negrito*.
+      Digite <htext code>**</htext> ou <htext code>__</htext> em ambos os lados
+      do seu texto para adicionar **negrito*.
     </hp>
     <hp indent={1} listStyleType="disc">
       Digite <htext code>*</htext> ou <htext code>_</htext> em ambos os lados do
@@ -22,13 +23,13 @@ export const autoformatValue: any = (
     </hp>
 
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>`</htext> em ambos os lados do seu texto para adicionar `código
-      inline.
+      Digite <htext code>`</htext> em ambos os lados do seu texto para adicionar
+      `código inline.
     </hp>
 
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>~~</htext> em ambos os lados do seu texto para adicionar
-      ~~tachado~.
+      Digite <htext code>~~</htext> em ambos os lados do seu texto para
+      adicionar ~~tachado~.
     </hp>
     <hp indent={1} listStyleType="disc">
       Note que nada acontece quando há um caractere antes, tente em:*negrito
@@ -39,12 +40,13 @@ export const autoformatValue: any = (
     </hp>
 
     <hp>
-      No início de qualquer novo bloco ou bloco existente, tente estes (regras de
-      bloco):
+      No início de qualquer novo bloco ou bloco existente, tente estes (regras
+      de bloco):
     </hp>
 
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>*</htext>, <htext code>-</htext> ou <htext code>+</htext>
+      Digite <htext code>*</htext>, <htext code>-</htext> ou{' '}
+      <htext code>+</htext>
       seguido de <htext code>espaço</htext> para criar uma lista com marcadores.
     </hp>
     <hp indent={1} listStyleType="disc">
@@ -68,8 +70,8 @@ export const autoformatValue: any = (
     </hp>
 
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>#</htext> seguido de <htext code>espaço</htext> para criar
-      um título H1.
+      Digite <htext code>#</htext> seguido de <htext code>espaço</htext> para
+      criar um título H1.
     </hp>
     <hp indent={1} listStyleType="disc">
       Digite <htext code>###</htext> seguido de <htext code>espaço</htext> para
@@ -80,12 +82,12 @@ export const autoformatValue: any = (
       criar um subtítulo H4.
     </hp>
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>#####</htext> seguido de <htext code>espaço</htext> para
-      criar um subtítulo H5.
+      Digite <htext code>#####</htext> seguido de <htext code>espaço</htext>{' '}
+      para criar um subtítulo H5.
     </hp>
     <hp indent={1} listStyleType="disc">
-      Digite <htext code>######</htext> seguido de <htext code>espaço</htext> para
-      criar um subtítulo H6.
+      Digite <htext code>######</htext> seguido de <htext code>espaço</htext>{' '}
+      para criar um subtítulo H6.
     </hp>
   </fragment>
 );

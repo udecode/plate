@@ -9,8 +9,8 @@ export const listValue: any = (
     <hh2>Lista</hh2>
 
     <hp>
-      Crie listas indentadas com múltiplos níveis de indentação e personalize
-      o tipo de estilo de lista para cada nível.
+      Crie listas indentadas com múltiplos níveis de indentação e personalize o
+      tipo de estilo de lista para cada nível.
     </hp>
     <hp checked={true} indent={1} listStyleType="todo">
       Tarefa 1

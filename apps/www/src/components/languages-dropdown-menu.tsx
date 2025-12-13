@@ -70,13 +70,13 @@ export function LanguagesDropdownMenu() {
           </button>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-         <button
+          <button
             type="button"
             className="w-full cursor-pointer"
             onClick={() => handleClick('pt-br')}
           >
             Português
-            <span className="text-xs text-muted-foreground">Beta</span>
+            <span className="text-muted-foreground text-xs">Beta</span>
           </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
