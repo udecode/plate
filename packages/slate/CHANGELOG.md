@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 52.0.10
+
+### Patch Changes
+
+- [`a4d093b`](https://github.com/udecode/plate/commit/a4d093bf0b0c78c40b6bb1bfe5fd15e4198b8942) by [@zbeyens](https://github.com/zbeyens) – slate 0.120.0
+
 ## 52.0.1
 
 ### Patch Changes

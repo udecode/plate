@@ -1,5 +1,18 @@
 # @platejs/core
 
+## 52.0.11
+
+### Patch Changes
+
+- [#4784](https://github.com/udecode/plate/pull/4784) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed "Cannot find module 'react/compiler-runtime'" error for React 18 users
+
+## 52.0.10
+
+### Patch Changes
+
+- [`a4d093b`](https://github.com/udecode/plate/commit/a4d093bf0b0c78c40b6bb1bfe5fd15e4198b8942) by [@zbeyens](https://github.com/zbeyens) – slate 0.120.0
+
 ## 52.0.8
 
 ### Patch Changes

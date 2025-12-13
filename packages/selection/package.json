@@ -1,6 +1,6 @@
 {
   "name": "@platejs/selection",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Plate selection plugins",
   "keywords": [
     "plate",
@@ -40,13 +40,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "copy-to-clipboard": "^3.3.3"
+    "copy-to-clipboard": "^3.3.3",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

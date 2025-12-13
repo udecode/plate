@@ -1,6 +1,6 @@
 {
   "name": "@platejs/playwright",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Interact with a Plate editor from inside a Playwright test",
   "keywords": [
     "plate",
@@ -17,11 +17,13 @@
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -37,18 +39,19 @@
     "test:watch": "yarn p:test:watch",
     "typecheck": "yarn p:typecheck"
   },
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.42.1",
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js"
+  }
 }

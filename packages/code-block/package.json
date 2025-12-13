@@ -1,6 +1,6 @@
 {
   "name": "@platejs/code-block",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Code block plugin for Plate",
   "keywords": [
     "plate",
@@ -44,7 +44,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
@@ -52,5 +52,8 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  }
 }

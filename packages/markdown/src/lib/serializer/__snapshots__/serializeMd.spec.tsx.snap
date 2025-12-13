@@ -84,7 +84,7 @@ Text with <span style="color: rgb(252, 109, 38);">color</span> and <span style="
 
 Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
 
-<callout>
+<callout icon="💡">
   callout
 </callout>
 "

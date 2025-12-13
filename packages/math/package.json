@@ -1,6 +1,6 @@
 {
   "name": "@platejs/math",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Math plugin for Plate",
   "keywords": [
     "plate",
@@ -40,14 +40,15 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "katex": "0.16.22"
+    "katex": "0.16.22",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@types/katex": "0.16.7",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

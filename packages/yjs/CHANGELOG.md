@@ -1,5 +1,18 @@
 # @platejs/yjs
 
+## 52.0.12
+
+### Patch Changes
+
+- [#4786](https://github.com/udecode/plate/pull/4786) by [@felixfeng33](https://github.com/felixfeng33) – revert @platejs/yjs to 52.0.5
+
+## 52.0.11
+
+### Patch Changes
+
+- [#4784](https://github.com/udecode/plate/pull/4784) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed "Cannot find module 'react/compiler-runtime'" error for React 18 users
+
 ## 52.0.9
 
 ### Patch Changes

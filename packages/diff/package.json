@@ -1,6 +1,6 @@
 {
   "name": "@platejs/diff",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Compute a diff of two Slate documents",
   "keywords": [
     "plate",
@@ -39,13 +39,14 @@
   },
   "dependencies": {
     "diff-match-patch-ts": "^0.6.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.1",
+    "platejs": ">=52.0.11",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

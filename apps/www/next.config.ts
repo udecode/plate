@@ -11,6 +11,7 @@ const nextConfig = async (phase: string) => {
     experimental: {
       turbopackFileSystemCacheForDev: true,
     },
+    productionBrowserSourceMaps: false,
     // https://nextjs.org/docs/basic-features/image-optimization#domains
     images: {
       remotePatterns: [

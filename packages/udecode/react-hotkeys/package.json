@@ -1,6 +1,6 @@
 {
   "name": "@udecode/react-hotkeys",
-  "version": "52.0.1",
+  "version": "52.0.11",
   "description": "Fork of react-hotkeys-hook",
   "keywords": [
     "react-hotkeys-hook"
@@ -43,5 +43,8 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  }
 }
