@@ -67,8 +67,7 @@ console.table(results);
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  // apiKey: 'sk-xxxx',
-  apiKey: 'sk-3c998387e77c46a48c008ce5ec58dc76',
+  apiKey: 'sk-xxxx',
   baseURL: 'https://api.desepseek.com',
 });
 
