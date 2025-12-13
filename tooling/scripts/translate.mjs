@@ -14,6 +14,22 @@ import path from 'node:path';
 // Load environment variables
 import OpenAI from 'openai';
 
+// Read languine configuration
+const readConfig = () => {
+  try {
+    const configPath = path.resolve(process.cwd(), 'languine.json');
+    const configContent = fs.readFileSync(configPath, 'utf8');
+    return JSON.parse(configContent);
+  } catch (error) {
+    console.error('Error reading languine.json:', error);
+    process.exit(1);
+  }
+};
+
+const config = readConfig();
+const { content: contentConfig, language } = config;
+const targets = language?.targets || [];
+
 const TARGET_DIR = 'docs';
 const DAYS = Number(process.argv[2]) || 60; // 默认 60 天
 const CUTOFF = Date.now() - DAYS * 24 * 60 * 60 * 1000;
@@ -33,7 +49,7 @@ console.error(`Scanning ${files.length} files… (cutoff = ${DAYS} days)`);
 
 // 2) 查询最后提交时间并过滤
 const results = files
-  .filter((f) => !f.endsWith('.cn.mdx')) // 过滤掉以.cn.mdx结尾的文件
+  .filter((f) => !targets.some((target) => f.endsWith(`.${target}.mdx`))) // 过滤掉翻译文件
   .flatMap((f) => {
     const out = spawnSync('git', ['log', '-1', '--format=%ci', '--', f], {
       encoding: 'utf8',
@@ -51,36 +67,39 @@ console.table(results);
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: 'sk-xxxx',
-  baseURL: 'https://api.deepseek.com',
+  // apiKey: 'sk-xxxx',
+  apiKey: 'sk-3c998387e77c46a48c008ce5ec58dc76',
+  baseURL: 'https://api.desepseek.com',
 });
-
-// Read languine configuration
-const readConfig = () => {
-  try {
-    const configPath = path.resolve(process.cwd(), 'languine.json');
-    const configContent = fs.readFileSync(configPath, 'utf8');
-    return JSON.parse(configContent);
-  } catch (error) {
-    console.error('Error reading languine.json:', error);
-    process.exit(1);
-  }
-};
 
 // Translate content using OpenAI
 async function translateContent(content, targetLanguage) {
   try {
-    const response = await openai.chat.completions.create({
-      messages: [
-        {
-          content: `You are a professional translator. Translate the following MDX content from English to ${targetLanguage}. 
+    let systemPrompt = `You are a professional translator. Translate the following MDX content from English to ${targetLanguage}. 
           Preserve all Markdown formatting, code blocks, and component tags. Do not translate code inside code blocks or component names.
-          The content is in .mdx format, which combines Markdown with JSX components.
+          The content is in .mdx format, which combines Markdown with JSX components.`;
+
+    if (targetLanguage === 'cn') {
+      systemPrompt += `
           - Do not translate the provider as 提供者, just keep it as provider.
           - Do not translate the entry as 条目, just keep it as entry.
           - Do not translate the leaf as 叶子, just keep it as leaf.
           - Do not translate the element as 元素, just keep it as element.
-          `,
+      `;
+    }
+
+    if (targetLanguage === 'pt-br') {
+      systemPrompt += `
+          - Do not translate the provider as Provedor, just keep it as provider.
+          - Do not translate the entry as Entrada, just keep it as entry.
+          - Do not translate the leaf as Folha, just keep it as leaf.
+      `;
+    }
+
+    const response = await openai.chat.completions.create({
+      messages: [
+        {
+          content: systemPrompt,
           role: 'system',
         },
         {
@@ -100,9 +119,6 @@ async function translateContent(content, targetLanguage) {
 
 // Process files for translation
 async function processTranslation() {
-  const config = readConfig();
-  const { content: contentConfig, language } = config;
-
   if (!language?.source || !language.targets || !contentConfig) {
     console.error('Invalid configuration in languine.json');
     process.exit(1);
@@ -113,8 +129,8 @@ async function processTranslation() {
     const sourceContent = fs.readFileSync(sourceFile, 'utf8');
 
     for (const targetLanguage of language.targets) {
-      // Add .cn.mdx suffix to the source file path
-      const targetFile = sourceFile.replace('.mdx', '.cn.mdx');
+      // Add target suffix to the source file path
+      const targetFile = sourceFile.replace('.mdx', `.${targetLanguage}.mdx`);
 
       console.info(
         `Translating ${sourceFile} to ${targetLanguage} (${targetFile})`
