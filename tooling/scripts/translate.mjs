@@ -68,7 +68,7 @@ console.table(results);
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: 'sk-xxxx',
-  baseURL: 'https://api.desepseek.com',
+  baseURL: 'https://api.deepseek.com',
 });
 
 // Translate content using OpenAI
