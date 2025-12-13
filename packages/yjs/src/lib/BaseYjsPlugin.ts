@@ -54,7 +54,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
     if (!ydoc) {
       ydoc = new Y.Doc();
     }
-
     if (!awareness) {
       awareness = new Awareness(ydoc);
     }
@@ -126,7 +125,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       try {
         YjsEditor.disconnect(editor as any);
-      } catch (_error) {}
+      } catch {}
     },
     /**
      * Disconnect from all providers or specific provider types. For WebRTC
@@ -138,7 +137,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
      *   specified, disconnects from all providers.
      */
     disconnect: (type?: YjsProviderType | YjsProviderType[]) => {
-      const { getOptions } = ctx;
+      const { editor: _editor, getOptions } = ctx;
       const { _providers } = getOptions();
 
       const typesToDisconnect = type
@@ -191,7 +190,6 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
 
       const options = getOptions();
       const {
-        _providers,
         awareness,
         providers: providerConfigsOrInstances = [],
         sharedType: customSharedType,
@@ -205,13 +203,106 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         );
       }
 
-      // Store initial value for potential later use (after sync)
-      let pendingInitialValue: Value | null = null;
+      // Final providers array that will contain both configured and custom providers
+      const finalProviders: UnifiedProvider[] = [];
 
-      // CRITICAL: Check for both null AND undefined to avoid creating default value
-      if (value != null) {
-        // != checks for both null and undefined
+      // Track sync state for waiting
+      let syncResolve: (() => void) | null = null;
+      const syncPromise = new Promise<void>((resolve) => {
+        syncResolve = resolve;
+      });
+
+      // Create providers FIRST (before connecting YjsEditor)
+      for (const item of providerConfigsOrInstances) {
+        if (isProviderConfig(item)) {
+          const { options: providerOptions, type } = item;
+
+          if (!providerOptions) {
+            continue;
+          }
+
+          try {
+            const provider = createProvider({
+              awareness,
+              doc: ydoc,
+              options: providerOptions,
+              type,
+              onConnect: () => {
+                getOptions().onConnect?.({ type });
+                setOption('_isConnected', true);
+              },
+              onDisconnect: () => {
+                getOptions().onDisconnect?.({ type });
+
+                const { _providers } = getOptions();
+                const hasConnectedProvider = _providers.some(
+                  (p) => p.isConnected
+                );
+
+                if (!hasConnectedProvider) {
+                  setOption('_isConnected', false);
+                }
+              },
+              onError: (error) => {
+                getOptions().onError?.({ error, type });
+              },
+              onSyncChange: (isSynced) => {
+                getOptions().onSyncChange?.({ isSynced, type });
+                setOption('_isSynced', isSynced);
+
+                // Resolve sync promise on first sync
+                if (isSynced && syncResolve) {
+                  syncResolve();
+                  syncResolve = null;
+                }
+              },
+            });
+            finalProviders.push(provider);
+          } catch {
+            // Provider creation failed
+          }
+        } else {
+          finalProviders.push(item);
+        }
+      }
+
+      setOption('_providers', finalProviders);
+
+      // Connect providers to start sync
+      if (autoConnect && finalProviders.length > 0) {
+        finalProviders.forEach((provider) => {
+          try {
+            provider.connect();
+          } catch (error) {
+            getOptions().onError?.({
+              error: error instanceof Error ? error : new Error(String(error)),
+              type: provider.type,
+            });
+          }
+        });
+
+        // Wait for first sync to complete (with timeout)
+        const SYNC_TIMEOUT = 5000;
+        await Promise.race([
+          syncPromise,
+          new Promise<void>((resolve) => {
+            setTimeout(() => {
+              syncResolve = null; // Clear to prevent late resolution
+              resolve();
+            }, SYNC_TIMEOUT);
+          }),
+        ]);
+      }
+
+      // After sync, check if ydoc has content from server
+      // Use custom sharedType if provided, otherwise use default 'content' key
+      const sharedRoot =
+        customSharedType ?? (ydoc.get('content', Y.XmlText) as Y.XmlText);
+
+      // Only apply initial value if ydoc is empty (no content from server)
+      if (sharedRoot.length === 0 && value !== null) {
         let initialNodes = value as Value;
+
         if (typeof value === 'string') {
           initialNodes = editor.api.html.deserialize({
             element: value,
@@ -224,163 +315,36 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
         if (!initialNodes || initialNodes?.length === 0) {
           initialNodes = editor.api.create.value();
         }
-
-        // Store for later - will apply after sync if Y.doc is empty
-        pendingInitialValue = initialNodes;
-      }
-
-      // Final providers array that will contain both configured and custom providers
-      const finalProviders: UnifiedProvider[] = [];
-
-      // Connect the YjsEditor first to set up slate-yjs bindings.
-      YjsEditor.connect(editor as any);
-
-      // CRITICAL: Don't call editor.tf.init yet - wait for first sync to complete
-      // This prevents editor.tf.init from adding an empty paragraph before server content arrives
-      let hasInitialized = false;
-
-      // Then process and create providers
-      for (const item of providerConfigsOrInstances) {
-        if (isProviderConfig(item)) {
-          // It's a configuration object, create the provider
-          const { options, type } = item;
-
-          if (!options) {
-            console.warn(
-              `[yjs] No options provided for provider type: ${type}`
-            );
-            continue;
-          }
-
-          try {
-            // Create provider with shared handlers, Y.Doc, and Awareness
-            const provider = createProvider({
-              awareness,
-              doc: ydoc,
-              options,
-              type,
-              onConnect: () => {
-                getOptions().onConnect?.({ type });
-                // At least one provider is connected
-                setOption('_isConnected', true);
-              },
-              onDisconnect: () => {
-                getOptions().onDisconnect?.({ type });
-
-                // Check for any connected providers
-                const { _providers } = getOptions();
-                const hasConnectedProvider = _providers.some(
-                  (provider) => provider.isConnected
-                );
-                if (!hasConnectedProvider) {
-                  setOption('_isConnected', false);
-                }
-              },
-              onError: (error) => {
-                getOptions().onError?.({ error, type });
-              },
-              onSyncChange: (isSynced) => {
-                getOptions().onSyncChange?.({ isSynced, type });
-                setOption('_isSynced', isSynced);
-
-                // CRITICAL: Initialize editor AFTER first sync to avoid empty paragraph before server content
-                if (isSynced && !hasInitialized) {
-                  hasInitialized = true;
-
-                  // After first sync completes, apply initial value ONLY if Y.doc is still empty
-                  if (pendingInitialValue) {
-                    const sharedTypeToCheck =
-                      customSharedType || ydoc.get('content', Y.XmlText);
-                    const ydocHasContent =
-                      sharedTypeToCheck && sharedTypeToCheck.length > 0;
-
-                    if (ydocHasContent) {
-                      pendingInitialValue = null;
-                    } else {
-                      // Use custom sharedType if provided, otherwise use default 'content'
-                      if (customSharedType) {
-                        const delta =
-                          slateNodesToInsertDelta(pendingInitialValue);
-                        ydoc.transact(() => {
-                          customSharedType.applyDelta(delta);
-                        });
-                      } else {
-                        // For default 'content' key, use deterministic state
-                        slateToDeterministicYjsState(
-                          id ?? editor.id,
-                          pendingInitialValue
-                        )
-                          .then((initialDelta) => {
-                            ydoc.transact(() => {
-                              Y.applyUpdate(ydoc, initialDelta);
-                            });
-                          })
-                          .catch(() => {
-                            // Ignore errors applying pending value
-                          });
-                      }
-
-                      pendingInitialValue = null;
-                    }
-                  }
-
-                  // Now call editor.tf.init after Y.doc sync is complete
-                  editor.tf.init({
-                    autoSelect,
-                    selection,
-                    shouldNormalizeEditor: false,
-                    value: null,
-                    onReady,
-                  });
-                }
-              },
-            });
-            finalProviders.push(provider);
-          } catch (error) {
-            console.warn(
-              `[yjs] Error creating provider of type ${type}:`,
-              error
-            );
-          }
+        if (customSharedType) {
+          const delta = slateNodesToInsertDelta(initialNodes);
+          ydoc.transact(() => {
+            customSharedType.applyDelta(delta);
+          });
         } else {
-          // It's a pre-instantiated UnifiedProvider instance
-          const customProvider = item;
-
-          // Check if the provider's document matches our shared document
-          if (customProvider.document !== ydoc) {
-            console.warn(
-              `[yjs] Custom provider instance (${customProvider.type}) has a different Y.Doc. ` +
-                'This may cause synchronization issues. Ensure custom providers use the shared Y.Doc.'
-            );
-          }
-          // Check if the provider's awareness matches our shared awareness
-          if (customProvider.awareness !== awareness) {
-            console.warn(
-              `[yjs] Custom provider instance (${customProvider.type}) has a different Awareness instance. ` +
-                'Ensure custom providers use the shared Awareness instance for cursor consistency.'
-            );
-          }
-
-          // Add the custom provider to our providers array
-          finalProviders.push(customProvider);
+          const initialDelta = await slateToDeterministicYjsState(
+            id ?? editor.id,
+            initialNodes
+          );
+          ydoc.transact(() => {
+            Y.applyUpdate(ydoc, initialDelta);
+          });
         }
       }
 
-      // Update provider counts after creation
-      setOption('_providers', finalProviders);
+      // NOW connect YjsEditor after sync is complete
+      YjsEditor.connect(editor as any);
 
-      // Finally, connect providers if autoConnect is true
-      if (autoConnect) {
-        _providers.forEach((provider) => {
-          try {
-            provider.connect();
-          } catch (error) {
-            getOptions().onError?.({
-              error: error instanceof Error ? error : new Error(String(error)),
-              type: provider.type,
-            });
-          }
-        });
-      }
+      editor.tf.init({
+        autoSelect,
+        selection,
+        shouldNormalizeEditor: false,
+        value: null,
+      });
+
+      // Force React to re-render by triggering onChange
+      editor.api.onChange();
+
+      // Call onReady callback
+      onReady?.({ editor, isAsync: true, value: editor.children });
     },
   }));
