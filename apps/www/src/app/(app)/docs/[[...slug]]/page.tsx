@@ -43,23 +43,23 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
 
   let slug = slugParam?.join('/') || '';
 
-  // For Chinese docs, look for .cn.mdx files
-  if (locale === 'cn') {
-    // First try to find the Chinese version with .cn.mdx
-    const cnDoc = allDocs.find(
+  // For non-default locales (e.g. cn, pt-br), look for .locale.mdx files
+  if (locale) {
+    // First try to find the localized version with .locale.mdx
+    const localizedDoc = allDocs.find(
       (doc) =>
-        doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
-        doc._raw.sourceFileName?.endsWith('.cn.mdx')
+        doc.slugAsParams === `docs/${slug || 'index'}.${locale}` &&
+        doc._raw.sourceFileName?.endsWith(`.${locale}.mdx`)
     );
 
-    if (cnDoc) {
+    if (localizedDoc) {
       const path = slugParam?.join('/') || '';
-      cnDoc.slug = `/docs${path ? `/${path}` : ''}?locale=cn`;
-      return cnDoc;
+      localizedDoc.slug = `/docs${path ? `/${path}` : ''}?locale=${locale}`;
+      return localizedDoc;
     }
   }
 
-  // Default behavior for non-Chinese or fallback
+  // Default behavior for non-localized or fallback
   slug = `docs${slug ? `/${slug}` : ''}`;
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
@@ -70,9 +70,9 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const path = slugParam?.join('/') || '';
   doc.slug = `/docs${path ? `/${path}` : ''}`;
 
-  // Only add locale param for Chinese
-  if (locale === 'cn') {
-    doc.slug += '?locale=cn';
+  // Only add locale param if present
+  if (locale) {
+    doc.slug += `?locale=${locale}`;
   }
 
   return doc;

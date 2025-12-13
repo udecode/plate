@@ -1,12 +1,16 @@
 {
   "language": {
     "source": "en",
-    "targets": ["cn"]
+    "targets": ["cn", "pt-br"]
   },
   "content": [
     {
       "source": "docs/*.mdx",
       "target": "docs/*.cn.mdx"
+    },
+    {
+      "source": "docs/*.mdx",
+      "target": "docs/*.pt-br.mdx"
     }
   ]
 }
