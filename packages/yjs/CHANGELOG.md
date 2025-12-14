@@ -1,5 +1,19 @@
 # @platejs/yjs
 
+## 52.0.13
+
+### Patch Changes
+
+- [#4762](https://github.com/udecode/plate/pull/4762) by [@felixfeng33](https://github.com/felixfeng33) – Add `userId` option to **YjsPlugin** for combobox collaboration support
+
+  ```tsx
+  YjsPlugin.configure({
+    options: {
+      userId: user?.id,
+    },
+  });
+  ```
+
 ## 52.0.12
 
 ### Patch Changes

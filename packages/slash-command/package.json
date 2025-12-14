@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slash-command",
-  "version": "52.0.11",
+  "version": "52.0.13",
   "description": "Slash commands plugin for Plate",
   "keywords": [
     "plate",
@@ -40,7 +40,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@platejs/combobox": "52.0.11",
+    "@platejs/combobox": "52.0.13",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
