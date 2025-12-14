@@ -27,6 +27,7 @@ import { cva } from 'class-variance-authority';
 import { useComposedRef, useEditorRef } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
+import { YjsPlugin } from '@platejs/yjs/react';
 
 type FilterFn = (
   item: { value: string; group?: string; keywords?: string[]; label?: string },
@@ -89,6 +90,17 @@ const InlineCombobox = ({
   const hasValueProp = valueProp !== undefined;
   const value = hasValueProp ? valueProp : valueState;
 
+  // Check if current user is the creator of this element (for Yjs collaboration)
+  const isCreator = React.useMemo(() => {
+    const elementUserId = (element as any).userId;
+    const currentUserId = editor.getOption(YjsPlugin, 'userId');
+
+    // If no userId (backwards compatibility or non-Yjs), allow
+    if (!elementUserId) return true;
+
+    return elementUserId === currentUserId;
+  }, [editor, element]);
+
   const setValue = React.useCallback(
     (newValue: string) => {
       setValueProp?.(newValue);
@@ -126,6 +138,7 @@ const InlineCombobox = ({
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: true,
     cursorState,
+    autoFocus: isCreator,
     ref: inputRef,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
