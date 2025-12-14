@@ -19,6 +19,6 @@ export type TriggerComboboxPluginOptions = {
   triggerPreviousCharPattern?: RegExp;
   createComboboxInput?: (trigger: string) => TElement;
   /** Get current user ID for Yjs collaboration - used to set userId on combobox input */
-  getUserId?: (editor: SlateEditor) => string | undefined;
+  getUserId?: (editor: SlateEditor) => string | null;
   triggerQuery?: (editor: SlateEditor) => boolean;
 };
