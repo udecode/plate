@@ -1,5 +1,7 @@
 # @platejs/emoji
 
+## 52.0.13
+
 ## 52.0.11
 
 ### Patch Changes
