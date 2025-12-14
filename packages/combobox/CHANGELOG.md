@@ -1,5 +1,11 @@
 # @platejs/combobox
 
+## 52.0.14
+
+### Patch Changes
+
+- [#4790](https://github.com/udecode/plate/pull/4790) by [@felixfeng33](https://github.com/felixfeng33) – Fix type error
+
 ## 52.0.13
 
 ### Patch Changes
