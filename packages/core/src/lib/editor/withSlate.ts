@@ -26,6 +26,11 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    */
   id?: string;
   /**
+   * Current user ID for collaborative features (e.g., Yjs). Used to identify
+   * the creator of elements like combobox inputs.
+   */
+  userId?: string | null;
+  /**
    * Determines which mark/element to apply at boundaries between different
    * marks, based on cursor movement using the left/right arrow keys.
    *
@@ -216,6 +221,7 @@ export const withSlate = <
     selection,
     shouldNormalizeEditor,
     skipInitialization,
+    userId,
     value,
     onReady,
     ...pluginConfig
@@ -226,6 +232,7 @@ export const withSlate = <
   editor.id = id ?? editor.id ?? nanoid();
   editor.meta.key = editor.meta.key ?? nanoid();
   editor.meta.isFallback = false;
+  editor.meta.userId = userId;
   editor.dom = {
     composing: false,
     currentKeyboardEvent: null,
