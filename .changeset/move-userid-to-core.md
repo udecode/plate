@@ -1,6 +1,6 @@
 ---
-"@platejs/core": patch
-"@platejs/combobox": patch
+"@platejs/core": minor
+"@platejs/combobox": minor
 ---
 
 Add `userId` option to editor for collaborative features
