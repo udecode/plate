@@ -12,7 +12,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/mention-kit.tsx",
-      "content": "'use client';\n\nimport { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';\n\nimport {\n  MentionElement,\n  MentionInputElement,\n} from '@/registry/ui/mention-node';\n\nexport const MentionKit = [\n  MentionPlugin.configure({\n    options: { triggerPreviousCharPattern: /^$|^[\\s\"']$/ },\n  }).withComponent(MentionElement),\n  MentionInputPlugin.withComponent(MentionInputElement),\n];\n",
+      "content": "'use client';\n\nimport { MentionInputPlugin, MentionPlugin } from '@platejs/mention/react';\n\nimport {\n  MentionElement,\n  MentionInputElement,\n} from '@/registry/ui/mention-node';\n\nexport const MentionKit = [\n  MentionPlugin.configure({\n    options: {\n      triggerPreviousCharPattern: /^$|^[\\s\"']$/,\n    },\n  }).withComponent(MentionElement),\n  MentionInputPlugin.withComponent(MentionInputElement),\n];\n",
       "type": "registry:component"
     }
   ]
