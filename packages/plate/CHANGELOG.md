@@ -1,5 +1,7 @@
 # platejs
 
+## 52.0.15
+
 ## 52.0.11
 
 ### Patch Changes
