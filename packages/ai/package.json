@@ -49,11 +49,11 @@
   },
   "devDependencies": {
     "@ai-sdk/react": "2.0.28",
-    "@platejs/combobox": "52.0.14",
+    "@platejs/combobox": "52.0.15",
     "ai": "5.0.28"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.11",
+    "platejs": ">=52.0.15",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
