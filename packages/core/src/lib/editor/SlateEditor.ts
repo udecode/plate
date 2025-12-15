@@ -50,6 +50,11 @@ export type BaseEditor = EditorBase & {
     key: any;
     /** A record of plugin components. */
     components: NodeComponents;
+    /**
+     * Current user ID for collaborative features (e.g., Yjs). Used to identify
+     * the creator of elements like combobox inputs.
+     */
+    userId?: string | null;
     /** Whether the editor is a fallback editor. */
     isFallback: boolean;
     /** Plugin cache by feature. */
