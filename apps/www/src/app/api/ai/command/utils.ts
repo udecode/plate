@@ -46,9 +46,9 @@ export const list = (items: string[] | undefined) =>
     : '';
 
 export type StructuredPromptSections = {
+  context?: string;
   examples?: string[] | string;
   history?: string;
-  input?: string;
   instruction?: string;
   outputFormatting?: string;
   prefilledResponse?: string;
@@ -87,9 +87,9 @@ export type StructuredPromptSections = {
  *   11. Prefilled response - Optional response starter
  */
 export const buildStructuredPrompt = ({
+  context,
   examples,
   history,
-  input,
   instruction,
   outputFormatting,
   prefilledResponse,
@@ -125,10 +125,10 @@ export const buildStructuredPrompt = ({
         ${tag('instruction', instruction)}
       `,
 
-    input &&
+    context &&
       dedent`
-        Here is the input you should reference when answering the user:
-        ${tag('input', input)}
+        Here is the context you should reference when answering the user:
+        ${tag('context', context)}
       `,
 
     rules && tag('rules', rules),
@@ -168,8 +168,8 @@ export function formatTextFromMessages(
   messages: ChatMessage[],
   options?: { limit?: number }
 ): string {
-  // No history needed if only one message
-  if (messages.length <= 1) return '';
+  // No history needed if no messages or only one message
+  if (!messages || messages.length <= 1) return '';
 
   const historyMessages = options?.limit
     ? messages.slice(-options.limit)
@@ -193,6 +193,8 @@ export function formatTextFromMessages(
  * Get the last user message text from messages array.
  */
 export function getLastUserInstruction(messages: ChatMessage[]): string {
+  if (!messages || messages.length === 0) return '';
+
   const lastUserMessage = [...messages]
     .reverse()
     .find((m) => m.role === 'user');

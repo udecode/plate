@@ -61,13 +61,21 @@ export async function POST(req: NextRequest) {
         let toolName = toolNameParam;
 
         if (!toolName) {
+          const prompt = getChooseToolPrompt({
+            isSelecting,
+            messages: messagesRaw,
+          });
+
+          const enumOptions = isSelecting
+            ? ['generate', 'edit', 'comment']
+            : ['generate', 'comment'];
+          const modelId = model || 'google/gemini-2.5-flash';
+
           const { object: AIToolName } = await generateObject({
-            enum: isSelecting
-              ? ['generate', 'edit', 'comment']
-              : ['generate', 'comment'],
-            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            enum: enumOptions,
+            model: gatewayProvider(modelId),
             output: 'enum',
-            prompt: getChooseToolPrompt(messagesRaw),
+            prompt,
           });
 
           writer.write({
@@ -118,6 +126,7 @@ export async function POST(req: NextRequest) {
 
             if (toolName === 'generate') {
               const generatePrompt = getGeneratePrompt(editor, {
+                isSelecting,
                 messages: messagesRaw,
               });
 
