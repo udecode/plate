@@ -343,7 +343,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'emojify',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Emojify',
+        prompt:
+          'Add a small number of contextually relevant emojis within each block only. You may insert emojis, but do not remove, replace, or rewrite existing text, and do not modify Markdown syntax, links, or line breaks.',
         toolName: 'edit',
       });
     },
@@ -368,7 +369,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Fix spelling and grammar',
+        prompt:
+          'Fix spelling, grammar, and punctuation errors within each block only, without changing meaning, tone, or adding new information.',
         toolName: 'edit',
       });
     },
@@ -401,7 +403,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'improveWriting',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Improve the writing',
+        prompt:
+          'Improve the writing for clarity and flow, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
@@ -423,7 +426,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'makeLonger',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Make longer',
+        prompt:
+          'Make the content longer by elaborating on existing ideas within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
@@ -434,7 +438,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'makeShorter',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Make shorter',
+        prompt:
+          'Make the content shorter by reducing verbosity within each block only, without changing meaning or removing essential information.',
         toolName: 'edit',
       });
     },
@@ -453,7 +458,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'simplifyLanguage',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Simplify the language',
+        prompt:
+          'Simplify the language by using clearer and more straightforward wording within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
