@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
-import { type SlateEditor, RangeApi } from 'platejs';
+import { type SlateEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -264,3 +264,15 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 /** Get markdown with selection markers */
 export const getMarkdownWithSelection = (editor: SlateEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
+
+/** Check if the current selection is inside a table cell */
+export const isSelectionInTable = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  const tableEntry = editor.api.block({
+    at: editor.selection,
+    match: { type: KEYS.table },
+  });
+
+  return !!tableEntry;
+};
