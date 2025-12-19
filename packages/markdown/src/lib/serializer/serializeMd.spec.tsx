@@ -311,4 +311,49 @@ describe('serializeMd', () => {
     });
     expect(result).toBe('Make text *bold*\n');
   });
+
+  it('should serialize table cells with multiple blocks using <br/> separator', () => {
+    const slateNodes = [
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [
+                  {
+                    children: [{ text: 'First paragraph' }],
+                    type: 'p',
+                  },
+                  {
+                    children: [{ text: 'Second paragraph' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'td',
+              },
+              {
+                children: [
+                  {
+                    children: [{ text: 'Single paragraph' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+    ];
+
+    const result = serializeMd(editor as any, { value: slateNodes });
+
+    // Table cells with multiple blocks should use <br/> separator, not \n\n
+    // Because markdown tables don't support multiple blocks natively
+    expect(result).toBe(
+      '| First paragraph<br/>Second paragraph | Single paragraph |\n| ------------------------------------ | ---------------- |\n'
+    );
+  });
 });
