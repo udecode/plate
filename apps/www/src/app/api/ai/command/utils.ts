@@ -276,3 +276,18 @@ export const isSelectionInTable = (editor: SlateEditor): boolean => {
 
   return !!tableEntry;
 };
+
+/** Check if selection is within a single table cell */
+export const isSingleCellSelection = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  // Get all td blocks in selection
+  const cells = Array.from(
+    editor.api.nodes({
+      at: editor.selection,
+      match: { type: KEYS.td },
+    })
+  );
+
+  return cells.length === 1;
+};

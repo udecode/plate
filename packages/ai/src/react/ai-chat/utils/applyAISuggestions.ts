@@ -19,6 +19,10 @@ import {
 } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';
+import {
+  getTableCellChildren as withoutTable,
+  isSingleCellTable,
+} from './nestedContainerUtils';
 
 export const applyAISuggestions = (editor: SlateEditor, content: string) => {
   /** Conflict with block selection */
@@ -171,11 +175,17 @@ const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] =>
 
     return node;
   });
+
 const getDiffNodes = (editor: SlateEditor, aiContent: string) => {
   /** Original document nodes */
-  const chatNodes = withoutSuggestionAndComments(
-    editor.getOption(AIChatPlugin, 'chatNodes')
-  );
+  const rawChatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
+
+  let chatNodes = withoutSuggestionAndComments(rawChatNodes);
+
+  /**If selecting one single cell table, we just need to compare it's children to get diff nodes */
+  if (isSingleCellTable(chatNodes)) {
+    chatNodes = withoutTable(chatNodes[0]);
+  }
 
   const aiNodes = withProps(deserializeMd(editor, aiContent), chatNodes);
 
