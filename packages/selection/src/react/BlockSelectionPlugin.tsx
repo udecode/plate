@@ -169,6 +169,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       },
     },
     enableContextMenu: false,
+    disableSelectAll: false,
     isSelecting: false,
     isSelectionAreaVisible: false,
     selectedIds: new Set(),
