@@ -44,12 +44,10 @@ export type BlockSelectionConfig = PluginConfig<
     editorPaddingRight?: CSSProperties['width'];
     enableContextMenu?: boolean;
     /**
-     * Enable the plugin's custom selectAll (Cmd+A) behavior that selects blocks.
-     * When false, uses the editor's default selectAll behavior.
-     *
-     * @default true
+     * Disable the plugin's custom selectAll (Cmd+A) behavior.
+     * When true, uses the editor's default selectAll behavior.
      */
-    enableSelectAll?: boolean;
+    disableSelectAll?: boolean;
     isSelecting?: boolean;
     isSelectionAreaVisible?: boolean;
     rightSelectionAreaClassName?: string;
@@ -171,7 +169,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       },
     },
     enableContextMenu: false,
-    enableSelectAll: true,
+    disableSelectAll: false,
     isSelecting: false,
     isSelectionAreaVisible: false,
     selectedIds: new Set(),
@@ -424,7 +422,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           focus();
         },
         selectAll: () => {
-          if (!getOptions().enableSelectAll) {
+          if (getOptions().disableSelectAll) {
             return selectAll();
           }
 
