@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
             }
 
             if (toolName === 'edit') {
-              const editPrompt = getEditPrompt(editor, {
+              const [editPrompt, editType] = getEditPrompt(editor, {
                 isSelecting,
                 messages: messagesRaw,
               });
@@ -115,6 +115,11 @@ export async function POST(req: NextRequest) {
               return {
                 ...step,
                 activeTools: [],
+                model:
+                  editType === 'selection'
+                    ? //The selection task is more challenging, so we chose to use Gemini 2.5 Flash.
+                      gatewayProvider(model || 'google/gemini-2.5-flash')
+                    : gatewayProvider(model || 'openai/gpt-4o-mini'),
                 messages: [
                   {
                     content: editPrompt,

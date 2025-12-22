@@ -11,6 +11,7 @@ import {
   getMarkdownWithSelection,
   isMultiBlocks,
   isSelectionInTable,
+  isSingleCellSelection,
 } from '../utils';
 
 import { buildEditTablePrompt } from './getEditTablePrompt';
@@ -221,18 +222,19 @@ function buildEditSelectionPrompt(
 export function getEditPrompt(
   editor: SlateEditor,
   { isSelecting, messages }: { isSelecting: boolean; messages: ChatMessage[] }
-) {
+): [string, 'table' | 'multi-block' | 'selection'] {
   if (!isSelecting)
     throw new Error('Edit tool is only available when selecting');
 
   // Handle selection inside table cell
-  if (isSelectionInTable(editor)) {
-    return buildEditTablePrompt(editor, messages);
+  if (isSelectionInTable(editor) && !isSingleCellSelection(editor)) {
+    return [buildEditTablePrompt(editor, messages), 'table'];
   }
   // Handle multi-block selection
   if (isMultiBlocks(editor)) {
-    return buildEditMultiBlockPrompt(editor, messages);
+    return [buildEditMultiBlockPrompt(editor, messages), 'multi-block'];
   }
+
   // Handle single block with selection
-  return buildEditSelectionPrompt(editor, messages);
+  return [buildEditSelectionPrompt(editor, messages), 'selection'];
 }

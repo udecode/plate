@@ -19,7 +19,7 @@ export const getMarkdown = (
   }
 
   if (type === 'block' || type === 'blockWithBlockId') {
-    const blocks = editor.api.blocks({ mode: 'highest' }).map(([node]) => node);
+    const blocks = editor.api.blocks({ mode: 'lowest' }).map(([node]) => node);
 
     return serializeMd(editor, {
       value: blocks,

@@ -256,7 +256,7 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 
 /** Check if the current selection fully covers all top-level blocks. */
 export const isMultiBlocks = (editor: SlateEditor) => {
-  const blocks = editor.api.blocks({ mode: 'highest' });
+  const blocks = editor.api.blocks({ mode: 'lowest' });
 
   return blocks.length > 1;
 };
