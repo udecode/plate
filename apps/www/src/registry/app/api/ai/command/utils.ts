@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
-import { type SlateEditor, RangeApi } from 'platejs';
+import { type SlateEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -46,9 +46,9 @@ export const list = (items: string[] | undefined) =>
     : '';
 
 export type StructuredPromptSections = {
+  context?: string;
   examples?: string[] | string;
   history?: string;
-  input?: string;
   instruction?: string;
   outputFormatting?: string;
   prefilledResponse?: string;
@@ -87,9 +87,9 @@ export type StructuredPromptSections = {
  *   11. Prefilled response - Optional response starter
  */
 export const buildStructuredPrompt = ({
+  context,
   examples,
   history,
-  input,
   instruction,
   outputFormatting,
   prefilledResponse,
@@ -125,10 +125,10 @@ export const buildStructuredPrompt = ({
         ${tag('instruction', instruction)}
       `,
 
-    input &&
+    context &&
       dedent`
-        Here is the input you should reference when answering the user:
-        ${tag('input', input)}
+        Here is the context you should reference when answering the user:
+        ${tag('context', context)}
       `,
 
     rules && tag('rules', rules),
@@ -168,8 +168,8 @@ export function formatTextFromMessages(
   messages: ChatMessage[],
   options?: { limit?: number }
 ): string {
-  // No history needed if only one message
-  if (messages.length <= 1) return '';
+  // No history needed if no messages or only one message
+  if (!messages || messages.length <= 1) return '';
 
   const historyMessages = options?.limit
     ? messages.slice(-options.limit)
@@ -193,6 +193,8 @@ export function formatTextFromMessages(
  * Get the last user message text from messages array.
  */
 export function getLastUserInstruction(messages: ChatMessage[]): string {
+  if (!messages || messages.length === 0) return '';
+
   const lastUserMessage = [...messages]
     .reverse()
     .find((m) => m.role === 'user');
@@ -254,7 +256,7 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 
 /** Check if the current selection fully covers all top-level blocks. */
 export const isMultiBlocks = (editor: SlateEditor) => {
-  const blocks = editor.api.blocks({ mode: 'highest' });
+  const blocks = editor.api.blocks({ mode: 'lowest' });
 
   return blocks.length > 1;
 };
@@ -262,3 +264,30 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 /** Get markdown with selection markers */
 export const getMarkdownWithSelection = (editor: SlateEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
+
+/** Check if the current selection is inside a table cell */
+export const isSelectionInTable = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  const tableEntry = editor.api.block({
+    at: editor.selection,
+    match: { type: KEYS.table },
+  });
+
+  return !!tableEntry;
+};
+
+/** Check if selection is within a single table cell */
+export const isSingleCellSelection = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  // Get all td blocks in selection
+  const cells = Array.from(
+    editor.api.nodes({
+      at: editor.selection,
+      match: { type: KEYS.td },
+    })
+  );
+
+  return cells.length === 1;
+};

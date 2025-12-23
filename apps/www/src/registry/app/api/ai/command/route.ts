@@ -23,11 +23,12 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 import {
+  buildEditTableMultiCellPrompt,
   getChooseToolPrompt,
   getCommentPrompt,
   getEditPrompt,
   getGeneratePrompt,
-} from './prompts';
+} from './prompt';
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
@@ -61,13 +62,21 @@ export async function POST(req: NextRequest) {
         let toolName = toolNameParam;
 
         if (!toolName) {
+          const prompt = getChooseToolPrompt({
+            isSelecting,
+            messages: messagesRaw,
+          });
+
+          const enumOptions = isSelecting
+            ? ['generate', 'edit', 'comment']
+            : ['generate', 'comment'];
+          const modelId = model || 'google/gemini-2.5-flash';
+
           const { object: AIToolName } = await generateObject({
-            enum: isSelecting
-              ? ['generate', 'edit', 'comment']
-              : ['generate', 'comment'],
-            model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+            enum: enumOptions,
+            model: gatewayProvider(modelId),
             output: 'enum',
-            prompt: getChooseToolPrompt(messagesRaw),
+            prompt,
           });
 
           writer.write({
@@ -89,6 +98,11 @@ export async function POST(req: NextRequest) {
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
               writer,
             }),
+            table: getTableTool(editor, {
+              messagesRaw,
+              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              writer,
+            }),
           },
           prepareStep: async (step) => {
             if (toolName === 'comment') {
@@ -99,14 +113,27 @@ export async function POST(req: NextRequest) {
             }
 
             if (toolName === 'edit') {
-              const editPrompt = getEditPrompt(editor, {
+              const [editPrompt, editType] = getEditPrompt(editor, {
                 isSelecting,
                 messages: messagesRaw,
               });
 
+              // Table editing uses the table tool
+              if (editType === 'table') {
+                return {
+                  ...step,
+                  toolChoice: { toolName: 'table', type: 'tool' },
+                };
+              }
+
               return {
                 ...step,
                 activeTools: [],
+                model:
+                  editType === 'selection'
+                    ? //The selection task is more challenging, so we chose to use Gemini 2.5 Flash.
+                      gatewayProvider(model || 'google/gemini-2.5-flash')
+                    : gatewayProvider(model || 'openai/gpt-4o-mini'),
                 messages: [
                   {
                     content: editPrompt,
@@ -118,6 +145,7 @@ export async function POST(req: NextRequest) {
 
             if (toolName === 'generate') {
               const generatePrompt = getGeneratePrompt(editor, {
+                isSelecting,
                 messages: messagesRaw,
               });
 
@@ -210,6 +238,60 @@ const getCommentTool = (
           status: 'finished',
         },
         type: 'data-comment',
+      });
+    },
+  });
+
+const getTableTool = (
+  editor: SlateEditor,
+  {
+    messagesRaw,
+    model,
+    writer,
+  }: {
+    messagesRaw: ChatMessage[];
+    model: LanguageModel;
+    writer: UIMessageStreamWriter<ChatMessage>;
+  }
+) =>
+  tool({
+    description: 'Edit table cells',
+    inputSchema: z.object({}),
+    execute: async () => {
+      const { elementStream } = streamObject({
+        model,
+        output: 'array',
+        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
+        schema: z
+          .object({
+            content: z
+              .string()
+              .describe(
+                String.raw`The new content for the cell. Can contain multiple paragraphs separated by \n\n.`
+              ),
+            id: z.string().describe('The id of the table cell to update.'),
+          })
+          .describe('A table cell update'),
+      });
+
+      for await (const cellUpdate of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            cellUpdate,
+            status: 'streaming',
+          },
+          type: 'data-table',
+        });
+      }
+
+      writer.write({
+        id: nanoid(),
+        data: {
+          cellUpdate: null,
+          status: 'finished',
+        },
+        type: 'data-table',
       });
     },
   });
