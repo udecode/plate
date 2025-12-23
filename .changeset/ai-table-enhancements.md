@@ -1,5 +1,5 @@
 ---
-'@platejs/ai': minor
+"@platejs/ai": patch
 ---
 
 Enhanced AI capabilities with better table cell handling:
