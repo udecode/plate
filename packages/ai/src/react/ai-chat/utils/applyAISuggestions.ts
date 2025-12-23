@@ -140,7 +140,9 @@ export const withTransient = (diffNodes: Descendant[]): Descendant[] =>
     };
   });
 
-export const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] =>
+export const withoutSuggestionAndComments = (
+  nodes: Descendant[]
+): Descendant[] =>
   nodes.map((node) => {
     if (TextApi.isText(node)) {
       if (node[KEYS.suggestion] || node[KEYS.comment]) {

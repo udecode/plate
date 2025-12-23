@@ -132,6 +132,12 @@ export const useChat = () => {
 
       if (data.type === 'data-table' && data.data) {
         if (data.data.status === 'finished') {
+          const chatSelection = editor.getOption(AIChatPlugin, 'chatSelection');
+
+          if (!chatSelection) return;
+
+          editor.tf.setSelection(chatSelection);
+
           return;
         }
 

@@ -38,7 +38,10 @@ const serializeTableWithCellRefs = (
   editor: SlateEditor,
   table: TTableElement,
   selectedCellIds: Set<string>
-): { selectedCells: Array<{ cell: TTableCellElement; id: string }>; tableMarkdown: string } => {
+): {
+  selectedCells: Array<{ cell: TTableCellElement; id: string }>;
+  tableMarkdown: string;
+} => {
   const rows: string[] = [];
   const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
   let headerSeparator = '';
