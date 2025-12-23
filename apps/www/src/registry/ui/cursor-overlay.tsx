@@ -8,8 +8,8 @@ import {
   type CursorOverlayState,
   useCursorOverlay,
 } from '@platejs/selection/react';
-import { RangeApi } from 'platejs';
-import { usePluginOption } from 'platejs/react';
+import { KEYS, RangeApi } from 'platejs';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 

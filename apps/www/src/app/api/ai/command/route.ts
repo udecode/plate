@@ -23,6 +23,7 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
 
 import {
+  buildEditTableMultiCellPrompt,
   getChooseToolPrompt,
   getCommentPrompt,
   getEditPrompt,
@@ -97,6 +98,11 @@ export async function POST(req: NextRequest) {
               model: gatewayProvider(model || 'google/gemini-2.5-flash'),
               writer,
             }),
+            table: getTableTool(editor, {
+              messagesRaw,
+              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              writer,
+            }),
           },
           prepareStep: async (step) => {
             if (toolName === 'comment') {
@@ -111,6 +117,14 @@ export async function POST(req: NextRequest) {
                 isSelecting,
                 messages: messagesRaw,
               });
+
+              // Table editing uses the table tool
+              if (editType === 'table') {
+                return {
+                  ...step,
+                  toolChoice: { toolName: 'table', type: 'tool' },
+                };
+              }
 
               return {
                 ...step,
@@ -224,6 +238,60 @@ const getCommentTool = (
           status: 'finished',
         },
         type: 'data-comment',
+      });
+    },
+  });
+
+const getTableTool = (
+  editor: SlateEditor,
+  {
+    messagesRaw,
+    model,
+    writer,
+  }: {
+    messagesRaw: ChatMessage[];
+    model: LanguageModel;
+    writer: UIMessageStreamWriter<ChatMessage>;
+  }
+) =>
+  tool({
+    description: 'Edit table cells',
+    inputSchema: z.object({}),
+    execute: async () => {
+      const { elementStream } = streamObject({
+        model,
+        output: 'array',
+        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
+        schema: z
+          .object({
+            content: z
+              .string()
+              .describe(
+                String.raw`The new content for the cell. Can contain multiple paragraphs separated by \n\n.`
+              ),
+            id: z.string().describe('The id of the table cell to update.'),
+          })
+          .describe('A table cell update'),
+      });
+
+      for await (const cellUpdate of elementStream) {
+        writer.write({
+          id: nanoid(),
+          data: {
+            cellUpdate,
+            status: 'streaming',
+          },
+          type: 'data-table',
+        });
+      }
+
+      writer.write({
+        id: nanoid(),
+        data: {
+          cellUpdate: null,
+          status: 'finished',
+        },
+        type: 'data-table',
       });
     },
   });

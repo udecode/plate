@@ -125,7 +125,7 @@ const withProps = (
     };
   });
 
-const withTransient = (diffNodes: Descendant[]): Descendant[] =>
+export const withTransient = (diffNodes: Descendant[]): Descendant[] =>
   diffNodes.map((node) => {
     if (TextApi.isText(node)) {
       return {
@@ -140,7 +140,7 @@ const withTransient = (diffNodes: Descendant[]): Descendant[] =>
     };
   });
 
-const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] =>
+export const withoutSuggestionAndComments = (nodes: Descendant[]): Descendant[] =>
   nodes.map((node) => {
     if (TextApi.isText(node)) {
       if (node[KEYS.suggestion] || node[KEYS.comment]) {

@@ -14,7 +14,7 @@ import {
   isSingleCellSelection,
 } from '../utils';
 
-import { buildEditTablePrompt } from './getEditTablePrompt';
+import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
 import { commonEditRules } from './common';
 function buildEditMultiBlockPrompt(
   editor: SlateEditor,
@@ -228,7 +228,7 @@ export function getEditPrompt(
 
   // Handle selection inside table cell
   if (isSelectionInTable(editor) && !isSingleCellSelection(editor)) {
-    return [buildEditTablePrompt(editor, messages), 'table'];
+    return [buildEditTableMultiCellPrompt(editor, messages), 'table'];
   }
   // Handle multi-block selection
   if (isMultiBlocks(editor)) {
