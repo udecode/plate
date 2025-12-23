@@ -10,6 +10,17 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2025 #27
 
+### December 23 #27.2
+- **AI Prompt System Refactoring**: Complete restructuring of AI command prompts for better maintainability
+  - Split monolithic `prompts.ts` into focused modules: `getEditPrompt`, `getGeneratePrompt`, `getCommentPrompt`, `getEditTablePrompt`, `getChooseToolPrompt`
+  - Added new `common.ts` for shared prompt utilities
+  - Enhanced table cell editing capabilities with specialized prompts
+- **AI Table Cell Handling**: Improved support for editing single-cell tables
+  - `use-chat`: Enhanced with parser options for better AI content processing
+  - `cursor-overlay`: Fixed overlay positioning and behavior
+  - Added tests for complex table markdown generation
+- **API Routes**: Updated AI command and copilot routes with improved prompt selection logic
+
 ### December 16 #27.1
 - `table-node`: Fixed table row drag and drop - rows could be dragged but not dropped, and dropline wasn't showing. Added missing `nodeRef` to element ref composition.
 
