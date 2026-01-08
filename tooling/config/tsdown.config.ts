@@ -61,6 +61,7 @@ export default defineConfig((opts) => [
     plugins: [
       pluginBabel({
         babelHelpers: 'bundled',
+        exclude: '**/static/**',
         parserOpts: {
           sourceType: 'module',
           plugins: ['jsx', 'typescript'],
