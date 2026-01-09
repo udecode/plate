@@ -1,5 +1,5 @@
 ---
-"@platejs/markdown": minor
+"@platejs/markdown": patch
 ---
 
 Enhanced table cell serialization to support multiple blocks within cells:
