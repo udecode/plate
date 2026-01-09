@@ -1,5 +1,14 @@
 # @platejs/markdown
 
+## 52.1.0
+
+### Patch Changes
+
+- [#4800](https://github.com/udecode/plate/pull/4800) by [@felixfeng33](https://github.com/felixfeng33) – Enhanced table cell serialization to support multiple blocks within cells:
+
+  - Table cells (td/th) now insert `<br/>` separators between multiple blocks when serializing to markdown
+  - This allows markdown tables to better represent complex cell content that contains multiple paragraphs or other block elements
+
 ## 52.0.11
 
 ### Patch Changes
