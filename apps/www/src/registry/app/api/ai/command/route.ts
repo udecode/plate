@@ -10,7 +10,8 @@ import {
   type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  generateObject,
+  generateText,
+  Output,
   streamObject,
   streamText,
   tool,
@@ -72,10 +73,9 @@ export async function POST(req: NextRequest) {
             : ['generate', 'comment'];
           const modelId = model || 'google/gemini-2.5-flash';
 
-          const { object: AIToolName } = await generateObject({
-            enum: enumOptions,
+          const { output: AIToolName } = await generateText({
             model: gatewayProvider(modelId),
-            output: 'enum',
+            output: Output.choice({ options: enumOptions }),
             prompt,
           });
 

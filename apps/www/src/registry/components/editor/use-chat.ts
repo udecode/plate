@@ -127,11 +127,13 @@ export const useChat = () => {
     }),
     onData(data) {
       if (data.type === 'data-toolName') {
-        editor.setOption(AIChatPlugin, 'toolName', data.data);
+        editor.setOption(AIChatPlugin, 'toolName', data.data as ToolName);
       }
 
       if (data.type === 'data-table' && data.data) {
-        if (data.data.status === 'finished') {
+        const tableData = data.data as TTableCellUpdate;
+
+        if (tableData.status === 'finished') {
           const chatSelection = editor.getOption(AIChatPlugin, 'chatSelection');
 
           if (!chatSelection) return;
@@ -141,7 +143,7 @@ export const useChat = () => {
           return;
         }
 
-        const cellUpdate = data.data.cellUpdate!;
+        const cellUpdate = tableData.cellUpdate!;
 
         withAIBatch(editor, () => {
           applyTableCellSuggestion(editor, cellUpdate);
@@ -149,13 +151,15 @@ export const useChat = () => {
       }
 
       if (data.type === 'data-comment' && data.data) {
-        if (data.data.status === 'finished') {
+        const commentData = data.data as TComment;
+
+        if (commentData.status === 'finished') {
           editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
 
           return;
         }
 
-        const aiComment = data.data.comment!;
+        const aiComment = commentData.comment!;
         const range = aiCommentToRange(editor, aiComment);
 
         if (!range) return console.warn('No range found for AI comment');

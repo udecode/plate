@@ -12,79 +12,76 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/gateway@npm:1.0.15":
-  version: 1.0.15
-  resolution: "@ai-sdk/gateway@npm:1.0.15"
+"@ai-sdk/gateway@npm:3.0.10, @ai-sdk/gateway@npm:^3.0.0":
+  version: 3.0.10
+  resolution: "@ai-sdk/gateway@npm:3.0.10"
   dependencies:
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.7"
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
+    "@vercel/oidc": "npm:3.1.0"
   peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/cdd09f119d6618f00c363a27f51dc466a8a64f57f01bcdd127030a804825bd143b0fef2dbdb7802530865d474f4b9d55855670fecd7f2e6c615a5d9ac9fd6e3b
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/239f8dfbc51861c907d66621abd622bbeb540b44822b217ef11854345da472c4f242130c73858a9a1b43dad427e31cd97c28694d079bc459299261c446a5c716
   languageName: node
   linkType: hard
 
-"@ai-sdk/google@npm:2.0.11":
-  version: 2.0.11
-  resolution: "@ai-sdk/google@npm:2.0.11"
+"@ai-sdk/google@npm:^3.0.0":
+  version: 3.0.6
+  resolution: "@ai-sdk/google@npm:3.0.6"
   dependencies:
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.7"
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
   peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/9660a1c6abac51b7c28f404f68ce5865b7ed8c5dbf045f667808cdbe106da537ab98cd497e551b4f41d725eb87e4117600ddd52dbe0f4af360f3da464be2f068
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/043a5bbfd03a841579583944cfa5c418cb7459e71bdfefbaeca0e98dad159b135c1d75f75295eb9036a540930edf4f8e99394c57e654219055645e20be3b6803
   languageName: node
   linkType: hard
 
-"@ai-sdk/openai@npm:2.0.23":
-  version: 2.0.23
-  resolution: "@ai-sdk/openai@npm:2.0.23"
-  dependencies:
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.7"
-  peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/541e8abcb765bdeda6cae43450eb7f56436eeac5e8458e8695392351e22ddd40b6bf2cea2b6a9d10335935c992301fe210f395e2cc4138956f0c05e4ed0f0dd5
-  languageName: node
-  linkType: hard
-
-"@ai-sdk/provider-utils@npm:3.0.7":
+"@ai-sdk/openai@npm:^3.0.0":
   version: 3.0.7
-  resolution: "@ai-sdk/provider-utils@npm:3.0.7"
+  resolution: "@ai-sdk/openai@npm:3.0.7"
   dependencies:
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@standard-schema/spec": "npm:^1.0.0"
-    eventsource-parser: "npm:^3.0.5"
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
   peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/7e709289f9e514a6ba56a9b19764eb124ea1bd36d4b3b3e455a1c05353674c152839a4d3cd061af7a4cc36106bd15859a2346e54d4ed0a861feec3b2c4c21513
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/b69ccb7f04a6378c0866b6df7d2bc62e8e0ab46f426175f06b607af296e75d48aa54e66d45d9c2400f563119b92b46d856f0cad98b1a93b497d29f87bc6765b3
   languageName: node
   linkType: hard
 
-"@ai-sdk/provider@npm:2.0.0":
-  version: 2.0.0
-  resolution: "@ai-sdk/provider@npm:2.0.0"
+"@ai-sdk/provider-utils@npm:4.0.4":
+  version: 4.0.4
+  resolution: "@ai-sdk/provider-utils@npm:4.0.4"
+  dependencies:
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@standard-schema/spec": "npm:^1.1.0"
+    eventsource-parser: "npm:^3.0.6"
+  peerDependencies:
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/22d4772e5cbbb764f2508e4b3055e84346435a9394749567dc284522e65201b17a66e137d4b0a9d5094c776252f940a02489f146c7d2ca4b34d71c01b46cc8c9
+  languageName: node
+  linkType: hard
+
+"@ai-sdk/provider@npm:3.0.2":
+  version: 3.0.2
+  resolution: "@ai-sdk/provider@npm:3.0.2"
   dependencies:
     json-schema: "npm:^0.4.0"
-  checksum: 10c0/e50e520016c9fc0a8b5009cadd47dae2f1c81ec05c1792b9e312d7d15479f024ca8039525813a33425c884e3449019fed21043b1bfabd6a2626152ca9a388199
+  checksum: 10c0/31617f93a78af9c96e4ef7938d168a55da32095d62aee4e6ad1ee4976738da11d7f948d930fc79c396ac38ace99e67e58f52a281cb925de40d365986c635a8ed
   languageName: node
   linkType: hard
 
-"@ai-sdk/react@npm:2.0.28":
-  version: 2.0.28
-  resolution: "@ai-sdk/react@npm:2.0.28"
+"@ai-sdk/react@npm:^3.0.0":
+  version: 3.0.23
+  resolution: "@ai-sdk/react@npm:3.0.23"
   dependencies:
-    "@ai-sdk/provider-utils": "npm:3.0.7"
-    ai: "npm:5.0.28"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
+    ai: "npm:6.0.23"
     swr: "npm:^2.2.5"
     throttleit: "npm:2.1.0"
   peerDependencies:
-    react: ^18 || ^19 || ^19.0.0-rc
-    zod: ^3.25.76 || ^4
-  peerDependenciesMeta:
-    zod:
-      optional: true
-  checksum: 10c0/cc1873c1ac3612ef32b61f818fbaa0abde491bc70b6507a4cc3025975f8c86b58b9c321b2652b2b9d5c0282a1ed59866a6a55fdd61d0c3ccc5de60662bb6d1cb
+    react: ^18 || ~19.0.1 || ~19.1.2 || ^19.2.1
+  checksum: 10c0/a2c08d5f77eafc1d26edb7eaddc946ce8a6c1bcbc231e6079ea4d633b4767d3c08336115060a09787202bd9b79d2aae6a41a0d1fc31799b4c9c92e70948fe1ad
   languageName: node
   linkType: hard
 
@@ -3139,12 +3136,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@platejs/ai@workspace:packages/ai"
   dependencies:
-    "@ai-sdk/react": "npm:2.0.28"
+    "@ai-sdk/react": "npm:^3.0.0"
     "@platejs/combobox": "npm:52.0.15"
     "@platejs/markdown": "npm:52.0.11"
     "@platejs/selection": "npm:52.0.11"
     "@platejs/suggestion": "npm:52.0.11"
-    ai: "npm:5.0.28"
+    ai: "npm:^6.0.0"
     fastest-levenshtein: "npm:1.0.16"
     lodash: "npm:^4.17.21"
     react-compiler-runtime: "npm:^1.0.0"
@@ -5868,6 +5865,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@standard-schema/spec@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@standard-schema/spec@npm:1.1.0"
+  checksum: 10c0/d90f55acde4b2deb983529c87e8025fa693de1a5e8b49ecc6eb84d1fd96328add0e03d7d551442156c7432fd78165b2c26ff561b970a9a881f046abb78d6a526
+  languageName: node
+  linkType: hard
+
 "@standard-schema/utils@npm:^0.3.0":
   version: 0.3.0
   resolution: "@standard-schema/utils@npm:0.3.0"
@@ -6997,6 +7001,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vercel/oidc@npm:3.1.0":
+  version: 3.1.0
+  resolution: "@vercel/oidc@npm:3.1.0"
+  checksum: 10c0/f57278ed4b4c022c7ca85e8baa5f9bdb2623397abfa0e5dbfd75de283c8e5dc534d64dac1364b5ad8c96d00eb2d469886e6f7b640f6f195def5766950ad8ce71
+  languageName: node
+  linkType: hard
+
 "@yarnpkg/lockfile@npm:^1.1.0":
   version: 1.1.0
   resolution: "@yarnpkg/lockfile@npm:1.1.0"
@@ -7064,17 +7075,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ai@npm:5.0.28":
-  version: 5.0.28
-  resolution: "ai@npm:5.0.28"
+"ai@npm:6.0.23, ai@npm:^6.0.0":
+  version: 6.0.23
+  resolution: "ai@npm:6.0.23"
   dependencies:
-    "@ai-sdk/gateway": "npm:1.0.15"
-    "@ai-sdk/provider": "npm:2.0.0"
-    "@ai-sdk/provider-utils": "npm:3.0.7"
+    "@ai-sdk/gateway": "npm:3.0.10"
+    "@ai-sdk/provider": "npm:3.0.2"
+    "@ai-sdk/provider-utils": "npm:4.0.4"
     "@opentelemetry/api": "npm:1.9.0"
   peerDependencies:
-    zod: ^3.25.76 || ^4
-  checksum: 10c0/eeb5b22e160870edcc0b6befe5168b0a982eef511aa94e5e23070aafe5cf1768042bcd1da663e0da6fe446d351962c5d934e8079d4a8335a43faac6729293842
+    zod: ^3.25.76 || ^4.1.8
+  checksum: 10c0/8b1d5b5df91753d3504c6c13be61f88c726147fcba7aee353c26967d0f51e0a8b520f2b7c566a60af8e5905fa6a414e945dc83b39a4517de7fd1fccfc14de79e
   languageName: node
   linkType: hard
 
@@ -10176,7 +10187,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:^3.0.5":
+"eventsource-parser@npm:^3.0.6":
   version: 3.0.6
   resolution: "eventsource-parser@npm:3.0.6"
   checksum: 10c0/70b8ccec7dac767ef2eca43f355e0979e70415701691382a042a2df8d6a68da6c2fca35363669821f3da876d29c02abe9b232964637c1b6635c940df05ada78a
@@ -20010,9 +20021,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "www@workspace:apps/www"
   dependencies:
-    "@ai-sdk/google": "npm:2.0.11"
-    "@ai-sdk/openai": "npm:2.0.23"
-    "@ai-sdk/react": "npm:2.0.28"
+    "@ai-sdk/gateway": "npm:^3.0.0"
+    "@ai-sdk/google": "npm:^3.0.0"
+    "@ai-sdk/openai": "npm:^3.0.0"
+    "@ai-sdk/react": "npm:^3.0.0"
     "@ariakit/react": "npm:0.4.17"
     "@emoji-mart/data": "npm:1.2.1"
     "@excalidraw/excalidraw": "npm:0.18.0"
@@ -20091,7 +20103,7 @@ __metadata:
     "@udecode/cmdk": "workspace:^"
     "@udecode/cn": "workspace:^"
     "@uploadthing/react": "npm:7.3.1"
-    ai: "npm:5.0.28"
+    ai: "npm:^6.0.0"
     autoprefixer: "npm:10.4.21"
     babel-plugin-react-compiler: "npm:1.0.0"
     class-variance-authority: "npm:0.7.1"

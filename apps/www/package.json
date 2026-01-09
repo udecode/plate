@@ -40,9 +40,10 @@
     ]
   },
   "dependencies": {
-    "@ai-sdk/google": "2.0.11",
-    "@ai-sdk/openai": "2.0.23",
-    "@ai-sdk/react": "2.0.28",
+    "@ai-sdk/gateway": "^3.0.0",
+    "@ai-sdk/google": "^3.0.0",
+    "@ai-sdk/openai": "^3.0.0",
+    "@ai-sdk/react": "^3.0.0",
     "@ariakit/react": "0.4.17",
     "@emoji-mart/data": "1.2.1",
     "@excalidraw/excalidraw": "0.18.0",
@@ -118,7 +119,7 @@
     "@udecode/cmdk": "workspace:^",
     "@udecode/cn": "workspace:^",
     "@uploadthing/react": "7.3.1",
-    "ai": "5.0.28",
+    "ai": "^6.0.0",
     "babel-plugin-react-compiler": "1.0.0",
     "class-variance-authority": "0.7.1",
     "cmdk": "1.1.1",
