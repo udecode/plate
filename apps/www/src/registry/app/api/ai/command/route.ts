@@ -12,7 +12,6 @@ import {
   createUIMessageStreamResponse,
   generateText,
   Output,
-  streamObject,
   streamText,
   tool,
 } from 'ai';
@@ -193,42 +192,48 @@ const getCommentTool = (
     description: 'Comment on the content',
     inputSchema: z.object({}),
     execute: async () => {
-      const { elementStream } = streamObject({
+      const commentSchema = z.object({
+        blockId: z
+          .string()
+          .describe(
+            'The id of the starting block. If the comment spans multiple blocks, use the id of the first block.'
+          ),
+        comment: z
+          .string()
+          .describe('A brief comment or explanation for this fragment.'),
+        content: z
+          .string()
+          .describe(
+            String.raw`The original document fragment to be commented on.It can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.`
+          ),
+      });
+
+      const { partialOutputStream } = streamText({
         model,
-        output: 'array',
+        output: Output.array({ element: commentSchema }),
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
         }),
-        schema: z
-          .object({
-            blockId: z
-              .string()
-              .describe(
-                'The id of the starting block. If the comment spans multiple blocks, use the id of the first block.'
-              ),
-            comment: z
-              .string()
-              .describe('A brief comment or explanation for this fragment.'),
-            content: z
-              .string()
-              .describe(
-                String.raw`The original document fragment to be commented on.It can be the entire block, a small part within a block, or span multiple blocks. If spanning multiple blocks, separate them with two \n\n.`
-              ),
-          })
-          .describe('A single comment'),
       });
 
-      for await (const comment of elementStream) {
-        const commentDataId = nanoid();
+      let lastLength = 0;
 
-        writer.write({
-          id: commentDataId,
-          data: {
-            comment,
-            status: 'streaming',
-          },
-          type: 'data-comment',
-        });
+      for await (const partialArray of partialOutputStream) {
+        for (let i = lastLength; i < partialArray.length; i++) {
+          const comment = partialArray[i];
+          const commentDataId = nanoid();
+
+          writer.write({
+            id: commentDataId,
+            data: {
+              comment,
+              status: 'streaming',
+            },
+            type: 'data-comment',
+          });
+        }
+
+        lastLength = partialArray.length;
       }
 
       writer.write({
@@ -258,31 +263,38 @@ const getTableTool = (
     description: 'Edit table cells',
     inputSchema: z.object({}),
     execute: async () => {
-      const { elementStream } = streamObject({
-        model,
-        output: 'array',
-        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
-        schema: z
-          .object({
-            content: z
-              .string()
-              .describe(
-                String.raw`The new content for the cell. Can contain multiple paragraphs separated by \n\n.`
-              ),
-            id: z.string().describe('The id of the table cell to update.'),
-          })
-          .describe('A table cell update'),
+      const cellUpdateSchema = z.object({
+        content: z
+          .string()
+          .describe(
+            String.raw`The new content for the cell. Can contain multiple paragraphs separated by \n\n.`
+          ),
+        id: z.string().describe('The id of the table cell to update.'),
       });
 
-      for await (const cellUpdate of elementStream) {
-        writer.write({
-          id: nanoid(),
-          data: {
-            cellUpdate,
-            status: 'streaming',
-          },
-          type: 'data-table',
-        });
+      const { partialOutputStream } = streamText({
+        model,
+        output: Output.array({ element: cellUpdateSchema }),
+        prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
+      });
+
+      let lastLength = 0;
+
+      for await (const partialArray of partialOutputStream) {
+        for (let i = lastLength; i < partialArray.length; i++) {
+          const cellUpdate = partialArray[i];
+
+          writer.write({
+            id: nanoid(),
+            data: {
+              cellUpdate,
+              status: 'streaming',
+            },
+            type: 'data-table',
+          });
+        }
+
+        lastLength = partialArray.length;
       }
 
       writer.write({
