@@ -191,6 +191,7 @@ const getCommentTool = (
   tool({
     description: 'Comment on the content',
     inputSchema: z.object({}),
+    strict: true,
     execute: async () => {
       const commentSchema = z.object({
         blockId: z
@@ -262,6 +263,7 @@ const getTableTool = (
   tool({
     description: 'Edit table cells',
     inputSchema: z.object({}),
+    strict: true,
     execute: async () => {
       const cellUpdateSchema = z.object({
         content: z
