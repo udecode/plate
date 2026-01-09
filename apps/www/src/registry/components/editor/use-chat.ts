@@ -4,7 +4,11 @@ import * as React from 'react';
 
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import { AIChatPlugin, aiCommentToRange } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  aiCommentToRange,
+  applyTableCellSuggestion,
+} from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -15,6 +19,7 @@ import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
 
 import { discussionPlugin } from './plugins/discussion-kit';
+import { withAIBatch } from '@platejs/ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';
 
@@ -27,9 +32,18 @@ export type TComment = {
   status: 'finished' | 'streaming';
 };
 
+export type TTableCellUpdate = {
+  cellUpdate: {
+    content: string;
+    id: string;
+  } | null;
+  status: 'finished' | 'streaming';
+};
+
 export type MessageDataPart = {
   toolName: ToolName;
   comment?: TComment;
+  table?: TTableCellUpdate;
 };
 
 export type Chat = UseChatHelpers<ChatMessage>;
@@ -113,17 +127,39 @@ export const useChat = () => {
     }),
     onData(data) {
       if (data.type === 'data-toolName') {
-        editor.setOption(AIChatPlugin, 'toolName', data.data);
+        editor.setOption(AIChatPlugin, 'toolName', data.data as ToolName);
+      }
+
+      if (data.type === 'data-table' && data.data) {
+        const tableData = data.data as TTableCellUpdate;
+
+        if (tableData.status === 'finished') {
+          const chatSelection = editor.getOption(AIChatPlugin, 'chatSelection');
+
+          if (!chatSelection) return;
+
+          editor.tf.setSelection(chatSelection);
+
+          return;
+        }
+
+        const cellUpdate = tableData.cellUpdate!;
+
+        withAIBatch(editor, () => {
+          applyTableCellSuggestion(editor, cellUpdate);
+        });
       }
 
       if (data.type === 'data-comment' && data.data) {
-        if (data.data.status === 'finished') {
+        const commentData = data.data as TComment;
+
+        if (commentData.status === 'finished') {
           editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
 
           return;
         }
 
-        const aiComment = data.data.comment!;
+        const aiComment = commentData.comment!;
         const range = aiCommentToRange(editor, aiComment);
 
         if (!range) return console.warn('No range found for AI comment');

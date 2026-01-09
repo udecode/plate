@@ -914,13 +914,30 @@ export const defaultRules: MdRules = {
     }),
   },
   td: {
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
+    serialize: (node, options) => {
+      const children = convertNodesSerialize(
         node.children,
         options
-      ) as MdTableCell['children'],
-      type: 'tableCell',
-    }),
+      ) as MdTableCell['children'];
+
+      // Insert <br/> between multiple blocks in table cells
+      // since markdown tables don't support multiple blocks natively
+      if (children.length > 1) {
+        const result: MdTableCell['children'] = [];
+
+        for (let i = 0; i < children.length; i++) {
+          result.push(children[i]);
+
+          if (i < children.length - 1) {
+            result.push({ type: 'html', value: '<br/>' } as any);
+          }
+        }
+
+        return { children: result, type: 'tableCell' };
+      }
+
+      return { children, type: 'tableCell' };
+    },
   },
   text: {
     deserialize: (mdastNode, deco) => ({
@@ -929,13 +946,30 @@ export const defaultRules: MdRules = {
     }),
   },
   th: {
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
+    serialize: (node, options) => {
+      const children = convertNodesSerialize(
         node.children,
         options
-      ) as MdTableCell['children'],
-      type: 'tableCell',
-    }),
+      ) as MdTableCell['children'];
+
+      // Insert <br/> between multiple blocks in table cells
+      // since markdown tables don't support multiple blocks natively
+      if (children.length > 1) {
+        const result: MdTableCell['children'] = [];
+
+        for (let i = 0; i < children.length; i++) {
+          result.push(children[i]);
+
+          if (i < children.length - 1) {
+            result.push({ type: 'html', value: '<br/>' } as any);
+          }
+        }
+
+        return { children: result, type: 'tableCell' };
+      }
+
+      return { children, type: 'tableCell' };
+    },
   },
   toc: {
     deserialize: (mdastNode, deco, options) => ({

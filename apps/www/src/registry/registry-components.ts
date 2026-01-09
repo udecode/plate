@@ -17,8 +17,38 @@ const registryApi: Registry['items'] = [
         type: 'registry:file',
       },
       {
-        path: 'app/api/ai/command/prompts.ts',
-        target: 'app/api/ai/command/prompts.ts',
+        path: 'app/api/ai/command/prompt/index.ts',
+        target: 'app/api/ai/command/prompt/index.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/common.ts',
+        target: 'app/api/ai/command/prompt/common.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/getChooseToolPrompt.ts',
+        target: 'app/api/ai/command/prompt/getChooseToolPrompt.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/getCommentPrompt.ts',
+        target: 'app/api/ai/command/prompt/getCommentPrompt.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/getEditPrompt.ts',
+        target: 'app/api/ai/command/prompt/getEditPrompt.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/getEditTablePrompt.ts',
+        target: 'app/api/ai/command/prompt/getEditTablePrompt.ts',
+        type: 'registry:file',
+      },
+      {
+        path: 'app/api/ai/command/prompt/getGeneratePrompt.ts',
+        target: 'app/api/ai/command/prompt/getGeneratePrompt.ts',
         type: 'registry:file',
       },
     ],
