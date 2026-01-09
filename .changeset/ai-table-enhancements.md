@@ -1,5 +1,5 @@
 ---
-"@platejs/ai": patch
+"@platejs/ai": minor
 ---
 
 Upgraded AI SDK from v5 to v6:
