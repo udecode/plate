@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 52.0.17
+
+### Patch Changes
+
+- [#4806](https://github.com/udecode/plate/pull/4806) by [@felixfeng33](https://github.com/felixfeng33) – skip react-compiler for static rendering
+
 ## 52.0.15
 
 ### Patch Changes
