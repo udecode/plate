@@ -84,11 +84,12 @@ export const useChat = () => {
         });
 
         if (!res.ok) {
-          let sample: 'comment' | 'markdown' | 'mdx' | null = null;
+          let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
 
           try {
-            const content = JSON.parse(init?.body as string)
-              .messages.at(-1)
+            const body = JSON.parse(init?.body as string);
+            const content = body.messages
+              .at(-1)
               .parts.find((p: any) => p.type === 'text')?.text;
 
             if (content.includes('Generate a markdown sample')) {
@@ -97,6 +98,40 @@ export const useChat = () => {
               sample = 'mdx';
             } else if (content.includes('comment')) {
               sample = 'comment';
+            }
+
+            // Detect table editing by checking if multiple table cells are selected
+            // Single cell selection should use normal edit flow, only multi-cell uses table tool
+            if (!sample) {
+              // First check: selectedCells from TablePlugin (cell selection mode)
+              const selectedCells =
+                editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+
+              if (selectedCells.length > 1) {
+                sample = 'table';
+              }
+              // Second check: selection range spans multiple cells
+              else if (body.ctx?.children && body.ctx?.selection) {
+                const { selection, children } = body.ctx;
+                const anchorPath = selection.anchor?.path;
+                const focusPath = selection.focus?.path;
+
+                if (anchorPath && anchorPath.length >= 3) {
+                  const rootIndex = anchorPath[0];
+                  const rootNode = children[rootIndex];
+
+                  if (rootNode?.type === 'table') {
+                    // Cell path is at index 2 (table -> row -> cell)
+                    const anchorCellPath = anchorPath.slice(0, 3).join(',');
+                    const focusCellPath = focusPath?.slice(0, 3).join(',');
+
+                    // Only use table mock if anchor and focus are in different cells
+                    if (focusCellPath && anchorCellPath !== focusCellPath) {
+                      sample = 'table';
+                    }
+                  }
+                }
+              }
             }
           } catch {
             sample = null;
@@ -239,7 +274,7 @@ const fakeStreamText = ({
 }: {
   editor: PlateEditor;
   chunkCount?: number;
-  sample?: 'comment' | 'markdown' | 'mdx' | null;
+  sample?: 'comment' | 'markdown' | 'mdx' | 'table' | null;
   signal?: AbortSignal;
 }) => {
   const encoder = new TextEncoder();
@@ -258,6 +293,11 @@ const fakeStreamText = ({
         if (sample === 'comment') {
           const commentChunks = createCommentChunks(editor);
           return commentChunks;
+        }
+
+        if (sample === 'table') {
+          const tableChunks = createTableCellChunks(editor);
+          return tableChunks;
         }
 
         return [
@@ -291,15 +331,15 @@ const fakeStreamText = ({
       // Generate a unique message ID
       const messageId = `msg_${faker.string.alphanumeric(40)}`;
 
-      // Handle comment data differently
-      if (sample === 'comment') {
+      // Handle comment and table data differently (they use data events, not text streams)
+      if (sample === 'comment' || sample === 'table') {
         controller.enqueue(encoder.encode('data: {"type":"start"}\n\n'));
         await new Promise((resolve) => setTimeout(resolve, 10));
 
         controller.enqueue(encoder.encode('data: {"type":"start-step"}\n\n'));
         await new Promise((resolve) => setTimeout(resolve, 10));
 
-        // For comments, send data events directly
+        // For comments and tables, send data events directly
         for (const block of blocks) {
           for (const chunk of block) {
             await new Promise((resolve) => setTimeout(resolve, chunk.delay));
@@ -1546,6 +1586,62 @@ const createCommentChunks = (editor: PlateEditor) => {
 
   const result_chunks = [
     [{ delay: 50, texts: '{"data":"comment","type":"data-toolName"}' }],
+    ...chunks,
+  ];
+
+  return result_chunks;
+};
+
+const createTableCellChunks = (editor: PlateEditor) => {
+  // Get selected table cells from the TablePlugin
+  const selectedCells =
+    editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+
+  // If no cells selected, try to get cells from current selection
+  let cellIds: string[] = [];
+
+  if (selectedCells.length > 0) {
+    cellIds = selectedCells
+      .map((cell: { id?: string }) => cell.id)
+      .filter(Boolean);
+  } else {
+    // Try to find table cells in current selection
+    const cells = Array.from(
+      editor.api.nodes({
+        at: editor.selection ?? undefined,
+        match: (n) =>
+          (n as { type?: string }).type === KEYS.td ||
+          (n as { type?: string }).type === KEYS.th,
+      })
+    );
+    cellIds = cells
+      .map(([node]) => (node as { id?: string }).id)
+      .filter(Boolean) as string[];
+  }
+
+  // If still no cells, return empty chunks
+  if (cellIds.length === 0) {
+    return [
+      [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
+      [
+        {
+          delay: 100,
+          texts: `{"id":"${nanoid()}","data":{"cellUpdate":null,"status":"finished"},"type":"data-table"}`,
+        },
+      ],
+    ];
+  }
+
+  // Generate mock content for each cell
+  const chunks = cellIds.map((cellId, i) => [
+    {
+      delay: faker.number.int({ max: 300, min: 100 }),
+      texts: `{"id":"${nanoid()}","data":{"cellUpdate":{"id":"${cellId}","content":"${faker.lorem.sentence()}"},"status":"${i === cellIds.length - 1 ? 'finished' : 'streaming'}"},"type":"data-table"}`,
+    },
+  ]);
+
+  const result_chunks = [
+    [{ delay: 50, texts: '{"data":"edit","type":"data-toolName"}' }],
     ...chunks,
   ];
 

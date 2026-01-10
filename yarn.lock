@@ -3138,7 +3138,7 @@ __metadata:
   dependencies:
     "@ai-sdk/react": "npm:^3.0.0"
     "@platejs/combobox": "npm:52.0.15"
-    "@platejs/markdown": "npm:52.0.11"
+    "@platejs/markdown": "npm:52.1.0"
     "@platejs/selection": "npm:52.0.16"
     "@platejs/suggestion": "npm:52.0.11"
     ai: "npm:^6.0.0"
@@ -3260,7 +3260,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/core@npm:52.0.15, @platejs/core@workspace:packages/core":
+"@platejs/core@npm:52.0.17, @platejs/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@platejs/core@workspace:packages/core"
   dependencies:
@@ -3522,7 +3522,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/markdown@npm:52.0.11, @platejs/markdown@workspace:^, @platejs/markdown@workspace:packages/markdown":
+"@platejs/markdown@npm:52.1.0, @platejs/markdown@workspace:^, @platejs/markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@platejs/markdown@workspace:packages/markdown"
   dependencies:
@@ -3750,11 +3750,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@platejs/utils@npm:52.0.15, @platejs/utils@workspace:packages/utils":
+"@platejs/utils@npm:52.0.17, @platejs/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@platejs/utils@workspace:packages/utils"
   dependencies:
-    "@platejs/core": "npm:52.0.15"
+    "@platejs/core": "npm:52.0.17"
     "@platejs/slate": "npm:52.0.10"
     "@udecode/react-utils": "npm:52.0.11"
     "@udecode/utils": "npm:52.0.1"
@@ -15786,9 +15786,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "platejs@workspace:packages/plate"
   dependencies:
-    "@platejs/core": "npm:52.0.15"
+    "@platejs/core": "npm:52.0.17"
     "@platejs/slate": "npm:52.0.10"
-    "@platejs/utils": "npm:52.0.15"
+    "@platejs/utils": "npm:52.0.17"
     "@udecode/react-hotkeys": "npm:52.0.11"
     "@udecode/react-utils": "npm:52.0.11"
     "@udecode/utils": "npm:52.0.1"
