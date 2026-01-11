@@ -10,6 +10,15 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## December 2025 #27
 
+### December 23 #27.3
+- **`code-drawing-node`**: Added new code drawing component with inline editing support
+  - Support for multiple diagram types: PlantUML, Graphviz, Flowchart, and Mermaid
+  - Inline code editing with real-time preview (no popup dialog)
+  - Multiple view modes: Both (code + preview), Code only, Image only
+  - Responsive layout: horizontal on desktop, vertical on mobile
+  - Floating toolbar with language selector, view mode selector, and download button
+  - Debounced rendering (500ms) for optimal performance
+
 ### December 23 #27.2
 - **AI Prompt System Refactoring**: Complete restructuring of AI command prompts for better maintainability
   - Split monolithic `prompts.ts` into focused modules: `getEditPrompt`, `getGeneratePrompt`, `getCommentPrompt`, `getEditTablePrompt`, `getChooseToolPrompt`
