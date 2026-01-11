@@ -35,7 +35,7 @@ export function CodeDrawingElement(
     <BaseCodeDrawingElement
       {...props}
       isMobile={isMobile}
-      renderToolbar={({
+      renderPopover={({
         children,
         onRemove,
         onDownload,
@@ -92,7 +92,9 @@ export function CodeDrawingElement(
             onOpenChange?.(open);
           }}
         >
-          <SelectTrigger className="w-[120px] bg-background h-8 text-xs border-0 shadow-none">
+          <SelectTrigger className={`w-[120px] bg-muted/50 h-8 text-xs border-0 shadow-none ${
+            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
+          }`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[100]">
@@ -117,7 +119,9 @@ export function CodeDrawingElement(
             onOpenChange?.(open);
           }}
         >
-          <SelectTrigger className="w-[80px] bg-background h-8 text-xs border-0 shadow-none">
+          <SelectTrigger className={`w-[80px] bg-muted/50 h-8 text-xs border-0 shadow-none ${
+            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
+          }`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[100]">

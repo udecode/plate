@@ -16,7 +16,7 @@ export interface CodeDrawingFloatingToolbarProps {
   element: TCodeDrawingElement;
   onRemove: () => void;
   onDownload?: () => void;
-  renderToolbar?: (props: {
+  renderPopover?: (props: {
     children: React.ReactNode;
     onRemove: () => void;
     onDownload?: () => void;
@@ -29,7 +29,7 @@ export function CodeDrawingFloatingToolbar({
   element,
   onRemove,
   onDownload,
-  renderToolbar,
+  renderPopover,
 }: CodeDrawingFloatingToolbarProps) {
   const readOnly = useReadOnly();
   const selected = useSelected();
@@ -41,13 +41,13 @@ export function CodeDrawingFloatingToolbar({
 
   const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
 
-  if (!renderToolbar) {
+  if (!renderPopover) {
     return <>{children}</>;
   }
 
   return (
     <>
-      {renderToolbar({
+      {renderPopover({
         children,
         onRemove,
         onDownload,

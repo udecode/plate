@@ -14,7 +14,7 @@ import { downloadImage } from '../lib/utils/download';
 import { DOWNLOAD_FILENAME } from '../lib/constants';
 
 export interface CodeDrawingElementProps extends PlateElementProps<TCodeDrawingElement> {
-  renderToolbar?: (props: {
+  renderPopover?: (props: {
     children: React.ReactNode;
     onRemove: () => void;
     onDownload?: () => void;
@@ -40,7 +40,7 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
   const {
     children,
     element,
-    renderToolbar,
+    renderPopover,
     renderDrawingTypeSelect,
     renderDrawingModeSelect,
     renderTextarea,
@@ -48,7 +48,7 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
   } = props;
   const editor = useEditorRef();
   const readOnly = useReadOnly();
-  const { removeNode, image } = useCodeDrawingElement({
+  const { removeNode, image, loading } = useCodeDrawingElement({
     element,
   });
 
@@ -121,13 +121,15 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
         element={element}
         onRemove={removeNode}
         onDownload={handleDownload}
-        renderToolbar={renderToolbar}
+        renderPopover={renderPopover}
       >
         <div contentEditable={false}>
           <CodeDrawingPreview
             code={code}
             drawingType={drawingType}
             drawingMode={drawingMode}
+            image={image}
+            loading={loading}
             onCodeChange={handleCodeChange}
             onDrawingTypeChange={handleDrawingTypeChange}
             onDrawingModeChange={handleDrawingModeChange}

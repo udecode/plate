@@ -12,10 +12,12 @@ docs:
 ## Features
 
 - Support for multiple diagram types: PlantUml, Graphviz, Flowchart, and Mermaid
-- Inline code editing with syntax highlighting
-- Real-time preview with debounced rendering
+- Inline code editing with code-block-like styling
+- Real-time preview with debounced rendering (500ms)
 - Multiple view modes: Both (code and preview), Code only, Image only
-- Responsive layout: horizontal on desktop, vertical on mobile
+- Responsive layout: horizontal on desktop (code left, preview right), vertical on mobile (preview top, code bottom)
+- Border separator between code editor and preview in Both mode
+- Toolbar controls: language selector and view mode selector (always visible on mobile, hover to show on desktop)
 - Download rendered diagrams as images
 - Floating toolbar with delete and download actions
 
@@ -273,7 +275,7 @@ The view mode for code drawing elements.
 <APIItem type="'Both' | 'Code' | 'Image'">
 The view mode.
 
-- `'Both'`: Shows both code editor and preview side by side
+- `'Both'`: Shows both code editor and preview side by side (horizontal on desktop, vertical on mobile with preview on top)
 - `'Code'`: Shows only the code editor
 - `'Image'`: Shows only the rendered preview
 

@@ -4,3 +4,6 @@
 
 export * from './CodeDrawingFloatingToolbar';
 export * from './CodeDrawingPreview';
+export * from './CodeDrawingPreviewArea';
+export * from './CodeDrawingTextarea';
+export * from './CodeDrawingToolbar';
