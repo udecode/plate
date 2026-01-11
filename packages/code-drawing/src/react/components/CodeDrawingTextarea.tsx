@@ -2,10 +2,10 @@
 
 import * as React from 'react';
 
-import type { CodeDrawingType, ViewMode } from '../../lib';
+import type { ViewMode } from '../../lib';
 import { VIEW_MODE, DEFAULT_MIN_HEIGHT } from '../../lib';
 
-export interface CodeDrawingTextareaProps {
+export type CodeDrawingTextareaProps = {
   code: string;
   viewMode: ViewMode;
   readOnly?: boolean;
@@ -17,7 +17,7 @@ export interface CodeDrawingTextareaProps {
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   }) => React.ReactNode;
   toolbar?: React.ReactNode;
-}
+};
 
 export function CodeDrawingTextarea({
   code,
@@ -35,7 +35,7 @@ export function CodeDrawingTextarea({
   return (
     <div
       className={`${
-        isCodeOnlyMode ? 'w-full' : 'flex-1 min-w-0'
+        isCodeOnlyMode ? 'w-full' : 'min-w-0 flex-1'
       } flex flex-col ${isCodeOnlyMode && !isMobile ? 'relative' : ''} ${
         showBorder && !isMobile ? 'border-r' : ''
       }`}
@@ -44,9 +44,7 @@ export function CodeDrawingTextarea({
       {toolbar && isCodeOnlyMode && (
         <div
           className={
-            isMobile
-              ? 'flex justify-end mb-2 px-2'
-              : 'absolute right-2 z-10'
+            isMobile ? 'mb-2 flex justify-end px-2' : 'absolute right-2 z-10'
           }
         >
           {toolbar}
@@ -59,18 +57,20 @@ export function CodeDrawingTextarea({
           onChange: onCodeChange,
         })
       ) : (
-        <div className="relative rounded-md flex-1">
+        <div className="relative flex-1 rounded-md">
           <pre
-            className={`overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid m-0`}
+            className={
+              'm-0 overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid'
+            }
             style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px`, height: '100%' }}
           >
-            <code className="block w-full h-full">
+            <code className="block h-full w-full">
               <textarea
                 ref={textareaRef}
                 value={code}
                 onChange={onCodeChange}
                 readOnly={readOnly}
-                className="w-full h-full resize-none bg-transparent border-0 p-0 m-0 font-mono text-sm outline-none overflow-auto"
+                className="m-0 h-full w-full resize-none overflow-auto border-0 bg-transparent p-0 font-mono text-sm outline-none"
                 style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px` }}
                 placeholder="Enter your code here..."
                 spellCheck={false}

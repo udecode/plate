@@ -3,9 +3,9 @@
 import * as React from 'react';
 
 import type { CodeDrawingType, ViewMode } from '../../lib';
-import { CODE_DRAWING_TYPE_ARRAY, VIEW_MODE_ARRAY, VIEW_MODE } from '../../lib';
+import { CODE_DRAWING_TYPE_ARRAY, VIEW_MODE_ARRAY } from '../../lib';
 
-export interface CodeDrawingToolbarProps {
+export type CodeDrawingToolbarProps = {
   drawingType: CodeDrawingType;
   viewMode: ViewMode;
   readOnly?: boolean;
@@ -22,7 +22,7 @@ export interface CodeDrawingToolbarProps {
     onChange: (value: ViewMode) => void;
     onOpenChange?: (open: boolean) => void;
   }) => React.ReactNode;
-}
+};
 
 export function CodeDrawingToolbar({
   drawingType,
@@ -50,6 +50,7 @@ export function CodeDrawingToolbar({
 
   return (
     <div
+      role="toolbar"
       className={`${positionClass} transition-opacity ${opacityClass}`}
       onMouseEnter={() => setToolbarVisible(true)}
       onMouseLeave={() => {
@@ -67,14 +68,16 @@ export function CodeDrawingToolbar({
             onOpenChange: setSelectOpen,
           })}
         </div>
-      ) : !readOnly ? (
+      ) : readOnly ? null : (
         <select
           value={drawingType}
-          onChange={(e) => onDrawingTypeChange(e.target.value as CodeDrawingType)}
+          onChange={(e) =>
+            onDrawingTypeChange(e.target.value as CodeDrawingType)
+          }
           onFocus={() => setSelectOpen(true)}
           onBlur={() => setSelectOpen(false)}
-          className={`rounded-md bg-muted/50 px-2 py-1 text-sm border-0 ${
-            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
+          className={`rounded-md border-0 bg-muted/50 px-2 py-1 text-sm ${
+            isMobile ? '' : 'transition-colors hover:bg-zinc-200'
           }`}
         >
           {CODE_DRAWING_TYPE_ARRAY.map((item) => (
@@ -83,7 +86,7 @@ export function CodeDrawingToolbar({
             </option>
           ))}
         </select>
-      ) : null}
+      )}
 
       {/* View Mode Select */}
       {!readOnly && renderDrawingModeSelect ? (
@@ -94,14 +97,14 @@ export function CodeDrawingToolbar({
             onOpenChange: setSelectOpen,
           })}
         </div>
-      ) : !readOnly ? (
+      ) : readOnly ? null : (
         <select
           value={viewMode}
           onChange={(e) => onDrawingModeChange(e.target.value as ViewMode)}
           onFocus={() => setSelectOpen(true)}
           onBlur={() => setSelectOpen(false)}
-          className={`rounded-md bg-muted/50 px-2 py-1 text-xs border-0 ${
-            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
+          className={`rounded-md border-0 bg-muted/50 px-2 py-1 text-xs ${
+            isMobile ? '' : 'transition-colors hover:bg-zinc-200'
           }`}
         >
           {VIEW_MODE_ARRAY.map((item) => (
@@ -110,7 +113,7 @@ export function CodeDrawingToolbar({
             </option>
           ))}
         </select>
-      ) : null}
+      )}
     </div>
   );
 }

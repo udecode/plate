@@ -1,7 +1,10 @@
 /**
  * Download image from data URL
  */
-export function downloadImage(imageDataUrl: string, filename: string = 'code-drawing.png'): void {
+export function downloadImage(
+  imageDataUrl: string,
+  filename = 'code-drawing.png'
+): void {
   const imageEl = new Image();
   imageEl.src = imageDataUrl;
   imageEl.onload = () => {

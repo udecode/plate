@@ -12,7 +12,10 @@ import { CodeDrawingElement } from '@/registry/ui/code-drawing-node';
 
 export default function CodeDrawingDemo() {
   const editor = usePlateEditor({
-    plugins: [...EditorKit, CodeDrawingPlugin.withComponent(CodeDrawingElement)],
+    plugins: [
+      ...EditorKit,
+      CodeDrawingPlugin.withComponent(CodeDrawingElement),
+    ],
     value: codeDrawingValue,
   });
 

@@ -180,7 +180,14 @@ const groups: Group[] = [
       },
       {
         icon: <Code2 />,
-        keywords: ['code-drawing', 'diagram', 'plantuml', 'graphviz', 'flowchart', 'mermaid'],
+        keywords: [
+          'code-drawing',
+          'diagram',
+          'plantuml',
+          'graphviz',
+          'flowchart',
+          'mermaid',
+        ],
         label: 'Code Drawing',
         value: KEYS.codeDrawing,
       },

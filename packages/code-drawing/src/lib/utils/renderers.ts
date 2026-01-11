@@ -3,8 +3,14 @@ import type { CodeDrawingType } from '../constants';
 /**
  * Generate a random string for unique IDs
  */
-function randomString(length: number, type: 'lowerCase' | 'upperCase' = 'lowerCase'): string {
-  const chars = type === 'lowerCase' ? 'abcdefghijklmnopqrstuvwxyz' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function randomString(
+  length: number,
+  type: 'lowerCase' | 'upperCase' = 'lowerCase'
+): string {
+  const chars =
+    type === 'lowerCase'
+      ? 'abcdefghijklmnopqrstuvwxyz'
+      : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -29,7 +35,7 @@ export async function renderPlantUml(content: string): Promise<string> {
     const plantumlEncoder = await import('plantuml-encoder');
     const encoded = plantumlEncoder.default.encode(content);
     const svgUrl = `https://www.plantuml.com/plantuml/svg/${encoded}`;
-    
+
     // Fetch SVG
     const response = await fetch(svgUrl);
     if (!response.ok) {
@@ -58,11 +64,11 @@ export async function renderGraphviz(content: string): Promise<string> {
     try {
       const vizModule = await import('viz.js');
       Viz = vizModule.default || vizModule;
-      
+
       const fullRender = await import('viz.js/full.render.js');
       Module = fullRender.Module;
       render = fullRender.render;
-    } catch (importError) {
+    } catch (_importError) {
       // Fallback: try alternative import
       const vizModule = await import('viz.js');
       Viz = vizModule.default || vizModule;
@@ -70,10 +76,13 @@ export async function renderGraphviz(content: string): Promise<string> {
       Module = fullRender.Module;
       render = fullRender.render;
     }
-    
+
     const viz = new Viz({ Module, render });
-    const svg = await viz.renderString(content, { format: 'svg', engine: 'dot' });
-    
+    const svg = await viz.renderString(content, {
+      format: 'svg',
+      engine: 'dot',
+    });
+
     return svgToDataUrl(svg);
   } catch (error) {
     console.error('Graphviz rendering error:', error);
@@ -89,16 +98,16 @@ export async function renderFlowchart(content: string): Promise<string> {
   try {
     // Dynamic import of flowchart.js
     const flowchart = (await import('flowchart.js')).default;
-    
+
     const chart = flowchart.parse(content);
     const el = document.createElement('div');
     el.style.display = 'none';
     document.body.appendChild(el);
-    
+
     chart.drawSVG(el);
     const svg = el.innerHTML;
     document.body.removeChild(el);
-    
+
     return svgToDataUrl(svg);
   } catch (error) {
     console.error('Flowchart rendering error:', error);
@@ -116,19 +125,19 @@ export async function renderMermaid(content: string): Promise<string> {
   try {
     // Dynamic import of mermaid
     const mermaid = await import('mermaid');
-    
+
     if (!mermaidInitialized) {
       mermaid.default.initialize({ startOnLoad: false });
       mermaidInitialized = true;
     }
-    
+
     const id = `mermaid-${randomString(6, 'lowerCase')}`;
     const { svg } = await mermaid.default.render(id, content);
-    
+
     if (svg) {
       return svgToDataUrl(svg);
     }
-    
+
     throw new Error('Mermaid rendering failed');
   } catch (error) {
     console.error('Mermaid rendering error:', error);

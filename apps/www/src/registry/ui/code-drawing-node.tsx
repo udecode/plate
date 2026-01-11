@@ -2,10 +2,13 @@
 
 import * as React from 'react';
 
+import { CodeDrawingElement as BaseCodeDrawingElement } from '@platejs/code-drawing/react';
 import {
-  CodeDrawingElement as BaseCodeDrawingElement,
-} from '@platejs/code-drawing/react';
-import { VIEW_MODE, type CodeDrawingType, type TCodeDrawingElement, type ViewMode } from '@platejs/code-drawing';
+  VIEW_MODE,
+  type CodeDrawingType,
+  type TCodeDrawingElement,
+  type ViewMode,
+} from '@platejs/code-drawing';
 import type { PlateElementProps } from 'platejs/react';
 import { Trash2, DownloadIcon } from 'lucide-react';
 
@@ -78,23 +81,29 @@ export function CodeDrawingElement(
           </PopoverContent>
         </Popover>
       )}
-      renderDrawingTypeSelect={({ value, onChange, onOpenChange }: {
+      renderDrawingTypeSelect={({
+        value,
+        onChange,
+        onOpenChange,
+      }: {
         value: CodeDrawingType;
         onChange: (value: CodeDrawingType) => void;
         onOpenChange?: (open: boolean) => void;
       }) => (
-        <Select 
-          value={value} 
-          onValueChange={onChange} 
-          open={languageSelectOpen} 
+        <Select
+          value={value}
+          onValueChange={onChange}
+          open={languageSelectOpen}
           onOpenChange={(open) => {
             setLanguageSelectOpen(open);
             onOpenChange?.(open);
           }}
         >
-          <SelectTrigger className={`w-[120px] bg-muted/50 h-8 text-xs border-0 shadow-none ${
-            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
-          }`}>
+          <SelectTrigger
+            className={`h-8 w-[120px] border-0 bg-muted/50 text-xs shadow-none ${
+              isMobile ? '' : 'transition-colors hover:bg-zinc-200'
+            }`}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[100]">
@@ -105,23 +114,29 @@ export function CodeDrawingElement(
           </SelectContent>
         </Select>
       )}
-      renderDrawingModeSelect={({ value, onChange, onOpenChange }: {
+      renderDrawingModeSelect={({
+        value,
+        onChange,
+        onOpenChange,
+      }: {
         value: ViewMode;
         onChange: (value: ViewMode) => void;
         onOpenChange?: (open: boolean) => void;
       }) => (
-        <Select 
-          value={value} 
-          onValueChange={onChange} 
-          open={viewModeSelectOpen} 
+        <Select
+          value={value}
+          onValueChange={onChange}
+          open={viewModeSelectOpen}
           onOpenChange={(open) => {
             setViewModeSelectOpen(open);
             onOpenChange?.(open);
           }}
         >
-          <SelectTrigger className={`w-[80px] bg-muted/50 h-8 text-xs border-0 shadow-none ${
-            !isMobile ? 'hover:bg-zinc-200 transition-colors' : ''
-          }`}>
+          <SelectTrigger
+            className={`h-8 w-[80px] border-0 bg-muted/50 text-xs shadow-none ${
+              isMobile ? '' : 'transition-colors hover:bg-zinc-200'
+            }`}
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[100]">

@@ -11,7 +11,7 @@ import {
   useSelected,
 } from 'platejs/react';
 
-export interface CodeDrawingFloatingToolbarProps {
+export type CodeDrawingFloatingToolbarProps = {
   children: React.ReactNode;
   element: TCodeDrawingElement;
   onRemove: () => void;
@@ -22,11 +22,11 @@ export interface CodeDrawingFloatingToolbarProps {
     onDownload?: () => void;
     open: boolean;
   }) => React.ReactNode;
-}
+};
 
 export function CodeDrawingFloatingToolbar({
   children,
-  element,
+  element: _element,
   onRemove,
   onDownload,
   renderPopover,

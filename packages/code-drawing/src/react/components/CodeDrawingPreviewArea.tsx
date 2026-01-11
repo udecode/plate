@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { ViewMode } from '../../lib';
 import { VIEW_MODE } from '../../lib';
 
-export interface CodeDrawingPreviewAreaProps {
+export type CodeDrawingPreviewAreaProps = {
   image: string;
   loading: boolean;
   code: string;
@@ -14,14 +14,14 @@ export interface CodeDrawingPreviewAreaProps {
   isMobile?: boolean;
   showBorder?: boolean;
   toolbar?: React.ReactNode;
-}
+};
 
 export function CodeDrawingPreviewArea({
   image,
   loading,
   code,
   viewMode,
-  readOnly = false,
+  readOnly: _readOnly = false,
   isMobile = false,
   showBorder = false,
   toolbar,
@@ -30,7 +30,7 @@ export function CodeDrawingPreviewArea({
 
   return (
     <div
-      className={`flex-1 min-w-0 flex flex-col ${!isMobile ? 'relative' : ''} ${
+      className={`flex min-w-0 flex-1 flex-col ${isMobile ? '' : 'relative'} ${
         showBorder && isMobile ? 'border-b' : ''
       }`}
     >
@@ -38,9 +38,7 @@ export function CodeDrawingPreviewArea({
       {toolbar && (
         <div
           className={
-            isMobile
-              ? 'flex justify-end mb-2 px-2'
-              : 'absolute right-2 z-10'
+            isMobile ? 'mb-2 flex justify-end px-2' : 'absolute right-2 z-10'
           }
         >
           {toolbar}
@@ -50,16 +48,16 @@ export function CodeDrawingPreviewArea({
       {/* Preview Content - Only show when showImage is true */}
       {showImage ? (
         <div
-          className={`flex items-center justify-center flex-1 rounded-md bg-muted/30 p-4`}
+          className={
+            'flex flex-1 items-center justify-center rounded-md bg-muted/30 p-4'
+          }
         >
-          {loading && (
-            <div className="text-muted-foreground">Loading...</div>
-          )}
+          {loading && <div className="text-muted-foreground">Loading...</div>}
           {!loading && image && (
             <img
               src={image}
               alt="Code drawing"
-              className="max-w-full max-h-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
           )}
           {!loading && !image && (
@@ -69,7 +67,7 @@ export function CodeDrawingPreviewArea({
           )}
         </div>
       ) : (
-        <div className="flex items-center justify-center flex-1 rounded-md border bg-muted/30 p-4 opacity-0 pointer-events-none">
+        <div className="pointer-events-none flex flex-1 items-center justify-center rounded-md border bg-muted/30 p-4 opacity-0">
           {/* Placeholder to maintain height */}
         </div>
       )}

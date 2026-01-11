@@ -273,7 +273,8 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
+      description:
+        'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
       files: [
         {
           path: 'examples/code-drawing-demo.tsx',

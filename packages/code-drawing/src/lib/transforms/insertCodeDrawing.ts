@@ -17,10 +17,15 @@ export const insertCodeDrawing = (
         drawingType: 'Mermaid',
         drawingMode: 'Both',
         code: '',
-        ...(typeof props.data === 'object' && props.data !== null ? props.data : {}),
+        ...(typeof props.data === 'object' && props.data !== null
+          ? props.data
+          : {}),
       },
       ...(props && typeof props === 'object' ? props : {}),
     },
-    { nextBlock: true, ...(options && typeof options === 'object' ? options : {}) }
+    {
+      nextBlock: true,
+      ...(options && typeof options === 'object' ? options : {}),
+    }
   );
 };

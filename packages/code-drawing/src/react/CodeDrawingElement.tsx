@@ -13,7 +13,8 @@ import { CodeDrawingPreview } from './components/CodeDrawingPreview';
 import { downloadImage } from '../lib/utils/download';
 import { DOWNLOAD_FILENAME } from '../lib/constants';
 
-export interface CodeDrawingElementProps extends PlateElementProps<TCodeDrawingElement> {
+export interface CodeDrawingElementProps
+  extends PlateElementProps<TCodeDrawingElement> {
   renderPopover?: (props: {
     children: React.ReactNode;
     onRemove: () => void;
@@ -146,4 +147,5 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
   );
 }
 
-export const CodeDrawingElement: React.FC<CodeDrawingElementProps> = CodeDrawingElementBase;
+export const CodeDrawingElement: React.FC<CodeDrawingElementProps> =
+  CodeDrawingElementBase;

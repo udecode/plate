@@ -554,15 +554,15 @@ export const playgroundValue: Value = [
     type: 'p',
   },
   {
-    "children": [
-        {
-            "text": ""
-        }
+    children: [
+      {
+        text: '',
+      },
     ],
-    data:{
-        "drawingMode": "Both",
-        "drawingType": "Mermaid",
-        "code": `classDiagram
+    data: {
+      drawingMode: 'Both',
+      drawingType: 'Mermaid',
+      code: `classDiagram
       Animal <|-- Duck
       Animal <|-- Fish
       Animal <|-- Zebra
@@ -583,9 +583,8 @@ export const playgroundValue: Value = [
         +bool is_wild
         +run()
       } 
-      `
-      },
-      "type": "code_drawing",
-      
-  },  
+      `,
+    },
+    type: 'code_drawing',
+  },
 ];

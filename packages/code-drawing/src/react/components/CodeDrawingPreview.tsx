@@ -8,7 +8,7 @@ import { CodeDrawingTextarea } from './CodeDrawingTextarea';
 import { CodeDrawingPreviewArea } from './CodeDrawingPreviewArea';
 import { CodeDrawingToolbar } from './CodeDrawingToolbar';
 
-export interface CodeDrawingPreviewProps {
+export type CodeDrawingPreviewProps = {
   code: string;
   drawingType: CodeDrawingType;
   drawingMode: ViewMode;
@@ -33,7 +33,7 @@ export interface CodeDrawingPreviewProps {
     value: string;
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   }) => React.ReactNode;
-}
+};
 
 export function CodeDrawingPreview({
   code,
@@ -61,7 +61,7 @@ export function CodeDrawingPreview({
     [onCodeChange]
   );
 
-  const toolbar = !readOnly ? (
+  const toolbar = readOnly ? null : (
     <CodeDrawingToolbar
       drawingType={drawingType}
       viewMode={viewMode}
@@ -72,16 +72,11 @@ export function CodeDrawingPreview({
       renderDrawingTypeSelect={renderDrawingTypeSelect}
       renderDrawingModeSelect={renderDrawingModeSelect}
     />
-  ) : null;
+  );
 
   return (
     <div
-      className={`flex 
-        ${isMobile ? 'flex-col-reverse' : 'flex-col'} 
-        md:flex-row w-full my-4 group 
-        items-stretch bg-muted/50
-        border 
-        `}
+      className={`flex ${isMobile ? 'flex-col-reverse' : 'flex-col'} group my-4 w-full items-stretch border bg-muted/50 md:flex-row`}
       style={{
         minHeight: `${DEFAULT_MIN_HEIGHT}px`,
       }}

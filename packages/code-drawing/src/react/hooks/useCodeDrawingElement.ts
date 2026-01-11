@@ -22,39 +22,42 @@ export const useCodeDrawingElement = ({
   // Debounced render when code or type changes
   const debouncedRender = React.useMemo(
     () =>
-      debounce(async (code: string | undefined, drawingType: string | undefined) => {
-        lastRequestRef.current += 1;
-        const requestId = lastRequestRef.current;
+      debounce(
+        async (code: string | undefined, drawingType: string | undefined) => {
+          lastRequestRef.current += 1;
+          const requestId = lastRequestRef.current;
 
-        if (!code || !code.trim() || !drawingType) {
-          setImage('');
-          setLoading(false);
-          setError(null);
-          return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-          const imageData = await renderCodeDrawing(drawingType as any, code);
-
-          // Only update if this is still the latest request
-          if (lastRequestRef.current === requestId) {
-            setImage(imageData);
-            setError(null);
-          }
-        } catch (err) {
-          if (lastRequestRef.current === requestId) {
-            setError(err instanceof Error ? err.message : 'Rendering failed');
+          if (!code || !code.trim() || !drawingType) {
             setImage('');
-          }
-        } finally {
-          if (lastRequestRef.current === requestId) {
             setLoading(false);
+            setError(null);
+            return;
           }
-        }
-      }, RENDER_DEBOUNCE_DELAY),
+
+          setLoading(true);
+          setError(null);
+
+          try {
+            const imageData = await renderCodeDrawing(drawingType as any, code);
+
+            // Only update if this is still the latest request
+            if (lastRequestRef.current === requestId) {
+              setImage(imageData);
+              setError(null);
+            }
+          } catch (err) {
+            if (lastRequestRef.current === requestId) {
+              setError(err instanceof Error ? err.message : 'Rendering failed');
+              setImage('');
+            }
+          } finally {
+            if (lastRequestRef.current === requestId) {
+              setLoading(false);
+            }
+          }
+        },
+        RENDER_DEBOUNCE_DELAY
+      ),
     []
   );
 
@@ -86,7 +89,6 @@ export const useCodeDrawingElement = ({
     },
     [editor, element, readOnly]
   );
-
 
   const removeNode = () => {
     if (readOnly) return;
