@@ -7,6 +7,3 @@ export * from './constants';
 export * from './types';
 export * from './transforms/index';
 export * from './utils/index';
-
-// Re-export ViewMode type for convenience
-export type { ViewMode } from './constants';
