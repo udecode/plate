@@ -273,6 +273,31 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description: 'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
+      files: [
+        {
+          path: 'examples/code-drawing-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/code-drawing-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/code-drawing',
+            title: 'Code Drawing',
+          },
+        ],
+      },
+      name: 'code-drawing-demo',
+      registryDependencies: ['code-drawing-kit', 'editor-kit'],
+      title: 'Code Drawing',
+      type: 'registry:example',
+    },
+    {
       description: 'Restrict the editor to a single block.',
       files: [
         {

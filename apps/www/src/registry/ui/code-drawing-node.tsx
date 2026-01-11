@@ -7,10 +7,9 @@ import {
 } from '@platejs/code-drawing/react';
 import { VIEW_MODE, type CodeDrawingType, type TCodeDrawingElement, type ViewMode } from '@platejs/code-drawing';
 import type { PlateElementProps } from 'platejs/react';
-
-import { useReadOnly } from 'platejs/react';
 import { Trash2, DownloadIcon } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -28,13 +27,14 @@ import {
 export function CodeDrawingElement(
   props: PlateElementProps<TCodeDrawingElement>
 ) {
-  const readOnly = useReadOnly();
+  const isMobile = useIsMobile();
   const [languageSelectOpen, setLanguageSelectOpen] = React.useState(false);
   const [viewModeSelectOpen, setViewModeSelectOpen] = React.useState(false);
 
   return (
     <BaseCodeDrawingElement
       {...props}
+      isMobile={isMobile}
       renderToolbar={({
         children,
         onRemove,

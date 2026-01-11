@@ -15,6 +15,7 @@ export interface CodeDrawingPreviewProps {
   onDrawingTypeChange: (type: CodeDrawingType) => void;
   onDrawingModeChange: (mode: ViewMode) => void;
   readOnly?: boolean;
+  isMobile?: boolean;
   renderDrawingTypeSelect?: (props: {
     value: CodeDrawingType;
     onChange: (value: CodeDrawingType) => void;
@@ -39,6 +40,7 @@ export function CodeDrawingPreview({
   onDrawingTypeChange,
   onDrawingModeChange,
   readOnly = false,
+  isMobile = false,
   renderDrawingTypeSelect,
   renderDrawingModeSelect,
   renderTextarea,
@@ -115,6 +117,12 @@ export function CodeDrawingPreview({
 
       if (!isCodeMode && !isPreviewMode) return null;
 
+      // Show controls directly on mobile when editable, otherwise use hover
+      const shouldShowDirectly = isMobile && !readOnly;
+      const opacityClass = shouldShowDirectly || toolbarVisible || selectOpen
+        ? 'opacity-100'
+        : 'opacity-0 group-hover:opacity-100';
+
       return (
         <div
           className={`absolute top-2 right-2 z-10 flex items-center gap-2 transition-opacity ${
@@ -129,11 +137,13 @@ export function CodeDrawingPreview({
         >
           {/* Language Selector */}
           {!readOnly && renderDrawingTypeSelect ? (
-            renderDrawingTypeSelect({
-              value: drawingType,
-              onChange: onDrawingTypeChange,
-              onOpenChange: setSelectOpen,
-            })
+            <div className="pointer-events-auto">
+              {renderDrawingTypeSelect({
+                value: drawingType,
+                onChange: onDrawingTypeChange,
+                onOpenChange: setSelectOpen,
+              })}
+            </div>
           ) : !readOnly ? (
             <select
               value={drawingType}
@@ -152,11 +162,13 @@ export function CodeDrawingPreview({
 
           {/* View Mode Select */}
           {!readOnly && renderDrawingModeSelect ? (
-            renderDrawingModeSelect({
-              value: viewMode,
-              onChange: onDrawingModeChange,
-              onOpenChange: setSelectOpen,
-            })
+            <div className="pointer-events-auto">
+              {renderDrawingModeSelect({
+                value: viewMode,
+                onChange: onDrawingModeChange,
+                onOpenChange: setSelectOpen,
+              })}
+            </div>
           ) : !readOnly ? (
             <select
               value={viewMode}
@@ -180,6 +192,7 @@ export function CodeDrawingPreview({
       toolbarVisible,
       selectOpen,
       readOnly,
+      isMobile,
       renderDrawingTypeSelect,
       drawingType,
       onDrawingTypeChange,
@@ -204,8 +217,8 @@ export function CodeDrawingPreview({
               onChange: handleCodeChange,
             })
           ) : (
-            <div className="relative rounded-md bg-muted/50">
-              <pre className="overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid m-0" style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px`, height: '100%' }}>
+            <div className="relative rounded-md bg-muted/50 h-full">
+              <pre className={`overflow-x-auto p-8 pr-4 font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid m-0 ${!readOnly && viewMode === VIEW_MODE.Code ? 'pt-10' : 'pt-8'}`} style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px`, height: '100%' }}>
                 <code className="block w-full h-full">
                   <textarea
                     ref={textareaRef}
@@ -232,7 +245,7 @@ export function CodeDrawingPreview({
 
           {/* Preview Content - Only show when showImage is true */}
           {showImage ? (
-            <div className="flex items-center justify-center h-full rounded-md border bg-muted/30 p-4" >
+            <div className={`flex items-center justify-center h-full rounded-md border bg-muted/30 p-4 ${!readOnly ? 'pt-10' : 'pt-4'}`} >
               {loading && (
                 <div className="text-muted-foreground">Loading...</div>
               )}

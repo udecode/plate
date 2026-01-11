@@ -9,14 +9,6 @@ export const insertCodeDrawing = (
   props: NodeProps<TCodeDrawingElement> = {},
   options: InsertNodesOptions = {}
 ): void => {
-  if (!editor.selection) return;
-
-  const selectionParentEntry = editor.api.parent(editor.selection);
-
-  if (!selectionParentEntry) return;
-
-  const [, path] = selectionParentEntry;
-
   editor.tf.insertNodes<TCodeDrawingElement>(
     {
       children: [{ text: '' }],
@@ -25,10 +17,10 @@ export const insertCodeDrawing = (
         drawingType: 'Mermaid',
         drawingMode: 'Both',
         code: '',
-        ...props.data,
+        ...(typeof props.data === 'object' && props.data !== null ? props.data : {}),
       },
-      ...props,
+      ...(props && typeof props === 'object' ? props : {}),
     },
-    { at: path, nextBlock: true, ...(options as any) }
+    { nextBlock: true, ...(options && typeof options === 'object' ? options : {}) }
   );
 };

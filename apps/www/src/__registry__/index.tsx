@@ -942,6 +942,27 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/code-block"},{"route":"https://pro.platejs.org/docs/components/code-block-node"}],"examples":["code-block-demo"]},
   },
+  "code-drawing-node": {
+    name: "code-drawing-node",
+    description: "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
+    type: "registry:ui",
+    registryDependencies: ["popover","button","select"],
+    files: [{
+      path: "src/registry/ui/code-drawing-node.tsx",
+      type: "registry:ui",
+      target: ""
+    },{
+      path: "src/registry/ui/code-drawing-node-static.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/code-drawing-node.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/code-drawing"},{"route":"https://pro.platejs.org/docs/components/code-drawing-node"}],"examples":["code-drawing-demo"]},
+  },
   "code-node": {
     name: "code-node",
     description: "An inline component for code snippets.",
@@ -1638,6 +1659,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "code-drawing-base-kit": {
+    name: "code-drawing-base-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/code-drawing-node"],
+    files: [{
+      path: "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/code-drawing-base-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "column-base-kit": {
     name: "column-base-kit",
     description: "",
@@ -1914,7 +1952,7 @@ export const Index: Record<string, any> = {
     name: "editor-base-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/align-base-kit","https://platejs.org/r/basic-blocks-base-kit","https://platejs.org/r/basic-marks-base-kit","https://platejs.org/r/callout-base-kit","https://platejs.org/r/code-block-base-kit","https://platejs.org/r/column-base-kit","https://platejs.org/r/comment-base-kit","https://platejs.org/r/date-base-kit","https://platejs.org/r/font-base-kit","https://platejs.org/r/line-height-base-kit","https://platejs.org/r/link-base-kit","https://platejs.org/r/list-base-kit","https://platejs.org/r/math-base-kit","https://platejs.org/r/media-base-kit","https://platejs.org/r/mention-base-kit","https://platejs.org/r/suggestion-base-kit","https://platejs.org/r/table-base-kit","https://platejs.org/r/toc-base-kit","https://platejs.org/r/toggle-base-kit","https://platejs.org/r/markdown-kit"],
+    registryDependencies: ["https://platejs.org/r/editor","https://platejs.org/r/align-base-kit","https://platejs.org/r/basic-blocks-base-kit","https://platejs.org/r/basic-marks-base-kit","https://platejs.org/r/callout-base-kit","https://platejs.org/r/code-block-base-kit","https://platejs.org/r/code-drawing-base-kit","https://platejs.org/r/column-base-kit","https://platejs.org/r/comment-base-kit","https://platejs.org/r/date-base-kit","https://platejs.org/r/font-base-kit","https://platejs.org/r/line-height-base-kit","https://platejs.org/r/link-base-kit","https://platejs.org/r/list-base-kit","https://platejs.org/r/math-base-kit","https://platejs.org/r/media-base-kit","https://platejs.org/r/mention-base-kit","https://platejs.org/r/suggestion-base-kit","https://platejs.org/r/table-base-kit","https://platejs.org/r/toc-base-kit","https://platejs.org/r/toggle-base-kit","https://platejs.org/r/markdown-kit"],
     files: [{
       path: "src/registry/components/editor/editor-base-kit.tsx",
       type: "registry:component",
@@ -2131,6 +2169,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "code-drawing-kit": {
+    name: "code-drawing-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/code-drawing-base-kit","https://platejs.org/r/code-drawing-node"],
+    files: [{
+      path: "src/registry/components/editor/plugins/code-drawing-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/code-drawing-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "column-kit": {
     name: "column-kit",
     description: "",
@@ -2271,7 +2326,7 @@ export const Index: Record<string, any> = {
     name: "editor-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-base-kit","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/code-block-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/excalidraw-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
+    registryDependencies: ["https://platejs.org/r/editor-base-kit","https://platejs.org/r/ai-kit","https://platejs.org/r/align-kit","https://platejs.org/r/autoformat-kit","https://platejs.org/r/basic-nodes-kit","https://platejs.org/r/block-menu-kit","https://platejs.org/r/block-placeholder-kit","https://platejs.org/r/callout-kit","https://platejs.org/r/code-block-kit","https://platejs.org/r/code-drawing-kit","https://platejs.org/r/column-kit","https://platejs.org/r/comment-kit","https://platejs.org/r/cursor-overlay-kit","https://platejs.org/r/date-kit","https://platejs.org/r/discussion-kit","https://platejs.org/r/dnd-kit","https://platejs.org/r/docx-kit","https://platejs.org/r/emoji-kit","https://platejs.org/r/excalidraw-kit","https://platejs.org/r/exit-break-kit","https://platejs.org/r/fixed-toolbar-kit","https://platejs.org/r/floating-toolbar-kit","https://platejs.org/r/font-kit","https://platejs.org/r/line-height-kit","https://platejs.org/r/link-kit","https://platejs.org/r/list-kit","https://platejs.org/r/markdown-kit","https://platejs.org/r/math-kit","https://platejs.org/r/media-kit","https://platejs.org/r/mention-kit","https://platejs.org/r/slash-kit","https://platejs.org/r/suggestion-kit","https://platejs.org/r/table-kit","https://platejs.org/r/toc-kit","https://platejs.org/r/toggle-kit"],
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
@@ -3384,6 +3439,27 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/excalidraw","title":"Excalidraw"}],"registry":false},
+  },
+  "code-drawing-demo": {
+    name: "code-drawing-demo",
+    description: "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/code-drawing-kit","https://platejs.org/r/editor-kit"],
+    files: [{
+      path: "src/registry/examples/code-drawing-demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/code-drawing-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/code-drawing-demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/code-drawing","title":"Code Drawing"}],"registry":false},
   },
   "single-block-demo": {
     name: "single-block-demo",

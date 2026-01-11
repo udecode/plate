@@ -1,0 +1,323 @@
+---
+title: Code Drawing
+docs:
+  - route: /docs/components/code-drawing-node
+    title: Code Drawing Node
+---
+
+<ComponentPreview name="code-drawing-demo" />
+
+<PackageInfo>
+
+## Features
+
+- Support for multiple diagram types: PlantUml, Graphviz, Flowchart, and Mermaid
+- Inline code editing with syntax highlighting
+- Real-time preview with debounced rendering
+- Multiple view modes: Both (code and preview), Code only, Image only
+- Responsive layout: horizontal on desktop, vertical on mobile
+- Download rendered diagrams as images
+- Floating toolbar with delete and download actions
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add code drawing functionality is with the `CodeDrawingKit`, which includes the pre-configured `CodeDrawingPlugin` with its [Plate UI](/docs/installation/plate-ui) components.
+
+<ComponentSource name="code-drawing-kit" />
+
+- [`CodeDrawingElement`](/docs/components/code-drawing-node): Renders code drawing elements with inline editing and preview.
+
+### Add Kit
+
+Add the kit to your plugins:
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { CodeDrawingKit } from '@/components/editor/plugins/code-drawing-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...CodeDrawingKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/code-drawing
+```
+
+### Add Plugin
+
+Include `CodeDrawingPlugin` in your Plate plugins array when creating the editor.
+
+```tsx
+import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeDrawingPlugin,
+  ],
+});
+```
+
+### Configure Plugin
+
+Configure the code drawing plugin with custom components.
+
+```tsx
+import { CodeDrawingPlugin } from '@platejs/code-drawing/react';
+import { createPlateEditor } from 'platejs/react';
+import { CodeDrawingElement } from '@/components/ui/code-drawing-node';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    CodeDrawingPlugin.withComponent(CodeDrawingElement),
+  ],
+});
+```
+
+- `withComponent`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing-node) to render code drawing elements.
+
+### Add Toolbar Button
+
+You can add a toolbar button to insert code drawing elements. Add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button):
+
+```tsx
+{
+  icon: <Code2Icon />,
+  label: 'Code Drawing',
+  value: KEYS.codeDrawing,
+}
+```
+
+</Steps>
+
+## Plugins
+
+### CodeDrawingPlugin
+
+Plugin for rendering code drawings (PlantUml, Graphviz, Flowchart, Mermaid) with inline editing and preview capabilities.
+
+## API
+
+### editor.tf.insert.codeDrawing
+
+Inserts a code drawing element at the current selection.
+
+<API name="insert.codeDrawing">
+<APIParameters>
+<APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
+Props for the code drawing element.
+<APISubList>
+<APISubListItem parent="props" name="data" type="CodeDrawingData" optional>
+The data for the code drawing element.
+<APISubList>
+<APISubListItem parent="data" name="drawingType" type="CodeDrawingType" optional>
+The type of diagram to render.
+
+- **Default:** `'Mermaid'`
+
+- **Options:** `'PlantUml'`, `'Graphviz'`, `'Flowchart'`, `'Mermaid'`
+
+</APISubListItem>
+<APISubListItem parent="data" name="drawingMode" type="ViewMode" optional>
+The view mode for the code drawing.
+
+- **Default:** `'Both'`
+
+- **Options:** `'Both'`, `'Code'`, `'Image'`
+
+</APISubListItem>
+<APISubListItem parent="data" name="code" type="string" optional>
+The code content for the diagram.
+
+- **Default:** `''`
+
+</APISubListItem>
+</APISubList>
+</APISubListItem>
+</APISubList>
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+The options for inserting the code drawing node.
+</APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### `tf.insert.codeDrawing`
+
+Inserts a code drawing element at the current selection.
+
+<API name="insert.codeDrawing">
+<APIParameters>
+<APIItem name="props" type="NodeProps<TCodeDrawingElement>" optional>
+Props for the code drawing element.
+</APIItem>
+<APIItem name="options" type="InsertNodesOptions" optional>
+The options for inserting the code drawing node.
+</APIItem>
+</APIParameters>
+</API>
+
+## Hooks
+
+### `useCodeDrawingElement`
+
+A hook for a code drawing element that handles rendering and state management.
+
+<API name="useCodeDrawingElement">
+<APIParameters>
+<APIItem name="element" type="TCodeDrawingElement">
+The code drawing element.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem name="loading" type="boolean">
+Whether the diagram is currently being rendered.
+</APIItem>
+<APIItem name="error" type="string | null">
+The error message if rendering failed, or `null` if there's no error.
+</APIItem>
+<APIItem name="image" type="string">
+The rendered image data URL.
+</APIItem>
+<APIItem name="updateNode" type="(data: Partial<CodeDrawingData>) => void">
+Function to update the code drawing element's data.
+</APIItem>
+<APIItem name="removeNode" type="() => void">
+Function to remove the code drawing element.
+</APIItem>
+</APIReturns>
+</API>
+
+## Types
+
+### `TCodeDrawingElement`
+
+The code drawing element type.
+
+<API name="TCodeDrawingElement">
+<APIAttributes>
+<APIItem name="type" type="string">
+The element type. Always `KEYS.codeDrawing`.
+</APIItem>
+<APIItem name="data" type="CodeDrawingData" optional>
+The data for the code drawing element.
+</APIItem>
+</APIAttributes>
+</API>
+
+### `CodeDrawingData`
+
+The data structure for code drawing elements.
+
+<API name="CodeDrawingData">
+<APIAttributes>
+<APIItem name="drawingType" type="CodeDrawingType" optional>
+The type of diagram to render.
+
+- **Options:** `'PlantUml'`, `'Graphviz'`, `'Flowchart'`, `'Mermaid'`
+
+</APIItem>
+<APIItem name="drawingMode" type="ViewMode" optional>
+The view mode for the code drawing.
+
+- **Options:** `'Both'`, `'Code'`, `'Image'`
+
+</APIItem>
+<APIItem name="code" type="string" optional>
+The code content for the diagram.
+</APIItem>
+</APIAttributes>
+</API>
+
+### `CodeDrawingType`
+
+The type of diagram supported.
+
+<API name="CodeDrawingType">
+<APIReturns>
+<APIItem type="'PlantUml' | 'Graphviz' | 'Flowchart' | 'Mermaid'">
+The diagram type.
+</APIItem>
+</APIReturns>
+</API>
+
+### `ViewMode`
+
+The view mode for code drawing elements.
+
+<API name="ViewMode">
+<APIReturns>
+<APIItem type="'Both' | 'Code' | 'Image'">
+The view mode.
+
+- `'Both'`: Shows both code editor and preview side by side
+- `'Code'`: Shows only the code editor
+- `'Image'`: Shows only the rendered preview
+
+</APIItem>
+</APIReturns>
+</API>
+
+## Utilities
+
+### `renderCodeDrawing`
+
+Renders a diagram from code based on the drawing type.
+
+<API name="renderCodeDrawing">
+<APIParameters>
+<APIItem name="type" type="CodeDrawingType">
+The type of diagram to render.
+</APIItem>
+<APIItem name="content" type="string">
+The code content for the diagram.
+</APIItem>
+</APIParameters>
+
+<APIReturns>
+<APIItem type="Promise<string>">
+A promise that resolves to the rendered image data URL.
+</APIItem>
+</APIReturns>
+</API>
+
+### `downloadImage`
+
+Downloads an image from a data URL.
+
+<API name="downloadImage">
+<APIParameters>
+<APIItem name="imageDataUrl" type="string">
+The image data URL to download.
+</APIItem>
+<APIItem name="filename" type="string" optional>
+The filename for the downloaded image.
+
+- **Default:** `'code-drawing.png'`
+
+</APIItem>
+</APIParameters>
+</API>

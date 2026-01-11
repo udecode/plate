@@ -33,6 +33,7 @@ export interface CodeDrawingElementProps extends PlateElementProps<TCodeDrawingE
     value: string;
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   }) => React.ReactNode;
+  isMobile?: boolean;
 }
 
 function CodeDrawingElementBase(props: CodeDrawingElementProps) {
@@ -43,6 +44,7 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
     renderDrawingTypeSelect,
     renderDrawingModeSelect,
     renderTextarea,
+    isMobile,
   } = props;
   const editor = useEditorRef();
   const readOnly = useReadOnly();
@@ -130,6 +132,7 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
             onDrawingTypeChange={handleDrawingTypeChange}
             onDrawingModeChange={handleDrawingModeChange}
             readOnly={readOnly}
+            isMobile={isMobile}
             renderDrawingTypeSelect={renderDrawingTypeSelect}
             renderDrawingModeSelect={renderDrawingModeSelect}
             renderTextarea={renderTextarea}
@@ -141,4 +144,4 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
   );
 }
 
-export const CodeDrawingElement = CodeDrawingElementBase;
+export const CodeDrawingElement: React.FC<CodeDrawingElementProps> = CodeDrawingElementBase;

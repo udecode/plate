@@ -4,6 +4,7 @@
 
 export * from './CodeDrawingPlugin';
 export * from './CodeDrawingElement';
+export type { CodeDrawingElementProps } from './CodeDrawingElement';
 export * from './components/CodeDrawingFloatingToolbar';
 export * from './components/CodeDrawingPreview';
 export * from './hooks/index';
