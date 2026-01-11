@@ -178,6 +178,12 @@ const groups: Group[] = [
         label: 'Excalidraw',
         value: KEYS.excalidraw,
       },
+      {
+        icon: <Code2 />,
+        keywords: ['code-drawing', 'diagram', 'plantuml', 'graphviz', 'flowchart', 'mermaid'],
+        label: 'Code Drawing',
+        value: KEYS.codeDrawing,
+      },
     ].map((item) => ({
       ...item,
       onSelect: (editor, value) => {

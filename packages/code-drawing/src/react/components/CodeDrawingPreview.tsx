@@ -15,12 +15,12 @@ export interface CodeDrawingPreviewProps {
   onDrawingTypeChange: (type: CodeDrawingType) => void;
   onDrawingModeChange: (mode: ViewMode) => void;
   readOnly?: boolean;
-  renderSelect?: (props: {
+  renderDrawingTypeSelect?: (props: {
     value: CodeDrawingType;
     onChange: (value: CodeDrawingType) => void;
     onOpenChange?: (open: boolean) => void;
   }) => React.ReactNode;
-  renderViewModeSelect?: (props: {
+  renderDrawingModeSelect?: (props: {
     value: ViewMode;
     onChange: (value: ViewMode) => void;
     onOpenChange?: (open: boolean) => void;
@@ -39,8 +39,8 @@ export function CodeDrawingPreview({
   onDrawingTypeChange,
   onDrawingModeChange,
   readOnly = false,
-  renderSelect,
-  renderViewModeSelect,
+  renderDrawingTypeSelect,
+  renderDrawingModeSelect,
   renderTextarea,
 }: CodeDrawingPreviewProps) {
   const viewMode = drawingMode;
@@ -128,8 +128,8 @@ export function CodeDrawingPreview({
           }}
         >
           {/* Language Selector */}
-          {!readOnly && renderSelect ? (
-            renderSelect({
+          {!readOnly && renderDrawingTypeSelect ? (
+            renderDrawingTypeSelect({
               value: drawingType,
               onChange: onDrawingTypeChange,
               onOpenChange: setSelectOpen,
@@ -151,8 +151,8 @@ export function CodeDrawingPreview({
           ) : null}
 
           {/* View Mode Select */}
-          {!readOnly && renderViewModeSelect ? (
-            renderViewModeSelect({
+          {!readOnly && renderDrawingModeSelect ? (
+            renderDrawingModeSelect({
               value: viewMode,
               onChange: onDrawingModeChange,
               onOpenChange: setSelectOpen,
@@ -180,10 +180,10 @@ export function CodeDrawingPreview({
       toolbarVisible,
       selectOpen,
       readOnly,
-      renderSelect,
+      renderDrawingTypeSelect,
       drawingType,
       onDrawingTypeChange,
-      renderViewModeSelect,
+      renderDrawingModeSelect,
       onDrawingModeChange,
     ]
   );

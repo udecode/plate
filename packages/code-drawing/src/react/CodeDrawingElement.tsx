@@ -20,11 +20,11 @@ export interface CodeDrawingElementProps extends PlateElementProps<TCodeDrawingE
     onDownload?: () => void;
     open: boolean;
   }) => React.ReactNode;
-  renderSelect?: (props: {
+  renderDrawingTypeSelect?: (props: {
     value: CodeDrawingType;
     onChange: (value: CodeDrawingType) => void;
   }) => React.ReactNode;
-  renderViewModeSelect?: (props: {
+  renderDrawingModeSelect?: (props: {
     value: ViewMode;
     onChange: (value: ViewMode) => void;
     onOpenChange?: (open: boolean) => void;
@@ -40,8 +40,8 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
     children,
     element,
     renderToolbar,
-    renderSelect,
-    renderViewModeSelect,
+    renderDrawingTypeSelect,
+    renderDrawingModeSelect,
     renderTextarea,
   } = props;
   const editor = useEditorRef();
@@ -130,8 +130,8 @@ function CodeDrawingElementBase(props: CodeDrawingElementProps) {
             onDrawingTypeChange={handleDrawingTypeChange}
             onDrawingModeChange={handleDrawingModeChange}
             readOnly={readOnly}
-            renderSelect={renderSelect}
-            renderViewModeSelect={renderViewModeSelect}
+            renderDrawingTypeSelect={renderDrawingTypeSelect}
+            renderDrawingModeSelect={renderDrawingModeSelect}
             renderTextarea={renderTextarea}
           />
         </div>

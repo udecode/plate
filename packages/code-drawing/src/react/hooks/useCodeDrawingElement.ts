@@ -1,8 +1,10 @@
 import React from 'react';
+import debounce from 'lodash/debounce.js';
 import { useEditorRef, useReadOnly } from 'platejs/react';
 
 import type { TCodeDrawingElement, CodeDrawingData } from '../../lib';
 import { renderCodeDrawing } from '../../lib/utils/renderers';
+import { RENDER_DEBOUNCE_DELAY } from '../../lib/constants';
 
 export const useCodeDrawingElement = ({
   element,
@@ -16,58 +18,53 @@ export const useCodeDrawingElement = ({
   const [image, setImage] = React.useState<string>('');
 
   const lastRequestRef = React.useRef(0);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Debounced render when code or type changes
-  React.useEffect(() => {
-    const drawingType = element.data?.drawingType;
-    const code = element.data?.code;
+  const debouncedRender = React.useMemo(
+    () =>
+      debounce(async (code: string | undefined, drawingType: string | undefined) => {
+        lastRequestRef.current += 1;
+        const requestId = lastRequestRef.current;
 
-    // Clear previous timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Set new timeout for rendering
-    timeoutRef.current = setTimeout(async () => {
-      lastRequestRef.current += 1;
-      const requestId = lastRequestRef.current;
-
-      if (!code || !code.trim() || !drawingType) {
-        setImage('');
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const imageData = await renderCodeDrawing(drawingType as any, code);
-
-        // Only update if this is still the latest request
-        if (lastRequestRef.current === requestId) {
-          setImage(imageData);
-          setError(null);
-        }
-      } catch (err) {
-        if (lastRequestRef.current === requestId) {
-          setError(err instanceof Error ? err.message : 'Rendering failed');
+        if (!code || !code.trim() || !drawingType) {
           setImage('');
-        }
-      } finally {
-        if (lastRequestRef.current === requestId) {
           setLoading(false);
+          setError(null);
+          return;
         }
-      }
-    }, 500);
+
+        setLoading(true);
+        setError(null);
+
+        try {
+          const imageData = await renderCodeDrawing(drawingType as any, code);
+
+          // Only update if this is still the latest request
+          if (lastRequestRef.current === requestId) {
+            setImage(imageData);
+            setError(null);
+          }
+        } catch (err) {
+          if (lastRequestRef.current === requestId) {
+            setError(err instanceof Error ? err.message : 'Rendering failed');
+            setImage('');
+          }
+        } finally {
+          if (lastRequestRef.current === requestId) {
+            setLoading(false);
+          }
+        }
+      }, RENDER_DEBOUNCE_DELAY),
+    []
+  );
+
+  React.useEffect(() => {
+    debouncedRender(element.data?.code, element.data?.drawingType);
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      debouncedRender.cancel();
     };
-  }, [element.data?.code, element.data?.drawingType]);
+  }, [element.data?.code, element.data?.drawingType, debouncedRender]);
 
   // Update node data - following excalidraw pattern with single callback
   const updateNode = React.useCallback(
