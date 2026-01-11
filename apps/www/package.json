@@ -58,6 +58,7 @@
     "@platejs/callout": "workspace:^",
     "@platejs/caption": "workspace:^",
     "@platejs/code-block": "workspace:^",
+    "@platejs/code-drawing": "workspace:^",
     "@platejs/combobox": "workspace:^",
     "@platejs/comment": "workspace:^",
     "@platejs/csv": "workspace:^",
