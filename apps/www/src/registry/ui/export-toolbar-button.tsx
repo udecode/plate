@@ -4,10 +4,34 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import {
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+} from '@platejs/basic-nodes';
+import {
+  BaseCodeBlockPlugin,
+  BaseCodeLinePlugin,
+  BaseCodeSyntaxPlugin,
+} from '@platejs/code-block';
 import { exportToDocx } from '@platejs/docx';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { BaseImagePlugin } from '@platejs/media';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
+import { BaseTocPlugin } from '@platejs/toc';
+import { all, createLowlight } from 'lowlight';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import { createSlateEditor } from 'platejs';
+import type { AnySlatePlugin } from 'platejs';
+
+import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -19,20 +43,70 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { BaseBasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-base-kit';
-import { DocxBasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-docx-kit';
-import { BaseCodeBlockKit } from '@/registry/components/editor/plugins/code-block-base-kit';
-import { DocxCodeBlockKit } from '@/registry/components/editor/plugins/code-block-docx-kit';
-import { BaseMediaKit } from '@/registry/components/editor/plugins/media-base-kit';
-import { DocxMediaKit } from '@/registry/components/editor/plugins/media-docx-kit';
-import { BaseTableKit } from '@/registry/components/editor/plugins/table-base-kit';
-import { DocxTableKit } from '@/registry/components/editor/plugins/table-docx-kit';
-import { DocxTocKit } from '@/registry/components/editor/plugins/toc-docx-kit';
+import {
+  CodeBlockElementStaticDocx,
+  CodeLineElementStaticDocx,
+  CodeSyntaxLeafStaticDocx,
+} from '@/registry/ui/code-block-node-static-docx';
+import {
+  H1ElementStaticDocx,
+  H2ElementStaticDocx,
+  H3ElementStaticDocx,
+  H4ElementStaticDocx,
+  H5ElementStaticDocx,
+  H6ElementStaticDocx,
+} from '@/registry/ui/heading-node-static-docx';
+import { ImageElementStaticDocx } from '@/registry/ui/media-image-node-static-docx';
+import { ParagraphElementStaticDocx } from '@/registry/ui/paragraph-node-static-docx';
+import {
+  TableCellElementStaticDocx,
+  TableCellHeaderElementStaticDocx,
+  TableElementStaticDocx,
+  TableRowElementStaticDocx,
+} from '@/registry/ui/table-node-static-docx';
+import { TocElementStaticDocx } from '@/registry/ui/toc-node-static-docx';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
+
+// DOCX-compatible plugin configurations
+const lowlight = createLowlight(all);
+
+const DocxPlugins: Record<string, AnySlatePlugin> = {
+  [BaseCodeBlockPlugin.key]: BaseCodeBlockPlugin.configure({
+    node: { component: CodeBlockElementStaticDocx },
+    options: { lowlight },
+  }),
+  [BaseCodeLinePlugin.key]: BaseCodeLinePlugin.withComponent(
+    CodeLineElementStaticDocx
+  ),
+  [BaseCodeSyntaxPlugin.key]: BaseCodeSyntaxPlugin.withComponent(
+    CodeSyntaxLeafStaticDocx
+  ),
+  [BaseH1Plugin.key]: BaseH1Plugin.withComponent(H1ElementStaticDocx),
+  [BaseH2Plugin.key]: BaseH2Plugin.withComponent(H2ElementStaticDocx),
+  [BaseH3Plugin.key]: BaseH3Plugin.withComponent(H3ElementStaticDocx),
+  [BaseH4Plugin.key]: BaseH4Plugin.withComponent(H4ElementStaticDocx),
+  [BaseH5Plugin.key]: BaseH5Plugin.withComponent(H5ElementStaticDocx),
+  [BaseH6Plugin.key]: BaseH6Plugin.withComponent(H6ElementStaticDocx),
+  [BaseImagePlugin.key]: BaseImagePlugin.withComponent(ImageElementStaticDocx),
+  [BaseParagraphPlugin.key]: BaseParagraphPlugin.withComponent(
+    ParagraphElementStaticDocx
+  ),
+  [BaseTableCellHeaderPlugin.key]: BaseTableCellHeaderPlugin.withComponent(
+    TableCellHeaderElementStaticDocx
+  ),
+  [BaseTableCellPlugin.key]: BaseTableCellPlugin.withComponent(
+    TableCellElementStaticDocx
+  ),
+  [BaseTablePlugin.key]: BaseTablePlugin.withComponent(TableElementStaticDocx),
+  [BaseTableRowPlugin.key]: BaseTableRowPlugin.withComponent(
+    TableRowElementStaticDocx
+  ),
+  [BaseTocPlugin.key]: BaseTocPlugin.withComponent(TocElementStaticDocx),
+};
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -158,35 +232,10 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
-    // Replace components with DOCX-compatible versions for proper export
-    const docxEditorKit = BaseEditorKit.map((plugin) => {
-      // Swap table plugins
-      const tableKitKeys = BaseTableKit.map((p) => p.key);
-      if (tableKitKeys.includes(plugin.key)) {
-        return DocxTableKit.find((p) => p.key === plugin.key) || plugin;
-      }
-      // Swap TOC and heading plugins (headings with bookmark anchors for TOC internal links)
-      const tocKitKeys = DocxTocKit.map((p) => p.key);
-      if (tocKitKeys.includes(plugin.key)) {
-        return DocxTocKit.find((p) => p.key === plugin.key) || plugin;
-      }
-      // Swap basic blocks (paragraph uses <p> instead of <div> to fix inline link handling)
-      const basicBlocksKitKeys = BaseBasicBlocksKit.map((p) => p.key);
-      if (basicBlocksKitKeys.includes(plugin.key)) {
-        return DocxBasicBlocksKit.find((p) => p.key === plugin.key) || plugin;
-      }
-      // Swap code block plugins (inline styles for syntax highlighting)
-      const codeBlockKitKeys = BaseCodeBlockKit.map((p) => p.key);
-      if (codeBlockKitKeys.includes(plugin.key)) {
-        return DocxCodeBlockKit.find((p) => p.key === plugin.key) || plugin;
-      }
-      // Swap media plugins (images with inline styles)
-      const mediaKitKeys = BaseMediaKit.map((p) => p.key);
-      if (mediaKitKeys.includes(plugin.key)) {
-        return DocxMediaKit.find((p) => p.key === plugin.key) || plugin;
-      }
-      return plugin;
-    });
+    // Replace plugins with DOCX-compatible versions
+    const docxEditorKit = BaseEditorKit.map(
+      (plugin) => DocxPlugins[plugin.key] || plugin
+    );
 
     const blob = await exportToDocx(editor.children, {
       editorPlugins: docxEditorKit,
