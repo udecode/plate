@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { exportToDocx } from '@platejs/docx';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createSlateEditor } from 'platejs';
@@ -18,6 +19,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { BaseBasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-base-kit';
+import { DocxBasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-docx-kit';
+import { BaseCodeBlockKit } from '@/registry/components/editor/plugins/code-block-base-kit';
+import { DocxCodeBlockKit } from '@/registry/components/editor/plugins/code-block-docx-kit';
+import { BaseTableKit } from '@/registry/components/editor/plugins/table-base-kit';
+import { DocxTableKit } from '@/registry/components/editor/plugins/table-docx-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -147,6 +154,43 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
     await downloadFile(url, 'plate.md');
   };
 
+  const exportToWord = async () => {
+    // Replace components with DOCX-compatible versions for proper export
+    const docxEditorKit = BaseEditorKit.map((plugin) => {
+      // Swap table plugins
+      const tableKitKeys = BaseTableKit.map((p) => p.key);
+      if (tableKitKeys.includes(plugin.key)) {
+        const docxPlugin = DocxTableKit.find((p) => p.key === plugin.key);
+        return docxPlugin || plugin;
+      }
+      // Swap basic blocks (paragraph uses <p> instead of <div> to fix inline link handling)
+      const basicBlocksKitKeys = BaseBasicBlocksKit.map((p) => p.key);
+      if (basicBlocksKitKeys.includes(plugin.key)) {
+        const docxPlugin = DocxBasicBlocksKit.find((p) => p.key === plugin.key);
+        return docxPlugin || plugin;
+      }
+      // Swap code block plugins (inline styles for syntax highlighting)
+      const codeBlockKitKeys = BaseCodeBlockKit.map((p) => p.key);
+      if (codeBlockKitKeys.includes(plugin.key)) {
+        const docxPlugin = DocxCodeBlockKit.find((p) => p.key === plugin.key);
+        return docxPlugin || plugin;
+      }
+      return plugin;
+    });
+
+    const blob = await exportToDocx(editor.children, {
+      editorPlugins: docxEditorKit,
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'plate.docx';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
@@ -168,6 +212,9 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={exportToMarkdown}>
             Export as Markdown
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={exportToWord}>
+            Export as Word
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

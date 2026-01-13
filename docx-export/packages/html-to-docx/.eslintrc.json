@@ -1,0 +1,12 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2021
+  },
+  "extends": ["airbnb-base", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "default-case": "off"
+  },
+  "ignorePatterns": "dist/**/*.js"
+}
