@@ -23,8 +23,11 @@ import { BaseBasicBlocksKit } from '@/registry/components/editor/plugins/basic-b
 import { DocxBasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-docx-kit';
 import { BaseCodeBlockKit } from '@/registry/components/editor/plugins/code-block-base-kit';
 import { DocxCodeBlockKit } from '@/registry/components/editor/plugins/code-block-docx-kit';
+import { BaseMediaKit } from '@/registry/components/editor/plugins/media-base-kit';
+import { DocxMediaKit } from '@/registry/components/editor/plugins/media-docx-kit';
 import { BaseTableKit } from '@/registry/components/editor/plugins/table-base-kit';
 import { DocxTableKit } from '@/registry/components/editor/plugins/table-docx-kit';
+import { DocxTocKit } from '@/registry/components/editor/plugins/toc-docx-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -160,20 +163,27 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
       // Swap table plugins
       const tableKitKeys = BaseTableKit.map((p) => p.key);
       if (tableKitKeys.includes(plugin.key)) {
-        const docxPlugin = DocxTableKit.find((p) => p.key === plugin.key);
-        return docxPlugin || plugin;
+        return DocxTableKit.find((p) => p.key === plugin.key) || plugin;
+      }
+      // Swap TOC and heading plugins (headings with bookmark anchors for TOC internal links)
+      const tocKitKeys = DocxTocKit.map((p) => p.key);
+      if (tocKitKeys.includes(plugin.key)) {
+        return DocxTocKit.find((p) => p.key === plugin.key) || plugin;
       }
       // Swap basic blocks (paragraph uses <p> instead of <div> to fix inline link handling)
       const basicBlocksKitKeys = BaseBasicBlocksKit.map((p) => p.key);
       if (basicBlocksKitKeys.includes(plugin.key)) {
-        const docxPlugin = DocxBasicBlocksKit.find((p) => p.key === plugin.key);
-        return docxPlugin || plugin;
+        return DocxBasicBlocksKit.find((p) => p.key === plugin.key) || plugin;
       }
       // Swap code block plugins (inline styles for syntax highlighting)
       const codeBlockKitKeys = BaseCodeBlockKit.map((p) => p.key);
       if (codeBlockKitKeys.includes(plugin.key)) {
-        const docxPlugin = DocxCodeBlockKit.find((p) => p.key === plugin.key);
-        return docxPlugin || plugin;
+        return DocxCodeBlockKit.find((p) => p.key === plugin.key) || plugin;
+      }
+      // Swap media plugins (images with inline styles)
+      const mediaKitKeys = BaseMediaKit.map((p) => p.key);
+      if (mediaKitKeys.includes(plugin.key)) {
+        return DocxMediaKit.find((p) => p.key === plugin.key) || plugin;
       }
       return plugin;
     });
@@ -181,6 +191,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
     const blob = await exportToDocx(editor.children, {
       editorPlugins: docxEditorKit,
     });
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

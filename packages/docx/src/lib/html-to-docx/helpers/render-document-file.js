@@ -29,15 +29,65 @@ export const buildImage = async (
   let base64Uri = null;
   try {
     const imageSource = vNode.properties.src;
+
+    // Skip WebP images - Word doesn't support WebP format
+    if (
+      imageSource &&
+      (imageSource.includes('.webp') || imageSource.includes('image/webp'))
+    ) {
+      return null;
+    }
+
     if (isValidUrl(imageSource)) {
-      const base64String = await imageToBase64(imageSource).catch((error) => {
-        console.warn(
-          `skipping image download and conversion due to ${error}`
-        );
-      });
+      const base64String = await imageToBase64(imageSource).catch(() => {});
 
       if (base64String) {
-        base64Uri = `data:${mimeTypes.lookup(imageSource)};base64, ${base64String}`;
+        // Try to get MIME type from URL extension first
+        let mimeType = mimeTypes.lookup(imageSource);
+
+        // Skip WebP images even if detected from extension
+        if (mimeType === 'image/webp') {
+          return null;
+        }
+
+        // If no extension or couldn't determine MIME type, detect from magic bytes
+        if (!mimeType) {
+          const binaryStr = atob(base64String.substring(0, 16));
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          // Check magic bytes
+          if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+            mimeType = 'image/jpeg';
+          } else if (
+            bytes[0] === 0x89 &&
+            bytes[1] === 0x50 &&
+            bytes[2] === 0x4e &&
+            bytes[3] === 0x47
+          ) {
+            mimeType = 'image/png';
+          } else if (
+            bytes[0] === 0x47 &&
+            bytes[1] === 0x49 &&
+            bytes[2] === 0x46
+          ) {
+            mimeType = 'image/gif';
+          } else if (
+            bytes[0] === 0x52 &&
+            bytes[1] === 0x49 &&
+            bytes[2] === 0x46 &&
+            bytes[3] === 0x46
+          ) {
+            // WebP detected - skip it as Word doesn't support WebP
+            return null;
+          } else {
+            // Default to JPEG for unknown formats
+            mimeType = 'image/jpeg';
+          }
+        }
+
+        base64Uri = `data:${mimeType};base64,${base64String}`;
       }
     } else {
       base64Uri = decodeURIComponent(vNode.properties.src);
@@ -217,10 +267,39 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
     case 'h4':
     case 'h5':
     case 'h6': {
+      // Check if the heading has a bookmark anchor (an <a> with id but no href)
+      let bookmarkId = null;
+      let headingVNode = vNode;
+      if (vNodeHasChildren(vNode) && vNode.children.length > 0) {
+        const firstChild = vNode.children[0];
+        // Check both properties.id and properties.attributes.id for the bookmark anchor
+        const anchorId =
+          firstChild.properties?.id || firstChild.properties?.attributes?.id;
+        const hasHref =
+          firstChild.properties?.href ||
+          firstChild.properties?.attributes?.href;
+
+        if (
+          isVNode(firstChild) &&
+          firstChild.tagName === 'a' &&
+          anchorId &&
+          !hasHref
+        ) {
+          bookmarkId = anchorId;
+          // Create a modified vNode without the bookmark anchor
+          headingVNode = new VNode(
+            vNode.tagName,
+            vNode.properties,
+            vNode.children.slice(1)
+          );
+        }
+      }
+
       const headingFragment = await xmlBuilder.buildParagraph(
-        vNode,
+        headingVNode,
         {
           paragraphStyle: `Heading${vNode.tagName[1]}`,
+          bookmarkId,
         },
         docxDocumentInstance
       );
@@ -240,7 +319,46 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
     case 'sub':
     case 'sup':
     case 'mark':
-    case 'p':
+    case 'p': {
+      // Check if paragraph contains list children (ul/ol)
+      // If so, process them separately as lists
+      if (vNodeHasChildren(vNode)) {
+        const listChildren = vNode.children.filter(
+          (child) => isVNode(child) && ['ul', 'ol'].includes(child.tagName)
+        );
+        if (listChildren.length > 0) {
+          // Process non-list children as paragraph content first
+          const nonListChildren = vNode.children.filter(
+            (child) => !isVNode(child) || !['ul', 'ol'].includes(child.tagName)
+          );
+          if (nonListChildren.length > 0) {
+            const modifiedVNode = new VNode(
+              vNode.tagName,
+              vNode.properties,
+              nonListChildren
+            );
+            const paragraphFragment = await xmlBuilder.buildParagraph(
+              modifiedVNode,
+              {},
+              docxDocumentInstance
+            );
+            xmlFragment.import(paragraphFragment);
+          }
+          // Process list children separately
+          for (const listChild of listChildren) {
+            await buildList(listChild, docxDocumentInstance, xmlFragment);
+          }
+          return;
+        }
+      }
+      const paragraphFragment = await xmlBuilder.buildParagraph(
+        vNode,
+        {},
+        docxDocumentInstance
+      );
+      xmlFragment.import(paragraphFragment);
+      return;
+    }
     case 'a':
     case 'blockquote':
     case 'code':

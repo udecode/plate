@@ -289,7 +289,84 @@ class DocxDocument {
         );
     }
 
-    return documentXML.toString({ prettyPrint: true });
+    let xmlString = documentXML.toString({ prettyPrint: true });
+
+    // Fix namespace prefixes for drawing elements
+    // xmlbuilder2 doesn't correctly preserve namespace prefixes when importing fragments
+    // so we need to post-process the XML string to fix them
+
+    // wp: (wordprocessingDrawing) elements
+    const wpElements = [
+      'inline',
+      'anchor',
+      'simplePos',
+      'positionH',
+      'positionV',
+      'posOffset',
+      'extent',
+      'effectExtent',
+      'wrapNone',
+      'wrapSquare',
+      'wrapTight',
+      'wrapThrough',
+      'docPr',
+    ];
+    wpElements.forEach((el) => {
+      xmlString = xmlString.replace(
+        new RegExp(`<w:${el}([ />])`, 'g'),
+        `<wp:${el}$1`
+      );
+      xmlString = xmlString.replace(
+        new RegExp(`</w:${el}>`, 'g'),
+        `</wp:${el}>`
+      );
+    });
+
+    // a: (drawingML main) elements
+    const aElements = [
+      'graphic',
+      'graphicData',
+      'blip',
+      'srcRect',
+      'stretch',
+      'fillRect',
+      'xfrm',
+      'off',
+      'ext',
+      'prstGeom',
+    ];
+    aElements.forEach((el) => {
+      xmlString = xmlString.replace(
+        new RegExp(`<w:${el}([ />])`, 'g'),
+        `<a:${el}$1`
+      );
+      xmlString = xmlString.replace(
+        new RegExp(`</w:${el}>`, 'g'),
+        `</a:${el}>`
+      );
+    });
+
+    // pic: (picture) elements
+    const picElements = [
+      'pic',
+      'nvPicPr',
+      'cNvPr',
+      'cNvPicPr',
+      'blipFill',
+      'spPr',
+    ];
+    picElements.forEach((el) => {
+      xmlString = xmlString.replace(
+        new RegExp(`<w:${el}([ />])`, 'g'),
+        `<pic:${el}$1`
+      );
+      xmlString = xmlString.replace(
+        new RegExp(`</w:${el}>`, 'g'),
+        `</pic:${el}>`
+      );
+    });
+
+    return xmlString;
   }
 
   generateCoreXML() {

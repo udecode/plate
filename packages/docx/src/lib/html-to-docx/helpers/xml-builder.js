@@ -694,16 +694,34 @@ const buildRunOrRuns = async (vNode, attributes, docxDocumentInstance) => {
 
 const buildRunOrHyperLink = async (vNode, attributes, docxDocumentInstance) => {
   if (isVNode(vNode) && vNode.tagName === 'a') {
-    const relationshipId = docxDocumentInstance.createDocumentRelationships(
-      docxDocumentInstance.relationshipFilename,
-      hyperlinkType,
-      vNode.properties && vNode.properties.href ? vNode.properties.href : ''
-    );
-    const hyperlinkFragment = fragment({
-      namespaceAlias: { w: namespaces.w, r: namespaces.r },
-    })
-      .ele('@w', 'hyperlink')
-      .att('@r', 'id', `rId${relationshipId}`);
+    const href =
+      vNode.properties && vNode.properties.href ? vNode.properties.href : '';
+
+    // Check if this is an internal link (starts with #)
+    const isInternalLink = href.startsWith('#');
+
+    let hyperlinkFragment;
+    if (isInternalLink) {
+      // For internal links, use w:anchor attribute instead of r:id
+      const anchorName = href.substring(1); // Remove the # prefix
+      hyperlinkFragment = fragment({
+        namespaceAlias: { w: namespaces.w },
+      })
+        .ele('@w', 'hyperlink')
+        .att('@w', 'anchor', anchorName);
+    } else {
+      // For external links, use relationship id
+      const relationshipId = docxDocumentInstance.createDocumentRelationships(
+        docxDocumentInstance.relationshipFilename,
+        hyperlinkType,
+        href
+      );
+      hyperlinkFragment = fragment({
+        namespaceAlias: { w: namespaces.w, r: namespaces.r },
+      })
+        .ele('@w', 'hyperlink')
+        .att('@r', 'id', `rId${relationshipId}`);
+    }
 
     const modifiedAttributes = { ...attributes };
     modifiedAttributes.hyperlink = true;
@@ -980,6 +998,9 @@ const computeImageDimensions = (vNode, attributes) => {
   attributes.height = modifiedHeight;
 };
 
+// Track bookmark IDs globally to ensure unique IDs across the document
+let globalBookmarkIdCounter = 0;
+
 const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
   const paragraphFragment = fragment({
     namespaceAlias: { w: namespaces.w },
@@ -995,6 +1016,21 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
   const paragraphPropertiesFragment =
     buildParagraphProperties(modifiedAttributes);
   paragraphFragment.import(paragraphPropertiesFragment);
+
+  // Add bookmark start if bookmarkId is provided
+  const bookmarkId = attributes && attributes.bookmarkId;
+  let bookmarkNumericId = null;
+  if (bookmarkId) {
+    bookmarkNumericId = globalBookmarkIdCounter++;
+    const bookmarkStartFragment = fragment({
+      namespaceAlias: { w: namespaces.w },
+    })
+      .ele('@w', 'bookmarkStart')
+      .att('@w', 'id', String(bookmarkNumericId))
+      .att('@w', 'name', bookmarkId)
+      .up();
+    paragraphFragment.import(bookmarkStartFragment);
+  }
   if (isVNode(vNode) && vNodeHasChildren(vNode)) {
     if (
       [
@@ -1047,37 +1083,85 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
       for (let index = 0; index < vNode.children.length; index++) {
         const childVNode = vNode.children[index];
         if (childVNode.tagName === 'img') {
-          console.log('[DOCX buildParagraph] Found img child, src:', childVNode.properties.src?.substring(0, 80));
           let base64String;
           const imageSource = childVNode.properties.src;
-          if (isValidUrl(imageSource)) {
-            console.log('[DOCX buildParagraph] Valid URL, fetching...');
-            base64String = await imageToBase64(imageSource).catch((error) => {
-              console.warn(
-                `[DOCX buildParagraph] skipping image download: ${error}`
-              );
-            });
 
-            if (base64String && mimeTypes.lookup(imageSource)) {
-              childVNode.properties.src = `data:${mimeTypes.lookup(
-                imageSource
-              )};base64,${base64String}`;
-              console.log('[DOCX buildParagraph] Converted to base64');
+          // Skip WebP images - Word doesn't support WebP format
+          if (
+            imageSource &&
+            (imageSource.includes('.webp') ||
+              imageSource.includes('image/webp'))
+          ) {
+            continue;
+          }
+
+          if (isValidUrl(imageSource)) {
+            base64String = await imageToBase64(imageSource).catch(() => {});
+
+            if (base64String) {
+              // Try to get MIME type from URL extension first
+              let mimeType = mimeTypes.lookup(imageSource);
+
+              // Skip WebP images even if detected from extension
+              if (mimeType === 'image/webp') {
+                continue;
+              }
+
+              // If no extension, detect MIME type from base64 data
+              if (!mimeType) {
+                const binaryStr = atob(base64String.substring(0, 16));
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) {
+                  bytes[i] = binaryStr.charCodeAt(i);
+                }
+                // Check magic bytes
+                if (
+                  bytes[0] === 0xff &&
+                  bytes[1] === 0xd8 &&
+                  bytes[2] === 0xff
+                ) {
+                  mimeType = 'image/jpeg';
+                } else if (
+                  bytes[0] === 0x89 &&
+                  bytes[1] === 0x50 &&
+                  bytes[2] === 0x4e &&
+                  bytes[3] === 0x47
+                ) {
+                  mimeType = 'image/png';
+                } else if (
+                  bytes[0] === 0x47 &&
+                  bytes[1] === 0x49 &&
+                  bytes[2] === 0x46
+                ) {
+                  mimeType = 'image/gif';
+                } else if (
+                  bytes[0] === 0x52 &&
+                  bytes[1] === 0x49 &&
+                  bytes[2] === 0x46 &&
+                  bytes[3] === 0x46
+                ) {
+                  // WebP detected - skip it as Word doesn't support WebP
+                  continue;
+                } else {
+                  // Default to JPEG for unknown formats
+                  mimeType = 'image/jpeg';
+                }
+              }
+
+              childVNode.properties.src = `data:${mimeType};base64,${base64String}`;
             } else {
-              console.warn('[DOCX buildParagraph] No base64 or mime type, skipping');
               break;
             }
           } else if (imageSource?.startsWith('data:')) {
-            console.log('[DOCX buildParagraph] Already data URI');
-            const match = imageSource.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+            const match = imageSource.match(
+              /^data:([A-Za-z-+/]+);base64,(.+)$/
+            );
             if (match) {
               base64String = match[2];
             } else {
-              console.warn('[DOCX buildParagraph] Invalid data URI format');
               break;
             }
           } else {
-            console.warn('[DOCX buildParagraph] Unknown image source format');
             break;
           }
 
@@ -1129,19 +1213,71 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
     // Or in case the vNode is something like img
     if (isVNode(vNode) && vNode.tagName === 'img') {
       const imageSource = vNode.properties.src;
+
+      // Skip WebP images - Word doesn't support WebP format
+      if (
+        imageSource &&
+        (imageSource.includes('.webp') || imageSource.includes('image/webp'))
+      ) {
+        paragraphFragment.up();
+        return paragraphFragment;
+      }
+
       let base64String = imageSource;
       if (isValidUrl(imageSource)) {
-        base64String = await imageToBase64(imageSource).catch((error) => {
-          console.warning(
-            `skipping image download and conversion due to ${error}`
-          );
-        });
+        base64String = await imageToBase64(imageSource).catch(() => {});
 
-        if (base64String && mimeTypes.lookup(imageSource)) {
-          vNode.properties.src = `data:${mimeTypes.lookup(imageSource)};base64, ${base64String}`;
+        if (base64String) {
+          // Try to get MIME type from URL extension first
+          let mimeType = mimeTypes.lookup(imageSource);
+
+          // Skip WebP images even if detected from extension
+          if (mimeType === 'image/webp') {
+            paragraphFragment.up();
+            return paragraphFragment;
+          }
+
+          // If no extension or couldn't determine MIME type, detect from magic bytes
+          if (!mimeType) {
+            const binaryStr = atob(base64String.substring(0, 16));
+            const bytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+              bytes[i] = binaryStr.charCodeAt(i);
+            }
+            // Check magic bytes
+            if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+              mimeType = 'image/jpeg';
+            } else if (
+              bytes[0] === 0x89 &&
+              bytes[1] === 0x50 &&
+              bytes[2] === 0x4e &&
+              bytes[3] === 0x47
+            ) {
+              mimeType = 'image/png';
+            } else if (
+              bytes[0] === 0x47 &&
+              bytes[1] === 0x49 &&
+              bytes[2] === 0x46
+            ) {
+              mimeType = 'image/gif';
+            } else if (
+              bytes[0] === 0x52 &&
+              bytes[1] === 0x49 &&
+              bytes[2] === 0x46 &&
+              bytes[3] === 0x46
+            ) {
+              // WebP detected - skip it
+              paragraphFragment.up();
+              return paragraphFragment;
+            } else {
+              // Default to JPEG for unknown formats
+              mimeType = 'image/jpeg';
+            }
+          }
+
+          vNode.properties.src = `data:${mimeType};base64,${base64String}`;
         } else {
           paragraphFragment.up();
-
           return paragraphFragment;
         }
       } else {
@@ -1150,11 +1286,13 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
         )[2];
       }
 
-      const imageBuffer = Buffer.from(
-        decodeURIComponent(base64String),
-        'base64'
-      );
-      const imageProperties = getImageDimensions(imageBuffer);
+      // Convert base64 to Uint8Array for browser compatibility
+      const binaryString = atob(decodeURIComponent(base64String));
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const imageProperties = getImageDimensions(bytes);
 
       modifiedAttributes.maximumWidth =
         modifiedAttributes.maximumWidth ||
@@ -1179,6 +1317,18 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
       paragraphFragment.import(runFragments);
     }
   }
+
+  // Add bookmark end if bookmarkId was provided
+  if (bookmarkId && bookmarkNumericId !== null) {
+    const bookmarkEndFragment = fragment({
+      namespaceAlias: { w: namespaces.w },
+    })
+      .ele('@w', 'bookmarkEnd')
+      .att('@w', 'id', String(bookmarkNumericId))
+      .up();
+    paragraphFragment.import(bookmarkEndFragment);
+  }
+
   paragraphFragment.up();
 
   return paragraphFragment;
@@ -2077,30 +2227,39 @@ const buildTable = async (vNode, attributes, docxDocumentInstance) => {
   return tableFragment;
 };
 
+// Common namespace aliases for all drawing-related elements
+const drawingNamespaces = {
+  w: namespaces.w,
+  wp: namespaces.wp,
+  a: namespaces.a,
+  pic: namespaces.pic,
+  r: namespaces.r,
+};
+
 const buildPresetGeometry = () =>
-  fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'prstGeom')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'prstGeom')
     .att('prst', 'rect')
     .up();
 
 const buildExtents = ({ width, height }) =>
-  fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'ext')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'ext')
     .att('cx', width)
     .att('cy', height)
     .up();
 
 const buildOffset = () =>
-  fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'off')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'off')
     .att('x', '0')
     .att('y', '0')
     .up();
 
 const buildGraphicFrameTransform = (attributes) => {
   const graphicFrameTransformFragment = fragment({
-    namespaceAlias: { a: namespaces.a },
-  }).ele('@a', 'xfrm');
+    namespaceAlias: drawingNamespaces,
+  }).ele(namespaces.a, 'xfrm');
 
   const offsetFragment = buildOffset();
   graphicFrameTransformFragment.import(offsetFragment);
@@ -2114,8 +2273,8 @@ const buildGraphicFrameTransform = (attributes) => {
 
 const buildShapeProperties = (attributes) => {
   const shapeProperties = fragment({
-    namespaceAlias: { pic: namespaces.pic },
-  }).ele('@pic', 'spPr');
+    namespaceAlias: drawingNamespaces,
+  }).ele(namespaces.pic, 'spPr');
 
   const graphicFrameTransformFragment = buildGraphicFrameTransform(attributes);
   shapeProperties.import(graphicFrameTransformFragment);
@@ -2128,13 +2287,13 @@ const buildShapeProperties = (attributes) => {
 };
 
 const buildFillRect = () =>
-  fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'fillRect')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'fillRect')
     .up();
 
 const buildStretch = () => {
-  const stretchFragment = fragment({ namespaceAlias: { a: namespaces.a } }).ele(
-    '@a',
+  const stretchFragment = fragment({ namespaceAlias: drawingNamespaces }).ele(
+    namespaces.a,
     'stretch'
   );
 
@@ -2147,8 +2306,8 @@ const buildStretch = () => {
 };
 
 const buildSrcRectFragment = () =>
-  fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'srcRect')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'srcRect')
     .att('b', '0')
     .att('l', '0')
     .att('r', '0')
@@ -2157,18 +2316,18 @@ const buildSrcRectFragment = () =>
 
 const buildBinaryLargeImageOrPicture = (relationshipId) =>
   fragment({
-    namespaceAlias: { a: namespaces.a, r: namespaces.r },
+    namespaceAlias: drawingNamespaces,
   })
-    .ele('@a', 'blip')
-    .att('@r', 'embed', `rId${relationshipId}`)
+    .ele(namespaces.a, 'blip')
+    .att(namespaces.r, 'embed', `rId${relationshipId}`)
     // FIXME: possible values 'email', 'none', 'print', 'hqprint', 'screen'
     .att('cstate', 'print')
     .up();
 
 const buildBinaryLargeImageOrPictureFill = (relationshipId) => {
   const binaryLargeImageOrPictureFillFragment = fragment({
-    namespaceAlias: { pic: namespaces.pic },
-  }).ele('@pic', 'blipFill');
+    namespaceAlias: drawingNamespaces,
+  }).ele(namespaces.pic, 'blipFill');
   const binaryLargeImageOrPictureFragment =
     buildBinaryLargeImageOrPicture(relationshipId);
   binaryLargeImageOrPictureFillFragment.import(
@@ -2185,8 +2344,8 @@ const buildBinaryLargeImageOrPictureFill = (relationshipId) => {
 };
 
 const buildNonVisualPictureDrawingProperties = () =>
-  fragment({ namespaceAlias: { pic: namespaces.pic } })
-    .ele('@pic', 'cNvPicPr')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.pic, 'cNvPicPr')
     .up();
 
 const buildNonVisualDrawingProperties = (
@@ -2194,8 +2353,8 @@ const buildNonVisualDrawingProperties = (
   pictureNameWithExtension,
   pictureDescription = ''
 ) =>
-  fragment({ namespaceAlias: { pic: namespaces.pic } })
-    .ele('@pic', 'cNvPr')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.pic, 'cNvPr')
     .att('id', pictureId)
     .att('name', pictureNameWithExtension)
     .att('descr', pictureDescription)
@@ -2207,8 +2366,8 @@ const buildNonVisualPictureProperties = (
   pictureDescription
 ) => {
   const nonVisualPicturePropertiesFragment = fragment({
-    namespaceAlias: { pic: namespaces.pic },
-  }).ele('@pic', 'nvPicPr');
+    namespaceAlias: drawingNamespaces,
+  }).ele(namespaces.pic, 'nvPicPr');
   // TODO: Handle picture attributes
   const nonVisualDrawingPropertiesFragment = buildNonVisualDrawingProperties(
     pictureId,
@@ -2235,8 +2394,8 @@ const buildPicture = ({
   height,
 }) => {
   const pictureFragment = fragment({
-    namespaceAlias: { pic: namespaces.pic },
-  }).ele('@pic', 'pic');
+    namespaceAlias: drawingNamespaces,
+  }).ele(namespaces.pic, 'pic');
   const nonVisualPicturePropertiesFragment = buildNonVisualPictureProperties(
     id,
     fileNameWithExtension,
@@ -2254,8 +2413,8 @@ const buildPicture = ({
 };
 
 const buildGraphicData = (graphicType, attributes) => {
-  const graphicDataFragment = fragment({ namespaceAlias: { a: namespaces.a } })
-    .ele('@a', 'graphicData')
+  const graphicDataFragment = fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.a, 'graphicData')
     .att('uri', 'http://schemas.openxmlformats.org/drawingml/2006/picture');
   if (graphicType === 'picture') {
     const pictureFragment = buildPicture(attributes);
@@ -2267,8 +2426,8 @@ const buildGraphicData = (graphicType, attributes) => {
 };
 
 const buildGraphic = (graphicType, attributes) => {
-  const graphicFragment = fragment({ namespaceAlias: { a: namespaces.a } }).ele(
-    '@a',
+  const graphicFragment = fragment({ namespaceAlias: drawingNamespaces }).ele(
+    namespaces.a,
     'graphic'
   );
   // TODO: Handle drawing type
@@ -2280,15 +2439,15 @@ const buildGraphic = (graphicType, attributes) => {
 };
 
 const buildDrawingObjectNonVisualProperties = (pictureId, pictureName) =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'docPr')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'docPr')
     .att('id', pictureId)
     .att('name', pictureName)
     .up();
 
 const buildWrapSquare = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'wrapSquare')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'wrapSquare')
     .att('wrapText', 'bothSides')
     .att('distB', '228600')
     .att('distT', '228600')
@@ -2297,13 +2456,13 @@ const buildWrapSquare = () =>
     .up();
 
 const buildWrapNone = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'wrapNone')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'wrapNone')
     .up();
 
 const buildEffectExtentFragment = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'effectExtent')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'effectExtent')
     .att('b', '0')
     .att('l', '0')
     .att('r', '0')
@@ -2311,42 +2470,42 @@ const buildEffectExtentFragment = () =>
     .up();
 
 const buildExtent = ({ width, height }) =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'extent')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'extent')
     .att('cx', width)
     .att('cy', height)
     .up();
 
 const buildPositionV = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'positionV')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'positionV')
     .att('relativeFrom', 'paragraph')
-    .ele('@wp', 'posOffset')
+    .ele(namespaces.wp, 'posOffset')
     .txt('19050')
     .up()
     .up();
 
 const buildPositionH = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'positionH')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'positionH')
     .att('relativeFrom', 'column')
-    .ele('@wp', 'posOffset')
+    .ele(namespaces.wp, 'posOffset')
     .txt('19050')
     .up()
     .up();
 
 const buildSimplePos = () =>
-  fragment({ namespaceAlias: { wp: namespaces.wp } })
-    .ele('@wp', 'simplePos')
+  fragment({ namespaceAlias: drawingNamespaces })
+    .ele(namespaces.wp, 'simplePos')
     .att('x', '0')
     .att('y', '0')
     .up();
 
 const buildAnchoredDrawing = (graphicType, attributes) => {
   const anchoredDrawingFragment = fragment({
-    namespaceAlias: { wp: namespaces.wp },
+    namespaceAlias: drawingNamespaces,
   })
-    .ele('@wp', 'anchor')
+    .ele(namespaces.wp, 'anchor')
     .att('distB', '0')
     .att('distL', '0')
     .att('distR', '0')
@@ -2389,9 +2548,9 @@ const buildAnchoredDrawing = (graphicType, attributes) => {
 
 const buildInlineDrawing = (graphicType, attributes) => {
   const inlineDrawingFragment = fragment({
-    namespaceAlias: { wp: namespaces.wp },
+    namespaceAlias: drawingNamespaces,
   })
-    .ele('@wp', 'inline')
+    .ele(namespaces.wp, 'inline')
     .att('distB', '0')
     .att('distL', '0')
     .att('distR', '0')
@@ -2419,10 +2578,10 @@ const buildInlineDrawing = (graphicType, attributes) => {
 };
 
 const buildDrawing = (inlineOrAnchored = false, graphicType, attributes) => {
-  const drawingFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
-    '@w',
-    'drawing'
-  );
+  // Declare all necessary namespaces for drawing elements
+  const drawingFragment = fragment({
+    namespaceAlias: drawingNamespaces,
+  }).ele('@w', 'drawing');
   const inlineOrAnchoredDrawingFragment = inlineOrAnchored
     ? buildInlineDrawing(graphicType, attributes)
     : buildAnchoredDrawing(graphicType, attributes);
