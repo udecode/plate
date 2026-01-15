@@ -29,7 +29,7 @@ class ListStyleBuilder {
   getListPrefixSuffix(style, lvl) {
     let listType = this.defaults.defaultOrderedListStyleType;
 
-    if (style && style['list-style-type']) {
+    if (style?.['list-style-type']) {
       listType = style['list-style-type'];
     }
 
@@ -45,7 +45,6 @@ class ListStyleBuilder {
         return `%${lvl + 1})`;
       case 'decimal-bracket':
         return `(%${lvl + 1})`;
-      case 'decimal':
       default:
         return `%${lvl + 1}.`;
     }

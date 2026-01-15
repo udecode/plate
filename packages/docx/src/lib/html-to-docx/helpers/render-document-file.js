@@ -1,4 +1,6 @@
-/** biome-ignore-all lint/complexity/useOptionalChain: <explanation> */
+/* biome-ignore-all lint/complexity/useOptionalChain: legacy code */
+/* biome-ignore-all lint/style/useForOf: legacy code */
+/* biome-ignore-all lint/nursery/useMaxParams: legacy code */
 import { default as HTMLToVDOM } from 'html-to-vdom';
 import imageToBase64 from '../utils/image-to-base64';
 import { getImageDimensions } from '../utils/image-dimensions';
@@ -14,6 +16,9 @@ import { isValidUrl } from '../utils/url';
 import { vNodeHasChildren } from '../utils/vnode';
 // FIXME: remove the cyclic dependency
 import * as xmlBuilder from './xml-builder';
+
+// Regex for parsing numeric values from margin-left
+const MARGIN_NUMBER_REGEX = /(\d+)/;
 
 const convertHTML = HTMLToVDOM({
   VNode,
@@ -95,7 +100,7 @@ export const buildImage = async (
     if (base64Uri) {
       response = docxDocumentInstance.createMediaFile(base64Uri);
     }
-  } catch (error) {
+  } catch (_error) {
     // NOOP
   }
   if (response) {
@@ -140,18 +145,23 @@ export const buildImage = async (
   }
 };
 
-export const buildList = async (vNode, docxDocumentInstance, xmlFragment) => {
+export const buildList = async (
+  vNode,
+  docxDocumentInstance,
+  xmlFragment,
+  existingNumberingId = null,
+  baseIndentLevel = 0
+) => {
   const listElements = [];
 
   let vNodeObjects = [
     {
       node: vNode,
-      level: 0,
+      level: baseIndentLevel,
       type: vNode.tagName,
-      numberingId: docxDocumentInstance.createNumbering(
-        vNode.tagName,
-        vNode.properties
-      ),
+      numberingId:
+        existingNumberingId ||
+        docxDocumentInstance.createNumbering(vNode.tagName, vNode.properties),
     },
   ];
   while (vNodeObjects.length) {
@@ -195,11 +205,10 @@ export const buildList = async (vNode, docxDocumentInstance, xmlFragment) => {
             });
           } else if (
             accumulator.length > 0 &&
-            isVNode(accumulator[accumulator.length - 1].node) &&
-            accumulator[accumulator.length - 1].node.tagName.toLowerCase() ===
-              'p'
+            isVNode(accumulator.at(-1).node) &&
+            accumulator.at(-1).node.tagName.toLowerCase() === 'p'
           ) {
-            accumulator[accumulator.length - 1].node.children.push(childVNode);
+            accumulator.at(-1).node.children.push(childVNode);
           } else {
             const paragraphVNode = new VNode(
               'p',
@@ -214,16 +223,13 @@ export const buildList = async (vNode, docxDocumentInstance, xmlFragment) => {
                   : []
             );
             accumulator.push({
-              // eslint-disable-next-line prettier/prettier
               node: isVNode(childVNode)
-                ? // eslint-disable-next-line prettier/prettier
-                  childVNode.tagName.toLowerCase() === 'li'
+                ? childVNode.tagName.toLowerCase() === 'li'
                   ? childVNode
                   : childVNode.tagName.toLowerCase() !== 'p'
                     ? paragraphVNode
                     : childVNode
-                : // eslint-disable-next-line prettier/prettier
-                  paragraphVNode,
+                : paragraphVNode,
               level: tempVNodeObject.level,
               type: tempVNodeObject.type,
               numberingId: tempVNodeObject.numberingId,
@@ -242,6 +248,30 @@ export const buildList = async (vNode, docxDocumentInstance, xmlFragment) => {
 };
 
 async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
+  // Check if this element contains list children (for paragraphs that wrap lists)
+  const hasListChildren =
+    vNodeHasChildren(vNode) &&
+    vNode.children.some(
+      (child) => isVNode(child) && ['ul', 'ol'].includes(child.tagName)
+    );
+
+  // Reset list tracking for non-list elements to break consecutive list sequences
+  // But don't reset for container elements that might wrap lists
+  // Also don't reset for paragraphs that contain lists (Plate's list rendering pattern)
+  const containerElements = [
+    'ol',
+    'ul',
+    'html',
+    'body',
+    'div',
+    'section',
+    'article',
+    'main',
+  ];
+  if (!containerElements.includes(vNode.tagName) && !hasListChildren) {
+    resetListTracking();
+  }
+
   if (
     vNode.tagName === 'div' &&
     (vNode.properties.attributes.class === 'page-break' ||
@@ -258,6 +288,37 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
 
     xmlFragment.import(paragraphFragment);
     return;
+  }
+
+  // Handle block equation with OMML
+  if (
+    vNode.tagName === 'div' &&
+    vNode.properties &&
+    vNode.properties.attributes &&
+    vNode.properties.attributes['data-equation-omml']
+  ) {
+    const ommlString = vNode.properties.attributes['data-equation-omml'];
+    try {
+      // Create a paragraph containing the OMML
+      const paragraphFragment = fragment({
+        namespaceAlias: { w: namespaces.w },
+      })
+        .ele('@w', 'p')
+        .ele('@w', 'pPr')
+        .ele('@w', 'jc')
+        .att('@w', 'val', 'center')
+        .up()
+        .up();
+      // Parse and import the OMML
+      const ommlFragment = fragment().ele(ommlString);
+      paragraphFragment.first().import(ommlFragment);
+      paragraphFragment.first().up();
+
+      xmlFragment.import(paragraphFragment);
+      return;
+    } catch {
+      console.warn('Failed to parse OMML for block equation');
+    }
   }
 
   switch (vNode.tagName) {
@@ -306,6 +367,24 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
       xmlFragment.import(headingFragment);
       return;
     }
+    case 'hr': {
+      // Create horizontal rule as a paragraph with bottom border
+      const hrFragment = fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', 'p')
+        .ele('@w', 'pPr')
+        .ele('@w', 'pBdr')
+        .ele('@w', 'bottom')
+        .att('@w', 'val', 'single')
+        .att('@w', 'sz', '6')
+        .att('@w', 'space', '1')
+        .att('@w', 'color', 'auto')
+        .up()
+        .up()
+        .up()
+        .up();
+      xmlFragment.import(hrFragment);
+      return;
+    }
     case 'span':
     case 'strong':
     case 'b':
@@ -344,9 +423,37 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
             );
             xmlFragment.import(paragraphFragment);
           }
-          // Process list children separately
+          // Process list children separately with tracking
+          // Get indent level from parent paragraph
+          const indentLevel = getIndentLevel(vNode);
+
           for (const listChild of listChildren) {
-            await buildList(listChild, docxDocumentInstance, xmlFragment);
+            // Get existing numbering ID for this type+level, if any
+            const { lastListNumberingId: existingId } = getListTracking(
+              listChild.tagName,
+              indentLevel
+            );
+
+            let numberingId;
+            if (existingId !== null) {
+              // Reuse existing numbering for this type+level
+              numberingId = existingId;
+            } else {
+              // Create new numbering for this type+level
+              numberingId = docxDocumentInstance.createNumbering(
+                listChild.tagName,
+                listChild.properties
+              );
+            }
+
+            setListTracking(listChild.tagName, numberingId, indentLevel);
+            await buildList(
+              listChild,
+              docxDocumentInstance,
+              xmlFragment,
+              numberingId,
+              indentLevel
+            );
           }
           return;
         }
@@ -419,9 +526,40 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
       return;
     }
     case 'ol':
-    case 'ul':
-      await buildList(vNode, docxDocumentInstance, xmlFragment);
+    case 'ul': {
+      // Get indent level from the list element
+      const indentLevel = getIndentLevel(vNode);
+
+      // Get existing numbering ID for this type+level, if any
+      const { lastListNumberingId: existingId } = getListTracking(
+        vNode.tagName,
+        indentLevel
+      );
+
+      let numberingId;
+      if (existingId !== null) {
+        // Reuse existing numbering for this type+level
+        numberingId = existingId;
+      } else {
+        // Create a new numbering ID for a new list sequence
+        numberingId = docxDocumentInstance.createNumbering(
+          vNode.tagName,
+          vNode.properties
+        );
+      }
+
+      // Update tracking with indent level
+      setListTracking(vNode.tagName, numberingId, indentLevel);
+
+      await buildList(
+        vNode,
+        docxDocumentInstance,
+        xmlFragment,
+        numberingId,
+        indentLevel
+      );
       return;
+    }
     case 'img': {
       const imageFragment = await buildImage(docxDocumentInstance, vNode);
       if (imageFragment) {
@@ -444,6 +582,34 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
       await convertVTreeToXML(docxDocumentInstance, childVNode, xmlFragment);
     }
   }
+}
+
+// Track consecutive lists to share numbering IDs
+// Use a map to track numbering per indent level: { 'ol_0': id, 'ol_1': id, ... }
+const listNumberingByLevel = new Map();
+let _lastListType = null;
+let _lastIndentLevel = 0;
+
+// Helper to extract indent level from vNode or parent paragraph
+function getIndentLevel(vNode, parentVNode = null) {
+  // Check margin-left style which indicates indent level
+  const marginLeft =
+    vNode?.properties?.style?.['margin-left'] ||
+    parentVNode?.properties?.style?.['margin-left'];
+
+  if (marginLeft) {
+    // Parse margin-left value (e.g., "24px", "48px")
+    const match = marginLeft.match(MARGIN_NUMBER_REGEX);
+    if (match) {
+      const px = Number.parseInt(match[1], 10);
+      // Assuming 24px per indent level in Plate
+      // Subtract 1 because Plate uses indent=1 for first level, but Word uses level=0
+      const plateIndent = Math.round(px / 24);
+      return Math.max(0, plateIndent - 1);
+    }
+  }
+
+  return 0;
 }
 
 export async function convertVTreeToXML(
@@ -472,7 +638,30 @@ export async function convertVTreeToXML(
   return xmlFragment;
 }
 
+export function resetListTracking() {
+  listNumberingByLevel.clear();
+  _lastListType = null;
+  _lastIndentLevel = 0;
+}
+
+export function getListTracking(listType, indentLevel = 0) {
+  const key = `${listType}_${indentLevel}`;
+  return {
+    lastListNumberingId: listNumberingByLevel.get(key) || null,
+  };
+}
+
+export function setListTracking(type, numberingId, indentLevel = 0) {
+  _lastListType = type;
+  _lastIndentLevel = indentLevel;
+  const key = `${type}_${indentLevel}`;
+  listNumberingByLevel.set(key, numberingId);
+}
+
 async function renderDocumentFile(docxDocumentInstance) {
+  // Reset list tracking at the start of each document render
+  resetListTracking();
+
   const vTree = convertHTML(docxDocumentInstance.htmlString);
 
   const xmlFragment = fragment({ namespaceAlias: { w: namespaces.w } });

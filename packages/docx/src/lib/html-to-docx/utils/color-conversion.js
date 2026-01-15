@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 /* eslint-disable no-param-reassign */
 
 export const rgbRegex = /rgb\((\d+),\s*([\d.]+),\s*([\d.]+)\)/i;
@@ -10,7 +11,7 @@ export const rgbToHex = (red, green, blue) => {
   const hexColorCode = [red, green, blue]
     .map((x) => {
       // eslint-disable-next-line radix, no-param-reassign
-      x = Number.parseInt(x).toString(16);
+      x = Number.parseInt(x, 10).toString(16);
       return x.length === 1 ? `0${x}` : x;
     })
     .join('');

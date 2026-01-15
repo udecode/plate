@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import {
@@ -173,11 +174,7 @@ class DocxDocument {
     this.complexScriptFontSize =
       properties.complexScriptFontSize || defaultFontSize;
     this.lang = properties.lang || defaultLang;
-    this.tableRowCantSplit =
-      (properties.table &&
-        properties.table.row &&
-        properties.table.row.cantSplit) ||
-      false;
+    this.tableRowCantSplit = properties.table?.row?.cantSplit || false;
     this.pageNumber = properties.pageNumber || false;
     this.skipFirstHeaderFooter = properties.skipFirstHeaderFooter || false;
     this.lineNumber = properties.lineNumber
@@ -477,7 +474,7 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      [...Array(8).keys()].forEach((level) => {
+      [...new Array(8).keys()].forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
           .att('@w', 'ilvl', level)
@@ -485,11 +482,7 @@ class DocxDocument {
           .att(
             '@w',
             'val',
-            type === 'ol'
-              ? (properties.attributes &&
-                  properties.attributes['data-start']) ||
-                  1
-              : '1'
+            type === 'ol' ? properties.attributes?.['data-start'] || 1 : '1'
           )
           .up()
           .ele('@w', 'numFmt')
@@ -498,7 +491,7 @@ class DocxDocument {
             'val',
             type === 'ol'
               ? this.ListStyleBuilder.getListStyleType(
-                  properties.style && properties.style['list-style-type']
+                  properties.style?.['list-style-type']
                 )
               : 'bullet'
           )
@@ -522,11 +515,11 @@ class DocxDocument {
           .ele('@w', 'tabs')
           .ele('@w', 'tab')
           .att('@w', 'val', 'num')
-          .att('@w', 'pos', (level + 1) * 720)
+          .att('@w', 'pos', level * 360 + 360)
           .up()
           .up()
           .ele('@w', 'ind')
-          .att('@w', 'left', (level + 1) * 720)
+          .att('@w', 'left', level * 360 + 360)
           .att('@w', 'hanging', 360)
           .up()
           .up()
@@ -644,12 +637,7 @@ class DocxDocument {
     };
   }
 
-  createDocumentRelationships(
-    fileName = 'document',
-    type,
-    target,
-    targetMode = 'External'
-  ) {
+  createDocumentRelationships(fileName, type, target, targetMode = 'External') {
     let relationshipObject = this.relationships.find(
       (relationship) => relationship.fileName === fileName
     );

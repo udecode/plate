@@ -6,6 +6,7 @@ const generateDocumentTemplate = (width, height, orientation, margins) => `
     <w:document
         xmlns:a="${namespaces.a}"
         xmlns:cdr="${namespaces.cdr}"
+        xmlns:m="${namespaces.m}"
         xmlns:o="${namespaces.o}"
         xmlns:pic="${namespaces.pic}"
         xmlns:r="${namespaces.r}"

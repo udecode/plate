@@ -1,5 +1,6 @@
 const namespaces = {
   a: 'http://schemas.openxmlformats.org/drawingml/2006/main',
+  m: 'http://schemas.openxmlformats.org/officeDocument/2006/math',
   b: 'http://schemas.openxmlformats.org/officeDocument/2006/bibliography',
   cdr: 'http://schemas.openxmlformats.org/drawingml/2006/chartDrawing',
   dc: 'http://purl.org/dc/elements/1.1/',

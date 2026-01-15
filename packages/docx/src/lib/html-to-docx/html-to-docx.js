@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 import { decode } from 'html-entities';
 // eslint-disable-next-line import/no-named-default
 import { default as HTMLToVDOM } from 'html-to-vdom';

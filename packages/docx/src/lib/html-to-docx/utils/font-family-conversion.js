@@ -13,6 +13,6 @@ export const fontFamilyToTableObject = (fontFamilyString, fallbackFont) => {
 
   return {
     fontName: fontFamilyElements[0],
-    genericFontName: fontFamilyElements[fontFamilyElements.length - 1],
+    genericFontName: fontFamilyElements.at(-1),
   };
 };

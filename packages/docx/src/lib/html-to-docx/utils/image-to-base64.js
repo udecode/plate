@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 /**
  * Browser-compatible image to base64 converter
  * Fetches remote images and converts them to base64

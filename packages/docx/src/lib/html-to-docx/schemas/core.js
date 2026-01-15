@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 import { applicationName } from '../constants';
 import namespaces from '../namespaces';
 

@@ -1,3 +1,7 @@
+/* biome-ignore-all lint/nursery/useMaxParams: legacy code */
+/* biome-ignore-all lint/performance/useTopLevelRegex: legacy code */
+/* biome-ignore-all lint/style/noParameterAssign: legacy code */
+/* biome-ignore-all lint/style/useForOf: legacy code */
 import colorNames from 'color-name';
 import imageToBase64 from '../utils/image-to-base64';
 import { getImageDimensions } from '../utils/image-dimensions';
@@ -199,7 +203,12 @@ const buildBorder = (
     .up();
 
 const buildTextElement = (text) =>
-  fragment({ namespaceAlias: { w: namespaces.w } })
+  fragment({
+    namespaceAlias: {
+      w: namespaces.w,
+      xml: 'http://www.w3.org/XML/1998/namespace',
+    },
+  })
     .ele('@w', 't')
     .att('@xml', 'space', 'preserve')
     .txt(text)
@@ -208,7 +217,7 @@ const buildTextElement = (text) =>
 const fixupLineHeight = (lineHeight, fontSize) => {
   // FIXME: If line height is anything other than a number
 
-  if (isNaN(lineHeight)) {
+  if (Number.isNaN(lineHeight)) {
     // 240 TWIP or 12 point is default line height
     return 240;
   }
@@ -256,22 +265,31 @@ const fixupRowHeight = (rowHeightString) => {
 };
 
 const fixupColumnWidth = (columnWidthString) => {
+  if (!columnWidthString) return null;
+
   if (pointRegex.test(columnWidthString)) {
     const matchedParts = columnWidthString.match(pointRegex);
-    return pointToTWIP(matchedParts[1]);
+    return { value: pointToTWIP(matchedParts[1]), type: 'dxa' };
   }
   if (pixelRegex.test(columnWidthString)) {
     const matchedParts = columnWidthString.match(pixelRegex);
-    return pixelToTWIP(matchedParts[1]);
+    return { value: pixelToTWIP(matchedParts[1]), type: 'dxa' };
   }
   if (cmRegex.test(columnWidthString)) {
     const matchedParts = columnWidthString.match(cmRegex);
-    return cmToTWIP(matchedParts[1]);
+    return { value: cmToTWIP(matchedParts[1]), type: 'dxa' };
   }
   if (inchRegex.test(columnWidthString)) {
     const matchedParts = columnWidthString.match(inchRegex);
-    return inchToTWIP(matchedParts[1]);
+    return { value: inchToTWIP(matchedParts[1]), type: 'dxa' };
   }
+  if (percentageRegex.test(columnWidthString)) {
+    const matchedParts = columnWidthString.match(percentageRegex);
+    // Convert percentage to fiftieths of a percent (pct in OOXML)
+    // 50% = 50 * 50 = 2500 (fiftieths of a percent)
+    return { value: Number.parseFloat(matchedParts[1]) * 50, type: 'pct' };
+  }
+  return null;
 };
 
 const fixupMargin = (marginString) => {
@@ -382,7 +400,7 @@ const modifiedStyleAttributesBuilder = (
   }
 
   // paragraph only
-  if (options && options.isParagraph) {
+  if (options?.isParagraph) {
     if (isVNode(vNode) && vNode.tagName === 'blockquote') {
       modifiedAttributes.indentation = { left: 284 };
       modifiedAttributes.textAlign = 'justify';
@@ -420,22 +438,21 @@ const buildFormatting = (htmlTag, options) => {
     case 'mark':
       return buildHighlight();
     case 'code':
+    case 'kbd':
       return buildHighlight('lightGray');
     case 'highlightColor':
-      return buildHighlight(
-        options && options.color ? options.color : 'lightGray'
-      );
+      return buildHighlight(options?.color ? options.color : 'lightGray');
     case 'font':
       return buildRunFontFragment(options.font);
     case 'pre':
       return buildRunFontFragment('Courier');
     case 'color':
-      return buildColor(options && options.color ? options.color : 'black');
+      return buildColor(options?.color ? options.color : 'black');
     case 'backgroundColor':
-      return buildShading(options && options.color ? options.color : 'black');
+      return buildShading(options?.color ? options.color : 'black');
     case 'fontSize':
       // does this need a unit of measure?
-      return buildFontSize(options && options.fontSize ? options.fontSize : 10);
+      return buildFontSize(options?.fontSize ? options.fontSize : 10);
     case 'hyperlink':
       return buildRunStyleFragment('Hyperlink');
   }
@@ -502,6 +519,7 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
       'mark',
       'blockquote',
       'code',
+      'kbd',
       'pre',
     ].includes(vNode.tagName)
   ) {
@@ -548,6 +566,7 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
             'sup',
             'mark',
             'code',
+            'kbd',
             'pre',
           ].includes(tempVNode.tagName)
         ) {
@@ -557,11 +576,18 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
             case 'b':
               tempAttributes.strong = true;
               break;
+            case 'em':
             case 'i':
               tempAttributes.i = true;
               break;
+            case 'ins':
             case 'u':
               tempAttributes.u = true;
+              break;
+            case 'strike':
+            case 'del':
+            case 's':
+              tempAttributes.strike = true;
               break;
             case 'sub':
               tempAttributes.sub = true;
@@ -569,8 +595,17 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
             case 'sup':
               tempAttributes.sup = true;
               break;
+            case 'mark':
+              tempAttributes.mark = true;
+              break;
+            case 'code':
+              tempAttributes.code = true;
+              break;
+            case 'kbd':
+              tempAttributes.kbd = true;
+              break;
           }
-          const formattingFragment = buildFormatting(tempVNode);
+          const formattingFragment = buildFormatting(tempVNode.tagName);
 
           if (formattingFragment) {
             runPropertiesFragment.import(formattingFragment);
@@ -597,7 +632,7 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
         }
       }
 
-      if (tempVNode.children && tempVNode.children.length) {
+      if (tempVNode.children?.length) {
         if (tempVNode.children.length > 1) {
           attributes = { ...attributes, ...tempAttributes };
         }
@@ -662,6 +697,24 @@ const buildRun = async (vNode, attributes, docxDocumentInstance) => {
 };
 
 const buildRunOrRuns = async (vNode, attributes, docxDocumentInstance) => {
+  // Check for OMML equation data attribute
+  if (
+    isVNode(vNode) &&
+    vNode.properties &&
+    vNode.properties.attributes &&
+    vNode.properties.attributes['data-equation-omml']
+  ) {
+    const ommlString = vNode.properties.attributes['data-equation-omml'];
+    try {
+      // Parse the OMML string and create a fragment
+      const ommlFragment = fragment().ele(ommlString);
+      return ommlFragment;
+    } catch {
+      // If parsing fails, fall through to normal text handling
+      console.warn('Failed to parse OMML, falling back to text');
+    }
+  }
+
   if (isVNode(vNode) && vNode.tagName === 'span') {
     let runFragments = [];
 
@@ -694,8 +747,7 @@ const buildRunOrRuns = async (vNode, attributes, docxDocumentInstance) => {
 
 const buildRunOrHyperLink = async (vNode, attributes, docxDocumentInstance) => {
   if (isVNode(vNode) && vNode.tagName === 'a') {
-    const href =
-      vNode.properties && vNode.properties.href ? vNode.properties.href : '';
+    const href = vNode.properties?.href ? vNode.properties.href : '';
 
     // Check if this is an internal link (starts with #)
     const isInternalLink = href.startsWith('#');
@@ -861,7 +913,7 @@ const buildParagraphProperties = (attributes) => {
           );
           paragraphPropertiesFragment.import(numberingPropertiesFragment);
 
-          delete attributes.numbering;
+          attributes.numbering = undefined;
           break;
         }
         case 'textAlign': {
@@ -870,7 +922,7 @@ const buildParagraphProperties = (attributes) => {
           );
           paragraphPropertiesFragment.import(horizontalAlignmentFragment);
 
-          delete attributes.textAlign;
+          attributes.textAlign = undefined;
           break;
         }
         case 'backgroundColor':
@@ -883,20 +935,20 @@ const buildParagraphProperties = (attributes) => {
             const paragraphBorderFragment = buildParagraphBorder();
             paragraphPropertiesFragment.import(paragraphBorderFragment);
 
-            delete attributes.backgroundColor;
+            attributes.backgroundColor = undefined;
           }
           break;
         case 'paragraphStyle': {
           const pStyleFragment = buildPStyle(attributes.paragraphStyle);
           paragraphPropertiesFragment.import(pStyleFragment);
-          delete attributes.paragraphStyle;
+          attributes.paragraphStyle = undefined;
           break;
         }
         case 'indentation': {
           const indentationFragment = buildIndentation(attributes[key]);
           paragraphPropertiesFragment.import(indentationFragment);
 
-          delete attributes.indentation;
+          attributes.indentation = undefined;
           break;
         }
       }
@@ -908,11 +960,11 @@ const buildParagraphProperties = (attributes) => {
       attributes.afterSpacing
     );
 
-    delete attributes.lineHeight;
+    attributes.lineHeight = undefined;
 
-    delete attributes.beforeSpacing;
+    attributes.beforeSpacing = undefined;
 
-    delete attributes.afterSpacing;
+    attributes.afterSpacing = undefined;
 
     paragraphPropertiesFragment.import(spacingFragment);
   }
@@ -934,7 +986,7 @@ const computeImageDimensions = (vNode, attributes) => {
   let modifiedHeight;
   let modifiedWidth;
 
-  if (vNode.properties && vNode.properties.style) {
+  if (vNode.properties?.style) {
     if (vNode.properties.style.width) {
       if (vNode.properties.style.width !== 'auto') {
         if (pixelRegex.test(vNode.properties.style.width)) {
@@ -1018,7 +1070,7 @@ const buildParagraph = async (vNode, attributes, docxDocumentInstance) => {
   paragraphFragment.import(paragraphPropertiesFragment);
 
   // Add bookmark start if bookmarkId is provided
-  const bookmarkId = attributes && attributes.bookmarkId;
+  const bookmarkId = attributes?.bookmarkId;
   let bookmarkNumericId = null;
   if (bookmarkId) {
     bookmarkNumericId = globalBookmarkIdCounter++;
@@ -1371,12 +1423,16 @@ const buildTableCellBorders = (tableCellBorder) => {
   return tableCellBordersFragment;
 };
 
-const buildTableCellWidth = (tableCellWidth) =>
-  fragment({ namespaceAlias: { w: namespaces.w } })
+const buildTableCellWidth = (tableCellWidth) => {
+  const widthInfo = fixupColumnWidth(tableCellWidth);
+  if (!widthInfo) return null;
+
+  return fragment({ namespaceAlias: { w: namespaces.w } })
     .ele('@w', 'tcW')
-    .att('@w', 'w', fixupColumnWidth(tableCellWidth))
-    .att('@w', 'type', 'dxa')
+    .att('@w', 'w', String(widthInfo.value))
+    .att('@w', 'type', widthInfo.type)
     .up();
+};
 
 const buildTableCellProperties = (attributes) => {
   const tableCellPropertiesFragment = fragment({
@@ -1389,7 +1445,7 @@ const buildTableCellProperties = (attributes) => {
           const shadingFragment = buildShading(attributes[key]);
           tableCellPropertiesFragment.import(shadingFragment);
 
-          delete attributes.backgroundColor;
+          attributes.backgroundColor = undefined;
           break;
         }
         case 'verticalAlign': {
@@ -1398,14 +1454,14 @@ const buildTableCellProperties = (attributes) => {
           );
           tableCellPropertiesFragment.import(verticalAlignmentFragment);
 
-          delete attributes.verticalAlign;
+          attributes.verticalAlign = undefined;
           break;
         }
         case 'colSpan': {
           const gridSpanFragment = buildGridSpanFragment(attributes[key]);
           tableCellPropertiesFragment.import(gridSpanFragment);
 
-          delete attributes.colSpan;
+          attributes.colSpan = undefined;
           break;
         }
         case 'tableCellBorder': {
@@ -1414,20 +1470,22 @@ const buildTableCellProperties = (attributes) => {
           );
           tableCellPropertiesFragment.import(tableCellBorderFragment);
 
-          delete attributes.tableCellBorder;
+          attributes.tableCellBorder = undefined;
           break;
         }
         case 'rowSpan': {
           const verticalMergeFragment = buildVerticalMerge(attributes[key]);
           tableCellPropertiesFragment.import(verticalMergeFragment);
 
-          delete attributes.rowSpan;
+          attributes.rowSpan = undefined;
           break;
         }
         case 'width': {
           const widthFragment = buildTableCellWidth(attributes[key]);
-          tableCellPropertiesFragment.import(widthFragment);
-          delete attributes.width;
+          if (widthFragment) {
+            tableCellPropertiesFragment.import(widthFragment);
+          }
+          attributes.width = undefined;
           break;
         }
       }
@@ -1577,27 +1635,23 @@ const buildTableCell = async (
         {
           ...previousSpanObject,
           rowSpan: 0,
-          colSpan: (previousSpanObject && previousSpanObject.colSpan) || 0,
+          colSpan: previousSpanObject?.colSpan || 0,
         }
       );
     }
-    if (
-      vNode.properties.colSpan ||
-      (vNode.properties.style && vNode.properties.style['column-span'])
-    ) {
+    if (vNode.properties.colSpan || vNode.properties.style?.['column-span']) {
       modifiedAttributes.colSpan =
-        vNode.properties.colSpan ||
-        (vNode.properties.style && vNode.properties.style['column-span']);
+        vNode.properties.colSpan || vNode.properties.style?.['column-span'];
       const previousSpanObject = rowSpanMap.get(columnIndex.index);
       rowSpanMap.set(
         columnIndex.index,
 
         {
           ...previousSpanObject,
-          colSpan: Number.parseInt(modifiedAttributes.colSpan) || 0,
+          colSpan: Number.parseInt(modifiedAttributes.colSpan, 10) || 0,
         }
       );
-      columnIndex.index += Number.parseInt(modifiedAttributes.colSpan) - 1;
+      columnIndex.index += Number.parseInt(modifiedAttributes.colSpan, 10) - 1;
     }
     if (vNode.properties.style) {
       modifiedAttributes = {
@@ -1680,7 +1734,7 @@ const buildTableCell = async (
 const buildRowSpanCell = (rowSpanMap, columnIndex, attributes) => {
   const rowSpanCellFragments = [];
   let spanObject = rowSpanMap.get(columnIndex.index);
-  while (spanObject && spanObject.rowSpan) {
+  while (spanObject?.rowSpan) {
     const rowSpanCellFragment = fragment({
       namespaceAlias: { w: namespaces.w },
     }).ele('@w', 'tc');
@@ -1726,7 +1780,7 @@ const buildTableRowProperties = (attributes) => {
           const tableRowHeightFragment = buildTableRowHeight(attributes[key]);
           tableRowPropertiesFragment.import(tableRowHeightFragment);
 
-          delete attributes.tableRowHeight;
+          attributes.tableRowHeight = undefined;
           break;
         }
         case 'rowCantSplit':
@@ -1738,7 +1792,7 @@ const buildTableRowProperties = (attributes) => {
               .up();
             tableRowPropertiesFragment.import(cantSplitFragment);
 
-            delete attributes.rowCantSplit;
+            attributes.rowCantSplit = undefined;
           }
           break;
       }
@@ -1761,14 +1815,14 @@ const buildTableRow = async (
   if (isVNode(vNode) && vNode.properties) {
     // FIXME: find a better way to get row height from cell style
     if (
-      (vNode.properties.style && vNode.properties.style.height) ||
+      vNode.properties.style?.height ||
       (vNode.children[0] &&
         isVNode(vNode.children[0]) &&
         vNode.children[0].properties.style &&
         vNode.children[0].properties.style.height)
     ) {
       modifiedAttributes.tableRowHeight = fixupRowHeight(
-        (vNode.properties.style && vNode.properties.style.height) ||
+        vNode.properties.style?.height ||
           (vNode.children[0] &&
           isVNode(vNode.children[0]) &&
           vNode.children[0].properties.style &&
@@ -1883,10 +1937,9 @@ const buildTableGridFromTableRow = (vNode, attributes) => {
       (accumulator, childVNode) => {
         const colSpan =
           childVNode.properties.colSpan ||
-          (childVNode.properties.style &&
-            childVNode.properties.style['column-span']);
+          childVNode.properties.style?.['column-span'];
 
-        return accumulator + (colSpan ? Number.parseInt(colSpan) : 1);
+        return accumulator + (colSpan ? Number.parseInt(colSpan, 10) : 1);
       },
       0
     );
@@ -1970,7 +2023,7 @@ const buildTableProperties = (attributes) => {
           const tableBordersFragment = buildTableBorders(attributes[key]);
           tablePropertiesFragment.import(tableBordersFragment);
 
-          delete attributes.tableBorder;
+          attributes.tableBorder = undefined;
           break;
         }
         case 'tableCellSpacing': {
@@ -1979,7 +2032,7 @@ const buildTableProperties = (attributes) => {
           );
           tablePropertiesFragment.import(tableCellSpacingFragment);
 
-          delete attributes.tableCellSpacing;
+          attributes.tableCellSpacing = undefined;
           break;
         }
         case 'width':
@@ -1988,7 +2041,7 @@ const buildTableProperties = (attributes) => {
             tablePropertiesFragment.import(tableWidthFragment);
           }
 
-          delete attributes.width;
+          attributes.width = undefined;
           break;
       }
     });
@@ -2006,7 +2059,21 @@ const buildTableProperties = (attributes) => {
 };
 
 const cssBorderParser = (borderString) => {
+  // Handle 'none' border - return 0 size with valid defaults
+  if (
+    borderString === 'none' ||
+    borderString === '0' ||
+    borderString === '0px'
+  ) {
+    return [0, 'single', '000000'];
+  }
+
   let [size, stroke, color] = borderString.split(' ');
+
+  // Handle 'none' as first value (e.g., 'none solid black')
+  if (size === 'none' || size === '0') {
+    return [0, 'single', '000000'];
+  }
 
   if (pointRegex.test(size)) {
     const matchedParts = size.match(pointRegex);
@@ -2040,7 +2107,7 @@ const buildTable = async (vNode, attributes, docxDocumentInstance) => {
     const tableCellBorders = {};
     let [borderSize, borderStrike, borderColor] = [2, 'single', '000000'];
 
-    if (!isNaN(tableAttributes.border)) {
+    if (!Number.isNaN(tableAttributes.border)) {
       borderSize = Number.parseInt(tableAttributes.border, 10);
     }
 
@@ -2049,7 +2116,9 @@ const buildTable = async (vNode, attributes, docxDocumentInstance) => {
       const [cssSize, cssStroke, cssColor] = cssBorderParser(
         tableStyles.border
       );
-      borderSize = cssSize || borderSize;
+      // Use nullish check to allow 0 as valid border size
+      borderSize =
+        cssSize !== undefined && cssSize !== null ? cssSize : borderSize;
       borderColor = cssColor || borderColor;
       borderStrike = cssStroke || borderStrike;
     }
@@ -2242,12 +2311,24 @@ const buildPresetGeometry = () =>
     .att('prst', 'rect')
     .up();
 
-const buildExtents = ({ width, height }) =>
-  fragment({ namespaceAlias: drawingNamespaces })
+const buildExtents = ({ width, height }) => {
+  // Default to 100x100 pixels in EMU if dimensions are missing
+  const defaultSize = 952_500;
+  // Ensure valid numeric values (handle undefined, null, NaN, 0)
+  const cx =
+    typeof width === 'number' && width > 0 && !Number.isNaN(width)
+      ? width
+      : defaultSize;
+  const cy =
+    typeof height === 'number' && height > 0 && !Number.isNaN(height)
+      ? height
+      : defaultSize;
+  return fragment({ namespaceAlias: drawingNamespaces })
     .ele(namespaces.a, 'ext')
-    .att('cx', width)
-    .att('cy', height)
+    .att('cx', String(cx))
+    .att('cy', String(cy))
     .up();
+};
 
 const buildOffset = () =>
   fragment({ namespaceAlias: drawingNamespaces })
@@ -2455,7 +2536,7 @@ const buildWrapSquare = () =>
     .att('distR', '228600')
     .up();
 
-const buildWrapNone = () =>
+const _buildWrapNone = () =>
   fragment({ namespaceAlias: drawingNamespaces })
     .ele(namespaces.wp, 'wrapNone')
     .up();
@@ -2469,12 +2550,25 @@ const buildEffectExtentFragment = () =>
     .att('t', '0')
     .up();
 
-const buildExtent = ({ width, height }) =>
-  fragment({ namespaceAlias: drawingNamespaces })
+const buildExtent = ({ width, height }) => {
+  // Default to 100x100 pixels in EMU (914400 EMU = 1 inch, 96 pixels = 1 inch)
+  // So 100 pixels = 952500 EMU
+  const defaultSize = 952_500;
+  // Ensure valid numeric values (handle undefined, null, NaN, 0)
+  const cx =
+    typeof width === 'number' && width > 0 && !Number.isNaN(width)
+      ? width
+      : defaultSize;
+  const cy =
+    typeof height === 'number' && height > 0 && !Number.isNaN(height)
+      ? height
+      : defaultSize;
+  return fragment({ namespaceAlias: drawingNamespaces })
     .ele(namespaces.wp, 'extent')
-    .att('cx', width)
-    .att('cy', height)
+    .att('cx', String(cx))
+    .att('cy', String(cy))
     .up();
+};
 
 const buildPositionV = () =>
   fragment({ namespaceAlias: drawingNamespaces })
@@ -2577,7 +2671,7 @@ const buildInlineDrawing = (graphicType, attributes) => {
   return inlineDrawingFragment;
 };
 
-const buildDrawing = (inlineOrAnchored = false, graphicType, attributes) => {
+const buildDrawing = (inlineOrAnchored, graphicType, attributes) => {
   // Declare all necessary namespaces for drawing elements
   const drawingFragment = fragment({
     namespaceAlias: drawingNamespaces,

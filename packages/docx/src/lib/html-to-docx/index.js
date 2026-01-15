@@ -17,7 +17,7 @@ const minifyHTMLString = (htmlString) => {
     }
 
     throw new Error('invalid html string');
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 };
@@ -25,7 +25,7 @@ const minifyHTMLString = (htmlString) => {
 async function generateContainer(
   htmlString,
   headerHTMLString,
-  documentOptions = {},
+  documentOptions,
   footerHTMLString
 ) {
   const zip = new JSZip();

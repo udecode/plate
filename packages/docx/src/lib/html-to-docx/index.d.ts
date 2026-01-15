@@ -1,3 +1,4 @@
+/* biome-ignore-all lint: legacy code */
 /**
  * Type declarations for html-to-docx
  *
@@ -8,7 +9,7 @@
  */
 
 declare namespace HTMLtoDOCX {
-  interface Margins {
+  type Margins = {
     top?: number;
     right?: number;
     bottom?: number;
@@ -16,42 +17,42 @@ declare namespace HTMLtoDOCX {
     header?: number;
     footer?: number;
     gutter?: number;
-  }
+  };
 
-  interface PageSize {
+  type PageSize = {
     width?: number;
     height?: number;
-  }
+  };
 
-  interface Row {
+  type Row = {
     cantSplit?: boolean;
-  }
+  };
 
-  interface BorderOptions {
+  type BorderOptions = {
     size?: number;
     color?: string;
-  }
+  };
 
-  interface Table {
+  type Table = {
     row?: Row;
     borderOptions?: BorderOptions;
-  }
+  };
 
-  interface LineNumberOptions {
+  type LineNumberOptions = {
     countBy?: number;
     start?: number;
     restart?: 'continuous' | 'newPage' | 'newSection';
     distance?: number;
-  }
+  };
 
-  interface HeadingSpacing {
+  type HeadingSpacing = {
     before?: number;
     after?: number;
     line?: number;
     lineRule?: 'auto' | 'exact' | 'atLeast';
-  }
+  };
 
-  interface HeadingStyle {
+  type HeadingStyle = {
     font?: string;
     fontSize?: number;
     bold?: boolean;
@@ -59,22 +60,22 @@ declare namespace HTMLtoDOCX {
     underline?: boolean;
     color?: string;
     spacing?: HeadingSpacing;
-  }
+  };
 
-  interface HeadingConfig {
+  type HeadingConfig = {
     heading1?: HeadingStyle;
     heading2?: HeadingStyle;
     heading3?: HeadingStyle;
     heading4?: HeadingStyle;
     heading5?: HeadingStyle;
     heading6?: HeadingStyle;
-  }
+  };
 
-  interface ImageProcessing {
+  type ImageProcessing = {
     svgHandling?: 'convert' | 'native';
-  }
+  };
 
-  interface DocumentOptions {
+  type DocumentOptions = {
     orientation?: 'portrait' | 'landscape';
     pageSize?: PageSize;
     margins?: Margins;
@@ -97,7 +98,7 @@ declare namespace HTMLtoDOCX {
     footer?: boolean;
     pageNumber?: boolean;
     imageProcessing?: ImageProcessing;
-  }
+  };
 }
 
 /**
