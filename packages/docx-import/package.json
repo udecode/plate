@@ -1,0 +1,66 @@
+{
+  "name": "@platejs/docx-import",
+  "version": "52.0.0",
+  "description": "Document import plugin for Plate - DOCX, HTML, Markdown",
+  "keywords": [
+    "docx",
+    "html",
+    "import",
+    "markdown",
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/docx-import"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "mammoth": "^1.9.0",
+    "react-compiler-runtime": "^1.0.0"
+  },
+  "devDependencies": {
+    "@platejs/docx": "workspace:^",
+    "@platejs/markdown": "workspace:^",
+    "platejs": "workspace:^"
+  },
+  "peerDependencies": {
+    "@platejs/docx": ">=52.0.0",
+    "@platejs/markdown": ">=52.0.0",
+    "platejs": ">=52.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.js"
+}

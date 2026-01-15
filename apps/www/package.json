@@ -65,6 +65,7 @@
     "@platejs/diff": "workspace:^",
     "@platejs/dnd": "workspace:^",
     "@platejs/docx": "workspace:^",
+    "@platejs/docx-import": "workspace:^",
     "@platejs/emoji": "workspace:^",
     "@platejs/excalidraw": "workspace:^",
     "@platejs/find-replace": "workspace:^",
