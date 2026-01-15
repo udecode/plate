@@ -12,13 +12,17 @@ import {
   BaseH5Plugin,
   BaseH6Plugin,
 } from '@platejs/basic-nodes';
+import { BaseCalloutPlugin } from '@platejs/callout';
 import {
   BaseCodeBlockPlugin,
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
+import { BaseDatePlugin } from '@platejs/date';
 import { exportToDocx } from '@platejs/docx';
+import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BaseImagePlugin } from '@platejs/media';
 import {
   BaseTableCellHeaderPlugin,
@@ -43,11 +47,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { CalloutElementStaticDocx } from '@/registry/ui/callout-node-static-docx';
 import {
   CodeBlockElementStaticDocx,
   CodeLineElementStaticDocx,
   CodeSyntaxLeafStaticDocx,
 } from '@/registry/ui/code-block-node-static-docx';
+import {
+  ColumnElementStaticDocx,
+  ColumnGroupElementStaticDocx,
+} from '@/registry/ui/column-node-static-docx';
+import { DateElementStaticDocx } from '@/registry/ui/date-node-static-docx';
+import {
+  EquationElementStaticDocx,
+  InlineEquationElementStaticDocx,
+} from '@/registry/ui/equation-node-static-docx';
 import {
   H1ElementStaticDocx,
   H2ElementStaticDocx,
@@ -75,6 +89,9 @@ const siteUrl = 'https://platejs.org';
 const lowlight = createLowlight(all);
 
 const DocxPlugins: Record<string, AnySlatePlugin> = {
+  [BaseCalloutPlugin.key]: BaseCalloutPlugin.withComponent(
+    CalloutElementStaticDocx
+  ),
   [BaseCodeBlockPlugin.key]: BaseCodeBlockPlugin.configure({
     node: { component: CodeBlockElementStaticDocx },
     options: { lowlight },
@@ -84,6 +101,19 @@ const DocxPlugins: Record<string, AnySlatePlugin> = {
   ),
   [BaseCodeSyntaxPlugin.key]: BaseCodeSyntaxPlugin.withComponent(
     CodeSyntaxLeafStaticDocx
+  ),
+  [BaseColumnItemPlugin.key]: BaseColumnItemPlugin.withComponent(
+    ColumnElementStaticDocx
+  ),
+  [BaseColumnPlugin.key]: BaseColumnPlugin.withComponent(
+    ColumnGroupElementStaticDocx
+  ),
+  [BaseDatePlugin.key]: BaseDatePlugin.withComponent(DateElementStaticDocx),
+  [BaseEquationPlugin.key]: BaseEquationPlugin.withComponent(
+    EquationElementStaticDocx
+  ),
+  [BaseInlineEquationPlugin.key]: BaseInlineEquationPlugin.withComponent(
+    InlineEquationElementStaticDocx
   ),
   [BaseH1Plugin.key]: BaseH1Plugin.withComponent(H1ElementStaticDocx),
   [BaseH2Plugin.key]: BaseH2Plugin.withComponent(H2ElementStaticDocx),
