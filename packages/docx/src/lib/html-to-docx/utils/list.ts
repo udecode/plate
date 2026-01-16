@@ -1,12 +1,37 @@
+export type ListStyleType =
+  | 'decimal'
+  | 'decimal-bracket'
+  | 'decimal-bracket-end'
+  | 'lower-alpha'
+  | 'lower-alpha-bracket-end'
+  | 'lower-roman'
+  | 'upper-alpha'
+  | 'upper-alpha-bracket-end'
+  | 'upper-roman';
+
+export type DocxListStyleType =
+  | 'decimal'
+  | 'lowerLetter'
+  | 'lowerRoman'
+  | 'upperLetter'
+  | 'upperRoman';
+
+export interface ListStyleDefaults {
+  defaultOrderedListStyleType: DocxListStyleType;
+}
+
+export interface ListStyle {
+  'list-style-type'?: ListStyleType;
+}
+
 class ListStyleBuilder {
-  // defaults is an object passed in from constants.js / numbering with the following properties:
-  // defaultOrderedListStyleType: 'decimal' (unless otherwise specified)
-  constructor(defaults) {
+  private defaults: ListStyleDefaults;
+
+  constructor(defaults?: ListStyleDefaults) {
     this.defaults = defaults || { defaultOrderedListStyleType: 'decimal' };
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  getListStyleType(listType) {
+  getListStyleType(listType: ListStyleType | undefined): DocxListStyleType {
     switch (listType) {
       case 'upper-roman':
         return 'upperRoman';
@@ -26,8 +51,12 @@ class ListStyleBuilder {
     }
   }
 
-  getListPrefixSuffix(style, lvl) {
-    let listType = this.defaults.defaultOrderedListStyleType;
+  getListPrefixSuffix(
+    style: ListStyle | null | undefined,
+    lvl: number
+  ): string {
+    let listType: ListStyleType = this.defaults
+      .defaultOrderedListStyleType as ListStyleType;
 
     if (style?.['list-style-type']) {
       listType = style['list-style-type'];

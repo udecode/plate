@@ -8,21 +8,28 @@
  */
 
 import HTMLtoDOCX from './html-to-docx/index.js';
+import type {
+  DocumentOptions,
+  LineNumberOptions,
+  Margins,
+  NumberingOptions,
+  PageSize,
+  TableOptions,
+} from './html-to-docx/index.js';
 
 // Re-export types from the library
-export type Margins = HTMLtoDOCX.Margins;
-export type PageSize = HTMLtoDOCX.PageSize;
-export type Row = HTMLtoDOCX.Row;
-export type Table = HTMLtoDOCX.Table;
-export type LineNumberOptions = HTMLtoDOCX.LineNumberOptions;
-export type HeadingSpacing = HTMLtoDOCX.HeadingSpacing;
-export type HeadingStyle = HTMLtoDOCX.HeadingStyle;
-export type HeadingConfig = HTMLtoDOCX.HeadingConfig;
-export type DocumentOptions = HTMLtoDOCX.DocumentOptions;
+export type {
+  DocumentOptions,
+  LineNumberOptions,
+  Margins,
+  NumberingOptions,
+  PageSize,
+  TableOptions,
+};
 
 // Backwards compatibility aliases
-export type DocumentMargins = HTMLtoDOCX.Margins;
-export type HtmlToDocxOptions = HTMLtoDOCX.DocumentOptions;
+export type DocumentMargins = Margins;
+export type HtmlToDocxOptions = DocumentOptions;
 
 /**
  * Convert HTML content to a DOCX blob.

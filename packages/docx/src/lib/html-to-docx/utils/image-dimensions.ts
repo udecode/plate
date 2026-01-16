@@ -3,13 +3,19 @@
  * Parses image dimensions from a Buffer without using Node.js fs module
  */
 
+export interface ImageDimensions {
+  height: number;
+  type: string;
+  width: number;
+}
+
 /**
  * Get image dimensions from a buffer
  * Supports PNG, JPEG, GIF, BMP, WebP
- * @param {Buffer|Uint8Array} buffer - Image data buffer
- * @returns {{width: number, height: number, type: string}} Image dimensions and type
  */
-export function getImageDimensions(buffer) {
+export function getImageDimensions(
+  buffer: ArrayBuffer | Uint8Array
+): ImageDimensions {
   const uint8 = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
 
   // PNG: 89 50 4E 47 0D 0A 1A 0A

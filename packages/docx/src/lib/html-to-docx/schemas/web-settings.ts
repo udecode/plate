@@ -1,6 +1,6 @@
 import namespaces from '../namespaces';
 
-const webSettingsXML = `
+const webSettingsXML: string = `
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
     <w:webSettings xmlns:w="${namespaces.w}" xmlns:r="${namespaces.r}">

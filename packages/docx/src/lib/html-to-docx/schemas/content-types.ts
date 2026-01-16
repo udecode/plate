@@ -1,4 +1,4 @@
-const contentTypesXML = `
+const contentTypesXML: string = `
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
     <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">

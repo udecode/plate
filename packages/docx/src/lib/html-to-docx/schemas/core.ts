@@ -3,16 +3,16 @@ import { applicationName } from '../constants';
 import namespaces from '../namespaces';
 
 const generateCoreXML = (
-  title = '',
-  subject = '',
-  creator = applicationName,
-  keywords = [applicationName],
-  description = '',
-  lastModifiedBy = applicationName,
-  revision = 1,
-  createdAt = new Date(),
-  modifiedAt = new Date()
-) => `
+  title: string = '',
+  subject: string = '',
+  creator: string = applicationName,
+  keywords: string[] = [applicationName],
+  description: string = '',
+  lastModifiedBy: string = applicationName,
+  revision: number = 1,
+  createdAt: Date = new Date(),
+  modifiedAt: Date = new Date()
+): string => `
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
         <cp:coreProperties

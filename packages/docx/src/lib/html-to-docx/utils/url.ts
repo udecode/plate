@@ -1,4 +1,4 @@
-const isValidUrl = (urlString) => {
+const isValidUrl = (urlString: string | null | undefined): boolean => {
   if (!urlString || typeof urlString !== 'string') {
     return false;
   }
@@ -12,5 +12,4 @@ const isValidUrl = (urlString) => {
   }
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export { isValidUrl };

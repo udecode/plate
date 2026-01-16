@@ -1,6 +1,21 @@
 import namespaces from '../namespaces';
 
-const generateDocumentTemplate = (width, height, orientation, margins) => `
+export interface DocumentMargins {
+  bottom: number;
+  footer: number;
+  gutter: number;
+  header: number;
+  left: number;
+  right: number;
+  top: number;
+}
+
+const generateDocumentTemplate = (
+  width: number,
+  height: number,
+  orientation: string,
+  margins: DocumentMargins
+): string => `
   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
     <w:document

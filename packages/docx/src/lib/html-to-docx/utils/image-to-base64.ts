@@ -1,4 +1,3 @@
-/* biome-ignore-all lint: legacy code */
 /**
  * Browser-compatible image to base64 converter
  * Fetches remote images and converts them to base64
@@ -6,10 +5,9 @@
 
 /**
  * Convert an image URL to base64 string
- * @param {string} imageUrl - URL of the image to convert
- * @returns {Promise<string>} Base64 encoded string (without data URI prefix)
+ * @returns Base64 encoded string (without data URI prefix)
  */
-export async function imageToBase64(imageUrl) {
+export async function imageToBase64(imageUrl: string): Promise<string> {
   // Check if it's a valid URL
   try {
     const url = new URL(imageUrl);

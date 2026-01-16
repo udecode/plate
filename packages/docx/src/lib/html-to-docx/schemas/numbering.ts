@@ -1,6 +1,6 @@
 import namespaces from '../namespaces';
 
-const generateNumberingXMLTemplate = () => `
+const generateNumberingXMLTemplate = (): string => `
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
         <w:numbering
