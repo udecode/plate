@@ -549,6 +549,105 @@ export const playgroundValue: Value = [
     children: [{ text: '' }],
     type: 'toc',
   },
+  // Horizontal Rule
+  {
+    children: [{ text: '' }],
+    type: 'hr',
+  },
+  // Date
+  {
+    children: [{ text: 'Dates and Equations' }],
+    type: 'h3',
+  },
+  {
+    children: [
+      { text: 'Insert dates like ' },
+      { children: [{ text: '' }], date: '2024-01-15', type: 'date' },
+      { text: ' or use inline equations: ' },
+      {
+        children: [{ text: '' }],
+        texExpression: 'E = mc^2',
+        type: 'inline_equation',
+      },
+      { text: '.' },
+    ],
+    type: 'p',
+  },
+  // Block Equation
+  {
+    children: [{ text: '' }],
+    texExpression: '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}',
+    type: 'equation',
+  },
+  // Callout
+  {
+    children: [{ text: 'Callouts and Toggles' }],
+    type: 'h3',
+  },
+  {
+    children: [
+      {
+        children: [
+          { text: 'This is a callout block for important information.' },
+        ],
+        type: 'p',
+      },
+    ],
+    type: 'callout',
+    variant: 'info',
+  },
+  // Toggle
+  {
+    children: [
+      {
+        children: [{ text: 'Click to expand this toggle' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Hidden content inside the toggle.' }],
+        type: 'p',
+      },
+    ],
+    type: 'toggle',
+  },
+  // Columns
+  {
+    children: [{ text: 'Multi-column Layout' }],
+    type: 'h3',
+  },
+  {
+    children: [
+      {
+        children: [
+          {
+            children: [
+              {
+                text: 'First column content. Great for side-by-side comparisons.',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        type: 'column',
+        width: '50%',
+      },
+      {
+        children: [
+          {
+            children: [
+              {
+                text: 'Second column content. Layout flexibility at its best.',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        type: 'column',
+        width: '50%',
+      },
+    ],
+    type: 'column_group',
+  },
   {
     children: [{ text: '' }],
     type: 'p',

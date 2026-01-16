@@ -1669,6 +1669,12 @@ const buildTableCell = async (
   const tableCellPropertiesFragment =
     buildTableCellProperties(modifiedAttributes);
   tableCellFragment.import(tableCellPropertiesFragment);
+
+  // Don't pass cell-level backgroundColor to paragraph content
+  // It should only apply to the cell itself (tcPr), not text runs
+  const paragraphAttributes = { ...modifiedAttributes };
+  delete paragraphAttributes.backgroundColor;
+
   if (vNodeHasChildren(vNode)) {
     for (let index = 0; index < vNode.children.length; index++) {
       const childVNode = vNode.children[index];
@@ -1709,10 +1715,49 @@ const buildTableCell = async (
         if (vNodeHasChildren(childVNode)) {
           await buildList(childVNode, docxDocumentInstance, tableCellFragment);
         }
+      } else if (isVNode(childVNode) && childVNode.tagName === 'div') {
+        // Handle div wrapper - process its children instead
+        if (vNodeHasChildren(childVNode)) {
+          for (
+            let divIndex = 0;
+            divIndex < childVNode.children.length;
+            divIndex++
+          ) {
+            const divChild = childVNode.children[divIndex];
+            if (isVNode(divChild) && divChild.tagName === 'img') {
+              const imageFragment = await buildImage(
+                docxDocumentInstance,
+                divChild,
+                modifiedAttributes.maximumWidth
+              );
+              if (imageFragment) {
+                tableCellFragment.import(imageFragment);
+              }
+            } else if (
+              isVNode(divChild) &&
+              ['ul', 'ol'].includes(divChild.tagName)
+            ) {
+              if (vNodeHasChildren(divChild)) {
+                await buildList(
+                  divChild,
+                  docxDocumentInstance,
+                  tableCellFragment
+                );
+              }
+            } else {
+              const paragraphFragment = await buildParagraph(
+                divChild,
+                paragraphAttributes,
+                docxDocumentInstance
+              );
+              tableCellFragment.import(paragraphFragment);
+            }
+          }
+        }
       } else {
         const paragraphFragment = await buildParagraph(
           childVNode,
-          modifiedAttributes,
+          paragraphAttributes,
           docxDocumentInstance
         );
 

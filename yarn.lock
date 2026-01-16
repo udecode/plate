@@ -3413,6 +3413,7 @@ __metadata:
     html-entities: "npm:^2.5.2"
     html-to-vdom: "npm:^0.7.0"
     jszip: "npm:^3.10.1"
+    juice: "npm:^11.0.1"
     lodash: "npm:^4.17.21"
     mime-types: "npm:^2.1.35"
     nanoid: "npm:^5.0.9"

@@ -28,14 +28,19 @@ export const BlockListStatic: RenderStaticNodeWrapper = (props) => {
 };
 
 function List(props: SlateRenderElementProps) {
-  const { listStart, listStyleType } = props.element as TListElement;
+  const { indent, listStart, listStyleType } = props.element as TListElement & {
+    indent?: number;
+  };
   const { Li, Marker } = config[listStyleType] ?? {};
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
+
+  // Apply margin-left for indent (24px per level) for DOCX export compatibility
+  const marginLeft = indent ? `${indent * 24}px` : undefined;
 
   return (
     <List
       className="relative m-0 p-0"
-      style={{ listStyleType }}
+      style={{ listStyleType, marginLeft }}
       start={listStart}
     >
       {Marker && <Marker {...props} />}

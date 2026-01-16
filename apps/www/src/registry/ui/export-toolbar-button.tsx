@@ -4,38 +4,12 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import {
-  BaseH1Plugin,
-  BaseH2Plugin,
-  BaseH3Plugin,
-  BaseH4Plugin,
-  BaseH5Plugin,
-  BaseH6Plugin,
-} from '@platejs/basic-nodes';
-import { BaseCalloutPlugin } from '@platejs/callout';
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@platejs/code-block';
-import { BaseDatePlugin } from '@platejs/date';
 import { exportToDocx } from '@platejs/docx';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
-import { BaseImagePlugin } from '@platejs/media';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
-import { BaseTocPlugin } from '@platejs/toc';
-import { all, createLowlight } from 'lowlight';
 import { ArrowDownToLineIcon } from 'lucide-react';
-import type { AnySlatePlugin } from 'platejs';
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import type { SlatePlugin } from 'platejs';
+import { createSlateEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -47,96 +21,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { CalloutElementStaticDocx } from '@/registry/ui/callout-node-static-docx';
-import {
-  CodeBlockElementStaticDocx,
-  CodeLineElementStaticDocx,
-  CodeSyntaxLeafStaticDocx,
-} from '@/registry/ui/code-block-node-static-docx';
-import {
-  ColumnElementStaticDocx,
-  ColumnGroupElementStaticDocx,
-} from '@/registry/ui/column-node-static-docx';
-import { DateElementStaticDocx } from '@/registry/ui/date-node-static-docx';
-import {
-  EquationElementStaticDocx,
-  InlineEquationElementStaticDocx,
-} from '@/registry/ui/equation-node-static-docx';
-import {
-  H1ElementStaticDocx,
-  H2ElementStaticDocx,
-  H3ElementStaticDocx,
-  H4ElementStaticDocx,
-  H5ElementStaticDocx,
-  H6ElementStaticDocx,
-} from '@/registry/ui/heading-node-static-docx';
-import { ImageElementStaticDocx } from '@/registry/ui/media-image-node-static-docx';
-import { ParagraphElementStaticDocx } from '@/registry/ui/paragraph-node-static-docx';
-import {
-  TableCellElementStaticDocx,
-  TableCellHeaderElementStaticDocx,
-  TableElementStaticDocx,
-  TableRowElementStaticDocx,
-} from '@/registry/ui/table-node-static-docx';
-import { TocElementStaticDocx } from '@/registry/ui/toc-node-static-docx';
+import { DocxExportKit } from '@/registry/components/editor/editor-docx-export-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
 
 const siteUrl = 'https://platejs.org';
-
-// DOCX-compatible plugin configurations
-const lowlight = createLowlight(all);
-
-const DocxPlugins: Record<string, AnySlatePlugin> = {
-  [BaseCalloutPlugin.key]: BaseCalloutPlugin.withComponent(
-    CalloutElementStaticDocx
-  ),
-  [BaseCodeBlockPlugin.key]: BaseCodeBlockPlugin.configure({
-    node: { component: CodeBlockElementStaticDocx },
-    options: { lowlight },
-  }),
-  [BaseCodeLinePlugin.key]: BaseCodeLinePlugin.withComponent(
-    CodeLineElementStaticDocx
-  ),
-  [BaseCodeSyntaxPlugin.key]: BaseCodeSyntaxPlugin.withComponent(
-    CodeSyntaxLeafStaticDocx
-  ),
-  [BaseColumnItemPlugin.key]: BaseColumnItemPlugin.withComponent(
-    ColumnElementStaticDocx
-  ),
-  [BaseColumnPlugin.key]: BaseColumnPlugin.withComponent(
-    ColumnGroupElementStaticDocx
-  ),
-  [BaseDatePlugin.key]: BaseDatePlugin.withComponent(DateElementStaticDocx),
-  [BaseEquationPlugin.key]: BaseEquationPlugin.withComponent(
-    EquationElementStaticDocx
-  ),
-  [BaseInlineEquationPlugin.key]: BaseInlineEquationPlugin.withComponent(
-    InlineEquationElementStaticDocx
-  ),
-  [BaseH1Plugin.key]: BaseH1Plugin.withComponent(H1ElementStaticDocx),
-  [BaseH2Plugin.key]: BaseH2Plugin.withComponent(H2ElementStaticDocx),
-  [BaseH3Plugin.key]: BaseH3Plugin.withComponent(H3ElementStaticDocx),
-  [BaseH4Plugin.key]: BaseH4Plugin.withComponent(H4ElementStaticDocx),
-  [BaseH5Plugin.key]: BaseH5Plugin.withComponent(H5ElementStaticDocx),
-  [BaseH6Plugin.key]: BaseH6Plugin.withComponent(H6ElementStaticDocx),
-  [BaseImagePlugin.key]: BaseImagePlugin.withComponent(ImageElementStaticDocx),
-  [BaseParagraphPlugin.key]: BaseParagraphPlugin.withComponent(
-    ParagraphElementStaticDocx
-  ),
-  [BaseTableCellHeaderPlugin.key]: BaseTableCellHeaderPlugin.withComponent(
-    TableCellHeaderElementStaticDocx
-  ),
-  [BaseTableCellPlugin.key]: BaseTableCellPlugin.withComponent(
-    TableCellElementStaticDocx
-  ),
-  [BaseTablePlugin.key]: BaseTablePlugin.withComponent(TableElementStaticDocx),
-  [BaseTableRowPlugin.key]: BaseTableRowPlugin.withComponent(
-    TableRowElementStaticDocx
-  ),
-  [BaseTocPlugin.key]: BaseTocPlugin.withComponent(TocElementStaticDocx),
-};
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -262,13 +152,9 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
-    // Replace plugins with DOCX-compatible versions
-    const docxEditorKit = BaseEditorKit.map(
-      (plugin) => DocxPlugins[plugin.key] || plugin
-    );
-
+    // Use mixed static components - docx-specific for code blocks, columns, etc.
     const blob = await exportToDocx(editor.children, {
-      editorPlugins: docxEditorKit,
+      editorPlugins: DocxExportKit as SlatePlugin[],
     });
 
     const url = URL.createObjectURL(blob);

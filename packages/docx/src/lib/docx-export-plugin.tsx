@@ -38,6 +38,8 @@ import { createPlatePlugin } from 'platejs/react';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
 
+import juice from 'juice';
+
 import type { DocumentMargins } from './html-to-docx';
 
 import { htmlToDocxBlob } from './html-to-docx';
@@ -408,8 +410,15 @@ async function exportToDocxInternal(
   // Wrap in complete HTML document
   const fullHtml = wrapHtmlForDocx(bodyHtml, customStyles);
 
+  // Inline CSS styles using juice for DOCX compatibility
+  const inlinedHtml = juice(fullHtml, {
+    removeStyleTags: false,
+    preserveMediaQueries: false,
+    preserveFontFaces: false,
+  });
+
   // Convert to DOCX using browser-compatible implementation
-  const blob = await htmlToDocxBlob(fullHtml, {
+  const blob = await htmlToDocxBlob(inlinedHtml, {
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,

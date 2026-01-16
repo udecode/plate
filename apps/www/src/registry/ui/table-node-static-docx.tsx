@@ -52,17 +52,13 @@ export function TableCellElementStaticDocx({
   const rowSpan = api.table.getRowSpan(element);
 
   const style: React.CSSProperties = {
-    backgroundColor: element.background || (isHeader ? '#f5f5f5' : undefined),
+    backgroundColor: element.background || undefined,
     border: '1px solid #ccc',
     padding: '6pt',
     textAlign: 'left',
     verticalAlign: 'top',
     ...(width ? { width: `${width}px` } : {}),
   };
-
-  if (isHeader) {
-    style.fontWeight = 'bold';
-  }
 
   return (
     <SlateElement

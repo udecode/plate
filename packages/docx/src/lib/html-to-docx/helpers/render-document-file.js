@@ -20,6 +20,60 @@ import * as xmlBuilder from './xml-builder';
 // Regex for parsing numeric values from margin-left
 const MARGIN_NUMBER_REGEX = /(\d+)/;
 
+// Inline elements that should be grouped into a single paragraph
+const INLINE_ELEMENTS = [
+  'span',
+  'strong',
+  'b',
+  'em',
+  'i',
+  'u',
+  'ins',
+  'strike',
+  'del',
+  's',
+  'sub',
+  'sup',
+  'mark',
+  'a',
+  'code',
+];
+
+// Check if a vNode is an inline element
+const isInlineElement = (node) =>
+  isVText(node) || (isVNode(node) && INLINE_ELEMENTS.includes(node.tagName));
+
+// Elements that need special handling and should not be wrapped in inline grouping
+const SPECIAL_BLOCK_ELEMENTS = [
+  'img',
+  'table',
+  'figure',
+  'ul',
+  'ol',
+  'blockquote',
+  'pre',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'hr',
+  'video',
+  'audio',
+  'iframe',
+];
+
+// Recursively check if a vNode contains any special block elements
+const containsSpecialElements = (node) => {
+  if (!isVNode(node)) return false;
+  if (SPECIAL_BLOCK_ELEMENTS.includes(node.tagName)) return true;
+  if (vNodeHasChildren(node)) {
+    return node.children.some((child) => containsSpecialElements(child));
+  }
+  return false;
+};
+
 const convertHTML = HTMLToVDOM({
   VNode,
   VText,
@@ -321,6 +375,76 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
     }
   }
 
+  // Handle div elements - check if they contain only inline children
+  // Skip divs that contain special elements that need their own processing
+  if (vNode.tagName === 'div' && vNodeHasChildren(vNode)) {
+    // Check recursively if div contains any special elements that need dedicated handling
+    const hasSpecialChildren = vNode.children.some((child) =>
+      containsSpecialElements(child)
+    );
+
+    // If div has special children, let default processing handle it
+    if (hasSpecialChildren) {
+      // Fall through to default processing at end of function
+    } else {
+      const allInline = vNode.children.every((child) => isInlineElement(child));
+
+      if (allInline && vNode.children.length > 0) {
+        // Wrap all inline children in a single paragraph
+        const paragraphVNode = new VNode('p', vNode.properties, vNode.children);
+        const paragraphFragment = await xmlBuilder.buildParagraph(
+          paragraphVNode,
+          {},
+          docxDocumentInstance
+        );
+        xmlFragment.import(paragraphFragment);
+        return;
+      }
+
+      // Handle mixed content: group consecutive inline elements into paragraphs
+      const groups = [];
+      let currentInlineGroup = [];
+
+      for (const child of vNode.children) {
+        if (isInlineElement(child)) {
+          currentInlineGroup.push(child);
+        } else {
+          // Flush current inline group as a paragraph
+          if (currentInlineGroup.length > 0) {
+            groups.push({ type: 'inline', children: currentInlineGroup });
+            currentInlineGroup = [];
+          }
+          // Add block element
+          groups.push({ type: 'block', node: child });
+        }
+      }
+      // Flush remaining inline group
+      if (currentInlineGroup.length > 0) {
+        groups.push({ type: 'inline', children: currentInlineGroup });
+      }
+
+      // Process groups
+      for (const group of groups) {
+        if (group.type === 'inline') {
+          const paragraphVNode = new VNode('p', null, group.children);
+          const paragraphFragment = await xmlBuilder.buildParagraph(
+            paragraphVNode,
+            {},
+            docxDocumentInstance
+          );
+          xmlFragment.import(paragraphFragment);
+        } else {
+          await convertVTreeToXML(
+            docxDocumentInstance,
+            group.node,
+            xmlFragment
+          );
+        }
+      }
+      return;
+    }
+  }
+
   switch (vNode.tagName) {
     case 'h1':
     case 'h2':
@@ -328,7 +452,7 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
     case 'h4':
     case 'h5':
     case 'h6': {
-      // Check if the heading has a bookmark anchor (an <a> with id but no href)
+      // Check if the heading has a bookmark anchor (an <a> or <span> with id but no href)
       let bookmarkId = null;
       let headingVNode = vNode;
       if (vNodeHasChildren(vNode) && vNode.children.length > 0) {
@@ -342,7 +466,7 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
 
         if (
           isVNode(firstChild) &&
-          firstChild.tagName === 'a' &&
+          (firstChild.tagName === 'a' || firstChild.tagName === 'span') &&
           anchorId &&
           !hasHref
         ) {
@@ -480,6 +604,23 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
     }
     case 'figure':
       if (vNodeHasChildren(vNode)) {
+        // Helper to find and process img elements recursively
+        const processImageInNode = async (node) => {
+          if (!isVNode(node)) return;
+          if (node.tagName === 'img') {
+            const imageFragment = await buildImage(docxDocumentInstance, node);
+            if (imageFragment) {
+              xmlFragment.import(imageFragment);
+            }
+            return;
+          }
+          if (vNodeHasChildren(node)) {
+            for (const child of node.children) {
+              await processImageInNode(child);
+            }
+          }
+        };
+
         for (let index = 0; index < vNode.children.length; index++) {
           const childVNode = vNode.children[index];
           if (childVNode.tagName === 'table') {
@@ -505,6 +646,30 @@ async function findXMLEquivalent(docxDocumentInstance, vNode, xmlFragment) {
             );
             if (imageFragment) {
               xmlFragment.import(imageFragment);
+            }
+          } else if (childVNode.tagName === 'figcaption') {
+            // Handle image caption
+            const captionFragment = await xmlBuilder.buildParagraph(
+              childVNode,
+              {},
+              docxDocumentInstance
+            );
+            xmlFragment.import(captionFragment);
+          } else if (childVNode.tagName === 'div') {
+            // Look for img and figcaption inside div (static component pattern)
+            await processImageInNode(childVNode);
+            // Also check for figcaption in the div
+            if (vNodeHasChildren(childVNode)) {
+              for (const divChild of childVNode.children) {
+                if (isVNode(divChild) && divChild.tagName === 'figcaption') {
+                  const captionFragment = await xmlBuilder.buildParagraph(
+                    divChild,
+                    {},
+                    docxDocumentInstance
+                  );
+                  xmlFragment.import(captionFragment);
+                }
+              }
             }
           }
         }
