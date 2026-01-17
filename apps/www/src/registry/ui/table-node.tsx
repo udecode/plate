@@ -437,7 +437,7 @@ export function TableRowElement({
   );
   const hasControls = !readOnly && !isSelectionAreaVisible;
 
-  const { isDragging, previewRef, handleRef } = useDraggable({
+  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
     type: element.type,
     canDropNode: ({ dragEntry, dropEntry }) =>
@@ -457,7 +457,7 @@ export function TableRowElement({
   return (
     <PlateElement
       {...props}
-      ref={useComposedRef(props.ref, previewRef)}
+      ref={useComposedRef(props.ref, previewRef, nodeRef)}
       as="tr"
       className={cn('group/row', isDragging && 'opacity-50')}
       attributes={{

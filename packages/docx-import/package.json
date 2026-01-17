@@ -1,8 +1,12 @@
 {
-  "name": "@platejs/selection",
-  "version": "52.0.16",
-  "description": "Plate selection plugins",
+  "name": "@platejs/docx-import",
+  "version": "52.0.0",
+  "description": "Document import plugin for Plate - DOCX, HTML, Markdown",
   "keywords": [
+    "docx",
+    "html",
+    "import",
+    "markdown",
     "plate",
     "plugin",
     "slate"
@@ -14,13 +18,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/selection"
+    "directory": "packages/docx-import"
   },
   "license": "MIT",
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
-    "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -40,14 +43,18 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "copy-to-clipboard": "^3.3.3",
+    "mammoth": "^1.9.0",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
+    "@platejs/docx": "workspace:^",
+    "@platejs/markdown": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.11",
+    "@platejs/docx": ">=52.0.0",
+    "@platejs/markdown": ">=52.0.0",
+    "platejs": ">=52.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

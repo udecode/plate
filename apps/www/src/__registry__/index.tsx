@@ -2681,9 +2681,33 @@ export const Index: Record<string, any> = {
       type: "registry:file",
       target: "app/api/ai/command/utils.ts"
     },{
-      path: "src/registry/app/api/ai/command/prompts.ts",
+      path: "src/registry/app/api/ai/command/prompt/index.ts",
       type: "registry:file",
-      target: "app/api/ai/command/prompts.ts"
+      target: "app/api/ai/command/prompt/index.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/common.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/common.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/getChooseToolPrompt.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/getChooseToolPrompt.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/getCommentPrompt.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/getCommentPrompt.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/getEditPrompt.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/getEditPrompt.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/getEditTablePrompt.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/getEditTablePrompt.ts"
+    },{
+      path: "src/registry/app/api/ai/command/prompt/getGeneratePrompt.ts",
+      type: "registry:file",
+      target: "app/api/ai/command/prompt/getGeneratePrompt.ts"
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/app/api/ai/command/route.ts")

@@ -4,7 +4,9 @@
 
 export * from './acceptAISuggestions';
 export * from './applyAISuggestions';
+export * from './applyTableCellSuggestion';
 export * from './getLastAssistantMessage';
+export * from './nestedContainerUtils';
 export * from './rejectAISuggestions';
 export * from './resetAIChat';
 export * from './submitAIChat';

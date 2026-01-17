@@ -8,7 +8,8 @@ export type MarkdownType =
   | 'blockSelectionWithBlockId'
   | 'blockWithBlockId'
   | 'editor'
-  | 'editorWithBlockId';
+  | 'editorWithBlockId'
+  | 'tableCellWithId';
 
 export const replacePlaceholders = (
   editor: SlateEditor,
@@ -28,6 +29,7 @@ export const replacePlaceholders = (
     '{block}': 'block',
     '{editorWithBlockId}': 'editorWithBlockId',
     '{editor}': 'editor',
+    '{tableCellWithId}': 'tableCellWithId',
   };
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {

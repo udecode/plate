@@ -1,5 +1,19 @@
 # @platejs/selection
 
+## 52.0.16
+
+### Patch Changes
+
+- [#4799](https://github.com/udecode/plate/pull/4799) by [@felixfeng33](https://github.com/felixfeng33) –
+
+  - Added `disableSelectAll` option to **BlockSelectionPlugin**. Set to `true` to disable the plugin's custom selectAll (Cmd+A) behavior and use the editor's default behavior instead.
+
+    ```ts
+    BlockSelectionPlugin.configure({
+      options: { disableSelectAll: true },
+    });
+    ```
+
 ## 52.0.11
 
 ### Patch Changes

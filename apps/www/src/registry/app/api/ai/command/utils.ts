@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
-import { type SlateEditor, RangeApi } from 'platejs';
+import { type SlateEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -46,18 +46,17 @@ export const list = (items: string[] | undefined) =>
     : '';
 
 export type StructuredPromptSections = {
-  backgroundData?: string;
+  context?: string;
   examples?: string[] | string;
   history?: string;
+  instruction?: string;
   outputFormatting?: string;
   prefilledResponse?: string;
-  question?: string;
   rules?: string;
   task?: string;
   taskContext?: string;
   thinking?: string;
   tone?: string;
-  tools?: string;
 };
 
 /**
@@ -88,12 +87,12 @@ export type StructuredPromptSections = {
  *   11. Prefilled response - Optional response starter
  */
 export const buildStructuredPrompt = ({
-  backgroundData,
+  context,
   examples,
   history,
+  instruction,
   outputFormatting,
   prefilledResponse,
-  question,
   rules,
   task,
   taskContext,
@@ -101,48 +100,49 @@ export const buildStructuredPrompt = ({
   tone,
 }: StructuredPromptSections) => {
   const formattedExamples = Array.isArray(examples)
-    ? examples.map((example) => tag('example', example)).join('\n')
+    ? examples
+        .map((example) => {
+          // Indent content inside example tag (4 spaces)
+          const indentedContent = example
+            .split('\n')
+            .map((line) => (line ? `    ${line}` : ''))
+            .join('\n');
+
+          return ['  <example>', indentedContent, '  </example>'].join('\n');
+        })
+        .join('\n')
     : examples;
 
-  const context = sections([
+  return sections([
     taskContext,
     tone,
 
-    backgroundData &&
+    task && tag('task', task),
+
+    instruction &&
       dedent`
-        Here is the background data you should reference when answering the user:
-        <backgroundData>
-              ${backgroundData}
-        </backgroundData>
-      `,
-    rules &&
-      dedent`
-        Here are some important rules for the interaction:
-            ${rules}
+        Here is the user's instruction (this is what you need to respond to):
+        ${tag('instruction', instruction)}
       `,
 
-    formattedExamples &&
+    context &&
       dedent`
-        Here are some examples of how to respond in a standard interaction:
-              ${tag('examples', formattedExamples)}
+        Here is the context you should reference when answering the user:
+        ${tag('context', context)}
       `,
+
+    rules && tag('rules', rules),
+
+    formattedExamples &&
+      'Here are some examples of how to respond in a standard interaction:\n' +
+        tag('examples', formattedExamples),
 
     history &&
       dedent`
-        Here is the conversation history (between the user and you) prior to the question:
-              ${tag('history', history)}
+        Here is the conversation history (between the user and you) prior to the current instruction:
+        ${tag('history', history)}
       `,
 
-    question &&
-      dedent`
-        Here is the user's question:
-              ${tag('question', question)}
-      `,
-  ]);
-
-  return sections([
-    tag('context', context),
-    task,
     // or <reasoningSteps>
     thinking && tag('thinking', thinking),
     // Not needed with structured output
@@ -162,12 +162,15 @@ export function getTextFromMessage(message: UIMessage): string {
 
 /**
  * Format conversation history for prompts. Extracts text from messages and
- * formats as ROLE: text.
+ * formats as ROLE: text. Returns empty string if only one message (no history needed).
  */
 export function formatTextFromMessages(
   messages: ChatMessage[],
   options?: { limit?: number }
 ): string {
+  // No history needed if no messages or only one message
+  if (!messages || messages.length <= 1) return '';
+
   const historyMessages = options?.limit
     ? messages.slice(-options.limit)
     : messages;
@@ -175,12 +178,30 @@ export function formatTextFromMessages(
   return historyMessages
     .map((message) => {
       const text = getTextFromMessage(message).trim();
+
       if (!text) return null;
+
       const role = message.role.toUpperCase();
+
       return `${role}: ${text}`;
     })
     .filter(Boolean)
     .join('\n');
+}
+
+/**
+ * Get the last user message text from messages array.
+ */
+export function getLastUserInstruction(messages: ChatMessage[]): string {
+  if (!messages || messages.length === 0) return '';
+
+  const lastUserMessage = [...messages]
+    .reverse()
+    .find((m) => m.role === 'user');
+
+  if (!lastUserMessage) return '';
+
+  return getTextFromMessage(lastUserMessage).trim();
 }
 
 const SELECTION_START = '<Selection>';
@@ -235,7 +256,7 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 
 /** Check if the current selection fully covers all top-level blocks. */
 export const isMultiBlocks = (editor: SlateEditor) => {
-  const blocks = editor.api.blocks({ mode: 'highest' });
+  const blocks = editor.api.blocks({ mode: 'lowest' });
 
   return blocks.length > 1;
 };
@@ -243,3 +264,30 @@ export const isMultiBlocks = (editor: SlateEditor) => {
 /** Get markdown with selection markers */
 export const getMarkdownWithSelection = (editor: SlateEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
+
+/** Check if the current selection is inside a table cell */
+export const isSelectionInTable = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  const tableEntry = editor.api.block({
+    at: editor.selection,
+    match: { type: KEYS.table },
+  });
+
+  return !!tableEntry;
+};
+
+/** Check if selection is within a single table cell */
+export const isSingleCellSelection = (editor: SlateEditor): boolean => {
+  if (!editor.selection) return false;
+
+  // Get all td blocks in selection
+  const cells = Array.from(
+    editor.api.nodes({
+      at: editor.selection,
+      match: { type: KEYS.td },
+    })
+  );
+
+  return cells.length === 1;
+};
