@@ -45,6 +45,20 @@ import ListStyleBuilder, {
   type ListStyleType,
 } from './utils/list';
 
+/**
+ * Get bullet character for unordered list based on level.
+ * Uses Symbol font characters for consistent rendering in Word.
+ */
+const getBulletChar = (level: number): string => {
+  // Symbol font bullet characters for different levels
+  const bullets = [
+    '\uF0B7', // Level 0: Bullet (•)
+    'o', // Level 1: Circle (will render as ○ with Symbol font)
+    '\uF0A7', // Level 2: Square bullet (■)
+  ];
+  return bullets[level % bullets.length];
+};
+
 /** Virtual DOM tree node */
 export interface VTree {
   children?: VTree[];
@@ -747,7 +761,7 @@ class DocxDocument {
                   properties.style,
                   level
                 )
-              : ''
+              : getBulletChar(level)
           )
           .up()
           .ele('@w', 'lvlJc')

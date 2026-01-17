@@ -4,5 +4,3 @@
 
 export * from './DocxPlugin';
 export * from './docx-cleaner/index';
-export * from './docx-export-plugin';
-export * from './html-to-docx';

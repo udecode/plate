@@ -175,6 +175,7 @@ type RunAttributes = {
 interface ParagraphAttributes extends RunAttributes {
   afterSpacing?: number;
   beforeSpacing?: number;
+  blockquoteBorder?: boolean;
   bookmarkId?: string | null;
   colSpan?: number;
   description?: string;
@@ -632,7 +633,7 @@ const modifiedStyleAttributesBuilder = (
   if (options?.isParagraph) {
     if (isVNode(vNode) && (vNode as VNodeType).tagName === 'blockquote') {
       modifiedAttributes.indentation = { left: 284 };
-      modifiedAttributes.textAlign = 'justify';
+      modifiedAttributes.blockquoteBorder = true;
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'code') {
       modifiedAttributes.highlightColor = 'lightGray';
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'pre') {
@@ -700,19 +701,24 @@ const buildRunProperties = (
   }).ele('@w', 'rPr');
   if (attributes && attributes.constructor === Object) {
     Object.keys(attributes).forEach((key) => {
+      const value = (attributes as Record<string, unknown>)[key];
+
+      // Skip undefined values to prevent default 'black' being applied
+      if (value === undefined) return;
+
       const options: FormattingOptions = {};
       if (
         key === 'color' ||
         key === 'backgroundColor' ||
         key === 'highlightColor'
       ) {
-        options.color = (attributes as Record<string, string>)[key];
+        options.color = value as string;
       }
 
       if (key === 'fontSize' || key === 'font') {
-        (options as Record<string, string | number>)[key] = (
-          attributes as Record<string, string | number>
-        )[key];
+        (options as Record<string, string | number>)[key] = value as
+          | string
+          | number;
       }
 
       const formattingFragment = buildFormatting(key, options);
@@ -1222,6 +1228,24 @@ const buildParagraphProperties = (
           paragraphPropertiesFragment.import(indentationFragment);
 
           attributes.indentation = undefined;
+          break;
+        }
+        case 'blockquoteBorder': {
+          // Add left border for blockquote styling
+          const borderFragment = fragment({
+            namespaceAlias: { w: namespaces.w },
+          })
+            .ele('@w', 'pBdr')
+            .ele('@w', 'left')
+            .att('@w', 'val', 'single')
+            .att('@w', 'sz', '18') // 2.25pt border width
+            .att('@w', 'space', '4')
+            .att('@w', 'color', 'CCCCCC')
+            .up()
+            .up();
+          paragraphPropertiesFragment.import(borderFragment);
+
+          attributes.blockquoteBorder = undefined;
           break;
         }
       }

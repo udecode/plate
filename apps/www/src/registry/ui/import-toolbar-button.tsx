@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { importDocx, importHtml, importMarkdown } from '@platejs/docx-import';
+import { importDocx, importHtml, importMarkdown } from '@platejs/docx-io';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { useEditorRef } from 'platejs/react';
 import { toast } from 'sonner';

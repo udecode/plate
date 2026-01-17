@@ -1,9 +1,10 @@
 {
-  "name": "@platejs/docx-import",
+  "name": "@platejs/docx-io",
   "version": "52.0.0",
-  "description": "Document import plugin for Plate - DOCX, HTML, Markdown",
+  "description": "DOCX import/export for Plate - file-based document conversion",
   "keywords": [
     "docx",
+    "export",
     "html",
     "import",
     "markdown",
@@ -18,7 +19,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/udecode/plate.git",
-    "directory": "packages/docx-import"
+    "directory": "packages/docx-io"
   },
   "license": "MIT",
   "sideEffects": false,
@@ -43,8 +44,19 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
+    "color-name": "^2.0.0",
+    "html-entities": "^2.5.2",
+    "html-to-vdom": "^0.7.0",
+    "jszip": "^3.10.1",
+    "juice": "^11.0.1",
+    "lodash": "^4.17.21",
     "mammoth": "^1.9.0",
-    "react-compiler-runtime": "^1.0.0"
+    "mime-types": "^2.1.35",
+    "nanoid": "^5.0.9",
+    "react-compiler-runtime": "^1.0.0",
+    "validator": "^13.15.15",
+    "virtual-dom": "^2.1.1",
+    "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
     "@platejs/docx": "workspace:^",
