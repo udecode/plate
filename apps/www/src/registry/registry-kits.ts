@@ -575,6 +575,24 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/docx-io'],
+    files: [
+      {
+        path: 'components/editor/plugins/docx-export-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'docx-export-kit',
+    registryDependencies: [
+      'callout-node-static-docx',
+      'code-block-node-static-docx',
+      'column-node-static-docx',
+      'equation-node-static-docx',
+      'toc-node-static-docx',
+    ],
+    type: 'registry:component',
+  },
+  {
     files: [
       {
         path: 'components/editor/editor-kit.tsx',

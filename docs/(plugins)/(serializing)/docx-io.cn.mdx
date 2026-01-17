@@ -1,0 +1,406 @@
+---
+title: DOCX 导入/导出
+description: 导入 DOCX 文件并将 Plate 内容导出为 Word 文档。
+---
+
+<PackageInfo>
+
+## 功能特性
+
+- **导入 DOCX 文件** 到 Plate 格式，支持完整内容和批注提取
+- **导出为 DOCX** 支持所有常见格式、表格、列表和图片
+- 支持页眉、页脚、页面方向和边距
+- 可配置导出的 CSS 样式和字体
+
+</PackageInfo>
+
+<Callout type="info">
+  需要从 Word 粘贴支持？请参阅 [DOCX 粘贴](/docs/docx)。
+</Callout>
+
+## 安装
+
+```bash
+npm install @platejs/docx-io
+```
+
+## 导入 DOCX
+
+<Steps>
+
+### 导入 DOCX 文件
+
+使用 `importDocx` 将 DOCX 文件转换为 Plate 节点：
+
+```tsx
+import { importDocx } from '@platejs/docx-io';
+
+const handleFileUpload = async (file: File) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await importDocx(editor, arrayBuffer);
+
+  // 将节点插入编辑器
+  editor.tf.insertNodes(result.nodes);
+
+  // 处理批注（如需要）
+  for (const comment of result.comments) {
+    console.log(`批注 ${comment.id}: ${comment.text}`);
+  }
+
+  // 检查转换警告
+  if (result.warnings.length > 0) {
+    console.warn('转换警告:', result.warnings);
+  }
+};
+```
+
+</Steps>
+
+## 导出 DOCX
+
+<Steps>
+
+### 基本导出
+
+使用 `exportToDocx` 将 Plate 内容转换为 DOCX 文件：
+
+```tsx
+import { exportToDocx, downloadDocx } from '@platejs/docx-io';
+
+const handleExport = async () => {
+  const blob = await exportToDocx(editor.children, {
+    orientation: 'portrait',
+    margins: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
+    fontFamily: 'Calibri',
+  });
+
+  downloadDocx(blob, 'document.docx');
+};
+```
+
+或使用组合函数：
+
+```tsx
+import { exportEditorToDocx } from '@platejs/docx-io';
+
+await exportEditorToDocx(editor.children, 'document', {
+  orientation: 'portrait',
+});
+```
+
+### 使用编辑器插件
+
+为确保准确序列化，请提供您的编辑器插件：
+
+```tsx
+import { exportToDocx } from '@platejs/docx-io';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { DocxExportKit } from '@/components/editor/plugins/docx-export-kit';
+
+const blob = await exportToDocx(editor.children, {
+  editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+});
+```
+
+### 自定义样式
+
+自定义导出样式：
+
+```tsx
+import { exportToDocx, DOCX_EXPORT_STYLES } from '@platejs/docx-io';
+
+const blob = await exportToDocx(editor.children, {
+  customStyles: `
+    .custom-highlight { background-color: #ffeb3b; }
+    h1 { color: #1a1a1a; }
+  `,
+  fontFamily: 'Times New Roman',
+});
+```
+
+### 使用 DocxExportPlugin
+
+基于插件的 API 访问：
+
+```tsx
+import { DocxExportPlugin } from '@platejs/docx-io';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件,
+    DocxExportPlugin.configure({
+      options: {
+        editorPlugins: myPlugins,
+        editorStaticComponent: MyEditorStatic,
+      },
+    }),
+  ],
+});
+
+// 使用插件 API 导出
+const blob = await editor.api.docxExport.exportToBlob({
+  orientation: 'landscape',
+});
+
+editor.api.docxExport.download(blob, 'document');
+
+// 或使用 transform 导出并下载
+await editor.tf.docxExport.exportAndDownload('document', {
+  orientation: 'portrait',
+});
+```
+
+</Steps>
+
+## DOCX 导出套件
+
+`DocxExportKit` 为需要特殊处理的元素提供 DOCX 优化的静态组件：
+
+<ComponentSource name="docx-export-kit" />
+
+包含的组件：
+- **代码块**: 带换行的内联语法高亮
+- **多列**: 使用表格布局代替 flexbox
+- **公式**: 内联字体样式（KaTeX 在 DOCX 中不工作）
+- **标注**: 图标+内容的表格布局
+- **目录**: 带正确段落分隔的锚点链接
+
+## 插件
+
+### DocxExportPlugin
+
+提供 DOCX 导出功能和类型化 API 方法的插件。
+
+<API name="DocxExportPlugin">
+<APIOptions>
+<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+用于 HTML 序列化的插件。如未提供，则使用编辑器当前的插件。
+</APIItem>
+<APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
+用于静态渲染的 React 组件。
+</APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `importDocx`
+
+导入 DOCX 文件并转换为 Plate 节点。
+
+<API name="importDocx">
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+Plate 编辑器实例。
+</APIItem>
+<APIItem name="arrayBuffer" type="ArrayBuffer">
+DOCX 文件的 ArrayBuffer。
+</APIItem>
+<APIItem name="options" type="ImportDocxOptions" optional>
+导入选项。
+</APIItem>
+</APIParameters>
+
+<APIOptions type="ImportDocxOptions">
+<APIItem name="rtf" type="string" optional>
+用于图片提取的 RTF 数据。
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<ImportDocxResult>">
+<APIItem name="nodes" type="TNode[]">
+反序列化的编辑器节点。
+</APIItem>
+<APIItem name="comments" type="DocxComment[]">
+从 DOCX 文件提取的批注。
+</APIItem>
+<APIItem name="warnings" type="string[]">
+mammoth 转换的警告。
+</APIItem>
+</APIReturns>
+</API>
+
+### `exportToDocx`
+
+将 Plate 内容转换为 DOCX blob。
+
+<API name="exportToDocx">
+<APIParameters>
+<APIItem name="value" type="Value">
+Plate 编辑器值（节点数组）。
+</APIItem>
+<APIItem name="options" type="DocxExportOptions" optional>
+导出选项。
+</APIItem>
+</APIParameters>
+
+<APIOptions type="DocxExportOptions">
+<APIItem name="orientation" type="'portrait' | 'landscape'" optional>
+页面方向。
+
+- **默认值:** `'portrait'`
+</APIItem>
+<APIItem name="margins" type="DocxExportMargins" optional>
+页边距，单位为二十分之一点（1英寸 = 1440）。
+
+- **默认值:** `{ top: 1440, bottom: 1440, left: 1440, right: 1440, header: 720, footer: 720, gutter: 0 }`
+</APIItem>
+<APIItem name="fontFamily" type="string" optional>
+文档正文的字体系列。覆盖默认的 Calibri 字体。
+</APIItem>
+<APIItem name="customStyles" type="string" optional>
+要包含的额外 CSS 样式。附加在默认 DOCX_EXPORT_STYLES 之后。
+</APIItem>
+<APIItem name="title" type="string" optional>
+用于元数据的文档标题。
+</APIItem>
+<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+用于 HTML 序列化的插件。
+</APIItem>
+<APIItem name="editorStaticComponent" type="React.ComponentType" optional>
+用于静态渲染的组件。
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<Blob>">
+包含 DOCX 文件的 Blob。
+</APIReturns>
+</API>
+
+### `downloadDocx`
+
+将 DOCX blob 下载为文件。
+
+<API name="downloadDocx">
+<APIParameters>
+<APIItem name="blob" type="Blob">
+要下载的 DOCX blob。
+</APIItem>
+<APIItem name="filename" type="string">
+文件名（带或不带 .docx 扩展名）。
+</APIItem>
+</APIParameters>
+</API>
+
+### `exportEditorToDocx`
+
+一次调用导出并下载编辑器内容为 DOCX 文件。
+
+<API name="exportEditorToDocx">
+<APIParameters>
+<APIItem name="value" type="Value">
+Plate 编辑器值。
+</APIItem>
+<APIItem name="filename" type="string">
+下载的文件名。
+</APIItem>
+<APIItem name="options" type="DocxExportOptions" optional>
+导出选项（与 `exportToDocx` 相同）。
+</APIItem>
+</APIParameters>
+</API>
+
+### api.docxExport.exportToBlob
+
+使用插件 API 将编辑器内容转换为 DOCX blob。
+
+<API name="api.docxExport.exportToBlob">
+<APIOptions type="DocxExportOperationOptions">
+<APIItem name="orientation" type="'portrait' | 'landscape'" optional>
+页面方向。
+</APIItem>
+<APIItem name="margins" type="DocxExportMargins" optional>
+页边距。
+</APIItem>
+<APIItem name="fontFamily" type="string" optional>
+字体系列。
+</APIItem>
+<APIItem name="customStyles" type="string" optional>
+额外的 CSS 样式。
+</APIItem>
+<APIItem name="title" type="string" optional>
+文档标题。
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<Blob>">
+包含 DOCX 文件的 Blob。
+</APIReturns>
+</API>
+
+### api.docxExport.download
+
+将 DOCX blob 下载为文件。
+
+<API name="api.docxExport.download">
+<APIParameters>
+<APIItem name="blob" type="Blob">
+DOCX blob。
+</APIItem>
+<APIItem name="filename" type="string">
+文件名。
+</APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### tf.docxExport.exportAndDownload
+
+导出并下载编辑器内容为 DOCX 文件。
+
+<API name="tf.docxExport.exportAndDownload">
+<APIParameters>
+<APIItem name="filename" type="string">
+下载的文件名。
+</APIItem>
+<APIItem name="options" type="DocxExportOperationOptions" optional>
+导出选项。
+</APIItem>
+</APIParameters>
+</API>
+
+## 类型
+
+### DocxComment
+
+```ts
+type DocxComment = {
+  id: string;
+  text: string;
+};
+```
+
+### DocxExportMargins
+
+```ts
+type DocxExportMargins = {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  header?: number;
+  footer?: number;
+  gutter?: number;
+};
+```
+
+## 常量
+
+### DOCX_EXPORT_STYLES
+
+为 Microsoft Word HTML 渲染优化的默认 CSS 样式：
+
+- Calibri 字体（Microsoft Office 默认）
+- 11pt 字号，1.5 行高
+- 标题层级（24pt 到 10pt）
+- 带边框的表格样式
+- Courier New 代码块样式
+- 带左边框的引用样式
+
+## 已知限制
+
+- **移动浏览器**: 由于 blob 处理和下载的限制，导出在移动浏览器上可能不可靠。
+- **复杂布局**: 某些复杂的 CSS 布局（flexbox、grid）会转换为基于表格的布局以兼容 Word。
+- **自定义字体**: 只有 Word 中可用的系统字体才能正确渲染。

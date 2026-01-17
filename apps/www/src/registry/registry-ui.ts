@@ -999,6 +999,13 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@platejs/callout'],
+    description: 'A DOCX-optimized callout static component.',
+    files: [{ path: 'ui/callout-node-static-docx.tsx', type: 'registry:ui' }],
+    name: 'callout-node-static-docx',
+    type: 'registry:ui',
+  },
+  {
     dependencies: ['@platejs/code-block', 'lowlight'],
     description:
       'A code block with syntax highlighting and language selection.',
@@ -1019,6 +1026,15 @@ export const uiNodes: Registry['items'] = [
     name: 'code-block-node',
     registryDependencies: ['shadcn/command', 'shadcn/popover', 'shadcn/button'],
     title: 'Code Block Nodes',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@platejs/code-block', 'lowlight'],
+    description: 'A DOCX-optimized code block static component.',
+    files: [
+      { path: 'ui/code-block-node-static-docx.tsx', type: 'registry:ui' },
+    ],
+    name: 'code-block-node-static-docx',
     type: 'registry:ui',
   },
   {
@@ -1062,6 +1078,13 @@ export const uiNodes: Registry['items'] = [
     name: 'column-node',
     registryDependencies: ['resize-handle'],
     title: 'Column Nodes',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@platejs/layout'],
+    description: 'A DOCX-optimized column static component.',
+    files: [{ path: 'ui/column-node-static-docx.tsx', type: 'registry:ui' }],
+    name: 'column-node-static-docx',
     type: 'registry:ui',
   },
   {
@@ -1139,6 +1162,13 @@ export const uiNodes: Registry['items'] = [
     name: 'equation-node',
     registryDependencies: ['shadcn/popover'],
     title: 'Equation Element',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@platejs/math'],
+    description: 'A DOCX-optimized equation static component.',
+    files: [{ path: 'ui/equation-node-static-docx.tsx', type: 'registry:ui' }],
+    name: 'equation-node-static-docx',
     type: 'registry:ui',
   },
   {
@@ -1613,6 +1643,13 @@ export const uiNodes: Registry['items'] = [
     name: 'toc-node',
     registryDependencies: [],
     title: 'TOC Element',
+    type: 'registry:ui',
+  },
+  {
+    dependencies: ['@platejs/toc'],
+    description: 'A DOCX-optimized TOC static component.',
+    files: [{ path: 'ui/toc-node-static-docx.tsx', type: 'registry:ui' }],
+    name: 'toc-node-static-docx',
     type: 'registry:ui',
   },
   {

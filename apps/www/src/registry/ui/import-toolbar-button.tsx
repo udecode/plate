@@ -4,10 +4,10 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { importDocx, importHtml, importMarkdown } from '@platejs/docx-io';
+import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
+import { getEditorDOMFromHtmlString } from 'platejs/static';
 import { useEditorRef } from 'platejs/react';
-import { toast } from 'sonner';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -20,56 +20,38 @@ import {
 
 import { ToolbarButton } from './toolbar';
 
-type ImportType = 'docx' | 'html' | 'markdown';
+type ImportType = 'html' | 'markdown';
 
 export function ImportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
   const [open, setOpen] = React.useState(false);
 
-  const handleImport = React.useCallback(
-    async (file: File, type: ImportType) => {
-      try {
-        if (type === 'docx') {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await importDocx(editor, arrayBuffer);
+  const getFileNodes = (text: string, type: ImportType) => {
+    if (type === 'html') {
+      const editorNode = getEditorDOMFromHtmlString(text);
+      const nodes = editor.api.html.deserialize({
+        element: editorNode,
+      });
 
-          if (result.warnings.length > 0) {
-            console.warn('DOCX import warnings:', result.warnings);
-          }
+      return nodes;
+    }
 
-          editor.tf.insertNodes(result.nodes);
+    if (type === 'markdown') {
+      return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
+    }
 
-          if (result.comments.length > 0) {
-            console.info(
-              `DOCX contains ${result.comments.length} comments (not imported)`
-            );
-          }
+    return [];
+  };
 
-          toast.success('DOCX file imported successfully');
-        } else if (type === 'html') {
-          const text = await file.text();
-          const result = importHtml(editor, text);
-          editor.tf.insertNodes(result.nodes);
-          toast.success('HTML file imported successfully');
-        } else if (type === 'markdown') {
-          const text = await file.text();
-          const result = importMarkdown(editor, text);
-          editor.tf.insertNodes(result.nodes);
-          toast.success('Markdown file imported successfully');
-        }
-      } catch (error) {
-        console.error('Import error:', error);
-        toast.error('Failed to import file');
-      }
-    },
-    [editor]
-  );
-
-  const { openFilePicker: openDocxFilePicker } = useFilePicker({
-    accept: ['.docx'],
+  const { openFilePicker: openMdFilePicker } = useFilePicker({
+    accept: ['.md', '.mdx'],
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
-      await handleImport(plainFiles[0], 'docx');
+      const text = await plainFiles[0].text();
+
+      const nodes = getFileNodes(text, 'markdown');
+
+      editor.tf.insertNodes(nodes);
     },
   });
 
@@ -77,15 +59,11 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     accept: ['text/html'],
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
-      await handleImport(plainFiles[0], 'html');
-    },
-  });
+      const text = await plainFiles[0].text();
 
-  const { openFilePicker: openMdFilePicker } = useFilePicker({
-    accept: ['.md', '.mdx'],
-    multiple: false,
-    onFilesSelected: async ({ plainFiles }) => {
-      await handleImport(plainFiles[0], 'markdown');
+      const nodes = getFileNodes(text, 'html');
+
+      editor.tf.insertNodes(nodes);
     },
   });
 
@@ -99,15 +77,19 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       <DropdownMenuContent align="start">
         <DropdownMenuGroup>
-          <DropdownMenuItem onSelect={() => openDocxFilePicker()}>
-            Import from DOCX
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onSelect={() => openHtmlFilePicker()}>
+          <DropdownMenuItem
+            onSelect={() => {
+              openHtmlFilePicker();
+            }}
+          >
             Import from HTML
           </DropdownMenuItem>
 
-          <DropdownMenuItem onSelect={() => openMdFilePicker()}>
+          <DropdownMenuItem
+            onSelect={() => {
+              openMdFilePicker();
+            }}
+          >
             Import from Markdown
           </DropdownMenuItem>
         </DropdownMenuGroup>

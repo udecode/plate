@@ -23,15 +23,3 @@ export type ImportDocxOptions = {
   /** RTF data for image extraction (optional) */
   rtf?: string;
 };
-
-/** Result of importing HTML */
-export type ImportHtmlResult = {
-  /** Deserialized editor nodes */
-  nodes: TNode[];
-};
-
-/** Result of importing Markdown */
-export type ImportMarkdownResult = {
-  /** Deserialized editor nodes */
-  nodes: TNode[];
-};
