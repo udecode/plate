@@ -8,14 +8,7 @@
  */
 
 import HTMLtoDOCX from './html-to-docx/index.js';
-import type {
-  DocumentOptions,
-  LineNumberOptions,
-  Margins,
-  NumberingOptions,
-  PageSize,
-  TableOptions,
-} from './html-to-docx/index.js';
+import type { DocumentOptions, Margins } from './html-to-docx/index.js';
 
 // Re-export types from the library
 export type {
@@ -25,7 +18,7 @@ export type {
   NumberingOptions,
   PageSize,
   TableOptions,
-};
+} from './html-to-docx/index.js';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;

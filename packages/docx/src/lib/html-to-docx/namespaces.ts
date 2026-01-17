@@ -1,5 +1,5 @@
 /** OOXML namespace URIs used in DOCX documents */
-export interface OoxmlNamespaces {
+export type OoxmlNamespaces = {
   /** DrawingML main namespace */
   a: string;
   /** Bibliography namespace */
@@ -70,7 +70,7 @@ export interface OoxmlNamespaces {
   xsd: string;
   /** XML Schema instance namespace */
   xsi: string;
-}
+};
 
 const namespaces: OoxmlNamespaces = {
   a: 'http://schemas.openxmlformats.org/drawingml/2006/main',

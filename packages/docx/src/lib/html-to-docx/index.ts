@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import addFilesToContainer from './html-to-docx';
 
 /** Document options for DOCX generation */
-export interface DocumentOptions {
+export type DocumentOptions = {
   complexScriptFontSize?: number | string;
   createdAt?: Date;
   creator?: string;
@@ -32,15 +32,15 @@ export interface DocumentOptions {
   subject?: string;
   table?: TableOptions;
   title?: string;
-}
+};
 
-export interface LineNumberOptions {
+export type LineNumberOptions = {
   countBy?: number;
   restart?: 'continuous' | 'newPage' | 'newSection';
   start?: number;
-}
+};
 
-export interface Margins {
+export type Margins = {
   bottom?: number | string;
   footer?: number | string;
   gutter?: number | string;
@@ -48,22 +48,22 @@ export interface Margins {
   left?: number | string;
   right?: number | string;
   top?: number | string;
-}
+};
 
-export interface NumberingOptions {
+export type NumberingOptions = {
   defaultOrderedListStyleType?: string;
-}
+};
 
-export interface PageSize {
+export type PageSize = {
   height?: number | string;
   width?: number | string;
-}
+};
 
-export interface TableOptions {
+export type TableOptions = {
   row?: {
     cantSplit?: boolean;
   };
-}
+};
 
 const minifyHTMLString = (htmlString: string): string | null => {
   try {

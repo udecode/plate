@@ -63,7 +63,7 @@ import { vNodeHasChildren } from '../utils/vnode';
 import { buildImage, buildList } from './render-document-file';
 
 // Types for Virtual DOM
-interface VNodeProperties {
+type VNodeProperties = {
   alt?: string;
   attributes?: Record<string, string>;
   colSpan?: number;
@@ -72,28 +72,28 @@ interface VNodeProperties {
   rowSpan?: number;
   src?: string;
   style?: Record<string, string>;
-}
+};
 
-interface VNodeType {
+type VNodeType = {
   children?: (VNodeType | VTextType)[];
   properties?: VNodeProperties;
   tagName?: string;
   [key: string]: unknown;
-}
+};
 
-interface VTextType {
+type VTextType = {
   text: string;
   [key: string]: unknown;
-}
+};
 
 // Types for DocxDocumentInstance
-interface MediaFileResponse {
+type MediaFileResponse = {
   fileContent: string;
   fileNameWithExtension: string;
   id: number;
-}
+};
 
-interface DocxDocumentInstance {
+type DocxDocumentInstance = {
   availableDocumentSpace: number;
   createDocumentRelationships: (
     filename: string,
@@ -123,34 +123,34 @@ interface DocxDocumentInstance {
       };
     };
   };
-}
+};
 
 // Types for attributes and options
-interface Indentation {
+type Indentation = {
   left?: number;
   right?: number;
-}
+};
 
-interface NumberingInfo {
+type NumberingInfo = {
   levelId: number;
   numberingId: number;
-}
+};
 
-interface TableCellBorder {
+type TableCellBorder = {
   bottom?: number;
   color?: string;
   left?: number;
   right?: number;
   stroke?: string;
   top?: number;
-}
+};
 
 interface TableBorder extends TableCellBorder {
   insideH?: number;
   insideV?: number;
 }
 
-interface RunAttributes {
+type RunAttributes = {
   backgroundColor?: string;
   code?: boolean;
   color?: string;
@@ -170,7 +170,7 @@ interface RunAttributes {
   u?: boolean;
   verticalAlign?: string;
   width?: number | string;
-}
+};
 
 interface ParagraphAttributes extends RunAttributes {
   afterSpacing?: number;
@@ -198,7 +198,7 @@ interface ParagraphAttributes extends RunAttributes {
   width?: number | string;
 }
 
-interface TableAttributes {
+type TableAttributes = {
   maximumWidth?: number;
   rowCantSplit?: boolean;
   tableBorder?: TableBorder;
@@ -206,12 +206,12 @@ interface TableAttributes {
   tableCellSpacing?: number;
   tableRowHeight?: number;
   width?: number;
-}
+};
 
-interface ColumnWidthInfo {
+type ColumnWidthInfo = {
   type: string;
   value: number;
-}
+};
 
 type FormattingOptions = {
   color?: string;
@@ -533,9 +533,9 @@ const fixupMargin = (marginString: string): number | undefined => {
   return;
 };
 
-interface ModifiedAttributesBuilderOptions {
+type ModifiedAttributesBuilderOptions = {
   isParagraph?: boolean;
-}
+};
 
 const modifiedStyleAttributesBuilder = (
   docxDocumentInstance: DocxDocumentInstance | undefined,
@@ -1246,13 +1246,13 @@ const buildParagraphProperties = (
   return paragraphPropertiesFragment;
 };
 
-interface ImageDimensionAttributes {
+type ImageDimensionAttributes = {
   height?: number;
   maximumWidth?: number;
   originalHeight?: number;
   originalWidth?: number;
   width?: number | string;
-}
+};
 
 const computeImageDimensions = (
   vNode: VNodeType,
@@ -1441,7 +1441,9 @@ const buildParagraph = async (
           }
 
           if (imageSource && isValidUrl(imageSource)) {
-            base64String = await imageToBase64(imageSource).catch(() => undefined);
+            base64String = (await imageToBase64(imageSource).catch(() => {})) as
+              | string
+              | undefined;
 
             if (base64String) {
               // Try to get MIME type from URL extension first
@@ -1573,7 +1575,9 @@ const buildParagraph = async (
 
       let base64String: string | undefined = imageSource;
       if (imageSource && isValidUrl(imageSource)) {
-        base64String = await imageToBase64(imageSource).catch(() => undefined);
+        base64String = (await imageToBase64(imageSource).catch(() => {})) as
+          | string
+          | undefined;
 
         if (base64String) {
           // Try to get MIME type from URL extension first
@@ -1779,7 +1783,8 @@ const buildTableCellProperties = (
           const border = attributes[key]!;
           // Only add cell borders if at least one border has a non-zero size
           const hasVisibleBorder = Object.entries(border).some(
-            ([k, v]) => k !== 'color' && k !== 'stroke' && v && v > 0
+            ([k, v]) =>
+              k !== 'color' && k !== 'stroke' && typeof v === 'number' && v > 0
           );
           if (hasVisibleBorder) {
             const tableCellBorderFragment = buildTableCellBorders(border);
@@ -1905,14 +1910,14 @@ const fixupTableCellBorder = (
   }
 };
 
-interface RowSpanInfo {
+type RowSpanInfo = {
   colSpan: number;
   rowSpan: number;
-}
+};
 
-interface ColumnIndex {
+type ColumnIndex = {
   index: number;
-}
+};
 
 const buildTableCell = async (
   vNode: VNodeType | VTextType,
@@ -1975,7 +1980,7 @@ const buildTableCell = async (
   // Don't pass cell-level backgroundColor to paragraph content
   // It should only apply to the cell itself (tcPr), not text runs
   const paragraphAttributes = { ...modifiedAttributes };
-  delete paragraphAttributes.backgroundColor;
+  paragraphAttributes.backgroundColor = undefined;
 
   if (vNodeHasChildren(vNode as VNodeType)) {
     const vn = vNode as VNodeType;
@@ -2743,10 +2748,10 @@ const buildPresetGeometry = (): XMLBuilderType =>
     .att('prst', 'rect')
     .up();
 
-interface ExtentsAttributes {
+type ExtentsAttributes = {
   height?: number;
   width?: number;
-}
+};
 
 const buildExtents = ({ width, height }: ExtentsAttributes): XMLBuilderType => {
   // Default to 100x100 pixels in EMU if dimensions are missing
@@ -2911,14 +2916,14 @@ const buildNonVisualPictureProperties = (
   return nonVisualPicturePropertiesFragment;
 };
 
-interface PictureAttributes {
+type PictureAttributes = {
   description?: string;
   fileNameWithExtension?: string;
   height?: number;
   id?: number;
   relationshipId?: number;
   width?: number;
-}
+};
 
 const buildPicture = ({
   id,

@@ -1,6 +1,6 @@
 import namespaces from '../namespaces';
 
-export interface DocumentMargins {
+export type DocumentMargins = {
   bottom: number;
   footer: number;
   gutter: number;
@@ -8,7 +8,7 @@ export interface DocumentMargins {
   left: number;
   right: number;
   top: number;
-}
+};
 
 const generateDocumentTemplate = (
   width: number,

@@ -16,16 +16,16 @@ export type DocxListStyleType =
   | 'upperLetter'
   | 'upperRoman';
 
-export interface ListStyleDefaults {
+export type ListStyleDefaults = {
   defaultOrderedListStyleType: DocxListStyleType;
-}
+};
 
-export interface ListStyle {
+export type ListStyle = {
   'list-style-type'?: ListStyleType;
-}
+};
 
 class ListStyleBuilder {
-  private defaults: ListStyleDefaults;
+  private readonly defaults: ListStyleDefaults;
 
   constructor(defaults?: ListStyleDefaults) {
     this.defaults = defaults || { defaultOrderedListStyleType: 'decimal' };
