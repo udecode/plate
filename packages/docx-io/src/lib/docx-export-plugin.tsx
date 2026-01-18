@@ -33,8 +33,7 @@
 'use client';
 
 import type { SlatePlugin, Value } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
+import { createSlateEditor, createSlatePlugin } from 'platejs';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
 
@@ -617,7 +616,7 @@ export async function exportEditorToDocx(
  * downloadDocx(blob, 'my-document.docx');
  * ```
  */
-export const DocxExportPlugin = createPlatePlugin({
+export const DocxExportPlugin = createSlatePlugin({
   key: 'docxExport',
   options: {
     editorPlugins: undefined as SlatePlugin[] | undefined,

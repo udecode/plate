@@ -596,20 +596,6 @@ export const playgroundValue: Value = [
     type: 'callout',
     variant: 'info',
   },
-  // Toggle
-  {
-    children: [
-      {
-        children: [{ text: 'Click to expand this toggle' }],
-        type: 'p',
-      },
-      {
-        children: [{ text: 'Hidden content inside the toggle.' }],
-        type: 'p',
-      },
-    ],
-    type: 'toggle',
-  },
   // Columns
   {
     children: [{ text: 'Multi-column Layout' }],

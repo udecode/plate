@@ -12,21 +12,21 @@
  * Tables use base version with juice CSS inlining.
  */
 
-import { CalloutElementStaticDocx } from '@/registry/ui/callout-node-static-docx';
+import { CalloutElementDocx } from '@/registry/ui/callout-node-static';
 import {
-  CodeBlockElementStaticDocx,
-  CodeLineElementStaticDocx,
-  CodeSyntaxLeafStaticDocx,
-} from '@/registry/ui/code-block-node-static-docx';
+  CodeBlockElementDocx,
+  CodeLineElementDocx,
+  CodeSyntaxLeafDocx,
+} from '@/registry/ui/code-block-node-static';
 import {
-  ColumnElementStaticDocx,
-  ColumnGroupElementStaticDocx,
-} from '@/registry/ui/column-node-static-docx';
+  ColumnElementDocx,
+  ColumnGroupElementDocx,
+} from '@/registry/ui/column-node-static';
 import {
-  EquationElementStaticDocx,
-  InlineEquationElementStaticDocx,
-} from '@/registry/ui/equation-node-static-docx';
-import { TocElementStaticDocx } from '@/registry/ui/toc-node-static-docx';
+  EquationElementDocx,
+  InlineEquationElementDocx,
+} from '@/registry/ui/equation-node-static';
+import { TocElementDocx } from '@/registry/ui/toc-node-static';
 import { DocxExportPlugin } from '@platejs/docx-io';
 import { KEYS } from 'platejs';
 
@@ -47,15 +47,15 @@ export const DocxExportKit = [
   DocxExportPlugin.configure({
     override: {
       components: {
-        [KEYS.codeBlock]: CodeBlockElementStaticDocx,
-        [KEYS.codeLine]: CodeLineElementStaticDocx,
-        [KEYS.codeSyntax]: CodeSyntaxLeafStaticDocx,
-        [KEYS.column]: ColumnElementStaticDocx,
-        [KEYS.columnGroup]: ColumnGroupElementStaticDocx,
-        [KEYS.equation]: EquationElementStaticDocx,
-        [KEYS.inlineEquation]: InlineEquationElementStaticDocx,
-        [KEYS.callout]: CalloutElementStaticDocx,
-        [KEYS.toc]: TocElementStaticDocx,
+        [KEYS.codeBlock]: CodeBlockElementDocx,
+        [KEYS.codeLine]: CodeLineElementDocx,
+        [KEYS.codeSyntax]: CodeSyntaxLeafDocx,
+        [KEYS.column]: ColumnElementDocx,
+        [KEYS.columnGroup]: ColumnGroupElementDocx,
+        [KEYS.equation]: EquationElementDocx,
+        [KEYS.inlineEquation]: InlineEquationElementDocx,
+        [KEYS.callout]: CalloutElementDocx,
+        [KEYS.toc]: TocElementDocx,
       },
     },
   }),
