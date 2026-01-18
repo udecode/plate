@@ -2,7 +2,7 @@
 title: 块选择
 docs:
   - route: /docs/components/block-selection
-    title: 块选择
+    title: Block Selection
 ---
 
 <ComponentPreview name="block-selection-demo" />
@@ -11,31 +11,31 @@ docs:
 
 块选择功能允许用户选择和操作整个文本块，而不是单个单词或字符。
 
-## 特性
+## 功能特性
 
-- 通过单一操作选择整个块
-- 使用鼠标拖动或键盘快捷键进行多块选择
-- 对选中块执行复制、剪切和删除操作
+- 通过单一操作选择整个块。
+- 使用鼠标拖动或键盘快捷键进行多块选择。
+- 对选中的块执行复制、剪切和删除操作。
 - 快速选择的键盘快捷键：
-  - `Cmd+A`：选择所有块
-  - 方向键：选择上方或下方的块
-- 可自定义选中块的样式
+  - `Cmd+A`：选择所有块。
+  - 方向键：选择上方或下方的块。
+- 可自定义选中块的样式。
 
 </PackageInfo>
 
-## 套件使用
+## Kit 使用方式
 
 <Steps>
 
 ### 安装
 
-添加块选择功能最快的方法是使用 `BlockSelectionKit`，它包含预配置的 `BlockSelectionPlugin` 和 [`BlockSelection`](/docs/components/block-selection) UI 组件。
+添加块选择最快的方式是使用 `BlockSelectionKit`，它包含预配置的 `BlockSelectionPlugin` 和 [`BlockSelection`](/docs/components/block-selection) UI 组件。
 
 <ComponentSource name="block-selection-kit" />
 
-- [`BlockSelection`](/docs/components/block-selection)：在选中的块周围渲染选择矩形
+- [`BlockSelection`](/docs/components/block-selection)：在选中的块周围渲染选择矩形。
 
-### 添加套件
+### 添加 Kit
 
 `BlockSelectionKit` 默认启用上下文菜单，并提供默认的 `isSelectable` 逻辑来排除常见的不可选择块，如代码行和表格单元格。
 
@@ -45,7 +45,7 @@ import { BlockSelectionKit } from '@/components/editor/plugins/block-selection-k
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     ...BlockSelectionKit,
   ],
 });
@@ -53,7 +53,7 @@ const editor = createPlateEditor({
 
 </Steps>
 
-## 手动使用
+## 手动使用方式
 
 <Steps>
 
@@ -71,17 +71,17 @@ import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     BlockSelectionPlugin,
   ],
 });
 ```
 
-将此插件放在任何覆盖 `selectAll` - `Cmd+A`（代码块、表格、列等）的其他插件之前，以避免冲突。
+将此插件放在任何覆盖 `selectAll` – `Cmd+A` 的其他插件（代码块、表格、列等）之前，以避免冲突。
 
 #### 从选择中排除块
 
-您可以使用 `options.isSelectable` 控制哪些块是可选择的。此函数接收一个元素及其路径，如果块可选择则应返回 `true`。
+您可以使用 `options.isSelectable` 控制哪些块可被选择。此函数接收元素及其路径，如果块可选择则返回 `true`。
 
 例如，排除代码行、列和表格单元格：
 
@@ -108,9 +108,9 @@ BlockSelectionPlugin.configure({
 
 如果您的编辑器位于可滚动容器内，您可能需要配置选择区域的边界和滚动速度。
 
-1. 为滚动容器添加 `id`，例如 `id={editor.meta.uid}`
-2. 在容器上设置 `position: relative`
-3. 使用 `areaOptions` 配置边界和滚动行为
+1.  为滚动容器添加 `id`，例如 `id={editor.meta.uid}`。
+2.  在容器上设置 `position: relative`。
+3.  使用 `areaOptions` 配置边界和滚动行为。
 
 ```ts
 BlockSelectionPlugin.configure({
@@ -120,7 +120,7 @@ BlockSelectionPlugin.configure({
       container: `#${editor.meta.uid}`,
       behaviour: {
         scrolling: {
-          // 推荐速度，接近原生
+          // 推荐速度，接近原生体验
           speedDivider: 0.8,
         },
         // 开始选择区域的阈值
@@ -131,28 +131,28 @@ BlockSelectionPlugin.configure({
 });
 ```
 
-#### 全页选择
+#### 全页面选择
 
-您可以通过添加 `data-plate-selectable` 属性为 `<Editor />` 组件之外的元素启用块选择。
+您可以通过添加 `data-plate-selectable` 属性，为 `<Editor />` 组件外部的元素启用块选择。
 
 ```tsx
 <Cover data-plate-selectable />
 <Sidebar data-plate-selectable />
 ```
 
-为了防止在点击某些元素（例如工具栏按钮）时取消选择块，请添加 `data-plate-prevent-unselect` 属性。
+要防止点击某些元素（例如工具栏按钮）时取消选择块，请添加 `data-plate-prevent-unselect` 属性。
 
 ```tsx
 <YourToolbarButton data-plate-prevent-unselect />
 ```
 
-要在点击可选择区域之外时重置选择，您可以使用点击处理程序或直接调用 API：
+要在点击可选择区域外部时重置选择，您可以使用点击处理程序或直接调用 API：
 
 ```tsx
 // 1. 直接调用 API
 editor.api.blockSelection.deselect();
 
-// 2. 点击外部处理程序
+// 2. 外部点击处理程序
 const handleClickOutside = (event: MouseEvent) => {
   if (!(event.target as HTMLElement).closest('[data-plate-selectable]')) {
     editor.api.blockSelection.deselect();
@@ -166,18 +166,18 @@ const handleClickOutside = (event: MouseEvent) => {
 
 ### 选择区域
 
-通过定位添加到编辑器容器的 `.slate-selection-area` 类来设置选择区域的样式。
+通过定位 `.slate-selection-area` 类来设置选择区域的样式，该类会添加到编辑器容器上。
 
 ```css
-/* 使用 Tailwind CSS 实用类的示例 */
+/* 使用 Tailwind CSS 工具类的示例 */
 '[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
 ```
 
 ### 选中元素
 
-使用 `useBlockSelected` 钩子确定块是否被选中。您可以渲染一个视觉指示器，如 [`BlockSelection`](/docs/components/block-selection) 组件，该组件专为此目的设计。
+使用 `useBlockSelected` hook 来确定块是否被选中。您可以渲染一个视觉指示器，例如专为此目的设计的 [`BlockSelection`](/docs/components/block-selection) 组件。
 
-Plate UI 使用 `render.belowRootNodes` 为所有可选择块渲染此组件：
+Plate UI 使用 `render.belowRootNodes` 为所有可选择的块渲染此组件：
 
 ```tsx
 render: {
@@ -198,8 +198,8 @@ render: {
 <API name="BlockSelectionPlugin">
 <APIOptions>
   <APIItem name="areaOptions" type="PartialSelectionOptions" optional>
-    选择区域的选项。查看 [SelectionJS 文档](https://github.com/Simonwep/selection-js) 获取所有可用选项。
-    
+    选择区域的选项。查看 [SelectionJS 文档](https://github.com/Simonwep/selection-js) 了解所有可用选项。
+
 ```ts
 {
   boundaries: [`#${editor.meta.uid}`],
@@ -208,7 +208,7 @@ render: {
   selectionAreaClass: 'slate-selection-area',
 }
 ```
-    
+
   </APIItem>
   <APIItem name="enableContextMenu" type="boolean" optional>
     启用或禁用块选择的上下文菜单。
@@ -219,10 +219,10 @@ render: {
     - **默认值:** `false`
   </APIItem>
   <APIItem name="onKeyDownSelecting" type="(e: KeyboardEvent) => void" optional>
-    在选择时处理键盘按下事件的函数。
+    处理选择时键盘按下事件的函数。
   </APIItem>
   <APIItem name="query" type="QueryNodeOptions" optional>
-    在块选择期间查询节点的选项。
+    块选择期间查询节点的选项。
     - **默认值:** `{ maxLevel: 1 }`
   </APIItem>
   <APIItem name="selectedIds" type="Set<string>" optional>
@@ -230,7 +230,7 @@ render: {
     - **默认值:** `new Set()`
   </APIItem>
   <APIItem name="anchorId" type="string | null" optional>
-    (内部) 当前选择中锚块的 ID。用于基于 Shift 的选择。
+    （内部）当前选择中锚点块的 ID。用于基于 Shift 的选择。
     - **默认值:** `null`
   </APIItem>
   <APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
@@ -247,27 +247,27 @@ render: {
 将一个或多个块添加到选择中。
 
 <API name="add">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    要选择的块的 ID。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      要选择的块的 ID。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.clear`
 
-将选中的 ID 集合重置为空集。
+将选中的 ID 集合重置为空集合。
 
 ### `api.blockSelection.delete`
 
 从选择中移除一个或多个块。
 
 <API name="delete">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    要从选择中移除的块的 ID。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      要从选择中移除的块的 ID。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.deselect`
@@ -276,15 +276,27 @@ render: {
 
 ### `api.blockSelection.focus`
 
-聚焦块选择阴影输入。此输入处理选中块的复制、删除和粘贴事件。
+聚焦块选择的影子输入框。此输入框处理选中块的复制、删除和粘贴事件。
 
 ### `api.blockSelection.getNodes`
 
-获取编辑器中的选中块。
+获取编辑器中选中的块。
 
 <API name="getNodes">
+<APIParameters>
+  <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
+    获取节点的选项。
+  </APIItem>
+</APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="selectionFallback" type="boolean" optional>
+    如果为 true，且块选择未选中任何块，该方法将使用编辑器的原始选择来获取块。- **默认值:** `false`
+  </APIItem>
+</APIOptions>
+
 <APIReturns type="NodeEntry[]">
-  选中块的条目数组。
+  选中块条目的数组。
 </APIReturns>
 </API>
 
@@ -293,34 +305,30 @@ render: {
 检查一个或多个块是否被选中。
 
 <API name="has">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    要检查的块的 ID。
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  <APIItem type="boolean">
-    块是否被选中。
-  </APIItem>
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      要检查的块的 ID。
+    </APIItem>
+  </APIParameters>
+  <APIReturns>
+    <APIItem type="boolean">块是否被选中。</APIItem>
+  </APIReturns>
 </API>
 
 ### `api.blockSelection.isSelectable`
 
-根据插件选项 `isSelectable` 检查给定路径的块是否可选择。
+根据 `isSelectable` 插件选项检查给定路径的块是否可选择。
 
 <API name="isSelectable">
-<APIParameters>
-  <APIItem name="element" type="TElement">
-    要检查的块元素。
-  </APIItem>
-  <APIItem name="path" type="Path">
-    块元素的路径。
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  块是否可选择。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="element" type="TElement">
+      要检查的块元素。
+    </APIItem>
+    <APIItem name="path" type="Path">
+      块元素的路径。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">块是否可选择。</APIReturns>
 </API>
 
 ### `api.blockSelection.moveSelection`
@@ -328,61 +336,63 @@ render: {
 将选择向上或向下移动到下一个可选择的块。
 
 向上移动时：
-- 从最顶部选中的块获取上一个可选择块
-- 将其设置为新锚点
-- 清除先前选择并仅选择此块
-向下移动时：
-- 从最底部选中的块获取下一个可选择块
-- 将其设置为新锚点
-- 清除先前选择并仅选择此块
+
+- 从最顶部选中的块获取前一个可选择的块
+- 将其设置为新的锚点
+- 清除之前的选择并仅选择此块
+  向下移动时：
+- 从最底部选中的块获取下一个可选择的块
+- 将其设置为新的锚点
+- 清除之前的选择并仅选择此块
 
 <API name="moveSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    移动选择的方向。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="direction" type="'up' | 'down'">
+      移动选择的方向。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.selectAll`
 
-选择编辑器中的所有可选择块。
+选择编辑器中所有可选择的块。
 
 ### `api.blockSelection.set`
 
 将选择设置为一个或多个块，清除任何现有选择。
 
 <API name="set">
-<APIParameters>
-  <APIItem name="id" type="string | string[]">
-    要选择的块的 ID。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="id" type="string | string[]">
+      要选择的块的 ID。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `api.blockSelection.shiftSelection`
 
-基于锚块扩展或收缩选择。
+根据锚点块扩展或收缩选择。
 
 对于 `Shift+ArrowDown`：
-- 如果锚点是最顶部：通过添加最底部下方的块向下扩展
+
+- 如果锚点在最顶部：通过在最底部下方添加块向下扩展
 - 否则：从最顶部收缩（除非最顶部是锚点）
-对于 `Shift+ArrowUp`：
-- 如果锚点是最底部：通过添加最顶部上方的块向上扩展
+  对于 `Shift+ArrowUp`：
+- 如果锚点在最底部：通过在最顶部上方添加块向上扩展
 - 否则：从最底部收缩（除非最底部是锚点）
-锚块始终保持选中状态。如果未设置锚点，则默认为：
-- `Shift+ArrowUp` 的最底部块
-- `Shift+ArrowDown` 的最顶部块
+  锚点块始终保持选中状态。如果未设置锚点，则默认为：
+- `Shift+ArrowUp` 时为最底部的块
+- `Shift+ArrowDown` 时为最顶部的块
 
 <API name="shiftSelection">
-<APIParameters>
-  <APIItem name="direction" type="'up' | 'down'">
-    扩展/收缩选择的方向。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="direction" type="'up' | 'down'">
+      扩展/收缩选择的方向。
+    </APIItem>
+  </APIParameters>
 </API>
 
-## 转换
+## Transforms
 
 ### `tf.blockSelection.duplicate`
 
@@ -394,95 +404,88 @@ render: {
 
 ### `tf.blockSelection.select`
 
-选择 `getNodes()` 返回的编辑器中的节点并重置选中的 ID。
+在编辑器中选择由 `getNodes()` 返回的节点并重置选中的 ID。
 
 ### `tf.blockSelection.setNodes`
 
-在选中的节点上设置属性。
+设置选中节点的属性。
 
 <API name="setNodes">
-<APIParameters>
-  <APIItem name="props" type="Partial<NodeProps<TElement>>">
-    要在选中节点上设置的属性。
-  </APIItem>
-  <APIItem name="options" type="SetNodesOptions" optional>
-    设置节点的选项。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="props" type="Partial<NodeProps<TElement>>">
+      要设置到选中节点的属性。
+    </APIItem>
+    <APIItem name="options" type="SetNodesOptions" optional>
+      设置节点的选项。
+    </APIItem>
+  </APIParameters>
 </API>
 
 ### `tf.blockSelection.setTexts`
 
-在选中的节点上设置文本属性。
+设置选中节点的文本属性。
 
 <API name="setTexts">
-<APIParameters>
-  <APIItem name="props" type="Partial<NodeProps<TText>>">
-    要在选中节点上设置的文本属性。
-  </APIItem>
-  <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
-    设置文本节点的选项，不包括 'at' 属性。
-  </APIItem>
-</APIParameters>
+  <APIParameters>
+    <APIItem name="props" type="Partial<NodeProps<TText>>">
+      要设置到选中节点的文本属性。
+    </APIItem>
+    <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+      设置文本节点的选项，不包括 'at' 属性。
+    </APIItem>
+  </APIParameters>
 </API>
 
-## 钩子
+## Hooks
 
 ### `useBlockSelectable`
 
-提供使块元素可选择的属性的钩子，包括上下文菜单行为。
+提供使块元素可选择的 props 的 hook，包括上下文菜单行为。
 
 <API name="useBlockSelectable">
-<APIReturns type="object">
-  <APIItem name="props" type="object">
-    要应用于块元素的属性。
-    <APISubList>
-      <APISubListItem parent="props" name="className" type="string">
-        选择功能所需的类。
-        - **默认值:** `'slate-selectable'`
-      </APISubListItem>
-      <APISubListItem parent="props" name="onContextMenu" type="(event: React.MouseEvent) => void">
-        处理右键上下文菜单行为：
-        - 为选中的块打开上下文菜单
-        - 为 void 元素打开
-        - 为具有 `data-plate-open-context-menu="true"` 的元素打开
-        - 使用 Shift 键为多选添加块到选择
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-</APIReturns>
+  <APIReturns type="object">
+    <APIItem name="props" type="object">
+      要展开到块元素上的 props。
+      <APISubList>
+        <APISubListItem parent="props" name="className" type="string">
+          选择功能所需的类。- **默认值:**
+          `'slate-selectable'`
+        </APISubListItem>
+        <APISubListItem
+          parent="props"
+          name="onContextMenu"
+          type="(event: React.MouseEvent) => void"
+        >
+          处理右键上下文菜单行为：- 为选中的块打开上下文菜单 - 为 void 元素打开 - 为带有
+          `data-plate-open-context-menu="true"` 的元素打开 - 使用 Shift 键添加块到选择以进行多选
+        </APISubListItem>
+      </APISubList>
+    </APIItem>
+  </APIReturns>
 </API>
 
 ### `useBlockSelected`
 
 <API name="useBlockSelected">
-<APIReturns type="boolean">
-  上下文块是否被选中。
-</APIReturns>
+  <APIReturns type="boolean">上下文块是否被选中。</APIReturns>
 </API>
 
 ### `useBlockSelectionNodes`
 
 <API name="useBlockSelectionNodes">
-<APIReturns type="NodeEntry[]">
-  选中块的条目数组。
-</APIReturns>
+  <APIReturns type="NodeEntry[]">选中块条目的数组。</APIReturns>
 </API>
 
 ### `useBlockSelectionFragment`
 
 <API name="useBlockSelectionFragment">
-<APIReturns type="Node[]">
-  选中块的节点数组。
-</APIReturns>
+  <APIReturns type="Node[]">选中块节点的数组。</APIReturns>
 </API>
 
 ### `useBlockSelectionFragmentProp`
 
 <API name="useBlockSelectionFragmentProp">
-<APIReturns type="Node[]">
-  选中块的片段属性。
-</APIReturns>
+  <APIReturns type="Node[]">选中块的 fragment prop。</APIReturns>
 </API>
 
 ### `useSelectionArea`

@@ -39,7 +39,7 @@ import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     ...BasicBlocksKit,
   ],
 });
@@ -67,7 +67,7 @@ import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     HorizontalRulePlugin,
   ],
 });
@@ -78,14 +78,14 @@ const editor = createPlateEditor({
 你可以配置 `HorizontalRulePlugin` 的自动格式化规则，将输入的特定模式（如 `---`）自动转换为水平分隔线。
 
 ```tsx
-import { insertNodes, setNodes, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 import { AutoformatPlugin } from '@platejs/autoformat';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     HorizontalRulePlugin,
     AutoformatPlugin.configure({
       options: {
@@ -95,8 +95,8 @@ const editor = createPlateEditor({
             type: KEYS.hr,
             match: ['---', '—-', '___ '],
             format: (editor) => {
-              setNodes(editor, { type: KEYS.hr });
-              insertNodes(editor, {
+              editor.tf.setNodes({ type: KEYS.hr });
+              editor.tf.insertNodes({
                 type: KEYS.p,
                 children: [{ text: '' }],
               });
@@ -118,7 +118,7 @@ const editor = createPlateEditor({
 ```tsx
 {
   icon: <MinusIcon />,
-  label: '分隔线',
+  label: 'Divider',
   value: KEYS.hr,
 }
 ```

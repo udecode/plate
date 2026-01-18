@@ -1,6 +1,6 @@
 ---
-title: 单元测试 Plate
-description: 学习如何对 Plate 编辑器及插件进行单元测试。
+title: Plate 单元测试
+description: 学习如何对 Plate 编辑器和插件进行单元测试。
 ---
 
 本指南概述了使用 `@platejs/test-utils` 对 Plate 插件和组件进行单元测试的最佳实践。
@@ -11,19 +11,19 @@ description: 学习如何对 Plate 编辑器及插件进行单元测试。
 npm install @platejs/test-utils
 ```
 
-## 测试设置
+## 设置测试
 
-在测试文件顶部添加 JSX 编译指示：
+在测试文件顶部添加 JSX pragma：
 
 ```typescript
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
 
-jsx; // 避免 ESLint 报错
+jsx; // so Biome doesn't remove unused imports
 ```
 
-这允许你使用 JSX 语法来创建编辑器值。
+这允许你使用 JSX 语法创建编辑器值。
 
 ## 创建测试用例
 
@@ -43,20 +43,20 @@ const input = (
 
 节点元素如 `<hp />`、`<hul />`、`<hli />` 表示不同类型的节点。
 
-特殊元素如 `<cursor />`、`<anchor />` 和 `<focus />` 表示选择状态。
+特殊元素如 `<cursor />`、`<anchor />` 和 `<focus />` 表示选区状态。
 
-### 测试转换操作
+### 测试转换
 
 1. 创建输入状态
 2. 定义预期输出状态
 3. 使用 `createPlateEditor` 设置编辑器
-4. 直接应用转换操作
+4. 直接应用转换
 5. 断言编辑器的新状态
 
-测试加粗格式化的示例：
+测试粗体格式的示例：
 
 ```typescript
-it('应应用加粗格式化', () => {
+it('should apply bold formatting', () => {
   const input = (
     <editor>
       <hp>
@@ -81,19 +81,19 @@ it('应应用加粗格式化', () => {
     selection: input.selection,
   });
 
-  // 直接应用转换
+  // Apply transform directly
   editor.tf.toggleMark('bold');
 
   expect(editor.children).toEqual(output.children);
 });
 ```
 
-### 测试选择操作
+### 测试选区
 
-测试操作如何影响编辑器的选择：
+测试操作如何影响编辑器的选区：
 
 ```typescript
-it('应在退格时折叠选择', () => {
+it('should collapse selection on backspace', () => {
   const input = (
     <editor>
       <hp>
@@ -124,10 +124,10 @@ it('应在退格时折叠选择', () => {
 
 ## 测试键盘事件
 
-当需要直接测试键盘处理程序时：
+当你需要直接测试键盘处理程序时：
 
 ```typescript
-it('应调用 onKeyDown 处理程序', () => {
+it('should call the onKeyDown handler', () => {
   const input = (
     <editor>
       <hp>
@@ -136,7 +136,7 @@ it('应调用 onKeyDown 处理程序', () => {
     </editor>
   ) as any as PlateEditor;
 
-  // 创建模拟处理程序以验证调用
+  // Create a mock handler to verify it's called
   const onKeyDownMock = jest.fn();
 
   const editor = createPlateEditor({
@@ -152,29 +152,29 @@ it('应调用 onKeyDown 处理程序', () => {
     ],
   });
 
-  // 创建键盘事件
+  // Create the keyboard event
   const event = new KeyboardEvent('keydown', {
     key: 'Enter',
   }) as any;
 
-  // 直接调用处理程序
+  // Call the handler directly
   editor.plugins.test.handlers.onKeyDown({
     ...getEditorPlugin(editor, { key: 'test' }),
     event,
   });
 
-  // 验证处理程序被调用
+  // Verify the handler was called
   expect(onKeyDownMock).toHaveBeenCalled();
 });
 ```
 
 ## 测试复杂场景
 
-对于表格等复杂插件，通过直接应用转换来测试各种场景：
+对于像表格这样的复杂插件，通过直接应用转换来测试各种场景：
 
 ```typescript
-describe('表格插件', () => {
-  it('应插入表格', () => {
+describe('Table plugin', () => {
+  it('should insert a table', () => {
     const input = (
       <editor>
         <hp>
@@ -215,7 +215,7 @@ describe('表格插件', () => {
       plugins: [TablePlugin],
     });
 
-    // 直接调用转换
+    // Call transform directly
     editor.tf.insertTable({ rows: 2, columns: 2 });
 
     expect(editor.children).toEqual(output.children);
@@ -229,8 +229,8 @@ describe('表格插件', () => {
 测试不同插件选项如何影响行为：
 
 ```typescript
-describe('当启用撤销时', () => {
-  it('应在删除时撤销文本格式', () => {
+describe('when undo is enabled', () => {
+  it('should undo text format upon delete', () => {
     const input = (
       <fragment>
         <hp>
@@ -265,26 +265,26 @@ describe('当启用撤销时', () => {
       value: input,
     });
 
-    // 触发自动格式化
+    // Trigger the autoformat
     editor.tf.insertText('4');
 
-    // 模拟退格键
+    // Simulate backspace key
     const event = new KeyboardEvent('keydown', {
       key: 'backspace',
     }) as any;
 
-    // 调用处理程序
+    // Call the handler
     editor.getPlugin({key: KEYS.autoformat}).handlers.onKeyDown({
       ...getEditorPlugin(editor, AutoformatPlugin),
       event,
     });
 
-    // 当 enableUndoOnDelete: true 时，按退格键应恢复原始文本
+    // With enableUndoOnDelete: true, pressing backspace should restore the original text
     expect(input.children).toEqual(output.children);
   });
 });
 ```
 
-## 模拟与真实转换
+## Mock 与真实转换
 
-虽然模拟可用于隔离特定行为，但 Plate 测试通常会在转换后评估实际的编辑器子节点和选择。这种方法确保插件能与整个编辑器状态正确协同工作。
+虽然 mock 对于隔离特定行为很有用，但 Plate 测试通常会在转换后评估实际的编辑器 children 和选区。这种方法确保插件能与整个编辑器状态正确协作。

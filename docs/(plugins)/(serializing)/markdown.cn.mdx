@@ -1,10 +1,16 @@
 ---
 title: Markdown
-description: Convert Plate content to Markdown and vice-versa.
+description: 将 Plate 内容转换为 Markdown，反之亦然。
 toc: true
 ---
 
-The `@platejs/markdown` package provides robust, two-way conversion between Markdown and Plate's content structure.
+---
+title: Markdown
+description: 将 Plate 内容转换为 Markdown 及其逆过程。
+toc: true
+---
+
+`@platejs/markdown` 提供了强大的 Plate 内容结构与 Markdown 之间的双向转换能力。
 
 <ComponentPreview name="markdown-to-slate-demo" />
 
@@ -12,42 +18,42 @@ The `@platejs/markdown` package provides robust, two-way conversion between Mark
 
 <PackageInfo>
 
-## Features
+## 特性
 
--   **Markdown to Plate JSON:** Convert Markdown strings to Plate's editable format (`deserialize`).
--   **Plate JSON to Markdown:** Convert Plate content back to Markdown strings (`serialize`).
--   **Safe by Default:** Handles Markdown conversion without `dangerouslySetInnerHTML`.
--   **Customizable Rules:** Define how specific Markdown syntax or custom Plate elements are converted using `rules`. Supports MDX.
--   **Extensible:** Utilize [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) via the `remarkPlugins` option.
--   **Compliant:** Supports CommonMark, with GFM (GitHub Flavored Markdown) available via [`remark-gfm`](https://github.com/remarkjs/remark-gfm).
--   **Round-Trip Serialization:** Preserves custom elements through MDX syntax during conversion cycles.
+- **Markdown 转 Plate JSON：** 将 Markdown 字符串转换为 Plate 可编辑格式（`deserialize` 方法）。
+- **Plate JSON 转 Markdown：** 将 Plate 内容重新序列化为 Markdown 字符串（`serialize` 方法）。
+- **默认安全：** 转换过程不使用 `dangerouslySetInnerHTML`，安全可靠。
+- **自定义规则：** 可通过 `rules` 配置自定义特定 Markdown 语法或 Plate 元素的转换方式，支持 MDX。
+- **高度可扩展：** 可通过 `remarkPlugins` 选项集成 [remark 插件](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)。
+- **标准兼容：** 支持 CommonMark，支持通过 [`remark-gfm`](https://github.com/remarkjs/remark-gfm) 启用 GFM（GitHub 风格 Markdown 扩展）。
+- **循环序列化：** 通过 MDX 语法保证自定义元素可逆转换。
 
 </PackageInfo>
 
-## Why Use Plate Markdown?
+## 为什么选择 Plate Markdown？
 
-While libraries like `react-markdown` render Markdown to React elements, `@platejs/markdown` offers deeper integration with the Plate ecosystem:
+与 `react-markdown` 等库仅将 Markdown 渲染成 React 元素不同，`@platejs/markdown` 深度集成 Plate 体系，带来如下优势：
 
--   **Rich Text Editing:** Enables advanced editing features by converting Markdown to Plate's structured format.
--   **WYSIWYG Experience:** Edit content in a rich text view and serialize it back to Markdown.
--   **Custom Elements & Data:** Handles complex custom Plate elements (mentions, embeds) by converting them to/from MDX.
--   **Extensibility:** Leverages Plate's plugin system and the unified/remark ecosystem for powerful customization.
+- **富文本编辑能力：** 支持将 Markdown 转为结构化 Plate 内容，实现高级编辑能力。
+- **所见即所得（WYSIWYG）：** 支持富文本视图编辑，一键回转为 Markdown。
+- **自定义元素与数据支持：** 复杂自定义元素（如提及、嵌入等）可通过 MDX 双向转换。
+- **可扩展性：** 充分利用 Plate 插件系统与 unified/remark 生态的能力。
 
 <Callout type="note">
-  If you only need to display Markdown as HTML without editing or custom elements, `react-markdown` might be sufficient. For a rich text editor with Markdown import/export and custom content, `@platejs/markdown` is the integrated solution.
+  如果你只需将 Markdown 显示为 HTML，无需自定义元素和富编辑，`react-markdown` 可能已足够。但如需 Markdown 导入/导出、富文本及自定义内容，`@platejs/markdown` 则是最佳集成方案。
 </Callout>
 
-## Kit Usage
+## 套件方式使用
 
 <Steps>
 
-### Installation
+### 安装
 
-The fastest way to add Markdown functionality is with the `MarkdownKit`, which includes pre-configured `MarkdownPlugin` with essential remark plugins for [Plate UI](/docs/installation/plate-ui) compatibility.
+最快速增加 Markdown 支持的方法是使用 `MarkdownKit`，它已预配置好带必要 remark 插件的 `MarkdownPlugin`，兼容 [Plate UI](/docs/installation/plate-ui)。
 
 <ComponentSource name="markdown-kit" />
 
-### Add Kit
+### 挂载套件
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
@@ -55,7 +61,7 @@ import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...otherPlugins,
+    // ...其它插件,
     ...MarkdownKit,
   ],
 });
@@ -63,17 +69,17 @@ const editor = createPlateEditor({
 
 </Steps>
 
-## Manual Usage
+## 手动集成用法
 
 <Steps>
 
-### Installation
+### 安装
 
 ```bash
 npm install platejs @platejs/markdown
 ```
 
-### Add Plugin
+### 引用插件
 
 ```tsx
 import { MarkdownPlugin } from '@platejs/markdown';
@@ -81,15 +87,15 @@ import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...otherPlugins,
+    // ...其它插件,
     MarkdownPlugin,
   ],
 });
 ```
 
-### Configure Plugin
+### 配置插件
 
-Configuring `MarkdownPlugin` is recommended to enable Markdown paste handling and set default conversion `rules`.
+推荐通过 `MarkdownPlugin` 的 configure 方法配置粘贴支持与自定义转换规则。
 
 ```tsx title="lib/plate-editor.ts"
 import { createPlateEditor } from 'platejs/react';
@@ -99,319 +105,320 @@ import remarkMath from 'remark-math';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...other Plate plugins
+    // ...其它 Plate 插件
     MarkdownPlugin.configure({
       options: {
-        // Add remark plugins for syntax extensions (GFM, Math, MDX)
+        // 通过 remarkPlugins 添加语法扩展（如 GFM、数学、MDX）
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
-        // Define custom rules if needed
+        // 如需自定义转换规则可配置 rules
         rules: {
-          // date: { /* ... rule implementation ... */ },
+          // date: { /* ... 规则对象 ... */ },
         },
       },
     }),
   ],
 });
 
-// To disable Markdown paste handling:
+// 如需禁用 Markdown 粘贴处理：
 const editorWithoutPaste = createPlateEditor({
   plugins: [
-    // ...other Plate plugins
+    // ...其它 Plate 插件
     MarkdownPlugin.configure(() => ({ parser: null })),
   ],
 });
 ```
 
 <Callout type="info">
-  If you don't use `MarkdownPlugin` with `configure`, you can still use `editor.api.markdown.deserialize` and `editor.api.markdown.serialize` directly, but without plugin-configured default rules or paste handling.
+  如果未用 `configure` 配置 `MarkdownPlugin`，可直接用 `editor.api.markdown.deserialize` 和 `serialize`，但无法享受默认规则和粘贴功能。
 </Callout>
 
-### Markdown to Plate (Deserialization)
+### Markdown 转 Plate（反序列化）
 
-Use `editor.api.markdown.deserialize` to convert a Markdown string into a Plate `Value` (an array of nodes). This is often used for the editor's initial content.
+用 `editor.api.markdown.deserialize` 方法将 Markdown 字符串转换为 Plate `Value`（节点数组），常用于设置编辑器初始内容。
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
-// ... import other necessary Plate plugins for rendering elements
+// ...还需引入其它用于渲染的 Plate 插件
 
 const markdownString = '# Hello, *Plate*!';
 
 const editor = createPlateEditor({
   plugins: [
-    // MarkdownPlugin must be included
+    // 必须包含 MarkdownPlugin
     MarkdownPlugin,
-    // ... other plugins needed to render the deserialized elements (e.g., HeadingPlugin, ItalicPlugin)
+    // ...渲染反序列化元素所需的其它插件（如 HeadingPlugin、ItalicPlugin）
   ],
-  // Use deserialize in the value factory for initial content
-  value: (editor) => editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+  // 初始内容通过反序列化生成
+  value: (editor) =>
+    editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
 });
 ```
 
-<Callout type="warning" title="Plugin Requirements">
-  Ensure all Plate plugins required to render the deserialized Markdown (e.g., `HeadingPlugin` for `#`, `TablePlugin` for tables) are included in your editor's `plugins` array.
+<Callout type="warning" title="插件依赖提醒">
+  你需要在 `plugins` 中包含渲染 Markdown 反序列化结果所需的所有 Plate 插件（例如渲染 `#` 需 `HeadingPlugin`，渲染表格需 `TablePlugin`）。
 </Callout>
 
-### Plate to Markdown (Serialization)
+### Plate 转 Markdown（序列化）
 
-Use `editor.api.markdown.serialize` to convert the current editor content (or a specific array of nodes) into a Markdown string.
+用 `editor.api.markdown.serialize` 将当前编辑器内容或指定节点数组转回 Markdown 字符串。
 
-**Serializing Current Editor Content:**
+**序列化当前编辑器内容：**
 
 ```tsx
-// Assuming `editor` is your Plate editor instance with content
+// 假设 editor 已有内容
 const markdownOutput = editor.api.markdown.serialize();
 console.info(markdownOutput);
 ```
 
-**Serializing Specific Nodes:**
+**序列化指定节点数组：**
 
 ```tsx
 const specificNodes = [
-  { type: 'p', children: [{ text: 'Serialize just this paragraph.' }] },
-  { type: 'h1', children: [{ text: 'And this heading.' }] }
+  { type: 'p', children: [{ text: '仅序列化这一段。' }] },
+  { type: 'h1', children: [{ text: '以及这个标题。' }] },
 ];
 
-// Assuming `editor` is your Plate editor instance
+// 假设 editor 是你的 Plate 实例
 const partialMarkdownOutput = editor.api.markdown.serialize({
   value: specificNodes,
 });
 console.info(partialMarkdownOutput);
 ```
 
-### Round-Trip Serialization with Custom Elements (MDX)
+### 循环序列化：自定义元素（MDX）
 
-A key feature is handling custom Plate elements that lack standard Markdown representation (e.g., underline, mentions). `@platejs/markdown` converts these to [MDX][github-mdx] elements during serialization and parses them back during deserialization.
+核心特性之一是支持无标准 Markdown 语法的自定义 Plate 元素（如下划线、提及等），`@platejs/markdown` 会在序列化时转为 [MDX][github-mdx] 元素，并可无损还原。
 
-**Example:** Handling a custom `date` element.
+**示例：处理自定义 `date` 元素**
 
-**Plate Node Structure:**
+**Plate 节点结构：**
+
 ```ts
 {
   type: 'p',
   children: [
     { text: 'Today is ' },
-    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // Leaf elements need a text child
+    { type: 'date', date: '2025-03-31', children: [{ text: '' }] } // 叶节点需有 text
   ],
 }
 ```
 
-**Plugin Configuration with `rules`:**
+**通过 `rules` 配置插件：**
+
 ```tsx title="lib/plate-editor.ts"
 import type { MdMdxJsxTextElement } from '@platejs/markdown';
 import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
-// ... other imports
+// ... 其它导入
 
 MarkdownPlugin.configure({
   options: {
     rules: {
-      // Key matches:
-      // 1. Plate element's plugin 'key' or 'type'.
-      // 2. mdast node type.
-      // 3. MDX tag name.
+      // 键名匹配规则：
+      // 1. Plate 插件的 key 或 type
+      // 2. mdast 节点类型
+      // 3. MDX tag 名
       date: {
         // Markdown -> Plate
         deserialize(mdastNode: MdMdxJsxTextElement, deco, options) {
           const dateValue = (mdastNode.children?.[0] as any)?.value || '';
           return {
-            type: 'date', // Your Plate element type
+            type: 'date', // 你的 Plate 节点类型
             date: dateValue,
-            children: [{ text: '' }], // Valid Plate structure
+            children: [{ text: '' }], // 合法 Plate 结构
           };
         },
-        // Plate -> Markdown (MDX)
+        // Plate -> Markdown（MDX）
         serialize: (slateNode): MdMdxJsxTextElement => {
           return {
             type: 'mdxJsxTextElement',
-            name: 'date', // MDX tag name
-            attributes: [], // Optional: [{ type: 'mdxJsxAttribute', name: 'date', value: slateNode.date }]
+            name: 'date', // MDX 标签名
+            attributes: [], // 可选，如 [{ type: 'mdxJsxAttribute', name: 'date', value: slateNode.date }]
             children: [{ type: 'text', value: slateNode.date || '1999-01-01' }],
           };
         },
       },
-      // ... rules for other custom elements
+      // ...其它自定义元素规则
     },
-    remarkPlugins: [remarkMdx /*, ... other remark plugins like remarkGfm */],
+    remarkPlugins: [remarkMdx /*, 其它如 remarkGfm 的插件 */],
   },
 });
 ```
 
-**Conversion Process:**
+**转换流程说明：**
 
-1.  **Serialization (Plate → Markdown):** The Plate `date` node becomes `<date>2025-03-31</date>`.
-2.  **Deserialization (Markdown → Plate):** The MDX tag `<date>2025-03-31</date>` converts back to the Plate `date` node.
+1.  **序列化（Plate → Markdown）：** Plate 的 `date` 节点会转为 `<date>2025-03-31</date>`。
+2.  **反序列化（Markdown → Plate）：** MDX 标签 `<date>2025-03-31</date>` 可还原对应 Plate `date` 节点。
 
 </Steps>
 
-## API Reference
+## API 参考
 
 ### `MarkdownPlugin`
 
-The core plugin configuration object. Use `MarkdownPlugin.configure({ options: {} })` to set global options for Markdown processing.
+核心插件配置对象。使用 `MarkdownPlugin.configure({ options: {} })` 可以设置全局的 Markdown 处理选项。
 
 <API name="MarkdownPlugin">
-<APIOptions>
-  <APIItem name="allowedNodes" type="PlateType | null">
-    Whitelist specific node types (Plate types and Markdown AST types like `strong`). Cannot be used with `disallowedNodes`. If set, only listed types are processed. Default: `null` (all allowed).
-  </APIItem>
-  <APIItem name="disallowedNodes" type="PlateType | null">
-    Blacklist specific node types. Cannot be used with `allowedNodes`. Listed types are filtered out. Default: `null`.
-  </APIItem>
-  <APIItem name="allowNode" type="AllowNodeConfig">
-    Fine-grained node filtering with custom functions, applied *after* `allowedNodes`/`disallowedNodes`.
-    - `deserialize?: (mdastNode: any) => boolean`: Filter for Markdown → Plate. Return `true` to keep.
-    - `serialize?: (slateNode: any) => boolean`: Filter for Plate → Markdown. Return `true` to keep.
-    Default: `null`.
-  </APIItem>
-  <APIItem name="rules" type="MdRules | null">
-    Custom conversion rules between Markdown AST and Plate elements. See [Round-Trip Serialization](#round-trip-serialization-with-custom-elements-mdx) and [Customizing Conversion Rules](#appendix-b-customizing-conversion-rules). For marks/leaves, ensure the rule object has `mark: true`. Default: `null` (uses internal `defaultRules`).
-  </APIItem>
-  <APIItem name="remarkPlugins" type="Plugin[]">
-    Array of [remark plugins](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins) (e.g., `remark-gfm`, `remark-math`, `remark-mdx`). Operates on Markdown AST (`mdast`). Default: `[]`.
-  </APIItem>
-</APIOptions>
-<APIAttributes>
-  <APIItem name="parser" type="Parser | null">
-    Configuration for pasted content. Set to `null` to disable Markdown paste handling. Default enables pasting `text/plain` as Markdown. See [PlatePlugin API > parser](/docs/api/core/plate-plugin#parser).
-  </APIItem>
-</APIAttributes>
+  <APIOptions>
+    <APIItem name="allowedNodes" type="PlateType | null">
+      白名单方式，指定允许哪些节点类型（包括 Plate 元素类型及 Markdown AST 类型，如 `strong`）。不能与 `disallowedNodes` 一起使用。如果设置，仅处理列表内的类型。默认值：`null`（全部允许）。
+    </APIItem>
+    <APIItem name="disallowedNodes" type="PlateType | null">
+      黑名单方式，指定过滤掉哪些节点类型。不能和 `allowedNodes` 一起使用。默认值：`null`。
+    </APIItem>
+    <APIItem name="allowNode" type="AllowNodeConfig">
+      使用自定义函数进行更细粒度的节点过滤，该函数会在 `allowedNodes`/`disallowedNodes` 之后应用。- `deserialize?: (mdastNode: any) => boolean`：Markdown → Plate 的过滤，返回 `true` 保留节点。- `serialize?: (slateNode: any) => boolean`：Plate → Markdown 的过滤，返回 `true` 保留节点。默认值：`null`。
+    </APIItem>
+    <APIItem name="rules" type="MdRules | null">
+      自定义 Markdown AST 与 Plate 元素之间的转换规则。详见 [轮转序列化](#round-trip-serialization-with-custom-elements-mdx) 与 [自定义转换规则](#appendix-b-customizing-conversion-rules)。对于 mark/leaf 类型，rule 对象需带上 `mark: true`。默认值：`null`（使用内部 `defaultRules`）。
+    </APIItem>
+    <APIItem name="remarkPlugins" type="Plugin[]">
+      [remark 插件](https://github.com/remarkjs/remark/blob/main/doc/plugins.md#list-of-plugins)数组
+      （如 `remark-gfm`、`remark-math`、`remark-mdx` 等）。对 Markdown AST (`mdast`) 生效。默认值：`[]`。
+    </APIItem>
+  </APIOptions>
+  <APIAttributes>
+    <APIItem name="parser" type="Parser | null">
+      粘贴内容处理相关配置。设置为 `null` 可禁止 Markdown 粘贴。默认情况下会启用将 `text/plain` 视为 Markdown 粘贴。详见 [PlatePlugin API > parser](/docs/api/core/plate-plugin#parser)。
+    </APIItem>
+  </APIAttributes>
 </API>
 
 ---
 
 ### `api.markdown.deserialize`
 
-Converts a Markdown string into a Plate `Value` (`Descendant[]`).
+将 Markdown 字符串转换为 Plate `Value`（`Descendant[]`）。
 
 <API name="deserialize">
-<APIParameters>
-  <APIItem name="markdown" type="string">
-    The Markdown string to deserialize.
-  </APIItem>
-  <APIItem name="options" type="DeserializeMdOptions" optional>
-    Options for this call, overriding plugin defaults.
-  </APIItem>
-</APIParameters>
-<APIOptions type="DeserializeMdOptions">
-  <APIItem name="allowedNodes" type="PlateType" optional>
-    Override plugin `allowedNodes`.
-  </APIItem>
-  <APIItem name="disallowedNodes" type="PlateType" optional>
-    Override plugin `disallowedNodes`.
-  </APIItem>
-  <APIItem name="allowNode" type="AllowNodeConfig" optional>
-    Override plugin `allowNode`.
-  </APIItem>
-  <APIItem name="memoize" type="boolean" optional>
-    Adds `_memo` property with raw Markdown to top-level blocks for memoization (e.g., with `PlateStatic`). Default: `false`.
-  </APIItem>
-  <APIItem name="rules" type="MdRules | null" optional>
-    Override plugin `rules`.
-  </APIItem>
-  <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
-    Options for the underlying Markdown block parser (`parseMarkdownBlocks`). See below.
-  </APIItem>
-  <APIItem name="remarkPlugins" type="Plugin[]" optional>
-    Override plugin `remarkPlugins`.
-  </APIItem>
-  <APIItem name="splitLineBreaks" type="boolean" optional>
-    If `true`, single line breaks (`\\n`) in paragraphs become paragraph breaks. Default: `false`.
-  </APIItem>
-</APIOptions>
-<APIReturns type="Descendant[]">
-  An array of Plate nodes.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="markdown" type="string">
+      要反序列化的 Markdown 字符串。
+    </APIItem>
+    <APIItem name="options" type="DeserializeMdOptions" optional>
+      本次调用的配置选项，将覆盖插件默认值。
+    </APIItem>
+  </APIParameters>
+  <APIOptions type="DeserializeMdOptions">
+    <APIItem name="allowedNodes" type="PlateType" optional>
+      覆盖插件的 `allowedNodes` 配置。
+    </APIItem>
+    <APIItem name="disallowedNodes" type="PlateType" optional>
+      覆盖插件的 `disallowedNodes` 配置。
+    </APIItem>
+    <APIItem name="allowNode" type="AllowNodeConfig" optional>
+      覆盖插件的 `allowNode` 配置。
+    </APIItem>
+    <APIItem name="memoize" type="boolean" optional>
+      为顶级 Block 节点添加 `_memo` 属性，记录原始 Markdown，用于如 `PlateStatic` 之类的记忆场景。默认值：`false`。
+    </APIItem>
+    <APIItem name="rules" type="MdRules | null" optional>
+      覆盖插件的 `rules` 配置。
+    </APIItem>
+    <APIItem name="parser" type="ParseMarkdownBlocksOptions" optional>
+      Markdown 块级解析器 (`parseMarkdownBlocks`) 的相关选项，详见下文。
+    </APIItem>
+    <APIItem name="remarkPlugins" type="Plugin[]" optional>
+      覆盖插件的 `remarkPlugins`。
+    </APIItem>
+    <APIItem name="splitLineBreaks" type="boolean" optional>
+      若设置为 `true`，段落中的单个换行符（`\n`）会被视为段落分隔。默认值：`false`。
+    </APIItem>
+  </APIOptions>
+  <APIReturns type="Descendant[]">返回 Plate 节点数组。</APIReturns>
 </API>
 
 ---
 
 ### `api.markdown.serialize`
 
-Converts a Plate `Value` (`Descendant[]`) into a Markdown string.
+将 Plate `Value`（`Descendant[]`）序列化为 Markdown 字符串。
 
 <API name="serialize">
-<APIParameters>
-  <APIItem name="options" type="SerializeMdOptions" optional>
-    Options for this call, overriding plugin defaults.
-  </APIItem>
-</APIParameters>
-<APIOptions type="SerializeMdOptions">
- <APIItem name="value" type="Descendant[]" optional>
-    Plate nodes to serialize. Defaults to `editor.children`.
-  </APIItem>
-  <APIItem name="allowedNodes" type="PlateType" optional>
-    Override plugin `allowedNodes`.
-  </APIItem>
-  <APIItem name="disallowedNodes" type="PlateType" optional>
-    Override plugin `disallowedNodes`.
-  </APIItem>
-  <APIItem name="allowNode" type="AllowNodeConfig" optional>
-    Override plugin `allowNode`.
-  </APIItem>
-  <APIItem name="rules" type="MdRules | null" optional>
-    Override plugin `rules`.
-  </APIItem>
-  <APIItem name="remarkPlugins" type="Plugin[]" optional>
-    Override plugin `remarkPlugins` (affects stringification).
-  </APIItem>
-</APIOptions>
-<APIReturns type="string">
-  A Markdown string.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="options" type="SerializeMdOptions" optional>
+      本次调用的序列化选项，覆盖插件默认值。
+    </APIItem>
+  </APIParameters>
+  <APIOptions type="SerializeMdOptions">
+    <APIItem name="value" type="Descendant[]" optional>
+      需要序列化为 Markdown 的 Plate 节点，默认为 `editor.children`。
+    </APIItem>
+    <APIItem name="allowedNodes" type="PlateType" optional>
+      覆盖插件的 `allowedNodes` 配置。
+    </APIItem>
+    <APIItem name="disallowedNodes" type="PlateType" optional>
+      覆盖插件的 `disallowedNodes` 配置。
+    </APIItem>
+    <APIItem name="allowNode" type="AllowNodeConfig" optional>
+      覆盖插件的 `allowNode` 配置。
+    </APIItem>
+    <APIItem name="rules" type="MdRules | null" optional>
+      覆盖插件的 `rules` 配置。
+    </APIItem>
+    <APIItem name="remarkPlugins" type="Plugin[]" optional>
+      覆盖插件的 `remarkPlugins`（影响 Markdown 字符串化过程）。
+    </APIItem>
+    <APIItem name="withBlockId" type="boolean" optional>
+      若为 true，序列化时会保留区块 ID，用于如 AI 评论跟踪。会以 `<block id="...">内容</block>` 语法包裹。**默认值**：`false`
+    </APIItem>
+  </APIOptions>
+  <APIReturns type="string">返回 Markdown 字符串。</APIReturns>
 </API>
 
 ---
 
 ### `parseMarkdownBlocks`
 
-Utility to parse a Markdown string into block-level tokens (used by `deserialize`, useful with `memoize`).
+工具函数：将 Markdown 字符串切分为块级 token（`deserialize` 内部使用，`memoize` 时也有用）。
 
 <API name="parseMarkdownBlocks">
-<APIParameters>
-  <APIItem name="markdown" type="string">
-    The Markdown string.
-  </APIItem>
-  <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
-    Parsing options.
-  </APIItem>
-</APIParameters>
-<APIOptions type="ParseMarkdownBlocksOptions">
-  <APIItem name="exclude" type="string[]" optional>
-    Marked token types (e.g., `'space'`) to exclude. Default: `['space']`.
-  </APIItem>
-  <APIItem name="trim" type="boolean" optional>
-    Trim trailing whitespace from input. Default: `true`.
-  </APIItem>
-</APIOptions>
-<APIReturns type="Token[]">
-  Array of marked `Token` objects with raw Markdown.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="markdown" type="string">
+      输入的 Markdown 字符串。
+    </APIItem>
+    <APIItem name="options" type="ParseMarkdownBlocksOptions" optional>
+      解析选项。
+    </APIItem>
+  </APIParameters>
+  <APIOptions type="ParseMarkdownBlocksOptions">
+    <APIItem name="exclude" type="string[]" optional>
+      需要排除的标记类型（如 `'space'`）。默认值：`['space']`。
+    </APIItem>
+    <APIItem name="trim" type="boolean" optional>
+      是否移除输入末尾的空白字符。默认值：`true`。
+    </APIItem>
+  </APIOptions>
+  <APIReturns type="Token[]">
+    返回带原始 Markdown 的标记（Token）对象数组。
+  </APIReturns>
 </API>
 
-## Examples
+## 示例
 
 <Steps>
 
-### Using a Remark Plugin (GFM)
+### 使用 Remark 插件（GFM）
 
-Add support for GitHub Flavored Markdown (tables, strikethrough, task lists, autolinks).
+为编辑器增加 GitHub Flavored Markdown（GFM）支持，包括表格、删除线、任务列表和自动链接。
 
-**Plugin Configuration:**
+**插件配置：**
+
 ```tsx title="lib/plate-editor.ts"
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import remarkGfm from 'remark-gfm';
-// Import Plate plugins for GFM elements
+// 导入 GFM 相关 Plate 插件
 import { TablePlugin } from '@platejs/table/react';
-import { TodoListPlugin } from '@platejs/list-classic/react'; // Ensure this is the correct List plugin for tasks
+import { TodoListPlugin } from '@platejs/list-classic/react'; // 对应任务列表的 List 插件
 import { StrikethroughPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...other plugins
+    // ...其他插件
     TablePlugin,
-    TodoListPlugin, // Or your specific task list plugin
+    TodoListPlugin, // 或你当前使用的任务列表插件
     StrikethroughPlugin,
     LinkPlugin,
     MarkdownPlugin.configure({
@@ -423,7 +430,8 @@ const editor = createPlateEditor({
 });
 ```
 
-**Usage:**
+**用法示例：**
+
 ```tsx
 const markdown = `
 A table:
@@ -438,51 +446,56 @@ A table:
 Visit https://platejs.org
 `;
 
-// Assuming `editor` is your configured Plate editor instance
+// 假设 `editor` 是已配置好的 Plate 编辑器实例
 const slateValue = editor.api.markdown.deserialize(markdown);
-// editor.tf.setValue(slateValue); // To set editor content
+// editor.tf.setValue(slateValue); // 可以设置编辑器内容
 
 const markdownOutput = editor.api.markdown.serialize();
-// markdownOutput will contain GFM syntax
+// markdownOutput 将包含 GFM 语法
 ```
 
-### Customizing Rendering (Syntax Highlighting)
+### 自定义渲染（语法高亮）
 
-This example shows two approaches: customizing the rendering component (common for UI changes) and customizing the conversion rule (advanced, for changing Plate structure).
+本例展示两种方式：一种是自定义渲染组件（适合仅 UI 层变更），另一种是自定义转换规则（适合改变 Plate 数据结构）。
 
-**Background:**
--   `@platejs/markdown` converts Markdown fenced code blocks (e.g., \`\`\`js ... \`\`\`) to Plate `code_block` elements with `code_line` children.
--   The Plate `CodeBlockElement` (often from `@platejs/code-block/react`) renders this structure.
--   Syntax highlighting typically occurs within `CodeBlockElement` using a library like `lowlight` (via `CodeBlockPlugin`). See [Code Block Plugin](/docs/plugins/code-block) for details.
+**背景说明：**
 
-**Approach 1: Customizing Rendering Component (Recommended for UI)**
+- `@platejs/markdown` 会将 Markdown 的代码块（如 \`\`\`js ... \`\`\`）转换为 Plate 的 `code_block` 元素，子元素为 `code_line`。
+- Plate 的 `CodeBlockElement`（通常来自 `@platejs/code-block/react`）负责渲染这一结构。
+- 语法高亮通常在 `CodeBlockElement` 渲染中通过 `lowlight`（由 `CodeBlockPlugin` 提供）实现。详见 [代码块插件文档](/docs/plugins/code-block)。
 
-To change how code blocks appear, customize the component for the `code_block` plugin key.
+**方式一：自定义渲染组件（推荐 UI 层改动时使用）**
+
+自定义 `code_block` 插件的渲染组件即可更改代码块的外观。
 
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor } from 'platejs/react';
-import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
+import {
+  CodeBlockPlugin,
+  CodeLinePlugin,
+  CodeSyntaxPlugin,
+} from '@platejs/code-block/react';
 import { MarkdownPlugin } from '@platejs/markdown';
-import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custom component
+import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自定义组件
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // Base plugin for structure/logic
+    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // 基础插件 + 自定义渲染
     CodeLinePlugin.withComponent(MyCustomCodeLineElement),
     CodeSyntaxPlugin.withComponent(MyCustomCodeSyntaxElement),
-    MarkdownPlugin,  // For Markdown conversion
-    // ... other plugins
+    MarkdownPlugin, // 用于 Markdown 转换
+    // ... 其他插件
   ],
 });
 
-// MyCustomCodeBlockElement.tsx would then implement the desired rendering
-// (e.g., using react-syntax-highlighter), consuming props from PlateElement.
+// MyCustomCodeBlockElement.tsx 内实现自定义渲染（如用 react-syntax-highlighter），并消费 PlateElement 的 props。
 ```
-Refer to the [Code Block Plugin documentation](/docs/plugins/code-block) for complete examples.
 
-**Approach 2: Customizing Conversion Rule (Advanced - Changing Plate Structure)**
+完整用法详见 [代码块插件文档](/docs/plugins/code-block)。
 
-To fundamentally alter the Plate JSON for code blocks (e.g., storing code as a single string prop), override the `deserialize` rule.
+**方式二：自定义转换规则（高级用法 - Plate 数据结构变更）**
+
+如果希望代码块以单独字符串属性存储（非 `code_line` 拆分），可重写 `deserialize` 规则。
 
 ```tsx title="lib/plate-editor.ts"
 import { MarkdownPlugin } from '@platejs/markdown';
@@ -491,66 +504,67 @@ import { CodeBlockPlugin } from '@platejs/code-block/react';
 MarkdownPlugin.configure({
   options: {
     rules: {
-      // Override deserialization for mdast 'code' type
+      // 自定义 mdast 的 'code' 类型反序列化方式
       code: {
         deserialize: (mdastNode, deco, options) => {
           return {
-            type: KEYS.codeBlock, // Use Plate's type
+            type: KEYS.codeBlock, // Plate 的 type
             lang: mdastNode.lang ?? undefined,
-            rawCode: mdastNode.value || '', // Store raw code directly
-            children: [{ text: '' }], // Plate Element needs a dummy text child
+            rawCode: mdastNode.value || '', // 直接存原始 code 文本
+            children: [{ text: '' }], // Plate 元素必须要有子文本节点
           };
         },
       },
-      // A custom `serialize` rule for `code_block` would also be needed
-      // to convert `rawCode` back to an mdast 'code' node.
+      // 还需要为 `code_block` 自定义 serialize 规则，将 `rawCode` 转回 mdast 'code' 节点
       [KEYS.codeBlock]: {
-          serialize: (slateNode, options) => {
-             return { // mdast 'code' node
-                type: 'code',
-                lang: slateNode.lang,
-                value: slateNode.rawCode,
-             };
-          },
+        serialize: (slateNode, options) => {
+          return {
+            // mdast 'code' 节点
+            type: 'code',
+            lang: slateNode.lang,
+            value: slateNode.rawCode,
+          };
+        },
       },
     },
     // remarkPlugins: [...]
   },
 });
 
-// Your custom rendering component (MyCustomCodeBlockElement) would then
-// need to read the code from the `rawCode` property.
+// 你的自定义渲染组件（MyCustomCodeBlockElement）应读取 `rawCode` 属性
 ```
-Choose based on whether you're changing UI (Approach 1) or data structure (Approach 2).
 
-### Using Remark Plugins for Math (`remark-math`)
+可根据需求选择 UI 层调整（方式一）或底层数据结构调整（方式二）。
 
-Enable TeX math syntax (`$inline$`, `$$block$$`).
+### 支持数学（`remark-math`）
 
-**Plugin Configuration:**
+支持 TeX 数学语法（如 `$行内$`、`$$块级$$`）。
+
+**插件配置：**
+
 ```tsx title="lib/plate-editor.ts"
 import { createPlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import remarkMath from 'remark-math';
-// Import Plate math plugins for rendering
-import { MathPlugin } from '@platejs/math/react'; // Main Math plugin
+// Plate 数学渲染相关插件
+import { MathPlugin } from '@platejs/math/react'; // 主 Math 插件
 
 const editor = createPlateEditor({
   plugins: [
-    // ...other plugins
-    MathPlugin, // Renders block and inline equations
+    // ...其他插件
+    MathPlugin, // 渲染块级与行内公式
     MarkdownPlugin.configure({
       options: {
         remarkPlugins: [remarkMath],
-        // Default rules handle 'math' and 'inlineMath' mdast types from remark-math,
-        // converting them to Plate's 'equation' and 'inline_equation' types.
+        // 内置规则已支持 remark-math 产生的 'math' / 'inlineMath' mdast 节点到 Plate 的 'equation' 和 'inline_equation'
       },
     }),
   ],
 });
 ```
 
-**Usage:**
+**用法示例：**
+
 ```tsx
 const markdown = `
 Inline math: $E=mc^2$
@@ -561,44 +575,153 @@ $$
 $$
 `;
 
-// Assuming `editor` is your configured Plate editor instance
+// 假设 `editor` 为已配置 Plate 编辑器实例
 const slateValue = editor.api.markdown.deserialize(markdown);
-// slateValue will contain 'inline_equation' and 'equation' nodes.
+// slateValue 包含 'inline_equation' 及 'equation' 节点
 
 const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
-// markdownOutput will contain $...$ and $$...$$ syntax.
+// 输出 Markdown 字符串包含 $...$ 和 $$...$$ 语法
 ```
+
+### Mentions 支持（`remarkMention`）
+
+使用链接语法风格的 mention，兼容多语言和特殊字符，序列化时格式始终如 `[显示文本](mention:id)`。
+
+**插件配置：**
+
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMention } from '@platejs/markdown';
+import { MentionPlugin } from '@platejs/mention/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    MentionPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMention],
+      },
+    }),
+  ],
+});
+```
+
+**支持的 Markdown 格式：**
+
+```tsx
+const markdown = `
+Mention: [Alice](mention:alice)
+Mention with spaces: [John Doe](mention:john_doe)
+Full name with ID: [Jane Smith](mention:user_123)
+`;
+
+// 假设 `editor` 是已配置好的 Plate 编辑器
+const slateValue = editor.api.markdown.deserialize(markdown);
+// 自动生成合适值与显示文本的 mention 节点
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// mention 序列化后始终用链接格式: [Alice](mention:alice), [John Doe](mention:john_doe) 等
+```
+
+`remarkMention` 插件采用 **[显示文本](mention:id)** 的链接语法，支持带空格与自定义显示文本。
+
+序列化时所有 mention 都用同一链接风格，以充分支持特殊字符与一致性。
+
+### 使用多列布局（Columns）
+
+支持多列文档，可通过 MDX 语法定义多列结构。
+
+**插件配置：**
+
+```tsx title="lib/plate-editor.ts"
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
+import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...其他插件
+    ColumnPlugin,
+    ColumnItemPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkMdx], // 多列 MDX 语法需要
+      },
+    }),
+  ],
+});
+```
+
+**支持的 Markdown 格式：**
+
+```tsx
+const markdown = `
+<column_group>
+  <column width="50%">
+    左侧内容，宽度 50%
+  </column>
+  <column width="50%">
+    右侧内容，宽度 50%
+  </column>
+</column_group>
+
+<column_group>
+  <column width="33%">第一列</column>
+  <column width="33%">第二列</column>
+  <column width="34%">第三列</column>
+</column_group>
+`;
+
+// 假设 `editor` 为已配置好的 Plate 编辑器
+const slateValue = editor.api.markdown.deserialize(markdown);
+// 生成包含嵌套 column 元素的 column_group 节点
+
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+// 输出的 Markdown 保持列结构和宽度属性
+```
+
+**多列特性：**
+
+- 支持任意数量的列
+- 宽度属性可省略（默认为等分）
+- 列内可嵌套任意内容
+- 自动归一化各列宽度，总和为 100%
 
 </Steps>
 
-## Remark Plugins
+## Remark 插件生态（Remark Plugins）
 
-`@platejs/markdown` leverages the [unified][github-unified] / [remark][github-remark] ecosystem. Extend its capabilities by adding remark plugins via the `remarkPlugins` option in `MarkdownPlugin.configure`. These plugins operate on the [mdast (Markdown Abstract Syntax Tree)][github-mdast].
+`@platejs/markdown` 基于 [unified][github-unified] 与 [remark][github-remark] 生态。通过在 `MarkdownPlugin.configure` 的 `remarkPlugins` 选项中添加 remark 插件可扩展能力。这些插件对 [mdast（Markdown 抽象语法树）][github-mdast] 进行操作。
 
-**Finding Plugins:**
--   [List of remark plugins][github-remark-plugins] (Official)
--   [`remark-plugin` topic on GitHub][github-topic-remark-plugin]
--   [Awesome Remark][github-awesome-remark]
+**插件查找指南：**
 
-**Common Uses:**
--   **Syntax Extensions:** `remark-gfm` (tables, etc.), `remark-math` (TeX), `remark-frontmatter`, `remark-mdx`.
--   **Linting/Formatting:** `remark-lint` (often separate tooling).
--   **Custom Transformations:** Custom plugins to modify mdast.
+- [remark 官方插件列表][github-remark-plugins]
+- [GitHub 上的 `remark-plugin` 主题][github-topic-remark-plugin]
+- [Awesome Remark][github-awesome-remark]
 
-<Callout type="info" title="Remark vs. Rehype">
-  Plate components (e.g., `TableElement`, `CodeBlockElement`) render Plate JSON. `remarkPlugins` modify the Markdown AST. Unlike some renderers, `rehypePlugins` (for HTML AST) are generally not needed for Plate rendering, but can be used within the remark pipeline for complex HTML transformations (e.g., with `rehype-raw`).
+**常见用途：**
+
+- **语法扩展：** 如 `remark-gfm`（表格等）、`remark-math`（TeX）、`remark-frontmatter`、`remark-mdx`
+- **Lint/格式化：** 如 `remark-lint`（通常作为独立工具链）
+- **自定义转换：** 编写自定义插件以变更 mdast
+
+<Callout type="info" title="Remark 与 Rehype 对比">
+  Plate 组件（如 `TableElement`、`CodeBlockElement`）渲染 Plate JSON。
+  `remarkPlugins` 作用于 Markdown AST。与部分渲染器不同，
+  Plate 一般不需要 `rehypePlugins`（HTML AST 处理），除非需要更复杂的 HTML 处理（如 `rehype-raw`）。
 </Callout>
 
-## Syntax Support
+## 语法支持
 
-`@platejs/markdown` uses [`remark-parse`][github-remark-parse], adhering to [CommonMark][commonmark-spec]. Enable GFM or other syntaxes via `remarkPlugins`.
+`@platejs/markdown` 使用 [`remark-parse`][github-remark-parse]，遵循 [CommonMark][commonmark-spec] 标准。可通过 `remarkPlugins` 开启 GFM 或其它语法扩展。
 
--   **Learn Markdown:** [CommonMark Help][commonmark-help]
--   **GFM Spec:** [GitHub Flavored Markdown Spec][gfm-spec]
+- **Markdown 教程：** [CommonMark 入门][commonmark-help]
+- **GFM 规范：** [GitHub Flavored Markdown 规范][gfm-spec]
 
-## Architecture Overview
+## 架构概览
 
-`@platejs/markdown` bridges Markdown strings and Plate's editor format using the unified/remark ecosystem.
+`@platejs/markdown` 基于 unified/remark，将 Markdown 字符串与 Plate 编辑器格式进行互转。
 
 ```
                                              @platejs/markdown
@@ -606,7 +729,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
           |                                                                                            |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |  |           |        |                |        |               |      |           |       |
- markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements 
+ markdown-+->+ remark    +-mdast->+ remark plugins +-mdast->+ mdast-to-slate+----->+   nodes   +-plate-+->react elements
           |  |           |        |                |        |               |      |           |       |
           |  +-----------+        +----------------+        +---------------+      +-----------+       |
           |       ^                                                                      |             |
@@ -620,241 +743,261 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
           +--------------------------------------------------------------------------------------------+
 ```
 
-**Key Steps:**
+**关键流程：**
 
-1.  **Parse (Deserialization):**
-    -   Markdown string → `remark-parse` → mdast.
-    -   `remarkPlugins` transform mdast (e.g., `remark-gfm`).
-    -   `mdast-to-slate` converts mdast to Plate nodes using `rules`.
-    -   Plate renders nodes via its component system.
-2.  **Stringify (Serialization):**
-    -   Plate nodes → `slate-to-mdast` (using `rules`) → mdast.
-    -   `remarkPlugins` transform mdast.
-    -   `remark-stringify` converts mdast to Markdown string.
+1.  **解析（反序列化）：**
+    - Markdown 字符串 → `remark-parse` → mdast
+    - `remarkPlugins` 变换 mdast（如 `remark-gfm`）
+    - `mdast-to-slate` 利用 `rules` 转化为 Plate 节点
+    - Plate 组件系统渲染节点
+2.  **序列化：**
+    - Plate 节点 → `slate-to-mdast`（用 `rules`）→ mdast
+    - `remarkPlugins` 变换 mdast
+    - `remark-stringify` 输出为 Markdown 字符串
 
-<Callout type="note" title="Comparison with react-markdown">
-  -   **Direct Node Rendering:** Plate directly renders its nodes via components, unlike `react-markdown` which often uses rehype to convert Markdown to HTML, then to React elements.
-  -   **Bidirectional:** Plate's Markdown processor is fully bidirectional.
-  -   **Rich Text Integration:** Nodes are integrated with Plate's editing capabilities.
-  -   **Plugin System:** Components are managed via Plate's plugin system.
+<Callout type="note" title="与 react-markdown 对比">
+  - **节点直出渲染：** Plate 直接渲染自己的节点组件，而 `react-markdown` 往往转为 HTML AST 后再生成 React 元素
+  - **双向处理：** Plate 的 Markdown 处理是完整双向的
+  - **富文本集成：** 节点与 Plate 编辑功能紧密集成
+  - **插件系统：** 节点组件受插件管理
 </Callout>
 
-## Migrating from `react-markdown`
+## 从 `react-markdown` 迁移
 
-Migrating involves mapping `react-markdown` concepts to Plate's architecture.
+迁移时需将 `react-markdown` 的概念映射到 Plate 体系。
 
-**Key Differences:**
-1.  **Rendering Pipeline:** `react-markdown` (MD → mdast → hast → React) vs. `@platejs/markdown` (MD ↔ mdast ↔ Plate JSON; Plate components render Plate JSON).
-2.  **Component Customization:**
-    -   `react-markdown`: `components` prop replaces HTML tag renderers.
-    -   Plate:
-        -   `MarkdownPlugin` `rules`: Customize mdast ↔ Plate JSON conversion.
-        -   `createPlateEditor` `components`: Customize React components for Plate node types. See [Appendix C](#appendix-c-components).
-3.  **Plugin Ecosystem:** `@platejs/markdown` primarily uses `remarkPlugins`. `rehypePlugins` are less common.
+**主要区别：**
 
-**Mapping Options:**
+1.  **渲染流程：** `react-markdown`（MD → mdast → hast → React） VS `@platejs/markdown`（MD ↔ mdast ↔ Plate JSON，Plate 组件直接渲染 Plate 节点）
+2.  **组件定制方式：**
+    - `react-markdown`：`components` 属性替换 HTML 节点渲染
+    - Plate：
+      - `MarkdownPlugin` 提供 `rules` 定制 mdast↔Plate JSON 互转
+      - `createPlateEditor` 的 `components` 配置 Plate 节点的渲染组件（详见[附录C](#appendix-c-components)）
+3.  **插件生态系统：** `@platejs/markdown` 主要以 `remarkPlugins` 为核心，`rehypePlugins` 使用较少
 
-| `react-markdown` Prop         | `@platejs/markdown` Equivalent/Concept                                | Notes                                                                                                                                                 |
-| :---------------------------- | :---------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `children` (string)           | Pass to `editor.api.markdown.deserialize(string)`                             | Input for deserialization; often in `createPlateEditor` `value` option.                                                                             |
-| `remarkPlugins`               | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`              | Direct mapping; operates on mdast.                                                                                                                    |
-| `rehypePlugins`               | Usually **not needed**. Use `remarkPlugins` for syntax.                       | Plate components handle rendering. For raw HTML, use `rehype-raw` via `remarkPlugins`.                                                            |
-| `components={{ h1: MyH1 }}`   | `createPlateEditor({ components: { h1: MyH1 } })`         | Configures Plate rendering component. Key depends on `HeadingPlugin` config.                                                                        |
-| `components={{ code: MyCode }}` | 1. **Conversion**: `MarkdownPlugin > rules > code`. 2. **Rendering**: `components: { [KEYS.codeBlock]: MyCode }` | `rules` for mdast (`code`) to Plate (`code_block`). `components` for Plate rendering.                                                                 |
-| `allowedElements`             | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`              | Filters nodes during conversion (mdast/Plate types).                                                                                                  |
-| `disallowedElements`          | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`            | Filters nodes during conversion.                                                                                                                      |
-| `unwrapDisallowed`            | No direct equivalent. Filtering removes nodes.                                | Custom `rules` could implement unwrapping.                                                                                                          |
-| `skipHtml`                    | Default behavior strips most HTML.                                            | Use `rehype-raw` via `remarkPlugins` for HTML processing.                                                                                       |
-| `urlTransform`                | Customize via `rules` for `link` (deserialize) or plugin type (serialize).  | Handle URL transformations in conversion rules.                                                                                                     |
-| `allowElement`                | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`               | Function-based filtering during conversion.                                                                                                         |
+**对照表：**
 
+| `react-markdown` 属性           | `@platejs/markdown` 等价项/概念                                                                       | 备注                                                                |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| `children` (字符串)             | 传递给 `editor.api.markdown.deserialize(string)`                                                      | 通常在 `createPlateEditor` 的 `value` 配置                          |
+| `remarkPlugins`                 | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] }})`                                     | 直接映射；在 mdast 层操作                                            |
+| `rehypePlugins`                 | 通常**不需要**，如有需求通过 `remarkPlugins` 完成语法扩展                                             | Plate 组件自行渲染。原生 HTML 需求通过 `rehype-raw` 加入             |
+| `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                    | 设置对应渲染组件，`h1` 等键依赖 HeadingPlugin 配置                   |
+| `components={{ code: MyCode }}` | ① 转换规则：`MarkdownPlugin > rules > code` ② 渲染：`components: { [KEYS.codeBlock]: MyCode }`       | `rules` 处理 mdast（`code`）到 Plate（`code_block`）；自定义渲染组件 |
+| `allowedElements`               | `MarkdownPlugin.configure({ options: { allowedNodes: [...] }})`                                      | 转换时过滤 mdast/Plate 节点                                          |
+| `disallowedElements`            | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] }})`                                   | 转换时过滤不支持节点                                                |
+| `unwrapDisallowed`              | 无直接等价项，默认过滤节点                                      | 可通过自定义 `rules` 实现展开逻辑                                   |
+| `skipHtml`                      | 默认会移除大部分 HTML                                           | 如需保留，使用 `remarkPlugins` 引入 `rehype-raw`                     |
+| `urlTransform`                  | 在 `rules` 对 `link` 处理，或按插件类型序列化处理                | 在转换规则中自定义实现                                               |
+| `allowElement`                  | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`                                     | 转换时自定义函数过滤节点                                            |
 
-## Appendix A: HTML in Markdown
+## 附录A：Markdown中的HTML
 
-By default, `@platejs/markdown` does **not** process raw HTML tags for security. Standard Markdown generating HTML (e.g., `*emphasis*` → `<em>`) is handled.
+默认情况下，`@platejs/markdown` 出于安全考虑**不会**处理原始的 HTML 标签。标准 Markdown 生成的 HTML（如 `*emphasis*` → `<em>`）会被正常转换。
 
-To process raw HTML in a **trusted environment**:
-1.  **Include `remark-mdx`:** Add to `remarkPlugins`.
-2.  **Use `rehype-raw`:** Add [`rehype-raw`][github-rehype-raw] to `remarkPlugins`.
-3.  **Configure Rules:** May need `rules` for parsed HTML `hast` nodes to Plate structures.
+如需在**受信任环境**下处理原始 HTML：
+
+1.  **引入 `remark-mdx`：** 添加到 `remarkPlugins`。
+2.  **使用 `rehype-raw`：** 将[`rehype-raw`][github-rehype-raw]添加进`remarkPlugins`。
+3.  **配置Rules：** 可能需要针对解析后的 HTML `hast` 节点自定义`rules`，将其映射到 Plate 结构。
 
 ```tsx title="lib/plate-editor.ts"
 import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
-import rehypeRaw from 'rehype-raw'; // May require VFile, ensure compatibility
-// import { VFile } from 'vfile'; // If needed by rehype-raw setup
+import rehypeRaw from 'rehype-raw'; // 可能需要 VFile，确保兼容性
+// import { VFile } from 'vfile'; // 如果 rehype-raw 需要 VFile
 
 MarkdownPlugin.configure({
   options: {
     remarkPlugins: [
       remarkMdx,
-      // Using rehype plugins within remark pipeline can be complex.
-      [rehypeRaw, { /* options, e.g., pass vfile */ }],
+      // 在 remark 流水线中使用 rehype 插件会比较复杂
+      [
+        rehypeRaw,
+        {
+          /* 配置项，如传递 vfile */
+        },
+      ],
     ],
     rules: {
-      // Example: Rule for HTML tags parsed by rehype-raw.
-      // mdastNode structure depends on rehype-raw output.
-      element: { // Generic rule for 'element' nodes from rehype-raw
+      // 示例：对 rehype-raw 解析出来的 HTML 标签设置规则
+      // mdastNode 结构取决于 rehype-raw 的输出
+      element: {
+        // 针对 rehype-raw 产出的“element”节点的通用处理
         deserialize: (mdastNode, deco, options) => {
-          // Simplified: Needs proper handling based on mdastNode.tagName and attributes.
-          // You'll likely need specific rules per HTML tag.
+          // 简化示例：请根据 mdastNode.tagName 及其属性做完整处理
+          // 实际上常需要针对每一种 HTML 标签做独立规则
           if (mdastNode.tagName === 'div') {
             return {
-              type: 'html_div', // Example: Map to a custom 'html_div' Plate element
-              children: convertChildrenDeserialize(mdastNode.children, deco, options),
+              type: 'html_div', // 例如：映射到 Plate 的自定义元素 'html_div'
+              children: convertChildrenDeserialize(
+                mdastNode.children,
+                deco,
+                options
+              ),
             };
           }
-          // Fallback or handle other tags
+          // 其他标签回退处理
           return convertChildrenDeserialize(mdastNode.children, deco, options);
         },
       },
-      // Add serialization rules if outputting raw HTML from Plate.
+      // 如需要将Plate结构重新序列化为原始HTML，请补充相应规则
     },
   },
 });
 ```
 
-<Callout type="destructive" title="Security Warning">
-  Enabling raw HTML rendering increases XSS risk if the Markdown source isn't trusted. Use [`rehype-sanitize`][github-rehype-sanitize] after `rehype-raw` to whitelist HTML elements/attributes.
+<Callout type="destructive" title="安全警告">
+  启用原始 HTML 渲染后，如果 Markdown 来源不受信任，会显著增加 XSS 风险。应在 `rehype-raw` 后使用 [`rehype-sanitize`][github-rehype-sanitize]，白名单允许的 HTML 元素/属性。
 </Callout>
 
-## Appendix B: Customizing Conversion Rules (`rules`)
+## 附录B：自定义转换规则（`rules`）
 
-The `rules` option in `MarkdownPlugin.configure` offers fine-grained control over mdast ↔ Plate JSON conversion. Keys in the `rules` object match node types.
+在 `MarkdownPlugin.configure` 中设置的 `rules` 选项，提供了 mdast ↔ Plate JSON 转换的精细控制。`rules` 对象中的字段需与各节点类型对应。
 
--   **Deserialization (Markdown → Plate):** Keys are `mdast` node types (e.g., `paragraph`, `heading`, `strong`, `link`, MDX types like `mdxJsxTextElement`). The `deserialize` function takes `(mdastNode, deco, options)` and returns a Plate `Descendant` or `Descendant[]`.
--   **Serialization (Plate → Markdown):** Keys are Plate element/text types (e.g., `p`, `h1`, `a`, `code_block`, `bold`). The `serialize` function takes `(slateNode, options)` and returns an `mdast` node.
+- **反序列化（Markdown → Plate）：** 键为 `mdast` 节点类型（如 `paragraph`、`heading`、`strong`、`link`，以及 MDX 节点如 `mdxJsxTextElement`）。`deserialize` 函数接收 `(mdastNode, deco, options)`，返回 Plate 的 `Descendant` 或 `Descendant[]`。
+- **序列化（Plate → Markdown）：** 键为 Plate 的元素/文本类型（如 `p`、`h1`、`a`、`code_block`、`bold`）。`serialize` 函数接收 `(slateNode, options)`，返回 `mdast` 节点。
 
-**Example: Overriding Link Deserialization**
+**示例：自定义链接反序列化规则**
+
 ```tsx title="lib/plate-editor.ts"
 MarkdownPlugin.configure({
   options: {
     rules: {
-      // Rule for mdast 'link' type
+      // 针对 mdast 的 'link' 类型的规则
       link: {
         deserialize: (mdastNode, deco, options) => {
-          // Default creates { type: 'a', url: ..., children: [...] }
-          // Add a custom property:
+          // 默认会生成 { type: 'a', url: ..., children: [...] }
+          // 这里添加一个自定义属性
           return {
-            type: 'a', // Plate link element type
+            type: 'a', // Plate 链接节点类型
             url: mdastNode.url,
             title: mdastNode.title,
             customProp: 'added-during-deserialize',
-            children: convertChildrenDeserialize(mdastNode.children, deco, options),
+            children: convertChildrenDeserialize(
+              mdastNode.children,
+              deco,
+              options
+            ),
           };
         },
       },
-      // Rule for Plate 'a' type (if serialization needs override for customProp)
-      a: { // Assuming 'a' is the Plate type for links
-         serialize: (slateNode, options) => {
-           // Default creates mdast 'link'
-           // Handle customProp if needed in MDX attributes or similar
-           return {
-             type: 'link', // mdast type
-             url: slateNode.url,
-             title: slateNode.title,
-             // customProp: slateNode.customProp, // MDX attribute?
-             children: convertNodesSerialize(slateNode.children, options),
-           };
-         },
+      // 如序列化时需处理 customProp，可对 Plate 的 'a' 类型覆写规则
+      a: {
+        // 假定 'a' 就是 Plate 链接类型
+        serialize: (slateNode, options) => {
+          // 默认输出 mdast 的 'link'
+          // 如需将 customProp 输出为 MDX 属性等，可自定义处理
+          return {
+            type: 'link', // mdast 类型
+            url: slateNode.url,
+            title: slateNode.title,
+            // customProp: slateNode.customProp, // MDX 属性占位？
+            children: convertNodesSerialize(slateNode.children, options),
+          };
+        },
       },
     },
-    // ... remarkPlugins ...
+    // ... 其他 remarkPlugins 配置 ...
   },
 });
 ```
 
-**Default Rules Summary:**
-Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages/markdown/src/lib/rules/defaultRules.ts) for the complete list. Key conversions include:
+**默认规则概览**
 
-| Markdown (mdast)  | Plate Type            | Notes                                                       |
-| :---------------- | :-------------------- | :---------------------------------------------------------- |
-| `paragraph`       | `p`                   |                                                             |
-| `heading` (depth) | `h1` - `h6`           | Based on depth.                                             |
-| `blockquote`      | `blockquote`          |                                                             |
-| `list` (ordered)  | `ol` / `p`\*          | `ol`/`li`/`lic` or `p` with list indent props.              |
-| `list` (unordered)| `ul` / `p`\*          | `ul`/`li`/`lic` or `p` with list indent props.              |
-| `code` (fenced)   | `code_block`          | Contains `code_line` children.                              |
-| `inlineCode`      | `code` (mark)         | Applied to text.                                            |
-| `strong`          | `bold` (mark)         | Applied to text.                                            |
-| `emphasis`        | `italic` (mark)       | Applied to text.                                            |
-| `delete`          | `strikethrough` (mark)| Applied to text.                                            |
-| `link`            | `a`                   |                                                             |
-| `image`           | `img`                 | Wraps in paragraph during serialization.                    |
-| `thematicBreak`   | `hr`                  |                                                             |
-| `table`           | `table`               | Contains `tr`.                                              |
-| `math` (block)    | `equation`            | Requires `remark-math`.                                     |
-| `inlineMath`      | `inline_equation`     | Requires `remark-math`.                                     |
-| `mdxJsxFlowElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
-| `mdxJsxTextElement`| *Custom*              | Requires `remark-mdx` and custom `rules`.                   |
+完整内容可查看 [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages/markdown/src/lib/rules/defaultRules.ts)。主要规则概览如下：
 
-\* List conversion depends on `ListPlugin` detection.
+| Markdown（mdast）  | Plate 类型           | 备注                                        |
+| :----------------- | :------------------- | :------------------------------------------- |
+| `paragraph`        | `p`                  |                                             |
+| `heading` (depth)  | `h1` - `h6`          | 根据 depth 自动映射                         |
+| `blockquote`       | `blockquote`         |                                             |
+| 有序 `list`        | `ol` / `p`\*         | `ol`/`li`/`lic`；或通过 `p`+列表缩进属性    |
+| 无序 `list`        | `ul` / `p`\*         | `ul`/`li`/`lic`；或通过 `p`+列表缩进属性    |
+| `code` (fenced)    | `code_block`         | 包裹 `code_line` 子节点                     |
+| `inlineCode`       | `code` (mark)        | 应用于文本                                  |
+| `strong`           | `bold` (mark)        | 应用于文本                                  |
+| `emphasis`         | `italic` (mark)      | 应用于文本                                  |
+| `delete`           | `strikethrough`(mark)| 应用于文本                                  |
+| `link`             | `a`                  |                                             |
+| `image`            | `img`                | 序列化时会包裹在段落                        |
+| `thematicBreak`    | `hr`                 |                                             |
+| `table`            | `table`              | 子节点为 `tr`                               |
+| `math` (block)     | `equation`           | 需配合 `remark-math` 使用                   |
+| `inlineMath`       | `inline_equation`    | 需配合 `remark-math` 使用                   |
+| `mdxJsxFlowElement`| _自定义_             | 需配合 `remark-mdx`，并补充自定义规则       |
+| `mdxJsxTextElement`| _自定义_             | 需配合 `remark-mdx`，并补充自定义规则       |
+
+\* 列表类型的转换依赖于是否启用 `ListPlugin`
 
 ---
 
-**Default MDX Conversions (with `remark-mdx`):**
+**默认 MDX 转换（配合 `remark-mdx`）:**
 
-| MDX (mdast)           | Plate Type                | Notes                                      |
-| :-------------------- | :------------------------ | :----------------------------------------- |
-| `<del>...</del>`      | `strikethrough` (mark)    | Alt for `~~strikethrough~~`                |
-| `<sub>...</sub>`      | `subscript` (mark)        | H<sub>2</sub>O                             |
-| `<sup>...</sup>`      | `superscript` (mark)      | E=mc<sup>2</sup>                           |
-| `<u>...</u>`        | `underline` (mark)        | <u>Underlined</u>                          |
-| `<mark>...</mark>`     | `highlight` (mark)        | <mark>Highlighted</mark>                   |
-| `<span style="font-family: ...">` | `fontFamily` (mark)    |                                            |
-| `<span style="font-size: ...">`   | `fontSize` (mark)       |                                            |
-| `<span style="font-weight: ...">` | `fontWeight` (mark)     |                                            |
-| `<span style="color: ...">`       | `color` (mark)          |                                            |
-| `<span style="background-color: ...">` | `backgroundColor` (mark)|                                            |
-| `<date>...</date>`      | `date`                    | Custom Date element                        |
-| `@mention`              | `mention`                 | Custom Mention element                       |
-| `<file name="..." />` | `file`                    | Custom File element                        |
-| `<audio src="..." />`   | `audio`                   | Custom Audio element                       |
-| `<video src="..." />`   | `video`                   | Custom Video element                       |
-| `<toc />`               | `toc`                     | Table of Contents                          |
-| `<callout>...</callout>`| `callout`                 | Callout block                              |
-| `<column_group>...</column_group>`| `column_group`            | 多列布局容器                              |
-| `<column width="50%">...</column>`| `column`                  | 单列，带有可选的宽度属性                    |
+| MDX（mdast）                         | Plate 类型                | 备注                               |
+| :----------------------------------- | :------------------------ | :---------------------------------- |
+| `<del>...</del>`                     | `strikethrough` (mark)    | 另一种写法 `~~strikethrough~~`      |
+| `<sub>...</sub>`                     | `subscript` (mark)        | H<sub>2</sub>O                      |
+| `<sup>...</sup>`                     | `superscript` (mark)      | E=mc<sup>2</sup>                    |
+| `<u>...</u>`                         | `underline` (mark)        | <u>下划线文本</u>                    |
+| `<mark>...</mark>`                   | `highlight` (mark)        | <mark>高亮文本</mark>                |
+| `<span style="font-family: ...">`    | `fontFamily` (mark)       |                                     |
+| `<span style="font-size: ...">`      | `fontSize` (mark)         |                                     |
+| `<span style="font-weight: ...">`    | `fontWeight` (mark)       |                                     |
+| `<span style="color: ...">`          | `color` (mark)            |                                     |
+| `<span style="background-color: ...">`| `backgroundColor` (mark) |                                     |
+| `<date>...</date>`                   | `date`                    | 自定义日期元素                      |
+| `[text](mention:id)`                 | `mention`                 | 自定义提及元素                      |
+| `<file name="..." />`                | `file`                    | 自定义文件元素                      |
+| `<audio src="..." />`                | `audio`                   | 自定义音频元素                      |
+| `<video src="..." />`                | `video`                   | 自定义视频元素                      |
+| `<toc />`                            | `toc`                     | 目录                                |
+| `<callout>...</callout>`             | `callout`                 | 提示块                              |
+| `<column_group>...</column_group>`   | `column_group`            | 多列布局容器                        |
+| `<column width="50%">...</column>`   | `column`                  | 单列，可指定宽度属性                 |
 
-## Appendix C: Components for Rendering
+## 附录C：渲染 Plate 节点的组件配置
 
-While `rules` handle MD ↔ Plate conversion, Plate uses React components to *render* Plate nodes. Configure these in `createPlateEditor` via the `components` option or plugin `withComponent` method.
+`rules` 主要负责 MD ↔ Plate 的数据转换，而 Plate 实际渲染节点时，使用 React 组件。可以通过 `createPlateEditor` 的 `components` 选项或插件的 `withComponent` 方法配置。
 
-**Example:**
+**示例：**
+
 ```tsx title="components/my-editor.tsx"
 import { createPlateEditor, ParagraphPlugin, PlateLeaf } from 'platejs/react';
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { ParagraphElement } from '@/components/ui/paragraph-node'; // Example UI component
-import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example UI component
+import { ParagraphElement } from '@/components/ui/paragraph-node'; // UI组件示例
+import { CodeBlockElement } from '@/components/ui/code-block-node'; // UI组件示例
 
 const editor = createPlateEditor({
   plugins: [
     ParagraphPlugin.withComponent(ParagraphElement),
     CodeBlockPlugin.withComponent(CodeBlockElement),
     BoldPlugin,
-    /* ... */
+    /* ... 其他插件 ... */
   ],
 });
 ```
-Refer to [Plugin Components](/docs/plugin-components) for more on creating/registering components.
 
-## Appendix D: `PlateMarkdown` Component (Read-Only Display)
+更多自定义与注册方式请参考 [插件组件相关文档](/docs/plugin-components)。
 
-For a `react-markdown`-like component for read-only display:
+## 附录D：`PlateMarkdown` 只读展示组件
+
+如果需要类似 `react-markdown` 的只读渲染组件，可以参考下方示例：
 
 ```tsx title="components/plate-markdown.tsx"
 import React, { useEffect } from 'react';
 import { Plate, PlateContent, usePlateEditor } from 'platejs/react';
 import { MarkdownPlugin } from '@platejs/markdown';
-// Import necessary Plate plugins for common Markdown features
+// 导入各类常用的 Plate 插件
 import { HeadingPlugin } from '@platejs/basic-nodes/react';
-// ... include other plugins like BlockquotePlugin, CodeBlockPlugin, ListPlugin, etc.
-// ... and mark plugins like BoldPlugin, ItalicPlugin, etc.
+// ... 还可以按需引入 BlockquotePlugin、CodeBlockPlugin、ListPlugin等
+// ... 以及粗体、斜体等标记插件
 
 export interface PlateMarkdownProps {
-  children: string; // Markdown content
+  children: string; // Markdown 内容
   remarkPlugins?: any[];
-  components?: Record<string, React.ComponentType<any>>; // Plate component overrides
+  components?: Record<string, React.ComponentType<any>>; // Plate 渲染组件（可选）
   className?: string;
 }
 
@@ -865,19 +1008,20 @@ export function PlateMarkdown({
   className,
 }: PlateMarkdownProps) {
   const editor = usePlateEditor({
-    plugins: [ // Include all plugins needed to render your Markdown
-      HeadingPlugin, /* ... other plugins ... */
+    plugins: [
+      // 加入渲染 Markdown 所需的所有插件
+      HeadingPlugin /* ... 其他插件 ... */,
       MarkdownPlugin.configure({ options: { remarkPlugins } }),
     ],
-    components, // Pass through component overrides
+    components, // 传递自定义渲染组件
   });
 
   useEffect(() => {
-    editor.tf.reset(); // Clear previous content
+    editor.tf.reset(); // 清空先前内容
     editor.tf.setValue(
       editor.getApi(MarkdownPlugin).markdown.deserialize(children)
     );
-  }, [children, editor, remarkPlugins]); // Re-deserialize if markdown or plugins change
+  }, [children, editor, remarkPlugins]); // 当 Markdown 内容或插件更改时重新反序列化
 
   return (
     <Plate editor={editor}>
@@ -886,92 +1030,35 @@ export function PlateMarkdown({
   );
 }
 
-// Usage Example:
+// 使用示例：
 // const markdownString = "# Hello\nThis is *Markdown*.";
 // <PlateMarkdown className="prose dark:prose-invert">
 //   {markdownString}
 // </PlateMarkdown>
 ```
 
-<Callout type="info" title="Initial Value">
-  This `PlateMarkdown` component provides a **read-only** view. For full editing, see the [Installation guides](/docs/installation).
+<Callout type="info" title="初始值">
+  该 `PlateMarkdown` 组件用于**只读**展示。如果需要完整的编辑体验，请参阅[安装指南](/docs/installation)。
 </Callout>
 
-## 使用分栏
+## 安全性注意事项
 
-通过 MDX 支持为多列文档启用列布局。
+`@platejs/markdown` 优先保证渲染安全，会把 Markdown 转换成结构化的 Plate 格式，避免直接渲染 HTML。但安全性依赖于：
 
-**插件配置：**
-```tsx title="lib/plate-editor.ts"
-import { createPlateEditor } from 'platejs/react';
-import { MarkdownPlugin, remarkMdx } from '@platejs/markdown';
-import { ColumnPlugin, ColumnItemPlugin } from '@platejs/layout/react';
+- **自定义 `rules`：** 保证自定义的 `deserialize` 规则不会引入不安全数据。
+- **`remarkPlugins`：** 谨慎甄别使用的第三方 remark 插件，注意其安全性隐患。
+- **原始 HTML 处理：** 如使用 `rehype-raw`，必须在来源不可信时联合 [`rehype-sanitize`][github-rehype-sanitize] 进行清洗。
+- **插件安全责任：** 如链接元素需进行有效性验证，可参见 LinkPlugin 的 [`isUrl`](/docs/plugins/link#linkplugin) 说明，或媒体插件的 [`parseMediaUrl`](/docs/plugins/media#parsemediaurl)。
 
-const editor = createPlateEditor({
-  plugins: [
-    // ...其他插件
-    ColumnPlugin,
-    ColumnItemPlugin,
-    MarkdownPlugin.configure({
-      options: {
-        remarkPlugins: [remarkMdx], // 列 MDX 语法所需
-      },
-    }),
-  ],
-});
-```
+**建议：** 对于不可信的 Markdown 输入务必格外谨慎。如果开放复杂扩展或原始 HTML 功能，请做好输入清洗。
 
-**支持的格式：**
-```tsx
-const markdown = `
-<column_group>
-  <column width="50%">
-    50% 宽度的左列内容
-  </column>
-  <column width="50%">
-    50% 宽度的右列内容
-  </column>
-</column_group>
+## 相关链接
 
-<column_group>
-  <column width="33%">第一列</column>
-  <column width="33%">第二列</column>
-  <column width="34%">第三列</column>
-</column_group>
-`;
-
-// 假设 `editor` 是您配置的 Plate 编辑器实例
-const slateValue = editor.api.markdown.deserialize(markdown);
-// 创建带有嵌套列元素的 column_group
-
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
-// 保留带有宽度属性的列结构
-```
-
-**列功能：**
-- 支持任意数量的列
-- 宽度属性是可选的（默认平均分配）
-- 完全支持列内嵌套内容
-- 宽度标准化确保列总和始终为 100%
-
-## Security Considerations
-
-`@platejs/markdown` prioritizes safety by converting Markdown to a structured Plate format, avoiding direct HTML rendering. However, security depends on:
-
--   **Custom `rules`:** Ensure `deserialize` rules don't introduce unsafe data.
--   **`remarkPlugins`:** Vet third-party remark plugins for potential security risks.
--   **Raw HTML Processing:** If `rehype-raw` is used, always sanitize with [`rehype-sanitize`][github-rehype-sanitize] if the source is untrusted.
--   **Plugin Responsibility:** URL validation in `LinkPlugin` ([`isUrl`](/docs/plugins/link#linkplugin)) or `MediaEmbedPlugin` ([`parseMediaUrl`](/docs/plugins/media#parsemediaurl)) is crucial.
-
-**Recommendation:** Treat untrusted Markdown input cautiously. Sanitize if allowing complex features or raw HTML.
-
-## Related Links
-
--   **[remark][github-remark]:** Markdown processor.
--   **[unified][github-unified]:** Core processing engine.
--   **[MDX][github-mdx]:** JSX in Markdown.
--   **[react-markdown][github-react-markdown]:** Alternative React Markdown component.
--   **[remark-slate-transformer][github-remark-slate-transformer]:** Initial mdast ↔ Plate conversion work by [inokawa](https://github.com/inokawa).
+- **[remark][github-remark]：** Markdown 处理器
+- **[unified][github-unified]：** 统一处理流程引擎
+- **[MDX][github-mdx]：** Markdown 文件中支持 JSX
+- **[react-markdown][github-react-markdown]：** 另一种 React Markdown 组件
+- **[remark-slate-transformer][github-remark-slate-transformer]：** [inokawa](https://github.com/inokawa) 起初开发的 mdast ↔ Plate 转换方案
 
 [commonmark-help]: https://commonmark.org/help/
 [commonmark-spec]: https://spec.commonmark.org/
