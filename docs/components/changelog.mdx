@@ -14,7 +14,13 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 - **DOCX Import/Export**: New `@platejs/docx-io` package for Word document handling
   - `import-toolbar-button`: Import DOCX files with `importDocx`
   - `export-toolbar-button`: Export to DOCX with `exportToDocx`
-  - `docx-export-kit`: DOCX-optimized static components for code blocks, columns, equations, callouts, TOC
+  - `docx-export-kit`: DOCX-optimized components using `DocxExportPlugin.configure({ override: { components } })`
+- **DOCX Static Components**: Added to existing static files with `*Docx` naming pattern:
+  - `callout-node-static`: `CalloutElementDocx`
+  - `code-block-node-static`: `CodeBlockElementDocx`, `CodeLineElementDocx`, `CodeSyntaxLeafDocx`
+  - `column-node-static`: `ColumnElementDocx`, `ColumnGroupElementDocx`
+  - `equation-node-static`: `EquationElementDocx`, `InlineEquationElementDocx`
+  - `toc-node-static`: `TocElementDocx`
 
 ## December 2025 #27
 
