@@ -12,17 +12,6 @@
  * Tables use base version with juice CSS inlining.
  */
 
-import {
-  BaseCodeBlockPlugin,
-  BaseCodeLinePlugin,
-  BaseCodeSyntaxPlugin,
-} from '@platejs/code-block';
-import { BaseCalloutPlugin } from '@platejs/callout';
-import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
-import { BaseTocPlugin } from '@platejs/toc';
-import { all, createLowlight } from 'lowlight';
-
 import { CalloutElementStaticDocx } from '@/registry/ui/callout-node-static-docx';
 import {
   CodeBlockElementStaticDocx,
@@ -38,8 +27,8 @@ import {
   InlineEquationElementStaticDocx,
 } from '@/registry/ui/equation-node-static-docx';
 import { TocElementStaticDocx } from '@/registry/ui/toc-node-static-docx';
-
-const lowlight = createLowlight(all);
+import { DocxExportPlugin } from '@platejs/docx-io';
+import { KEYS } from 'platejs';
 
 /**
  * Editor kit for DOCX export.
@@ -55,16 +44,19 @@ const lowlight = createLowlight(all);
  * Tables use base version with juice CSS inlining.
  */
 export const DocxExportKit = [
-  BaseCodeBlockPlugin.configure({
-    node: { component: CodeBlockElementStaticDocx },
-    options: { lowlight },
+  DocxExportPlugin.configure({
+    override: {
+      components: {
+        [KEYS.codeBlock]: CodeBlockElementStaticDocx,
+        [KEYS.codeLine]: CodeLineElementStaticDocx,
+        [KEYS.codeSyntax]: CodeSyntaxLeafStaticDocx,
+        [KEYS.column]: ColumnElementStaticDocx,
+        [KEYS.columnGroup]: ColumnGroupElementStaticDocx,
+        [KEYS.equation]: EquationElementStaticDocx,
+        [KEYS.inlineEquation]: InlineEquationElementStaticDocx,
+        [KEYS.callout]: CalloutElementStaticDocx,
+        [KEYS.toc]: TocElementStaticDocx,
+      },
+    },
   }),
-  BaseCodeLinePlugin.withComponent(CodeLineElementStaticDocx),
-  BaseCodeSyntaxPlugin.withComponent(CodeSyntaxLeafStaticDocx),
-  BaseColumnPlugin.withComponent(ColumnGroupElementStaticDocx),
-  BaseColumnItemPlugin.withComponent(ColumnElementStaticDocx),
-  BaseInlineEquationPlugin.withComponent(InlineEquationElementStaticDocx),
-  BaseEquationPlugin.withComponent(EquationElementStaticDocx),
-  BaseCalloutPlugin.withComponent(CalloutElementStaticDocx),
-  BaseTocPlugin.withComponent(TocElementStaticDocx),
 ];

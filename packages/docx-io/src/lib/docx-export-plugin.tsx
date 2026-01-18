@@ -307,6 +307,8 @@ export const DEFAULT_DOCX_MARGINS: DocxExportMargins = {
  */
 type SerializeToHtmlInternalOptions = {
   EditorStaticComponent?: React.ComponentType<PlateStaticProps>;
+  /** Component overrides by plugin key */
+  components?: Record<string, React.ComponentType<any>>;
   fontFamily?: string;
   plugins?: SlatePlugin[];
   value: Value;
@@ -321,12 +323,21 @@ type SerializeToHtmlInternalOptions = {
 async function serializeToHtml(
   options: SerializeToHtmlInternalOptions
 ): Promise<string> {
-  const { EditorStaticComponent, fontFamily, plugins, value } = options;
+  const { EditorStaticComponent, components, fontFamily, plugins, value } =
+    options;
 
   const editorStatic = createSlateEditor({
     plugins: plugins ?? [],
     value,
   });
+
+  // Apply component overrides directly to editor.meta.components
+  if (components) {
+    (editorStatic.meta as any).components = {
+      ...editorStatic.meta.components,
+      ...components,
+    };
+  }
 
   const htmlOptions: Partial<SerializeHtmlOptions> = {};
 
@@ -375,6 +386,8 @@ ${bodyHtml}
  * Internal options for exportToDocxInternal.
  */
 interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
+  /** Component overrides by plugin key */
+  components?: Record<string, React.ComponentType<any>>;
   editorPlugins?: SlatePlugin[];
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
   value: Value;
@@ -390,6 +403,7 @@ async function exportToDocxInternal(
   options: ExportToDocxInternalOptions
 ): Promise<Blob> {
   const {
+    components,
     customStyles,
     editorPlugins,
     editorStaticComponent,
@@ -402,6 +416,7 @@ async function exportToDocxInternal(
   // Serialize editor content to HTML
   const bodyHtml = await serializeToHtml({
     EditorStaticComponent: editorStaticComponent,
+    components,
     fontFamily,
     plugins: editorPlugins,
     value,
@@ -458,8 +473,35 @@ export async function exportToDocx(
 ): Promise<Blob> {
   const { editorPlugins, editorStaticComponent, ...operationOptions } = options;
 
+  // Extract component overrides from plugins
+  let components: Record<string, React.ComponentType<any>> | undefined;
+
+  if (editorPlugins) {
+    for (const plugin of editorPlugins) {
+      // Check direct override first
+      let pluginOverride = (plugin as any).override;
+
+      // If no direct override, check __configuration (from configure())
+      if (
+        (!pluginOverride || !pluginOverride.components) &&
+        (plugin as any).__configuration
+      ) {
+        const configResult = (plugin as any).__configuration({});
+        pluginOverride = configResult?.override;
+      }
+
+      if (pluginOverride?.components) {
+        components = {
+          ...components,
+          ...pluginOverride.components,
+        };
+      }
+    }
+  }
+
   return exportToDocxInternal({
     ...operationOptions,
+    components,
     editorPlugins,
     editorStaticComponent,
     value,
@@ -594,8 +636,15 @@ export const DocxExportPlugin = createPlatePlugin({
       ): Promise<Blob> => {
         const pluginOptions = getOptions();
 
+        // Get component overrides from plugin.override.components
+        const plugin = editor.getPlugin({ key: 'docxExport' }) as any;
+        const components = plugin.override?.components as
+          | Record<string, React.ComponentType<any>>
+          | undefined;
+
         return exportToDocxInternal({
           ...options,
+          components,
           editorPlugins: pluginOptions.editorPlugins,
           editorStaticComponent: pluginOptions.editorStaticComponent,
           value: editor.children,
