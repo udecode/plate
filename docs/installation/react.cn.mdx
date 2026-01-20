@@ -16,7 +16,7 @@ description: 为 React 安装和配置 Plate UI
 首先在项目中添加核心 [Editor](/docs/components/editor) 组件：
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor
+npx shadcn@latest add @plate/editor
 ```
 
 接下来，在主应用文件（如 `src/App.tsx`）中创建基础编辑器。此示例在 `EditorContainer` 内设置了一个简单编辑器。
@@ -50,7 +50,7 @@ export default function App() {
 通过文本格式化功能增强编辑器。添加 **Basic Nodes Kit**、[FixedToolbar](/docs/components/fixed-toolbar) 和 [MarkToolbarButton](/docs/components/mark-toolbar-button) 组件：
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+npx shadcn@latest add @plate/basic-nodes-kit @plate/fixed-toolbar @plate/mark-toolbar-button
 ```
 
 <Callout type="info">
@@ -82,13 +82,13 @@ const initialValue: Value = [
   {
     type: 'p',
     children: [
-      { text: '您好！试试 ' },
-      { text: '粗体', bold: true },
-      { text: '、' },
-      { text: '斜体', italic: true },
-      { text: ' 和 ' },
-      { text: '下划线', underline: true },
-      { text: ' 格式。' },
+      { text: 'Hello! Try out the ' },
+      { text: 'bold', bold: true },
+      { text: ', ' },
+      { text: 'italic', italic: true },
+      { text: ', and ' },
+      { text: 'underline', underline: true },
+      { text: ' formatting.' },
     ],
   },
 ];
@@ -102,9 +102,9 @@ export default function App() {
   return (
     <Plate editor={editor}>
       <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton nodeType="bold" tooltip="粗体 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
         <Editor placeholder="输入您精彩的内容..." />
@@ -147,18 +147,18 @@ import { ToolbarButton } from '@/components/ui/toolbar'; // 通用工具栏按�
 
 const initialValue: Value = [
   {
-    children: [{ text: '标题' }],
+    children: [{ text: 'Title' }],
     type: 'h3',
   },
   {
-    children: [{ text: '这是一段引用。' }],
+    children: [{ text: 'This is a quote.' }],
     type: 'blockquote',
   },
   {
     children: [
-      { text: '使用一些 ' },
-      { bold: true, text: '粗体' },
-      { text: ' 文字强调！' },
+      { text: 'With some ' },
+      { bold: true, text: 'bold' },
+      { text: ' text for emphasis!' },
     ],
     type: 'p',
   },
@@ -185,11 +185,11 @@ export default function App() {
         <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>引用</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
         {/* 标记工具栏按钮 */}
-        <MarkToolbarButton nodeType="bold" tooltip="粗体 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
         <Editor placeholder="输入您精彩的内容..." />
@@ -206,7 +206,7 @@ export default function App() {
 
   如需快速开始使用预配置的常见插件和组件，可使用 `editor-basic` 区块：
   ```bash
-  npx shadcn@latest add https://platejs.org/r/editor-basic
+  npx shadcn@latest add @plate/editor-basic
   ```
   这将为您处理大部分样板代码。
 </Callout>
@@ -215,7 +215,7 @@ export default function App() {
 
 为了使编辑器内容持久化，我们集成 `localStorage` 来保存和加载编辑器的值。
 
-```tsx showLineNumbers title="src/App.tsx" {55-61,67-69,79-85}
+```tsx showLineNumbers title="src/App.tsx" {55-58,64-66,76-82}
 import * as React from 'react';
 import type { Value } from 'platejs';
 
@@ -242,18 +242,18 @@ import { ToolbarButton } from '@/components/ui/toolbar';
 
 const initialValue: Value = [
   {
-    children: [{ text: '标题' }],
+    children: [{ text: 'Title' }],
     type: 'h3',
   },
   {
-    children: [{ text: '这是一段引用。' }],
+    children: [{ text: 'This is a quote.' }],
     type: 'blockquote',
   },
   {
     children: [
-      { text: '使用一些 ' },
-      { bold: true, text: '粗体' },
-      { text: ' 文字强调！' },
+      { text: 'With some ' },
+      { bold: true, text: 'bold' },
+      { text: ' text for emphasis!' },
     ],
     type: 'p',
   },
@@ -272,10 +272,7 @@ export default function App() {
     ],
     value: () => {
       const savedValue = localStorage.getItem('installation-react-demo');
-      if (savedValue) {
-        return JSON.parse(savedValue);
-      }
-      return initialValue;
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
 
@@ -290,16 +287,16 @@ export default function App() {
         <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>引用</ToolbarButton>
-        <MarkToolbarButton nodeType="bold" tooltip="粗体 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
         <div className="flex-1" />
         <ToolbarButton
           className="px-2"
           onClick={() => editor.tf.setValue(initialValue)}
         >
-          重置
+          Reset
         </ToolbarButton>
       </FixedToolbar>
       <EditorContainer>
@@ -321,8 +318,8 @@ export default function App() {
 *   **探索组件：** 发现 [工具栏、菜单、节点组件](/docs/components) 等。
 *   **添加插件：** 集成 [表格](/docs/plugins/table)、[提及](/docs/plugins/mention)、[AI](/docs/plugins/ai) 或 [Markdown](/docs/plugins/markdown) 等功能。
 *   **使用编辑器区块：** 快速设置预配置编辑器：
-    *   基础编辑器：`npx shadcn@latest add https://platejs.org/r/editor-basic`
-    *   AI 驱动编辑器：`npx shadcn@latest add https://platejs.org/r/editor-ai`
+    *   基础编辑器：`npx shadcn@latest add @plate/editor-basic`
+    *   AI 驱动编辑器：`npx shadcn@latest add @plate/editor-ai`
 *   **了解更多：**
     *   [编辑器配置](/docs/editor)
     *   [插件配置](/docs/plugin)

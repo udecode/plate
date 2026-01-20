@@ -7,7 +7,7 @@ Plate 插件是通过 `Plate` 组件的 [plugins](/docs/api/core/plate-component
 
 ## 插件属性
 
-<API name="属性">
+<API name="Properties">
 <APIAttributes>
 <APIItem name="key" type="C['key']" required>
 Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
@@ -26,7 +26,49 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
-编辑器事件的事件处理器，包括 `onChange`。
+各种编辑器事件的事件处理器。
+
+<APISubList>
+<APISubListItem parent="handlers" name="onChange" type="(editor: PlateEditor) => void" optional>
+每当编辑器内容更改时调用。
+</APISubListItem>
+<APISubListItem parent="handlers" name="onNodeChange" type="OnNodeChange" optional>
+每当发生节点操作时调用（插入、删除、设置、合并、拆分、移动）。
+
+```ts
+type OnNodeChange = (ctx: PlatePluginContext & {
+  node: Descendant;
+  operation: NodeOperation;
+  prevNode: Descendant;
+}) => HandlerReturnType;
+```
+
+**参数：**
+- `node`：操作后的节点
+- `operation`：发生的节点操作
+- `prevNode`：操作前的节点
+
+**注意：** 对于 `insert_node` 和 `remove_node` 操作，`node` 和 `prevNode` 包含相同的值以避免空值情况。
+</APISubListItem>
+<APISubListItem parent="handlers" name="onTextChange" type="OnTextChange" optional>
+每当发生文本操作时调用（插入或删除文本）。
+
+```ts
+type OnTextChange = (ctx: PlatePluginContext & {
+  node: Descendant;
+  operation: TextOperation;
+  prevText: string;
+  text: string;
+}) => HandlerReturnType;
+```
+
+**参数：**
+- `node`：包含已更改文本的父节点
+- `operation`：发生的文本操作（`insert_text` 或 `remove_text`）
+- `prevText`：操作前的文本内容
+- `text`：操作后的文本内容
+</APISubListItem>
+</APISubList>
 </APIItem>
 
 <APIItem name="inject" type="object">
@@ -36,6 +78,7 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 <APISubListItem parent="inject" name="nodeProps" type="Record<string, any>" optional>
 Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
+
 
 <APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
 排除节点属性注入的插件 key 数组。

@@ -1,11 +1,11 @@
 ---
 title: Plate 组件
-description: Plate 组件的 API 参考文档。
+description: Plate 组件的 API 参考。
 ---
 
-`Plate` 是用于将编辑器状态加载到 store provider 的根组件。
+`Plate` 是将编辑器状态加载到 store provider 的根组件。
 
-`PlateContent` 是用于渲染编辑器内容的组件。
+`PlateContent` 是渲染编辑器的组件。
 
 ## `<Plate>`
 
@@ -15,33 +15,55 @@ description: Plate 组件的 API 参考文档。
 子组件可以访问 plate store。
 </APIItem>
 <APIItem name="editor" type="PlateEditor">
-受控的 `editor` 实例。此属性为必填项。
+受控的 `editor` 实例。此属性是必需的。
 </APIItem>
 <APIItem name="decorate" type="(ctx: SlatePluginContext<C>) => TRange[]" optional>
 参见 [Slate 文档](https://docs.slatejs.org/concepts/09-rendering#decorations)。
 </APIItem>
 <APIItem name="onChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
-编辑器状态变化时的受控回调函数。
+编辑器状态变化时调用的受控回调。
 </APIItem>
 <APIItem name="onSelectionChange" type="(selection: TRange | null) => void" optional>
-编辑器选区变化时的回调函数。
+编辑器选区变化时调用的回调。
 </APIItem>
 <APIItem name="onValueChange" type="({ value, editor }: { value: Value; editor: PlateEditor }) => void" optional>
-编辑器值变化时的回调函数。
+编辑器值变化时调用的回调。
+</APIItem>
+<APIItem name="onNodeChange" type="(options: { editor: PlateEditor; node: Descendant; operation: NodeOperation; prevNode: Descendant }) => void" optional>
+节点操作发生时调用的回调（插入、删除、设置、合并、拆分、移动）。
+
+**参数：**
+- `editor`：Plate 编辑器实例
+- `node`：操作后的节点
+- `operation`：发生的节点操作
+- `prevNode`：操作前的节点
+
+**注意：** 对于 `insert_node` 和 `remove_node` 操作，`node` 和 `prevNode` 包含相同的值，以避免空值情况。
+</APIItem>
+<APIItem name="onTextChange" type="(options: { editor: PlateEditor; node: Descendant; operation: TextOperation; prevText: string; text: string }) => void" optional>
+文本操作发生时调用的回调（插入或删除文本）。
+
+**参数：**
+- `editor`：Plate 编辑器实例
+- `node`：包含已更改文本的父节点（块级或内联元素）
+- `operation`：发生的文本操作（`insert_text` 或 `remove_text`）
+- `prevText`：操作前的文本内容
+- `text`：操作后的文本内容
+
 </APIItem>
 <APIItem name="primary" type="boolean" optional>
-当与 PlateController 一起使用时，控制编辑器是否默认被视为活动状态。
+控制与 PlateController 一起使用时编辑器是否默认被视为活动状态。
 
-- **默认值:** `true`
+- **默认值：** `true`
 </APIItem>
 <APIItem name="readOnly" type="boolean" optional>
-如果为 true，编辑器将处于只读模式。
+如果为 true，编辑器处于只读模式。
 </APIItem>
 <APIItem name="renderElement" type="FC<RenderElementProps>" optional>
-自定义元素渲染函数。
+元素的自定义渲染函数。
 </APIItem>
 <APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional>
-自定义叶子节点渲染函数。
+叶子节点的自定义渲染函数。
 </APIItem>
 </APIProps>
 </API>
@@ -53,12 +75,12 @@ description: Plate 组件的 API 参考文档。
 
 <APIProps>
 <APIItem name="autoFocusOnEditable" type="boolean" optional>
-当编辑器从只读模式切换到可编辑模式时（当 `readOnly` 从 `true` 变为 `false` 时），自动聚焦编辑器。
+当编辑器从只读模式转换为可编辑模式时（`readOnly` 从 `true` 变为 `false`）自动聚焦编辑器。
 </APIItem>
 <APIItem name="renderEditable" type="(editable: ReactNode) => ReactNode" optional>
 自定义 `Editable` 节点。
 
-- **默认值:** `<Editable {...props} />`
+- **默认值：** `<Editable {...props} />`
 </APIItem>
 <APIItem name="as" type="React.ElementType" optional />
 <APIItem name="autoFocus" type="boolean" optional />
@@ -68,6 +90,7 @@ description: Plate 组件的 API 参考文档。
 <APIItem name="onKeyDown" type="(event: KeyboardEvent) => void" optional />
 <APIItem name="placeholder" type="string" optional />
 <APIItem name="readOnly" type="boolean" optional />
+<APIItem name="renderChunk" type="FC<RenderChunkProps>" optional />
 <APIItem name="renderElement" type="FC<RenderElementProps>" optional />
 <APIItem name="renderLeaf" type="FC<RenderLeafProps>" optional />
 <APIItem name="renderPlaceholder" type="FC<RenderPlaceholderProps>" optional />
@@ -79,12 +102,12 @@ description: Plate 组件的 API 参考文档。
 
 ## Plate 工作原理
 
-`Plate` 需要一个 `editor` 属性，该属性应为 `PlateEditor` 的实例。如果 `editor` 为 `null`，`Plate` 将不会渲染任何内容。
+`Plate` 需要一个 `editor` 属性，它应该是 `PlateEditor` 的实例。如果 `editor` 为 `null`，`Plate` 将不会渲染任何内容。
 
-`Plate` 组件不负责创建编辑器或管理插件。这些职责由 `createPlateEditor` 处理。
+`Plate` 组件不处理编辑器的创建或插件的管理。这些职责由 `createPlateEditor` 处理。
 
-`Plate` 提供了编辑器状态的 store 并渲染其子组件。它使用 `PlateStoreProvider` 使编辑器状态和相关功能对其子组件可用。
+`Plate` 为编辑器状态提供一个 store 并渲染其子组件。它使用 `PlateStoreProvider` 使编辑器状态和相关函数对其子组件可用。
 
-元素和叶子节点的渲染逻辑主要由插件系统处理，`renderElement` 和 `renderLeaf` 属性作为未找到特定节点类型插件时的后备方案。
+元素和叶子节点的渲染逻辑主要由插件系统处理，如果没有找到特定节点类型的插件，`renderElement` 和 `renderLeaf` 属性将作为后备方案。
 
 有关创建和配置编辑器的更多详细信息，请参阅[编辑器配置](/docs/editor)指南。

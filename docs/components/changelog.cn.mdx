@@ -4,389 +4,430 @@ description: 最新组件更新与公告。
 toc: true
 ---
 
-由于 Plate UI 并非组件库，更新日志在此维护。
+由于 Plate UI 不是一个组件库，因此在此维护更新日志。
 
-使用 [CLI](https://platejs.org/docs/components/cli) 安装最新版本的组件。
+使用 [CLI](https://platejs.org/docs/components/cli) 安装组件的最新版本。
+
+## 2026年1月 #28
+
+### 1月17日 #28.1
+- **DOCX 导入/导出**：全新 `@platejs/docx-io` 包，支持 Word 文档处理
+  - `import-toolbar-button`：通过 `importDocx` 导入 DOCX 文件
+  - `export-toolbar-button`：通过 `exportToDocx` 导出为 DOCX
+  - `docx-export-kit`：支持 DOCX 的组件，可使用 `DocxExportPlugin.configure({ override: { components } })` 覆盖
+- **DOCX 静态组件**：在已有静态文件中增加 `*Docx` 命名的静态组件：
+  - `callout-node-static`：`CalloutElementDocx`
+  - `code-block-node-static`：`CodeBlockElementDocx`、`CodeLineElementDocx`、`CodeSyntaxLeafDocx`
+  - `column-node-static`：`ColumnElementDocx`、`ColumnGroupElementDocx`
+  - `equation-node-static`：`EquationElementDocx`、`InlineEquationElementDocx`
+  - `toc-node-static`：`TocElementDocx`
+
+## 2025年12月 #27
+
+### 12月23日 #27.2
+- **AI 提示系统重构**：完全重构 AI 命令提示，提升可维护性
+  - 将单文件 `prompts.ts` 拆分为多个独立模块：`getEditPrompt`、`getGeneratePrompt`、`getCommentPrompt`、`getEditTablePrompt`、`getChooseToolPrompt`
+  - 增加新的 `common.ts`，提供共享提示工具函数
+  - 针对表格单元格编辑新增专用提示
+- **AI 表格单元格处理**：优化对单元格表格的编辑支持
+  - `use-chat`：增强了解析器选项，提升 AI 内容处理能力
+  - `cursor-overlay`：修复覆盖层定位与行为
+  - 针对复杂表格 markdown 生成增加测试
+- **API 路由**：AI 命令和 copilot 路由更新，改进提示选择逻辑
+
+### 12月16日 #27.1
+- `table-node`：修复表格行拖拽，之前行只能拖动不能放下，且未正确显示拖拽线。已补充元素引用的 `nodeRef`。
+
+### 11月30日 #26.10
+- `inline-combobox`：添加 Yjs 协作支持——组合框弹窗仅对当前操作用户可见，协作编辑时不会影响其他用户
+
+### 10月21日 #26.9
+- `suggestion-kit`：移除 `BlockSuggestion`，使用 `SuggestionLineBreak` 以修复样式
+- `use-chat`：修复 AI 评论结束时隐藏的问题
+
+### 10月17日 #26.8
+- **静态组件**：全部静态组件路径统一为新的 `platejs/static`
+  - `*-node-static` 组件：导入路径由 `@platejs/core/react` 改为 `platejs/static`
+  - `editor-static`：`PlateStatic` 导入路径更新
+  - `export-toolbar-button`：静态工具路径调整
+  - `import-toolbar-button`：静态工具路径调整
+  - `slate-to-html/page`：静态渲染导入路径更新
+  - `comment-kit`、`suggestion-kit`：静态类型导入路径更新
+
+### 10月6日 #26.7
+- `api/ai/command/route.ts`：修复 blockSelecting 时 AI 生成内容质量差问题
+
+### 10月5日 #26.6
+- `ai-kit`：移除 `useHooks` 里未使用的 `api` 参数
+- `block-selection-kit`：为已选中块时增加快捷键（mod+j）唤起 AI 菜单
+
+### 10月4日 #26.5
+- `api/ai/command/route.ts`：修复 #4669
+
+## 2025年9月 #26
+
+### 9月28日 #26.5
+- `transforms`：修复斜杠命令重复插入块，避免在空块中选择同类型块造成重复
+
+### 9月20日 #26.4
+- **AI 建议**：AI 建议系统重大优化，内容处理与界面体验全面升级
+  - `ai-menu`：
+    - 新增动画进度条组件 `AILoadingBar`，含加载动画与停止功能
+    - 评论接收界面增加接收/拒绝按钮
+    - 依据选择和操作模式，菜单状态可自动适配
+    - 键盘操作优化，ESC 可停止运行
+  - `ai-toolbar-button`：实现简化
+  - `api/ai/command/route.ts`：
+    - 新增多工具（生成、编辑、评论）自动意图识别处理
+    - 默认使用 Google Gemini（`gemini-2.5-flash`）模型
+    - 提示模板支持占位符
+    - 新增 MDX 标签保留
+  - `markdown-joiner-transform`：新增智能缓存，支持流式 markdown 渲染更流畅
+  - `use-chat`：实现简化并增强错误处理
+  - `ai-kit`：增加 markdown 插件
+  - `markdown-kit`：增加 AI 插件集成
+  - `link-node`：支持 AI 专用点击事件
+  - `block-context-menu`：去除冗余的 AI 选项（现已由 ai-menu 统一处理）
+  - `block-discussion`：样式微调
+  - `fixed-toolbar-buttons`：AI 按钮实现简化
+
+### 9月7日 #26.3
+- `block-context-menu`：修复多处触发时菜单位置会卡住的问题
+
+### 9月5日 #26.2
+- `block-draggable`：修复右键事件下块选择功能
+
+### 9月4日 #26.1
+- **AI 评论**：新增 AI 智能评论功能，支持文档审阅与反馈
+  - `use-chat`：增强支持 AI 评论及流式响应能力
+  - `ai-menu`：菜单增加评论生成与界面优化
+  - `ai-toolbar-button`：支持 AI 评论相关动作
+  - `block-context-menu`：集成 AI 评论至块右键菜单
+  - `fixed-toolbar-buttons`：工具栏添加 AI 评论按钮
+  - `ai-kit`：移除所有提示模板，直接在 `api/ai/command/route.ts` 使用
+  - `api/ai/command/route.ts`：新增评论支持
+
+## 2025年8月 #25
+
+### 8月17日 #25.2
+- `block-discussion`：移除用于弹出讨论弹窗的 `useFocusedLast` 检查
+
+### 8月1日 #25.1
+- **浮动工具栏优化**：多个组件现使用新的 `useFocusedLast` hook，仅在当前编辑器聚焦时显示浮动工具栏，解决多编辑器场景下工具栏冲突
+  - `ai-menu`
+  - `block-discussion`
+  - `column-node`
+  - `media-toolbar`
+  - `table-node`
+- `block-draggable`：
+  - 点击拖拽柄时可选择列表子项
+  - 点击拖拽柄时会聚焦到已选区块
+
+## 2025年7月 #24
+
+### 7月29日 #24.11
+- `block-draggable`：修复表格拖拽时拖拽预览部分错位，支持横向滚动情况下可正确展示内容
+- `block-draggable`：新增 `isAboutToDrag` 状态，优化拖拽预览清理
+
+### 7月27日 #24.10
+- `ai-kit`：支持自定义节点类型
+- `indent-kit`：`IndentPlugin` 支持 `KEYS.img`
+- `list-kit`：`ListPlugin` 支持 `KEYS.img`
+- `markdown-joiner-transform.ts`：新增 `markdownJoinerTransform`，自动将 [**,bold,**] 转化为 [**bold**]，以便 markdown 反序列化
+- `api/ai/command/route.ts`：采用 `markdownJoinerTransform`
+
+### 7月26日 #24.9
+- `list-classic-kit`：新增 `ListPlugin`，恢复列表功能（支持 Tab/Shift+Tab 缩进，回车新建列表项等）
+
+### 7月25日 #24.8
+- `block-draggable`：拖动列表项时自动选择所有缩进更深的子项
+
+### 7月23日 #24.7
+- `block-draggable`：使用新的 BlockSelectionPlugin 的 `addOnContextMenu` API 优化右键菜单代码
+
+### 7月18日 #24.6
+- `block-context-menu`：修复右键点击块边距区域无法弹出菜单
+- `block-draggable`：外部包裹 div 增加右键菜单处理，保证边距点击时可选中块
+
+### 7月14日 #24.5
+- `block-draggable`：支持通过编辑器原生选择区拖动多个块（之前只能用块选择功能）
+
+### 7月3日 #24.4
+- `slate-to-html`：新增 `EditorViewDemo` 组件，采用 `createStaticEditor` 支持静态编辑器渲染
+### 7月4日 #24.3
+- `list-classic-node`：修复影响 `TaskListElement` 的样式，强制重置列表样式为 none
+
+### 7月3日 #24.2
+
+- **经典列表支持待办清单**：为 list-classic 插件添加带复选框的待办任务列表功能
+  - `list-classic-kit`：新增 `TaskListPlugin` 及 `TaskListElement`
+  - `list-classic-node`：新增 `TaskListElement` 与 `TaskListItemElement`，包含复选框
+  - `transforms-classic`：新增经典列表转换逻辑
+  - `insert-toolbar-classic-button`：新增插入经典列表类型组件（无序、有序、待办）
+  - `turn-into-toolbar-classic-button`：新增转换为经典列表类型组件
+  - `floating-toolbar-classic-buttons`：新增经典列表浮动工具栏按钮组件
+  - `floating-toolbar-classic-kit`：新增包含上述按钮的插件集
+
+### 7月2日 #24.1
+- `editor`：新增 `EditorView`，基于 `@platejs/core/react` 的新 `PlateView`，支持静态渲染及复制
 
 ## 2025年6月 #23
+
+### 6月29日 #23.9
+- `link-node`：移除 `useLink`
+- `link-node-static`：补充缺失的 `getLinkAttributes`
+- `media-image-node`：`attributes.alt` 类型转换补充
+
+### 6月26日 #23.7
+- `inline-combobox`：修复点击编辑器外无法关闭组合框弹窗
+
+### 6月24日 #23.6
+- `transform.ts`：`setBlockMap` 新增 `toggleCodeBlock`，修复 `turn-into-toolbar-button.tsx` 创建 code_block 的结构错误
+
+### 6月20日 #23.5
+- [拖拽优化](https://github.com/udecode/plate/pull/4385)
+- `block-draggable`：修复多块拖动及边缘区域定位不准等问题
+- `block-selection-kit`：现可选择整张表格（table）；仅当选区框在表格内部时才选 tr 行
+- `table-node`：表格增加块选择样式
+
+### 6月18日 #23.4
+- `table-node`：修复与光标位置有关的 bug，提升性能
+
+### 6月16日 #23.3
+
+- `block-draggable`：由 `getContainerTypes` 改为 `getPluginByType`
+
+### 6月13日 #23.2
+
+- `editor`：修复占位符定位问题 `**:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2`
+- `block-placeholder-kit`：占位符颜色调整为 `text-muted-foreground/80`，保持与编辑器一致
 
 ### 6月9日 #23.1
 
 **Plate 49**
 
-合并文件，使用更一致的命名约定，并删除未使用的 `export` 语句。
+合并文件、统一更规范的命名方式、移除不再使用的 `export`。
 
-组件:
+组件：
 
-- 由于基本节点现在有默认的 HTML 元素，你可以删除 `withProps(..., { as: '...' })` 插件组件。
-- 为了提高解耦性，不再仅为了获取键而导入插件。从 `@udecode/plate` 导入 `KEYS` 作为统一的键源。
+- 基础节点有默认的 HTML 元素后，插件组件可移除 `withProps(..., { as: '...' })`
+- 为提升解耦，插件不再只为 key 导入，统一使用 `@udecode/plate` 的 `KEYS`
   - `ParagraphPlugin.key` -> `KEYS.p`
   - `INDENT_LIST_KEYS.listStyleType` -> `KEYS.listType`
   - `ListStyleType.Decimal` -> `KEYS.ol`
   - `ListStyleType.Disc` -> `KEYS.ul`
-  - `list` (经典) -> `KEYS.listClassic`
-  - `ol` (经典) -> `KEYS.olClassic`
-  - `ul` (经典) -> `KEYS.ulClassic`
-  - `li` (经典) -> `KEYS.liClassic`
-  - `action_item` (经典) -> `KEYS.listTodoClassic`
-- 将所有 `*-element`、`*-leaf` 文件重命名为 `*-node`（以及静态版本）
-- 删除 `ai-anchor-element`，合并到 `ai-node`
-- 删除 `ai-loading-bar`，合并到 `ai-menu`
-- 删除 `ai-menu-items`，合并到 `ai-menu`
-- 将 `align-dropdown-menu` 重命名为 `align-toolbar-button`，`AlignDropdownMenu` 重命名为 `AlignToolbarButton`
-- 将 `api-ai` 重命名为 `ai-api`
-- 将 `api-uploadthing` 重命名为 `media-uploadthing-api`
-- `BlockSelection`：修复表格的块选择
-- 删除 `code-block-combobox`，合并到 `code-block-node`
-- 删除 `code-line-element`，合并到 `code-block-node`（以及静态版本）
-- 删除 `code-syntax-leaf`，合并到 `code-block-node`（以及静态版本）
-- 将 `color-toolbar-button` 重命名为 `font-color-toolbar-button`，`ColorDropdownMenu` 重命名为 `FontColorToolbarButton`
-- 删除所有 `color-*` 文件，合并到 `font-color-toolbar-button`
-  - 将 `color-dropdown-menu` 重命名为 `font-color-toolbar-button`
-- 删除 `column-group-element`，合并到 `column-node`（以及静态版本）
-- 删除 `comment-create-form`，合并到 `comment`
-- 将 `draggable` 重命名为 `block-draggable`，`DraggableAboveNodes` 重命名为 `BlockDraggable`
-- 将 `emoji-input-element` 重命名为 `emoji-node`
-- 删除所有 `emoji-*` 文件（除了 `emoji-input-node`），合并到 `emoji-toolbar-button`
-  - 将 `EmojiToolbarDropdown` 重命名为 `EmojiPopover`，`EmojiDropdownMenu` 重命名为 `EmojiToolbarButton`
-  - `EmojiPicker` 的 `icons` 属性现在是可选的，默认为 `emojiCategoryIcons` 和 `emojiSearchIcons`
-- 将 `image-preview` 重命名为 `media-preview-dialog`，`ImagePreview` 重命名为 `MediaPreviewDialog`
-- 将 `image-element` 重命名为 `media-image-node`
-  - 将 `MediaFileElement` 重命名为 `FileElement`（以及静态版本）
-  - 将 `MediaAudioElement` 重命名为 `AudioElement`（以及静态版本）
-  - 将 `MediaVideoElement` 重命名为 `VideoElement`（以及静态版本）
-- 将 `indent-list-toolbar-button` 重命名为 `list-toolbar-button`
-  - 将 `BulletedIndentListToolbarButton` 重命名为 `BulletedListToolbarButton`
-  - 将 `NumberedIndentListToolbarButton` 重命名为 `NumberedListToolbarButton`
-- 将 `indent-todo-marker` 重命名为 `block-list`
-- 删除 `indent-fire-marker`
-- 删除 `indent-todo-toolbar-button`，合并到 `list-toolbar-button`
-- 将 `IndentTodoToolbarButton` 重命名为 `TodoListToolbarButton`
-- 删除 `inline-equation-element` 和 `equation-popover`，合并到 `equation-node`（以及静态版本）
-- 删除 `inline-equation-toolbar-button`，合并到 `equation-toolbar-button`
-- 将 `insert-dropdown-menu` 重命名为 `insert-toolbar-button`，`InsertDropdownMenu` 重命名为 `InsertToolbarButton`
-- 将 `line-height-dropdown-menu` 重命名为 `line-height-toolbar-button`，`LineHeightDropdownMenu` 重命名为 `LineHeightToolbarButton`
-- 将 `link-floating-toolbar` 重命名为 `link-toolbar`
-- 删除 `list-indent-toolbar-button`，合并到 `list-classic-toolbar-button`
-- 将 `ListIndentToolbarButton` 重命名为 `IndentToolbarButton`
-- 将 `list-node` 重命名为 `list-classic-node`
-- 将 `media-popover` 重命名为 `media-toolbar`，`MediaPopover` 重命名为 `MediaToolbar`
-- 将 `mode-dropdown-menu` 重命名为 `mode-toolbar-button`，`ModeDropdownMenu` 重命名为 `ModeToolbarButton`
-- 将 `more-dropdown-menu` 重命名为 `more-toolbar-button`，`MoreDropdownMenu` 重命名为 `MoreToolbarButton`
-- 删除 `outdent-toolbar-button`，合并到 `indent-toolbar-button`
-- `table-icons`：将 `Border*` 重命名为 `Border*Icon`
-- 将 `slash-input-element` 重命名为 `slash-input-node`
-- 将 `SuggestionBelowNodes` 重命名为 `SuggestionLineBreak`
-- 删除 `table-cell-element`，合并到 `table-node`（以及静态版本）
-- 删除 `table-row-element`，合并到 `table-node`（以及静态版本）
-- 将 `table-dropdown-menu` 重命名为 `table-toolbar-button`，`TableDropdownMenu` 重命名为 `TableToolbarButton`
-- 删除 `todo-list-node`，合并到 `list-classic-node`
-- 将 `turn-into-dropdown-menu` 重命名为 `turn-into-toolbar-button`，`TurnIntoDropdownMenu` 重命名为 `TurnIntoToolbarButton`
-- `export-toolbar-button`，`indent-list-plugins`：从 `listStyleTypes` 中移除 fire
-- `useCommentEditor`：使用 `usePlateEditor` 替代 `useCreateEditor`
-- 删除 `placeholder`，`withPlaceholder`。迁移：使用 `block-placeholder-kit`，`BlockPlaceholderPlugin` 替代。
-- `line-height-toolbar-button`：删除 `useLineHeightDropdownMenu` 钩子。
-- `font-color-toolbar-button`：删除 `useColorInput` 钩子。
-
-插件:
-
-- 将所有 `*-plugin`、`*-plugins` 文件重命名为 `-kit`，将 `*Plugin`、`*Plugins` 重命名为 `*Kit`。**插件套件**是已配置插件的集合。
-  - 将 `editor-plugins` 重命名为 `editor-kit`
-  - 将 `equation-plugins` 重命名为 `math-kit`，`equationPlugins` 重命名为 `MathKit`
-  - 将 `indent-list-plugins` 重命名为 `list-kit`，`indentListPlugins` 重命名为 `ListKit`
-  - 在 `block-list` 中添加 `BlockList` 组件，在 `list-kit` 中使用
-  - 删除 `use-create-editor`，使用 `usePlateEditor` 替代
-- `ai-kit`：添加 `show` 快捷键。从 `ai-menu` 中删除 `useHotkeys('mod+j')`
-- `comment-kit`：添加 `setDraft` 转换，快捷键
-- `basic-marks-kit`，`basic-blocks-kit`：添加快捷键
-
-- `transforms`，`block-draggable`：删除 `STRUCTURE_TYPES`，这些现在从 `plugin.node.isContainer` 推断。改用 `editor.meta.containerTypes`。
-- 从 `useSelectionFragmentProp` 用法中删除 `structuralTypes`。
-
-## 2025年5月 #22
-### 5月26日 #22.7
-
   - `list` (classic) -> `KEYS.listClassic`
-  - `ol` (classic) -> `KEYS.olClassic` 
+  - `ol` (classic) -> `KEYS.olClassic`
   - `ul` (classic) -> `KEYS.ulClassic`
   - `li` (classic) -> `KEYS.liClassic`
   - `action_item` (classic) -> `KEYS.listTodoClassic`
-- 将所有 `*-element`、`*-leaf` 文件重命名为 `*-node`（以及静态版本）
-- 删除 `ai-anchor-element`，合并到 `ai-node`
-- 删除 `ai-loading-bar`，合并到 `ai-menu`
-- 删除 `ai-menu-items`，合并到 `ai-menu`
-- 将 `align-dropdown-menu` 重命名为 `align-toolbar-button`，`AlignDropdownMenu` 重命名为 `AlignToolbarButton`
-- 将 `api-ai` 重命名为 `ai-api`
-- 将 `api-uploadthing` 重命名为 `media-uploadthing-api`
-- `BlockSelection`：修复表格的块选择
-- 删除 `code-block-combobox`，合并到 `code-block-node`
-- 删除 `code-line-element`，合并到 `code-block-node`（以及静态版本）
-- 删除 `code-syntax-leaf`，合并到 `code-block-node`（以及静态版本）
-- 将 `color-toolbar-button` 重命名为 `font-color-toolbar-button`，`ColorDropdownMenu` 重命名为 `FontColorToolbarButton`
-- 删除所有 `color-*` 文件，合并到 `font-color-toolbar-button`
-  - 将 `color-dropdown-menu` 重命名为 `font-color-toolbar-button`
-- 删除 `column-group-element`，合并到 `column-node`（以及静态版本）
-- 删除 `comment-create-form`，合并到 `comment`
-- 将 `draggable` 重命名为 `block-draggable`，`DraggableAboveNodes` 重命名为 `BlockDraggable`
-- 将 `emoji-input-element` 重命名为 `emoji-node`
-- 删除所有 `emoji-*` 文件（除了 `emoji-input-node`），合并到 `emoji-toolbar-button`
-  - 将 `EmojiToolbarDropdown` 重命名为 `EmojiPopover`，`EmojiDropdownMenu` 重命名为 `EmojiToolbarButton`
-  - `EmojiPicker` 的 `icons` 属性现在是可选的，默认为 `emojiCategoryIcons` 和 `emojiSearchIcons`
-- 将 `image-preview` 重命名为 `media-preview-dialog`，`ImagePreview` 重命名为 `MediaPreviewDialog`
-- 将 `image-element` 重命名为 `media-image-node`
-  - 将 `MediaFileElement` 重命名为 `FileElement`（以及静态版本）
-  - 将 `MediaAudioElement` 重命名为 `AudioElement`（以及静态版本）
-  - 将 `MediaVideoElement` 重命名为 `VideoElement`（以及静态版本）
-- 将 `indent-list-toolbar-button` 重命名为 `list-toolbar-button`
-  - 将 `BulletedIndentListToolbarButton` 重命名为 `BulletedListToolbarButton`
-  - 将 `NumberedIndentListToolbarButton` 重命名为 `NumberedListToolbarButton`
-- 将 `indent-todo-marker` 重命名为 `block-list`
-- 删除 `indent-fire-marker`
-- 删除 `indent-todo-toolbar-button`，合并到 `list-toolbar-button`
-- 将 `IndentTodoToolbarButton` 重命名为 `TodoListToolbarButton`
-- 删除 `inline-equation-element` 和 `equation-popover`，合并到 `equation-node`（以及静态版本）
-- 删除 `inline-equation-toolbar-button`，合并到 `equation-toolbar-button`
-- 将 `insert-dropdown-menu` 重命名为 `insert-toolbar-button`，`InsertDropdownMenu` 重命名为 `InsertToolbarButton`
-- 将 `line-height-dropdown-menu` 重命名为 `line-height-toolbar-button`，`LineHeightDropdownMenu` 重命名为 `LineHeightToolbarButton`
-- 将 `link-floating-toolbar` 重命名为 `link-toolbar`
-- 删除 `list-indent-toolbar-button`，合并到 `list-classic-toolbar-button`
-- 将 `ListIndentToolbarButton` 重命名为 `IndentToolbarButton`
-- 将 `list-node` 重命名为 `list-classic-node`
-- 将 `media-popover` 重命名为 `media-toolbar`，`MediaPopover` 重命名为 `MediaToolbar`
-- 将 `mode-dropdown-menu` 重命名为 `mode-toolbar-button`，`ModeDropdownMenu` 重命名为 `ModeToolbarButton`
-- 将 `more-dropdown-menu` 重命名为 `more-toolbar-button`，`MoreDropdownMenu` 重命名为 `MoreToolbarButton`
-- 删除 `outdent-toolbar-button`，合并到 `indent-toolbar-button`
-- `table-icons`：将 `Border*` 重命名为 `Border*Icon`
-- 将 `slash-input-element` 重命名为 `slash-input-node`
-- 将 `SuggestionBelowNodes` 重命名为 `SuggestionLineBreak`
-- 删除 `table-cell-element`，合并到 `table-node`（以及静态版本）
-- 删除 `table-row-element`，合并到 `table-node`（以及静态版本）
-- 将 `table-dropdown-menu` 重命名为 `table-toolbar-button`，`TableDropdownMenu` 重命名为 `TableToolbarButton`
-- 删除 `todo-list-node`，合并到 `list-classic-node`
-- 将 `turn-into-dropdown-menu` 重命名为 `turn-into-toolbar-button`，`TurnIntoDropdownMenu` 重命名为 `TurnIntoToolbarButton`
-- `export-toolbar-button`，`indent-list-plugins`：从 `listStyleTypes` 中移除 fire
-- `useCommentEditor`：使用 `usePlateEditor` 替代 `useCreateEditor`
-- 删除 `placeholder`，`withPlaceholder`。迁移：使用 `block-placeholder-kit`，`BlockPlaceholderPlugin` 替代。
-- `line-height-toolbar-button`：删除 `useLineHeightDropdownMenu` 钩子。
-- `font-color-toolbar-button`：删除 `useColorInput` 钩子。
+- 所有 `*-element`、`*-leaf` 文件重命名为 `*-node`（及静态文件）
+- 移除 `ai-anchor-element`，合并到 `ai-node`
+- 移除 `ai-loading-bar`，合并到 `ai-menu`
+- 移除 `ai-menu-items`，合并到 `ai-menu`
+- `align-dropdown-menu` 重命名为 `align-toolbar-button`，`AlignDropdownMenu` 重命名为 `AlignToolbarButton`
+- `api-ai` 重命名为 `ai-api`
+- `api-uploadthing` 重命名为 `media-uploadthing-api`
+- `BlockSelection`：修复表格块选择
+- 移除 `code-block-combobox`，合并到 `code-block-node`
+- 移除 `code-line-element`，合并到 `code-block-node`（及静态）
+- 移除 `code-syntax-leaf`，合并到 `code-block-node`（及静态）
+- `color-toolbar-button` 重命名为 `font-color-toolbar-button`，`ColorDropdownMenu` 重命名为 `FontColorToolbarButton`
+- 移除所有 `color-*` 文件，合并到 `font-color-toolbar-button`
+  - `color-dropdown-menu` 重命名为 `font-color-toolbar-button`
+- 移除 `column-group-element`，合并到 `column-node`（及静态）
+- 移除 `comment-create-form`，合并到 `comment`
+- `draggable` 重命名为 `block-draggable`，`DraggableAboveNodes` 重命名为 `BlockDraggable`
+- `emoji-input-element` 重命名为 `emoji-node`
+- 除 `emoji-input-node` 外，移除所有 `emoji-*` 文件，合并到 `emoji-toolbar-button`
+  - `EmojiToolbarDropdown` 重命名为 `EmojiPopover`，`EmojiDropdownMenu` 重命名为 `EmojiToolbarButton`
+  - `EmojiPicker` `icons` 参数现在可选，默认使用 `emojiCategoryIcons` 与 `emojiSearchIcons`
+- `image-preview` 重命名为 `media-preview-dialog`，`ImagePreview` 重命名为 `MediaPreviewDialog`
+- `image-element` 重命名为 `media-image-node`
+  - `MediaFileElement` 重命名为 `FileElement`（及静态）
+  - `MediaAudioElement` 重命名为 `AudioElement`（及静态）
+  - `MediaVideoElement` 重命名为 `VideoElement`（及静态）
+- `indent-list-toolbar-button` 重命名为 `list-toolbar-button`
+  - `BulletedIndentListToolbarButton` 重命名为 `BulletedListToolbarButton`
+  - `NumberedIndentListToolbarButton` 重命名为 `NumberedListToolbarButton`
+- `indent-todo-marker` 重命名为 `block-list`
+- 移除 `indent-fire-marker`
+- 移除 `indent-todo-toolbar-button`，合并到 `list-toolbar-button`
+- `IndentTodoToolbarButton` 重命名为 `TodoListToolbarButton`
+- 移除 `inline-equation-element` 与 `equation-popover`，合并到 `equation-node`（及静态）
+- 移除 `inline-equation-toolbar-button`，合并到 `equation-toolbar-button`
+- `insert-dropdown-menu` 重命名为 `insert-toolbar-button`，`InsertDropdownMenu` 重命名为 `InsertToolbarButton`
+- `line-height-dropdown-menu` 重命名为 `line-height-toolbar-button`，`LineHeightDropdownMenu` 重命名为 `LineHeightToolbarButton`
+- `link-floating-toolbar` 重命名为 `link-toolbar`
+- 移除 `list-indent-toolbar-button`，合并到 `list-classic-toolbar-button`
+- `ListIndentToolbarButton` 重命名为 `IndentToolbarButton`
+- `list-node` 重命名为 `list-classic-node`
+- `media-popover` 重命名为 `media-toolbar`，`MediaPopover` 重命名为 `MediaToolbar`
+- `mode-dropdown-menu` 重命名为 `mode-toolbar-button`，`ModeDropdownMenu` 重命名为 `ModeToolbarButton`
+- `more-dropdown-menu` 重命名为 `more-toolbar-button`，`MoreDropdownMenu` 重命名为 `MoreToolbarButton`
+- 移除 `outdent-toolbar-button`，合并到 `indent-toolbar-button`
+- `table-icons`：`Border*` 重命名为 `Border*Icon`
+- `slash-input-element` 重命名为 `slash-input-node`
+- `SuggestionBelowNodes` 重命名为 `SuggestionLineBreak`
+- 移除 `table-cell-element`，合并到 `table-node`（及静态）
+- 移除 `table-row-element`，合并到 `table-node`（及静态）
+- `table-dropdown-menu` 重命名为 `table-toolbar-button`，`TableDropdownMenu` 重命名为 `TableToolbarButton`
+- 移除 `todo-list-node`，合并到 `list-classic-node`
+- `turn-into-dropdown-menu` 重命名为 `turn-into-toolbar-button`，`TurnIntoDropdownMenu` 重命名为 `TurnIntoToolbarButton`
+- `export-toolbar-button`、`indent-list-plugins`：`listStyleTypes` 移除 fire
+- `useCommentEditor`：改为用 `usePlateEditor` 取代 `useCreateEditor`
+- 移除 `placeholder`、`withPlaceholder`，替换为 `block-placeholder-kit`、`BlockPlaceholderPlugin`
+- `line-height-toolbar-button`：移除 `useLineHeightDropdownMenu` hook
+- `font-color-toolbar-button`：移除 `useColorInput` hook
 
-插件:
+插件：
 
-- 将所有 `*-plugin`、`*-plugins` 文件重命名为 `-kit`，将 `*Plugin`、`*Plugins` 重命名为 `*Kit`。**插件套件**是已配置插件的集合。
-  - 将 `editor-plugins` 重命名为 `editor-kit`
-  - 将 `equation-plugins` 重命名为 `math-kit`，`equationPlugins` 重命名为 `MathKit`
-  - 将 `indent-list-plugins` 重命名为 `list-kit`，`indentListPlugins` 重命名为 `ListKit`
-  - 在 `block-list` 中添加 `BlockList` 组件，在 `list-kit` 中使用
-  - 删除 `use-create-editor`，使用 `usePlateEditor` 替代
-- `ai-kit`：添加 `show` 快捷键。从 `ai-menu` 中删除 `useHotkeys('mod+j')`
-- `comment-kit`：添加 `setDraft` 转换，快捷键
-- `basic-marks-kit`，`basic-blocks-kit`：添加快捷键
+- 所有 `*-plugin`、`*-plugins` 文件重命名为 `-kit`，`*Plugin`、`*Plugins` 重命名为 `*Kit`，**插件集（plugin kit）**为一组已配置组件插件
+  - `editor-plugins` 重命名为 `editor-kit`
+  - `equation-plugins` 重命名为 `math-kit`，`equationPlugins` 重命名为 `MathKit`
+  - `indent-list-plugins` 重命名为 `list-kit`，`indentListPlugins` 重命名为 `ListKit`
+  - `block-list` 增加 `BlockList` 组件，用于 `list-kit`
+  - 移除 `use-create-editor`，全部迁移为 `usePlateEditor`
+- `ai-kit`：添加 `show` 快捷键，移除 `ai-menu` 的 `useHotkeys('mod+j')`
+- `comment-kit`：添加 `setDraft` 转换与快捷键
+- `basic-marks-kit`、`basic-blocks-kit`：添加快捷键
 
-- `transforms`，`block-draggable`：删除 `STRUCTURE_TYPES`，这些现在从 `plugin.node.isContainer` 推断。改用 `editor.meta.containerTypes`。
-- 从 `useSelectionFragmentProp` 用法中删除 `structuralTypes`。
+- `transforms`、`block-draggable`：移除 `STRUCTURE_TYPES`，现以 `plugin.node.isContainer` 自动推断，使用 `editor.meta.containerTypes`
+- 所有 `useSelectionFragmentProp` 移除 `structuralTypes` 参数
 
 ## 2025年5月 #22
 
 ### 5月26日 #22.7
 
 - [修复组合框关闭问题](https://github.com/udecode/plate/pull/4322)
-- `inline-combobox`：修复组合框关闭时 `insertPoint` 未更新的问题。
+- `inline-combobox`：修复关闭弹窗时 `insertPoint` 未能及时更新的问题
 
 ### 5月15日 #22.6
 
 - [修复内联数学键盘行为和样式](https://github.com/udecode/plate/pull/4305)
-- `equation-popover`：关闭弹出框时将焦点返回到编辑器。
-- `inline-equation-element`：选择时应高亮显示。
+- `equation-popover`：关闭弹窗后聚焦回编辑器
+- `inline-equation-element`：选中时支持高亮显示
 
 ### 5月11-12日 #22.5
 
-- [模板迁移到 Plate 48](https://github.com/udecode/plate/pull/4298/files)
-- 迁移到 shadcn v4：
-  - Plate 有一个分叉版本的 shadcn/ui 原语，可能会与您现有的组件冲突。我们的组件现在**完全依赖**于原始的 shadcn/ui 原语，使 Plate 更容易集成到您现有的 shadcn/ui 组件集中。
-- 将所有 `*-element`、`*-leaf` 文件重命名为 `*-node`（以及静态版本）
-- 删除 `ai-anchor-element`，合并到 `ai-node`
-- 删除 `ai-loading-bar`，合并到 `ai-menu`
-- 删除 `ai-menu-items`，合并到 `ai-menu`
-- 将 `align-dropdown-menu` 重命名为 `align-toolbar-button`，`AlignDropdownMenu` 重命名为 `AlignToolbarButton`
-- 将 `api-ai` 重命名为 `ai-api`
-- 将 `api-uploadthing` 重命名为 `media-uploadthing-api`
-- `BlockSelection`：修复表格的块选择
-- 删除 `code-block-combobox`，合并到 `code-block-node`
-- 删除 `code-line-element`，合并到 `code-block-node`（以及静态版本）
-- 删除 `code-syntax-leaf`，合并到 `code-block-node`（以及静态版本）
-- 将 `color-toolbar-button` 重命名为 `font-color-toolbar-button`，`ColorDropdownMenu` 重命名为 `FontColorToolbarButton`
-- 删除所有 `color-*` 文件，合并到 `font-color-toolbar-button`
-  - 将 `color-dropdown-menu` 重命名为 `font-color-toolbar-button`
-- 删除 `column-group-element`，合并到 `column-node`（以及静态版本）
-- 删除 `comment-create-form`，合并到 `comment`
-- 将 `draggable` 重命名为 `block-draggable`，`DraggableAboveNodes` 重命名为 `BlockDraggable`
-- 将 `emoji-input-element` 重命名为 `emoji-node`
-- 删除所有 `emoji-*` 文件（除了 `emoji-input-node`），合并到 `emoji-toolbar-button`
-  - 将 `EmojiToolbarDropdown` 重命名为 `EmojiPopover`，`EmojiDropdownMenu` 重命名为 `EmojiToolbarButton`
-  - `EmojiPicker` 的 `icons` 属性现在是可选的，默认为 `emojiCategoryIcons` 和 `emojiSearchIcons`
-- 将 `image-preview` 重命名为 `media-preview-dialog`，`ImagePreview` 重命名为 `MediaPreviewDialog`
-- 将 `image-element` 重命名为 `media-image-node`
-  - 将 `MediaFileElement` 重命名为 `FileElement`（以及静态版本）
-  - 将 `MediaAudioElement` 重命名为 `AudioElement`（以及静态版本）
-  - 将 `MediaVideoElement` 重命名为 `VideoElement`（以及静态版本）
-- 将 `indent-list-toolbar-button` 重命名为 `list-toolbar-button`
-  - 将 `BulletedIndentListToolbarButton` 重命名为 `BulletedListToolbarButton`
-  - 将 `NumberedIndentListToolbarButton` 重命名为 `NumberedListToolbarButton`
-- 将 `indent-todo-marker` 重命名为 `block-list`
-- 删除 `indent-fire-marker`
-- 删除 `indent-todo-toolbar-button`，合并到 `list-toolbar-button`
-- 将 `IndentTodoToolbarButton` 重命名为 `TodoListToolbarButton`
-- 删除 `inline-equation-element` 和 `equation-popover`，合并到 `equation-node`（以及静态版本）
-- 删除 `inline-equation-toolbar-button`，合并到 `equation-toolbar-button`
-- 将 `insert-dropdown-menu` 重命名为 `insert-toolbar-button`，`InsertDropdownMenu` 重命名为 `InsertToolbarButton`
-- 将 `line-height-dropdown-menu` 重命名为 `line-height-toolbar-button`，`LineHeightDropdownMenu` 重命名为 `LineHeightToolbarButton`
-- 将 `link-floating-toolbar` 重命名为 `link-toolbar`
-- 删除 `list-indent-toolbar-button`，合并到 `list-classic-toolbar-button`
-- 将 `ListIndentToolbarButton` 重命名为 `IndentToolbarButton`
-- 将 `list-node` 重命名为 `list-classic-node`
-- 将 `media-popover` 重命名为 `media-toolbar`，`MediaPopover` 重命名为 `MediaToolbar`
-- 将 `mode-dropdown-menu` 重命名为 `mode-toolbar-button`，`ModeDropdownMenu` 重命名为 `ModeToolbarButton`
-- 将 `more-dropdown-menu` 重命名为 `more-toolbar-button`，`MoreDropdownMenu` 重命名为 `MoreToolbarButton`
-- 删除 `outdent-toolbar-button`，合并到 `indent-toolbar-button`
-- `table-icons`：将 `Border*` 重命名为 `Border*Icon`
-- 将 `slash-input-element` 重命名为 `slash-input-node`
-- 将 `SuggestionBelowNodes` 重命名为 `SuggestionLineBreak`
-- 删除 `table-cell-element`，合并到 `table-node`（以及静态版本）
-- 删除 `table-row-element`，合并到 `table-node`（以及静态版本）
-- 将 `table-dropdown-menu` 重命名为 `table-toolbar-button`，`TableDropdownMenu` 重命名为 `TableToolbarButton`
-- 删除 `todo-list-node`，合并到 `list-classic-node`
-- 将 `turn-into-dropdown-menu` 重命名为 `turn-into-toolbar-button`，`TurnIntoDropdownMenu` 重命名为 `TurnIntoToolbarButton`
-- `export-toolbar-button`，`indent-list-plugins`：从 `listStyleTypes` 中移除 fire
-- `useCommentEditor`：使用 `usePlateEditor` 替代 `useCreateEditor`
-- 删除 `placeholder`，`withPlaceholder`。迁移：使用 `block-placeholder-kit`，`BlockPlaceholderPlugin` 替代。
-- `line-height-toolbar-button`：删除 `useLineHeightDropdownMenu` 钩子。
-- `font-color-toolbar-button`：删除 `useColorInput` 钩子。
-插件:
-
-- 将所有 `*-plugin`、`*-plugins` 文件重命名为 `-kit`，将 `*Plugin`、`*Plugins` 重命名为 `*Kit`。**插件套件**是已配置插件的集合。
-  - 将 `editor-plugins` 重命名为 `editor-kit`
-  - 将 `equation-plugins` 重命名为 `math-kit`，`equationPlugins` 重命名为 `MathKit`
-  - 将 `indent-list-plugins` 重命名为 `list-kit`，`indentListPlugins` 重命名为 `ListKit`
-  - 在 `block-list` 中添加 `BlockList` 组件，用于 `list-kit`
-  - 删除 `use-create-editor`，改用 `usePlateEditor`
-- `ai-kit`：添加 `show` 快捷键。从 `ai-menu` 中移除 `useHotkeys('mod+j')`
-- `comment-kit`：添加 `setDraft` 转换和快捷键
-- `basic-marks-kit`、`basic-blocks-kit`：添加快捷键
-
-- `transforms`、`block-draggable`：移除 `STRUCTURE_TYPES`，现在从 `plugin.node.isContainer` 推断。改用 `editor.meta.containerTypes`。
-- 从 `useSelectionFragmentProp` 用法中移除 `structuralTypes`。
-
-## 2025年5月 #22
-
-### 5月26日 #22.7
-
-- [修复 combobox 关闭问题](https://github.com/udecode/plate/pull/4322)
-- `inline-combobox`：修复 combobox 关闭时 `insertPoint` 未更新的问题。
-
-### 5月15日 #22.6
-
-- [修复内联数学键盘行为和样式](https://github.com/udecode/plate/pull/4305)
-- `equation-popover`：关闭弹出框时将焦点返回到编辑器。
-- `inline-equation-element`：选中时应高亮显示。
-
-### 5月11-12日 #22.5
-
-- [模板迁移到 Plate 48](https://github.com/udecode/plate/pull/4298/files)
-- 迁移到 shadcn v4：
-  - Plate 之前有一个分叉版本的 shadcn/ui 原语，可能会与你现有的组件冲突。我们的组件现在**完全依赖**原始的 shadcn/ui 原语，使 Plate 更容易集成到你现有的 shadcn/ui 组件集中。
-  - 所有组件更新到 [Tailwind v4](https://ui.shadcn.com/docs/tailwind-v4)。
-  - 查看更新的[安装指南](/docs/components/installation)。
-- 迁移到 React 19。如果你使用 React 18，可能需要在一些地方使用 `React.forwardRef`。
+- [模板迁移至 Plate 48](https://github.com/udecode/plate/pull/4298/files)
+- 迁移至 shadcn v4：
+  - Plate 之前 fork 了 shadcn/ui 原始库，有兼容问题。现在完全依赖官方 shadcn/ui，方便与现有组件集成
+  - 所有组件升至 [Tailwind v4](https://ui.shadcn.com/docs/tailwind-v4)
+  - 详见更新的 [安装指南](/docs/components/installation)
+- 升级至 React 19。如果仍用 React 18，部分场景需手动用 `React.forwardRef`
 - 迁移到 [shadcn CLI](https://ui.shadcn.com/docs/cli)：
-  - 从 `components.json` 中移除 `registries`
+  - 从 `components.json` 移除 `registries`
   - 使用 `npx shadcn` 替代 `npx shadcx`
 - [MCP 支持](/docs/mcp)
-- 从所有组件中移除 `withRef`
-- 从 `@/lib/utils` 导入 `cn` 而不是 `@udecode/cn`，以保持与 shadcn/ui 的一致性
-- 从所有 element 和 leaf 组件中移除未使用的 `className`、`style` 属性
+- 移除所有组件的 `withRef`
+- 保持与 shadcn/ui 一致，`cn` 统一从 `@/lib/utils` 导入，而非 `@udecode/cn`
+- 所有元素类和叶子组件移除未用到的 `className`、`style` 属性
 - `draggable`：
-  - 修复 Firefox 中的拖放功能
-- `media-placeholder-element`：重构为使用 `use-upload-file` 钩子而不是 `uploadthing`
-  - 迁移：`npx shadcn@latest add https://platejs.org/r/api-uploadthing`
+  - 修复 Firefox 下拖拽兼容
+- `media-placeholder-element`：重构为使用 `use-upload-file` hook，取代 `uploadthing`
+  - 迁移命令：`npx shadcn@latest add @plate/api-uploadthing`
 
 ### 5月6日 #22.3
 
-- `ai-chat-editor`：支持非标准 markdown 节点。
-- `slash-input-element`：添加 callout 支持。
-- `block-selection-plugins.tsx`：修复块选择不工作的问题。
+- `ai-chat-editor`：支持非标准 markdown 节点
+- `slash-input-element`：新增 callout 支持
+- `block-selection-plugins.tsx`：修复快选块失效问题
 
 ### 5月4日 #22.2
 
-- `ai/command`: 从 `ai` 包分叉的 smoothStream 现在默认使用 30ms 延迟（仅代码块和表格使用 100ms 延迟）。
+- `ai/command`：fork 版 smoothStream 默认延迟 30ms（仅代码块和表格为 100ms）
+
+v48 迁移：
+- `PlateElement`、`PlateLeaf` 和 `PlateText` 属性由顶层 props 挪入 `attributes`
+- 移除 `nodeProps`，统一用 `attributes`
+- 迁移组件列表：
+  - `block-discussion`
+  - `comment-leaf`
+  - `date-element`
+  - `draggable`
+  - `excalidraw-element`
+  - `hr-element` + `-static`
+  - `image-element` + `-static`
+  - `link-element`
+  - `media-audio-element`
+  - `media-file-element`
+  - `media-placeholder-element`
+  - `media-video-element`
+  - `mention-element`
+  - `placeholder`
+  - `suggestion-leaf`
+  - `table-cell-element` + `-static`
+  - `table-element`
+  - `tag-element`
 
 ### 5月2日 #22.1
-- `use-chat`: 添加 `_abortFakeStream`。
-- `ai-menu`: 修复菜单项显示不正确的问题。
-- `ai-loading-bar`: 将 esc 按键处理移至 `ai-menu`。
-- `ai/command`: 将分块延迟增加到 100ms（临时解决性能问题）。
-
+- `use-chat`：添加 `_abortFakeStream`
+- `ai-menu`：修复菜单项显示错误
+- `ai-loading-bar`：esc 快捷键处理逻辑移至 `ai-menu`
+- `ai/command`：分块延迟 100ms（临时性能兼容）
 
 ## 2025年4月 #21
 
 ### 4月30日 #21.3
 
-- `autoformat-plugin`: 允许以非1的数字开始新的缩进列表
+- `autoformat-plugin`：支持从非1开头的数字新建缩进列表
 
 ### 4月29日 #21.2
 
-- `ai-leaf`: 添加 `aiIndicatorVariants` 以显示加载状态。
-- `cursor-overlay`: 当 AI 流式传输时隐藏。
-- `api/ai/command`: 修复分块问题。
+- `ai-leaf`：新增 `aiIndicatorVariants`，显示加载状态
+- `cursor-overlay`：AI 内容流式时隐藏光标覆盖层
+- `api/ai/command`：修复分块问题
 
-添加 `discussion-plugin`:
-- 将 `discussionPlugin` 添加到 `editor-plugins`，从 `suggestionPlugin` 中移除 `configure`
-- 重构 `block-suggestion`, `comment` 以使用 `discussionPlugin`
-- 修复 `comment-create-form` 在不存在讨论时创建讨论
-- `suggestion-leaf` 中的样式更改
-- 修复 `link-floating-toolbar` 以支持内部链接，并在建议或评论激活时顶部放置
+新增 `discussion-plugin`：
+- `editor-plugins` 增加 `discussionPlugin`，并移除 `suggestionPlugin` 的 configure
+- 重构 `block-suggestion`、`comment` 使用 `discussionPlugin`
+- 修复 `comment-create-form` 自动创建讨论
+- `suggestion-leaf` 样式调整
+- `link-floating-toolbar` 支持内部链接，建议/评论活跃时顶部定位
 
 ### 4月19日 #21.1
 
-- `ai-anchor-element`: 添加 `ai-anchor-element` 组件，在流式传输前插入，流式传输后移除，用于定位 ai-menu
-- `ai-loading-bar`: 添加 `ai-loading-bar` 组件，用于显示插入模式流式传输的加载进度
-- `ai-menu`: 迁移到最新的 `ai` 包
-- `ai-menu-items`: 添加 `generateMarkdownSample`
-- `ai-plugins`: 移除提示中的单段落限制
-- `editor`: 引入 `PlateContainer` 组件
+- `ai-anchor-element`：新增组件，流式插入前插入节点，流式结束后移除，用于 ai-menu 定位
+- `ai-loading-bar`：新增组件，显示插入模式流式加载进度条
+- `ai-menu`：升级到最新版 `ai` 包
+- `ai-menu-items`：新增 `generateMarkdownSample`
+- `ai-plugins`：移除 prompt 单段落限制
+- `editor`：新增 `PlateContainer` 组件
 
 ### 4月2日 #21.1
 
-- `export-toolbar-button`: 修复与 `html2canvas-pro` 的 PDF 导出问题
-- `import-toolbar-button`: 修复有时无法选择文件的问题
+- `export-toolbar-button`：修复 `html2canvas-pro` 导出 PDF 问题
+- `import-toolbar-button`：修复文件选择异常
 
 ## 2025年3月 #20
 
 ### 3月12日 #20.4
 
-- `ai-toolbar-button`: 添加缺失的 `@platejs/ai` 依赖。
-- `comment-toolbar-button`: 添加缺失的 `comments-plugin` registry 依赖。
-- `font-size-toolbar-button`: 添加缺失的 `popover` registry 依赖。
-- `tooltip`: 添加缺失的 `button` registry 依赖。
+- `ai-toolbar-button`：补全 `@udecode/plate-ai` 依赖
+- `comment-toolbar-button`：补全 `comments-plugin` 依赖
+- `font-size-toolbar-button`：补全 `popover` 依赖
+- `tooltip`：补全 `button` 依赖
 
 ### 3月10日 #20.3
-- `block-context-menu`: 防止在只读模式下打开上下文菜单
+- `block-context-menu`：只读模式下禁止弹出右键菜单
 
 ### 3月2日 #20.2
 
-- `block-suggestion`: 修复样式
-- `suggestion-leaf-static`: 添加静态版本
+- `block-suggestion`：修正样式
+- `suggestion-leaf-static`：新增静态版本
 
 ### 3月1日 #20.1
 
 Plate 46 - 新代码块
 
-- 从 Prism.js 迁移到 lowlight 进行语法高亮
-  - `code-block-element-static`, `code-block-element`, `code-block-combobox`: 更新以使用 lowlight 类。默认为 github 主题。
-  - `code-syntax-leaf-static`, `code-syntax-leaf`: 更新以使用 lowlight token 类
-  - 移除 `prismjs` 依赖及相关样式
-  - 使用 `lowlight` 插件选项代替 `prism` 选项
-  - `code-block-combobox`: 添加 `Auto` 语言选项，更改语言值以匹配 lowlight
-- `autoformat-plugin`: 防止在代码块上自动格式化
+- 语法高亮从 Prism.js 迁移到 lowlight
+  - `code-block-element-static`、`code-block-element`、`code-block-combobox`：改为使用 lowlight 的 class，默认 github 主题
+  - `code-syntax-leaf-static`、`code-syntax-leaf`：改为使用 lowlight 的 token class
+  - 移除 `prismjs` 依赖和相关样式
+  - 插件选项由 `prism` 改为 `lowlight`
+  - `code-block-combobox`：增加 `Auto` 语言选项，语言值与 lowlight 对齐
+- `autoformat-plugin`：禁止在代码块中自动格式化
 
 ```tsx
 import { all, createLowlight } from 'lowlight';
@@ -402,17 +443,17 @@ CodeBlockPlugin.configure({
 
 ### 2月21日 #19.3
 
-- `image-preview`: 防止在图像预览遮罩上显示块菜单
-- `media-popover`: 当图像预览打开时隐藏媒体弹出窗口
+- `image-preview`：阻止 image preview 遮罩层弹出 block 菜单
+- `media-popover`：image preview 打开时隐藏媒体弹窗
 
 ### 2月18日 #19.2
 
 Plate 45 - 新评论和建议 UI
 
-- 新增 `block-discussion` 作为主容器，用于 `plate-element`
-- 新增 `comment` 用于单个评论显示
-- 新增 `comment-create-form` 带有最小 Plate 编辑器用于输入
-- 移除旧组件:
+- 新增 `block-discussion`，作为主要容器，在 `plate-element` 使用
+- 新增 `comment`，用于单条评论显示
+- 新增 `comment-create-form`，内嵌精简版 Plate 编辑器方便输入
+- 移除旧组件：
   - `comments-popover`
   - `comment-avatar`
   - `comment-reply-items`
@@ -421,7 +462,7 @@ Plate 45 - 新评论和建议 UI
 - 新增 `block-suggestion`
 - 新增 `suggestion-leaf`
 - 新增 `suggestion-line-break`
-- 移除 `plate-element`，从 `platejs/react` 导入 `PlateElement` 代替。在 `block-selection-plugins` 中添加:
+- 移除 `plate-element`，改为从 `@udecode/plate/react` 引入 `PlateElement`。并在 `block-selection-plugins` 中增加如下：
 ```tsx
 render: {
   belowRootNodes: (props) => {
@@ -439,60 +480,59 @@ render: {
 - Plate 45
 - Jotai 2
 - Zustand 6
-- `comment-more-dropdown`: 移除 `useCommentEditButtonState`, `useCommentDeleteButtonState`
-- `image-element`, `media-embed-element`, `media-video-element`, `mode-dropdown-menu`
+- `comment-more-dropdown`：移除 `useCommentEditButtonState`、`useCommentDeleteButtonState`
+- `image-element`、`media-embed-element`、`media-video-element`、`mode-dropdown-menu`
   - 使用 `const width = useResizableValue('width')`
-- `image-preview`: 移除 `useScaleInputState`, `useImagePreviewState`
-- `floating-toolbar`: 
-  - 用 `useEventEditorValue` 替换 `useEventEditorSelectors`
-- `media-popover`: 
-  - 用 `FloatingMediaStore.set` 替换 `floatingMediaActions`, 
-  - 用 `useFloatingMediaValue` 替换 `useFloatingMediaSelectors`
+- `image-preview`：移除 `useScaleInputState`、`useImagePreviewState`
+- `floating-toolbar`： 
+  - 使用 `useEventEditorValue` 替换 `useEventEditorSelectors`
+- `media-popover`： 
+  - 使用 `FloatingMediaStore.set` 替换 `floatingMediaActions`
+  - 使用 `useFloatingMediaValue` 替换 `useFloatingMediaSelectors`
 
 ## 2025年1月 #18
 
 ### 1月23日 #18.8
 
-- `table-element`: 修复样式，折叠时显示表格边框控件
-- `table-row-element`: 重构
-- `table-cell-element`: 选择背景品牌色
+- `table-element`：修复样式，折叠时显示表格边框控件
+- `table-row-element`：重构
+- `table-cell-element`：选中时使用品牌色背景
 
 ### 1月21日 #18.7
 
-- `table-element`, `table-row-element`: 支持行拖放和选择
-- `plate-element`: 添加 `blockSelectionClassName` 属性
-- `editor`: 选择区域 z-50
-- `draggable`: 
-  - 用 `editor.api.blockSelection.clear` 替换 `editor.api.blockSelection.replaceSelectedIds`
-  - 使用 `TooltipButton` 作为拖动手柄
-  - 在拖动手柄点击时选择块
-  - 在表格单元格中隐藏拖动手柄
-- `column-element`, `table-cell-element`: 添加 `isSelectionAreaVisible` 检查
-- `block-selection`: 拖动时隐藏
-- 用 `editor.api.blockSelection.set` 替换 `editor.api.blockSelection.addSelectedRow`:
+- `table-element`、`table-row-element`：支持行拖拽和选择
+- `plate-element`：增加 `blockSelectionClassName` 属性
+- `editor`：选区区域 z-50
+- `draggable`： 
+  - 替换 `editor.api.blockSelection.replaceSelectedIds` 为 `editor.api.blockSelection.clear`
+  - 拖拽把手使用 `TooltipButton`
+  - 拖拽把手点击时阻止块选择
+  - 表格单元格内隐藏拖拽把手
+- `column-element`、`table-cell-element`：增加 `isSelectionAreaVisible` 检查
+- `block-selection`：拖拽时隐藏
+- 替换 `editor.api.blockSelection.addSelectedRow` 为 `editor.api.blockSelection.set`，涉及：
   - `ai-menu`
   - `equation-popover`
-- `align-dropdown-menu`: 弃用 
-
+- `align-dropdown-menu`：弃用
 
 ### 1月18日 #18.6
 
-- `inline-equation-element` 和 `equation-popover`: 修复: 当选择内联公式时，弹出窗口不应打开，因为它会导致选择丢失。
+- `inline-equation-element` 和 `equation-popover`：修复选择行内公式时不应弹出浮窗，否则导致选区丢失
 
 ### 1月17日 #18.5
 
-- `emoji-picker-search-bar`: 添加 `autoFocus`
+- `emoji-picker-search-bar`：增加 `autoFocus`
 
 ### 1月16日 #18.4
 
-- `import-toolbar-button` 和 `export-toolbar-button`: 添加 `markdown` 支持
+- `import-toolbar-button` 和 `export-toolbar-button`：增加 `markdown` 支持
 
 ### 1月14日 #18.3
-- `fixed-toolbar-buttons`: 添加 `import-toolbar-button`
-- `indent-fire-marker.tsx` 添加 `data-plate-prevent-deserialization` 以防止反序列化火标记。将 `span` 标签更改为 `li`。
-- `indent-todo-marker.tsx` 将 `span` 标签更改为 `li`。
-- `image-element-static.tsx` 和 `hr-element-static.tsx`: 修复 `nodeProps` 未传递给 `SlateElement`。
-- `ai-chat-editor`:
+- `fixed-toolbar-buttons`：增加 `import-toolbar-button`
+- `indent-fire-marker.tsx`：增加 `data-plate-prevent-deserialization` 防止火标反序列化，将标签由 `span` 改为 `li`
+- `indent-todo-marker.tsx`：将标签由 `span` 改为 `li`
+- `image-element-static.tsx` 和 `hr-element-static.tsx`：修复 `nodeProps` 未传递给 `SlateElement`
+- `ai-chat-editor`：
 ```tsx
 const aiEditor = usePlateEditor({ plugins });
 useAIChatEditor(aiEditor, content);
@@ -500,13 +540,13 @@ useAIChatEditor(aiEditor, content);
 
 ### 1月12日 #18.2
 
-- `ai-plugins`: 移除 `createAIEditor`，现在在 `ai-chat-editor` 中创建
-- `ai-chat-editor`: 仅使用 `useAIChatEditor` (v42.1)
-- `ai-menu`: 避免冲突，移除 `aiEditorRef`
-- `command`: 添加 `focus-visible:outline-none`
-- `editor-static`: 更新 `aiChat` 内边距
-- `transforms`: 修复 `insertBlock` 被斜杠命令使用的问题: 如果新插入的块与命令类型相同，则应插入新块。
-- `block-selection-plugins`: 更新 `BlockSelectionPlugin`
+- `ai-plugins`：移除 `createAIEditor`，现在于 `ai-chat-editor` 创建
+- `ai-chat-editor`：仅需使用 `useAIChatEditor`（v42.1）
+- `ai-menu`：避免冲突，移除 `aiEditorRef`
+- `command`：增加 `focus-visible:outline-none`
+- `editor-static`：调整 `aiChat` 内边距
+- `transforms`：修复 slash 命令用到的 `insertBlock`：插入的新块与当前类型一致时新建一块
+- `block-selection-plugins`：升级 `BlockSelectionPlugin`
 
 ```tsx
 BlockSelectionPlugin.configure(({ editor }) => ({
@@ -525,49 +565,49 @@ BlockSelectionPlugin.configure(({ editor }) => ({
  
 ### 1月8日 #18.1
 
-- v42 迁移
-- `table-element`, `table-element-static`
-  - 将图标移至 `table-icons`
-  - 移除 `colgroup`，列宽现在在 `table-cell-element` 中设置
-- `table-row-element`: 移除 `hideBorder` 属性
-- `table-cell-element`, `table-cell-element-static`: 
-  - 列悬停/调整大小状态现在使用 Tailwind 而非 JS
-  - **主要性能改进**: 所有表格单元格在单个单元格更改时都会重新渲染。现已修复。
-  - React.memo
-- `table-dropdown-menu`:
-  - 动态表格插入
+- 升级至 v42
+- `table-element`、`table-element-static`
+  - 图标移至 `table-icons`
+  - 移除 `colgroup`，列宽现由 `table-cell-element` 控制
+- `table-row-element`：移除 `hideBorder` 属性
+- `table-cell-element`、`table-cell-element-static`： 
+  - 列悬停/调整宽度以 Tailwind 实现而非 JS
+  - **重大性能提升**：单个单元格变化不再导致所有表格单元格重渲染
+  - 使用 React.memo
+- `table-dropdown-menu`：
+  - 动态插入表格
   - 合并/拆分单元格
   - 在前插入行/列
-- `tooltip`: 添加 `TooltipButton`
-- `indent-list-toolbar-button`: 移除 `IndentListToolbarButton`，改用 `NumberedIndentListToolbarButton` 和 `BulletedIndentListToolbarButton`。
-- `table-dropdown-menu`: 新的插入表格界面。
-- `column-group-element`: 修复 `ColumnFloatingToolbar` onColumnChange
+- `tooltip`：新增 `TooltipButton`
+- `indent-list-toolbar-button`：移除 `IndentListToolbarButton`，使用 `NumberedIndentListToolbarButton` 和 `BulletedIndentListToolbarButton`
+- `table-dropdown-menu`：全新插入表格界面
+- `column-group-element`：修复 `ColumnFloatingToolbar` 的 onColumnChange
 
 ## 2024年12月 #17
 
 ### 12月28日 #17.8
 
-- `export-toolbar-button`: 添加 `katex` 支持
-- `plate-element`: 移除 `relative` 类名
-- 所有使用 `PlateElement` 的组件已移除冗余的 `relative` 类名。
+- `export-toolbar-button`：新增 `katex` 支持
+- `plate-element`：移除 `relative` className
+- 所有使用 `PlateElement` 的组件均已移除冗余 `relative` className
+
 ### 12月27日 #17.7
 
-- `fixed-toolbar-buttons`: 添加 `font-size-toolbar-button`
-- `floating-toolbar`: 添加 `inline-equation-toolbar-button`
-- `turn-into-dropdown-menu`: 修复: 转换为其他块后，编辑器应重新获得焦点。
-- `insert-dropdown-menu`: 添加 `inline equation` 和 `equation` 并修复焦点问题
-- `slash-input-element`: 添加 `equation` 和 `inline equation`
+- `fixed-toolbar-buttons`：增加 `font-size-toolbar-button`
+- `floating-toolbar`：增加 `inline-equation-toolbar-button`
+- `turn-into-dropdown-menu`：修复转换后应自动聚焦到编辑器
+- `insert-dropdown-menu`：新增 `inline equation` 和 `equation`，修复聚焦问题
+- `slash-input-element`：新增 `equation` 和 `inline equation`
 
 ### 12月23日 #17.5
 
-- `table-element`: 修复选择
-- 之前: `isSelectingCell && '[&_*::selection]:bg-none'`
-- 之后: `isSelectingCell && '[&_*::selection]:!bg-transparent'`
-
+- `table-element`：修复选区
+- before: `isSelectingCell && '[&_*::selection]:bg-none'`
+- after: `isSelectingCell && '[&_*::selection]:!bg-transparent'`
 
 ### 12月21日 #17.4
 
-更新 `tailwind.config.cjs` 以在 HTML 导出中更好地支持字体:
+升级 `tailwind.config.cjs`，优化 HTML 导出字体配置：
 
 ```ts
 fontFamily: {
@@ -607,13 +647,13 @@ fontFamily: {
 
 ### 12月20日 #17.3
 
-- `insertColumnGroup`, `toggleColumnGroup`: 使用 `columns` 选项代替 `layout` 
-- 移除 `with-draggables`。添加 [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) 到 `draggable`。添加到 `DndPlugin` 配置:
+- `insertColumnGroup`、`toggleColumnGroup`：使用 `columns` 选项代替 `layout`。
+- 移除 `with-draggables`。将 [`DraggableAboveNodes`](https://github.com/udecode/plate/pull/3878/files#diff-493c12ebed9c3ef9fd8c3a723909b18ad439a448c0132d2d93e5341ee0888ad2) 添加到 `draggable`。在 `DndPlugin` 配置中加入：
 ```tsx
 DndPlugin.configure({ render: { aboveNodes: DraggableAboveNodes } }),
 ```
-- `column-element`, `image-element`, `media-video-element`: 移除 `useDraggableState`。使用 `const { isDragging, previewRef, handleRef } = useDraggable`
-- `column-group-element`: 移除 `useColumnState`。改用:
+- `column-element`、`image-element`、`media-video-element`：移除 `useDraggableState`，改用 `const { isDragging, previewRef, handleRef } = useDraggable`
+- `column-group-element`：移除 `useColumnState`，改用如下方式：
 ```tsx
 const columnGroupElement = useElement<TColumnGroupElement>(ColumnPlugin.key);
 
@@ -624,89 +664,553 @@ const onColumnChange = (widths: string[]) => {
   });
 };
 ```
-- `export-toolbar-button`: 添加 `exportToHtml`
+- `export-toolbar-button`：新增 `exportToHtml`
 
 ### 12月19日 #17.2
 
 Plate 41
 
-- 新的 RSC 组件用于元素和叶子组件，文件名以 `-static.tsx` 结尾。这些现在与默认的客户端组件一起添加。
-- `editor`: 添加 `select-text` 到 `editorVariants`
-- `date-element`: 只读时移除弹出窗口
-- `indent-todo-marker`: 使用 `SlateRenderElementProps` 类型代替 `PlateRenderElementProps`
-- `hr-element`, `media-audio-element`, `media-embed-element`, `mention-element`: 改进光标样式
-- `media-file-element`: 使用 `<a>` 代替 `div` + `onClick`
-- 所有元素和叶子组件: `className` 属性现在放在内联属性之前。
+- 新增 RSC 组件，适用于元素与叶子组件，文件名以 `-static.tsx` 结尾。现在这些组件会与默认客户端组件一起添加。
+- `editor`：在 `editorVariants` 中新增 `select-text`
+- `date-element`：只读时移除弹窗
+- `indent-todo-marker`：使用 `SlateRenderElementProps` 类型代替 `PlateRenderElementProps`
+- `hr-element`、`media-audio-element`、`media-embed-element`、`mention-element`：优化光标样式
+- `media-file-element`：使用 `<a>` 替换原有的 `div` + `onClick`
+- 所有元素和叶子组件：`className` prop 目前均放在 inline prop 之前
 
 ### 12月16日 #17.1
 
-- `column-element`:
-  - 添加列的拖放支持
-  - 添加带工具提示的拖动手柄
-  - 修复列间距和内边距
+- `column-element`：
+  - 增加对列的拖拽支持
+  - 新增拖拽把手与提示
+  - 修复列间距与内边距
 
-- `column-group-element`:
-  - 移除列之间的间隙
-  - 移除顶部边距
+- `column-group-element`：
+  - 移除列间隙
+  - 移除上边距
 
-- `draggable`:
+- `draggable`：
   - 移除 `DraggableProvider` HOC
-  - 移除 `DropLine` 子属性
+  - 移除 `DropLine` 的 children 属性
 
 ## 2024年11月 #16
 
 ### 11月26日 #16.9
 
 https://github.com/udecode/plate/pull/3809/files
-- 添加 `select-editor`, `tag-element`, `label`, `form`
-- 用 `@udecode/cmdk` 替换 `cmdk` 依赖。这是 `cmdk` 的可控版本。
-- `command`: 添加变体
-- `editor`: 添加 `select` 变体
-- `popover`: 添加 `animate` 变体
+- 新增 `select-editor`、`tag-element`、`label`、`form`
+- 将 `cmdk` 依赖替换为 `@udecode/cmdk`。该版本可控。
+- `command`：新增 variants
+- `editor`：新增 `select` variant
+- `popover`：新增 `animate` variant
 
 https://github.com/udecode/plate/pull/3807/files
-- `toc-element`: 移除 `<nav>` 标签，改用 `<div>` 修复 html2canvas 问题
-- `editor`: 移除 `role="button"` 修复 html2canvas 问题
+- `toc-element`：为修复 html2canvas 问题，移除 `<nav>` 标签，改用 `<div>`
+- `editor`：移除 `role="button"`，以修正 html2canvas 问题
 
 ### 11月21日 #16.8
 
-Shadcn 同步:
+Shadcn 同步：
 
-- `input`: 添加 `text-base md:text-sm`
-- `textarea`: 添加 `text-base md:text-sm`
-- `editor`(`ai`, `aiChat` 变体): 添加 `text-base md:text-sm`
+- `input`：新增 `text-base md:text-sm`
+- `textarea`：新增 `text-base md:text-sm`
+- `editor`（`ai`、`aiChat` variants）：新增 `text-base md:text-sm`
 
 ### 11月14日 #16.7
 
-- `toolbar`: 添加 `ToolbarSplitButton`, `ToolbarSplitButtonPrimary`, `ToolbarSplitButtonSecondary`
-- `media-toolbar-button`: 使用 `ToolbarSplitButton`
+- `toolbar`：新增 `ToolbarSplitButton`、`ToolbarSplitButtonPrimary`、`ToolbarSplitButtonSecondary`
+- `media-toolbar-button`：采用 `ToolbarSplitButton`
 
 ### 11月13日 #16.6
 
-- `resizable`: 只读时隐藏 `ResizeHandle`
+- `resizable`：只读状态下隐藏 `ResizeHandle`
 
 ### 11月8日 #16.5
 
-- 将此添加到您的 tailwind 配置: 
+- 请在您的 tailwind 配置中添加以下内容： 
 ```ts
-// 插件
+// plugins
 require("tailwind-scrollbar-hide")
 
 // theme.extend.screens
 screens: {
   /**
-   * 匹配主指向设备可以方便悬停的设备。用法: main-hover:group-hover:bg-red-500 参见:
-   * https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
+   * 匹配主指针设备可方便悬浮的设备。用法：main-hover:group-hover:bg-red-500
+   * 参考：https://developer.mozilla.org/en-US/docs/Web/CSS/@media/hover
    *
-   * 在 iOS 设备上，包含 `group-hover:` CSS 规则的 .group 元素内的按钮需要点击两次才能
-   * 点击。作为解决方法，我们在无法方便悬停的设备上禁用这些规则，使用 `main-hover:`。
+   * 在 iOS 设备中，包含 `group-hover:` CSS 规则的 .group 内按钮需点击两次。为规避此问题，无法方便悬浮的设备使用 `main-hover:` 禁用这些规则。
    */
   'main-hover': {
     raw: '(hover: hover)',
   },
 },
 ```
-- `editor`: 
-  - `EditorContainer`: 移除 `ref`，改用 `useEditorContainerRef`
-  - 添加 `caret-primary selection:bg-brand/25`
-  - 将 `id
+- `editor`： 
+  - `EditorContainer`：移除 `ref`，改用 `useEditorContainerRef`
+  - 增加 `caret-primary selection:bg-brand/25`
+  - 为 `EditorContainer` 增加 `id={editor.uid}`，以便移除 `scroll_container` 或你自定义的 id
+- `draggable`： 
+  - 修复了一个**严重**的移动端体验问题：因 group hover 样式，编辑器需点击两次才能聚焦。已用 `main-hover:group-hover:opacity-100` 解决。
+  - 在超小屏（xs）下，仅选中时才显示
+- `table-element`：修复宽度问题
+- `table-row-element`、`table-cell-element`：支持行选择
+- `date-element`、`mention-element`：新增 `draggable` prop
+- `link-toolbar-button`、`link-floating-toolbar`、`ai-menu` 输入框：新增 `data-plate-focus` 属性
+- `cursor-overlay`： 
+  - 支持折叠选区
+  - 移除 `DragOverCursorPlugin`、`SelectionOverlayPlugin`，请使用 `@udecode/plate-selection`
+- `ghost-text`：超小屏下隐藏，新增 `pointer-events-none`
+- `floating-toolbar`：新增 `overflow-x-auto scrollbar-hide`，支持移动端横向滚动
+- `fixed-toolbar`：新增 `scrollbar-hide`
+- `emoji-picker-content`：新增 emoji 字体
+- `column-element`：默认添加 `w-full`
+- 新增钩子：`use-is-touch-device`
+- `block-context-menu`：触屏设备上禁用
+- `ai-toolbar-button`：新增 `onMouseDown`
+- `ai-menu-items`：增加未定义检查
+- `block-selection-plugins`：添加
+```ts
+inject: {
+  excludeBelowPlugins: ['tr'],
+  excludePlugins: ['table', 'code_line', 'column_group', 'column'],
+},
+```
+- 新增 `floating-toolbar-plugin`、`fixed-toolbar-plugin`
+- 其它：`hr-element`、`plate-element`、`transforms`
+
+### 11月7日 #16.4
+
+- `block-context-menu`：点击菜单时阻止失焦
+- `block-selection`：在 onCloseAutoFocus 中添加 `editor.getApi(BlockSelectionPlugin).blockSelection.focus()`
+
+### 11月6日 #16.3
+
+- `editor`：新增 `overflow-x-hidden` 样式，防止横向滚动
+- `table-element`：新增 `overflow-x-auto`，支持横向滚动
+
+### 11月5日 #16.2
+
+- 修复 color-picker 清除按钮的样式
+- 切换 toggle-element 按钮为 CSS 动画效果
+
+### 11月1日 #16.1
+
+- `editor`：样式和新增 `<EditorContainer />`
+
+## 2024年10月 #15
+
+### 10月31日 #15.6
+
+- 新增 `lib/transforms.ts`，包含常用操作的实用转换函数。
+- 移除对 `Icons` 文件的依赖，所有图标现均从 `lucide-react` 导入。
+- 修复并调整了 emoji 与颜色选择器的一些样式。
+- 分组样式调整： 
+  - `dropdown-menu`
+  - `context-menu`
+  - `inline-combobox`
+- `slash-input-element` 支持分组与分项目展示
+- 间距和尺寸更新：
+  - `ai-menu-items`
+  - `align-dropdown-menu`
+  - `block-context-menu`
+  - `button`
+  - `code-block-combobox`
+  - `color-dropdown-menu-items`
+  - `color-picker`
+  - `column-group-element`
+  - `command`
+  - `comment-more-dropdown`
+  - `context-menu`
+  - `dropdown-menu`
+  - `emoji-dropdown-menu`
+  - `emoji-input-element`
+  - `image-preview`
+  - `inline-combobox`
+  - `input`
+  - `insert-dropdown-menu`
+  - `line-height-dropdown-menu`
+  - `link-floating-toolbar`
+  - `media-popover`
+  - `mention-input-element`
+  - `mode-dropdown-menu`
+  - `more-dropdown-menu`
+  - `popover`
+  - `slash-input-element`
+  - `table-dropdown-menu`
+  - `table-element`
+  - `toggle-element`
+  - `toggle-toolbar-button`
+
+### 10月26日 #15.5
+
+- 将 `indent-todo-marker-component` 重命名为 `indent-todo-marker`。
+
+### 10月25日 #15.4
+
+- `slash-input-element`：增加 AI 命令并新增 `focusEditor` 选项
+
+### 10月24日 #15.3
+
+- 新增 `ai-menu`、`ai-menu-items`、`ai-toolbar-button`、`ai-chat-editor`、`block-context-menu`、`context-menu`、`ghost-text`、`toc-element`
+- `command`：增加 `InputCommand`
+- `toolbar` 新样式
+- `editor` 演示版本
+- `heading-element`：移除 `isFirstBlock` 属性
+- 其他：`fixed-toolbar`、`fixed-toolbar-buttons`、`floating-toolbar`、`floating-toolbar-buttons`、`mode-dropdown-menu`、`turn-into-dropdown-menu`、`button`、`cursor-overlay`、`excalidraw-element`、`inline-combobox`、`slash-input-element`
+
+### 10月14日 #15.3
+
+- 新增 cli 工具：`shadcx`。参见 [CLI](/docs/components/cli) 和 [components.json](/docs/components/components-json)。
+
+### 10月10日 #15.3
+
+- `dropdown-menu` (`DropdownMenuContent`)：阻止 `onCloseAutoFocus` 的默认行为
+- `floating-toolbar` (`FloatingToolbar`)：移除 portal，点击外部或浮动链接打开时自动隐藏
+- `turn-into-dropdown-menu` (`TurnIntoDropdownMenu`)：新增缩进列表项
+- `table-dropdown-menu` (`TableDropdownMenu`)：在 `insertTable` 时支持选择
+
+### 10月4日 #15.2
+
+- 新增 `emoji-picker`：调整 ui，优化表情选择器外观
+
+### 10月1日 #15.1
+
+- 新增 `block-selection` 组件，用于可视化块选反馈
+- 新增 `plate-element` 组件，可配合 `BlockSelection` 渲染 plate 元素
+- 更新 `paragraph-element` 及所有块级组件以统一使用 `plate-element`
+- `draggable`：
+  - 重构为使用新 hooks：`useDraggableGutter` 与 `useDropLine`
+  - 移除 `classNames` 属性，统一改为 `className`
+  - 新增 `DraggableProvider` 容器
+  - 拆分出单独的 `Gutter` 和 `DropLine` 组件
+- `with-draggables`：
+  - 更新为新的 `className` 格式
+- 修复 `mention-element`：解决 MacOS 下输入法输入过程被中断的问题
+
+以下组件使用 `--highlight` 颜色：
+
+- `comment-leaf`
+- `highlight-leaf`
+
+以下组件使用 `--highlight` 颜色：
+
+- `comment-leaf`
+- `highlight-leaf`
+
+以下组件使用 `--brand` 颜色：
+
+- `block-selection`
+- `draggable`
+
+
+## 2024年9月 #14
+
+### 9月29日 #14.3
+
+- 修复 `heading-element`：如果标题是首个区块，则不应有顶部间距
+
+### 9月13日 #14.2
+
+- 修复 `code-block-combobox`：支持按 label 或 value 过滤
+
+### 9月10日 #14.1
+
+- 修复 `floating-toolbar`：当只读时也显示工具栏
+
+## 2024年8月 #13
+
+### 8月27日 #13.3
+
+- 迁移到 Plate 37
+
+### 8月26日 #13.2
+
+- 新增 `emoji-picker`：适配 shadcn 主题与样式
+
+### 8月12日 #13.1
+
+- 为 Excalidraw 改进提前支持 mermaid 语言
+
+## 2024年7月 #12
+
+### 7月14日 #12.2
+
+- 修复 `cursor`：当光标数据未定义时也显示选区矩形/光标
+
+### 7月12日 #12.1
+
+- `fixed-toolbar`：`top-0`
+
+## 2024年6月 #11
+
+### 6月23日 #11.3
+
+- 重大变更：将 prismjs 支持的语言列表移动到 `code-block-combobox`
+
+### 6月13日 #11.2
+
+- 修复 `caption`：当元素 `caption` 属性变化时自动更新 UI
+
+### 6月6日 #11.1
+
+- 用 `inline-combobox` 替换原有 `combobox`
+- 移除 `mention-combobox`、`emoji-combobox` 和 `slash-combobox`
+- 新增 `emoji-input-element`
+- 更新 `mention-input-element` 和 `slash-input-element`，使用新 combobox
+- 新特性 `draggable`：增加 data-key 属性，便于拖拽操作完成后添加选区
+- 重大变更：通过 `CaptionButton` 或将媒体元素 ID 传递给 `captionActions.showCaptionId` 打开标题
+- `floating-toolbar` 增加 `portalElement` 属性
+
+## 2024年5月 #10
+
+### 5月30日 #10.2
+
+- 修复 `draggable`：加入 portal 以解决裁剪问题，按钮阻止表单提交
+- 修复 `editor`：增加 x 轴内边距，提高拖拽把手可见性
+
+### 5月24日 #10.1
+
+- 修复 `site-header`：zIndex 调整为 60
+- 修复 `fixed-toolbar`：zIndex 调整为 60
+
+## 2024年4月 #9
+
+### 4月30日 #9.3
+
+- 修复 `indent-todo-marker-component`：点击勾选框会丢失焦点
+
+### 4月17日 #9.2
+
+- 新增 `column-element`、`column-group-element`
+
+### 4月6日 #9.1
+
+- 修复 `combobox`：撤销操作导致编辑器崩溃
+
+## 2024年2月 #8
+
+### 2月6日 #8.2
+
+- 修复 `list-element`：variant 样式缺失
+
+### 2月5日 #8.1
+
+- 修复 `mention-element`：点击 mention 下拉菜单的滚动条后，Mention 输入会被移除
+  ([#2919](https://github.com/udecode/plate/issues/2919))
+
+## 2024年1月 #7
+
+### 1月31日 #7.5
+
+- 新增 `toggle-element`
+- 新增 `toggle-toolbar-button`
+
+### 1月11日 #7.4
+
+- `components.json` 支持自定义 ui 目录
+- 新增 `plate-components.json`，避免与 shadcn 的 `components.json` 冲突
+
+### 1月9日 #7.3
+
+- `toolbar`
+  - `Toolbar`：将 `items-stretch` 替换为 `items-center`
+  - 使用 `toolbarButtonVariants` 代替 `toggleVariants`
+  - 修复 `value` prop 类型错误
+  - 新增 `withTooltip`，需将 `[data-state=on]` 替换为 `aria-checked` 以避免冲突
+- `toggle`：作为未使用内容已移除
+- `tooltip`：新增 `withTooltip`，`ToolbarButton` 已在使用
+
+### 1月8日 #7.2
+
+- `table-element`：需在 TableElement 上层渲染 TableProvider
+
+```tsx
+// 变更前
+export const TableElement = withRef<typeof PlateElement>(
+  ({ className, children, ...props }, ref) => {
+    // ...
+  }
+);
+
+// 变更后
+export const TableElement = withHOC(
+  TableProvider,
+  withRef<typeof PlateElement>(({ className, children, ...props }, ref) => {
+    // ...
+  })
+);
+```
+
+### 1月2日 #7.1
+
+- `dropdown-menu`：修复 `DropdownMenuContent` 不应排除 `className`
+
+## 2023年12月 #6
+
+### 12月27日 #6.3
+
+- 移除 `clsx` 依赖，`class-variance-utility` 已经导出 `cx`
+- 新增依赖：`@udecode/cn`
+- 用 `@udecode/cn` 替换 `@/lib/utils.ts`，所有从 `@/lib/utils` 的导入需替换为 `@udecode/cn`
+- `withProps` 现从 `@udecode/cn` 导入，不再从 `@udecode/plate` 导入
+
+- 所有使用 `forwardRef` 的组件现在使用 `withRef`。同时引入 `withProps`、`withCn`、`withVariants` 以减少样板代码
+- 在 ESLint `settings.tailwindcss.callees` 和 IDE `classAttributes` 配置中添加 `withCn`
+
+```tsx
+// 变更前
+const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn(
+      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
+      className
+    )}
+    {...props}
+  />
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
+
+export { Avatar };
+
+// 变更后
+export const Avatar = withCn(
+  AvatarPrimitive.Root,
+  'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full'
+);
+```
+
+### 12月25日 #6.2
+
+- [dialog](https://github.com/udecode/plate/pull/2824/files#diff-5f7205cdd85718b7f26cef1e746ad67d69c83703135a7e3ad1a9a09ca69c38c8)
+- Plate 28，包含部分优化：[详细更改](https://github.com/udecode/plate/pull/2816/files#diff-726cd463a614f1a49228e05a2eb7ea9bc95f2e574423eb4264c6cb95eb0ac792)
+  - `combobox`
+  - `insert-dropdown-menu`
+  - `media-popover`
+  - `mode-dropdown-menu`
+  - `more-dropdown-menu`
+  - `table-dropdown-menu`
+  - `table-element`
+  - `turn-into-dropdown-menu`
+
+### 12月10日 #6.1
+
+- `image-element`：用 `withHOC(ResizableProvide, ...)` 包裹组件
+- `media-embed-element`：同样用 `withHOC(ResizableProvide, ...)` 包裹组件
+
+## 2023年11月 #5
+
+### 11月28日 #5.1
+
+- `table-element`
+  - [新特性](https://github.com/udecode/plate/pull/2733/files#diff-c5f0c4861d1d4f4e3551cebd8bc75888f5ab60a21a41d5da07487a6c9c79d483)：支持单元格合并（plate 26）
+- `table-cell-element`
+  - [新特性](https://github.com/udecode/plate/pull/2733/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26)：支持单元格合并（plate 26）
+- `comments-popover`
+  - `comment-more-dropdown`
+    - [修复](https://github.com/udecode/plate/commit/cb6838962f105e30b4d6a56db2e5bda01a118b43)：可编辑和删除评论
+  - `comment-value`
+    - [修复](https://github.com/udecode/plate/commit/cb6838962f105e30b4d6a56db2e5bda01a118b43#diff-9234422f7416eb31a4f9aca1d2070bf26dae1dcf92579ee4145702123b4347e2)：移除已废弃的 `useCommentValue`（plate 25 升级后废弃）
+- `toolbar`
+  - [修复](https://github.com/udecode/plate/pull/2742/files)：按下状态支持
+
+## 2023年9月 #4
+
+### 9月18日 #4.4
+
+- `editor`：新组件 🎉 详见 [Editor](https://platejs.org/docs/components/editor)
+- `fixed-toolbar-buttons`、`floating-toolbar-buttons`、`mode-dropdown-menu`：
+  - plate 24：`usePlateReadOnly` 重命名为 `useEditorReadOnly`
+- `code-block-element`：`code-block-element.css` 有调整
+
+### 9月15日 #4.3
+
+- `table-element`
+  - 修复：表格内输入时浮动工具栏应保持显示
+- `floating-toolbar`：
+  - 修复：import 问题
+- `comment-leaf`、`link-element`
+  - 新特性：使用主色
+- 区块选中：
+  - 为 `body` 添加如下类：`'[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'`
+
+### 9月12日 #4.2
+
+- `button`：增加 `whitespace-nowrap`
+- `popover`：打印时隐藏
+- `caption`：打印时隐藏占位内容
+- `highlight-leaf`：高亮颜色现在基于主色
+
+### 9月2日 #4.1
+
+- `link-floating-toolbar`
+  - [修复](https://github.com/udecode/plate/pull/2593/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202)：props 类型
+- `media-embed-element`
+  - [修复](https://github.com/udecode/plate/pull/2593/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bdR54)：使用 `align` 选项
+- `caption`
+  - 修复：`style` 属性
+
+## 2023年8月 #3
+
+### 8月19日 #3.4
+
+- `floating-toolbar` - [详细更改](https://github.com/udecode/plate/pull/2585/files#diff-c3329bdae6493e8868acb88f985b2929109dae7a04d756359346f0c614913766)：
+  - 新特性：支持 `ref`
+  - 重构：使用 `useFloatingToolbarState`，控制 `floatingOptions` 默认值
+  - 修复：加入 `fallbackPlacements` 避免浮动溢出视口
+  - 破坏性变更：移除以下 props：`portalElement`、`floatingOptions`、`ignoreReadOnly`、`hideToolbar`
+  - 新特性：新增 `state` 属性
+- `link-floating-toolbar` - [详细更改](https://github.com/udecode/plate/pull/2585/files#diff-bd61ef4cfdcfe9401df0307a461ac13dce507b178d8e9a7ed693cb36453e9202)：
+  - 重构：控制 `floatingOptions` 默认值
+  - 修复：新加 `fallbackPlacements`，防止浮动溢出
+
+### 8月9日 #3.3
+
+- `mention-element` - [新特性](https://github.com/udecode/plate/pull/2564/files#diff-b008c662509a2be20fae922f91462771d69105ba04e5731184427e37dc86b236)：支持加粗、斜体、下划线
+
+### 8月3日 #3.2
+
+- `table-cell-element` - [新特性](https://github.com/udecode/plate/pull/2557/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26)：支持表格单元格背景样式
+
+### 8月2日 #3.1
+
+- `image-element`：[重构](https://github.com/udecode/plate/pull/2555/files#diff-932738209da6d341356f451777ebf380ae116fd70bf73124a786ede5ca7eb77e)：使用 `mediaResizeHandleVariants`
+- `media-embed-element`：[重构](https://github.com/udecode/plate/pull/2555/files#diff-13ddd3e18dbdc399e507d7bb512e0f592fba062a36bca14d66d39069773617bd)：使用 `mediaResizeHandleVariants`
+- `resizable` - [详细更改](https://github.com/udecode/plate/pull/2555/files#diff-514a5137146b81612a86bf85717ed3185ec745889f6aa5beeddf9dc8f03acae7)：
+  - 重构
+  - 新特性：`mediaResizeHandleVariants`
+- `table-cell-element`：
+  - [修复](https://github.com/udecode/plate/pull/2555/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26)：可调大小
+  - [修复](https://github.com/udecode/plate/pull/2550/files#diff-b474b48d3e947c67296867abe2421b7dad66a8327a4e09f43402825393e3aa26)：firefox 下的表格选区
+
+## 2023年7月 #2
+
+### 7月27日 #2.2
+
+- `caption` — 新组件
+- `image-element`：
+  - 重构：状态
+  - 新增依赖：`caption`、`resizable`
+- `media-embed-element` 现在是完全 headless：
+  - 新增依赖：`react-lite-youtube-embed`、`react-tweet`，减小包体积
+  - 新增依赖：`caption`、`resizable`
+- `media-popover` — 修复：弹窗关闭异常
+- `resizable` — 新组件
+- `table-element` — 修复：弹窗关闭异常
+
+### 7月17日 #2.1
+
+- `comments-popover` — 修复：新评论时弹窗无法打开
+- `comment-toolbar-button` — 新特性：`myUserId` 为空时不显示
+- `excalidraw-element` — 修复：拼写错误
+
+### 发布 #1
+
+Plate headless 组件现已发布：
+
+- [手动安装](https://platejs.org/docs/components/installation/manual)
+- [主题配置](https://platejs.org/docs/components/theming)
+- [CLI 工具](https://platejs.org/docs/components/cli)

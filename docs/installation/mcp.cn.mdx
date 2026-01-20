@@ -1,13 +1,13 @@
 ---
 title: MCP 服务器
-description: 在 Plate 中使用模型上下文协议。
+description: 在 Plate 中使用 Model Context Protocol。
 ---
 
 Plate 有一个官方的 MCP 服务器。这使 AI 工具能够理解并使用我们丰富的编辑器模板、插件配置、UI 组件和文档生态系统。
 
 ## 什么是 MCP？
 
-模型上下文协议（MCP）是一个开放协议，用于标准化应用程序如何向 LLM 提供上下文。这对 Plate 很有用，因为你现在可以让你的 AI 辅助 IDE 直接访问数百个 Plate 资源。
+Model Context Protocol（MCP）是一个开放协议，用于标准化应用程序如何向 LLM 提供上下文。这对 Plate 很有用，因为你现在可以让你的 AI 辅助 IDE 直接访问数百个 Plate 资源。
 
 ## 在 Plate 中使用 MCP
 
@@ -22,9 +22,9 @@ Plate 有一个官方的 MCP 服务器。这使 AI 工具能够理解并使用�
 尝试询问你的 AI：
 
 ```bash
-"设置一个具有基本格式和表格支持的 Plate 编辑器"
-"帮助我理解 Plate AI 插件的工作原理"
-"将我的编辑器组件更新到最新版本"
+"Set up a Plate editor with basic formatting and table support"
+"Help me understand how the Plate AI plugin works"
+"Update my editor components to the latest version"
 ```
 
 ## 工作原理
@@ -49,23 +49,103 @@ Plate 生态系统提供结构化信息，支持 MCP 的工具可以从统一注
 
 ## 设置 MCP
 
-将代码复制并粘贴到 `.cursor/mcp.json`（或 `.codeium/windsurf/mcp_config.json` 用于 Windsurf）
+按照以下步骤使用 Plate 设置 MCP：
+
+### 步骤 1：从我们的基础模板开始
+
+运行此命令以使用基础编辑器模板初始化你的项目：
+
+```bash
+npx shadcn@latest add @plate/editor-basic
+```
+
+### 步骤 2：添加 MCP 配置
+
+在 `components.json` 文件中配置你的注册表：
+
+```json
+{
+  "registries": {
+    "@platejs": "https://platejs.org/r/{name}.json"
+  }
+}
+```
+
+### 步骤 3：配置你的 IDE
+
+选择适合你 IDE 的配置：
+
+#### Cursor
+
+复制并粘贴到 `.cursor/mcp.json`：
 
 ```json
 {
   "mcpServers": {
     "plate": {
-      "description": "Plate editors, plugins, components and documentation",
+      "description": "Plate editors, plugins and components",
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "shadcn@canary", "registry:mcp"],
-      "env": {
-        "REGISTRY_URL": "https://platejs.org/r/registry.json"
-      }
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }
 ```
+
+#### VS Code
+
+复制并粘贴到工作区中的 `.vscode/mcp.json`：
+
+```json
+{
+  "servers": {
+    "plate": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### Claude
+
+复制并粘贴到 `.mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "plate": {
+      "description": "Plate editors, plugins and components",
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+```
+
+#### CodeX
+
+1. 打开或创建文件 `~/.codex/config.toml`
+2. 添加以下配置：
+
+```toml
+[mcp_servers.plate]
+command = "npx"
+args = ["shadcn@latest", "mcp"]
+```
+
+3. 重启 CodeX 以加载 MCP 服务器
 
 ## 最佳实践
 

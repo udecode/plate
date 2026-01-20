@@ -1,5 +1,5 @@
 ---
-title: 问题排查
+title: 故障排除
 description: 使用 Plate 时常见问题的解决方案。
 ---
 
@@ -9,32 +9,32 @@ description: 使用 Plate 时常见问题的解决方案。
 
 ### 使用 `depset` 管理 Plate 包版本
 
-确保所有 ``@udecode/*`` 包（包括 Plate 及其相关插件）同步到一致且兼容的版本集，推荐使用 [`depset`](https://npmjs.com/package/depset) 命令行工具。
+确保所有 ``@platejs/*`` 包（包括 Plate 及其相关插件）同步到一致且兼容的版本集，推荐使用 [`depset`](https://npmjs.com/package/depset) 命令行工具。
 
 **为什么选择 `depset`？**
-- 它简化了 ``@udecode`` 范围内多个包的升级或对齐操作
+- 它简化了 ``@platejs`` 范围内多个包的升级或对齐操作
 - 防止因部分 Plate 包使用一个版本而其他包使用可能不兼容的不同版本导致的问题
 
 **使用方法：**
 
-要将 ``@udecode`` 范围内的所有包升级或对齐到特定目标版本（如 ``45.0.1``），在项目根目录运行：
+要将 ``@platejs`` 范围内的所有包升级或对齐到特定目标版本（如 ``52.0.1``），在项目根目录运行：
 ```bash
-npx depset@latest @udecode 45.0.1
+npx depset@latest @platejs 52.0.1 && npx depset@latest platejs 52.0.1
 ```
 
-要将所有 ``@udecode`` 包升级到主版本 ``46`` 以下的最新版本（例如如果 ``45.x.y`` 是最新发布版本，则会选择这些）：
+要将所有 ``@platejs`` 包升级到主版本 ``46`` 以下的最新版本（例如如果 ``52.x.y`` 是最新发布版本，则会选择这些）：
 ```bash
-npx depset@latest @udecode 45
+npx depset@latest @platejs 52 && npx depset@latest platejs 52
 ```
 
-- 将 ``<target_version>``（如 ``45.0.1`` 或 ``45``）替换为你想要的版本标识符
+- 将 ``<target_version>``（如 ``52.0.1`` 或 ``52``）替换为你想要的版本标识符
 - ``depset`` 会更新你的 ``package.json``
 
 ### 示例：多个 Plate 实例
 
-**问题：** 出现意外行为或"hooks can only be called inside a component"错误
+**问题：** 出现意外行为或"hooks can only be called inside a component"错误。
 
-**根本原因：** 项目中存在不兼容版本的 Plate 包。通常意味着不同的 ``platejs*`` 包或 ``@platejs/core`` 使用了不同版本且未设计为协同工作
+**根本原因：** 项目中存在不兼容版本的 Plate 包。通常意味着不同的 ``platejs*`` 包或 ``@platejs/core`` 使用了不同版本且未设计为协同工作。
 
 **诊断方法：** 检查多个 Plate 包版本：
 
@@ -48,13 +48,13 @@ pnpm why @platejs/core
 ```
 
 **解决方案：**
-主要解决方案是确保所有 ``@udecode/*`` 包都更新到各自最新且设计为相互兼容的版本。这样可以防止项目中某些 Plate 包版本过旧或过新导致的不匹配问题。使用上述的 ``depset`` 工具。
+主要解决方案是确保所有 ``@platejs/*`` 包都更新到各自最新且设计为相互兼容的版本。这样可以防止项目中某些 Plate 包版本过旧或过新导致的不匹配问题。使用上述的 ``depset`` 工具。
 
 ### 示例：多个 Slate 实例
 
-**问题：** 编辑器功能可能无法正常工作
+**问题：** 编辑器功能可能无法正常工作。
 
-**根本原因：** 包管理器有时会安装不匹配的 Slate 依赖版本。例如，`pnpm` 可能安装 `slate` 0.112.2 版本而非所需的 0.111.0 版本
+**根本原因：** 包管理器有时会安装不匹配的 Slate 依赖版本。例如，`pnpm` 可能安装 `slate` 0.112.2 版本而非所需的 0.111.0 版本。
 
 **诊断方法：** 检查多个 Slate 版本：
 
@@ -70,11 +70,11 @@ pnpm why slate-dom
 
 **解决方案：** 按顺序尝试以下解决方案：
 
-1. 从 `package.json` 中移除 `slate*` 依赖（如果有）。Plate 会管理这些依赖
+1. 从 `package.json` 中移除 `slate*` 依赖（如果有）。Plate 会管理这些依赖。
 
-2. 使用上述的 ``depset`` 工具
+2. 使用上述的 ``depset`` 工具。
 
-3. 强制使用一致的 Slate 依赖版本：
+2. 强制使用一致的 Slate 依赖版本：
 
 ```jsonc
 // package.json
