@@ -42,6 +42,12 @@ import juice from 'juice';
 import type { DocumentMargins } from './html-to-docx';
 
 import { htmlToDocxBlob } from './html-to-docx';
+import {
+  buildUserNameMap,
+  injectDocxTrackingTokens,
+  type DocxExportDiscussion,
+  type InjectDocxTrackingTokensOptions,
+} from './injectDocxTrackingTokens';
 
 // =============================================================================
 // CSS Styles for DOCX Export
@@ -156,6 +162,35 @@ export type DocxExportMargins = DocumentMargins;
 export type DocxExportOrientation = 'landscape' | 'portrait';
 
 /**
+ * Options for tracked changes/comments export.
+ */
+export type DocxTrackingExportOptions = {
+  /**
+   * Discussion threads for comment metadata.
+   * Each discussion represents a comment thread with its comments.
+   */
+  discussions?: DocxExportDiscussion[] | null;
+
+  /**
+   * Custom function to get comment IDs from a text node.
+   * If not provided, uses default implementation that looks for 'comment_' prefixed keys.
+   */
+  getCommentIds?: InjectDocxTrackingTokensOptions['getCommentIds'];
+
+  /**
+   * Custom function to get suggestion metadata from a text node.
+   * If not provided, uses default implementation that looks for 'suggestion_' prefixed keys.
+   */
+  getSuggestions?: InjectDocxTrackingTokensOptions['getSuggestions'];
+
+  /**
+   * Function to convert rich content to plain text.
+   * Used for extracting comment text from rich content.
+   */
+  nodeToString?: InjectDocxTrackingTokensOptions['nodeToString'];
+};
+
+/**
  * Options for DOCX export operations.
  */
 export type DocxExportOperationOptions = {
@@ -202,6 +237,13 @@ export type DocxExportOperationOptions = {
    * Document title (for metadata purposes).
    */
   title?: string;
+
+  /**
+   * Options for exporting tracked changes and comments.
+   * When provided, tracking tokens will be injected into the document
+   * and converted to Word tracked changes format.
+   */
+  tracking?: DocxTrackingExportOptions;
 };
 
 /**
@@ -409,8 +451,23 @@ async function exportToDocxInternal(
     fontFamily,
     margins = DEFAULT_DOCX_MARGINS,
     orientation = 'portrait',
+    tracking,
     value,
   } = options;
+
+  // Process tracking tokens if enabled
+  let processedValue = value;
+
+  if (tracking) {
+    const userNameMap = buildUserNameMap(tracking.discussions);
+    processedValue = injectDocxTrackingTokens(value, {
+      discussions: tracking.discussions,
+      getCommentIds: tracking.getCommentIds,
+      getSuggestions: tracking.getSuggestions,
+      nodeToString: tracking.nodeToString,
+      userNameMap,
+    });
+  }
 
   // Serialize editor content to HTML
   const bodyHtml = await serializeToHtml({
@@ -418,7 +475,7 @@ async function exportToDocxInternal(
     components,
     fontFamily,
     plugins: editorPlugins,
-    value,
+    value: processedValue,
   });
 
   // Wrap in complete HTML document
@@ -671,3 +728,7 @@ export const DocxExportPlugin = createSlatePlugin({
 // =============================================================================
 
 export { htmlToDocxBlob } from './html-to-docx';
+
+// Re-export tracking types and utilities for convenience
+export type { DocxExportDiscussion } from './injectDocxTrackingTokens';
+export { injectDocxTrackingTokens, buildUserNameMap } from './injectDocxTrackingTokens';
