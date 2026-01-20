@@ -243,6 +243,168 @@ describe('applyDocxTracking', () => {
       // Delete should be called twice (start and end tokens)
       expect(editor.tf.delete).toHaveBeenCalledTimes(2);
     });
+
+    it('handles invalid rangeRef (null current)', () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => ({
+            current: null,
+            unref: mock(() => null),
+          }),
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const changes: DocxTrackedChange[] = [
+        {
+          id: 'change-1',
+          type: 'insert',
+          startToken: '[[START:1]]',
+          endToken: '[[END:1]]',
+        },
+      ];
+
+      const result = applyTrackedChangeSuggestions({
+        editor,
+        changes,
+        searchRange: createMockSearchRange(),
+        suggestionKey: 'suggestion',
+        getSuggestionKey: (id) => `suggestion_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.total).toBe(0);
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0]).toContain('Invalid range');
+    });
+
+    it('handles exceptions during processing', () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => {
+            throw new Error('Test error');
+          },
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const changes: DocxTrackedChange[] = [
+        {
+          id: 'change-1',
+          type: 'insert',
+          startToken: '[[START:1]]',
+          endToken: '[[END:1]]',
+        },
+      ];
+
+      const result = applyTrackedChangeSuggestions({
+        editor,
+        changes,
+        searchRange: createMockSearchRange(),
+        suggestionKey: 'suggestion',
+        getSuggestionKey: (id) => `suggestion_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.total).toBe(0);
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0]).toContain('Failed to apply change');
+      expect(result.errors[0]).toContain('Test error');
+    });
+
+    it('handles non-Error exceptions', () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => {
+            throw 'string error';
+          },
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const changes: DocxTrackedChange[] = [
+        {
+          id: 'change-1',
+          type: 'insert',
+          startToken: '[[START:1]]',
+          endToken: '[[END:1]]',
+        },
+      ];
+
+      const result = applyTrackedChangeSuggestions({
+        editor,
+        changes,
+        searchRange: createMockSearchRange(),
+        suggestionKey: 'suggestion',
+        getSuggestionKey: (id) => `suggestion_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.errors[0]).toContain('string error');
+    });
+
+    it('handles missing author (uses default)', () => {
+      const editor = createMockEditor();
+      const changes: DocxTrackedChange[] = [
+        {
+          id: 'change-1',
+          type: 'insert',
+          author: undefined,
+          startToken: '[[START:1]]',
+          endToken: '[[END:1]]',
+        },
+      ];
+
+      const result = applyTrackedChangeSuggestions({
+        editor,
+        changes,
+        searchRange: createMockSearchRange(),
+        suggestionKey: 'suggestion',
+        getSuggestionKey: (id) => `suggestion_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.total).toBe(1);
+    });
+
+    it('handles invalid date (uses current time)', () => {
+      const editor = createMockEditor();
+      const changes: DocxTrackedChange[] = [
+        {
+          id: 'change-1',
+          type: 'insert',
+          date: 'invalid-date',
+          startToken: '[[START:1]]',
+          endToken: '[[END:1]]',
+        },
+      ];
+
+      const result = applyTrackedChangeSuggestions({
+        editor,
+        changes,
+        searchRange: createMockSearchRange(),
+        suggestionKey: 'suggestion',
+        getSuggestionKey: (id) => `suggestion_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.total).toBe(1);
+    });
   });
 
   describe('applyTrackedComments', () => {
@@ -472,6 +634,252 @@ describe('applyDocxTracking', () => {
       });
 
       expect(onCommentsCreated).not.toHaveBeenCalled();
+    });
+
+    it('handles invalid rangeRef (null current) for comments', async () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => ({
+            current: null,
+            unref: mock(() => null),
+          }),
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: 'Test',
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      const result = await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: {
+          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+        },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.created).toBe(0);
+      expect(result.skipped).toBe(1);
+    });
+
+    it('handles empty document content (uses default)', async () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => ''), // Returns empty string
+          rangeRef: (range: TRange) => ({
+            current: range,
+            unref: mock(() => range),
+          }),
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const createDiscussion = mock(async () => ({ id: 'disc-1' }));
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: 'Test comment',
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: { mutateAsync: createDiscussion },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+      });
+
+      expect(createDiscussion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentContent: 'Imported comment',
+        })
+      );
+    });
+
+    it('handles comment with commentPlugin and setOption', async () => {
+      const editor = createMockEditor();
+      const commentPlugin = { key: 'comment' };
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: 'Test',
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: {
+          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+        },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+        commentPlugin,
+      });
+
+      expect(editor.setOption).toHaveBeenCalledWith(
+        commentPlugin,
+        'updateTimestamp',
+        expect.any(Number)
+      );
+    });
+
+    it('handles exceptions during comment processing', async () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => {
+            throw new Error('Comment error');
+          },
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: 'Test',
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      const result = await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: {
+          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+        },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.errors.length).toBe(1);
+      expect(result.errors[0]).toContain('Failed to apply comment');
+      expect(result.errors[0]).toContain('Comment error');
+    });
+
+    it('handles non-Error exceptions in comments', async () => {
+      const editor: TrackingEditor = {
+        api: {
+          string: mock(() => 'sample text'),
+          rangeRef: () => {
+            throw 'string comment error';
+          },
+        },
+        tf: {
+          setNodes: mock(() => {}),
+          delete: mock(() => {}),
+          withMerging: mock((fn: () => void) => fn()),
+        },
+      };
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: 'Test',
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      const result = await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: {
+          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+        },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+      });
+
+      expect(result.errors[0]).toContain('string comment error');
+    });
+
+    it('handles comment without text (undefined)', async () => {
+      const editor = createMockEditor();
+      const createDiscussion = mock(async () => ({ id: 'disc-1' }));
+
+      const comments: DocxImportComment[] = [
+        {
+          id: 'cmt-1',
+          text: undefined,
+          startToken: '[[CMT_START:1]]',
+          endToken: '[[CMT_END:1]]',
+          hasStartToken: true,
+          hasEndToken: true,
+        },
+      ];
+
+      await applyTrackedComments({
+        editor,
+        comments,
+        searchRange: createMockSearchRange(),
+        documentId: 'doc-1',
+        createDiscussionWithComment: { mutateAsync: createDiscussion },
+        commentKey: 'comment',
+        getCommentKey: (id) => `comment_${id}`,
+        isText: () => true,
+      });
+
+      expect(createDiscussion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contentRich: undefined,
+        })
+      );
     });
   });
 
