@@ -180,7 +180,9 @@ export function splitDocxTrackingTokens(text: string): ParsedToken[] {
  * Check if text contains any DOCX tracking tokens.
  */
 export function hasTrackingTokens(text: string): boolean {
-  return DOCX_TOKEN_REGEX.test(text);
+  // Create a new regex each time to avoid state issues with global flag
+  const tokenRegex = /\[\[DOCX_(INS|DEL|CMT)_(START|END):(.+?)\]\]/;
+  return tokenRegex.test(text);
 }
 
 // ============================================================================
