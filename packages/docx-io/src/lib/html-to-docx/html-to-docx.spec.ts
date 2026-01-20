@@ -8,6 +8,7 @@
  * - List indentation
  */
 
+import { describe, expect, it } from 'bun:test';
 import JSZip from 'jszip';
 
 import { htmlToDocxBlob } from '../html-to-docx';
