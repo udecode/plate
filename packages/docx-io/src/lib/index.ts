@@ -3,6 +3,7 @@
  */
 
 // Import
+export * from './applyDocxTracking';
 export * from './importDocx';
 export * from './parseDocxTracking';
 export * from './preprocessMammothHtml';
@@ -11,3 +12,4 @@ export * from './types';
 // Export
 export * from './docx-export-plugin';
 export * from './html-to-docx';
+export * from './injectDocxTrackingTokens';
