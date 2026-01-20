@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "yarn build:contentlayer",
-    "build": "yarn prebuild && yarn r && next build",
+    "build": "yarn prebuild && yarn r && NODE_OPTIONS='--max-old-space-size=8192' next build",
     "build:contentlayer": "contentlayer2 build",
     "build:registry": "NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
@@ -65,6 +65,7 @@
     "@platejs/diff": "workspace:^",
     "@platejs/dnd": "workspace:^",
     "@platejs/docx": "workspace:^",
+    "@platejs/docx-io": "workspace:^",
     "@platejs/emoji": "workspace:^",
     "@platejs/excalidraw": "workspace:^",
     "@platejs/find-replace": "workspace:^",

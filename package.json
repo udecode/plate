@@ -64,7 +64,7 @@
     "templates:check": "cd templates/plate-template && bun lint && bun typecheck && cd ../plate-playground-template && bun lint && bun typecheck",
     "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
     "templates:test": "cd templates/plate-template && npx shadcn@latest add http://localhost:3000/rd/editor-ai -o && bun lint && bun typecheck",
-    "templates:update": "yarn templates:update:basic && yarn templates:update:ai",
+    "templates:update": "yarn templates:basic && yarn templates:ai",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
     "test:watch": "bun test --watch",

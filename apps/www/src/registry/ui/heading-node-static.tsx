@@ -22,12 +22,16 @@ export function HeadingElementStatic({
   variant = 'h1',
   ...props
 }: SlateElementProps & VariantProps<typeof headingVariants>) {
+  const id = props.element.id as string | undefined;
+
   return (
     <SlateElement
       as={variant!}
       className={headingVariants({ variant })}
       {...props}
     >
+      {/* Bookmark anchor for DOCX TOC internal links */}
+      {id && <span id={id} />}
       {props.children}
     </SlateElement>
   );

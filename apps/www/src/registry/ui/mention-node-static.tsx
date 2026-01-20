@@ -19,6 +19,7 @@ export function MentionElementStatic(
   return (
     <SlateElement
       {...props}
+      as="span"
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
         element.children[0][KEYS.bold] === true && 'font-bold',

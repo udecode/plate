@@ -8,14 +8,27 @@ Since Plate UI is not a component library, a changelog is maintained here.
 
 Use the [CLI](https://platejs.org/docs/components/cli) to install the latest version of the components.
 
-## January 2026 #27  
-  
-### January 19 #27.3  
+## January 2026 #28
+
+### January 19 #28.2
 - **`inline-combobox`**: Added keyboard navigation cycling at list boundaries
   - ArrowUp at first item cycles to last item
   - ArrowDown at last item cycles to first item
   - Prevents null activeId using capture-phase event handling
-  
+
+### January 17 #28.1
+- **DOCX Import/Export**: New `@platejs/docx-io` package for Word document handling
+  - `import-toolbar-button`: Import DOCX files with `importDocx`
+  - `export-toolbar-button`: Export to DOCX with `exportToDocx`
+  - `docx-export-kit`: DOCX-optimized components using `DocxExportPlugin.configure({ override: { components } })`
+- **DOCX Static Components**: Added to existing static files with `*Docx` naming pattern:
+  - `callout-node-static`: `CalloutElementDocx`
+  - `code-block-node-static`: `CodeBlockElementDocx`, `CodeLineElementDocx`, `CodeSyntaxLeafDocx`
+  - `column-node-static`: `ColumnElementDocx`, `ColumnGroupElementDocx`
+  - `equation-node-static`: `EquationElementDocx`, `InlineEquationElementDocx`
+  - `toc-node-static`: `TocElementDocx`
+
+
 ## December 2025 #27
 
 ### December 23 #27.2

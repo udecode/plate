@@ -1,0 +1,78 @@
+{
+  "name": "@platejs/docx-io",
+  "version": "52.0.0",
+  "description": "DOCX import/export for Plate - file-based document conversion",
+  "keywords": [
+    "docx",
+    "export",
+    "html",
+    "import",
+    "markdown",
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/docx-io"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "color-name": "^2.0.0",
+    "html-entities": "^2.5.2",
+    "html-to-vdom": "^0.7.0",
+    "jszip": "^3.10.1",
+    "juice": "^11.0.1",
+    "lodash": "^4.17.21",
+    "mammoth": "^1.9.0",
+    "mime-types": "^2.1.35",
+    "nanoid": "^5.0.9",
+    "react-compiler-runtime": "^1.0.0",
+    "validator": "^13.15.15",
+    "virtual-dom": "^2.1.1",
+    "xmlbuilder2": "^3.1.1"
+  },
+  "devDependencies": {
+    "@platejs/docx": "workspace:^",
+    "@platejs/markdown": "workspace:^",
+    "platejs": "workspace:^"
+  },
+  "peerDependencies": {
+    "@platejs/docx": ">=52.0.0",
+    "@platejs/markdown": ">=52.0.0",
+    "platejs": ">=52.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.js"
+}
