@@ -3,6 +3,9 @@ import JSZip from 'jszip';
 
 import addFilesToContainer from './html-to-docx';
 
+// Export tracking types and utilities for external use
+export * from './tracking';
+
 /** Document options for DOCX generation */
 export type DocumentOptions = {
   complexScriptFontSize?: number | string;
