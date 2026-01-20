@@ -7,6 +7,7 @@ export * from './applyDocxTracking';
 export * from './importDocx';
 export * from './parseDocxTracking';
 export * from './preprocessMammothHtml';
+export * from './searchRange';
 export * from './types';
 
 // Export
