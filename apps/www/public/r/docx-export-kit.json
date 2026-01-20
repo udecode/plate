@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "docx-export-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/docx-io"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/callout-node-static",
+    "https://platejs.org/r/code-block-node-static",
+    "https://platejs.org/r/column-node-static",
+    "https://platejs.org/r/equation-node-static",
+    "https://platejs.org/r/toc-node-static"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/docx-export-kit.tsx",
+      "content": "/**\n * Editor kit optimized for DOCX export.\n *\n * Uses docx-specific static components for elements that require\n * inline styles instead of Tailwind classes (which don't work in DOCX):\n * - Code blocks: Need inline syntax highlighting colors and line breaks\n * - Columns: Need table layout instead of flexbox\n * - Equations: Need inline font styling (KaTeX doesn't work in DOCX)\n * - Callouts: Need table layout for icon + content\n * - TOC: Need anchor links with proper paragraph breaks\n *\n * Tables use base version with juice CSS inlining.\n */\n\nimport { CalloutElementDocx } from '@/registry/ui/callout-node-static';\nimport {\n  CodeBlockElementDocx,\n  CodeLineElementDocx,\n  CodeSyntaxLeafDocx,\n} from '@/registry/ui/code-block-node-static';\nimport {\n  ColumnElementDocx,\n  ColumnGroupElementDocx,\n} from '@/registry/ui/column-node-static';\nimport {\n  EquationElementDocx,\n  InlineEquationElementDocx,\n} from '@/registry/ui/equation-node-static';\nimport { TocElementDocx } from '@/registry/ui/toc-node-static';\nimport { DocxExportPlugin } from '@platejs/docx-io';\nimport { KEYS } from 'platejs';\n\n/**\n * Editor kit for DOCX export.\n *\n * Uses standard static components for most elements (with juice CSS inlining),\n * but uses docx-specific components for elements that need special handling:\n * - Code blocks (syntax highlighting, line breaks)\n * - Columns (table layout instead of flexbox)\n * - Equations (inline font instead of KaTeX)\n * - Callouts (table layout for icon placement)\n * - TOC (anchor links with paragraph breaks)\n *\n * Tables use base version with juice CSS inlining.\n */\nexport const DocxExportKit = [\n  DocxExportPlugin.configure({\n    override: {\n      components: {\n        [KEYS.codeBlock]: CodeBlockElementDocx,\n        [KEYS.codeLine]: CodeLineElementDocx,\n        [KEYS.codeSyntax]: CodeSyntaxLeafDocx,\n        [KEYS.column]: ColumnElementDocx,\n        [KEYS.columnGroup]: ColumnGroupElementDocx,\n        [KEYS.equation]: EquationElementDocx,\n        [KEYS.inlineEquation]: InlineEquationElementDocx,\n        [KEYS.callout]: CalloutElementDocx,\n        [KEYS.toc]: TocElementDocx,\n      },\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}
