@@ -4,6 +4,7 @@
 
 // Import
 export * from './importDocx';
+export * from './parseDocxTracking';
 export * from './preprocessMammothHtml';
 export * from './types';
 
