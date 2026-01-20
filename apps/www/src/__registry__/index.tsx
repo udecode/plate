@@ -2267,6 +2267,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "docx-export-kit": {
+    name: "docx-export-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/callout-node-static","https://platejs.org/r/code-block-node-static","https://platejs.org/r/column-node-static","https://platejs.org/r/equation-node-static","https://platejs.org/r/toc-node-static"],
+    files: [{
+      path: "src/registry/components/editor/plugins/docx-export-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/docx-export-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "editor-kit": {
     name: "editor-kit",
     description: "",
