@@ -31,7 +31,7 @@ export {
 // ============================================================================
 
 /** Tracked change (insertion or deletion) parsed from HTML */
-export interface DocxTrackedChange {
+export type DocxTrackedChange = {
   /** Unique ID for this change */
   id: string;
   /** Type of change */
@@ -44,10 +44,10 @@ export interface DocxTrackedChange {
   startToken: string;
   /** The full end token string (for searching in editor) */
   endToken: string;
-}
+};
 
 /** Comment parsed from HTML with full metadata */
-export interface DocxImportComment {
+export type DocxImportComment = {
   /** Unique ID for this comment */
   id: string;
   /** Author display name */
@@ -66,25 +66,25 @@ export interface DocxImportComment {
   hasStartToken: boolean;
   /** Whether the end token was found in HTML */
   hasEndToken: boolean;
-}
+};
 
 /** Result of parsing tracked changes from HTML */
-export interface ParseTrackedChangesResult {
+export type ParseTrackedChangesResult = {
   /** All tracked changes found (insertions and deletions) */
   changes: DocxTrackedChange[];
   /** Number of insertions found */
   insertionCount: number;
   /** Number of deletions found */
   deletionCount: number;
-}
+};
 
 /** Result of parsing comments from HTML */
-export interface ParseCommentsResult {
+export type ParseCommentsResult = {
   /** All comments found */
   comments: DocxImportComment[];
   /** Number of comments found */
   count: number;
-}
+};
 
 // ============================================================================
 // Token Constants (import from tracking for consistency)
@@ -138,7 +138,9 @@ function escapeRegExp(value: string): string {
  * }
  * ```
  */
-export function parseDocxTrackedChanges(html: string): ParseTrackedChangesResult {
+export function parseDocxTrackedChanges(
+  html: string
+): ParseTrackedChangesResult {
   const changes: DocxTrackedChange[] = [];
   let insertionCount = 0;
   let deletionCount = 0;
@@ -170,10 +172,7 @@ export function parseDocxTrackedChanges(html: string): ParseTrackedChangesResult
         endToken: `${DOCX_INSERTION_END_TOKEN_PREFIX}${payload.id}${DOCX_INSERTION_TOKEN_SUFFIX}`,
       });
       insertionCount++;
-    } catch {
-      // Skip malformed tokens
-      continue;
-    }
+    } catch {}
   }
 
   // Parse deletions
@@ -203,10 +202,7 @@ export function parseDocxTrackedChanges(html: string): ParseTrackedChangesResult
         endToken: `${DOCX_DELETION_END_TOKEN_PREFIX}${payload.id}${DOCX_DELETION_TOKEN_SUFFIX}`,
       });
       deletionCount++;
-    } catch {
-      // Skip malformed tokens
-      continue;
-    }
+    } catch {}
   }
 
   return { changes, insertionCount, deletionCount };
@@ -314,10 +310,7 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         endToken: `${DOCX_COMMENT_END_TOKEN_PREFIX}${encodeURIComponent(payload.id)}${DOCX_COMMENT_TOKEN_SUFFIX}`,
         hasStartToken: true,
       });
-    } catch {
-      // Skip malformed tokens
-      continue;
-    }
+    } catch {}
   }
 
   // Parse comment end tokens
@@ -340,10 +333,7 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         startToken: endToken,
         hasEndToken: true,
       });
-    } catch {
-      // Skip malformed tokens
-      continue;
-    }
+    } catch {}
   }
 
   const comments = Array.from(commentsById.values());
@@ -355,14 +345,14 @@ export function parseDocxComments(html: string): ParseCommentsResult {
 // ============================================================================
 
 /** Result of parsing all tracking information from HTML */
-export interface ParseDocxTrackingResult {
+export type ParseDocxTrackingResult = {
   /** Tracked changes (insertions and deletions) */
   trackedChanges: ParseTrackedChangesResult;
   /** Comments */
   comments: ParseCommentsResult;
   /** Whether any tracking tokens were found */
   hasTracking: boolean;
-}
+};
 
 /**
  * Parse all DOCX tracking tokens from HTML.
@@ -424,7 +414,6 @@ export function hasDocxTrackingTokens(html: string): boolean {
  */
 export function stripDocxTrackingTokens(html: string): string {
   // Remove all tokens (start and end for all types)
-  const tokenPattern =
-    /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
+  const tokenPattern = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
   return html.replace(tokenPattern, '');
 }

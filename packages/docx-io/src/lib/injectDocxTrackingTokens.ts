@@ -23,43 +23,49 @@ import {
 } from './html-to-docx/tracking';
 
 // ============================================================================
+// Top-level Regex Patterns (for performance)
+// ============================================================================
+
+const WHITESPACE_REGEX = /\s+/;
+
+// ============================================================================
 // Types
 // ============================================================================
 
 /** User information for resolving author names */
-export interface DocxExportUser {
+export type DocxExportUser = {
   id?: string | null;
   name?: string | null;
-}
+};
 
 /** Comment data from discussion thread */
-export interface DocxExportComment {
+export type DocxExportComment = {
   contentRich?: unknown | null;
   createdAt?: Date | number | string | null;
   user?: DocxExportUser | null;
   userId?: string | null;
-}
+};
 
 /** Discussion thread containing comments */
-export interface DocxExportDiscussion {
+export type DocxExportDiscussion = {
   comments?: DocxExportComment[] | null;
   createdAt?: Date | number | string | null;
   documentContent?: string | null;
   id: string;
   user?: DocxExportUser | null;
   userId?: string | null;
-}
+};
 
 /** Suggestion metadata stored on nodes */
-export interface DocxExportSuggestionMeta {
+export type DocxExportSuggestionMeta = {
   createdAt?: Date | number | string | null;
   id: string;
   type?: 'insert' | 'remove' | string | null;
   userId?: string | null;
-}
+};
 
 /** Options for token injection */
-export interface InjectDocxTrackingTokensOptions {
+export type InjectDocxTrackingTokensOptions = {
   /** Discussion threads for comment metadata */
   discussions?: DocxExportDiscussion[] | null;
   /** Function to get comment IDs from a text node */
@@ -70,14 +76,14 @@ export interface InjectDocxTrackingTokensOptions {
   nodeToString?: (node: unknown) => string;
   /** Pre-built user name map (userId -> name) */
   userNameMap?: Map<string, string>;
-}
+};
 
 /** Internal leaf entry for tracking */
-interface LeafEntry {
+type LeafEntry = {
   commentIds: string[];
   node: TText;
   suggestions: Map<string, DocxExportSuggestionMeta>;
-}
+};
 
 // ============================================================================
 // Utility Functions
@@ -128,7 +134,7 @@ export function buildUserNameMap(
  */
 export function toInitials(name?: null | string): string {
   if (!name) return '';
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const parts = name.trim().split(WHITESPACE_REGEX).filter(Boolean);
 
   return parts
     .slice(0, 2)
@@ -142,9 +148,9 @@ export function toInitials(name?: null | string): string {
 export function normalizeDate(
   date?: Date | null | number | string
 ): string | undefined {
-  if (!date) return undefined;
+  if (!date) return;
   const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return undefined;
+  if (Number.isNaN(parsed.getTime())) return;
 
   return parsed.toISOString();
 }
@@ -298,7 +304,10 @@ function collectLeaves(
   options: InjectDocxTrackingTokensOptions,
   inheritedSuggestions: DocxExportSuggestionMeta[] = []
 ): void {
-  const { getCommentIds = defaultGetCommentIds, getSuggestions = defaultGetSuggestions } = options;
+  const {
+    getCommentIds = defaultGetCommentIds,
+    getSuggestions = defaultGetSuggestions,
+  } = options;
 
   // Check if this is a text node
   if (typeof node.text === 'string') {
@@ -447,12 +456,8 @@ export function injectDocxTrackingTokens(
 
     // Get current suggestion/comment IDs
     const currentSuggestionIds = [...leaf.suggestions.keys()];
-    const prevSuggestionIds = new Set(
-      prev ? [...prev.suggestions.keys()] : []
-    );
-    const nextSuggestionIds = new Set(
-      next ? [...next.suggestions.keys()] : []
-    );
+    const prevSuggestionIds = new Set(prev ? [...prev.suggestions.keys()] : []);
+    const nextSuggestionIds = new Set(next ? [...next.suggestions.keys()] : []);
 
     const currentCommentIds = leaf.commentIds;
     const prevCommentIds = new Set(prev?.commentIds ?? []);

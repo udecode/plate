@@ -541,7 +541,6 @@ const buildRunsFromTextWithTokens = (
       trackingState.suggestionStack = trackingState.suggestionStack.filter(
         (item) => item.id !== part.id
       );
-      continue;
     }
   }
 

@@ -57,7 +57,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.insertions).toBe(0);
@@ -85,7 +86,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.insertions).toBe(1);
@@ -112,7 +114,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.insertions).toBe(0);
@@ -144,7 +147,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.total).toBe(0);
@@ -176,7 +180,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.total).toBe(0);
@@ -212,7 +217,8 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         suggestionKey: 'suggestion',
         getSuggestionKey: (id) => `suggestion_${id}`,
-        isText: (node) => typeof (node as Record<string, unknown>).text === 'string',
+        isText: (node) =>
+          typeof (node as Record<string, unknown>).text === 'string',
       });
 
       expect(result.insertions).toBe(2);
@@ -327,7 +333,7 @@ describe('applyDocxTracking', () => {
         api: {
           string: mock(() => 'sample text'),
           rangeRef: () => {
-            throw 'string error';
+            throw new Error('string error');
           },
         },
         tf: {
@@ -812,7 +818,7 @@ describe('applyDocxTracking', () => {
         api: {
           string: mock(() => 'sample text'),
           rangeRef: () => {
-            throw 'string comment error';
+            throw new Error('string comment error');
           },
         },
         tf: {

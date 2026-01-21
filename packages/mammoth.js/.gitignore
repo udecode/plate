@@ -1,0 +1,6 @@
+/node_modules
+/_build
+/static/bootstrap
+/static/jszip
+/mammoth.browser.js
+/mammoth.browser.min.js

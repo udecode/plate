@@ -344,9 +344,7 @@ describe('DOCX Export with Tracked Changes', () => {
     }
 
     // Content types should include comments
-    const contentTypes = await zip
-      .file('[Content_Types].xml')!
-      .async('string');
+    const contentTypes = await zip.file('[Content_Types].xml')!.async('string');
     expect(contentTypes).toContain('comments.xml');
   });
 

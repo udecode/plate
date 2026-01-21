@@ -20,24 +20,24 @@
 export type Path = number[];
 
 /** Point in the document */
-export interface Point {
+export type Point = {
   path: Path;
   offset: number;
-}
+};
 
 /** Range in the document */
-export interface TRange {
+export type TRange = {
   anchor: Point;
   focus: Point;
-}
+};
 
 /** Descendant node (element or text) */
-export interface Descendant {
+export type Descendant = {
   children?: Descendant[];
   text?: string;
   type?: string;
   [key: string]: unknown;
-}
+};
 
 /** Element node with children */
 export interface TElement extends Descendant {
@@ -56,7 +56,7 @@ export type NodeEntry<T = Descendant> = [T, Path];
 export type MatchFn = (node: Descendant, path: Path) => boolean;
 
 /** Editor interface for search operations */
-export interface SearchEditor {
+export type SearchEditor = {
   /** Get nodes matching criteria */
   api: {
     nodes: <T extends Descendant>(options: {
@@ -68,15 +68,15 @@ export interface SearchEditor {
   };
   /** Editor children (root nodes) */
   children: Descendant[];
-}
+};
 
 /** Options for search operations */
-export interface SearchOptions {
+export type SearchOptions = {
   /** Starting point for search */
   from?: Point;
   /** Match function to filter which nodes to search in */
   match?: MatchFn;
-}
+};
 
 // ============================================================================
 // Utility Functions
@@ -290,7 +290,12 @@ export function searchRange(
         path
       );
 
-      if (startPath && endPath && anchorOffset !== undefined && focusOffset !== undefined) {
+      if (
+        startPath &&
+        endPath &&
+        anchorOffset !== undefined &&
+        focusOffset !== undefined
+      ) {
         return {
           anchor: { path: startPath, offset: anchorOffset },
           focus: { path: endPath, offset: focusOffset },
@@ -413,7 +418,12 @@ export function searchRanges(
         path
       );
 
-      if (startPath && endPath && anchorOffset !== undefined && focusOffset !== undefined) {
+      if (
+        startPath &&
+        endPath &&
+        anchorOffset !== undefined &&
+        focusOffset !== undefined
+      ) {
         ranges.push({
           anchor: { path: startPath, offset: anchorOffset },
           focus: { path: endPath, offset: focusOffset },
