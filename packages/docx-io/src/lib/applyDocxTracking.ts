@@ -24,19 +24,19 @@ import type { DocxImportComment, DocxTrackedChange } from './parseDocxTracking';
 // ============================================================================
 
 /** Range type compatible with Slate/Plate */
-export interface TRange {
+export type TRange = {
   anchor: { path: number[]; offset: number };
   focus: { path: number[]; offset: number };
-}
+};
 
 /** Point type compatible with Slate/Plate */
-export interface TPoint {
+export type TPoint = {
   path: number[];
   offset: number;
-}
+};
 
 /** Editor interface for applying tracking changes */
-export interface TrackingEditor {
+export type TrackingEditor = {
   /** Get string content from a range */
   api: {
     string: (range: TRange) => string;
@@ -56,7 +56,7 @@ export interface TrackingEditor {
   };
   /** Set plugin option */
   setOption?: (plugin: unknown, key: string, value: unknown) => void;
-}
+};
 
 /** Function to search for a string in the editor and return its range */
 export type SearchRangeFn = (
@@ -65,16 +65,16 @@ export type SearchRangeFn = (
 ) => TRange | null;
 
 /** Function to create a discussion with comment */
-export interface CreateDiscussionFn {
+export type CreateDiscussionFn = {
   mutateAsync: (input: {
     contentRich?: unknown;
     documentContent: string;
     documentId: string;
   }) => Promise<{ id: string }>;
-}
+};
 
 /** Options for applying tracked change suggestions */
-export interface ApplySuggestionsOptions {
+export type ApplySuggestionsOptions = {
   /** The editor instance */
   editor: TrackingEditor;
   /** Tracked changes to apply */
@@ -87,10 +87,10 @@ export interface ApplySuggestionsOptions {
   getSuggestionKey: (id: string) => string;
   /** Function to check if node is text (e.g., TextApi.isText) */
   isText: (node: unknown) => boolean;
-}
+};
 
 /** Options for applying tracked comments */
-export interface ApplyCommentsOptions {
+export type ApplyCommentsOptions = {
   /** The editor instance */
   editor: TrackingEditor;
   /** Comments to apply */
@@ -113,10 +113,10 @@ export interface ApplyCommentsOptions {
   commentPlugin?: unknown;
   /** Optional callback when comments are created */
   onCommentsCreated?: () => void;
-}
+};
 
 /** Result of applying tracked change suggestions */
-export interface ApplySuggestionsResult {
+export type ApplySuggestionsResult = {
   /** Number of insertions applied */
   insertions: number;
   /** Number of deletions applied */
@@ -125,17 +125,17 @@ export interface ApplySuggestionsResult {
   total: number;
   /** Errors encountered */
   errors: string[];
-}
+};
 
 /** Result of applying tracked comments */
-export interface ApplyCommentsResult {
+export type ApplyCommentsResult = {
   /** Number of comments created */
   created: number;
   /** Number of comments skipped (no location) */
   skipped: number;
   /** Errors encountered */
   errors: string[];
-}
+};
 
 // ============================================================================
 // Utility Functions
@@ -523,14 +523,14 @@ export async function applyTrackedComments(
 // ============================================================================
 
 /** Result of importing DOCX with full tracking support */
-export interface ImportWithTrackingResult {
+export type ImportWithTrackingResult = {
   /** Suggestions result */
   suggestions: ApplySuggestionsResult;
   /** Comments result (may be null if not applied) */
   comments: ApplyCommentsResult | null;
   /** Total tracked items applied */
   totalApplied: number;
-}
+};
 
 /**
  * Apply all tracked changes and comments from parsed DOCX.
@@ -569,8 +569,14 @@ export async function applyAllTracking(options: {
   trackedChanges: DocxTrackedChange[];
   comments?: DocxImportComment[];
   searchRange: SearchRangeFn;
-  suggestionConfig: Omit<ApplySuggestionsOptions, 'editor' | 'changes' | 'searchRange'>;
-  commentConfig?: Omit<ApplyCommentsOptions, 'editor' | 'comments' | 'searchRange'>;
+  suggestionConfig: Omit<
+    ApplySuggestionsOptions,
+    'editor' | 'changes' | 'searchRange'
+  >;
+  commentConfig?: Omit<
+    ApplyCommentsOptions,
+    'editor' | 'comments' | 'searchRange'
+  >;
 }): Promise<ImportWithTrackingResult> {
   const {
     editor,
@@ -603,7 +609,6 @@ export async function applyAllTracking(options: {
   return {
     suggestions: suggestionsResult,
     comments: commentsResult,
-    totalApplied:
-      suggestionsResult.total + (commentsResult?.created ?? 0),
+    totalApplied: suggestionsResult.total + (commentsResult?.created ?? 0),
   };
 }

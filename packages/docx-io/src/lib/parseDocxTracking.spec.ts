@@ -222,7 +222,8 @@ describe('parseDocxTrackedChanges', () => {
     });
 
     it('should skip malformed tokens', () => {
-      const html = '<p>[[DOCX_INS_START:not-valid-json]]text[[DOCX_INS_END:id]]</p>';
+      const html =
+        '<p>[[DOCX_INS_START:not-valid-json]]text[[DOCX_INS_END:id]]</p>';
 
       const result = parseDocxTrackedChanges(html);
 
@@ -348,7 +349,8 @@ describe('parseDocxComments', () => {
     });
 
     it('should skip malformed tokens', () => {
-      const html = '<p>[[DOCX_CMT_START:not-valid-json]]text[[DOCX_CMT_END:id]]</p>';
+      const html =
+        '<p>[[DOCX_CMT_START:not-valid-json]]text[[DOCX_CMT_END:id]]</p>';
 
       const result = parseDocxComments(html);
 
@@ -358,23 +360,33 @@ describe('parseDocxComments', () => {
     });
 
     it('should handle special characters in comment text', () => {
-      const payload = { id: 'cmt-1', text: 'Comment with <tags> & special chars' };
+      const payload = {
+        id: 'cmt-1',
+        text: 'Comment with <tags> & special chars',
+      };
       const html = `<p>${buildCommentToken(payload, 'start')}text${buildCommentToken(payload, 'end')}</p>`;
 
       const result = parseDocxComments(html);
 
       expect(result.comments).toHaveLength(1);
-      expect(result.comments[0].text).toBe('Comment with <tags> & special chars');
+      expect(result.comments[0].text).toBe(
+        'Comment with <tags> & special chars'
+      );
     });
 
     it('should handle Unicode in comment text', () => {
-      const payload = { id: 'cmt-1', text: 'Comment with emoji 🎉 and CJK 日本語' };
+      const payload = {
+        id: 'cmt-1',
+        text: 'Comment with emoji 🎉 and CJK 日本語',
+      };
       const html = `<p>${buildCommentToken(payload, 'start')}text${buildCommentToken(payload, 'end')}</p>`;
 
       const result = parseDocxComments(html);
 
       expect(result.comments).toHaveLength(1);
-      expect(result.comments[0].text).toBe('Comment with emoji 🎉 and CJK 日本語');
+      expect(result.comments[0].text).toBe(
+        'Comment with emoji 🎉 and CJK 日本語'
+      );
     });
 
     it('should handle empty comment text', () => {

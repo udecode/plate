@@ -731,4 +731,7 @@ export { htmlToDocxBlob } from './html-to-docx';
 
 // Re-export tracking types and utilities for convenience
 export type { DocxExportDiscussion } from './injectDocxTrackingTokens';
-export { injectDocxTrackingTokens, buildUserNameMap } from './injectDocxTrackingTokens';
+export {
+  injectDocxTrackingTokens,
+  buildUserNameMap,
+} from './injectDocxTrackingTokens';

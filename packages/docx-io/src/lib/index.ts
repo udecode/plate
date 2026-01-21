@@ -5,6 +5,7 @@
 // Import
 export * from './applyDocxTracking';
 export * from './importDocx';
+export * from './mammothWithTracking';
 export * from './parseDocxTracking';
 export * from './preprocessMammothHtml';
 export * from './searchRange';

@@ -429,9 +429,11 @@ async function addFilesToContainer(
 
   // Add comments.xml if there are comments
   if (docxDocument.comments.length > 0) {
-    zip.folder(wordFolder)!.file('comments.xml', docxDocument.generateCommentsXML(), {
-      createFolders: false,
-    });
+    zip
+      .folder(wordFolder)!
+      .file('comments.xml', docxDocument.generateCommentsXML(), {
+        createFolders: false,
+      });
   }
 
   const relationshipXMLs = docxDocument.generateRelsXML();

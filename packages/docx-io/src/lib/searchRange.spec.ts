@@ -18,7 +18,7 @@ function createMockEditor(children: Descendant[]): SearchEditor {
   return {
     children,
     api: {
-      nodes: function* <T extends Descendant>(options: {
+      *nodes<T extends Descendant>(options: {
         at: number[] | null;
         match?: (node: Descendant, path: number[]) => boolean;
       }) {
@@ -126,10 +126,7 @@ describe('searchRange', () => {
       });
 
       it('provides correct paths', () => {
-        const nodes: Descendant[] = [
-          { text: 'a' },
-          { text: 'b' },
-        ];
+        const nodes: Descendant[] = [{ text: 'a' }, { text: 'b' }];
         const paths: number[][] = [];
         traverseTextNodes(nodes, (_node, path) => {
           paths.push(path);
@@ -248,11 +245,7 @@ describe('searchRange', () => {
     it('finds string spanning multiple text nodes', () => {
       const editor = createMockEditor([
         {
-          children: [
-            { text: 'hel' },
-            { text: 'lo wor' },
-            { text: 'ld' },
-          ],
+          children: [{ text: 'hel' }, { text: 'lo wor' }, { text: 'ld' }],
           type: 'p',
         },
       ]);
@@ -346,7 +339,7 @@ describe('searchRange', () => {
           },
         ],
         api: {
-          nodes: function* (options) {
+          *nodes(options) {
             const match = options.match ?? ((_n, p) => p.length === 1);
             for (const [i, node] of editor.children.entries()) {
               if (match(node, [i])) yield [node, [i]];
@@ -396,9 +389,7 @@ describe('searchRange', () => {
     it('finds all token pair ranges', () => {
       const editor = createMockEditor([
         {
-          children: [
-            { text: '[[A]]x[[/A]] and [[A]]y[[/A]]' },
-          ],
+          children: [{ text: '[[A]]x[[/A]] and [[A]]y[[/A]]' }],
           type: 'p',
         },
       ]);
@@ -462,14 +453,18 @@ describe('searchRange', () => {
 
   describe('integration with DOCX tracking tokens', () => {
     it('finds insertion token pairs', () => {
-      const payload = encodeURIComponent(JSON.stringify({ id: 'ins-1', author: 'John' }));
+      const payload = encodeURIComponent(
+        JSON.stringify({ id: 'ins-1', author: 'John' })
+      );
       const startToken = `[[DOCX_INS_START:${payload}]]`;
       const endToken = '[[DOCX_INS_END:ins-1]]';
 
       const editor = createMockEditor([
         {
           children: [
-            { text: `Some text ${startToken}inserted content${endToken} more text` },
+            {
+              text: `Some text ${startToken}inserted content${endToken} more text`,
+            },
           ],
           type: 'p',
         },
@@ -480,15 +475,15 @@ describe('searchRange', () => {
     });
 
     it('finds deletion token pairs', () => {
-      const payload = encodeURIComponent(JSON.stringify({ id: 'del-1', author: 'Jane' }));
+      const payload = encodeURIComponent(
+        JSON.stringify({ id: 'del-1', author: 'Jane' })
+      );
       const startToken = `[[DOCX_DEL_START:${payload}]]`;
       const endToken = '[[DOCX_DEL_END:del-1]]';
 
       const editor = createMockEditor([
         {
-          children: [
-            { text: `${startToken}deleted content${endToken}` },
-          ],
+          children: [{ text: `${startToken}deleted content${endToken}` }],
           type: 'p',
         },
       ]);
@@ -498,19 +493,19 @@ describe('searchRange', () => {
     });
 
     it('finds comment token pairs', () => {
-      const payload = encodeURIComponent(JSON.stringify({
-        id: 'cmt-1',
-        authorName: 'Bob',
-        text: 'Comment text',
-      }));
+      const payload = encodeURIComponent(
+        JSON.stringify({
+          id: 'cmt-1',
+          authorName: 'Bob',
+          text: 'Comment text',
+        })
+      );
       const startToken = `[[DOCX_CMT_START:${payload}]]`;
       const endToken = '[[DOCX_CMT_END:cmt-1]]';
 
       const editor = createMockEditor([
         {
-          children: [
-            { text: `${startToken}commented text${endToken}` },
-          ],
+          children: [{ text: `${startToken}commented text${endToken}` }],
           type: 'p',
         },
       ]);
@@ -528,7 +523,9 @@ describe('searchRange', () => {
       const editor = createMockEditor([
         {
           children: [
-            { text: `${ins1Start}added${ins1End} and ${del1Start}removed${del1End}` },
+            {
+              text: `${ins1Start}added${ins1End} and ${del1Start}removed${del1End}`,
+            },
           ],
           type: 'p',
         },
