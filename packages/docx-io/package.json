@@ -48,7 +48,6 @@
     "html-entities": "^2.5.2",
     "html-to-vdom": "^0.7.0",
     "jszip": "^3.10.1",
-    "juice": "^11.0.1",
     "lodash": "^4.17.21",
     "mammoth": "file:./src/lib/mammoth.js",
     "mime-types": "^2.1.35",

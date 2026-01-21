@@ -3412,7 +3412,6 @@ __metadata:
     html-entities: "npm:^2.5.2"
     html-to-vdom: "npm:^0.7.0"
     jszip: "npm:^3.10.1"
-    juice: "npm:^11.0.1"
     lodash: "npm:^4.17.21"
     mammoth: "file:./src/lib/mammoth.js"
     mime-types: "npm:^2.1.35"
@@ -13323,7 +13322,7 @@ __metadata:
 
 "mammoth@file:./src/lib/mammoth.js::locator=%40platejs%2Fdocx-io%40workspace%3Apackages%2Fdocx-io":
   version: 1.11.0
-  resolution: "mammoth@file:./src/lib/mammoth.js#./src/lib/mammoth.js::hash=12572f&locator=%40platejs%2Fdocx-io%40workspace%3Apackages%2Fdocx-io"
+  resolution: "mammoth@file:./src/lib/mammoth.js#./src/lib/mammoth.js::hash=6c62d6&locator=%40platejs%2Fdocx-io%40workspace%3Apackages%2Fdocx-io"
   dependencies:
     "@xmldom/xmldom": "npm:^0.8.6"
     argparse: "npm:~1.0.3"
@@ -13337,7 +13336,7 @@ __metadata:
     xmlbuilder: "npm:^10.0.0"
   bin:
     mammoth: bin/mammoth
-  checksum: 10c0/8facfda3a959f1a080bab8e278ff6d7f78311cfe509fe3d29a9dc5bc0654dde2a4e6e669f604bb142dc05ab89f923be0d98949c4900e1c4f42000e8d89d9e55d
+  checksum: 10c0/23ad4748a47ab105a546b635bcd36ebdab29aa07f3b1e87647361cd524201519fcedae2680ece0df13653d829c134de423890f34b83e8239bfa8ac5f1555b7b2
   languageName: node
   linkType: hard
 

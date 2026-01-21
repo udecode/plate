@@ -249,11 +249,9 @@ test('inline images referenced by path relative to base are included in output',
 test('src of inline images can be changed using read("base64")', () => {
   var docxPath = path.join(__dirname, 'test-data/tiny-picture.docx');
   var convertImage = mammoth.images.imgElement((element) =>
-    element
-      .read('base64')
-      .then((encodedImage) => ({
-        src: encodedImage.substring(0, 2) + ',' + element.contentType,
-      }))
+    element.read('base64').then((encodedImage) => ({
+      src: encodedImage.substring(0, 2) + ',' + element.contentType,
+    }))
   );
   return mammoth
     .convertToHtml({ path: docxPath }, { convertImage })
@@ -266,11 +264,9 @@ test('src of inline images can be changed using read("base64")', () => {
 test('src of inline images can be changed using readAsBase64String()', () => {
   var docxPath = path.join(__dirname, 'test-data/tiny-picture.docx');
   var convertImage = mammoth.images.imgElement((element) =>
-    element
-      .readAsBase64String()
-      .then((encodedImage) => ({
-        src: encodedImage.substring(0, 2) + ',' + element.contentType,
-      }))
+    element.readAsBase64String().then((encodedImage) => ({
+      src: encodedImage.substring(0, 2) + ',' + element.contentType,
+    }))
   );
   return mammoth
     .convertToHtml({ path: docxPath }, { convertImage })
