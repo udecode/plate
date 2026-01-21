@@ -123,9 +123,9 @@ describe('PlateControllerEffect', () => {
       it('registers and unregisters the store', () => {
         const { getByText } = render(children);
         (expect(getByText('test: non-null')) as any).toBeInTheDocument();
-        void act(() => getByText('unmountPlate').click());
+        act(() => getByText('unmountPlate').click());
         (expect(getByText('test: null')) as any).toBeInTheDocument();
-        void act(() => getByText('mountPlate').click());
+        act(() => getByText('mountPlate').click());
         (expect(getByText('test: non-null')) as any).toBeInTheDocument();
       });
 
@@ -161,7 +161,7 @@ describe('PlateControllerEffect', () => {
         );
 
         (expect(getByText('activeId: null')) as any).toBeInTheDocument();
-        void act(() => getByText('focus').click());
+        act(() => getByText('focus').click());
         (expect(getByText('activeId: test')) as any).toBeInTheDocument();
 
         useFocusedSpy.mockRestore();
@@ -187,11 +187,11 @@ describe('PlateControllerEffect', () => {
       (
         expect(queryByText('primaryEditorId: 3')) as any
       ).not.toBeInTheDocument();
-      void act(() => getByText('mountPlate').click());
+      act(() => getByText('mountPlate').click());
       (expect(queryByText('primaryEditorId: 1')) as any).toBeInTheDocument();
       (expect(queryByText('primaryEditorId: 2')) as any).toBeInTheDocument();
       (expect(queryByText('primaryEditorId: 3')) as any).toBeInTheDocument();
-      void act(() => getByText('unmountPlate').click());
+      act(() => getByText('unmountPlate').click());
       (expect(queryByText('primaryEditorId: 1')) as any).toBeInTheDocument();
       (expect(queryByText('primaryEditorId: 2')) as any).toBeInTheDocument();
       (

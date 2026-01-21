@@ -26,25 +26,9 @@ export {
   DOCX_INSERTION_TOKEN_SUFFIX,
 } from './html-to-docx/tracking';
 
-// ============================================================================
-// Types for Import
-// ============================================================================
+import type { DocxTrackedChange } from './types';
 
-/** Tracked change (insertion or deletion) parsed from HTML */
-export type DocxTrackedChange = {
-  /** Unique ID for this change */
-  id: string;
-  /** Type of change */
-  type: 'insert' | 'remove';
-  /** Author who made the change */
-  author?: string;
-  /** Date when the change was made (ISO string) */
-  date?: string;
-  /** The full start token string (for searching in editor) */
-  startToken: string;
-  /** The full end token string (for searching in editor) */
-  endToken: string;
-};
+export type { DocxTrackedChange };
 
 /** Comment parsed from HTML with full metadata */
 export type DocxImportComment = {

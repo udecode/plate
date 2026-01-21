@@ -18,22 +18,12 @@
  */
 
 import type { DocxImportComment, DocxTrackedChange } from './parseDocxTracking';
+import type { Point, TRange } from './searchRange';
 
-// ============================================================================
-// Types
-// ============================================================================
+export type { TRange };
 
-/** Range type compatible with Slate/Plate */
-export type TRange = {
-  anchor: { path: number[]; offset: number };
-  focus: { path: number[]; offset: number };
-};
-
-/** Point type compatible with Slate/Plate */
-export type TPoint = {
-  path: number[];
-  offset: number;
-};
+/** Alias for Point type */
+export type TPoint = Point;
 
 /** Editor interface for applying tracking changes */
 export type TrackingEditor = {
