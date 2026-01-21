@@ -1,8 +1,14 @@
 /**
- * HTML to DOCX converter using @turbodocx/html-to-docx
+ * HTML to DOCX converter using html-to-docx
  *
- * This module wraps the @turbodocx/html-to-docx library to provide
+ * This module wraps the html-to-docx library to provide
  * a simple API for converting HTML content to DOCX format.
+ *
+ * IMPORTANT: This uses native DOCX element generation (not altChunk).
+ * altChunk embeds raw HTML and only works in Microsoft Word - it breaks
+ * in LibreOffice and Google Docs. This library converts HTML to native
+ * DOCX elements (<w:p>, <w:r>, <w:t>, tables, images, etc.) which works
+ * in all word processors.
  *
  * @packageDocumentation
  */
@@ -13,10 +19,14 @@ import type { DocumentOptions, Margins } from './html-to-docx/index.js';
 // Re-export types from the library
 export type {
   DocumentOptions,
+  HeadingOptions,
+  HeadingSpacing,
+  HeadingStyleOptions,
   LineNumberOptions,
   Margins,
   NumberingOptions,
   PageSize,
+  TableBorderOptions,
   TableOptions,
 } from './html-to-docx/index.js';
 
@@ -27,7 +37,7 @@ export type HtmlToDocxOptions = DocumentOptions;
 /**
  * Convert HTML content to a DOCX blob.
  *
- * This function uses @turbodocx/html-to-docx to create a valid DOCX file
+ * This function uses html-to-docx to create a valid DOCX file
  * from HTML content with proper support for images, tables, and styling.
  *
  * @param html - The HTML content to convert
@@ -56,14 +66,27 @@ export async function htmlToDocxBlob(
 
   const result = await HTMLtoDOCX(safeHtml, null, options, null);
 
-  // In browser environment, result is a Blob
+  // Convert the result to a Blob if it isn't already
   if (result instanceof Blob) {
     return result;
   }
 
-  // In Node.js/Bun environment, result is a Buffer - convert to Blob
-  // Buffer.isBuffer is the type-safe way to check for Buffer
-  return new Blob([new Uint8Array(result)], {
+  // Handle Buffer (Node.js/Bun environment) - convert to Uint8Array first
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(result)) {
+    return new Blob([new Uint8Array(result)], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+  }
+
+  // Handle ArrayBuffer
+  if (result instanceof ArrayBuffer) {
+    return new Blob([result], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+  }
+
+  // Fallback for other types
+  return new Blob([result as unknown as BlobPart], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 }

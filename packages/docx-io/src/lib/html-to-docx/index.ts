@@ -20,6 +20,7 @@ export type DocumentOptions = {
   footerType?: 'default' | 'even' | 'first';
   header?: boolean;
   headerType?: 'default' | 'even' | 'first';
+  heading?: HeadingOptions;
   keywords?: string[];
   lastModifiedBy?: string;
   lineNumber?: boolean;
@@ -62,10 +63,39 @@ export type PageSize = {
   width?: number | string;
 };
 
+export type TableBorderOptions = {
+  color?: string;
+  size?: number;
+};
+
 export type TableOptions = {
+  borderOptions?: TableBorderOptions;
   row?: {
     cantSplit?: boolean;
   };
+};
+
+export type HeadingSpacing = {
+  after?: number;
+  before?: number;
+};
+
+export type HeadingStyleOptions = {
+  bold?: boolean;
+  color?: string;
+  font?: string;
+  fontSize?: number;
+  italic?: boolean;
+  spacing?: HeadingSpacing;
+};
+
+export type HeadingOptions = {
+  heading1?: HeadingStyleOptions;
+  heading2?: HeadingStyleOptions;
+  heading3?: HeadingStyleOptions;
+  heading4?: HeadingStyleOptions;
+  heading5?: HeadingStyleOptions;
+  heading6?: HeadingStyleOptions;
 };
 
 const minifyHTMLString = (htmlString: string): string | null => {
