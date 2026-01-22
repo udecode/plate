@@ -225,38 +225,50 @@ export default function TablePerfPage() {
     useState<BenchmarkResult | null>(null);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
 
-  const metricsRef = useRef<Metrics>(metrics);
-  metricsRef.current = metrics;
-
   // Generate initial table value
   const tableValue = generateTableValue(config.rows, config.cols);
 
+  // Use ref to collect profiler data without causing re-renders
+  const profilerDataRef = useRef<{
+    initialRender: number | null;
+    lastRenderDuration: number | null;
+    renderCount: number;
+    renderDurations: number[];
+  }>({
+    initialRender: null,
+    lastRenderDuration: null,
+    renderCount: 0,
+    renderDurations: [],
+  });
+
   const onRenderCallback: ProfilerOnRenderCallback = useCallback(
-    (id, phase, actualDuration, baseDuration, startTime, commitTime) => {
+    (id, phase, actualDuration, baseDuration) => {
       console.log(
         `[Profiler] ${id} (${phase}): ${actualDuration.toFixed(2)}ms (base: ${baseDuration.toFixed(2)}ms)`
       );
 
-      setMetrics((prev) => {
-        const newMetrics = {
-          ...prev,
-          lastRenderDuration: actualDuration,
-          renderCount: prev.renderCount + 1,
-          renderDurations: [...prev.renderDurations, actualDuration],
-        };
+      // Store in ref to avoid triggering re-renders
+      profilerDataRef.current.lastRenderDuration = actualDuration;
+      profilerDataRef.current.renderCount += 1;
+      profilerDataRef.current.renderDurations.push(actualDuration);
 
-        if (phase === 'mount') {
-          newMetrics.initialRender = actualDuration;
-        }
-
-        return newMetrics;
-      });
+      if (phase === 'mount') {
+        profilerDataRef.current.initialRender = actualDuration;
+        // Only sync to state on mount to update the UI once
+        setMetrics({ ...profilerDataRef.current });
+      }
     },
     []
   );
 
   const handleGenerate = useCallback(() => {
     // Reset metrics and force editor remount
+    profilerDataRef.current = {
+      initialRender: null,
+      lastRenderDuration: null,
+      renderCount: 0,
+      renderDurations: [],
+    };
     setMetrics({
       initialRender: null,
       lastRenderDuration: null,
@@ -289,13 +301,13 @@ export default function TablePerfPage() {
     for (let i = 0; i < WARMUP_RUNS + MEASURED_RUNS; i++) {
       const isWarmup = i < WARMUP_RUNS;
 
-      // Reset metrics
-      setMetrics({
+      // Reset profiler data ref
+      profilerDataRef.current = {
         initialRender: null,
         lastRenderDuration: null,
         renderCount: 0,
         renderDurations: [],
-      });
+      };
 
       // Force remount
       setEditorKey((k) => k + 1);
@@ -312,7 +324,7 @@ export default function TablePerfPage() {
       // Small delay to ensure state is updated
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const initialRender = metricsRef.current.initialRender;
+      const initialRender = profilerDataRef.current.initialRender;
 
       if (initialRender !== null && !isWarmup) {
         renderTimes.push(initialRender);
