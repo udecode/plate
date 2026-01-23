@@ -14,7 +14,7 @@
  * while keeping the mammoth fork as a separate, untouched package.
  */
 
-import mammoth from 'mammoth';
+import { mammoth } from './mammoth';
 
 // ============================================================================
 // Types
@@ -77,15 +77,3 @@ export async function convertToHtmlWithTracking(
     messages: result.messages,
   };
 }
-
-/**
- * Re-export the mammoth fork for direct use.
- * This allows using both `mammoth` (fork) and `convertToHtmlWithTracking`
- * from the same module.
- */
-export { default as mammoth } from 'mammoth';
-
-/**
- * Re-export mammoth types for convenience
- */
-export type { MammothMessage, MammothResult } from 'mammoth';

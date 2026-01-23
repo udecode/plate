@@ -404,6 +404,8 @@ function DocumentConversion(options, comments) {
     paragraph: convertParagraph,
     run: convertRun,
     text(element, messages, options) {
+      void messages;
+      void options;
       return [Html.text(element.value)];
     },
     tab(element, messages, options) {
@@ -437,6 +439,8 @@ function DocumentConversion(options, comments) {
       return [anchor];
     },
     noteReference(element, messages, options) {
+      void messages;
+      void options;
       noteReferences.push(element);
       var anchor = Html.freshElement(
         'a',
@@ -467,6 +471,7 @@ function DocumentConversion(options, comments) {
     commentReference: convertCommentReference,
     comment: convertComment,
     commentRangeStart(element, messages, options) {
+      void options;
       // Get the comment data for this range
       var comment = comments[element.commentId];
       var payload = {

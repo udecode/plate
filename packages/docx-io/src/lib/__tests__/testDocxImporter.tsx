@@ -20,7 +20,7 @@ import { ListPlugin } from '@platejs/list/react';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
-import mammoth from 'mammoth';
+import { mammoth } from '../mammoth';
 
 import { preprocessMammothHtml } from '../preprocessMammothHtml';
 

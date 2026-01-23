@@ -1,19 +1,7 @@
 import type { TNode } from 'platejs';
 
 // ============================================================================
-// Basic Comment Type (from standard mammoth output)
-// ============================================================================
-
-/** Comment extracted from DOCX file (basic format from standard mammoth) */
-export type DocxComment = {
-  /** Comment ID from the DOCX file */
-  id: string;
-  /** Comment text content */
-  text: string;
-};
-
-// ============================================================================
-// Tracked Changes Types (from mammoth fork with tracked changes support)
+// Tracked Changes Types
 // ============================================================================
 
 /** Tracked change (insertion or deletion) from DOCX file */
@@ -32,7 +20,7 @@ export type DocxTrackedChange = {
   endToken: string;
 };
 
-/** Comment with full metadata from DOCX file (from mammoth fork) */
+/** Comment with full metadata from DOCX file */
 export type DocxTrackedComment = {
   /** Unique ID for this comment */
   id: string;
@@ -58,18 +46,10 @@ export type DocxTrackedComment = {
 // Import Result Types
 // ============================================================================
 
-/** Result of importing a DOCX file */
+/** Result of importing a DOCX file with tracking support */
 export type ImportDocxResult = {
   /** Deserialized editor nodes */
   nodes: TNode[];
-  /** Comments extracted from the DOCX file (not yet applied to editor) */
-  comments: DocxComment[];
-  /** Warnings from mammoth conversion */
-  warnings: string[];
-};
-
-/** Extended result with tracked changes support */
-export type ImportDocxWithTrackingResult = ImportDocxResult & {
   /** Tracked changes (insertions and deletions) */
   trackedChanges: DocxTrackedChange[];
   /** Comments with full metadata */
@@ -80,20 +60,12 @@ export type ImportDocxWithTrackingResult = ImportDocxResult & {
   deletionCount: number;
   /** Whether any tracking tokens were found */
   hasTracking: boolean;
+  /** Warnings from mammoth conversion */
+  warnings: string[];
 };
 
 /** Options for importing a DOCX file */
 export type ImportDocxOptions = {
   /** RTF data for image extraction (optional) */
   rtf?: string;
-};
-
-/** Extended options with tracked changes support */
-export type ImportDocxWithTrackingOptions = ImportDocxOptions & {
-  /**
-   * Whether to parse tracked changes tokens from mammoth output.
-   * Requires a mammoth.js fork that emits tracked change tokens.
-   * @default false
-   */
-  parseTrackedChanges?: boolean;
 };

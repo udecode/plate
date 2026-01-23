@@ -767,7 +767,7 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      [...new Array(8).keys()].forEach((level) => {
+      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
           .att('@w', 'ilvl', String(level))
