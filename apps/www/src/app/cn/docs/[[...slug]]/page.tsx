@@ -38,15 +38,31 @@ export const dynamic = 'force-static';
 
 async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
-  const slug = `docs${slugParam?.join('/') ? `/${slugParam.join('/')}` : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === slug);
+  const slug = slugParam?.join('/') || '';
+
+  // Look for Chinese version with .cn.mdx
+  const cnDoc = allDocs.find(
+    (doc) =>
+      doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
+      doc._raw.sourceFileName?.endsWith('.cn.mdx')
+  );
+
+  if (cnDoc) {
+    const path = slugParam?.join('/') || '';
+    cnDoc.slug = `/cn/docs${path ? `/${path}` : ''}`;
+    return cnDoc;
+  }
+
+  // Fallback to English doc if no Chinese version exists
+  const englishSlug = `docs${slug ? `/${slug}` : ''}`;
+  const doc = allDocs.find((doc) => doc.slugAsParams === englishSlug);
 
   if (!doc) {
     return null;
   }
 
   const path = slugParam?.join('/') || '';
-  doc.slug = `/docs${path ? `/${path}` : ''}`;
+  doc.slug = `/cn/docs${path ? `/${path}` : ''}`;
 
   return doc;
 }
@@ -80,7 +96,7 @@ export async function generateMetadata({
     }
 
     const path = slugParam?.join('/') || '';
-    slug = `/docs${path ? `/${path}` : ''}`;
+    slug = `/cn/docs${path ? `/${path}` : ''}`;
     title = file.title || docName;
     description = file.description;
   }
@@ -118,16 +134,20 @@ export async function generateMetadata({
 }
 
 const registryNames = new Set(registry.items.map((item) => item.name));
+const CN_SUFFIX_REGEX = /\.cn$/;
 
 export function generateStaticParams() {
-  return allDocs
-    .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
+  // Generate params for CN docs - both .cn.mdx files and fallback to English
+  const cnDocs = allDocs
+    .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
     .map((doc) => ({
-      slug: doc.slugAsParams.split('/').slice(1),
+      slug: doc.slugAsParams.replace(CN_SUFFIX_REGEX, '').split('/').slice(1),
     }));
+
+  return cnDocs;
 }
 
-export default async function DocPage(props: DocPageProps) {
+export default async function CNDocPage(props: DocPageProps) {
   const params = await props.params;
   const category = slugToCategory(params.slug);
 
@@ -157,7 +177,7 @@ export default async function DocPage(props: DocPageProps) {
     const dependencies = getAllDependencies(docName);
     const files = getAllFiles(docName);
 
-    const slug = `/docs/${params.slug?.join('/') ?? ''}`;
+    const slug = `/cn/docs/${params.slug?.join('/') ?? ''}`;
 
     const docs = getRegistryDocs({
       docName,
@@ -260,13 +280,13 @@ function getRegistryDocs({
         if (!uiItem) return null;
 
         return {
-          route: `/docs/${uiItem.type.includes('example') ? 'examples' : 'components'}/${fileName}`,
+          route: `/cn/docs/${uiItem.type.includes('example') ? 'examples' : 'components'}/${fileName}`,
           title: getRegistryTitle(uiItem),
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null),
     ...usedBy.map((item) => ({
-      route: `/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
+      route: `/cn/docs/${item.type.includes('example') ? 'examples' : 'components'}/${item.name}`,
       title: getRegistryTitle(item),
     })),
   ]
@@ -280,16 +300,16 @@ function getRegistryDocs({
     (acc, doc) => {
       if (doc.route!.startsWith(siteConfig.links.platePro)) {
         acc.external.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/components')) {
+      } else if (doc.route!.startsWith('/cn/docs/components')) {
         acc.components.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/api')) {
+      } else if (doc.route!.startsWith('/cn/docs/api')) {
         acc.docs.push({
           ...doc,
           title: `${getRegistryTitle({
             name: doc.title ?? doc.route?.split('/').pop(),
           })} API`,
         } as any);
-      } else if (doc.route!.startsWith('/docs/')) {
+      } else if (doc.route!.startsWith('/cn/docs/')) {
         acc.docs.push({
           ...doc,
           title: `${getRegistryTitle({
@@ -329,7 +349,6 @@ async function getExampleCode(name?: string) {
     throw new Error(`Component ${name} not found`);
   }
 
-  // Use the same caching pattern
   const item = await getCachedRegistryItem(name, true);
   let highlightedFiles: any = [];
   let tree: any = null;
@@ -352,26 +371,3 @@ async function getExampleCode(name?: string) {
     tree,
   };
 }
-
-// const pkg = docToPackage(name);
-// if (pkg) {
-//   const { gzip: gzipNumber } = await getPackageData(pkg.name);
-//   const gzip =
-//     typeof gzipNumber === 'number' ? formatBytes(gzipNumber) : null;
-//
-//   packageInfo.name = pkg.name;
-//   if (gzip) {
-//     packageInfo.gzip = gzip;
-//   }
-//   packageInfo.source =
-//     'https://github.com/udecode/plate/tree/main/packages/' +
-//     pkg.sourcePath +
-//     '/src';
-//   packageInfo.npm = 'https://www.npmjs.com/package/@udecode/' + pkg.name;
-// }
-
-// let toc: TableOfContents;
-// if (params.slug?.[0] === 'api') {
-//   toc = getAPITableOfContents(doc.body.raw);
-// } else {
-// }
