@@ -12,14 +12,13 @@ import { createSlateEditor, KEYS, NodeApi, TextApi } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 import { DocxExportKit } from 'www/src/registry/components/editor/plugins/docx-export-kit';
-import { mammoth } from '../mammoth';
-
-import { applyTrackedCommentsLocal } from '../applyDocxTracking';
-import { exportToDocx } from '../docx-export-plugin';
-import { htmlToDocxBlob } from '../html-to-docx';
-import type { DocxExportDiscussion } from '../injectDocxTrackingTokens';
-import { parseDocxTracking } from '../parseDocxTracking';
-import { preprocessMammothHtml } from '../preprocessMammothHtml';
+import { mammoth, preprocessMammothHtml } from '../importDocx';
+import {
+  applyTrackedCommentsLocal,
+  parseDocxTracking,
+} from '../importComments';
+import { exportToDocx, htmlToDocxBlob } from '../docx-export-plugin';
+import type { DocxExportDiscussion } from '../exportTrackChanges';
 import { searchRange } from '../searchRange';
 
 jsx;
@@ -53,8 +52,13 @@ const importDocxBuffer = async (
   editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
 ): Promise<TNode[]> => {
+  // Convert Node Buffer to ArrayBuffer for mammoth
+  const arrayBuffer = buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  ) as ArrayBuffer;
   const mammothResult = await mammoth.convertToHtml(
-    { buffer },
+    { arrayBuffer },
     { styleMap: ['comment-reference => sup'] }
   );
 
@@ -189,8 +193,13 @@ describe('docx roundtrip', () => {
     const buffer = readMammothFixture('comments');
     const editor = createTestEditor();
 
+    // Convert Node Buffer to ArrayBuffer for mammoth
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    ) as ArrayBuffer;
     const mammothResult = await mammoth.convertToHtml(
-      { buffer },
+      { arrayBuffer },
       { styleMap: ['comment-reference => sup'] }
     );
 

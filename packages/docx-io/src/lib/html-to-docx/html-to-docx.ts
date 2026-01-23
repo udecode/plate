@@ -63,7 +63,7 @@ interface NormalizedDocumentOptions {
   headerType?: 'default' | 'even' | 'first';
   keywords?: string[];
   lastModifiedBy?: string;
-  lineNumber?: boolean;
+  lineNumber?: boolean | LineNumberOptions;
   lineNumberOptions?: LineNumberOptions;
   margins?: NormalizedMargins | null;
   modifiedAt?: Date;

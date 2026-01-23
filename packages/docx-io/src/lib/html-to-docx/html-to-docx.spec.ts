@@ -11,7 +11,7 @@
 import { describe, expect, it } from 'bun:test';
 import JSZip from 'jszip';
 
-import { htmlToDocxBlob } from '../html-to-docx';
+import { htmlToDocxBlob } from '../exportDocx';
 
 // Helper to load zip from Blob
 async function loadZipFromBlob(blob: Blob): Promise<JSZip> {

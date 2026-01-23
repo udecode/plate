@@ -1,13 +1,16 @@
 import { describe, expect, it, mock } from 'bun:test';
 
 import {
-  applyAllTracking,
   applyTrackedChangeSuggestions,
-  applyTrackedComments,
   type TrackingEditor,
   type TRange,
-} from './applyDocxTracking';
-import type { DocxImportComment, DocxTrackedChange } from './parseDocxTracking';
+} from './importTrackChanges';
+import {
+  applyAllTracking,
+  applyTrackedComments,
+  type DocxImportComment,
+} from './importComments';
+import type { DocxTrackedChange } from './types';
 
 // Mock editor factory
 function createMockEditor(): TrackingEditor {

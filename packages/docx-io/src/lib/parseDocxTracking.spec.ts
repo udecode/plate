@@ -8,21 +8,23 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-  hasDocxTrackingTokens,
-  parseDocxComments,
-  parseDocxTrackedChanges,
-  parseDocxTracking,
-  stripDocxTrackingTokens,
-  DOCX_COMMENT_END_TOKEN_PREFIX,
-  DOCX_COMMENT_START_TOKEN_PREFIX,
-  DOCX_COMMENT_TOKEN_SUFFIX,
   DOCX_DELETION_END_TOKEN_PREFIX,
   DOCX_DELETION_START_TOKEN_PREFIX,
   DOCX_DELETION_TOKEN_SUFFIX,
   DOCX_INSERTION_END_TOKEN_PREFIX,
   DOCX_INSERTION_START_TOKEN_PREFIX,
   DOCX_INSERTION_TOKEN_SUFFIX,
-} from './parseDocxTracking';
+  parseDocxTrackedChanges,
+} from './importTrackChanges';
+import {
+  DOCX_COMMENT_END_TOKEN_PREFIX,
+  DOCX_COMMENT_START_TOKEN_PREFIX,
+  DOCX_COMMENT_TOKEN_SUFFIX,
+  hasDocxTrackingTokens,
+  parseDocxComments,
+  parseDocxTracking,
+  stripDocxTrackingTokens,
+} from './importComments';
 
 // Helper to build tokens for testing
 function buildInsertionToken(

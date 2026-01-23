@@ -13,8 +13,20 @@
  * @packageDocumentation
  */
 
-import HTMLtoDOCX from './html-to-docx/index.js';
-import type { DocumentOptions, Margins } from './html-to-docx/index.js';
+import JSZip from 'jszip';
+
+import addFilesToContainer, {
+  type DocumentOptions,
+  type HeadingOptions,
+  type HeadingSpacing,
+  type HeadingStyleOptions,
+  type LineNumberOptions,
+  type Margins,
+  type NumberingOptions,
+  type PageSize,
+  type TableBorderOptions,
+  type TableOptions,
+} from './html-to-docx';
 
 // Re-export types from the library
 export type {
@@ -28,7 +40,7 @@ export type {
   PageSize,
   TableBorderOptions,
   TableOptions,
-} from './html-to-docx/index.js';
+};
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
@@ -64,29 +76,19 @@ export async function htmlToDocxBlob(
   // Handle empty HTML - the underlying library crashes on empty string
   const safeHtml = html.trim() === '' ? '<p></p>' : html;
 
-  const result = await HTMLtoDOCX(safeHtml, null, options, null);
+  // Create a new JSZip instance
+  const zip = new JSZip();
 
-  // Convert the result to a Blob if it isn't already
-  if (result instanceof Blob) {
-    return result;
-  }
+  // Add files to the zip container
+  // Parameters: (zip, htmlString, options, headerHTML, footerHTML)
+  const populatedZip = await addFilesToContainer(zip, safeHtml, options);
 
-  // Handle Buffer (Node.js/Bun environment) - convert to Uint8Array first
-  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(result)) {
-    return new Blob([new Uint8Array(result)], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    });
-  }
-
-  // Handle ArrayBuffer
-  if (result instanceof ArrayBuffer) {
-    return new Blob([result], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    });
-  }
-
-  // Fallback for other types
-  return new Blob([result as unknown as BlobPart], {
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  // Generate the DOCX blob from the populated zip
+  const result = await populatedZip.generateAsync({
+    type: 'blob',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
+
+  return result;
 }

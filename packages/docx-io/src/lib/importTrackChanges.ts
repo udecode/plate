@@ -1,8 +1,8 @@
 /**
- * DOCX Tracked Changes Application
+ * DOCX Tracked Changes Import
  *
- * This module provides utilities for applying tracked changes (insertions
- * and deletions) from parsed DOCX tokens to a Plate editor.
+ * This module provides utilities for parsing and applying tracked changes
+ * (insertions and deletions) from DOCX files to a Plate editor.
  *
  * Usage flow:
  * 1. Convert DOCX to HTML with mammoth (with tracking token support)
@@ -11,9 +11,30 @@
  * 4. Apply tracked changes using applyTrackedChangeSuggestions
  */
 
-import type { DocxTrackedChange } from './parseDocxTracking';
 import type { Point, TRange } from './searchRange';
+
+import {
+  DOCX_DELETION_END_TOKEN_PREFIX,
+  DOCX_DELETION_START_TOKEN_PREFIX,
+  DOCX_DELETION_TOKEN_SUFFIX,
+  DOCX_INSERTION_END_TOKEN_PREFIX,
+  DOCX_INSERTION_START_TOKEN_PREFIX,
+  DOCX_INSERTION_TOKEN_SUFFIX,
+} from './html-to-docx/tracking';
+import type { DocxTrackedChange } from './types';
+
+// Re-export token constants for test usage
+export {
+  DOCX_DELETION_END_TOKEN_PREFIX,
+  DOCX_DELETION_START_TOKEN_PREFIX,
+  DOCX_DELETION_TOKEN_SUFFIX,
+  DOCX_INSERTION_END_TOKEN_PREFIX,
+  DOCX_INSERTION_START_TOKEN_PREFIX,
+  DOCX_INSERTION_TOKEN_SUFFIX,
+} from './html-to-docx/tracking';
+
 export type { TRange } from './searchRange';
+export type { DocxTrackedChange } from './types';
 
 // ============================================================================
 // Types
@@ -58,6 +79,16 @@ export type SearchRangeFn = (
   search: string
 ) => TRange | null;
 
+/** Result of parsing tracked changes from HTML */
+export type ParseTrackedChangesResult = {
+  /** All tracked changes found (insertions and deletions) */
+  changes: DocxTrackedChange[];
+  /** Number of insertions found */
+  insertionCount: number;
+  /** Number of deletions found */
+  deletionCount: number;
+};
+
 /** Options for applying tracked change suggestions */
 export type ApplySuggestionsOptions = {
   /** The editor instance */
@@ -89,6 +120,11 @@ export type ApplySuggestionsResult = {
 // ============================================================================
 // Utility Functions
 // ============================================================================
+
+/** Escape special regex characters in a string */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 /**
  * Compare two points to determine order.
@@ -137,6 +173,107 @@ export function parseDateToDate(
 }
 
 // ============================================================================
+// Parsing Functions
+// ============================================================================
+
+/**
+ * Parse tracked change tokens (insertions and deletions) from HTML.
+ *
+ * This function extracts all tracked changes from HTML that contains
+ * DOCX tracking tokens. It returns both the changes and token strings
+ * needed to locate and apply them in an editor.
+ *
+ * @param html - The HTML string containing tracking tokens
+ * @returns Parsed tracked changes with token strings
+ *
+ * @example
+ * ```ts
+ * const html = mammothResult.value;
+ * const { changes, insertionCount, deletionCount } = parseDocxTrackedChanges(html);
+ *
+ * for (const change of changes) {
+ *   // Find and apply each change in the editor
+ *   const startRange = searchRange(editor, change.startToken);
+ *   const endRange = searchRange(editor, change.endToken);
+ *   // Apply suggestion marks...
+ * }
+ * ```
+ */
+export function parseDocxTrackedChanges(
+  html: string
+): ParseTrackedChangesResult {
+  const changes: DocxTrackedChange[] = [];
+  let insertionCount = 0;
+  let deletionCount = 0;
+
+  // Parse insertions
+  const insertionPattern = new RegExp(
+    `${escapeRegExp(DOCX_INSERTION_START_TOKEN_PREFIX)}(.*?)${escapeRegExp(DOCX_INSERTION_TOKEN_SUFFIX)}`,
+    'g'
+  );
+
+  for (const match of html.matchAll(insertionPattern)) {
+    const rawPayload = match[1];
+    if (!rawPayload) continue;
+
+    try {
+      const payload = JSON.parse(decodeURIComponent(rawPayload)) as {
+        id?: string;
+        author?: string;
+        date?: string;
+      };
+      if (!payload.id) continue;
+
+      changes.push({
+        id: payload.id,
+        type: 'insert',
+        author: payload.author,
+        date: payload.date,
+        startToken: `${DOCX_INSERTION_START_TOKEN_PREFIX}${rawPayload}${DOCX_INSERTION_TOKEN_SUFFIX}`,
+        endToken: `${DOCX_INSERTION_END_TOKEN_PREFIX}${payload.id}${DOCX_INSERTION_TOKEN_SUFFIX}`,
+      });
+      insertionCount++;
+    } catch {
+      // Skip malformed tokens
+    }
+  }
+
+  // Parse deletions
+  const deletionPattern = new RegExp(
+    `${escapeRegExp(DOCX_DELETION_START_TOKEN_PREFIX)}(.*?)${escapeRegExp(DOCX_DELETION_TOKEN_SUFFIX)}`,
+    'g'
+  );
+
+  for (const match of html.matchAll(deletionPattern)) {
+    const rawPayload = match[1];
+    if (!rawPayload) continue;
+
+    try {
+      const payload = JSON.parse(decodeURIComponent(rawPayload)) as {
+        id?: string;
+        author?: string;
+        date?: string;
+      };
+      if (!payload.id) continue;
+
+      changes.push({
+        id: payload.id,
+        type: 'remove',
+        author: payload.author,
+        date: payload.date,
+        startToken: `${DOCX_DELETION_START_TOKEN_PREFIX}${rawPayload}${DOCX_DELETION_TOKEN_SUFFIX}`,
+        endToken: `${DOCX_DELETION_END_TOKEN_PREFIX}${payload.id}${DOCX_DELETION_TOKEN_SUFFIX}`,
+      });
+      deletionCount++;
+    } catch {
+      // Skip malformed tokens
+    }
+  }
+
+  return { changes, insertionCount, deletionCount };
+}
+
+// ============================================================================
 // Apply Tracked Change Suggestions
 // ============================================================================
 
@@ -153,8 +290,8 @@ export function parseDateToDate(
  *
  * @example
  * ```ts
- * import { parseDocxTrackedChanges } from './parseDocxTracking';
- * import { applyTrackedChangeSuggestions } from './applyDocxTrackingChanges';
+ * import { parseDocxTrackedChanges } from './importTrackChanges';
+ * import { applyTrackedChangeSuggestions } from './importTrackChanges';
  * import { getSuggestionKey } from '@platejs/suggestion';
  *
  * const { changes } = parseDocxTrackedChanges(html);
@@ -278,4 +415,37 @@ export function applyTrackedChangeSuggestions(
     total: insertions + deletions,
     errors,
   };
+}
+
+// ============================================================================
+// Utility Functions for Tracking Detection
+// ============================================================================
+
+/**
+ * Check if HTML contains any DOCX tracking tokens.
+ *
+ * This is a fast check that doesn't parse the tokens, just checks
+ * for their presence.
+ *
+ * @param html - The HTML string to check
+ * @returns Whether any tracking tokens are present
+ */
+export function hasDocxTrackingTokens(html: string): boolean {
+  return (
+    html.includes(DOCX_INSERTION_START_TOKEN_PREFIX) ||
+    html.includes(DOCX_DELETION_START_TOKEN_PREFIX)
+  );
+}
+
+/**
+ * Remove all DOCX tracked change tokens from HTML.
+ *
+ * This preserves the content but removes the token markers.
+ *
+ * @param html - The HTML string containing tracking tokens
+ * @returns HTML with tokens removed (content preserved)
+ */
+export function stripDocxTrackingTokens(html: string): string {
+  const tokenPattern = /\[\[DOCX_(INS|DEL)_(START|END):[^\]]+\]\]/g;
+  return html.replace(tokenPattern, '');
 }

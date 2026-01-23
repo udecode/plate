@@ -4,12 +4,11 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import type { DocxExportDiscussion } from '@platejs/docx-io';
-import { exportToDocx } from '@platejs/docx-io';
+import { exportToDocx, type DocxExportDiscussion } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import type { SlatePlugin } from 'platejs';
-import { createSlateEditor, NodeApi } from 'platejs';
+import { createSlateEditor } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -23,9 +22,9 @@ import {
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
-import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
+import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 
 const siteUrl = 'https://platejs.org';
 
@@ -153,44 +152,27 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
-    // Get discussions from the plugin for comment export
+    // Get discussions from the discussion plugin for comment export
     const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
 
-    // Convert TDiscussion[] to DocxExportDiscussion[] format
-    const docxDiscussions: DocxExportDiscussion[] = discussions.map(
-      (discussion) => ({
-        id: discussion.id,
-        comments: discussion.comments?.map((comment) => ({
-          contentRich: comment.contentRich,
-          createdAt: comment.createdAt,
-          userId: comment.userId,
-          // Pass direct author info from DOCX imports
-          user: comment.authorName
-            ? { id: comment.userId, name: comment.authorName }
-            : undefined,
-        })),
-        createdAt: discussion.createdAt,
-        documentContent: discussion.documentContent,
-        userId: discussion.userId,
-        // Pass direct author info from DOCX imports
-        user: discussion.authorName
-          ? { id: discussion.userId, name: discussion.authorName }
-          : undefined,
-      })
-    );
+    // Convert discussions to export format
+    const exportDiscussions: DocxExportDiscussion[] = discussions.map((d) => ({
+      id: d.id,
+      comments: d.comments?.map((c) => ({
+        contentRich: c.contentRich,
+        createdAt: c.createdAt,
+        userId: c.userId,
+      })),
+      createdAt: d.createdAt,
+      documentContent: d.documentContent,
+      userId: d.userId,
+      user: d.authorName ? { id: d.userId, name: d.authorName } : undefined,
+    }));
 
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
       tracking: {
-        discussions: docxDiscussions,
-        // Convert rich content to plain text for comment export
-        nodeToString: (node: unknown) => {
-          try {
-            return NodeApi.string(node as Parameters<typeof NodeApi.string>[0]);
-          } catch {
-            return '';
-          }
-        },
+        discussions: exportDiscussions,
       },
     });
 
