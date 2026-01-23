@@ -7,7 +7,7 @@ import {
   toInitials,
   type DocxExportDiscussion,
   type DocxExportSuggestionMeta,
-} from './injectDocxTrackingTokens';
+} from './exportTrackChanges';
 
 describe('injectDocxTrackingTokens', () => {
   describe('utility functions', () => {
@@ -109,7 +109,7 @@ describe('injectDocxTrackingTokens', () => {
         },
       ];
       const result = injectDocxTrackingTokens(value);
-      expect(result[0].children[0].text).toBe('Hello World');
+      expect((result[0] as any).children[0].text).toBe('Hello World');
     });
 
     it('injects suggestion tokens for insertions', () => {
@@ -130,7 +130,7 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value);
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       expect(text).toContain('[[DOCX_INS_START:');
       expect(text).toContain('[[DOCX_INS_END:');
@@ -155,7 +155,7 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value);
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       expect(text).toContain('[[DOCX_DEL_START:');
       expect(text).toContain('[[DOCX_DEL_END:');
@@ -195,7 +195,7 @@ describe('injectDocxTrackingTokens', () => {
           return ids;
         },
       });
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       expect(text).toContain('[[DOCX_CMT_START:');
       expect(text).toContain('[[DOCX_CMT_END:');
@@ -220,8 +220,8 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value);
-      const text1 = result[0].children[0].text;
-      const text2 = result[0].children[1].text;
+      const text1 = (result[0] as any).children[0].text;
+      const text2 = (result[0] as any).children[1].text;
 
       // Start token should be at beginning of first node
       expect(text1).toContain('[[DOCX_INS_START:');
@@ -252,7 +252,7 @@ describe('injectDocxTrackingTokens', () => {
           return [];
         },
       });
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       // Both suggestion and comment tokens should be present
       expect(text).toContain('[[DOCX_INS_START:');
@@ -290,7 +290,7 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value);
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       expect(text).toContain('[[DOCX_INS_START:');
       expect(text).toContain('[[DOCX_INS_END:');
@@ -319,7 +319,7 @@ describe('injectDocxTrackingTokens', () => {
           return [];
         },
       });
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       expect(text).toContain('[[DOCX_INS_START:');
     });
@@ -345,7 +345,7 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value, { userNameMap });
-      const text = result[0].children[0].text;
+      const text = (result[0] as any).children[0].text;
 
       // The token should contain the resolved author name
       expect(text).toContain('John%20Smith');
@@ -365,10 +365,12 @@ describe('injectDocxTrackingTokens', () => {
 
       const result = injectDocxTrackingTokens(value);
 
-      expect(result[0].children[0].text).toBe('Normal ');
-      expect(result[0].children[1].text).toContain('[[DOCX_INS_START:');
-      expect(result[0].children[1].text).toContain('[[DOCX_INS_END:');
-      expect(result[0].children[2].text).toBe(' normal again');
+      expect((result[0] as any).children[0].text).toBe('Normal ');
+      expect((result[0] as any).children[1].text).toContain(
+        '[[DOCX_INS_START:'
+      );
+      expect((result[0] as any).children[1].text).toContain('[[DOCX_INS_END:');
+      expect((result[0] as any).children[2].text).toBe(' normal again');
     });
 
     it('handles deeply nested elements', () => {
@@ -390,7 +392,7 @@ describe('injectDocxTrackingTokens', () => {
       ];
 
       const result = injectDocxTrackingTokens(value);
-      const text = result[0].children[0].children[0].text;
+      const text = (result[0] as any).children[0].children[0].text;
 
       expect(text).toContain('[[DOCX_INS_START:');
       expect(text).toContain('[[DOCX_INS_END:');

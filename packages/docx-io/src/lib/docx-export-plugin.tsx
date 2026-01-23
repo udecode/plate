@@ -39,13 +39,13 @@ import { serializeHtml } from 'platejs/static';
 
 import type { DocumentMargins } from './html-to-docx';
 
-import { htmlToDocxBlob } from './html-to-docx';
+import { htmlToDocxBlob } from './exportDocx';
 import {
   buildUserNameMap,
   injectDocxTrackingTokens,
   type DocxExportDiscussion,
   type InjectDocxTrackingTokensOptions,
-} from './injectDocxTrackingTokens';
+} from './exportTrackChanges';
 
 // =============================================================================
 // CSS Styles for DOCX Export
@@ -454,7 +454,7 @@ async function exportToDocxInternal(
   } = options;
 
   // Process tracking tokens if enabled
-  let processedValue = value;
+  let processedValue: Value = value;
 
   if (tracking) {
     const userNameMap = buildUserNameMap(tracking.discussions);
@@ -464,7 +464,7 @@ async function exportToDocxInternal(
       getSuggestions: tracking.getSuggestions,
       nodeToString: tracking.nodeToString,
       userNameMap,
-    });
+    }) as Value;
   }
 
   // Serialize editor content to HTML
@@ -718,11 +718,11 @@ export const DocxExportPlugin = createSlatePlugin({
 // Re-exports
 // =============================================================================
 
-export { htmlToDocxBlob } from './html-to-docx';
+export { htmlToDocxBlob } from './exportDocx';
 
 // Re-export tracking types and utilities for convenience
-export type { DocxExportDiscussion } from './injectDocxTrackingTokens';
+export type { DocxExportDiscussion } from './exportTrackChanges';
 export {
   injectDocxTrackingTokens,
   buildUserNameMap,
-} from './injectDocxTrackingTokens';
+} from './exportTrackChanges';

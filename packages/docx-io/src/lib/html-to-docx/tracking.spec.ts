@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'bun:test';
 import JSZip from 'jszip';
 
-import { htmlToDocxBlob } from '../html-to-docx';
+import { htmlToDocxBlob } from '../exportDocx';
 import {
   buildCommentEndToken,
   buildCommentStartToken,

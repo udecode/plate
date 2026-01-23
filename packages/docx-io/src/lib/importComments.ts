@@ -1,8 +1,8 @@
 /**
- * DOCX Comments Application
+ * DOCX Comments Import
  *
- * This module provides utilities for applying comments from parsed DOCX
- * tokens to a Plate editor.
+ * This module provides utilities for parsing and applying comments from
+ * DOCX files to a Plate editor.
  *
  * Two modes are supported:
  * 1. API mode: Uses external API to create discussions (applyTrackedComments)
@@ -22,17 +22,88 @@ import {
   type SearchRangeFn,
   type TPoint,
   type TrackingEditor,
-} from './applyDocxTrackingChanges';
-import type { DocxImportComment } from './parseDocxTracking';
+} from './importTrackChanges';
 import type { TRange } from './searchRange';
+
+import {
+  DOCX_COMMENT_END_TOKEN_PREFIX,
+  DOCX_COMMENT_START_TOKEN_PREFIX,
+  DOCX_COMMENT_TOKEN_SUFFIX,
+} from './html-to-docx/tracking';
+
+// Re-export token constants for test usage
+export {
+  DOCX_COMMENT_END_TOKEN_PREFIX,
+  DOCX_COMMENT_START_TOKEN_PREFIX,
+  DOCX_COMMENT_TOKEN_SUFFIX,
+} from './html-to-docx/tracking';
 
 // Re-export shared types
 export type {
   SearchRangeFn,
   TPoint,
   TrackingEditor,
-} from './applyDocxTrackingChanges';
+} from './importTrackChanges';
 export type { TRange } from './searchRange';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+/** Comment parsed from HTML with full metadata */
+export type DocxImportComment = {
+  /** Unique ID for this comment */
+  id: string;
+  /** Author display name */
+  authorName?: string;
+  /** Author initials (for Word compatibility) */
+  authorInitials?: string;
+  /** Date when the comment was made (ISO string) */
+  date?: string;
+  /** Comment text content */
+  text?: string;
+  /** The full start token string (for searching in editor) */
+  startToken: string;
+  /** The full end token string (for searching in editor) */
+  endToken: string;
+  /** Whether the start token was found in HTML */
+  hasStartToken: boolean;
+  /** Whether the end token was found in HTML */
+  hasEndToken: boolean;
+};
+
+/** Result of parsing comments from HTML */
+export type ParseCommentsResult = {
+  /** All comments found */
+  comments: DocxImportComment[];
+  /** Number of comments found */
+  count: number;
+};
+
+/** Discussion data created from DOCX comment (for local storage/import) */
+export type DocxImportDiscussion = {
+  /** Unique discussion ID */
+  id: string;
+  /** Comments in this discussion */
+  comments?: Array<{
+    /** Rich content of the comment */
+    contentRich?: unknown;
+    /** When the comment was created */
+    createdAt?: Date;
+    /** User ID of the commenter */
+    userId?: string;
+    /** Optional user object for direct author info */
+    user?: { id: string; name: string };
+  }>;
+  /** When the discussion was created */
+  createdAt?: Date;
+  /** The document text that was commented on */
+  documentContent?: string;
+  /** User ID who created the discussion */
+  userId?: string;
+  /** Optional user object for direct author info */
+  user?: { id: string; name: string };
+};
 
 // ============================================================================
 // Point/Range Comparison Utilities
@@ -69,6 +140,147 @@ export function isPathEqual(a: number[], b: number[]): boolean {
 }
 
 // ============================================================================
+// Parsing Functions
+// ============================================================================
+
+/** Escape special regex characters in a string */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Parse comment tokens from HTML.
+ *
+ * This function extracts all comments from HTML that contains DOCX
+ * comment tokens. It handles cases where only start or end tokens
+ * are present (e.g., point comments).
+ *
+ * @param html - The HTML string containing comment tokens
+ * @returns Parsed comments with metadata and token strings
+ *
+ * @example
+ * ```ts
+ * const html = mammothResult.value;
+ * const { comments, count } = parseDocxComments(html);
+ *
+ * for (const comment of comments) {
+ *   // Create comment in your backend
+ *   const discussion = await createComment({
+ *     text: comment.text,
+ *     author: comment.authorName,
+ *   });
+ *
+ *   // Apply comment marks to editor
+ *   const startRange = searchRange(editor, comment.startToken);
+ *   // ...
+ * }
+ * ```
+ */
+export function parseDocxComments(html: string): ParseCommentsResult {
+  const commentsById = new Map<string, DocxImportComment>();
+
+  const upsertComment = (
+    id: string,
+    patch: Partial<DocxImportComment> & {
+      hasStartToken?: boolean;
+      hasEndToken?: boolean;
+    }
+  ) => {
+    const existing = commentsById.get(id);
+    if (!existing) {
+      commentsById.set(id, {
+        id,
+        authorName: patch.authorName,
+        authorInitials: patch.authorInitials,
+        date: patch.date,
+        text: patch.text,
+        startToken: patch.startToken ?? patch.endToken ?? '',
+        endToken: patch.endToken ?? '',
+        hasStartToken: Boolean(patch.hasStartToken),
+        hasEndToken: Boolean(patch.hasEndToken),
+      });
+      return;
+    }
+
+    commentsById.set(id, {
+      ...existing,
+      authorName: patch.authorName ?? existing.authorName,
+      authorInitials: patch.authorInitials ?? existing.authorInitials,
+      date: patch.date ?? existing.date,
+      text: patch.text ?? existing.text,
+      startToken: existing.hasStartToken
+        ? existing.startToken
+        : (patch.startToken ?? existing.startToken),
+      endToken: patch.endToken ?? existing.endToken,
+      hasStartToken: existing.hasStartToken || Boolean(patch.hasStartToken),
+      hasEndToken: existing.hasEndToken || Boolean(patch.hasEndToken),
+    });
+  };
+
+  // Parse comment start tokens
+  const startPattern = new RegExp(
+    `${escapeRegExp(DOCX_COMMENT_START_TOKEN_PREFIX)}(.*?)${escapeRegExp(DOCX_COMMENT_TOKEN_SUFFIX)}`,
+    'g'
+  );
+
+  for (const match of html.matchAll(startPattern)) {
+    const rawPayload = match[1];
+    if (!rawPayload) continue;
+
+    try {
+      const payload = JSON.parse(decodeURIComponent(rawPayload)) as {
+        id?: string;
+        authorName?: string;
+        authorInitials?: string;
+        date?: string;
+        text?: string;
+      };
+      if (!payload.id) continue;
+
+      upsertComment(payload.id, {
+        authorName: payload.authorName,
+        authorInitials: payload.authorInitials,
+        date: payload.date,
+        text: payload.text,
+        startToken: `${DOCX_COMMENT_START_TOKEN_PREFIX}${rawPayload}${DOCX_COMMENT_TOKEN_SUFFIX}`,
+        endToken: `${DOCX_COMMENT_END_TOKEN_PREFIX}${encodeURIComponent(payload.id)}${DOCX_COMMENT_TOKEN_SUFFIX}`,
+        hasStartToken: true,
+      });
+    } catch {
+      // Skip malformed tokens
+    }
+  }
+
+  // Parse comment end tokens
+  const endPattern = new RegExp(
+    `${escapeRegExp(DOCX_COMMENT_END_TOKEN_PREFIX)}(.*?)${escapeRegExp(DOCX_COMMENT_TOKEN_SUFFIX)}`,
+    'g'
+  );
+
+  for (const match of html.matchAll(endPattern)) {
+    const rawPayload = match[1];
+    if (!rawPayload) continue;
+
+    try {
+      const id = decodeURIComponent(rawPayload);
+      if (!id) continue;
+
+      const endToken = `${DOCX_COMMENT_END_TOKEN_PREFIX}${rawPayload}${DOCX_COMMENT_TOKEN_SUFFIX}`;
+      upsertComment(id, {
+        endToken,
+        startToken: endToken,
+        hasEndToken: true,
+      });
+    } catch {
+      // Skip malformed tokens
+    }
+  }
+
+  const comments = Array.from(commentsById.values());
+  return { comments, count: comments.length };
+}
+
+// ============================================================================
 // Point Comment Range Expansion
 // ============================================================================
 
@@ -82,20 +294,7 @@ type PointCommentMarkRangeOptions = {
  * Get a non-empty range for a point comment.
  *
  * When a comment is at a single point (start === end), we need to expand
- * it to cover at least one character so it can be marked. This function
- * handles various edge cases:
- *
- * 1. If the point has text after it, expand forward by 1 character
- * 2. If the point is at end of node, try to expand backward by 1 character
- * 3. If current node is empty, scan other text nodes in the document
- *
- * @param editor - The editor instance
- * @param point - The point to expand
- * @param options - Range expansion options
- * @param options.preferBefore - Whether to prefer expanding backward (default: false = prefer after)
- * @param options.skipCurrentNode - Whether to skip the current node and scan others (default: false)
- * @param options.isText - Function to check if a node is text
- * @returns A range covering at least 1 character, or null if no text found
+ * it to cover at least one character so it can be marked.
  */
 export function getPointCommentMarkRange(
   editor: TrackingEditor,
@@ -118,9 +317,9 @@ export function getPointCommentMarkRange(
   } = resolvedOptions;
 
   if (!isText) return null;
+
   // Try current node first if not skipping
   if (!skipCurrentNode && editor.api.nodes) {
-    // Get all text nodes to find the one at point.path
     const textEntries = Array.from(
       editor.api.nodes<{ text?: string }>({
         at: [],
@@ -128,7 +327,6 @@ export function getPointCommentMarkRange(
       })
     );
 
-    // Find the entry at point.path
     const currentEntry = textEntries.find(([, path]) =>
       isPathEqual(path, point.path)
     );
@@ -245,96 +443,42 @@ export type CreateDiscussionFn = {
 
 /** Options for applying tracked comments via API */
 export type ApplyCommentsOptions = {
-  /** The editor instance */
   editor: TrackingEditor;
-  /** Comments to apply */
   comments: DocxImportComment[];
-  /** Function to search for ranges in editor */
   searchRange: SearchRangeFn;
-  /** Document ID for creating discussions */
   documentId: string;
-  /** Function to create a discussion with comment */
   createDiscussionWithComment: CreateDiscussionFn;
-  /** Key constant for comment marks (e.g., 'comment') */
   commentKey: string;
-  /** Function to generate comment key property (e.g., getCommentKey) */
   getCommentKey: (discussionId: string) => string;
-  /** Function to generate transient comment key (optional) */
   getTransientCommentKey?: () => string;
-  /** Function to check if node is text (e.g., TextApi.isText) */
   isText: (node: unknown) => boolean;
-  /** Optional comment plugin for update notifications */
   commentPlugin?: unknown;
-  /** Optional callback when comments are created */
   onCommentsCreated?: () => void;
 };
 
 /** Result of applying tracked comments via API */
 export type ApplyCommentsResult = {
-  /** Number of comments created */
   created: number;
-  /** Number of comments skipped (no location) */
   skipped: number;
-  /** Errors encountered */
   errors: string[];
-};
-
-// ============================================================================
-// Types for Local Comment Application
-// ============================================================================
-
-/** Discussion data created from DOCX comment (for local storage/import) */
-export type DocxImportDiscussion = {
-  /** Unique discussion ID */
-  id: string;
-  /** Comments in this discussion */
-  comments?: Array<{
-    /** Rich content of the comment */
-    contentRich?: unknown;
-    /** When the comment was created */
-    createdAt?: Date;
-    /** User ID of the commenter */
-    userId?: string;
-    /** Optional user object for direct author info */
-    user?: { id: string; name: string };
-  }>;
-  /** When the discussion was created */
-  createdAt?: Date;
-  /** The document text that was commented on */
-  documentContent?: string;
-  /** User ID who created the discussion */
-  userId?: string;
-  /** Optional user object for direct author info */
-  user?: { id: string; name: string };
 };
 
 /** Options for applying tracked comments locally (without API) */
 export type ApplyCommentsLocalOptions = {
-  /** The editor instance */
   editor: TrackingEditor;
-  /** Comments to apply */
   comments: DocxImportComment[];
-  /** Function to search for ranges in editor */
   searchRange: SearchRangeFn;
-  /** Key constant for comment marks (e.g., 'comment') */
   commentKey: string;
-  /** Function to generate comment key property (e.g., getCommentKey) */
   getCommentKey: (discussionId: string) => string;
-  /** Function to check if node is text (e.g., TextApi.isText) */
   isText: (node: unknown) => boolean;
-  /** Function to generate unique IDs (e.g., nanoid) */
   generateId: () => string;
-  /** Fallback date when comment has no date (Word doesn't export dates) */
   documentDate?: Date;
 };
 
 /** Result of applying tracked comments locally */
 export type ApplyCommentsLocalResult = {
-  /** Number of comments applied */
   applied: number;
-  /** Errors encountered */
   errors: string[];
-  /** Created discussions (for storing in plugin state) */
   discussions: DocxImportDiscussion[];
 };
 
@@ -345,41 +489,9 @@ export type ApplyCommentsLocalResult = {
 /**
  * Apply tracked comments to the editor using an external API.
  *
- * This function:
- * 1. Finds start/end tokens in the editor using searchRange
- * 2. Creates discussions via the provided API
- * 3. Applies comment marks to the text between tokens
- * 4. Removes the tokens from the document
- *
- * Golden rule: If we have ANY location marker, preserve the comment.
- * - Has start, no end → end = start (point comment)
- * - Has end, no start → start = end (point comment)
- * - Has neither → skip (no location available)
- *
- * @param options - Options for applying comments
- * @returns Result with counts and errors
- *
- * @example
- * ```ts
- * import { parseDocxComments } from './parseDocxTracking';
- * import { applyTrackedComments } from './applyDocxComments';
- * import { getCommentKey } from '@platejs/comment';
- *
- * const { comments } = parseDocxComments(html);
- *
- * const result = await applyTrackedComments({
- *   editor,
- *   comments,
- *   searchRange: mySearchRangeFn,
- *   documentId: 'doc-123',
- *   createDiscussionWithComment: api.comment.createDiscussionWithComment,
- *   commentKey: 'comment',
- *   getCommentKey,
- *   isText: TextApi.isText,
- * });
- *
- * console.log(`Created ${result.created} comments`);
- * ```
+ * This function handles point comments (where start and end are at the same
+ * location) by expanding them to cover at least one character using the
+ * getPointCommentMarkRange helper.
  */
 export async function applyTrackedComments(
   options: ApplyCommentsOptions
@@ -415,6 +527,9 @@ export async function applyTrackedComments(
       const hasEndMarker = Boolean(endTokenRange);
 
       // Golden rule: if we have ANY location marker, preserve the comment
+      // - Has start, no end → end = start (point comment)
+      // - Has end, no start → start = end (point comment)
+      // - Has neither → skip (no location available)
       if (!startTokenRange && !endTokenRange) {
         skipped++;
         continue;
@@ -429,7 +544,6 @@ export async function applyTrackedComments(
         continue;
       }
 
-      // Use rangeRef to track ranges through operations
       const startTokenRef = editor.api.rangeRef(effectiveStartRange);
       const endTokenRef = editor.api.rangeRef(effectiveEndRange);
 
@@ -443,29 +557,87 @@ export async function applyTrackedComments(
         continue;
       }
 
-      // Determine the content range
-      let anchor = currentStartRange.focus;
-      let focus = currentEndRange.anchor;
+      /**
+       * Resolve ranges for point comments.
+       *
+       * Returns both markRange (for applying marks) and contentRange (for
+       * extracting document content). For point comments, these may differ
+       * as markRange is expanded to cover at least one character.
+       */
+      const resolveRanges = (
+        startRange: TRange,
+        endRange: TRange
+      ): { markRange: TRange | null; contentRange: TRange } => {
+        const startTokenPoint = startRange.focus;
+        const endTokenPoint = endRange.anchor;
 
-      if (isPointAfter(anchor, focus)) {
-        [anchor, focus] = [focus, anchor];
-      }
+        // Detect point comments
+        const isPointComment =
+          !hasStartMarker ||
+          !hasEndMarker ||
+          isPointEqual(startTokenPoint, endTokenPoint);
 
-      const contentRange = { anchor, focus };
+        // Check if both tokens exist but are collapsed (at same position)
+        const pointHasNoSpan =
+          hasStartMarker &&
+          hasEndMarker &&
+          isPointEqual(startTokenPoint, endTokenPoint);
 
-      // Get the document content (the text that was commented)
+        if (!isPointComment) {
+          // Normal range comment - just normalize direction
+          let anchor = startTokenPoint;
+          let focus = endTokenPoint;
+
+          if (isPointAfter(anchor, focus)) {
+            [anchor, focus] = [focus, anchor];
+          }
+
+          const range = { anchor, focus };
+          return { markRange: range, contentRange: range };
+        }
+
+        // Point comment - determine expansion direction based on which marker exists
+        // - Only end token → prefer expanding before (true)
+        // - Only start token → prefer expanding after (false)
+        // - Both collapsed → prefer before (true)
+        const preferBefore = !(hasStartMarker && !hasEndMarker);
+
+        // Use the appropriate point for marking
+        const pointForMark =
+          hasStartMarker && !hasEndMarker ? startTokenPoint : endTokenPoint;
+
+        // Expand point to a single-character range
+        const markRange = getPointCommentMarkRange(editor, pointForMark, {
+          preferBefore,
+          skipCurrentNode: pointHasNoSpan,
+          isText,
+        });
+
+        return {
+          markRange,
+          contentRange: markRange ?? {
+            anchor: pointForMark,
+            focus: pointForMark,
+          },
+        };
+      };
+
+      // Get content range for document text extraction
+      const { contentRange } = resolveRanges(
+        currentStartRange,
+        currentEndRange
+      );
+
       let documentContent = editor.api.string(contentRange);
       if (!documentContent || documentContent.trim().length === 0) {
         documentContent = 'Imported comment';
       }
 
-      // Build the comment content
       const commentText = comment.text ?? '';
       const contentRich = commentText
         ? [{ children: [{ text: commentText }], type: 'p' }]
         : undefined;
 
-      // Create discussion via API
       const discussion = await createDiscussionWithComment.mutateAsync({
         contentRich,
         documentContent,
@@ -474,20 +646,18 @@ export async function applyTrackedComments(
 
       created++;
 
-      // Apply comment marks to the text
       editor.tf.withMerging(() => {
         const currentStart = startTokenRef.current;
         const currentEnd = endTokenRef.current;
 
         if (currentStart && currentEnd) {
-          let markAnchor = currentStart.focus;
-          let markFocus = currentEnd.anchor;
+          // Re-resolve ranges after potential mutations
+          const { markRange } = resolveRanges(currentStart, currentEnd);
 
-          if (isPointAfter(markAnchor, markFocus)) {
-            [markAnchor, markFocus] = [markFocus, markAnchor];
+          if (!markRange) {
+            // Could not resolve a valid mark range
+            return;
           }
-
-          const markRange = { anchor: markAnchor, focus: markFocus };
 
           const marks: Record<string, unknown> = {
             [getCommentKey(discussion.id)]: true,
@@ -510,10 +680,11 @@ export async function applyTrackedComments(
         }
       });
 
-      // Delete the tokens (only delete tokens that actually existed)
       const endRange = endTokenRef.unref();
       const startRange = startTokenRef.unref();
 
+      // Delete tokens (only delete tokens that actually existed)
+      // For point comments, both refs may point to the same range
       if (hasEndMarker && endRange) {
         editor.tf.delete({ at: endRange });
       }
@@ -531,11 +702,7 @@ export async function applyTrackedComments(
     onCommentsCreated();
   }
 
-  return {
-    created,
-    skipped,
-    errors,
-  };
+  return { created, skipped, errors };
 }
 
 // ============================================================================
@@ -544,53 +711,6 @@ export async function applyTrackedComments(
 
 /**
  * Apply tracked comments to the editor locally (without API calls).
- *
- * This function:
- * 1. Finds start/end tokens in the editor using searchRange
- * 2. Creates discussion objects locally
- * 3. Applies comment marks to the text between tokens
- * 4. Removes the tokens from the document
- * 5. Returns created discussions for storage in plugin state
- *
- * Golden rule: If we have ANY location marker, preserve the comment.
- * - Has start, no end → end = start (point comment)
- * - Has end, no start → start = end (point comment)
- * - Has neither → skip (no location available)
- *
- * For point comments (same start/end), the range is expanded to cover
- * at least 1 character using getPointCommentMarkRange.
- *
- * @param options - Options for applying comments
- * @returns Result with counts, errors, and created discussions
- *
- * @example
- * ```ts
- * import { parseDocxComments } from './parseDocxTracking';
- * import { applyTrackedCommentsLocal } from './applyDocxComments';
- * import { getCommentKey } from '@platejs/comment';
- * import { nanoid } from 'nanoid';
- *
- * const { comments } = parseDocxComments(html);
- *
- * const result = applyTrackedCommentsLocal({
- *   editor,
- *   comments,
- *   searchRange: mySearchRangeFn,
- *   commentKey: 'comment',
- *   getCommentKey,
- *   isText: TextApi.isText,
- *   generateId: nanoid,
- *   documentDate: new Date(file.lastModified),
- * });
- *
- * // Store discussions in plugin state
- * editor.setOption(discussionPlugin, 'discussions', [
- *   ...existingDiscussions,
- *   ...result.discussions,
- * ]);
- *
- * console.log(`Applied ${result.applied} comments`);
- * ```
  */
 export function applyTrackedCommentsLocal(
   options: ApplyCommentsLocalOptions
@@ -612,7 +732,6 @@ export function applyTrackedCommentsLocal(
 
   for (const comment of comments) {
     try {
-      // Find the token ranges - search for actual tokens in editor
       const startTokenRange = comment.hasStartToken
         ? searchRange(editor, comment.startToken)
         : null;
@@ -623,17 +742,14 @@ export function applyTrackedCommentsLocal(
       const hasStartMarker = Boolean(startTokenRange);
       const hasEndMarker = Boolean(endTokenRange);
 
-      // Golden rule: if we have ANY location marker, preserve the comment
       if (!startTokenRange && !endTokenRange) {
         errors.push(`Comment ${comment.id}: no location markers found`);
         continue;
       }
 
-      // Check if both tokens exist but resolve to the same range (same token string)
       const isSameTokenString = comment.startToken === comment.endToken;
       const isSameRange = isRangeEqual(startTokenRange, endTokenRange);
 
-      // Use whichever marker we have, fallback to the other for point comments
       const effectiveStartRange = startTokenRange ?? endTokenRange;
       const effectiveEndRange = endTokenRange ?? startTokenRange;
 
@@ -642,9 +758,7 @@ export function applyTrackedCommentsLocal(
         continue;
       }
 
-      // Use rangeRef to track ranges through operations
       const startTokenRef = editor.api.rangeRef(effectiveStartRange);
-      // Only create separate endTokenRef if it's a different range
       const endTokenRef =
         isSameRange || isSameTokenString
           ? startTokenRef
@@ -662,7 +776,6 @@ export function applyTrackedCommentsLocal(
         continue;
       }
 
-      // Detect point comment: both tokens adjacent or same location
       const startEnd = currentStartRange.focus;
       const endStart = currentEndRange.anchor;
       const isPointComment =
@@ -672,16 +785,11 @@ export function applyTrackedCommentsLocal(
         (!hasStartMarker && hasEndMarker) ||
         (hasStartMarker && !hasEndMarker);
 
-      // Create discussion data - use exact author name from DOCX
       const discussionId = generateId();
-      // Use author name directly (not as userId for lookup)
       const authorName = comment.authorName ?? undefined;
-      // userId for internal tracking - use author name or fallback
       const userId = formatAuthorAsUserId(comment.authorName);
-      // Use comment date if available, else document date, else current date
       const createdAt = parseDateToDate(comment.date, documentDate);
 
-      // Create the discussion with comment
       const discussion: DocxImportDiscussion = {
         id: discussionId,
         comments: [
@@ -694,20 +802,17 @@ export function applyTrackedCommentsLocal(
             ],
             createdAt,
             userId,
-            // Pass direct author info from DOCX (displayed directly in UI)
             user: authorName ? { id: userId, name: authorName } : undefined,
           },
         ],
         createdAt,
         documentContent: comment.text ?? '',
         userId,
-        // Pass exact author info from DOCX
         user: authorName ? { id: userId, name: authorName } : undefined,
       };
 
       discussions.push(discussion);
 
-      // Apply comment marks to the text between tokens
       editor.tf.withMerging(() => {
         const currentStart = startTokenRef.current;
         const currentEnd = endTokenRef.current;
@@ -720,9 +825,7 @@ export function applyTrackedCommentsLocal(
             [markAnchor, markFocus] = [markFocus, markAnchor];
           }
 
-          // For point comments, expand range to include adjacent character
           if (isPointComment || isPointEqual(markAnchor, markFocus)) {
-            // Try to use getPointCommentMarkRange for robust expansion
             const expandedRange = getPointCommentMarkRange(editor, markFocus, {
               preferBefore: false,
               skipCurrentNode: false,
@@ -733,16 +836,12 @@ export function applyTrackedCommentsLocal(
               markAnchor = expandedRange.anchor;
               markFocus = expandedRange.focus;
             } else {
-              // Fallback: simple expansion
-              // Try to expand the range to mark at least 1 character
-              // Prefer text AFTER the token position
               const expandedFocus = {
                 ...markFocus,
                 offset: markFocus.offset + 1,
               };
               markFocus = expandedFocus;
 
-              // If still empty (at end of node), try expanding anchor backward
               if (
                 isPointEqual(markAnchor, markFocus) &&
                 markAnchor.offset > 0
@@ -754,9 +853,7 @@ export function applyTrackedCommentsLocal(
 
           const markRange = { anchor: markAnchor, focus: markFocus };
 
-          // Only apply marks if we have a non-empty range
           if (!isPointEqual(markRange.anchor, markRange.focus)) {
-            // Apply comment marks
             editor.tf.setNodes(
               {
                 [commentKey]: true,
@@ -772,25 +869,19 @@ export function applyTrackedCommentsLocal(
         }
       });
 
-      // Delete the tokens - handle same range case to avoid double-delete
       if (isSameRange || isSameTokenString) {
-        // Both refs point to same range - only delete once
         const tokenRange = startTokenRef.unref();
         if (tokenRange && (hasStartMarker || hasEndMarker)) {
           editor.tf.delete({ at: tokenRange });
         }
       } else {
-        // Different ranges - delete both, but unref first to get stable ranges
-        // Unref BOTH before deleting to capture ranges before mutations
         const endRange = endTokenRef.unref();
         const startRange = startTokenRef.unref();
 
-        // Delete end first (usually after start in document), then start
         if (hasEndMarker && endRange) {
           editor.tf.delete({ at: endRange });
         }
         if (hasStartMarker && startRange) {
-          // Re-search for start token since document changed after end deletion
           const updatedStartRange = searchRange(editor, comment.startToken);
           if (updatedStartRange) {
             editor.tf.delete({ at: updatedStartRange });
@@ -807,4 +898,144 @@ export function applyTrackedCommentsLocal(
   }
 
   return { applied, errors, discussions };
+}
+
+// ============================================================================
+// Combined Parsing & Utility Functions
+// ============================================================================
+
+import {
+  applyTrackedChangeSuggestions,
+  hasDocxTrackingTokens as hasTrackChangeTokens,
+  parseDocxTrackedChanges,
+  type ApplySuggestionsOptions,
+  type ApplySuggestionsResult,
+  type ParseTrackedChangesResult,
+} from './importTrackChanges';
+import type { DocxTrackedChange } from './types';
+
+/** Result of parsing all tracking information from HTML */
+export type ParseDocxTrackingResult = {
+  /** Tracked changes (insertions and deletions) */
+  trackedChanges: ParseTrackedChangesResult;
+  /** Comments */
+  comments: ParseCommentsResult;
+  /** Whether any tracking tokens were found */
+  hasTracking: boolean;
+};
+
+/**
+ * Parse all DOCX tracking tokens from HTML.
+ *
+ * This is a convenience function that combines tracked changes and
+ * comment parsing in a single call.
+ *
+ * @param html - The HTML string containing tracking tokens
+ * @returns All parsed tracking information
+ */
+export function parseDocxTracking(html: string): ParseDocxTrackingResult {
+  const trackedChanges = parseDocxTrackedChanges(html);
+  const comments = parseDocxComments(html);
+
+  const hasTracking =
+    trackedChanges.changes.length > 0 || comments.comments.length > 0;
+
+  return { trackedChanges, comments, hasTracking };
+}
+
+/**
+ * Check if HTML contains any DOCX tracking tokens (changes or comments).
+ */
+export function hasDocxTrackingTokens(html: string): boolean {
+  return (
+    hasTrackChangeTokens(html) || html.includes(DOCX_COMMENT_START_TOKEN_PREFIX)
+  );
+}
+
+/**
+ * Remove all DOCX tracking tokens from HTML (changes and comments).
+ */
+export function stripDocxTrackingTokens(html: string): string {
+  const tokenPattern = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
+  return html.replace(tokenPattern, '');
+}
+
+// ============================================================================
+// Combined Application
+// ============================================================================
+
+/** Result of importing DOCX with full tracking support */
+export type ImportWithTrackingResult = {
+  /** Suggestions result */
+  suggestions: ApplySuggestionsResult;
+  /** Comments result (may be null if not applied) */
+  comments: ApplyCommentsResult | null;
+  /** Total tracked items applied */
+  totalApplied: number;
+};
+
+/** Options for applying all tracking */
+export type ApplyAllTrackingOptions = {
+  /** The editor instance */
+  editor: TrackingEditor;
+  /** Tracked changes to apply */
+  trackedChanges: DocxTrackedChange[];
+  /** Comments to apply (optional) */
+  comments?: DocxImportComment[];
+  /** Function to search for ranges in editor */
+  searchRange: SearchRangeFn;
+  /** Config for applying suggestions */
+  suggestionConfig: Omit<
+    ApplySuggestionsOptions,
+    'editor' | 'changes' | 'searchRange'
+  >;
+  /** Config for applying comments (optional - if not provided, comments won't be applied) */
+  commentConfig?: Omit<
+    ApplyCommentsOptions,
+    'editor' | 'comments' | 'searchRange'
+  >;
+};
+
+/**
+ * Apply all tracked changes and comments from parsed DOCX.
+ *
+ * This is a convenience function that combines suggestion and comment
+ * application. Comments are optional and require API integration.
+ */
+export async function applyAllTracking(
+  options: ApplyAllTrackingOptions
+): Promise<ImportWithTrackingResult> {
+  const {
+    editor,
+    trackedChanges,
+    comments,
+    searchRange,
+    suggestionConfig,
+    commentConfig,
+  } = options;
+
+  // Apply suggestions
+  const suggestionsResult = applyTrackedChangeSuggestions({
+    editor,
+    changes: trackedChanges,
+    searchRange,
+    ...suggestionConfig,
+  });
+
+  // Apply comments if config provided and there are comments
+  let commentsResult: ApplyCommentsResult | null = null;
+  if (commentConfig && comments && comments.length > 0) {
+    commentsResult = await applyTrackedComments({
+      editor,
+      comments,
+      searchRange,
+      ...commentConfig,
+    });
+  }
+
+  return {
+    suggestions: suggestionsResult,
+    comments: commentsResult,
+    totalApplied: suggestionsResult.total + (commentsResult?.created ?? 0),
+  };
 }

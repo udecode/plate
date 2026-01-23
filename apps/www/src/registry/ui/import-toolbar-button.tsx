@@ -5,20 +5,13 @@ import * as React from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { getCommentKey } from '@platejs/comment';
-import {
-  applyTrackedChangeSuggestions,
-  applyTrackedCommentsLocal,
-  type DocxImportDiscussion,
-  type DocxTrackedComment,
-  importDocx,
-  searchRange,
-} from '@platejs/docx-io';
+import { importDocxWithTracking } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { getSuggestionKey } from '@platejs/suggestion';
 import { ArrowUpToLineIcon } from 'lucide-react';
-import { KEYS, nanoid, TextApi } from 'platejs';
-import { useEditorRef } from 'platejs/react';
+import { KEYS, TextApi } from 'platejs';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
+import { useEditorRef } from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import {
@@ -29,42 +22,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-kit';
-
+import { discussionPlugin, type TDiscussion } from '@/registry/components/editor/plugins/discussion-kit';
 import { ToolbarButton } from './toolbar';
 
 type ImportType = 'html' | 'markdown';
-
-/**
- * Convert DocxImportDiscussion to TDiscussion format for plugin storage.
- */
-function convertToTDiscussion(
-  docxDiscussion: DocxImportDiscussion
-): TDiscussion {
-  return {
-    id: docxDiscussion.id,
-    comments:
-      docxDiscussion.comments?.map((comment, index) => ({
-        id: `${docxDiscussion.id}-comment-${index}`,
-        contentRich: comment.contentRich as TDiscussion['comments'][0]['contentRich'],
-        createdAt: comment.createdAt ?? new Date(),
-        discussionId: docxDiscussion.id,
-        isEdited: false,
-        userId: comment.userId ?? 'imported-unknown',
-        // Pass direct author info from DOCX
-        authorName: comment.user?.name,
-      })) ?? [],
-    createdAt: docxDiscussion.createdAt ?? new Date(),
-    documentContent: docxDiscussion.documentContent,
-    isResolved: false,
-    userId: docxDiscussion.userId ?? 'imported-unknown',
-    // Pass direct author info from DOCX
-    authorName: docxDiscussion.user?.name,
-  };
-}
 
 export function ImportToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -116,81 +77,52 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
-      const result = await importDocx(editor, arrayBuffer);
 
-      // Insert the deserialized nodes
-      editor.tf.insertNodes(result.nodes as typeof editor.children);
+      // Import with full tracking support (suggestions + comments)
+      const result = await importDocxWithTracking(editor as any, arrayBuffer, {
+        suggestionKey: KEYS.suggestion,
+        getSuggestionKey,
+        commentKey: KEYS.comment,
+        getCommentKey,
+        isText: TextApi.isText,
+        generateId: () => crypto.randomUUID(),
+      });
 
-      // Apply tracked changes (suggestions) if any were found
-      if (result.hasTracking && result.trackedChanges.length > 0) {
-        const suggestionsResult = applyTrackedChangeSuggestions({
-          editor: editor as Parameters<
-            typeof applyTrackedChangeSuggestions
-          >[0]['editor'],
-          changes: result.trackedChanges,
-          searchRange: (_editor, search) =>
-            searchRange(editor as Parameters<typeof searchRange>[0], search),
-          suggestionKey: KEYS.suggestion,
-          getSuggestionKey,
-          isText: TextApi.isText,
-        });
+      // Add imported discussions to the discussion plugin
+      if (result.discussions.length > 0) {
+        const existingDiscussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
 
-        // Log results for debugging
-        if (suggestionsResult.total > 0) {
-          console.log(
-            `[DOCX Import] Applied ${suggestionsResult.insertions} insertions, ${suggestionsResult.deletions} deletions`
-          );
-        }
-        if (suggestionsResult.errors.length > 0) {
-          console.warn('[DOCX Import] Errors:', suggestionsResult.errors);
-        }
+        // Convert imported discussions to TDiscussion format
+        const newDiscussions: TDiscussion[] = result.discussions.map((d) => ({
+          id: d.id,
+          comments: (d.comments ?? []).map((c, index) => ({
+            id: `${d.id}-comment-${index}`,
+            contentRich: c.contentRich as TDiscussion['comments'][number]['contentRich'],
+            createdAt: c.createdAt ?? new Date(),
+            discussionId: d.id,
+            isEdited: false,
+            userId: c.userId ?? c.user?.id ?? 'imported-unknown',
+          })),
+          createdAt: d.createdAt ?? new Date(),
+          documentContent: d.documentContent,
+          isResolved: false,
+          userId: d.userId ?? d.user?.id ?? 'imported-unknown',
+          authorName: d.user?.name,
+        }));
+
+        editor.setOption(discussionPlugin, 'discussions', [
+          ...existingDiscussions,
+          ...newDiscussions,
+        ]);
       }
 
-      // Apply comments if any were found
-      if (result.trackedComments.length > 0) {
-        // Use file's last modified date as fallback for comment dates
-        // (Word doesn't export dates on w:comment elements)
-        const documentDate = plainFiles[0].lastModified
-          ? new Date(plainFiles[0].lastModified)
-          : new Date();
-
-        // Get existing discussions from the plugin
-        const existingDiscussions =
-          editor.getOption(discussionPlugin, 'discussions') ?? [];
-
-        const commentsResult = applyTrackedCommentsLocal({
-          editor: editor as Parameters<
-            typeof applyTrackedCommentsLocal
-          >[0]['editor'],
-          comments: result.trackedComments as DocxTrackedComment[],
-          searchRange: (_editor, search) =>
-            searchRange(editor as Parameters<typeof searchRange>[0], search),
-          commentKey: KEYS.comment,
-          getCommentKey,
-          isText: TextApi.isText,
-          generateId: nanoid,
-          documentDate,
-        });
-
-        // Convert and store discussions in plugin state
-        if (commentsResult.discussions.length > 0) {
-          const newDiscussions = commentsResult.discussions.map(
-            convertToTDiscussion
-          );
-          editor.setOption(discussionPlugin, 'discussions', [
-            ...existingDiscussions,
-            ...newDiscussions,
-          ]);
-        }
-
-        if (commentsResult.applied > 0) {
-          // eslint-disable-next-line no-console
-          console.log(
-            `[DOCX Import] Applied ${commentsResult.applied} comments`
-          );
-        }
-        if (commentsResult.errors.length > 0) {
-          console.warn('[DOCX Import] Comment errors:', commentsResult.errors);
+      // Log import results
+      if (result.hasTracking) {
+        console.log(
+          `[DOCX Import] Imported ${result.insertions} insertions, ${result.deletions} deletions, ${result.comments} comments`
+        );
+        if (result.errors.length > 0) {
+          console.warn('[DOCX Import] Errors:', result.errors);
         }
       }
     },

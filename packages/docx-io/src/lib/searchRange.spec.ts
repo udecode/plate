@@ -9,8 +9,12 @@ import {
   searchRanges,
   traverseTextNodes,
   type Descendant,
+  type MatchFn,
+  type NodeEntry,
+  type Path,
   type SearchEditor,
   type TElement,
+  type TRange,
 } from './searchRange';
 
 // Helper to create a mock editor
@@ -19,14 +23,15 @@ function createMockEditor(children: Descendant[]): SearchEditor {
     children,
     api: {
       *nodes<T extends Descendant>(options: {
-        at: number[] | null;
-        match?: (node: Descendant, path: number[]) => boolean;
-      }) {
-        const match = options.match ?? ((_n, p) => p.length === 1);
+        at: Path | TRange | null;
+        match?: MatchFn;
+      }): Iterable<NodeEntry<T>> {
+        const match =
+          options.match ?? ((_n: Descendant, p: Path) => p.length === 1);
         function* traverse(
           nodes: Descendant[],
-          basePath: number[]
-        ): Generator<[T, number[]]> {
+          basePath: Path
+        ): Generator<NodeEntry<T>> {
           for (const [index, node] of nodes.entries()) {
             const path = [...basePath, index];
             if (match(node, path)) {
@@ -327,22 +332,27 @@ describe('searchRange', () => {
     });
 
     it('skips void elements when isVoid is provided', () => {
+      const children: Descendant[] = [
+        {
+          children: [
+            { text: 'before' },
+            { type: 'image', children: [{ text: '' }] } as TElement,
+            { text: 'after' },
+          ],
+          type: 'p',
+        },
+      ];
       const editor: SearchEditor = {
-        children: [
-          {
-            children: [
-              { text: 'before' },
-              { type: 'image', children: [{ text: '' }] } as TElement,
-              { text: 'after' },
-            ],
-            type: 'p',
-          },
-        ],
+        children,
         api: {
-          *nodes(options) {
-            const match = options.match ?? ((_n, p) => p.length === 1);
-            for (const [i, node] of editor.children.entries()) {
-              if (match(node, [i])) yield [node, [i]];
+          *nodes<T extends Descendant>(options: {
+            at: Path | TRange | null;
+            match?: MatchFn;
+          }): Iterable<NodeEntry<T>> {
+            const match =
+              options.match ?? ((_n: Descendant, p: Path) => p.length === 1);
+            for (const [i, node] of children.entries()) {
+              if (match(node, [i])) yield [node as T, [i]];
             }
           },
           isVoid: (node) => (node as TElement).type === 'image',

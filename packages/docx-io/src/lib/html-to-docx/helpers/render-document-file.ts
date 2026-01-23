@@ -360,7 +360,9 @@ export const buildList = async (
             isVNode(accumulator.at(-1)!.node) &&
             (
               (accumulator.at(-1)!.node as VNodeType).tagName || ''
-            ).toLowerCase() === 'p'
+            ).toLowerCase() === 'p' &&
+            // Don't append <li> elements to paragraphs - they need separate processing
+            (childNode.tagName || '').toLowerCase() !== 'li'
           ) {
             const lastNode = accumulator.at(-1)!.node as VNodeType;
             if (lastNode.children) {
