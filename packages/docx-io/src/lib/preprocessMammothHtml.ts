@@ -1,5 +1,3 @@
-import type { DocxComment } from './types';
-
 const DOCX_COMMENT_REF_TOKEN_PREFIX = '[[DOCX_COMMENT_REF:';
 const DOCX_COMMENT_REF_TOKEN_SUFFIX = ']]';
 
@@ -26,7 +24,7 @@ export type PreprocessMammothHtmlResult = {
  *
  * This function:
  * 1. Extracts comment text from `<dl>` elements
- * 2. Replaces comment anchors with tokens `[[DOCX_COMMENT_REF:id]]`
+ * 2. Removes comment anchors while tracking their IDs
  * 3. Returns the processed HTML and comment data
  */
 export function preprocessMammothHtml(
@@ -69,7 +67,7 @@ export function preprocessMammothHtml(
     dl.remove();
   }
 
-  // Replace comment anchors with tokens
+  // Remove comment anchors but keep their IDs
   const seen = new Set<string>();
   const commentIds: string[] = [];
 
@@ -84,31 +82,16 @@ export function preprocessMammothHtml(
       commentIds.push(commentId);
     }
 
-    const token = `${DOCX_COMMENT_REF_TOKEN_PREFIX}${commentId}${DOCX_COMMENT_REF_TOKEN_SUFFIX}`;
-    const textNode = doc.createTextNode(token);
     const parent = a.parentElement;
 
     if (parent?.tagName === 'SUP' && parent.childNodes.length === 1) {
-      parent.replaceWith(textNode);
+      parent.remove();
     } else {
-      a.replaceWith(textNode);
+      a.remove();
     }
   }
 
   return { commentById, commentIds, html: doc.body.innerHTML };
-}
-
-/**
- * Extract comments from preprocessed result.
- */
-export function extractComments(
-  commentById: Map<string, string>,
-  commentIds: string[]
-): DocxComment[] {
-  return commentIds.map((id) => ({
-    id,
-    text: commentById.get(id) ?? '',
-  }));
 }
 
 /** Get the comment token prefix for searching in editor */

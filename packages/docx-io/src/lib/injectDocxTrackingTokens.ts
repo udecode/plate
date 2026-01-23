@@ -27,6 +27,8 @@ import {
 // ============================================================================
 
 const WHITESPACE_REGEX = /\s+/;
+const ZERO_WIDTH_SPACE = '\u200B';
+const ZERO_WIDTH_SPACE_REGEX = /\u200B/g;
 
 // ============================================================================
 // Types
@@ -98,6 +100,95 @@ function cloneValue<T>(value: T): T {
   }
 
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function hasLeafText(text: string): boolean {
+  return text.replace(ZERO_WIDTH_SPACE_REGEX, '').length > 0;
+}
+
+function ensureNonEmptyCommentRanges(leaves: LeafEntry[]): void {
+  const commentInfo = new Map<
+    string,
+    { firstIndex: number; hasText: boolean; lastIndex: number }
+  >();
+
+  leaves.forEach((leaf, index) => {
+    if (leaf.commentIds.length === 0) return;
+
+    const hasText = hasLeafText(leaf.node.text);
+
+    leaf.commentIds.forEach((id) => {
+      const entry = commentInfo.get(id);
+      if (entry) {
+        entry.lastIndex = index;
+        if (hasText) entry.hasText = true;
+        return;
+      }
+
+      commentInfo.set(id, {
+        firstIndex: index,
+        hasText,
+        lastIndex: index,
+      });
+    });
+  });
+
+  const addCommentId = (index: number, id: string) => {
+    const leaf = leaves[index];
+    if (!leaf) return;
+    if (!leaf.commentIds.includes(id)) {
+      leaf.commentIds.push(id);
+    }
+  };
+
+  const extendRange = (from: number, to: number, id: string) => {
+    if (from <= to) {
+      for (let i = from; i <= to; i += 1) {
+        addCommentId(i, id);
+      }
+      return;
+    }
+
+    for (let i = from; i >= to; i -= 1) {
+      addCommentId(i, id);
+    }
+  };
+
+  const findNextTextLeaf = (startIndex: number): number | null => {
+    for (let i = startIndex; i < leaves.length; i += 1) {
+      if (hasLeafText(leaves[i].node.text)) return i;
+    }
+    return null;
+  };
+
+  const findPrevTextLeaf = (startIndex: number): number | null => {
+    for (let i = startIndex; i >= 0; i -= 1) {
+      if (hasLeafText(leaves[i].node.text)) return i;
+    }
+    return null;
+  };
+
+  commentInfo.forEach((info, id) => {
+    if (info.hasText) return;
+
+    const nextTextIndex = findNextTextLeaf(info.lastIndex + 1);
+    if (nextTextIndex !== null) {
+      extendRange(info.lastIndex + 1, nextTextIndex, id);
+      return;
+    }
+
+    const prevTextIndex = findPrevTextLeaf(info.firstIndex - 1);
+    if (prevTextIndex !== null) {
+      extendRange(info.firstIndex - 1, prevTextIndex, id);
+      return;
+    }
+
+    const leaf = leaves[info.firstIndex];
+    if (!leaf || leaf.commentIds.length === 0) return;
+    if (!hasLeafText(leaf.node.text) && leaf.node.text.length === 0) {
+      leaf.node.text = ZERO_WIDTH_SPACE;
+    }
+  });
 }
 
 /**
@@ -444,6 +535,8 @@ export function injectDocxTrackingTokens(
   cloned.forEach((node) => {
     collectLeaves(node as Record<string, unknown>, leaves, options);
   });
+
+  ensureNonEmptyCommentRanges(leaves);
 
   // Track when each suggestion/comment first appears
   const suggestionStartOrder = new Map<string, number>();

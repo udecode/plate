@@ -4,11 +4,12 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import type { DocxExportDiscussion } from '@platejs/docx-io';
 import { exportToDocx } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import type { SlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor, NodeApi } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import { serializeHtml } from 'platejs/static';
 
@@ -20,10 +21,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
+import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
-import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
 
 const siteUrl = 'https://platejs.org';
 
@@ -151,8 +153,45 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
+    // Get discussions from the plugin for comment export
+    const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+
+    // Convert TDiscussion[] to DocxExportDiscussion[] format
+    const docxDiscussions: DocxExportDiscussion[] = discussions.map(
+      (discussion) => ({
+        id: discussion.id,
+        comments: discussion.comments?.map((comment) => ({
+          contentRich: comment.contentRich,
+          createdAt: comment.createdAt,
+          userId: comment.userId,
+          // Pass direct author info from DOCX imports
+          user: comment.authorName
+            ? { id: comment.userId, name: comment.authorName }
+            : undefined,
+        })),
+        createdAt: discussion.createdAt,
+        documentContent: discussion.documentContent,
+        userId: discussion.userId,
+        // Pass direct author info from DOCX imports
+        user: discussion.authorName
+          ? { id: discussion.userId, name: discussion.authorName }
+          : undefined,
+      })
+    );
+
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+      tracking: {
+        discussions: docxDiscussions,
+        // Convert rich content to plain text for comment export
+        nodeToString: (node: unknown) => {
+          try {
+            return NodeApi.string(node as Parameters<typeof NodeApi.string>[0]);
+          } catch {
+            return '';
+          }
+        },
+      },
     });
 
     const url = URL.createObjectURL(blob);
