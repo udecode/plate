@@ -1,4 +1,5 @@
 {
+  "installCommand": "yarn install",
   "functions": {
     "app/**/*": {
       "maxDuration": 1
