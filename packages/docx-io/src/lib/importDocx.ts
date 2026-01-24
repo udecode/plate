@@ -492,9 +492,10 @@ export async function importDocxWithTracking(
   const originalChildren = [...editor.children];
 
   editor.tf.withMerging(() => {
-    // Remove all existing nodes
-    while (editor.children.length > 0) {
-      editor.tf.removeNodes({ at: [editor.children.length - 1] });
+    // Remove all existing nodes (iterate in reverse by index to avoid infinite loop)
+    const childCount = editor.children.length;
+    for (let i = childCount - 1; i >= 0; i--) {
+      editor.tf.removeNodes({ at: [i] });
     }
     // Insert deserialized nodes
     editor.tf.insertNodes(nodes as unknown[], { at: [0] });
@@ -542,8 +543,9 @@ export async function importDocxWithTracking(
   } catch (error) {
     // Restore original content on failure using transforms
     editor.tf.withMerging(() => {
-      while (editor.children.length > 0) {
-        editor.tf.removeNodes({ at: [editor.children.length - 1] });
+      const childCount = editor.children.length;
+      for (let i = childCount - 1; i >= 0; i--) {
+        editor.tf.removeNodes({ at: [i] });
       }
       editor.tf.insertNodes(originalChildren, { at: [0] });
     });
