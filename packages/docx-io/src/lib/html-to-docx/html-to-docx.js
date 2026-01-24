@@ -1,12 +1,5 @@
-/* biome-ignore-all lint: legacy code */
-import type JSZip from 'jszip';
-
 import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
-import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
-
-import type { CommentPayload, StoredComment, TrackingState } from './tracking';
-
 import {
   applicationName,
   commentsType,
@@ -41,201 +34,17 @@ import {
   settingsXML as settingsXMLString,
   webSettingsXML as webSettingsXMLString,
 } from './schemas';
-import type { DocumentMargins } from './schemas/document.template';
 import { fontFamilyToTableObject } from './utils/font-family-conversion';
-import ListStyleBuilder, {
-  type ListStyleDefaults,
-  type ListStyleType,
-} from './utils/list';
+import ListStyleBuilder from './utils/list';
 
-/**
- * Get bullet character for unordered list based on level.
- * Uses Symbol font characters for consistent rendering in Word.
- */
-const getBulletChar = (level: number): string => {
-  // Symbol font bullet characters for different levels
-  const bullets = [
-    '\uF0B7', // Level 0: Bullet (•)
-    'o', // Level 1: Circle (will render as ○ with Symbol font)
-    '\uF0A7', // Level 2: Square bullet (■)
-  ];
-  return bullets[level % bullets.length];
-};
-
-/** Virtual DOM tree node */
-export interface VTree {
-  children?: VTree[];
-  properties?: Record<string, unknown>;
-  tagName?: string;
-  text?: string;
-}
-
-/** Margins configuration (optional fields for input) */
-export interface Margins {
-  bottom?: number;
-  footer?: number;
-  gutter?: number;
-  header?: number;
-  left?: number;
-  right?: number;
-  top?: number;
-}
-
-/** Required margins for internal use */
-export type { DocumentMargins };
-
-/** Page size configuration */
-export interface PageSize {
-  height?: number;
-  width?: number;
-}
-
-/** Line number options */
-export interface LineNumberOptions {
-  countBy?: number;
-  restart?: string;
-  start?: number;
-}
-
-/** Numbering options - use ListStyleDefaults for constructor */
-export type NumberingOptions = ListStyleDefaults;
-
-/** Table options */
-export interface TableOptions {
-  row?: {
-    cantSplit?: boolean;
-  };
-}
-
-/** Header object stored in the document */
-export interface HeaderObject {
-  headerId: number;
-  relationshipId: number;
-  type: string;
-}
-
-/** Footer object stored in the document */
-export interface FooterObject {
-  footerId: number;
-  relationshipId: number;
-  type: string;
-}
-
-/** Relationship object */
-export interface RelationshipObject {
-  relationshipId: number;
-  target: string;
-  targetMode: string;
-  type: string;
-}
-
-/** File relationship entry */
-export interface FileRelationship {
-  fileName: string;
-  lastRelsId: number;
-  rels: RelationshipObject[];
-}
-
-/** Relationship XML output */
-export interface RelationshipXMLOutput {
-  fileName: string;
-  xmlString: string;
-}
-
-/** Numbering object */
-export interface NumberingObject {
-  numberingId: number;
-  properties: NumberingProperties;
-  type: 'ol' | 'ul';
-}
-
-/** Numbering properties */
-export interface NumberingProperties {
-  attributes?: Record<string, string | undefined>;
-  style?: {
-    'list-style-type'?: ListStyleType;
-    [key: string]: string | undefined;
-  };
-}
-
-/** Font table object */
-export interface FontTableObject {
-  fontName: string;
-  genericFontName: string;
-}
-
-/** Media file info */
-export interface MediaFileInfo {
-  fileContent: string;
-  fileNameWithExtension: string;
-  id: number;
-}
-
-/** Style object */
-export interface StyleObject {
-  [key: string]: unknown;
-}
-
-/** Section header result */
-export interface HeaderResult {
-  headerId: number;
-  headerXML: XMLBuilder;
-}
-
-/** Section footer result */
-export interface FooterResult {
-  footerId: number;
-  footerXML: XMLBuilder;
-}
-
-/** DocxDocument constructor properties */
-export interface DocxDocumentProperties {
-  complexScriptFontSize?: number | null;
-  createdAt?: Date;
-  creator?: string;
-  description?: string;
-  font?: string;
-  fontSize?: number | null;
-  footer?: boolean;
-  footerType?: string;
-  header?: boolean;
-  headerType?: string;
-  htmlString: string | null;
-  keywords?: string[];
-  lang?: string;
-  lastModifiedBy?: string;
-  lineNumber?: boolean;
-  lineNumberOptions?: LineNumberOptions;
-  margins?: Margins | null;
-  modifiedAt?: Date;
-  numbering?: ListStyleDefaults;
-  orientation?: string;
-  pageNumber?: boolean;
-  pageSize?: PageSize | null;
-  revision?: number;
-  skipFirstHeaderFooter?: boolean;
-  subject?: string;
-  table?: TableOptions;
-  title?: string;
-  zip: JSZip;
-}
-
-function generateContentTypesFragments(
-  contentTypesXML: XMLBuilder,
-  type: 'footer' | 'header',
-  objects: FooterObject[] | HeaderObject[]
-): void {
+function generateContentTypesFragments(contentTypesXML, type, objects) {
   if (objects && Array.isArray(objects)) {
     objects.forEach((object) => {
-      const id =
-        type === 'header'
-          ? (object as HeaderObject).headerId
-          : (object as FooterObject).footerId;
       const contentTypesFragment = fragment({
         defaultNamespace: { ele: namespaces.contentTypes },
       })
         .ele('Override')
-        .att('PartName', `/word/${type}${id}.xml`)
+        .att('PartName', `/word/${type}${object[`${type}Id`]}.xml`)
         .att(
           'ContentType',
           `application/vnd.openxmlformats-officedocument.wordprocessingml.${type}+xml`
@@ -248,12 +57,12 @@ function generateContentTypesFragments(
 }
 
 function generateSectionReferenceXML(
-  documentXML: XMLBuilder,
-  documentSectionType: string,
-  objects: FooterObject[] | HeaderObject[],
-  isEnabled: boolean
-): void {
-  if (isEnabled && objects && Array.isArray(objects) && objects.length > 0) {
+  documentXML,
+  documentSectionType,
+  objects,
+  isEnabled
+) {
+  if (isEnabled && objects && Array.isArray(objects) && objects.length) {
     const xmlFragment = fragment();
     objects.forEach(({ relationshipId, type }) => {
       const objectFragment = fragment({
@@ -270,20 +79,15 @@ function generateSectionReferenceXML(
   }
 }
 
-function generateXMLString(xmlString: string): string {
+function generateXMLString(xmlString) {
   const xmlDocumentString = create(
     { encoding: 'UTF-8', standalone: true },
     xmlString
   );
-
   return xmlDocumentString.toString({ prettyPrint: true });
 }
 
-async function generateSectionXML(
-  this: DocxDocument,
-  vTree: VTree,
-  type: 'footer' | 'header' = 'header'
-): Promise<FooterResult | HeaderResult> {
+async function generateSectionXML(vTree, type = 'header') {
   const sectionXML = create({
     encoding: 'UTF-8',
     standalone: true,
@@ -299,13 +103,10 @@ async function generateSectionXML(
   }).ele('@w', type === 'header' ? 'hdr' : 'ftr');
 
   const XMLFragment = fragment();
-  // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   await convertVTreeToXML(this, vTree, XMLFragment);
-
   if (
     type === 'footer' &&
-    // @ts-expect-error - Node is actually an Element here
-    (XMLFragment.first().node as Element).tagName === 'p' &&
+    XMLFragment.first().node.tagName === 'p' &&
     this.pageNumber
   ) {
     XMLFragment.first().import(
@@ -320,79 +121,19 @@ async function generateSectionXML(
   sectionXML.root().import(XMLFragment);
 
   const referenceName = type === 'header' ? 'Header' : 'Footer';
-  const lastIdKey = `last${referenceName}Id` as 'lastFooterId' | 'lastHeaderId';
-  this[lastIdKey] += 1;
-
-  if (type === 'header') {
-    return {
-      headerId: this.lastHeaderId,
-      headerXML: sectionXML,
-    } as HeaderResult;
-  }
+  this[`last${referenceName}Id`] += 1;
 
   return {
-    footerId: this.lastFooterId,
-    footerXML: sectionXML,
-  } as FooterResult;
+    [`${type}Id`]: this[`last${referenceName}Id`],
+    [`${type}XML`]: sectionXML,
+  };
 }
 
 class DocxDocument {
-  availableDocumentSpace: number;
-  complexScriptFontSize: number;
-  createdAt: Date;
-  creator: string;
-  description: string;
-  documentXML: XMLBuilder | null;
-  font: string;
-  fontSize: number;
-  footer: boolean;
-  footerObjects: FooterObject[];
-  footerType: string;
-  header: boolean;
-  headerObjects: HeaderObject[];
-  headerType: string;
-  height: number;
-  htmlString: string | null;
-  keywords: string[];
-  lang: string;
-  lastFooterId: number;
-  lastHeaderId: number;
-  lastMediaId: number;
-  lastModifiedBy: string;
-  lastNumberingId: number;
-  lineNumber: LineNumberOptions | null;
-  ListStyleBuilder: ListStyleBuilder;
-  margins: DocumentMargins;
-  mediaFiles: MediaFileInfo[];
-  modifiedAt: Date;
-  numberingObjects: NumberingObject[];
-  fontTableObjects: FontTableObject[];
-  orientation: string;
-  pageNumber: boolean;
-  pageSize: PageSize;
-  relationshipFilename: string;
-  relationships: FileRelationship[];
-  revision: number;
-  skipFirstHeaderFooter: boolean;
-  stylesObjects: StyleObject[];
-  subject: string;
-  tableRowCantSplit: boolean;
-  title: string;
-  width: number;
-  zip: JSZip;
-
-  // Tracking support for comments and suggestions
-  _trackingState?: TrackingState;
-  comments: StoredComment[];
-  commentIdMap: Map<string, number>;
-  lastCommentId: number;
-  revisionIdMap: Map<string, number>;
-  lastRevisionId: number;
-
-  constructor(properties: DocxDocumentProperties) {
+  constructor(properties) {
     this.zip = properties.zip;
     this.htmlString = properties.htmlString;
-    this.orientation = properties.orientation || defaultOrientation;
+    this.orientation = properties.orientation;
     this.pageSize = properties.pageSize || defaultDocumentOptions.pageSize;
 
     const isPortraitOrientation = this.orientation === defaultOrientation;
@@ -405,16 +146,13 @@ class DocxDocument {
     this.height = isPortraitOrientation ? height : width;
 
     const marginsObject = properties.margins;
-    const defaultMargins = isPortraitOrientation
-      ? portraitMargins
-      : landscapeMargins;
     this.margins =
-      marginsObject && Object.keys(marginsObject).length > 0
-        ? {
-            ...defaultMargins,
-            ...marginsObject,
-          }
-        : defaultMargins;
+      // eslint-disable-next-line no-nested-ternary
+      marginsObject && Object.keys(marginsObject).length
+        ? marginsObject
+        : isPortraitOrientation
+          ? portraitMargins
+          : landscapeMargins;
 
     this.availableDocumentSpace =
       this.width - this.margins.left - this.margins.right;
@@ -432,15 +170,19 @@ class DocxDocument {
     this.footerType = properties.footerType || 'default';
     this.footer = properties.footer || false;
     this.font = properties.font || defaultFont;
-    this.fontSize = properties.fontSize ?? defaultFontSize;
+    this.fontSize = properties.fontSize || defaultFontSize;
     this.complexScriptFontSize =
-      properties.complexScriptFontSize ?? defaultFontSize;
+      properties.complexScriptFontSize || defaultFontSize;
     this.lang = properties.lang || defaultLang;
-    this.tableRowCantSplit = properties.table?.row?.cantSplit || false;
+    this.tableRowCantSplit =
+      (properties.table &&
+        properties.table.row &&
+        properties.table.row.cantSplit) ||
+      false;
     this.pageNumber = properties.pageNumber || false;
     this.skipFirstHeaderFooter = properties.skipFirstHeaderFooter || false;
     this.lineNumber = properties.lineNumber
-      ? properties.lineNumberOptions || null
+      ? properties.lineNumberOptions
       : null;
 
     this.lastNumberingId = 0;
@@ -458,8 +200,6 @@ class DocxDocument {
     this.headerObjects = [];
     this.footerObjects = [];
     this.documentXML = null;
-
-    // Initialize tracking support
     this.comments = [];
     this.commentIdMap = new Map();
     this.lastCommentId = 0;
@@ -482,20 +222,11 @@ class DocxDocument {
     this.generateHeaderXML = this.generateHeaderXML.bind(this);
     this.generateFooterXML = this.generateFooterXML.bind(this);
     this.generateSectionXML = generateSectionXML.bind(this);
-    this.generateCommentsXML = this.generateCommentsXML.bind(this);
-    this.ensureComment = this.ensureComment.bind(this);
-    this.getCommentId = this.getCommentId.bind(this);
-    this.getRevisionId = this.getRevisionId.bind(this);
 
     this.ListStyleBuilder = new ListStyleBuilder(properties.numbering);
   }
 
-  generateSectionXML: (
-    vTree: VTree,
-    type?: 'footer' | 'header'
-  ) => Promise<FooterResult | HeaderResult>;
-
-  generateContentTypesXML(): string {
+  generateContentTypesXML() {
     const contentTypesXML = create(
       { encoding: 'UTF-8', standalone: true },
       contentTypesXMLString
@@ -512,26 +243,23 @@ class DocxDocument {
       this.footerObjects
     );
 
-    // Add comments content type if there are comments
     if (this.comments.length > 0) {
-      const commentsContentTypeFragment = fragment({
-        defaultNamespace: { ele: namespaces.contentTypes },
-      })
-        .ele('Override')
-        .att('PartName', '/word/comments.xml')
-        .att(
-          'ContentType',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml'
-        )
-        .up();
-
-      contentTypesXML.root().import(commentsContentTypeFragment);
+      contentTypesXML.root().import(
+        fragment({ defaultNamespace: { ele: namespaces.contentTypes } })
+          .ele('Override')
+          .att('PartName', '/word/comments.xml')
+          .att(
+            'ContentType',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml'
+          )
+          .up()
+      );
     }
 
     return contentTypesXML.toString({ prettyPrint: true });
   }
 
-  generateDocumentXML(): string {
+  generateDocumentXML() {
     const documentXML = create(
       { encoding: 'UTF-8', standalone: true },
       generateDocumentTemplate(
@@ -541,7 +269,7 @@ class DocxDocument {
         this.margins
       )
     );
-    documentXML.root().first().import(this.documentXML!);
+    documentXML.root().first().import(this.documentXML);
 
     generateSectionReferenceXML(
       documentXML,
@@ -574,93 +302,16 @@ class DocxDocument {
         .import(
           fragment({ namespaceAlias: { w: namespaces.w } })
             .ele('@w', 'lnNumType')
-            .att('@w', 'countBy', String(countBy))
-            .att('@w', 'start', String(start))
-            .att('@w', 'restart', restart as string)
+            .att('@w', 'countBy', countBy)
+            .att('@w', 'start', start)
+            .att('@w', 'restart', restart)
         );
     }
 
-    let xmlString = documentXML.toString({ prettyPrint: true });
-
-    // Fix namespace prefixes for drawing elements
-    // xmlbuilder2 doesn't correctly preserve namespace prefixes when importing fragments
-    // so we need to post-process the XML string to fix them
-
-    // wp: (wordprocessingDrawing) elements
-    const wpElements = [
-      'inline',
-      'anchor',
-      'simplePos',
-      'positionH',
-      'positionV',
-      'posOffset',
-      'extent',
-      'effectExtent',
-      'wrapNone',
-      'wrapSquare',
-      'wrapTight',
-      'wrapThrough',
-      'docPr',
-    ];
-    wpElements.forEach((el) => {
-      xmlString = xmlString.replace(
-        new RegExp(`<w:${el}([ />])`, 'g'),
-        `<wp:${el}$1`
-      );
-      xmlString = xmlString.replace(
-        new RegExp(`</w:${el}>`, 'g'),
-        `</wp:${el}>`
-      );
-    });
-
-    // a: (drawingML main) elements
-    const aElements = [
-      'graphic',
-      'graphicData',
-      'blip',
-      'srcRect',
-      'stretch',
-      'fillRect',
-      'xfrm',
-      'off',
-      'ext',
-      'prstGeom',
-    ];
-    aElements.forEach((el) => {
-      xmlString = xmlString.replace(
-        new RegExp(`<w:${el}([ />])`, 'g'),
-        `<a:${el}$1`
-      );
-      xmlString = xmlString.replace(
-        new RegExp(`</w:${el}>`, 'g'),
-        `</a:${el}>`
-      );
-    });
-
-    // pic: (picture) elements
-    const picElements = [
-      'pic',
-      'nvPicPr',
-      'cNvPr',
-      'cNvPicPr',
-      'blipFill',
-      'spPr',
-    ];
-    picElements.forEach((el) => {
-      xmlString = xmlString.replace(
-        new RegExp(`<w:${el}([ />])`, 'g'),
-        `<pic:${el}$1`
-      );
-      xmlString = xmlString.replace(
-        new RegExp(`</w:${el}>`, 'g'),
-        `</pic:${el}>`
-      );
-    });
-
-    return xmlString;
+    return documentXML.toString({ prettyPrint: true });
   }
 
-  generateCoreXML(): string {
+  generateCoreXML() {
     return generateXMLString(
       generateCoreXML(
         this.title,
@@ -677,16 +328,16 @@ class DocxDocument {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  generateSettingsXML(): string {
+  generateSettingsXML() {
     return generateXMLString(settingsXMLString);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  generateWebSettingsXML(): string {
+  generateWebSettingsXML() {
     return generateXMLString(webSettingsXMLString);
   }
 
-  generateStylesXML(): string {
+  generateStylesXML() {
     return generateXMLString(
       generateStylesXML(
         this.font,
@@ -697,7 +348,7 @@ class DocxDocument {
     );
   }
 
-  generateFontTableXML(): string {
+  generateFontTableXML() {
     const fontTableXML = create(
       { encoding: 'UTF-8', standalone: true },
       fontTableXMLString
@@ -748,11 +399,11 @@ class DocxDocument {
     return fontTableXML.toString({ prettyPrint: true });
   }
 
-  generateThemeXML(): string {
+  generateThemeXML() {
     return generateXMLString(generateThemeXML(this.font));
   }
 
-  generateNumberingXML(): string {
+  generateNumberingXML() {
     const numberingXML = create(
       { encoding: 'UTF-8', standalone: true },
       generateNumberingXMLTemplate()
@@ -768,15 +419,19 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
+      [...Array(8).keys()].forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
-          .att('@w', 'ilvl', String(level))
+          .att('@w', 'ilvl', level)
           .ele('@w', 'start')
           .att(
             '@w',
             'val',
-            type === 'ol' ? properties.attributes?.['data-start'] || '1' : '1'
+            type === 'ol'
+              ? (properties.attributes &&
+                  properties.attributes['data-start']) ||
+                  1
+              : '1'
           )
           .up()
           .ele('@w', 'numFmt')
@@ -785,7 +440,7 @@ class DocxDocument {
             'val',
             type === 'ol'
               ? this.ListStyleBuilder.getListStyleType(
-                  properties.style?.['list-style-type']
+                  properties.style && properties.style['list-style-type']
                 )
               : 'bullet'
           )
@@ -799,7 +454,7 @@ class DocxDocument {
                   properties.style,
                   level
                 )
-              : getBulletChar(level)
+              : ''
           )
           .up()
           .ele('@w', 'lvlJc')
@@ -809,12 +464,12 @@ class DocxDocument {
           .ele('@w', 'tabs')
           .ele('@w', 'tab')
           .att('@w', 'val', 'num')
-          .att('@w', 'pos', String(level * 360 + 360))
+          .att('@w', 'pos', (level + 1) * 720)
           .up()
           .up()
           .ele('@w', 'ind')
-          .att('@w', 'left', String(level * 360 + 360))
-          .att('@w', 'hanging', '360')
+          .att('@w', 'left', (level + 1) * 720)
+          .att('@w', 'hanging', 360)
           .up()
           .up()
           .up();
@@ -853,11 +508,103 @@ class DocxDocument {
     return numberingXML.toString({ prettyPrint: true });
   }
 
+  getRevisionId(id) {
+    if (!id) {
+      this.lastRevisionId += 1;
+      return this.lastRevisionId;
+    }
+
+    const existing = this.revisionIdMap.get(id);
+    if (existing) return existing;
+
+    this.lastRevisionId += 1;
+    this.revisionIdMap.set(id, this.lastRevisionId);
+    return this.lastRevisionId;
+  }
+
+  ensureComment(data) {
+    const { id, authorName, authorInitials, date, text } = data || {};
+    const commentId = id || `comment-${this.lastCommentId + 1}`;
+    let numericId = this.commentIdMap.get(commentId);
+
+    if (!numericId) {
+      this.lastCommentId += 1;
+      numericId = this.lastCommentId;
+      this.commentIdMap.set(commentId, numericId);
+    }
+
+    const existing = this.comments.find((item) => item.id === numericId);
+    if (existing) {
+      if (!existing.authorName && authorName) existing.authorName = authorName;
+      if (!existing.authorInitials && authorInitials)
+        existing.authorInitials = authorInitials;
+      if (!existing.date && date) existing.date = date;
+      if (!existing.text && text) existing.text = text;
+      return numericId;
+    }
+
+    this.comments.push({
+      authorInitials: authorInitials || '',
+      authorName: authorName || 'unknown',
+      date,
+      id: numericId,
+      text: text || 'Imported comment',
+    });
+
+    return numericId;
+  }
+
+  getCommentId(id) {
+    if (!id) return this.ensureComment({ id: undefined });
+    return this.ensureComment({ id });
+  }
+
+  generateCommentsXML() {
+    const commentsXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { w: namespaces.w },
+      standalone: true,
+    }).ele('@w', 'comments');
+
+    this.comments.forEach((comment) => {
+      const commentElement = commentsXML
+        .ele('@w', 'comment')
+        .att('@w', 'id', String(comment.id))
+        .att('@w', 'author', comment.authorName || 'unknown');
+
+      if (comment.authorInitials) {
+        commentElement.att('@w', 'initials', comment.authorInitials);
+      }
+      if (comment.date) {
+        commentElement.att('@w', 'date', comment.date);
+      }
+
+      const paragraphs = String(comment.text || '')
+        .split(/\r?\n/)
+        .filter((line, index, arr) => line.length > 0 || arr.length === 1);
+
+      paragraphs.forEach((line) => {
+        commentElement
+          .ele('@w', 'p')
+          .ele('@w', 'r')
+          .ele('@w', 't')
+          .att('@xml', 'space', 'preserve')
+          .txt(line)
+          .up()
+          .up()
+          .up();
+      });
+
+      commentElement.up();
+    });
+
+    commentsXML.up();
+
+    return commentsXML.toString({ prettyPrint: true });
+  }
+
   // eslint-disable-next-line class-methods-use-this
-  appendRelationships(
-    xmlFragment: XMLBuilder,
-    relationships: RelationshipObject[]
-  ): void {
+  appendRelationships(xmlFragment, relationships) {
     relationships.forEach(({ relationshipId, type, target, targetMode }) => {
       xmlFragment.import(
         fragment({ defaultNamespace: { ele: namespaces.relationship } })
@@ -871,7 +618,7 @@ class DocxDocument {
     });
   }
 
-  generateRelsXML(): RelationshipXMLOutput[] {
+  generateRelsXML() {
     const relationshipXMLStrings = this.relationships.map(
       ({ fileName, rels }) => {
         const xmlFragment = create(
@@ -892,7 +639,7 @@ class DocxDocument {
     return relationshipXMLStrings;
   }
 
-  createNumbering(type: 'ol' | 'ul', properties: NumberingProperties): number {
+  createNumbering(type, properties) {
     this.lastNumberingId += 1;
     this.numberingObjects.push({
       numberingId: this.lastNumberingId,
@@ -903,30 +650,25 @@ class DocxDocument {
     return this.lastNumberingId;
   }
 
-  createFont(fontFamily: string): string {
+  createFont(fontFamily) {
     const fontTableObject = fontFamilyToTableObject(fontFamily, this.font);
     this.fontTableObjects.push(fontTableObject);
-
     return fontTableObject.fontName;
   }
 
-  createMediaFile(base64String: string): MediaFileInfo {
+  createMediaFile(base64String) {
     // eslint-disable-next-line no-useless-escape
     const matches = base64String.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-
-    if (!matches || matches.length !== 3) {
+    if (matches.length !== 3) {
       throw new Error('Invalid base64 string');
     }
 
     const base64FileContent = matches[2];
     // matches array contains file type in base64 format - image/jpeg and base64 stringified data
-    const extensionMatch = matches[1].match(/\/(.*?)$/);
     const fileExtension =
-      extensionMatch && extensionMatch[1] === 'octet-stream'
+      matches[1].match(/\/(.*?)$/)[1] === 'octet-stream'
         ? 'png'
-        : extensionMatch
-          ? extensionMatch[1]
-          : 'png';
+        : matches[1].match(/\/(.*?)$/)[1];
 
     const fileNameWithExtension = `image-${nanoid()}.${fileExtension}`;
 
@@ -940,16 +682,15 @@ class DocxDocument {
   }
 
   createDocumentRelationships(
-    fileName: string,
-    type: string,
-    target: string,
-    targetMode: string = 'External'
-  ): number {
+    fileName = 'document',
+    type,
+    target,
+    targetMode = 'External'
+  ) {
     let relationshipObject = this.relationships.find(
       (relationship) => relationship.fileName === fileName
     );
     let lastRelsId = 1;
-
     if (relationshipObject) {
       lastRelsId = relationshipObject.lastRelsId + 1;
       relationshipObject.lastRelsId = lastRelsId;
@@ -957,9 +698,7 @@ class DocxDocument {
       relationshipObject = { fileName, lastRelsId, rels: [] };
       this.relationships.push(relationshipObject);
     }
-
-    let relationshipType: string | undefined;
-
+    let relationshipType;
     switch (type) {
       case hyperlinkType:
         relationshipType = namespaces.hyperlinks;
@@ -983,7 +722,7 @@ class DocxDocument {
 
     relationshipObject.rels.push({
       relationshipId: lastRelsId,
-      type: relationshipType!,
+      type: relationshipType,
       target,
       targetMode,
     });
@@ -991,138 +730,12 @@ class DocxDocument {
     return lastRelsId;
   }
 
-  generateHeaderXML(vTree: VTree): Promise<HeaderResult> {
-    return this.generateSectionXML(vTree, 'header') as Promise<HeaderResult>;
+  generateHeaderXML(vTree) {
+    return this.generateSectionXML(vTree, 'header');
   }
 
-  generateFooterXML(vTree: VTree): Promise<FooterResult> {
-    return this.generateSectionXML(vTree, 'footer') as Promise<FooterResult>;
-  }
-
-  // ============================================================================
-  // Tracking Support Methods (Comments and Suggestions)
-  // ============================================================================
-
-  /**
-   * Get a revision ID for a suggestion. Creates a new one if needed.
-   * Ensures consistent IDs for the same suggestion across multiple occurrences.
-   */
-  getRevisionId(id?: string): number {
-    if (!id) {
-      this.lastRevisionId += 1;
-      return this.lastRevisionId;
-    }
-
-    const existing = this.revisionIdMap.get(id);
-    if (existing !== undefined) {
-      return existing;
-    }
-
-    this.lastRevisionId += 1;
-    this.revisionIdMap.set(id, this.lastRevisionId);
-    return this.lastRevisionId;
-  }
-
-  /**
-   * Ensure a comment exists in the document and return its numeric ID.
-   * Updates metadata if the comment already exists but had missing fields.
-   */
-  ensureComment(data: Partial<CommentPayload>): number {
-    const { id, authorName, authorInitials, date, text } = data;
-    const commentId = id || `comment-${this.lastCommentId + 1}`;
-    let numericId = this.commentIdMap.get(commentId);
-
-    if (numericId === undefined) {
-      this.lastCommentId += 1;
-      numericId = this.lastCommentId;
-      this.commentIdMap.set(commentId, numericId);
-    }
-
-    const existing = this.comments.find((item) => item.id === numericId);
-    if (existing) {
-      // Update missing fields
-      if (!existing.authorName && authorName) {
-        existing.authorName = authorName;
-      }
-      if (!existing.authorInitials && authorInitials) {
-        existing.authorInitials = authorInitials;
-      }
-      if (!existing.date && date) {
-        existing.date = date;
-      }
-      if (!existing.text && text) {
-        existing.text = text;
-      }
-      return numericId;
-    }
-
-    this.comments.push({
-      id: numericId,
-      authorName: authorName || 'unknown',
-      authorInitials: authorInitials || '',
-      date,
-      text: text || 'Imported comment',
-    });
-
-    return numericId;
-  }
-
-  /**
-   * Get the numeric ID for a comment, creating it if necessary.
-   */
-  getCommentId(id: string): number {
-    if (!id) {
-      return this.ensureComment({ id: undefined });
-    }
-    return this.ensureComment({ id });
-  }
-
-  /**
-   * Generate the comments.xml file content.
-   */
-  generateCommentsXML(): string {
-    const commentsXML = create({
-      encoding: 'UTF-8',
-      namespaceAlias: { w: namespaces.w },
-      standalone: true,
-    }).ele('@w', 'comments');
-
-    this.comments.forEach((comment) => {
-      const commentElement = commentsXML
-        .ele('@w', 'comment')
-        .att('@w', 'id', String(comment.id))
-        .att('@w', 'author', comment.authorName || 'unknown');
-
-      if (comment.authorInitials) {
-        commentElement.att('@w', 'initials', comment.authorInitials);
-      }
-      if (comment.date) {
-        commentElement.att('@w', 'date', comment.date);
-      }
-
-      // Split multi-line comment text into paragraphs
-      const paragraphs = String(comment.text || '')
-        .split(/\r?\n/)
-        .filter((line, index, arr) => line.length > 0 || arr.length === 1);
-
-      paragraphs.forEach((line) => {
-        commentElement
-          .ele('@w', 'p')
-          .ele('@w', 'r')
-          .ele('@w', 't')
-          .att('@xml', 'space', 'preserve')
-          .txt(line)
-          .up()
-          .up()
-          .up();
-      });
-
-      commentElement.up();
-    });
-
-    commentsXML.up();
-
-    return commentsXML.toString({ prettyPrint: true });
+  generateFooterXML(vTree) {
+    return this.generateSectionXML(vTree, 'footer');
   }
 }
 

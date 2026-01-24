@@ -308,64 +308,23 @@ function DocumentConversion(options, comments) {
   }
 
   function convertCommentReference(reference, messages, options) {
-    return findHtmlPath(reference, htmlPaths.ignore).wrap(() => {
-      var comment = comments[reference.commentId];
-      if (!comment) {
-        messages.push(
-          results.warning(
-            'Comment with ID ' +
-              reference.commentId +
-              ' was referenced but not found in the document'
-          )
-        );
-        // Create a placeholder comment to allow conversion to continue
-        comment = {
-          commentId: reference.commentId,
-          body: [],
-          authorInitials: '',
-        };
-      }
-      var count = referencedComments.length + 1;
-      var label = '[' + commentAuthorLabel(comment) + count + ']';
-      referencedComments.push({ label, comment });
-      // TODO: remove duplication with note references
-      return [
-        Html.freshElement(
-          'a',
-          {
-            href: '#' + referentHtmlId('comment', reference.commentId),
-            id: referenceHtmlId('comment', reference.commentId),
-          },
-          [Html.text(label)]
-        ),
-      ];
-    });
+    // Since we use [[DOCX_CMT_START/END:...]] tokens for comments,
+    // we don't need footnote-style references. Return empty.
+    // The comment data is already embedded in the tokens.
+    void reference;
+    void messages;
+    void options;
+    return [];
   }
 
   function convertComment(referencedComment, messages, options) {
-    // TODO: remove duplication with note references
-
-    var label = referencedComment.label;
-    var comment = referencedComment.comment;
-    var body = convertElements(comment.body, messages, options).concat([
-      Html.nonFreshElement('p', {}, [
-        Html.text(' '),
-        Html.freshElement(
-          'a',
-          { href: '#' + referenceHtmlId('comment', comment.commentId) },
-          [Html.text('↑')]
-        ),
-      ]),
-    ]);
-
-    return [
-      Html.freshElement(
-        'dt',
-        { id: referentHtmlId('comment', comment.commentId) },
-        [Html.text('Comment ' + label)]
-      ),
-      Html.freshElement('dd', {}, body),
-    ];
+    // Since we use [[DOCX_CMT_START/END:...]] tokens for comments,
+    // we don't need footnote-style definition lists. Return empty.
+    // The comment data is already embedded in the tokens.
+    void referencedComment;
+    void messages;
+    void options;
+    return [];
   }
 
   function convertBreak(element, messages, options) {

@@ -168,6 +168,7 @@ const documentFileName = 'document';
 const headerType = 'header';
 const footerType = 'footer';
 const themeType = 'theme';
+const commentsType = 'comments';
 const hyperlinkType = 'hyperlink';
 const imageType = 'image';
 const internalRelationship = 'Internal';
@@ -201,6 +202,7 @@ const verticalAlignValues: VerticalAlign[] = ['top', 'middle', 'bottom'];
 export {
   applicationName,
   colorlessColors,
+  commentsType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
