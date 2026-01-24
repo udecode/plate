@@ -1,8 +1,8 @@
 /** @jsx jsx */
-/** biome-ignore-all lint/suspicious/noEvolvingTypes: <explanation> */
-/** biome-ignore-all lint/suspicious/noImplicitAnyLet: <explanation> */
-/** biome-ignore-all lint/suspicious/noAssignInExpressions: <explanation> */
-/** biome-ignore-all lint/suspicious/useIterableCallbackReturn: <explanation> */
+/** biome-ignore-all lint/suspicious/noEvolvingTypes: test file */
+/** biome-ignore-all lint/suspicious/noImplicitAnyLet: test file */
+/** biome-ignore-all lint/suspicious/noAssignInExpressions: test file */
+/** biome-ignore-all lint/suspicious/useIterableCallbackReturn: test file */
 
 import fs from 'node:fs';
 import path from 'node:path';
