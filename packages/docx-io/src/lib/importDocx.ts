@@ -303,6 +303,38 @@ export async function importDocx(
 const TRACKING_TOKEN_PATTERN = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
 
 /**
+ * Remove body-level text nodes that contain only tracking tokens.
+ * This prevents the deserialization from wrapping orphan tokens in paragraphs.
+ *
+ * When w:commentRangeStart/End appear between paragraphs in DOCX XML,
+ * mammoth emits them as text nodes at the body level. During deserialization,
+ * these get wrapped in paragraphs due to mixed inline/block normalization,
+ * creating unwanted empty paragraphs after the tokens are cleaned up.
+ */
+function cleanBodyLevelTokenNodes(body: HTMLElement): void {
+  const nodesToRemove: Node[] = [];
+
+  for (const node of Array.from(body.childNodes)) {
+    // Only process text nodes at body level
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent ?? '';
+      // Check if the text is entirely tracking tokens (possibly with whitespace)
+      const withoutTokens = text.replace(TRACKING_TOKEN_PATTERN, '').trim();
+
+      if (withoutTokens === '') {
+        // Text node contains only tokens and whitespace - mark for removal
+        nodesToRemove.push(node);
+      }
+    }
+  }
+
+  // Remove the marked nodes
+  for (const node of nodesToRemove) {
+    node.parentNode?.removeChild(node);
+  }
+}
+
+/**
  * Recursively clean up any remaining tracking tokens from nodes.
  * This is a safety net for cases where the rangeRef-based deletion fails.
  */
@@ -511,6 +543,11 @@ export async function importDocxWithTracking(
   // Step 3: Deserialize HTML to nodes (keep tokens for now)
   const parser = new DOMParser();
   const doc = parser.parseFromString(result.value, 'text/html');
+
+  // Clean up body-level text nodes that contain only tracking tokens.
+  // This prevents unwanted empty paragraphs from being created during normalization.
+  cleanBodyLevelTokenNodes(doc.body);
+
   const nodes = editor.api.html.deserialize({ element: doc.body });
 
   // Capture original content for recovery on failure
