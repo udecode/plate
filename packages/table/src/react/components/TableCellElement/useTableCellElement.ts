@@ -1,5 +1,3 @@
-import React from 'react';
-
 import type { TTableCellElement } from 'platejs';
 
 import { useEditorPlugin, useElement, usePluginOption } from 'platejs/react';
@@ -25,21 +23,10 @@ export type TableCellElementState = {
 };
 
 export const useTableCellElement = (): TableCellElementState => {
-  const { api, setOption } = useEditorPlugin(TablePlugin);
+  const { api } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
   const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
-
-  // Sync element transforms with selected cells
-  React.useEffect(() => {
-    if (selectedCells?.some((v) => v.id === element.id && element !== v)) {
-      setOption(
-        'selectedCells',
-        selectedCells.map((v) => (v.id === element.id ? element : v))
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [element]);
 
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const { minHeight, width } = useTableCellSize({ element });
