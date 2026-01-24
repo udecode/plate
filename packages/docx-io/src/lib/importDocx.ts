@@ -356,6 +356,41 @@ function cleanupTrackingTokens(nodes: unknown[]): void {
   }
 }
 
+/**
+ * Check if a node is an empty paragraph (only contains empty text).
+ * A paragraph is empty if all its children are text nodes with empty strings.
+ */
+function isEmptyParagraph(node: unknown): boolean {
+  if (typeof node !== 'object' || node === null) return false;
+
+  const nodeObj = node as Record<string, unknown>;
+
+  // Must be a paragraph-type element
+  if (nodeObj.type !== 'p') return false;
+
+  // Must have children
+  if (!Array.isArray(nodeObj.children)) return false;
+
+  // All children must be empty text nodes
+  return nodeObj.children.every((child) => {
+    if (typeof child !== 'object' || child === null) return false;
+    const childObj = child as Record<string, unknown>;
+    // Must be a text node with empty or whitespace-only content
+    return typeof childObj.text === 'string' && childObj.text.trim() === '';
+  });
+}
+
+/**
+ * Remove empty leading paragraphs from the editor children.
+ * These can occur when tracking tokens are removed from paragraphs
+ * that only contained tokens (e.g., spanning comments/changes).
+ */
+function removeEmptyLeadingParagraphs(nodes: unknown[]): void {
+  while (nodes.length > 0 && isEmptyParagraph(nodes[0])) {
+    nodes.shift();
+  }
+}
+
 // ============================================================================
 // Import With Tracking Support
 // ============================================================================
@@ -603,6 +638,10 @@ export async function importDocxWithTracking(
     // Step 6: Clean up any remaining tokens that weren't deleted
     // This handles edge cases where rangeRef tracking fails due to direct mutation
     cleanupTrackingTokens(editor.children);
+
+    // Step 7: Remove empty leading paragraphs that may result from token cleanup
+    // When tokens span multiple paragraphs, the token-only paragraphs become empty
+    removeEmptyLeadingParagraphs(editor.children as unknown[]);
   } catch (error) {
     // Restore original content on failure
     (editor.children as unknown[]).length = 0;
