@@ -297,6 +297,36 @@ export async function importDocx(
 }
 
 // ============================================================================
+// Token Cleanup Utilities
+// ============================================================================
+
+/** Regex to match all DOCX tracking tokens */
+const TRACKING_TOKEN_PATTERN =
+  /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
+
+/**
+ * Recursively clean up any remaining tracking tokens from nodes.
+ * This is a safety net for cases where the rangeRef-based deletion fails.
+ */
+function cleanupTrackingTokens(nodes: unknown[]): void {
+  for (const node of nodes) {
+    if (typeof node !== 'object' || node === null) continue;
+
+    const nodeObj = node as Record<string, unknown>;
+
+    // If it's a text node with tokens, clean them
+    if (typeof nodeObj.text === 'string') {
+      nodeObj.text = nodeObj.text.replace(TRACKING_TOKEN_PATTERN, '');
+    }
+
+    // Recursively process children
+    if (Array.isArray(nodeObj.children)) {
+      cleanupTrackingTokens(nodeObj.children);
+    }
+  }
+}
+
+// ============================================================================
 // Import With Tracking Support
 // ============================================================================
 
@@ -532,6 +562,10 @@ export async function importDocxWithTracking(
       discussions.push(...commentsResult.discussions);
       errors.push(...commentsResult.errors);
     }
+
+    // Step 6: Clean up any remaining tokens that weren't deleted
+    // This handles edge cases where rangeRef tracking fails due to direct mutation
+    cleanupTrackingTokens(editor.children);
   } catch (error) {
     // Restore original content on failure
     (editor.children as unknown[]).length = 0;
