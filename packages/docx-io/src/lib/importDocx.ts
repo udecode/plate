@@ -214,10 +214,9 @@ export async function convertToHtmlWithTracking(
   options: ConvertToHtmlWithTrackingOptions = {}
 ): Promise<ConvertToHtmlWithTrackingResult> {
   // The mammoth fork natively emits tracking tokens during conversion
-  const result = await mammoth.convertToHtml(
-    { arrayBuffer },
-    { styleMap: options.styleMap ?? ['comment-reference => sup'] }
-  );
+  // Always include comment-reference => sup default, merge with user styleMap
+  const styleMap = ['comment-reference => sup', ...(options.styleMap ?? [])];
+  const result = await mammoth.convertToHtml({ arrayBuffer }, { styleMap });
 
   return {
     value: result.value,
@@ -301,8 +300,7 @@ export async function importDocx(
 // ============================================================================
 
 /** Regex to match all DOCX tracking tokens */
-const TRACKING_TOKEN_PATTERN =
-  /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
+const TRACKING_TOKEN_PATTERN = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;
 
 /**
  * Recursively clean up any remaining tracking tokens from nodes.
@@ -515,15 +513,17 @@ export async function importDocxWithTracking(
   const doc = parser.parseFromString(result.value, 'text/html');
   const nodes = editor.api.html.deserialize({ element: doc.body });
 
-  // Replace editor content with deserialized nodes
-  // Direct mutation is used here because transform-based approaches can cause
-  // infinite loops due to Slate's normalization. The caller is responsible for
-  // proper history/collaboration handling if needed.
+  // Capture original content for recovery on failure
   const originalChildren = [...editor.children];
-  (editor.children as unknown[]).length = 0;
-  (editor.children as unknown[]).push(...nodes);
 
   try {
+    // Replace editor content with deserialized nodes
+    // Direct mutation is used here because transform-based approaches can cause
+    // infinite loops due to Slate's normalization. The caller is responsible for
+    // proper history/collaboration handling if needed.
+    (editor.children as unknown[]).length = 0;
+    (editor.children as unknown[]).push(...nodes);
+
     // Create search function adapter
     // createSearchRangeFn returns (search) => TRange, but SearchRangeFn expects (editor, search) => TRange
     const boundSearchFn = createSearchRangeFn(editor as any);

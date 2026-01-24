@@ -950,6 +950,10 @@ export function parseDocxTracking(html: string): ParseDocxTrackingResult {
 
 /**
  * Check if HTML contains any DOCX tracking tokens (changes or comments).
+ *
+ * NOTE: This is the COMPLETE version that checks INS, DEL, and CMT tokens.
+ * The importTrackChanges.ts version only checks INS|DEL and is used internally.
+ * This version is exported from index.ts as the public API.
  */
 export function hasDocxTrackingTokens(html: string): boolean {
   return (
@@ -959,6 +963,10 @@ export function hasDocxTrackingTokens(html: string): boolean {
 
 /**
  * Remove all DOCX tracking tokens from HTML (changes and comments).
+ *
+ * NOTE: This is the COMPLETE version that strips INS, DEL, and CMT tokens.
+ * The importTrackChanges.ts version only strips INS|DEL and is used internally.
+ * This version is exported from index.ts as the public API.
  */
 export function stripDocxTrackingTokens(html: string): string {
   const tokenPattern = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]+\]\]/g;

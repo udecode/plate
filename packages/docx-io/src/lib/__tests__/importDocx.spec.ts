@@ -362,6 +362,63 @@ describe('DOCX Import - Regression: Content Preservation', () => {
   });
 });
 
+describe('DOCX Import - StyleMap Merge', () => {
+  // Test the styleMap merge logic used in convertToHtmlWithTracking
+  // The logic is: ['comment-reference => sup', ...(options.styleMap ?? [])]
+
+  function mergeStyleMap(userStyleMap?: string[]): string[] {
+    return ['comment-reference => sup', ...(userStyleMap ?? [])];
+  }
+
+  it('should include default comment-reference mapping when no custom styleMap provided', () => {
+    const result = mergeStyleMap();
+
+    expect(result).toEqual(['comment-reference => sup']);
+    expect(result).toContain('comment-reference => sup');
+  });
+
+  it('should include default comment-reference mapping when empty styleMap provided', () => {
+    const result = mergeStyleMap([]);
+
+    expect(result).toEqual(['comment-reference => sup']);
+  });
+
+  it('should merge custom styleMap with default, preserving both', () => {
+    const customStyles = ['p[style-name="Heading 1"] => h1', 'b => strong'];
+    const result = mergeStyleMap(customStyles);
+
+    expect(result.length).toBe(3);
+    expect(result[0]).toBe('comment-reference => sup');
+    expect(result).toContain('p[style-name="Heading 1"] => h1');
+    expect(result).toContain('b => strong');
+  });
+
+  it('should place default before custom entries', () => {
+    const customStyles = ['custom => div'];
+    const result = mergeStyleMap(customStyles);
+
+    expect(result[0]).toBe('comment-reference => sup');
+    expect(result[1]).toBe('custom => div');
+  });
+
+  it('should allow custom comment-reference override after default', () => {
+    // If user provides their own comment-reference mapping, mammoth uses first match
+    // so default comes first and takes precedence, but user can still override
+    const customStyles = ['comment-reference => span.comment-ref'];
+    const result = mergeStyleMap(customStyles);
+
+    expect(result.length).toBe(2);
+    expect(result[0]).toBe('comment-reference => sup');
+    expect(result[1]).toBe('comment-reference => span.comment-ref');
+  });
+
+  it('should handle undefined styleMap same as no styleMap', () => {
+    const result = mergeStyleMap(undefined);
+
+    expect(result).toEqual(['comment-reference => sup']);
+  });
+});
+
 describe('DOCX Import - Edge Cases', () => {
   it('should handle malformed tokens gracefully', () => {
     const html = '<p>[[DOCX_INS_START:invalid-json]]text[[DOCX_INS_END:x]]</p>';

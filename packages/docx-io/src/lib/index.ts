@@ -17,7 +17,9 @@ export { DocxIOKit, DocxIOPlugin } from './DocxIOPlugin';
 
 export * from './importDocx';
 
-// Export from importTrackChanges, excluding duplicates that are re-exported from importComments
+// Export from importTrackChanges, excluding hasDocxTrackingTokens & stripDocxTrackingTokens
+// which are re-exported from importComments with COMPLETE implementations (INS|DEL|CMT).
+// The importTrackChanges versions only handle INS|DEL - they're internal building blocks.
 export {
   applyTrackedChangeSuggestions,
   formatAuthorAsUserId,
