@@ -31,7 +31,7 @@ export type {
   TableOptions,
 } from './html-to-docx';
 
-import type { DocumentOptions } from './html-to-docx';
+import type { DocumentOptions, Margins } from './html-to-docx';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
