@@ -107,12 +107,15 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
             discussionId: d.id,
             isEdited: false,
             userId: c.userId ?? c.user?.id ?? 'imported-unknown',
+            authorName: c.user?.name,
+            authorInitials: c.user?.initials,
           })),
           createdAt: d.createdAt ?? new Date(),
           documentContent: d.documentContent,
           isResolved: false,
           userId: d.userId ?? d.user?.id ?? 'imported-unknown',
           authorName: d.user?.name,
+          authorInitials: d.user?.initials,
         }));
 
         editor.setOption(discussionPlugin, 'discussions', [

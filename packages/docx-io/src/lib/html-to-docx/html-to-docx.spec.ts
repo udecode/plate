@@ -336,4 +336,79 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('This is a quote');
     });
   });
+
+  /**
+   * REGRESSION TESTS: Stylesheet-based styling
+   *
+   * Tests that styles defined in <style> tags are properly applied.
+   * Previously, only inline styles were read and stylesheet styles were lost.
+   */
+  describe('stylesheet-based styling', () => {
+    it('should apply inline styles to text', async () => {
+      // Inline styles should always work
+      const html = '<p style="font-size: 24pt;">Large text</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Large text');
+      // 24pt = 48 half-points
+      expect(docXml).toContain('<w:sz w:val="48"');
+    });
+
+    it('should apply inline font-family', async () => {
+      const html = '<p style="font-family: Arial, sans-serif;">Arial text</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Arial text');
+      expect(docXml).toContain('<w:rFonts');
+    });
+
+    it('should apply inline color', async () => {
+      const html = '<p style="color: #ff0000;">Red text</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Red text');
+      expect(docXml).toContain('<w:color');
+      expect(docXml.toLowerCase()).toContain('ff0000');
+    });
+
+    it('should apply inline background-color', async () => {
+      const html = '<p style="background-color: #ffff00;">Highlighted text</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Highlighted text');
+      expect(docXml).toContain('<w:shd');
+    });
+
+    it('should apply default font settings to body text', async () => {
+      // Body text without any styles should get default Calibri font
+      const html = '<p>Default body text</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Default body text');
+      // Check that document has font definitions
+      const stylesXml = await zip.file('word/styles.xml')!.async('string');
+      expect(stylesXml).toContain('<w:rFonts');
+    });
+
+    it('should preserve heading styles with Word paragraph styles', async () => {
+      const html = '<h1>Heading One</h1>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('Heading One');
+      // Headings should use Word's built-in Heading1 style
+      expect(docXml).toContain('<w:pStyle w:val="Heading1"');
+    });
+  });
 });

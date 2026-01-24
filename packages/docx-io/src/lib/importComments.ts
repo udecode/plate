@@ -93,7 +93,7 @@ export type DocxImportDiscussion = {
     /** User ID of the commenter */
     userId?: string;
     /** Optional user object for direct author info */
-    user?: { id: string; name: string };
+    user?: { id: string; name: string; initials?: string };
   }>;
   /** When the discussion was created */
   createdAt?: Date;
@@ -102,7 +102,7 @@ export type DocxImportDiscussion = {
   /** User ID who created the discussion */
   userId?: string;
   /** Optional user object for direct author info */
-  user?: { id: string; name: string };
+  user?: { id: string; name: string; initials?: string };
 };
 
 // ============================================================================
@@ -787,6 +787,7 @@ export function applyTrackedCommentsLocal(
 
       const discussionId = generateId();
       const authorName = comment.authorName ?? undefined;
+      const authorInitials = comment.authorInitials ?? undefined;
       const userId = formatAuthorAsUserId(comment.authorName);
       const createdAt = parseDateToDate(comment.date, documentDate);
 
@@ -802,13 +803,17 @@ export function applyTrackedCommentsLocal(
             ],
             createdAt,
             userId,
-            user: authorName ? { id: userId, name: authorName } : undefined,
+            user: authorName
+              ? { id: userId, name: authorName, initials: authorInitials }
+              : undefined,
           },
         ],
         createdAt,
         documentContent: comment.text ?? '',
         userId,
-        user: authorName ? { id: userId, name: authorName } : undefined,
+        user: authorName
+          ? { id: userId, name: authorName, initials: authorInitials }
+          : undefined,
       };
 
       discussions.push(discussion);
