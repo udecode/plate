@@ -1,4 +1,5 @@
 /* biome-ignore-all lint/nursery/useMaxParams: legacy code */
+/** biome-ignore-all lint/style/useAtIndex: <explanation> */
 /* biome-ignore-all lint/performance/useTopLevelRegex: legacy code */
 /* biome-ignore-all lint/style/noParameterAssign: legacy code */
 /* biome-ignore-all lint/style/useForOf: legacy code */

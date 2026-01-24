@@ -1,4 +1,8 @@
 /** @jsx jsx */
+/** biome-ignore-all lint/suspicious/noEvolvingTypes: <explanation> */
+/** biome-ignore-all lint/suspicious/noImplicitAnyLet: <explanation> */
+/** biome-ignore-all lint/suspicious/noAssignInExpressions: <explanation> */
+/** biome-ignore-all lint/suspicious/useIterableCallbackReturn: <explanation> */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,13 +16,13 @@ import { createSlateEditor, KEYS, NodeApi, TextApi } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 import { DocxExportKit } from 'www/src/registry/components/editor/plugins/docx-export-kit';
-import { mammoth, preprocessMammothHtml } from '../importDocx';
+import { exportToDocx, htmlToDocxBlob } from '../docx-export-plugin';
+import type { DocxExportDiscussion } from '../exportTrackChanges';
 import {
   applyTrackedCommentsLocal,
   parseDocxTracking,
 } from '../importComments';
-import { exportToDocx, htmlToDocxBlob } from '../docx-export-plugin';
-import type { DocxExportDiscussion } from '../exportTrackChanges';
+import { mammoth, preprocessMammothHtml } from '../importDocx';
 import { searchRange } from '../searchRange';
 
 jsx;
