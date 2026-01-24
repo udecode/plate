@@ -123,7 +123,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       // Log import results
       if (result.hasTracking) {
-        console.log(
+        console.info(
           `[DOCX Import] Imported ${result.insertions} insertions, ${result.deletions} deletions, ${result.comments} comments`
         );
         if (result.errors.length > 0) {

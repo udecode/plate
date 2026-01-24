@@ -355,6 +355,8 @@ type ImportDocxWithTrackingEditor = ImportDocxEditor & {
       };
     }) => void;
     withMerging: (fn: () => void) => void;
+    insertNodes: (nodes: unknown[], options?: { at?: number[] }) => void;
+    removeNodes: (options?: { at?: number[] }) => void;
   };
   children: unknown[];
 };
@@ -485,11 +487,18 @@ export async function importDocxWithTracking(
   const doc = parser.parseFromString(result.value, 'text/html');
   const nodes = editor.api.html.deserialize({ element: doc.body });
 
-  // Replace editor content with deserialized nodes
-  // Note: The caller should handle this, but we need nodes in editor for searchRange
+  // Replace editor content with deserialized nodes using transforms
+  // This ensures proper operation handling for history, collaboration, etc.
   const originalChildren = [...editor.children];
-  (editor.children as unknown[]).length = 0;
-  (editor.children as unknown[]).push(...nodes);
+
+  editor.tf.withMerging(() => {
+    // Remove all existing nodes
+    while (editor.children.length > 0) {
+      editor.tf.removeNodes({ at: [editor.children.length - 1] });
+    }
+    // Insert deserialized nodes
+    editor.tf.insertNodes(nodes as unknown[], { at: [0] });
+  });
 
   try {
     // Create search function adapter
@@ -531,9 +540,13 @@ export async function importDocxWithTracking(
       errors.push(...commentsResult.errors);
     }
   } catch (error) {
-    // Restore original content on failure
-    (editor.children as unknown[]).length = 0;
-    (editor.children as unknown[]).push(...originalChildren);
+    // Restore original content on failure using transforms
+    editor.tf.withMerging(() => {
+      while (editor.children.length > 0) {
+        editor.tf.removeNodes({ at: [editor.children.length - 1] });
+      }
+      editor.tf.insertNodes(originalChildren, { at: [0] });
+    });
     throw error;
   }
 
