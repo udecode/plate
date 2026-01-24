@@ -15,18 +15,7 @@
 
 import JSZip from 'jszip';
 
-import addFilesToContainer, {
-  type DocumentOptions,
-  type HeadingOptions,
-  type HeadingSpacing,
-  type HeadingStyleOptions,
-  type LineNumberOptions,
-  type Margins,
-  type NumberingOptions,
-  type PageSize,
-  type TableBorderOptions,
-  type TableOptions,
-} from './html-to-docx';
+import addFilesToContainer from './html-to-docx';
 
 // Re-export types from the library
 export type {
@@ -40,7 +29,9 @@ export type {
   PageSize,
   TableBorderOptions,
   TableOptions,
-};
+} from './html-to-docx';
+
+import type { DocumentOptions } from './html-to-docx';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
