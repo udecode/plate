@@ -64,6 +64,21 @@ export const withTableCellSelection: OverrideEditor<TableConfig> = ({
         const result = apply();
         if (result) return result;
 
+        // Defensive check: ensure selection points are valid before calling marks
+        const { selection } = editor;
+        if (selection) {
+          try {
+            // Verify anchor and focus paths exist in the document
+            const anchorNode = editor.api.node(selection.anchor.path);
+            const focusNode = editor.api.node(selection.focus.path);
+            if (!anchorNode || !focusNode) {
+              return null;
+            }
+          } catch {
+            return null;
+          }
+        }
+
         return marks();
       },
     },

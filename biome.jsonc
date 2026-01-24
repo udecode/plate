@@ -13,7 +13,7 @@
   "files": {
     "includes": [
       "**",
-      "!packages/docx-io/src/lib/mammoth.js",
+      "!!packages/docx-io/src/lib/mammoth.js",
       "!!node_modules/@opentelemetry",
       "!!node_modules/@effect-ts",
       "!!node_modules/pdf-lib",

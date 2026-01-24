@@ -91,7 +91,6 @@
     "@platejs/test-utils": "workspace:^",
     "@platejs/toc": "workspace:^",
     "@platejs/toggle": "workspace:^",
-    "@platejs/yjs": "workspace:^",
     "@radix-ui/react-accordion": "1.2.11",
     "@radix-ui/react-alert-dialog": "1.1.14",
     "@radix-ui/react-aspect-ratio": "1.1.7",
@@ -116,7 +115,6 @@
     "@radix-ui/react-toggle-group": "1.1.10",
     "@radix-ui/react-toolbar": "1.1.10",
     "@radix-ui/react-tooltip": "1.2.7",
-    "@slate-yjs/core": "^1.0.0",
     "@slate-yjs/react": "1.1.0",
     "@tabler/icons-react": "3.34.0",
     "@udecode/cmdk": "workspace:^",
@@ -175,8 +173,7 @@
     "use-file-picker": "2.1.2",
     "vaul": "1.1.2",
     "y-webrtc": "10.3.0",
-    "yjs": "^13.5.29",
-    "zod": "3.25.61"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@shikijs/compat": "1.1.7",
