@@ -5889,7 +5889,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@slate-yjs/core@npm:^1.0.2":
+"@slate-yjs/core@npm:^1.0.0, @slate-yjs/core@npm:^1.0.2":
   version: 1.0.2
   resolution: "@slate-yjs/core@npm:1.0.2"
   dependencies:
@@ -20579,6 +20579,7 @@ __metadata:
     "@radix-ui/react-toolbar": "npm:1.1.10"
     "@radix-ui/react-tooltip": "npm:1.2.7"
     "@shikijs/compat": "npm:1.1.7"
+    "@slate-yjs/core": "npm:^1.0.0"
     "@slate-yjs/react": "npm:1.1.0"
     "@tabler/icons-react": "npm:3.34.0"
     "@tailwindcss/cli": "npm:4.1.8"
@@ -20664,6 +20665,7 @@ __metadata:
     use-file-picker: "npm:2.1.2"
     vaul: "npm:1.1.2"
     y-webrtc: "npm:10.3.0"
+    yjs: "npm:^13.5.29"
     zod: "npm:3.25.61"
   languageName: unknown
   linkType: soft
@@ -20821,6 +20823,15 @@ __metadata:
     buffer-crc32: "npm:~0.2.3"
     fd-slicer: "npm:~1.1.0"
   checksum: 10c0/f265002af7541b9ec3589a27f5fb8f11cf348b53cc15e2751272e3c062cd73f3e715bc72d43257de71bbaecae446c3f1b14af7559e8ab0261625375541816422
+  languageName: node
+  linkType: hard
+
+"yjs@npm:^13.5.29":
+  version: 13.6.29
+  resolution: "yjs@npm:13.6.29"
+  dependencies:
+    lib0: "npm:^0.2.99"
+  checksum: 10c0/f300786ea63deac8a83e85598707ab9542e0a90b72fc0a1bcc77a58e618799de531ba4f85bcf349e647ad9e72bc4186edf50c4ecf67c8144cd53d3ac80d27351
   languageName: node
   linkType: hard
 
