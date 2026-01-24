@@ -9,7 +9,7 @@
  * - Deletions: [[DOCX_DEL_START:{payload}]] ... [[DOCX_DEL_END:id]]
  * - Comments: [[DOCX_CMT_START:{payload}]] ... [[DOCX_CMT_END:id]]
  */
-/** biome-ignore-all lint/style/useConsistentTypeDefinitions: <explanation> */
+/** biome-ignore-all lint/style/useConsistentTypeDefinitions: legacy code */
 
 import { fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
@@ -149,11 +149,11 @@ export function splitDocxTrackingTokens(text: string): ParsedToken[] {
   const parts: ParsedToken[] = [];
   let lastIndex = 0;
   const tokenRegex = new RegExp(DOCX_TOKEN_REGEX);
-  // biome-ignore lint/suspicious/noEvolvingTypes: <explanation>
-  // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
+  // biome-ignore lint/suspicious/noEvolvingTypes: regex exec result type
+  // biome-ignore lint/suspicious/noImplicitAnyLet: regex exec result type
   let match;
 
-  // biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+  // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic regex loop
   while ((match = tokenRegex.exec(text)) !== null) {
     // Add text before this token
     if (match.index > lastIndex) {
@@ -185,7 +185,7 @@ export function splitDocxTrackingTokens(text: string): ParsedToken[] {
  */
 export function hasTrackingTokens(text: string): boolean {
   // Create a new regex each time to avoid state issues with global flag
-  // biome-ignore lint/performance/useTopLevelRegex: <explanation>
+  // biome-ignore lint/performance/useTopLevelRegex: avoid global flag state issues
   const tokenRegex = /\[\[DOCX_(INS|DEL|CMT)_(START|END):(.+?)\]\]/;
   return tokenRegex.test(text);
 }
