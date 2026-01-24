@@ -355,8 +355,6 @@ type ImportDocxWithTrackingEditor = ImportDocxEditor & {
       };
     }) => void;
     withMerging: (fn: () => void) => void;
-    insertNodes: (nodes: unknown[], options?: { at?: number[] }) => void;
-    removeNodes: (options?: { at?: number[] }) => void;
   };
   children: unknown[];
 };
@@ -487,19 +485,13 @@ export async function importDocxWithTracking(
   const doc = parser.parseFromString(result.value, 'text/html');
   const nodes = editor.api.html.deserialize({ element: doc.body });
 
-  // Replace editor content with deserialized nodes using transforms
-  // This ensures proper operation handling for history, collaboration, etc.
+  // Replace editor content with deserialized nodes
+  // Direct mutation is used here because transform-based approaches can cause
+  // infinite loops due to Slate's normalization. The caller is responsible for
+  // proper history/collaboration handling if needed.
   const originalChildren = [...editor.children];
-
-  editor.tf.withMerging(() => {
-    // Remove all existing nodes (iterate in reverse by index to avoid infinite loop)
-    const childCount = editor.children.length;
-    for (let i = childCount - 1; i >= 0; i--) {
-      editor.tf.removeNodes({ at: [i] });
-    }
-    // Insert deserialized nodes
-    editor.tf.insertNodes(nodes as unknown[], { at: [0] });
-  });
+  (editor.children as unknown[]).length = 0;
+  (editor.children as unknown[]).push(...nodes);
 
   try {
     // Create search function adapter
@@ -541,14 +533,9 @@ export async function importDocxWithTracking(
       errors.push(...commentsResult.errors);
     }
   } catch (error) {
-    // Restore original content on failure using transforms
-    editor.tf.withMerging(() => {
-      const childCount = editor.children.length;
-      for (let i = childCount - 1; i >= 0; i--) {
-        editor.tf.removeNodes({ at: [i] });
-      }
-      editor.tf.insertNodes(originalChildren, { at: [0] });
-    });
+    // Restore original content on failure
+    (editor.children as unknown[]).length = 0;
+    (editor.children as unknown[]).push(...originalChildren);
     throw error;
   }
 
