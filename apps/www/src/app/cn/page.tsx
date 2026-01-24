@@ -16,29 +16,20 @@ import { ThemesButton } from '@/components/themes-button';
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';
 
-import { AnnouncementButton } from './_components/announcement-button';
-import { PotionLazyBlock } from './_components/potion-lazy-block';
+import { AnnouncementButton } from '../(app)/_components/announcement-button';
+import { PotionLazyBlock } from '../(app)/_components/potion-lazy-block';
 
-const i18n = {
-  cn: {
-    buildYourRichTextEditor: '构建你的富文本编辑器',
-    description: '框架 · 插件 · 组件 · 主题',
-    getStarted: '开始使用',
-    github: 'GitHub',
-    potionDescription: '一个类似 Notion 的 AI 模板。',
-  },
-  en: {
-    buildYourRichTextEditor: 'Build your rich-text editor',
-    description: 'Framework · Plugins · Components · Themes',
-    getStarted: 'Get Started',
-    github: 'GitHub',
-    potionDescription: 'A Notion-like AI template.',
-  },
+const content = {
+  buildYourRichTextEditor: '构建你的富文本编辑器',
+  description: '框架 · 插件 · 组件 · 主题',
+  getStarted: '开始使用',
+  github: 'GitHub',
+  potionDescription: '一个类似 Notion 的 AI 模板。',
 };
 
-const title = 'Build your rich-text editor';
+const title = '构建你的富文本编辑器';
 const description =
-  'A set of beautifully-designed, customizable plugins and components to help you build your rich-text editor. Open Source.';
+  '一套精心设计的、可定制的插件和组件，帮助您构建富文本编辑器。开源免费。';
 
 export const metadata: Metadata = {
   description,
@@ -66,11 +57,7 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-static';
 
-// SYNC
-
-export default async function IndexPage() {
-  const content = i18n.en;
-
+export default async function CNIndexPage() {
   return (
     <>
       <div className="relative">
@@ -87,7 +74,7 @@ export default async function IndexPage() {
             <PageHeaderDescription>{content.description}</PageHeaderDescription>
             <section className="flex w-full items-center space-x-2 py-2">
               <Button asChild size="sm" className="rounded-md text-xs">
-                <Link href="/docs">{content.getStarted}</Link>
+                <Link href="/cn/docs">{content.getStarted}</Link>
               </Button>
               <Button
                 asChild
