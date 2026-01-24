@@ -22,7 +22,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { discussionPlugin, type TDiscussion } from '@/registry/components/editor/plugins/discussion-kit';
+import {
+  discussionPlugin,
+  type TDiscussion,
+} from '@/registry/components/editor/plugins/discussion-kit';
 import { ToolbarButton } from './toolbar';
 
 type ImportType = 'html' | 'markdown';
@@ -90,14 +93,16 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
 
       // Add imported discussions to the discussion plugin
       if (result.discussions.length > 0) {
-        const existingDiscussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+        const existingDiscussions =
+          editor.getOption(discussionPlugin, 'discussions') ?? [];
 
         // Convert imported discussions to TDiscussion format
         const newDiscussions: TDiscussion[] = result.discussions.map((d) => ({
           id: d.id,
           comments: (d.comments ?? []).map((c, index) => ({
             id: `${d.id}-comment-${index}`,
-            contentRich: c.contentRich as TDiscussion['comments'][number]['contentRich'],
+            contentRich:
+              c.contentRich as TDiscussion['comments'][number]['contentRich'],
             createdAt: c.createdAt ?? new Date(),
             discussionId: d.id,
             isEdited: false,

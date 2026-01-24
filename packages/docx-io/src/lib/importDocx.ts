@@ -302,9 +302,7 @@ export async function importDocx(
 
 import {
   applyTrackedChangeSuggestions,
-  formatAuthorAsUserId,
   parseDocxTrackedChanges,
-  parseDateToDate,
 } from './importTrackChanges';
 import {
   applyTrackedCommentsLocal,
@@ -316,10 +314,22 @@ import { createSearchRangeFn } from './searchRange';
 /** Extended editor interface for tracking imports */
 type ImportDocxWithTrackingEditor = ImportDocxEditor & {
   api: ImportDocxEditor['api'] & {
-    string: (range: { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } }) => string;
-    rangeRef: (range: { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } }) => {
-      current: { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } } | null;
-      unref: () => { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } } | null;
+    string: (range: {
+      anchor: { path: number[]; offset: number };
+      focus: { path: number[]; offset: number };
+    }) => string;
+    rangeRef: (range: {
+      anchor: { path: number[]; offset: number };
+      focus: { path: number[]; offset: number };
+    }) => {
+      current: {
+        anchor: { path: number[]; offset: number };
+        focus: { path: number[]; offset: number };
+      } | null;
+      unref: () => {
+        anchor: { path: number[]; offset: number };
+        focus: { path: number[]; offset: number };
+      } | null;
     };
     nodes?: <T>(options: {
       at: number[];
@@ -329,9 +339,21 @@ type ImportDocxWithTrackingEditor = ImportDocxEditor & {
   tf: {
     setNodes: (
       props: Record<string, unknown>,
-      options: { at: { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } }; match: (node: unknown) => boolean; split: boolean }
+      options: {
+        at: {
+          anchor: { path: number[]; offset: number };
+          focus: { path: number[]; offset: number };
+        };
+        match: (node: unknown) => boolean;
+        split: boolean;
+      }
     ) => void;
-    delete: (options: { at: { anchor: { path: number[]; offset: number }; focus: { path: number[]; offset: number } } }) => void;
+    delete: (options: {
+      at: {
+        anchor: { path: number[]; offset: number };
+        focus: { path: number[]; offset: number };
+      };
+    }) => void;
     withMerging: (fn: () => void) => void;
   };
   children: unknown[];
@@ -455,7 +477,8 @@ export async function importDocxWithTracking(
   const trackedChanges = parseDocxTrackedChanges(result.value);
   const parsedComments = parseDocxComments(result.value);
 
-  const hasTracking = trackedChanges.changes.length > 0 || parsedComments.comments.length > 0;
+  const hasTracking =
+    trackedChanges.changes.length > 0 || parsedComments.comments.length > 0;
 
   // Step 3: Deserialize HTML to nodes (keep tokens for now)
   const parser = new DOMParser();
@@ -469,14 +492,18 @@ export async function importDocxWithTracking(
   (editor.children as unknown[]).push(...nodes);
 
   try {
+    // Create search function adapter
+    // createSearchRangeFn returns (search) => TRange, but SearchRangeFn expects (editor, search) => TRange
+    const boundSearchFn = createSearchRangeFn(editor as any);
+    const searchRangeFn = (_editor: unknown, search: string) =>
+      boundSearchFn(search);
+
     // Step 4: Apply tracked changes as suggestions
     if (trackedChanges.changes.length > 0) {
-      const searchRange = createSearchRangeFn(editor as any);
-
       const suggestionsResult = applyTrackedChangeSuggestions({
         editor: editor as any,
         changes: trackedChanges.changes,
-        searchRange: searchRange as any,
+        searchRange: searchRangeFn as any,
         suggestionKey,
         getSuggestionKey,
         isText,
@@ -489,12 +516,10 @@ export async function importDocxWithTracking(
 
     // Step 5: Apply comments
     if (parsedComments.comments.length > 0) {
-      const searchRange = createSearchRangeFn(editor as any);
-
       const commentsResult = applyTrackedCommentsLocal({
         editor: editor as any,
         comments: parsedComments.comments,
-        searchRange: searchRange as any,
+        searchRange: searchRangeFn as any,
         commentKey,
         getCommentKey,
         isText,

@@ -115,7 +115,8 @@ describe('DOCX Import/Export Demo', () => {
     });
 
     it('should handle links', async () => {
-      const html = '<p>Visit <a href="https://example.com">our website</a>.</p>';
+      const html =
+        '<p>Visit <a href="https://example.com">our website</a>.</p>';
 
       const blob = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(blob);

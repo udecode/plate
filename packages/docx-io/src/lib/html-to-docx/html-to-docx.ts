@@ -12,6 +12,7 @@ import VText from 'virtual-dom/vnode/vtext';
 import { create } from 'xmlbuilder2';
 
 import {
+  commentsType,
   defaultDocumentOptions,
   defaultHTMLString,
   documentFileName,
@@ -324,6 +325,16 @@ async function addFilesToContainer(
   // Conversion to Word XML happens here
   // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   docxDocument.documentXML = await renderDocumentFile(docxDocument);
+
+  // Create comments relationship if there are comments (populated by renderDocumentFile)
+  if (docxDocument.comments.length > 0) {
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsType,
+      'comments.xml',
+      internalRelationship
+    );
+  }
 
   zip.folder(relsFolderName)!.file(
     '.rels',
