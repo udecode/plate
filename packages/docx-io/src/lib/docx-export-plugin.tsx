@@ -41,8 +41,10 @@ import type { DocumentMargins } from './html-to-docx';
 
 import { htmlToDocxBlob } from './exportDocx';
 import {
+  buildCommentThreads,
   buildUserNameMap,
   injectDocxTrackingTokens,
+  type DocxCommentThread,
   type DocxExportDiscussion,
   type InjectDocxTrackingTokensOptions,
 } from './exportTrackChanges';
@@ -186,6 +188,12 @@ export type DocxTrackingExportOptions = {
    * Used for extracting comment text from rich content.
    */
   nodeToString?: InjectDocxTrackingTokensOptions['nodeToString'];
+
+  /**
+   * Optional user name map for resolving suggestion authors.
+   * Merged with discussions-derived names (explicit map wins).
+   */
+  userNameMap?: Map<string, string>;
 };
 
 /**
@@ -455,10 +463,20 @@ async function exportToDocxInternal(
 
   // Process tracking tokens if enabled
   let processedValue: Value = value;
+  let commentThreads: DocxCommentThread[] | undefined;
 
   if (tracking) {
-    const userNameMap = buildUserNameMap(tracking.discussions);
+    const discussionUserMap = buildUserNameMap(tracking.discussions);
+    const userNameMap = tracking.userNameMap
+      ? new Map([...discussionUserMap, ...tracking.userNameMap])
+      : discussionUserMap;
+    commentThreads = buildCommentThreads(
+      tracking.discussions,
+      userNameMap,
+      tracking.nodeToString
+    );
     processedValue = injectDocxTrackingTokens(value, {
+      commentThreads,
       discussions: tracking.discussions,
       getCommentIds: tracking.getCommentIds,
       getSuggestions: tracking.getSuggestions,
@@ -481,6 +499,7 @@ async function exportToDocxInternal(
 
   // Convert to DOCX using browser-compatible implementation
   const blob = await htmlToDocxBlob(fullHtml, {
+    commentThreads: tracking ? commentThreads : undefined,
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,

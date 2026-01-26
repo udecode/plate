@@ -32,6 +32,8 @@ jspm_packages/
 # compiled output
 /dist
 /tmp
+/packages/docx-io/tmp
+/packages/docx-io/src/tmp
 /out-tsc
 **/build
 

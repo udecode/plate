@@ -62,6 +62,10 @@ export interface StoredComment {
   authorInitials: string;
   date?: string;
   text: string;
+  paraId?: string;
+  parentParaId?: string;
+  durableId?: string;
+  done?: boolean;
 }
 
 /** Tracking state maintained during document generation */

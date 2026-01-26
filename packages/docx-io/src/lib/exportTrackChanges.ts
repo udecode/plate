@@ -42,8 +42,12 @@ export type DocxExportUser = {
 
 /** Comment data from discussion thread */
 export type DocxExportComment = {
+  authorInitials?: string | null;
+  authorName?: string | null;
   contentRich?: unknown | null;
   createdAt?: Date | number | string | null;
+  id?: string | null;
+  parentCommentId?: string | null;
   user?: DocxExportUser | null;
   userId?: string | null;
 };
@@ -54,8 +58,29 @@ export type DocxExportDiscussion = {
   createdAt?: Date | number | string | null;
   documentContent?: string | null;
   id: string;
+  isResolved?: boolean | null;
   user?: DocxExportUser | null;
   userId?: string | null;
+};
+
+/** Normalized comment entry for DOCX thread export */
+export type DocxThreadComment = {
+  authorInitials: string;
+  authorName: string;
+  date?: string;
+  durableId?: string;
+  done?: boolean;
+  id: string;
+  parentId?: string;
+  paraId?: string;
+  text: string;
+};
+
+/** Normalized discussion thread for DOCX export */
+export type DocxCommentThread = {
+  comments: DocxThreadComment[];
+  id: string;
+  isResolved?: boolean;
 };
 
 /** Suggestion metadata stored on nodes */
@@ -70,6 +95,8 @@ export type DocxExportSuggestionMeta = {
 export type InjectDocxTrackingTokensOptions = {
   /** Discussion threads for comment metadata */
   discussions?: DocxExportDiscussion[] | null;
+  /** Precomputed comment threads for DOCX export */
+  commentThreads?: DocxCommentThread[] | null;
   /** Function to get comment IDs from a text node */
   getCommentIds?: (node: TText) => string[];
   /** Function to get suggestion metadata from a text node */
@@ -221,6 +248,114 @@ export function buildUserNameMap(
 }
 
 /**
+ * Normalize discussions into DOCX comment threads.
+ */
+export function buildCommentThreads(
+  discussions?: DocxExportDiscussion[] | null,
+  userNameMap?: Map<string, string>,
+  nodeToString?: (node: unknown) => string
+): DocxCommentThread[] {
+  const threads: DocxCommentThread[] = [];
+
+  discussions?.forEach((discussion) => {
+    if (!discussion?.id) return;
+
+    const discussionAuthorName =
+      discussion?.user?.name ??
+      userNameMap?.get(discussion?.userId ?? '') ??
+      discussion?.userId ??
+      'unknown';
+
+    const resolveAuthorName = (comment?: DocxExportComment | null) =>
+      comment?.authorName ??
+      comment?.user?.name ??
+      userNameMap?.get(comment?.userId ?? '') ??
+      comment?.userId ??
+      discussionAuthorName ??
+      'unknown';
+
+    const resolveCommentText = (comment?: DocxExportComment | null) => {
+      const commentContent = comment?.contentRich;
+      if (Array.isArray(commentContent) && nodeToString) {
+        try {
+          return nodeToString({
+            children: commentContent,
+            type: 'root',
+          });
+        } catch {
+          return '';
+        }
+      }
+      if (typeof commentContent === 'string') return commentContent;
+      return '';
+    };
+
+    const sourceComments = discussion?.comments ?? [];
+    const makeCommentKey = (commentId: string | undefined, index: number) =>
+      `${discussion.id}:${commentId ?? `comment-${index + 1}`}`;
+    const parentCommentKey = makeCommentKey(sourceComments[0]?.id, 0);
+
+    const comments: DocxThreadComment[] = [];
+
+    if (sourceComments.length === 0) {
+      const text =
+        discussion?.documentContent?.toString?.() ?? 'Imported comment';
+      comments.push({
+        authorInitials: toInitials(discussionAuthorName),
+        authorName: discussionAuthorName,
+        date: normalizeDate(discussion?.createdAt),
+        done: discussion?.isResolved ?? false,
+          id: discussion.id,
+          text,
+        });
+    } else {
+      const commentKeyById = new Map<string, string>();
+
+      sourceComments.forEach((comment, index) => {
+        if (comment?.id) {
+          commentKeyById.set(comment.id, makeCommentKey(comment.id, index));
+        }
+      });
+
+      sourceComments.forEach((comment, index) => {
+        const authorName = resolveAuthorName(comment);
+        const authorInitials =
+          comment?.authorInitials ?? toInitials(authorName);
+        const text =
+          resolveCommentText(comment) ||
+          (index === 0
+            ? discussion?.documentContent?.toString?.()
+            : '') ||
+          'Imported comment';
+        const explicitParentKey = comment?.parentCommentId
+          ? commentKeyById.get(comment.parentCommentId) ?? parentCommentKey
+          : undefined;
+        comments.push({
+          authorInitials,
+          authorName,
+          date: normalizeDate(comment?.createdAt ?? discussion?.createdAt),
+          done: discussion?.isResolved ?? false,
+          id: makeCommentKey(comment?.id, index),
+          parentId:
+            index === 0 ? undefined : explicitParentKey ?? parentCommentKey,
+          text,
+        });
+      });
+    }
+
+    if (comments.length > 0) {
+      threads.push({
+        comments,
+        id: discussion.id,
+        isResolved: discussion?.isResolved ?? false,
+      });
+    }
+  });
+
+  return threads;
+}
+
+/**
  * Convert a name to initials (max 2 characters).
  */
 export function toInitials(name?: null | string): string {
@@ -272,43 +407,37 @@ function resolveSuggestionAuthor(
  */
 function resolveCommentMeta(
   id: string,
-  discussions?: DocxExportDiscussion[] | null,
-  userNameMap?: Map<string, string>,
-  nodeToString?: (node: unknown) => string
+  options: InjectDocxTrackingTokensOptions,
+  commentThreadMap?: Map<string, DocxCommentThread>
 ): CommentPayload {
-  const discussion = discussions?.find((item) => item?.id === id);
-  const comment = discussion?.comments?.[0];
-  const commentContent = comment?.contentRich;
-  let text = '';
+  const thread =
+    commentThreadMap?.get(id) ??
+    buildCommentThreads(
+      options.discussions,
+      options.userNameMap,
+      options.nodeToString
+    ).find((item) => item.id === id);
 
-  if (Array.isArray(commentContent) && nodeToString) {
-    try {
-      text = nodeToString({
-        children: commentContent,
-        type: 'root',
-      });
-    } catch {
-      text = '';
-    }
-  }
+  const parentComment = thread?.comments?.[0];
 
-  if (!text) {
-    text = discussion?.documentContent ?? 'Imported comment';
-  }
-
-  const authorName =
-    comment?.user?.name ??
+  const discussion = options.discussions?.find((item) => item?.id === id);
+  const discussionAuthorName =
     discussion?.user?.name ??
-    userNameMap?.get(comment?.userId ?? '') ??
-    userNameMap?.get(discussion?.userId ?? '') ??
-    comment?.userId ??
+    options.userNameMap?.get(discussion?.userId ?? '') ??
     discussion?.userId ??
     'unknown';
 
-  const date = normalizeDate(comment?.createdAt ?? discussion?.createdAt);
+  const authorName =
+    parentComment?.authorName ?? discussionAuthorName ?? 'unknown';
+  const text =
+    parentComment?.text ??
+    discussion?.documentContent?.toString?.() ??
+    'Imported comment';
+  const date =
+    parentComment?.date ?? normalizeDate(discussion?.createdAt);
 
   return {
-    authorInitials: toInitials(authorName),
+    authorInitials: parentComment?.authorInitials ?? toInitials(authorName),
     authorName,
     date,
     id,
@@ -492,14 +621,10 @@ function buildResolvedSuggestionEndToken(
  */
 function buildResolvedCommentStartToken(
   id: string,
-  options: InjectDocxTrackingTokensOptions
+  options: InjectDocxTrackingTokensOptions,
+  commentThreadMap?: Map<string, DocxCommentThread>
 ): string {
-  const payload = resolveCommentMeta(
-    id,
-    options.discussions,
-    options.userNameMap,
-    options.nodeToString
-  );
+  const payload = resolveCommentMeta(id, options, commentThreadMap);
 
   return buildCommentStartToken(payload);
 }
@@ -530,6 +655,16 @@ export function injectDocxTrackingTokens(
 ): TNode[] {
   const cloned = cloneValue(value);
   const leaves: LeafEntry[] = [];
+  const commentThreads =
+    options.commentThreads ??
+    buildCommentThreads(
+      options.discussions,
+      options.userNameMap,
+      options.nodeToString
+    );
+  const commentThreadMap = new Map(
+    commentThreads.map((thread) => [thread.id, thread])
+  );
 
   // Collect all leaves from all top-level nodes
   cloned.forEach((node) => {
@@ -628,7 +763,11 @@ export function injectDocxTrackingTokens(
               leaf.suggestions.get(token.id) ?? { id: token.id },
               options.userNameMap
             )
-          : buildResolvedCommentStartToken(token.id, options)
+          : buildResolvedCommentStartToken(
+              token.id,
+              options,
+              commentThreadMap
+            )
       )
       .join('');
 

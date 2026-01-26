@@ -4,6 +4,8 @@
  * This module provides tools for converting HTML to DOCX format.
  */
 
+import type { DocxCommentThread } from '../exportTrackChanges';
+
 // Main converter function (default export)
 export { default as HTMLtoDOCX, default } from './html-to-docx';
 
@@ -96,6 +98,7 @@ export type NumberingOptions = {
 };
 
 export type DocumentOptions = {
+  commentThreads?: DocxCommentThread[] | null;
   complexScriptFontSize?: number | string;
   createdAt?: Date;
   creator?: string;

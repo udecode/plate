@@ -5,11 +5,15 @@ import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+import type { DocxCommentThread } from '../exportTrackChanges';
 import type { CommentPayload, StoredComment, TrackingState } from './tracking';
 
 import {
   applicationName,
   commentsType,
+  commentsExtendedType,
+  commentsIdsType,
+  commentsExtensibleType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
@@ -60,6 +64,28 @@ const getBulletChar = (level: number): string => {
     '\uF0A7', // Level 2: Square bullet (■)
   ];
   return bullets[level % bullets.length];
+};
+
+const COMMENT_HEX_LENGTH = 8;
+
+const generateRandomHexId = (used: Set<string>): string => {
+  let value = '';
+
+  do {
+    if (globalThis.crypto && 'getRandomValues' in globalThis.crypto) {
+      const buffer = new Uint32Array(1);
+      globalThis.crypto.getRandomValues(buffer);
+      value = buffer[0].toString(16).padStart(COMMENT_HEX_LENGTH, '0');
+    } else {
+      value = Math.floor(Math.random() * 0xffffffff)
+        .toString(16)
+        .padStart(COMMENT_HEX_LENGTH, '0');
+    }
+    value = value.toUpperCase();
+  } while (used.has(value));
+
+  used.add(value);
+  return value;
 };
 
 /** Virtual DOM tree node */
@@ -190,6 +216,7 @@ export interface FooterResult {
 
 /** DocxDocument constructor properties */
 export interface DocxDocumentProperties {
+  commentThreads?: DocxCommentThread[] | null;
   complexScriptFontSize?: number | null;
   createdAt?: Date;
   creator?: string;
@@ -385,9 +412,14 @@ class DocxDocument {
   _trackingState?: TrackingState;
   comments: StoredComment[];
   commentIdMap: Map<string, number>;
+  commentThreadMap: Map<string, DocxCommentThread>;
+  commentThreadProcessed: Set<string>;
+  commentThreads?: DocxCommentThread[] | null;
   lastCommentId: number;
   revisionIdMap: Map<string, number>;
   lastRevisionId: number;
+  usedCommentDurableIds: Set<string>;
+  usedCommentParaIds: Set<string>;
 
   constructor(properties: DocxDocumentProperties) {
     this.zip = properties.zip;
@@ -462,9 +494,16 @@ class DocxDocument {
     // Initialize tracking support
     this.comments = [];
     this.commentIdMap = new Map();
-    this.lastCommentId = 0;
+    this.commentThreads = properties.commentThreads ?? null;
+    this.commentThreadMap = new Map(
+      (properties.commentThreads ?? []).map((thread) => [thread.id, thread])
+    );
+    this.commentThreadProcessed = new Set();
+    this.lastCommentId = -1;
     this.revisionIdMap = new Map();
     this.lastRevisionId = 0;
+    this.usedCommentDurableIds = new Set();
+    this.usedCommentParaIds = new Set();
 
     this.generateContentTypesXML = this.generateContentTypesXML.bind(this);
     this.generateDocumentXML = this.generateDocumentXML.bind(this);
@@ -483,6 +522,11 @@ class DocxDocument {
     this.generateFooterXML = this.generateFooterXML.bind(this);
     this.generateSectionXML = generateSectionXML.bind(this);
     this.generateCommentsXML = this.generateCommentsXML.bind(this);
+    this.generateCommentsExtendedXML =
+      this.generateCommentsExtendedXML.bind(this);
+    this.generateCommentsIdsXML = this.generateCommentsIdsXML.bind(this);
+    this.generateCommentsExtensibleXML =
+      this.generateCommentsExtensibleXML.bind(this);
     this.ensureComment = this.ensureComment.bind(this);
     this.getCommentId = this.getCommentId.bind(this);
     this.getRevisionId = this.getRevisionId.bind(this);
@@ -526,6 +570,43 @@ class DocxDocument {
         .up();
 
       contentTypesXML.root().import(commentsContentTypeFragment);
+
+      const commentsExtendedContentTypeFragment = fragment({
+        defaultNamespace: { ele: namespaces.contentTypes },
+      })
+        .ele('Override')
+        .att('PartName', '/word/commentsExtended.xml')
+        .att(
+          'ContentType',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml'
+        )
+        .up();
+
+      const commentsIdsContentTypeFragment = fragment({
+        defaultNamespace: { ele: namespaces.contentTypes },
+      })
+        .ele('Override')
+        .att('PartName', '/word/commentsIds.xml')
+        .att(
+          'ContentType',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml'
+        )
+        .up();
+
+      const commentsExtensibleContentTypeFragment = fragment({
+        defaultNamespace: { ele: namespaces.contentTypes },
+      })
+        .ele('Override')
+        .att('PartName', '/word/commentsExtensible.xml')
+        .att(
+          'ContentType',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml'
+        )
+        .up();
+
+      contentTypesXML.root().import(commentsExtendedContentTypeFragment);
+      contentTypesXML.root().import(commentsIdsContentTypeFragment);
+      contentTypesXML.root().import(commentsExtensibleContentTypeFragment);
     }
 
     return contentTypesXML.toString({ prettyPrint: true });
@@ -970,6 +1051,15 @@ class DocxDocument {
       case commentsType:
         relationshipType = namespaces.comments;
         break;
+      case commentsExtendedType:
+        relationshipType = namespaces.commentsExtended;
+        break;
+      case commentsIdsType:
+        relationshipType = namespaces.commentsIds;
+        break;
+      case commentsExtensibleType:
+        relationshipType = namespaces.commentsExtensible;
+        break;
       case headerFileType:
         relationshipType = namespaces.headers;
         break;
@@ -1032,6 +1122,124 @@ class DocxDocument {
     const commentId = id || `comment-${this.lastCommentId + 1}`;
     let numericId = this.commentIdMap.get(commentId);
 
+    const threadKey = this.commentThreadMap.has(commentId)
+      ? commentId
+      : undefined;
+    const thread = threadKey ? this.commentThreadMap.get(threadKey) : undefined;
+
+    if (thread && !this.commentThreadProcessed.has(threadKey)) {
+      this.commentThreadProcessed.add(threadKey);
+
+      const threadCommentEntries = thread.comments.map((comment, index) => {
+        const commentKey = comment.id || `${threadKey}-${index + 1}`;
+        let threadNumericId = this.commentIdMap.get(commentKey);
+
+        if (threadNumericId === undefined) {
+          this.lastCommentId += 1;
+          threadNumericId = this.lastCommentId;
+          this.commentIdMap.set(commentKey, threadNumericId);
+        }
+
+        const paraId =
+          comment.paraId ?? generateRandomHexId(this.usedCommentParaIds);
+        if (!comment.paraId) {
+          comment.paraId = paraId;
+        }
+
+        const durableId =
+          comment.durableId ??
+          generateRandomHexId(this.usedCommentDurableIds);
+        if (!comment.durableId) {
+          comment.durableId = durableId;
+        }
+
+        return {
+          comment,
+          commentKey,
+          durableId,
+          index,
+          paraId,
+          threadNumericId,
+        };
+      });
+
+      const commentParaIdMap = new Map(
+        threadCommentEntries.map((entry) => [entry.commentKey, entry.paraId])
+      );
+      const parentEntry = threadCommentEntries[0];
+      const parentNumericId = parentEntry?.threadNumericId;
+
+      if (parentNumericId !== undefined) {
+        this.commentIdMap.set(threadKey, parentNumericId);
+        this.commentIdMap.set(commentId, parentNumericId);
+      }
+
+      threadCommentEntries.forEach((entry) => {
+        const { comment, threadNumericId, paraId, durableId, index } = entry;
+        const resolvedAuthorName =
+          comment.authorName || authorName || 'unknown';
+        const resolvedInitials =
+          comment.authorInitials || authorInitials || '';
+        const resolvedText = comment.text || text || 'Imported comment';
+        const parentKey =
+          comment.parentId ?? (index === 0 ? undefined : parentEntry?.commentKey);
+        const parentParaId =
+          parentKey && commentParaIdMap.has(parentKey)
+            ? commentParaIdMap.get(parentKey)
+            : index === 0
+              ? undefined
+              : parentEntry?.paraId;
+
+        const existing = this.comments.find(
+          (item) => item.id === threadNumericId
+        );
+
+        if (existing) {
+          if (!existing.authorName && resolvedAuthorName) {
+            existing.authorName = resolvedAuthorName;
+          }
+          if (!existing.authorInitials && resolvedInitials) {
+            existing.authorInitials = resolvedInitials;
+          }
+          if (!existing.date && (comment.date || date)) {
+            existing.date = comment.date || date;
+          }
+          if (!existing.text && resolvedText) {
+            existing.text = resolvedText;
+          }
+          if (!existing.paraId) {
+            existing.paraId = paraId;
+          }
+          if (!existing.durableId) {
+            existing.durableId = durableId;
+          }
+          if (!existing.parentParaId && parentParaId) {
+            existing.parentParaId = parentParaId;
+          }
+          if (existing.done === undefined && comment.done !== undefined) {
+            existing.done = comment.done;
+          }
+          return;
+        }
+
+        this.comments.push({
+          id: threadNumericId,
+          authorName: resolvedAuthorName,
+          authorInitials: resolvedInitials,
+          date: comment.date || date,
+          text: resolvedText,
+          paraId,
+          parentParaId,
+          durableId,
+          done: comment.done,
+        });
+      });
+
+      if (parentNumericId !== undefined) {
+        return parentNumericId;
+      }
+    }
+
     if (numericId === undefined) {
       this.lastCommentId += 1;
       numericId = this.lastCommentId;
@@ -1053,6 +1261,12 @@ class DocxDocument {
       if (!existing.text && text) {
         existing.text = text;
       }
+      if (!existing.paraId) {
+        existing.paraId = generateRandomHexId(this.usedCommentParaIds);
+      }
+      if (!existing.durableId) {
+        existing.durableId = generateRandomHexId(this.usedCommentDurableIds);
+      }
       return numericId;
     }
 
@@ -1062,6 +1276,8 @@ class DocxDocument {
       authorInitials: authorInitials || '',
       date,
       text: text || 'Imported comment',
+      paraId: generateRandomHexId(this.usedCommentParaIds),
+      durableId: generateRandomHexId(this.usedCommentDurableIds),
     });
 
     return numericId;
@@ -1083,11 +1299,14 @@ class DocxDocument {
   generateCommentsXML(): string {
     const commentsXML = create({
       encoding: 'UTF-8',
-      namespaceAlias: { w: namespaces.w },
+      namespaceAlias: { w: namespaces.w, w14: namespaces.w14 },
       standalone: true,
     }).ele('@w', 'comments');
 
     this.comments.forEach((comment) => {
+      const paraId =
+        comment.paraId ?? generateRandomHexId(this.usedCommentParaIds);
+      comment.paraId = paraId;
       const commentElement = commentsXML
         .ele('@w', 'comment')
         .att('@w', 'id', String(comment.id))
@@ -1105,9 +1324,22 @@ class DocxDocument {
         .split(/\r?\n/)
         .filter((line, index, arr) => line.length > 0 || arr.length === 1);
 
-      paragraphs.forEach((line) => {
-        commentElement
-          .ele('@w', 'p')
+      paragraphs.forEach((line, index) => {
+        const paragraphElement = commentElement.ele('@w', 'p');
+        if (index === paragraphs.length - 1 && paraId) {
+          paragraphElement.att('@w14', 'paraId', paraId);
+        }
+
+        if (index === 0) {
+          paragraphElement
+            .ele('@w', 'r')
+            .ele('@w', 'commentReference')
+            .att('@w', 'id', String(comment.id))
+            .up()
+            .up();
+        }
+
+        paragraphElement
           .ele('@w', 'r')
           .ele('@w', 't')
           .att('@xml', 'space', 'preserve')
@@ -1123,6 +1355,105 @@ class DocxDocument {
     commentsXML.up();
 
     return commentsXML.toString({ prettyPrint: true });
+  }
+
+  /**
+   * Generate the commentsExtended.xml file content.
+   */
+  generateCommentsExtendedXML(): string {
+    const commentsExtendedXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { mc: namespaces.mc, w15: namespaces.w15 },
+      standalone: true,
+    })
+      .ele('@w15', 'commentsEx')
+      .att('@mc', 'Ignorable', 'w15');
+
+    this.comments.forEach((comment) => {
+      const paraId =
+        comment.paraId ?? generateRandomHexId(this.usedCommentParaIds);
+      comment.paraId = paraId;
+
+      const commentEx = commentsExtendedXML
+        .ele('@w15', 'commentEx')
+        .att('@w15', 'paraId', paraId);
+
+      if (comment.parentParaId) {
+        commentEx.att('@w15', 'paraIdParent', comment.parentParaId);
+      }
+
+      commentEx.att('@w15', 'done', comment.done ? '1' : '0');
+      commentEx.up();
+    });
+
+    commentsExtendedXML.up();
+
+    return commentsExtendedXML.toString({ prettyPrint: true });
+  }
+
+  /**
+   * Generate the commentsIds.xml file content.
+   */
+  generateCommentsIdsXML(): string {
+    const commentsIdsXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { mc: namespaces.mc, w16cid: namespaces.w16cid },
+      standalone: true,
+    })
+      .ele('@w16cid', 'commentsIds')
+      .att('@mc', 'Ignorable', 'w16cid');
+
+    this.comments.forEach((comment) => {
+      const paraId =
+        comment.paraId ?? generateRandomHexId(this.usedCommentParaIds);
+      comment.paraId = paraId;
+      const durableId =
+        comment.durableId ??
+        generateRandomHexId(this.usedCommentDurableIds);
+      comment.durableId = durableId;
+
+      commentsIdsXML
+        .ele('@w16cid', 'commentId')
+        .att('@w16cid', 'paraId', paraId)
+        .att('@w16cid', 'durableId', durableId)
+        .up();
+    });
+
+    commentsIdsXML.up();
+
+    return commentsIdsXML.toString({ prettyPrint: true });
+  }
+
+  /**
+   * Generate the commentsExtensible.xml file content.
+   */
+  generateCommentsExtensibleXML(): string {
+    const commentsExtensibleXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { mc: namespaces.mc, w16cex: namespaces.w16cex },
+      standalone: true,
+    })
+      .ele('@w16cex', 'commentsExtensible')
+      .att('@mc', 'Ignorable', 'w16cex');
+
+    this.comments.forEach((comment) => {
+      const durableId =
+        comment.durableId ??
+        generateRandomHexId(this.usedCommentDurableIds);
+      comment.durableId = durableId;
+
+      const dateUtc = comment.date || this.modifiedAt.toISOString();
+
+      commentsExtensibleXML
+        .ele('@w16cex', 'commentExtensible')
+        .att('@w16cex', 'durableId', durableId)
+        .att('@w16cex', 'dateUtc', dateUtc)
+        .up();
+    });
+
+    commentsExtensibleXML.up();
+
+    return commentsExtensibleXML.toString({ prettyPrint: true });
   }
 }
 

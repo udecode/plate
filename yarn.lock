@@ -3424,6 +3424,7 @@ __metadata:
     path-is-absolute: "npm:^1.0.0"
     platejs: "workspace:^"
     react-compiler-runtime: "npm:^1.0.0"
+    tailwindcss: "npm:^4.1.18"
     underscore: "npm:^1.13.1"
     validator: "npm:^13.15.15"
     virtual-dom: "npm:^2.1.1"
@@ -18907,6 +18908,13 @@ __metadata:
   version: 4.1.8
   resolution: "tailwindcss@npm:4.1.8"
   checksum: 10c0/a566d049ee313f9c1638fd2a5fe95ae7e40bb35b58e92ed8d7c51880e71dff2a423dd430ff97444e2496c9c77b3f44ad4df48110b11484133019c1a8520d7bce
+  languageName: node
+  linkType: hard
+
+"tailwindcss@npm:^4.1.18":
+  version: 4.1.18
+  resolution: "tailwindcss@npm:4.1.18"
+  checksum: 10c0/c79263cea0b2c577859b02f28284caa4eb3844e4d0f563686726ca97817c045c5c395a55bc776daaa351ba9e4aefa9a75bfbb43c22d86f3c573eecc2b87d6bf1
   languageName: node
   linkType: hard
 

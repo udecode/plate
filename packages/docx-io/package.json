@@ -59,6 +59,7 @@
     "nanoid": "^5.0.9",
     "path-is-absolute": "^1.0.0",
     "react-compiler-runtime": "^1.0.0",
+    "tailwindcss": "^4.1.18",
     "underscore": "^1.13.1",
     "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
