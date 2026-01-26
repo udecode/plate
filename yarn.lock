@@ -3845,6 +3845,7 @@ __metadata:
     platejs: ">=52.0.11"
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
+    y-indexeddb: ">=9.0.12"
     y-webrtc: 10.3.0
   languageName: unknown
   linkType: soft
