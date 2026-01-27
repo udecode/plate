@@ -57,6 +57,8 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.13",
+    "@types/plantuml-encoder": "^1.4.2",
+    "@types/viz.js": "^2.1.5",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
