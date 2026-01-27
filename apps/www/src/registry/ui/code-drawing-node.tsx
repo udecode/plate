@@ -3,7 +3,11 @@
 import * as React from 'react';
 
 import { CodeDrawingElement as BaseCodeDrawingElement } from '@platejs/code-drawing/react';
-import type { CodeDrawingType, TCodeDrawingElement, ViewMode } from '@platejs/code-drawing';
+import type {
+  CodeDrawingType,
+  TCodeDrawingElement,
+  ViewMode,
+} from '@platejs/code-drawing';
 import type { PlateElementProps } from 'platejs/react';
 import {
   useEditorRef,

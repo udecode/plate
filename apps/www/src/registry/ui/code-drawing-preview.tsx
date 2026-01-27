@@ -2,7 +2,12 @@
 
 import * as React from 'react';
 
-import { VIEW_MODE, DEFAULT_MIN_HEIGHT, type CodeDrawingType, type ViewMode } from '@platejs/code-drawing';
+import {
+  VIEW_MODE,
+  DEFAULT_MIN_HEIGHT,
+  type CodeDrawingType,
+  type ViewMode,
+} from '@platejs/code-drawing';
 
 import { CodeDrawingToolbar } from './code-drawing-toolbar';
 import { CodeDrawingTextarea } from './code-drawing-textarea';

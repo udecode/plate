@@ -34,7 +34,9 @@ export function CodeDrawingPreviewArea({
       {toolbar && (
         <div
           className={
-            isMobile ? 'mb-2 flex justify-end px-2 mt-2' : 'absolute right-2 z-10 mt-2'
+            isMobile
+              ? 'mt-2 mb-2 flex justify-end px-2'
+              : 'absolute right-2 z-10 mt-2'
           }
         >
           {toolbar}
