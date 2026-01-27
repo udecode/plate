@@ -929,6 +929,10 @@ export async function convertVTreeToXML(
       xmlFragment
     );
   } else if (isVText(vTree)) {
+    const text = (vTree as VTextType).text;
+    if (!text || !text.trim()) {
+      return xmlFragment;
+    }
     const paragraphFragment = await xmlBuilder.buildParagraph(
       vTree as VTextType,
       {},

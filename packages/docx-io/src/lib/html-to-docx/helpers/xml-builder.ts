@@ -710,13 +710,10 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.color = fixupColorCode(style.color);
     }
 
-    if (
-      style['background-color'] &&
-      !colorlessColors.includes(style['background-color'])
-    ) {
-      modifiedAttributes.backgroundColor = fixupColorCode(
-        style['background-color']
-      );
+    const backgroundColor =
+      style['background-color'] ?? (style as Record<string, string>).backgroundColor;
+    if (backgroundColor && !colorlessColors.includes(backgroundColor)) {
+      modifiedAttributes.backgroundColor = fixupColorCode(backgroundColor);
     }
 
     if (
