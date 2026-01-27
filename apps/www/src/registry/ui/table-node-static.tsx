@@ -22,7 +22,10 @@ export function TableElementStatic({
       style={{ paddingLeft: marginLeft }}
     >
       <div className="group/table relative w-fit">
-        <table className="mr-0 ml-px table h-px table-fixed border-collapse">
+        <table
+          className="mr-0 ml-px table h-px table-fixed border-collapse"
+          style={{ borderCollapse: 'collapse', width: '100%' }}
+        >
           <tbody className="min-w-full">{children}</tbody>
         </table>
       </div>

@@ -1,12 +1,14 @@
 ---
-title: 评论功能
+title: 评论
 docs:
+  - route: https://pro.platejs.org/docs/examples/discussion
+    title: Plus
   - route: /docs/components/comment-node
-    title: 评论叶子节点
+    title: Comment Leaf
   - route: /docs/components/comment-toolbar-button
-    title: 评论工具栏按钮
+    title: Comment Toolbar Button
   - route: /docs/components/block-discussion
-    title: 区块讨论
+    title: Block Discussion
 ---
 
 <ComponentPreview name="discussion-demo" />
@@ -15,28 +17,28 @@ docs:
 
 ## 功能特性
 
-- **文本评论**: 以内联标注形式添加文本评论标记
-- **重叠评论**: 支持同一段文本上的多个评论
-- **草稿评论**: 在最终确定前创建评论草稿
-- **状态追踪**: 跟踪评论状态和用户交互
-- **讨论集成**: 与讨论插件配合实现完整协作功能
+- **文本评论:** 将评论作为文本标记添加,支持内联注释
+- **重叠评论:** 支持在同一文本上添加多个评论
+- **草稿评论:** 在最终确认前创建草稿评论
+- **状态追踪:** 追踪评论状态和用户交互
+- **讨论集成:** 与讨论插件配合使用,实现完整的协作功能
 
 </PackageInfo>
 
-## 套件使用
+## Kit 用法
 
 <Steps>
 
 ### 安装
 
-最快捷的添加评论功能方式是使用 `CommentKit`，它包含预配置的 `commentPlugin` 和相关组件以及它们的 [Plate UI](/docs/installation/plate-ui) 组件。
+添加评论功能最快的方式是使用 `CommentKit`,它包含预配置的 `commentPlugin` 和相关组件,以及对应的 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="comment-kit" />
 
 - [`CommentLeaf`](/docs/components/comment-node): 渲染评论文本标记
-- [`BlockDiscussion`](/docs/components/block-discussion): 渲染集成评论功能的讨论界面
+- [`BlockDiscussion`](/docs/components/block-discussion): 渲染带有评论集成的讨论 UI
 
-### 添加套件
+### 添加 Kit
 
 ```tsx
 import { createPlateEditor } from 'platejs/react';
@@ -44,7 +46,7 @@ import { CommentKit } from '@/components/editor/plugins/comment-kit';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     ...CommentKit,
   ],
 });
@@ -52,7 +54,7 @@ const editor = createPlateEditor({
 
 </Steps>
 
-## 手动配置
+## 手动用法
 
 <Steps>
 
@@ -64,14 +66,10 @@ npm install @platejs/comment
 
 ### 扩展评论插件
 
-创建带有状态管理扩展配置的评论插件：
+创建带有扩展配置的评论插件以进行状态管理:
 
 ```tsx
-import {
-  type ExtendConfig,
-  type Path,
-  isSlateString,
-} from 'platejs';
+import { type ExtendConfig, type Path, isSlateString } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
@@ -106,22 +104,22 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 );
 ```
 
-- `options.activeId`: 当前激活评论ID，用于视觉高亮
-- `options.commentingBlock`: 当前被评论区块的路径
-- `options.hoverId`: 当前悬停评论ID，用于悬停效果
-- `options.uniquePathMap`: 追踪评论解析唯一路径的映射表
+- `options.activeId`: 当前激活的评论 ID,用于视觉高亮
+- `options.commentingBlock`: 当前正在评论的块的路径
+- `options.hoverId`: 当前悬停的评论 ID,用于悬停效果
+- `options.uniquePathMap`: 用于评论解析的唯一路径映射
 - `render.node`: 指定 [`CommentLeaf`](/docs/components/comment-node) 来渲染评论文本标记
 
-### 添加点击处理
+### 添加点击处理器
 
-添加点击处理来管理激活评论状态：
+添加点击处理来管理激活评论状态:
 
 ```tsx
 export const commentPlugin = toTPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
     handlers: {
-      // 点击评论标记时设置激活评论
+      // Set active comment when clicking on comment marks
       onClick: ({ api, event, setOption, type }) => {
         let leaf = event.target as HTMLElement;
         let isSet = false;
@@ -154,26 +152,27 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
         if (!isSet) unsetActiveComment();
       },
     },
-    // ... 之前的options和render配置
+    // ... previous options and render
   })
 );
 ```
 
-点击处理器追踪当前激活的评论：
-- **检测评论点击**: 遍历DOM查找评论元素
-- **设置激活状态**: 点击评论时更新`activeId`
-- **清除状态**: 点击评论外部时取消`activeId`
+点击处理器追踪当前激活的评论:
+
+- **检测评论点击**: 遍历 DOM 以找到评论元素
+- **设置激活状态**: 点击评论时更新 `activeId`
+- **清除状态**: 点击评论外部时取消 `activeId`
 - **视觉反馈**: 在评论组件中启用悬停/激活样式
 
-### 扩展转换
+### 扩展 Transforms
 
-扩展`setDraft`转换以增强功能：
+扩展 `setDraft` transform 以增强功能:
 
 ```tsx
 export const commentPlugin = toTPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
-    // ... 之前的配置
+    // ... previous configuration
   })
 )
   .extendTransforms(
@@ -207,7 +206,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 
 ### 添加工具栏按钮
 
-您可以在[工具栏](/docs/toolbar)中添加[`CommentToolbarButton`](/docs/components/comment-toolbar-button)来为选中文本添加评论。
+你可以将 [`CommentToolbarButton`](/docs/components/comment-toolbar-button) 添加到你的[工具栏](/docs/toolbar)中,以便在选中文本上添加评论。
 
 ### 添加插件
 
@@ -216,7 +215,7 @@ import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     commentPlugin,
   ],
 });
@@ -224,14 +223,14 @@ const editor = createPlateEditor({
 
 ### 讨论集成
 
-评论插件可与[讨论插件](/docs/discussion)配合实现完整协作：
+评论插件与[讨论插件](/docs/discussion)配合使用,实现完整的协作功能:
 
 ```tsx
 import { discussionPlugin } from '@/components/editor/plugins/discussion-kit';
 
 const editor = createPlateEditor({
   plugins: [
-    // ...其他插件
+    // ...otherPlugins,
     discussionPlugin,
     commentPlugin,
   ],
@@ -244,96 +243,98 @@ const editor = createPlateEditor({
 
 <KeyTable>
   <KeyTableItem hotkey="Cmd + Shift + M">
-    在选中文本上添加评论
+    在选中文本上添加评论。
   </KeyTableItem>
 </KeyTable>
 
 ## Plate Plus
 
-<ComponentPreviewPro name="comment-pro" />
+<ComponentPreviewPro name="discussion-pro" />
 
 ## 插件
 
 ### `CommentPlugin`
 
-用于创建和管理文本评论的插件，具有状态追踪和讨论集成功能。
+用于创建和管理文本评论的插件,支持状态追踪和讨论集成。
 
 <API name="CommentPlugin">
-<APIOptions>
-  <APIItem name="activeId" type="string | null">
-    当前激活评论ID，用于视觉高亮。内部用于状态追踪。
-  </APIItem>
-  <APIItem name="commentingBlock" type="Path | null">
-    当前被评论区块的路径。
-  </APIItem>
-  <APIItem name="hoverId" type="string | null">
-    当前悬停评论ID，用于悬停效果。
-  </APIItem>
-  <APIItem name="uniquePathMap" type="Map<string, Path>">
-    追踪评论解析唯一路径的映射表。
-  </APIItem>
-</APIOptions>
+  <APIOptions>
+    <APIItem name="activeId" type="string | null">
+      当前激活的评论 ID,用于视觉高亮。内部用于追踪状态。
+    </APIItem>
+    <APIItem name="commentingBlock" type="Path | null">
+      当前正在评论的块的路径。
+    </APIItem>
+    <APIItem name="hoverId" type="string | null">
+      当前悬停的评论 ID,用于悬停效果。
+    </APIItem>
+    <APIItem name="uniquePathMap" type="Map<string, Path>">
+      用于评论解析的唯一路径映射。
+    </APIItem>
+  </APIOptions>
 </API>
 
 ## API
 
 ### `api.comment.has`
 
-检查编辑器中是否存在指定ID的评论。
+检查编辑器中是否存在指定 ID 的评论。
 
 <API name="has">
-<APIParameters>
-  <APIItem name="options" type="{ id: string }">
-    包含要检查评论ID的选项。
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  评论是否存在。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="options" type="{ id: string }">
+      包含要检查的评论 ID 的选项。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">评论是否存在。</APIReturns>
 </API>
 
 ### `api.comment.node`
 
-获取评论节点entry。
+获取评论节点条目。
 
 <API name="node">
-<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
-  查找节点的选项。
-</APIOptions>
-<APIReturns type="NodeEntry<TCommentText> | undefined">
-  找到的评论节点entry。
-</APIReturns>
+  <APIOptions
+    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    optional
+  >
+    查找节点的选项。
+  </APIOptions>
+  <APIReturns type="NodeEntry<TCommentText> | undefined">
+    如果找到则返回评论节点条目。
+  </APIReturns>
 </API>
 
 ### `api.comment.nodeId`
 
-从叶子节点获取评论ID。
+从叶子节点获取评论的 ID。
 
 <API name="nodeId">
-<APIParameters>
-  <APIItem name="leaf" type="TCommentText">
-    评论叶子节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="string | undefined">
-  找到的评论ID。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="leaf" type="TCommentText">
+      评论叶子节点。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string | undefined">如果找到则返回评论 ID。</APIReturns>
 </API>
 
 ### `api.comment.nodes`
 
-获取所有匹配选项的评论节点entry。
+获取匹配选项的所有评论节点条目。
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions & { id?: string; isDraft?: boolean }" optional>
-  查找节点的选项。
-</APIOptions>
-<APIReturns type="NodeEntry<TCommentText>[]">
-  评论节点entry数组。
-</APIReturns>
+  <APIOptions
+    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    optional
+  >
+    查找节点的选项。
+  </APIOptions>
+  <APIReturns type="NodeEntry<TCommentText>[]">
+    评论节点条目数组。
+  </APIReturns>
 </API>
 
-## 转换
+## Transforms
 
 ### `tf.comment.removeMark`
 
@@ -346,21 +347,31 @@ const editor = createPlateEditor({
 在当前选区设置草稿评论标记。
 
 <API name="setDraft">
-<APIOptions type="SetNodesOptions" optional>
-  设置草稿评论的选项。
-</APIOptions>
+  <APIOptions type="SetNodesOptions" optional>
+    设置草稿评论的选项。
+  </APIOptions>
 </API>
 
 ### `tf.comment.unsetMark`
 
-从编辑器中取消设置指定ID的评论节点。
+从编辑器中取消指定 ID 的评论节点。
 
 <API name="unsetMark">
 <APIParameters>
-  <APIItem name="options" type="{ id: string }">
-    包含要取消评论ID的选项。
+  <APIItem name="options" type="{ id: string; transient?: boolean }">
+    取消评论标记的选项。
   </APIItem>
 </APIParameters>
+
+<APIOptions type="object">
+  <APIItem name="id" type="string">
+    要取消的评论 ID。
+  </APIItem>
+  <APIItem name="transient" type="boolean" optional>
+    当为 true 时,一次性移除所有 AI 评论。
+    - **默认值:** `false`
+  </APIItem>
+</APIOptions>
 </API>
 
 ## 工具函数
@@ -370,117 +381,105 @@ const editor = createPlateEditor({
 获取评论节点中非草稿评论的数量。
 
 <API name="getCommentCount">
-<APIParameters>
-  <APIItem name="node" type="TCommentText">
-    评论节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="number">
-  评论数量。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TCommentText">
+      评论节点。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="number">评论数量。</APIReturns>
 </API>
 
 ### `getCommentKey`
 
-基于提供的ID生成评论key。
+根据提供的 ID 生成评论键。
 
 <API name="getCommentKey">
-<APIParameters>
-  <APIItem name="id" type="string">
-    评论ID。
-  </APIItem>
-</APIParameters>
-<APIReturns type="string">
-    生成的评论key。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string">
+      评论的 ID。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string">生成的评论键。</APIReturns>
 </API>
 
 ### `getCommentKeyId`
 
-从评论key中提取评论ID。
+从评论键中提取评论 ID。
 
 <API name="getCommentKeyId">
-<APIParameters>
-  <APIItem name="key" type="string">
-    评论key。
-  </APIItem>
-</APIParameters>
-<APIReturns type="string">
-    提取的评论ID。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="key" type="string">
+      评论键。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string">提取的评论 ID。</APIReturns>
 </API>
 
 ### `getCommentKeys`
 
-返回给定节点中存在的评论key数组。
+返回给定节点中存在的评论键数组。
 
 <API name="getCommentKeys">
-<APIParameters>
-  <APIItem name="node" type="TCommentText">
-    要检查评论key的节点。
-  </APIItem>
-</APIParameters>
-<APIReturns type="string[]">
-    评论key数组。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TCommentText">
+      要检查评论键的节点。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="string[]">评论键数组。</APIReturns>
 </API>
 
 ### `getDraftCommentKey`
 
-获取草稿评论使用的key。
+获取用于草稿评论的键。
 
 <API name="getDraftCommentKey">
-<APIReturns type="string">
-    草稿评论key。
-</APIReturns>
+  <APIReturns type="string">草稿评论键。</APIReturns>
 </API>
 
 ### `isCommentKey`
 
-检查给定key是否为评论key。
+检查给定的键是否是评论键。
 
 <API name="isCommentKey">
-<APIParameters>
-  <APIItem name="key" type="string">
-    要检查的key。
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-    是否为评论key。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="key" type="string">
+      要检查的键。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">是否是评论键。</APIReturns>
 </API>
 
 ### `isCommentNodeById`
 
-检查给定节点是否为指定ID的评论。
+检查给定节点是否是具有指定 ID 的评论。
 
 <API name="isCommentNodeById">
-<APIParameters>
-  <APIItem name="node" type="TNode">
-    要检查的节点。
-  </APIItem>
-  <APIItem name="id" type="string">
-    评论ID。
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-    节点是否为指定ID的评论。
-</APIReturns>
+  <APIParameters>
+    <APIItem name="node" type="TNode">
+      要检查的节点。
+    </APIItem>
+    <APIItem name="id" type="string">
+      评论的 ID。
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">
+    节点是否是具有指定 ID 的评论。
+  </APIReturns>
 </API>
 
 ## 类型
 
 ### `TCommentText`
 
-可包含评论的文本节点。
+可以包含评论的文本节点。
 
 <API name="TCommentText">
-<APIAttributes>
-  <APIItem name="comment" type="boolean" optional>
-    该文本节点是否包含评论。
-  </APIItem>
-  <APIItem name="comment_<id>" type="boolean" optional>
-    按评论ID索引的评论数据。一个文本节点可包含多个评论。
-  </APIItem>
-</APIAttributes>
+  <APIAttributes>
+    <APIItem name="comment" type="boolean" optional>
+      此文本节点是否包含评论。
+    </APIItem>
+    <APIItem name="comment_<id>" type="boolean" optional>
+      按评论 ID 键入的评论数据。一个文本节点中可以存在多个评论。
+    </APIItem>
+  </APIAttributes>
 </API>

@@ -76,6 +76,7 @@
         "https://platejs.org/r/superscript-docs",
         "https://platejs.org/r/underline-docs",
         "https://platejs.org/r/csv-docs",
+        "https://platejs.org/r/docx-io-docs",
         "https://platejs.org/r/docx-docs",
         "https://platejs.org/r/html-docs",
         "https://platejs.org/r/markdown-docs",
@@ -1078,7 +1079,20 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Serializing Docx",
+      "description": "Import DOCX files and export Plate content to Word documents.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/docx-io.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/docx-io.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "docx-io-docs",
+      "title": "DOCX Import/Export",
+      "type": "registry:file"
+    },
+    {
+      "description": "Paste content from Microsoft Word with automatic formatting.",
       "files": [
         {
           "path": "../../docs/(plugins)/(serializing)/docx.mdx",
@@ -1087,7 +1101,7 @@
         }
       ],
       "name": "docx-docs",
-      "title": "Serializing Docx",
+      "title": "DOCX Paste",
       "type": "registry:file"
     },
     {

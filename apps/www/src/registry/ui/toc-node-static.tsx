@@ -92,3 +92,56 @@ const getHeadingList = (editor?: SlateEditor) => {
 
   return headingList;
 };
+
+/**
+ * DOCX-compatible TOC component.
+ * Renders TOC items as anchor links for proper Word internal navigation.
+ */
+export function TocElementDocx(props: SlateElementProps) {
+  const { editor } = props;
+  const headingList = getHeadingList(editor);
+
+  const depthIndent: Record<number, string> = {
+    1: '0',
+    2: '24pt',
+    3: '48pt',
+  };
+
+  return (
+    <SlateElement {...props}>
+      <div
+        style={{
+          marginBottom: '12pt',
+          padding: '8pt 0',
+        }}
+      >
+        {headingList.length > 0 ? (
+          headingList.map((item) => (
+            <p
+              key={item.id}
+              style={{
+                margin: '4pt 0',
+                paddingLeft: depthIndent[item.depth] || '0',
+              }}
+            >
+              <a
+                href={`#${item.id}`}
+                style={{
+                  color: '#0066cc',
+                  textDecoration: 'underline',
+                }}
+              >
+                {item.title}
+              </a>
+            </p>
+          ))
+        ) : (
+          <p style={{ color: '#666', fontSize: '10pt' }}>
+            Create a heading to display the table of contents.
+          </p>
+        )}
+      </div>
+      {props.children}
+    </SlateElement>
+  );
+}

@@ -29,7 +29,10 @@ export function ImageElementStatic(
             src={url}
           />
           {caption && (
-            <figcaption className="mx-auto mt-2 h-[24px] max-w-full">
+            <figcaption
+              className="mx-auto mt-2 h-[24px] max-w-full"
+              style={{ textAlign: 'center' }}
+            >
               {NodeApi.string(caption[0])}
             </figcaption>
           )}

@@ -416,6 +416,13 @@ export const pluginsNavItems: SidebarNavItem[] = [
         titleCn: 'DOCX',
       },
       {
+        description: 'Import DOCX files and export to Word.',
+        href: '/docs/docx-io',
+        label: 'New',
+        title: 'DOCX Import/Export',
+        titleCn: 'DOCX 导入/导出',
+      },
+      {
         description: 'Copy paste from HTML to Slate.',
         href: '/docs/html',
         title: 'HTML',

@@ -1,0 +1,406 @@
+---
+title: DOCX Import/Export
+description: Import DOCX files and export Plate content to Word documents.
+---
+
+<PackageInfo>
+
+## Features
+
+- **Import DOCX files** to Plate format with full content and comment extraction
+- **Export to DOCX** with support for all common formatting, tables, lists, and images
+- Support for headers, footers, page orientation, and margins
+- Configurable CSS styles and fonts for export
+
+</PackageInfo>
+
+<Callout type="info">
+  Looking for paste from Word support? See [DOCX Paste](/docs/docx).
+</Callout>
+
+## Installation
+
+```bash
+npm install @platejs/docx-io
+```
+
+## Import DOCX
+
+<Steps>
+
+### Import DOCX File
+
+Use `importDocx` to convert a DOCX file to Plate nodes:
+
+```tsx
+import { importDocx } from '@platejs/docx-io';
+
+const handleFileUpload = async (file: File) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await importDocx(editor, arrayBuffer);
+
+  // Insert nodes into editor
+  editor.tf.insertNodes(result.nodes);
+
+  // Handle comments if needed
+  for (const comment of result.comments) {
+    console.log(`Comment ${comment.id}: ${comment.text}`);
+  }
+
+  // Check for conversion warnings
+  if (result.warnings.length > 0) {
+    console.warn('Conversion warnings:', result.warnings);
+  }
+};
+```
+
+</Steps>
+
+## Export DOCX
+
+<Steps>
+
+### Basic Export
+
+Use `exportToDocx` to convert Plate content to a DOCX file:
+
+```tsx
+import { exportToDocx, downloadDocx } from '@platejs/docx-io';
+
+const handleExport = async () => {
+  const blob = await exportToDocx(editor.children, {
+    orientation: 'portrait',
+    margins: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
+    fontFamily: 'Calibri',
+  });
+
+  downloadDocx(blob, 'document.docx');
+};
+```
+
+Or use the combined function:
+
+```tsx
+import { exportEditorToDocx } from '@platejs/docx-io';
+
+await exportEditorToDocx(editor.children, 'document', {
+  orientation: 'portrait',
+});
+```
+
+### With Editor Plugins
+
+For accurate serialization, provide your editor plugins:
+
+```tsx
+import { exportToDocx } from '@platejs/docx-io';
+import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { DocxExportKit } from '@/components/editor/plugins/docx-export-kit';
+
+const blob = await exportToDocx(editor.children, {
+  editorPlugins: [...BaseEditorKit, ...DocxExportKit],
+});
+```
+
+### Custom Styles
+
+Customize the export styles:
+
+```tsx
+import { exportToDocx, DOCX_EXPORT_STYLES } from '@platejs/docx-io';
+
+const blob = await exportToDocx(editor.children, {
+  customStyles: `
+    .custom-highlight { background-color: #ffeb3b; }
+    h1 { color: #1a1a1a; }
+  `,
+  fontFamily: 'Times New Roman',
+});
+```
+
+### Using DocxExportPlugin
+
+For plugin-based API access:
+
+```tsx
+import { DocxExportPlugin } from '@platejs/docx-io';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    DocxExportPlugin.configure({
+      options: {
+        editorPlugins: myPlugins,
+        editorStaticComponent: MyEditorStatic,
+      },
+    }),
+  ],
+});
+
+// Export using plugin API
+const blob = await editor.api.docxExport.exportToBlob({
+  orientation: 'landscape',
+});
+
+editor.api.docxExport.download(blob, 'document');
+
+// Or use transform for export + download
+await editor.tf.docxExport.exportAndDownload('document', {
+  orientation: 'portrait',
+});
+```
+
+</Steps>
+
+## DOCX Export Kit
+
+The `DocxExportKit` provides DOCX-optimized static components for elements that require special handling:
+
+<ComponentSource name="docx-export-kit" />
+
+Components included:
+- **Code blocks**: Inline syntax highlighting with line breaks
+- **Columns**: Table layout instead of flexbox
+- **Equations**: Inline font styling (KaTeX doesn't work in DOCX)
+- **Callouts**: Table layout for icon + content
+- **TOC**: Anchor links with proper paragraph breaks
+
+## Plugins
+
+### DocxExportPlugin
+
+Plugin providing DOCX export functionality with typed API methods.
+
+<API name="DocxExportPlugin">
+<APIOptions>
+<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+Plugins to use for HTML serialization. If not provided, uses the editor's current plugins.
+</APIItem>
+<APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
+React component to use for static rendering.
+</APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `importDocx`
+
+Import a DOCX file and convert it to Plate nodes.
+
+<API name="importDocx">
+<APIParameters>
+<APIItem name="editor" type="SlateEditor">
+The Plate editor instance.
+</APIItem>
+<APIItem name="arrayBuffer" type="ArrayBuffer">
+The DOCX file as ArrayBuffer.
+</APIItem>
+<APIItem name="options" type="ImportDocxOptions" optional>
+Import options.
+</APIItem>
+</APIParameters>
+
+<APIOptions type="ImportDocxOptions">
+<APIItem name="rtf" type="string" optional>
+RTF data for image extraction.
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<ImportDocxResult>">
+<APIItem name="nodes" type="TNode[]">
+Deserialized editor nodes.
+</APIItem>
+<APIItem name="comments" type="DocxComment[]">
+Comments extracted from the DOCX file.
+</APIItem>
+<APIItem name="warnings" type="string[]">
+Warnings from mammoth conversion.
+</APIItem>
+</APIReturns>
+</API>
+
+### `exportToDocx`
+
+Convert Plate content to a DOCX blob.
+
+<API name="exportToDocx">
+<APIParameters>
+<APIItem name="value" type="Value">
+The Plate editor value (array of nodes).
+</APIItem>
+<APIItem name="options" type="DocxExportOptions" optional>
+Export options.
+</APIItem>
+</APIParameters>
+
+<APIOptions type="DocxExportOptions">
+<APIItem name="orientation" type="'portrait' | 'landscape'" optional>
+Page orientation.
+
+- **Default:** `'portrait'`
+</APIItem>
+<APIItem name="margins" type="DocxExportMargins" optional>
+Page margins in twentieths of a point (1 inch = 1440).
+
+- **Default:** `{ top: 1440, bottom: 1440, left: 1440, right: 1440, header: 720, footer: 720, gutter: 0 }`
+</APIItem>
+<APIItem name="fontFamily" type="string" optional>
+Font family for the document body. Overrides default Calibri font.
+</APIItem>
+<APIItem name="customStyles" type="string" optional>
+Additional CSS styles to include. Appended after default DOCX_EXPORT_STYLES.
+</APIItem>
+<APIItem name="title" type="string" optional>
+Document title for metadata.
+</APIItem>
+<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+Plugins for HTML serialization.
+</APIItem>
+<APIItem name="editorStaticComponent" type="React.ComponentType" optional>
+Component for static rendering.
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<Blob>">
+A Blob containing the DOCX file.
+</APIReturns>
+</API>
+
+### `downloadDocx`
+
+Download a DOCX blob as a file.
+
+<API name="downloadDocx">
+<APIParameters>
+<APIItem name="blob" type="Blob">
+The DOCX blob to download.
+</APIItem>
+<APIItem name="filename" type="string">
+The filename (with or without .docx extension).
+</APIItem>
+</APIParameters>
+</API>
+
+### `exportEditorToDocx`
+
+Export and download editor content as a DOCX file in one call.
+
+<API name="exportEditorToDocx">
+<APIParameters>
+<APIItem name="value" type="Value">
+The Plate editor value.
+</APIItem>
+<APIItem name="filename" type="string">
+The filename for download.
+</APIItem>
+<APIItem name="options" type="DocxExportOptions" optional>
+Export options (same as `exportToDocx`).
+</APIItem>
+</APIParameters>
+</API>
+
+### api.docxExport.exportToBlob
+
+Convert editor content to a DOCX blob using the plugin API.
+
+<API name="api.docxExport.exportToBlob">
+<APIOptions type="DocxExportOperationOptions">
+<APIItem name="orientation" type="'portrait' | 'landscape'" optional>
+Page orientation.
+</APIItem>
+<APIItem name="margins" type="DocxExportMargins" optional>
+Page margins.
+</APIItem>
+<APIItem name="fontFamily" type="string" optional>
+Font family.
+</APIItem>
+<APIItem name="customStyles" type="string" optional>
+Additional CSS styles.
+</APIItem>
+<APIItem name="title" type="string" optional>
+Document title.
+</APIItem>
+</APIOptions>
+
+<APIReturns type="Promise<Blob>">
+A Blob containing the DOCX file.
+</APIReturns>
+</API>
+
+### api.docxExport.download
+
+Download a DOCX blob as a file.
+
+<API name="api.docxExport.download">
+<APIParameters>
+<APIItem name="blob" type="Blob">
+The DOCX blob.
+</APIItem>
+<APIItem name="filename" type="string">
+The filename.
+</APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### tf.docxExport.exportAndDownload
+
+Export and download editor content as a DOCX file.
+
+<API name="tf.docxExport.exportAndDownload">
+<APIParameters>
+<APIItem name="filename" type="string">
+The filename for download.
+</APIItem>
+<APIItem name="options" type="DocxExportOperationOptions" optional>
+Export options.
+</APIItem>
+</APIParameters>
+</API>
+
+## Types
+
+### DocxComment
+
+```ts
+type DocxComment = {
+  id: string;
+  text: string;
+};
+```
+
+### DocxExportMargins
+
+```ts
+type DocxExportMargins = {
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+  header?: number;
+  footer?: number;
+  gutter?: number;
+};
+```
+
+## Constants
+
+### DOCX_EXPORT_STYLES
+
+Default CSS styles optimized for Microsoft Word HTML rendering:
+
+- Calibri font (Microsoft Office default)
+- 11pt font size with 1.5 line height
+- Heading hierarchy (24pt to 10pt)
+- Table styles with borders
+- Code block styling with Courier New
+- Blockquote styling with left border
+
+## Known Limitations
+
+- **Mobile browsers**: Export may not work reliably on mobile browsers due to limitations with blob handling and downloads.
+- **Complex layouts**: Some complex CSS layouts (flexbox, grid) are converted to table-based layouts for Word compatibility.
+- **Custom fonts**: Only system fonts available in Word will render correctly.

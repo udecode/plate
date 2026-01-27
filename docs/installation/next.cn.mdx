@@ -3,23 +3,23 @@ title: Next.js
 description: 在 Next.js 中安装和配置 Plate UI
 ---
 
-<Callout type="warning" title="先决条件">
-  开始前，请确保已安装并配置 [shadcn/ui](https://ui.shadcn.com/docs/installation/next) 和 [Plate UI](/docs/installation/plate-ui)。
+<Callout type="warning" title="前置条件">
+  开始之前，请确保您已安装并配置好 [shadcn/ui](https://ui.shadcn.com/docs/installation/next) 和 [Plate UI](/docs/installation/plate-ui)。
 </Callout>
 
-本指南将逐步引导您在 Next.js 应用中构建 Plate 编辑器。
+本指南将引导您在 Next.js 应用程序中逐步构建 Plate 编辑器。
 
 <Steps>
 
-### 创建第一个编辑器
+### 创建您的第一个编辑器
 
-首先在项目中添加核心的 [Editor](/docs/components/editor) 组件：
+首先将核心 [Editor](/docs/components/editor) 组件添加到您的项目中：
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/editor
+npx shadcn@latest add @plate/editor
 ```
 
-接下来创建一个基础编辑器页面。这个示例在 `EditorContainer` 中设置了一个简单编辑器。
+接下来，创建一个基础编辑器页面。此示例在 `EditorContainer` 中设置了一个简单的编辑器。
 
 ```tsx showLineNumbers title="app/editor/page.tsx"
 'use client';
@@ -34,7 +34,7 @@ export default function MyEditorPage() {
   return (
     <Plate editor={editor}>      {/* 提供编辑器上下文 */}
       <EditorContainer>         {/* 设置编辑器区域样式 */}
-        <Editor placeholder="输入您精彩的内容..." />
+        <Editor placeholder="在这里输入精彩内容..." />
       </EditorContainer>
     </Plate>
   );
@@ -42,25 +42,25 @@ export default function MyEditorPage() {
 ```
 
 <Callout type="info">
-  `usePlateEditor` 会创建一个记忆化的编辑器实例，确保在重新渲染时保持稳定。如需非记忆化版本，请使用 `createPlateEditor`。
+  `usePlateEditor` 创建一个记忆化的编辑器实例，确保在重新渲染时保持稳定。如需非记忆化版本，请使用 `createPlateEditor`。
 </Callout>
 
 <ComponentPreview name="installation-next-01-editor-demo" height="200px" />
 
 ### 添加基础标记
 
-通过文本格式化增强编辑器功能。添加 **基础节点套件**、[FixedToolbar](/docs/components/fixed-toolbar) 和 [MarkToolbarButton](/docs/components/mark-toolbar-button) 组件：
+通过文本格式化增强您的编辑器。添加 **Basic Nodes Kit**、[FixedToolbar](/docs/components/fixed-toolbar) 和 [MarkToolbarButton](/docs/components/mark-toolbar-button) 组件：
 
 ```bash
-npx shadcn@latest add https://platejs.org/r/basic-nodes-kit https://platejs.org/r/fixed-toolbar https://platejs.org/r/mark-toolbar-button
+npx shadcn@latest add @plate/basic-nodes-kit @plate/fixed-toolbar @plate/mark-toolbar-button
 ```
 
 <Callout type="info">
-  `basic-nodes-kit` 包含所有基础插件（加粗、斜体、下划线、标题、引用块等）及其组件，我们将在后续步骤中使用。
+  `basic-nodes-kit` 包含所有基础插件（粗体、斜体、下划线、标题、引用等）及其组件，我们将在后续步骤中使用。
 </Callout>
 
-更新编辑器页面以包含这些组件和基础标记插件。
-此示例添加了加粗、斜体和下划线功能。
+更新您的编辑器页面以包含这些组件和基础标记插件。
+此示例添加了粗体、斜体和下划线功能。
 
 ```tsx showLineNumbers title="app/editor/page.tsx" {4,6-10,17-18,20-33,37-38,43-47}
 'use client';
@@ -86,32 +86,32 @@ const initialValue: Value = [
   {
     type: 'p',
     children: [
-      { text: '你好！试试' },
-      { text: '加粗', bold: true },
-      { text: '、' },
-      { text: '斜体', italic: true },
-      { text: '和' },
-      { text: '下划线', underline: true },
-      { text: '格式。' },
+      { text: 'Hello! Try out the ' },
+      { text: 'bold', bold: true },
+      { text: ', ' },
+      { text: 'italic', italic: true },
+      { text: ', and ' },
+      { text: 'underline', underline: true },
+      { text: ' formatting.' },
     ],
   },
 ];
 
 export default function MyEditorPage() {
   const editor = usePlateEditor({
-    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // 添加标记插件
-    value: initialValue,         // 设置初始内容
+    plugins: [BoldPlugin, ItalicPlugin, UnderlinePlugin], // Add the mark plugins
+    value: initialValue,         // Set initial content
   });
 
   return (
     <Plate editor={editor}>
       <FixedToolbar className="justify-start rounded-t-lg">
-        <MarkToolbarButton nodeType="bold" tooltip="加粗 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
+        <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
     </Plate>
   );
@@ -122,7 +122,7 @@ export default function MyEditorPage() {
 
 ### 添加基础元素
 
-通过自定义组件引入块级元素如标题和引用块。
+引入块级元素，如标题和引用块，并使用自定义组件。
 
 ```tsx showLineNumbers title="app/editor/page.tsx" {7,9-11,20,23,25,28-35,52-55,63-67}
 'use client';
@@ -149,22 +149,22 @@ import { Editor, EditorContainer } from '@/components/ui/editor';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
 import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
-import { ToolbarButton } from '@/components/ui/toolbar'; // 通用工具栏按钮
+import { ToolbarButton } from '@/components/ui/toolbar'; // Generic toolbar button
 
 const initialValue: Value = [
   {
-    children: [{ text: '标题' }],
+    children: [{ text: 'Title' }],
     type: 'h3',
   },
   {
-    children: [{ text: '这是一段引用。' }],
+    children: [{ text: 'This is a quote.' }],
     type: 'blockquote',
   },
   {
     children: [
-      { text: '包含一些' },
-      { bold: true, text: '加粗' },
-      { text: '文字用于强调！' },
+      { text: 'With some ' },
+      { bold: true, text: 'bold' },
+      { text: ' text for emphasis!' },
     ],
     type: 'p',
   },
@@ -187,18 +187,18 @@ export default function MyEditorPage() {
   return (
     <Plate editor={editor}>
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-        {/* 元素工具栏按钮 */}
+        {/* Element Toolbar Buttons */}
         <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>引用</ToolbarButton>
-        {/* 标记工具栏按钮 */}
-        <MarkToolbarButton nodeType="bold" tooltip="加粗 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
+        {/* Mark Toolbar Buttons */}
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
       </FixedToolbar>
       <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
+        <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
     </Plate>
   );
@@ -208,20 +208,20 @@ export default function MyEditorPage() {
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
 
 <Callout type="info" title="组件注册">
-  注意我们如何使用 `Plugin.withComponent(Component)` 将组件与其对应的插件注册。这是将 React 组件与 Plate 插件关联的推荐方式。
+  注意我们如何使用 `Plugin.withComponent(Component)` 将组件注册到各自的插件。这是将 React 组件与 Plate 插件关联的推荐方法。
 
-  如需快速开始使用预配置的常用插件和组件，可使用 `editor-basic` 区块：
+  如需快速开始并预配置常用插件和组件，请使用 `editor-basic` 区块：
   ```bash
-  npx shadcn@latest add https://platejs.org/r/editor-basic
+  npx shadcn@latest add @plate/editor-basic
   ```
-  这会为您处理大部分样板代码。
+  这将为您处理大部分样板代码。
 </Callout>
 
 ### 处理编辑器值
 
-为了使编辑器内容持久化，我们集成 `localStorage` 来在客户端保存和加载编辑器值。
+为了使编辑器内容持久化，让我们集成 `localStorage` 来在客户端保存和加载编辑器的值。
 
-```tsx showLineNumbers title="app/editor/page.tsx" {57-65,68-71,76-78,88-94}
+```tsx showLineNumbers title="app/editor/page.tsx" {57-60,66-68,78-84}
 'use client';
 
 import * as React from 'react';
@@ -250,18 +250,18 @@ import { ToolbarButton } from '@/components/ui/toolbar';
 
 const initialValue: Value = [
   {
-    children: [{ text: '标题' }],
+    children: [{ text: 'Title' }],
     type: 'h3',
   },
   {
-    children: [{ text: '这是一段引用。' }],
+    children: [{ text: 'This is a quote.' }],
     type: 'blockquote',
   },
   {
     children: [
-      { text: '包含一些' },
-      { bold: true, text: '加粗' },
-      { text: '文字用于强调！' },
+      { text: 'With some ' },
+      { bold: true, text: 'bold' },
+      { text: ' text for emphasis!' },
     ],
     type: 'p',
   },
@@ -279,20 +279,10 @@ export default function MyEditorPage() {
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
     value: () => {
-      if (typeof window !== 'undefined') {
-        const savedValue = localStorage.getItem('installation-next-demo');
-        if (savedValue) {
-          return JSON.parse(savedValue);
-        }
-      }
-      return initialValue;
+      const savedValue = localStorage.getItem('installation-next-demo');
+      return savedValue ? JSON.parse(savedValue) : initialValue;
     },
   });
-
-  // 防止 SSR 渲染编辑器
-  if (typeof window === 'undefined') {
-    return null;
-  }
 
   return (
     <Plate
@@ -305,20 +295,20 @@ export default function MyEditorPage() {
         <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
         <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
-        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>引用</ToolbarButton>
-        <MarkToolbarButton nodeType="bold" tooltip="加粗 (⌘+B)">B</MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="斜体 (⌘+I)">I</MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="下划线 (⌘+U)">U</MarkToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>Quote</ToolbarButton>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">B</MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">I</MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">U</MarkToolbarButton>
         <div className="flex-1" />
         <ToolbarButton
           className="px-2"
           onClick={() => editor.tf.setValue(initialValue)}
         >
-          重置
+          Reset
         </ToolbarButton>
       </FixedToolbar>
       <EditorContainer>
-        <Editor placeholder="输入您精彩的内容..." />
+        <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
     </Plate>
   );
@@ -329,15 +319,15 @@ export default function MyEditorPage() {
 
 ### 后续步骤
 
-恭喜！您已在 Next.js 中构建了一个基础的 Plate 编辑器。
+恭喜！您已在 Next.js 中构建了一个基础 Plate 编辑器。
 
-要进一步增强编辑器：
+要进一步增强您的编辑器：
 
-*   **探索组件：** 发现 [工具栏、菜单、节点组件](/docs/components) 等。
-*   **添加插件：** 集成 [表格](/docs/plugins/table)、[提及](/docs/plugins/mention)、[AI](/docs/plugins/ai) 或 [Markdown](/docs/plugins/markdown) 等功能。
+*   **探索组件：** 发现[工具栏、菜单、节点组件](/docs/components)等更多内容。
+*   **添加插件：** 集成[表格](/docs/table)、[提及](/docs/mention)、[AI](/docs/ai) 或 [Markdown](/docs/markdown) 等功能。
 *   **使用编辑器区块：** 快速设置预配置的编辑器：
-    *   基础编辑器：`npx shadcn@latest add https://platejs.org/r/editor-basic`
-    *   AI 驱动的编辑器：`npx shadcn@latest add https://platejs.org/r/editor-ai`
+    *   基础编辑器：`npx shadcn@latest add @plate/editor-basic`
+    *   AI 增强编辑器：`npx shadcn@latest add @plate/editor-ai`
 *   **了解更多：**
     *   [编辑器配置](/docs/editor)
     *   [插件配置](/docs/plugin)

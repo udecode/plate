@@ -63,6 +63,48 @@ Plate 编辑器的引用。
 ```
 </APIItem>
 
+<APIItem name="onNodeChange" type="function" optional>
+节点操作发生时的受控回调函数。
+
+```ts
+(options: {
+  editor: PlateEditor;
+  node: Descendant;
+  operation: NodeOperation;
+  prevNode: Descendant
+}) => void
+```
+
+**参数:**
+- `editor`: Plate 编辑器实例
+- `node`: 操作后的节点
+- `operation`: 发生的节点操作（insert、remove、set、merge、split、move）
+- `prevNode`: 操作前的节点
+
+**注意:** 对于 `insert_node` 和 `remove_node` 操作，`node` 和 `prevNode` 包含相同的值，以避免空值情况。
+</APIItem>
+
+<APIItem name="onTextChange" type="function" optional>
+文本操作发生时的受控回调函数。
+
+```ts
+(options: {
+  editor: PlateEditor;
+  node: Descendant;
+  operation: TextOperation;
+  prevText: string;
+  text: string
+}) => void
+```
+
+**参数:**
+- `editor`: Plate 编辑器实例
+- `node`: 包含变化文本的父节点
+- `operation`: 发生的文本操作（`insert_text` 或 `remove_text`）
+- `prevText`: 操作前的文本内容
+- `text`: 操作后的文本内容
+</APIItem>
+
 <APIItem name="primary" type="boolean" optional>
 编辑器是否是主要的。如果没有活跃的编辑器，PlateController 将使用第一个挂载的主要编辑器。
 
@@ -105,7 +147,7 @@ Plate 编辑器的引用。
 import { usePlateStore, useEditorRef, useEditorPlugin } from 'platejs/react'
 
 // 直接访问存储
-const store = usePlateStore(id?) 
+const store = usePlateStore(id?)
 
 // 通过编辑器引用访问
 const store = useEditorRef().store
