@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { ViewMode } from '../../lib';
 import { VIEW_MODE, DEFAULT_MIN_HEIGHT } from '../../lib';
 
-export type CodeDrawingTextareaProps = {
+export interface CodeDrawingTextareaProps {
   code: string;
   viewMode: ViewMode;
   readOnly?: boolean;
@@ -17,7 +17,7 @@ export type CodeDrawingTextareaProps = {
     onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   }) => React.ReactNode;
   toolbar?: React.ReactNode;
-};
+}
 
 export function CodeDrawingTextarea({
   code,
@@ -31,6 +31,30 @@ export function CodeDrawingTextarea({
 }: CodeDrawingTextareaProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const isCodeOnlyMode = viewMode === VIEW_MODE.Code;
+  
+  // Use internal state to manage textarea value to prevent re-renders from losing focus
+  const [internalCode, setInternalCode] = React.useState(code);
+  // Track the last external code value to detect external updates (e.g., undo/redo)
+  const lastExternalCodeRef = React.useRef(code);
+
+  // Sync external code changes to internal state only when external code actually changes
+  // This handles external updates (e.g., undo/redo) without interfering with user input
+  React.useEffect(() => {
+    if (code !== lastExternalCodeRef.current) {
+      lastExternalCodeRef.current = code;
+      setInternalCode(code);
+    }
+  }, [code]);
+
+  // Handle change with internal state update
+  const handleChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      setInternalCode(newValue);
+      onCodeChange(e);
+    },
+    [onCodeChange]
+  );
 
   return (
     <div
@@ -53,8 +77,8 @@ export function CodeDrawingTextarea({
 
       {renderTextarea ? (
         renderTextarea({
-          value: code,
-          onChange: onCodeChange,
+          value: internalCode,
+          onChange: handleChange,
         })
       ) : (
         <div className="relative flex-1 rounded-md">
@@ -67,8 +91,8 @@ export function CodeDrawingTextarea({
             <code className="block h-full w-full">
               <textarea
                 ref={textareaRef}
-                value={code}
-                onChange={onCodeChange}
+                value={internalCode}
+                onChange={handleChange}
                 readOnly={readOnly}
                 className="m-0 h-full w-full resize-none overflow-auto border-0 bg-transparent p-0 font-mono text-sm outline-none"
                 style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px` }}
