@@ -2,19 +2,7 @@
 
 import * as React from 'react';
 
-import type { ViewMode } from '../../lib';
-import { VIEW_MODE } from '../../lib';
-
-export type CodeDrawingPreviewAreaProps = {
-  image: string;
-  loading: boolean;
-  code: string;
-  viewMode: ViewMode;
-  readOnly?: boolean;
-  isMobile?: boolean;
-  showBorder?: boolean;
-  toolbar?: React.ReactNode;
-};
+import { VIEW_MODE, type ViewMode } from '@platejs/code-drawing';
 
 export function CodeDrawingPreviewArea({
   image,
@@ -25,7 +13,16 @@ export function CodeDrawingPreviewArea({
   isMobile = false,
   showBorder = false,
   toolbar,
-}: CodeDrawingPreviewAreaProps) {
+}: {
+  image: string;
+  loading: boolean;
+  code: string;
+  viewMode: ViewMode;
+  readOnly?: boolean;
+  isMobile?: boolean;
+  showBorder?: boolean;
+  toolbar?: React.ReactNode;
+}) {
   const showImage = viewMode === VIEW_MODE.Both || viewMode === VIEW_MODE.Image;
 
   return (
@@ -34,7 +31,6 @@ export function CodeDrawingPreviewArea({
         showBorder && isMobile ? 'border-b' : ''
       }`}
     >
-      {/* Controls - Mobile: top, Desktop: absolute top-right */}
       {toolbar && (
         <div
           className={
@@ -45,7 +41,6 @@ export function CodeDrawingPreviewArea({
         </div>
       )}
 
-      {/* Preview Content - Only show when showImage is true */}
       {showImage ? (
         <div
           className={

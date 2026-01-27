@@ -3,13 +3,16 @@
 import * as React from 'react';
 
 import { CodeDrawingElement as BaseCodeDrawingElement } from '@platejs/code-drawing/react';
-import {
-  VIEW_MODE,
-  type CodeDrawingType,
-  type TCodeDrawingElement,
-  type ViewMode,
-} from '@platejs/code-drawing';
+import type { CodeDrawingType, TCodeDrawingElement, ViewMode } from '@platejs/code-drawing';
 import type { PlateElementProps } from 'platejs/react';
+import {
+  useEditorRef,
+  useEditorSelector,
+  useElement,
+  useFocusedLast,
+  useReadOnly,
+  useSelected,
+} from 'platejs/react';
 import { Trash2, DownloadIcon } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,133 +22,147 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useCodeDrawingElement } from '@platejs/code-drawing/react';
+import { downloadImage } from '@platejs/code-drawing';
+import { DOWNLOAD_FILENAME } from '@platejs/code-drawing';
+
+import { CodeDrawingPreview } from './code-drawing-preview';
 
 export function CodeDrawingElement(
   props: PlateElementProps<TCodeDrawingElement>
 ) {
   const isMobile = useIsMobile();
-  const [languageSelectOpen, setLanguageSelectOpen] = React.useState(false);
-  const [viewModeSelectOpen, setViewModeSelectOpen] = React.useState(false);
+  const editor = useEditorRef();
+  const readOnly = useReadOnly();
+  const selected = useSelected();
+  const isFocusedLast = useFocusedLast();
+  const element = useElement<TCodeDrawingElement>();
+  const { removeNode, image, loading } = useCodeDrawingElement({ element });
+
+  const handleDownload = React.useCallback(() => {
+    if (!image) return;
+    downloadImage(image, DOWNLOAD_FILENAME);
+  }, [image]);
+
+  const handleCodeChange = React.useCallback(
+    (code: string) => {
+      const path = editor.api.findPath(element);
+      if (path) {
+        editor.tf.setNodes(
+          {
+            data: {
+              ...element.data,
+              code,
+            },
+          },
+          { at: path }
+        );
+      }
+    },
+    [editor, element]
+  );
+
+  const handleDrawingTypeChange = React.useCallback(
+    (drawingType: CodeDrawingType) => {
+      const path = editor.api.findPath(element);
+      if (path) {
+        editor.tf.setNodes(
+          {
+            data: {
+              ...element.data,
+              drawingType,
+            },
+          },
+          { at: path }
+        );
+      }
+    },
+    [editor, element]
+  );
+
+  const handleDrawingModeChange = React.useCallback(
+    (drawingMode: ViewMode) => {
+      const path = editor.api.findPath(element);
+      if (path) {
+        editor.tf.setNodes(
+          {
+            data: {
+              ...element.data,
+              drawingMode,
+            },
+          },
+          { at: path }
+        );
+      }
+    },
+    [editor, element]
+  );
+
+  const code = element.data?.code ?? '';
+  const drawingType = element.data?.drawingType ?? 'Mermaid';
+  const drawingMode = element.data?.drawingMode ?? 'Both';
+
+  const selectionCollapsed = useEditorSelector(
+    (editor) => !editor.api.isExpanded(),
+    []
+  );
+
+  const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
+
+  const content = (
+    <BaseCodeDrawingElement {...props}>
+      <div contentEditable={false}>
+        <CodeDrawingPreview
+          code={code}
+          drawingType={drawingType}
+          drawingMode={drawingMode}
+          image={image}
+          loading={loading}
+          onCodeChange={handleCodeChange}
+          onDrawingTypeChange={handleDrawingTypeChange}
+          onDrawingModeChange={handleDrawingModeChange}
+          readOnly={readOnly}
+          isMobile={isMobile}
+        />
+      </div>
+    </BaseCodeDrawingElement>
+  );
+
+  if (readOnly) {
+    return content;
+  }
 
   return (
-    <BaseCodeDrawingElement
-      {...props}
-      isMobile={isMobile}
-      renderPopover={({
-        children,
-        onRemove,
-        onDownload,
-        open,
-      }: {
-        children: React.ReactNode;
-        onRemove: () => void;
-        onDownload?: () => void;
-        open: boolean;
-      }) => (
-        <Popover open={open} modal={false}>
-          <PopoverAnchor asChild>{children}</PopoverAnchor>
-          <PopoverContent
-            className="w-auto p-1"
-            contentEditable={false}
-            onOpenAutoFocus={(e) => e.preventDefault()}
+    <Popover open={open} modal={false}>
+      <PopoverAnchor asChild>{content}</PopoverAnchor>
+      <PopoverContent
+        className="w-auto p-1"
+        contentEditable={false}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex items-center gap-1">
+          {image && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8"
+              onClick={handleDownload}
+              title="Export"
+            >
+              <DownloadIcon className="size-4" />
+            </Button>
+          )}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="size-8"
+            onClick={removeNode}
+            title="Delete"
           >
-            <div className="flex items-center gap-1">
-              {onDownload && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="size-8"
-                  onClick={onDownload}
-                  title="Export"
-                >
-                  <DownloadIcon className="size-4" />
-                </Button>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                className="size-8"
-                onClick={onRemove}
-                title="Delete"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-      )}
-      renderDrawingTypeSelect={({
-        value,
-        onChange,
-        onOpenChange,
-      }: {
-        value: CodeDrawingType;
-        onChange: (value: CodeDrawingType) => void;
-        onOpenChange?: (open: boolean) => void;
-      }) => (
-        <Select
-          value={value}
-          onValueChange={onChange}
-          open={languageSelectOpen}
-          onOpenChange={(open) => {
-            setLanguageSelectOpen(open);
-            onOpenChange?.(open);
-          }}
-        >
-          <SelectTrigger
-            className={`h-8 w-[120px] border-0 bg-muted/50 text-xs shadow-none ${
-              isMobile ? '' : 'transition-colors hover:bg-zinc-200'
-            }`}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="z-[100]">
-            <SelectItem value="PlantUml">PlantUml</SelectItem>
-            <SelectItem value="Graphviz">Graphviz</SelectItem>
-            <SelectItem value="Flowchart">Flowchart</SelectItem>
-            <SelectItem value="Mermaid">Mermaid</SelectItem>
-          </SelectContent>
-        </Select>
-      )}
-      renderDrawingModeSelect={({
-        value,
-        onChange,
-        onOpenChange,
-      }: {
-        value: ViewMode;
-        onChange: (value: ViewMode) => void;
-        onOpenChange?: (open: boolean) => void;
-      }) => (
-        <Select
-          value={value}
-          onValueChange={onChange}
-          open={viewModeSelectOpen}
-          onOpenChange={(open) => {
-            setViewModeSelectOpen(open);
-            onOpenChange?.(open);
-          }}
-        >
-          <SelectTrigger
-            className={`h-8 w-[80px] border-0 bg-muted/50 text-xs shadow-none ${
-              isMobile ? '' : 'transition-colors hover:bg-zinc-200'
-            }`}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="z-[100]">
-            <SelectItem value={VIEW_MODE.Both}>Both</SelectItem>
-            <SelectItem value={VIEW_MODE.Code}>Code</SelectItem>
-            <SelectItem value={VIEW_MODE.Image}>Image</SelectItem>
-          </SelectContent>
-        </Select>
-      )}
-    />
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

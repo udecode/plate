@@ -4,5 +4,4 @@
 
 export * from './CodeDrawingElement';
 export * from './CodeDrawingPlugin';
-export * from './components/index';
 export * from './hooks/index';

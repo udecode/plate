@@ -2,38 +2,11 @@
 
 import * as React from 'react';
 
-import type { CodeDrawingType, ViewMode } from '../../lib';
-import { VIEW_MODE, DEFAULT_MIN_HEIGHT } from '../../lib';
-import { CodeDrawingTextarea } from './CodeDrawingTextarea';
-import { CodeDrawingPreviewArea } from './CodeDrawingPreviewArea';
-import { CodeDrawingToolbar } from './CodeDrawingToolbar';
+import { VIEW_MODE, DEFAULT_MIN_HEIGHT, type CodeDrawingType, type ViewMode } from '@platejs/code-drawing';
 
-export type CodeDrawingPreviewProps = {
-  code: string;
-  drawingType: CodeDrawingType;
-  drawingMode: ViewMode;
-  image: string;
-  loading: boolean;
-  onCodeChange: (code: string) => void;
-  onDrawingTypeChange: (type: CodeDrawingType) => void;
-  onDrawingModeChange: (mode: ViewMode) => void;
-  readOnly?: boolean;
-  isMobile?: boolean;
-  renderDrawingTypeSelect?: (props: {
-    value: CodeDrawingType;
-    onChange: (value: CodeDrawingType) => void;
-    onOpenChange?: (open: boolean) => void;
-  }) => React.ReactNode;
-  renderDrawingModeSelect?: (props: {
-    value: ViewMode;
-    onChange: (value: ViewMode) => void;
-    onOpenChange?: (open: boolean) => void;
-  }) => React.ReactNode;
-  renderTextarea?: (props: {
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  }) => React.ReactNode;
-};
+import { CodeDrawingToolbar } from './code-drawing-toolbar';
+import { CodeDrawingTextarea } from './code-drawing-textarea';
+import { CodeDrawingPreviewArea } from './code-drawing-preview-area';
 
 export function CodeDrawingPreview({
   code,
@@ -46,13 +19,21 @@ export function CodeDrawingPreview({
   onDrawingModeChange,
   readOnly = false,
   isMobile = false,
-  renderDrawingTypeSelect,
-  renderDrawingModeSelect,
-  renderTextarea,
-}: CodeDrawingPreviewProps) {
+}: {
+  code: string;
+  drawingType: CodeDrawingType;
+  drawingMode: ViewMode;
+  image: string;
+  loading: boolean;
+  onCodeChange: (code: string) => void;
+  onDrawingTypeChange: (type: CodeDrawingType) => void;
+  onDrawingModeChange: (mode: ViewMode) => void;
+  readOnly?: boolean;
+  isMobile?: boolean;
+}) {
   const viewMode = drawingMode;
   const showCode = viewMode === VIEW_MODE.Both || viewMode === VIEW_MODE.Code;
-  const showBorder = viewMode === VIEW_MODE.Both; // Only show border in Both mode
+  const showBorder = viewMode === VIEW_MODE.Both;
 
   const handleCodeChange = React.useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -69,8 +50,6 @@ export function CodeDrawingPreview({
       isMobile={isMobile}
       onDrawingTypeChange={onDrawingTypeChange}
       onDrawingModeChange={onDrawingModeChange}
-      renderDrawingTypeSelect={renderDrawingTypeSelect}
-      renderDrawingModeSelect={renderDrawingModeSelect}
     />
   );
 
@@ -81,7 +60,6 @@ export function CodeDrawingPreview({
         minHeight: `${DEFAULT_MIN_HEIGHT}px`,
       }}
     >
-      {/* Code Editor - Left (Desktop) / Bottom (Mobile) */}
       {showCode && (
         <CodeDrawingTextarea
           code={code}
@@ -90,12 +68,10 @@ export function CodeDrawingPreview({
           isMobile={isMobile}
           showBorder={showBorder}
           onCodeChange={handleCodeChange}
-          renderTextarea={renderTextarea}
           toolbar={viewMode === VIEW_MODE.Code ? toolbar : null}
         />
       )}
 
-      {/* Preview Area - Right (Desktop) / Top (Mobile) */}
       {viewMode !== VIEW_MODE.Code && (
         <CodeDrawingPreviewArea
           image={image}

@@ -3476,7 +3476,7 @@ export const Index: Record<string, any> = {
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
-    meta: {"docs":[{"route":"/docs/code-drawing","title":"Code Drawing"}],"registry":false},
+    meta: {"docs":[{"route":"/docs/code-drawing","title":"Code Drawing"}],"label":"New","registry":false},
   },
   "single-block-demo": {
     name: "single-block-demo",

@@ -292,6 +292,7 @@ export const demoExamples: Registry['items'] = (
             title: 'Code Drawing',
           },
         ],
+        label: 'New',
       },
       name: 'code-drawing-demo',
       registryDependencies: ['code-drawing-kit', 'editor-kit'],

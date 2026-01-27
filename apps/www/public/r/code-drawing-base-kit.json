@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
-      "content": "'use client';\n\nimport { toPlatePlugin } from 'platejs/react';\n\nimport { BaseCodeDrawingPlugin } from '@platejs/code-drawing';\n\nimport { CodeDrawingElement } from '@/registry/ui/code-drawing-node';\n\nexport const BaseCodeDrawingKit = [\n  toPlatePlugin(BaseCodeDrawingPlugin).withComponent(CodeDrawingElement),\n];\n",
+      "content": "import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';\n\nimport { CodeDrawingElement } from '@/registry/ui/code-drawing-node';\n\nexport const BaseCodeDrawingKit = [\n  BaseCodeDrawingPlugin.configure({\n    node: { component: CodeDrawingElement },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]
