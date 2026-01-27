@@ -51,6 +51,7 @@ import ListStyleBuilder, {
   type ListStyleDefaults,
   type ListStyleType,
 } from './utils/list';
+import { validateRunText } from '../docxmlater/utils/validation';
 
 /**
  * Get bullet character for unordered list based on level.
@@ -495,9 +496,13 @@ class DocxDocument {
     this.comments = [];
     this.commentIdMap = new Map();
     this.commentThreads = properties.commentThreads ?? null;
-    this.commentThreadMap = new Map(
-      (properties.commentThreads ?? []).map((thread) => [thread.id, thread])
-    );
+    this.commentThreadMap = new Map();
+    (properties.commentThreads ?? []).forEach((thread) => {
+      this.commentThreadMap.set(thread.id, thread);
+      thread.comments.forEach((comment) => {
+        this.commentThreadMap.set(comment.id, thread);
+      });
+    });
     this.commentThreadProcessed = new Set();
     this.lastCommentId = -1;
     this.revisionIdMap = new Map();
@@ -1122,12 +1127,10 @@ class DocxDocument {
     const commentId = id || `comment-${this.lastCommentId + 1}`;
     let numericId = this.commentIdMap.get(commentId);
 
-    const threadKey = this.commentThreadMap.has(commentId)
-      ? commentId
-      : undefined;
-    const thread = threadKey ? this.commentThreadMap.get(threadKey) : undefined;
+    const thread = this.commentThreadMap.get(commentId);
+    const threadKey = thread?.id;
 
-    if (thread && !this.commentThreadProcessed.has(threadKey)) {
+    if (threadKey && !this.commentThreadProcessed.has(threadKey)) {
       this.commentThreadProcessed.add(threadKey);
 
       const threadCommentEntries = thread.comments.map((comment, index) => {
@@ -1166,12 +1169,14 @@ class DocxDocument {
       const commentParaIdMap = new Map(
         threadCommentEntries.map((entry) => [entry.commentKey, entry.paraId])
       );
+      const requestedEntry = threadCommentEntries.find(
+        (entry) => entry.commentKey === commentId
+      );
       const parentEntry = threadCommentEntries[0];
       const parentNumericId = parentEntry?.threadNumericId;
 
       if (parentNumericId !== undefined) {
         this.commentIdMap.set(threadKey, parentNumericId);
-        this.commentIdMap.set(commentId, parentNumericId);
       }
 
       threadCommentEntries.forEach((entry) => {
@@ -1235,8 +1240,10 @@ class DocxDocument {
         });
       });
 
-      if (parentNumericId !== undefined) {
-        return parentNumericId;
+      const requestedNumericId =
+        requestedEntry?.threadNumericId ?? parentNumericId;
+      if (requestedNumericId !== undefined) {
+        return requestedNumericId;
       }
     }
 
@@ -1319,8 +1326,15 @@ class DocxDocument {
         commentElement.att('@w', 'date', comment.date);
       }
 
+      const rawText = String(comment.text || '');
+      const validation = validateRunText(rawText, {
+        context: 'comments.xml text',
+        autoClean: true,
+      });
+      const normalizedText = validation.cleanedText ?? rawText;
+
       // Split multi-line comment text into paragraphs
-      const paragraphs = String(comment.text || '')
+      const paragraphs = normalizedText
         .split(/\r?\n/)
         .filter((line, index, arr) => line.length > 0 || arr.length === 1);
 
@@ -1331,12 +1345,14 @@ class DocxDocument {
         }
 
         if (index === 0) {
-          paragraphElement
-            .ele('@w', 'r')
-            .ele('@w', 'commentReference')
-            .att('@w', 'id', String(comment.id))
+          const refRun = paragraphElement.ele('@w', 'r');
+          refRun
+            .ele('@w', 'rPr')
+            .ele('@w', 'rStyle')
+            .att('@w', 'val', 'CommentReference')
             .up()
             .up();
+          refRun.ele('@w', 'annotationRef').up();
         }
 
         paragraphElement

@@ -262,12 +262,20 @@ export function buildCommentRangeEnd(id: number): XMLBuilder {
  * Build a comment reference run (appears after commentRangeEnd).
  */
 export function buildCommentReferenceRun(id: number): XMLBuilder {
-  return fragment({ namespaceAlias: { w: namespaces.w } })
-    .ele('@w', 'r')
-    .ele('@w', 'commentReference')
-    .att('@w', 'id', String(id))
+  const root = fragment({ namespaceAlias: { w: namespaces.w } });
+  const run = root.ele('@w', 'r');
+
+  run
+    .ele('@w', 'rPr')
+    .ele('@w', 'rStyle')
+    .att('@w', 'val', 'CommentReference')
     .up()
     .up();
+
+  run.ele('@w', 'commentReference').att('@w', 'id', String(id)).up();
+  run.up();
+
+  return root;
 }
 
 /**

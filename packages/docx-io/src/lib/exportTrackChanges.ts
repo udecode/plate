@@ -418,9 +418,14 @@ function resolveCommentMeta(
       options.nodeToString
     ).find((item) => item.id === id);
 
-  const parentComment = thread?.comments?.[0];
+  const threadComment =
+    thread?.comments?.find((comment) => comment.id === id) ??
+    thread?.comments?.[0];
 
-  const discussion = options.discussions?.find((item) => item?.id === id);
+  const discussionId = thread?.id ?? id;
+  const discussion = options.discussions?.find(
+    (item) => item?.id === discussionId
+  );
   const discussionAuthorName =
     discussion?.user?.name ??
     options.userNameMap?.get(discussion?.userId ?? '') ??
@@ -428,16 +433,16 @@ function resolveCommentMeta(
     'unknown';
 
   const authorName =
-    parentComment?.authorName ?? discussionAuthorName ?? 'unknown';
+    threadComment?.authorName ?? discussionAuthorName ?? 'unknown';
   const text =
-    parentComment?.text ??
+    threadComment?.text ??
     discussion?.documentContent?.toString?.() ??
     'Imported comment';
   const date =
-    parentComment?.date ?? normalizeDate(discussion?.createdAt);
+    threadComment?.date ?? normalizeDate(discussion?.createdAt);
 
   return {
-    authorInitials: parentComment?.authorInitials ?? toInitials(authorName),
+    authorInitials: threadComment?.authorInitials ?? toInitials(authorName),
     authorName,
     date,
     id,
@@ -662,9 +667,13 @@ export function injectDocxTrackingTokens(
       options.userNameMap,
       options.nodeToString
     );
-  const commentThreadMap = new Map(
-    commentThreads.map((thread) => [thread.id, thread])
-  );
+  const commentThreadMap = new Map<string, DocxCommentThread>();
+  commentThreads.forEach((thread) => {
+    commentThreadMap.set(thread.id, thread);
+    thread.comments.forEach((comment) => {
+      commentThreadMap.set(comment.id, thread);
+    });
+  });
 
   // Collect all leaves from all top-level nodes
   cloned.forEach((node) => {
@@ -673,9 +682,39 @@ export function injectDocxTrackingTokens(
 
   ensureNonEmptyCommentRanges(leaves);
 
+  const expandCommentIds = (ids: string[]): string[] => {
+    const expanded: string[] = [];
+    const seen = new Set<string>();
+
+    const push = (value: string) => {
+      if (seen.has(value)) return;
+      seen.add(value);
+      expanded.push(value);
+    };
+
+    ids.forEach((commentId) => {
+      const thread = commentThreadMap.get(commentId);
+      if (thread) {
+        push(thread.id);
+      } else {
+        push(commentId);
+      }
+    });
+
+    return expanded;
+  };
+
+  leaves.forEach((leaf) => {
+    leaf.commentIds = expandCommentIds(leaf.commentIds);
+  });
+
   // Track when each suggestion/comment first appears
   const suggestionStartOrder = new Map<string, number>();
   const commentStartOrder = new Map<string, number>();
+  const startSequence = new Map<string, number>();
+  let startSequenceCounter = 0;
+  const makeTokenKey = (kind: 'comment' | 'suggestion', id: string) =>
+    `${kind}:${id}`;
 
   // Process each leaf to inject tokens
   leaves.forEach((leaf, index) => {
@@ -707,53 +746,65 @@ export function injectDocxTrackingTokens(
     );
 
     // Record start order for proper nesting
-    startSuggestions.forEach((id) => {
-      if (!suggestionStartOrder.has(id)) {
-        suggestionStartOrder.set(id, index);
-      }
-    });
-
     startComments.forEach((id) => {
       if (!commentStartOrder.has(id)) {
         commentStartOrder.set(id, index);
       }
+      const key = makeTokenKey('comment', id);
+      if (!startSequence.has(key)) {
+        startSequence.set(key, startSequenceCounter++);
+      }
     });
 
-    // Build sorted start tokens (suggestions before comments, earlier starts first)
+    startSuggestions.forEach((id) => {
+      if (!suggestionStartOrder.has(id)) {
+        suggestionStartOrder.set(id, index);
+      }
+      const key = makeTokenKey('suggestion', id);
+      if (!startSequence.has(key)) {
+        startSequence.set(key, startSequenceCounter++);
+      }
+    });
+
+    // Build sorted start tokens (comment ranges should wrap suggestions)
     const startTokens = [
       ...startSuggestions.map((id) => ({
         id,
         kind: 'suggestion' as const,
         order: suggestionStartOrder.get(id) ?? index,
+        sequence: startSequence.get(makeTokenKey('suggestion', id)) ?? 0,
       })),
       ...startComments.map((id) => ({
         id,
         kind: 'comment' as const,
         order: commentStartOrder.get(id) ?? index,
+        sequence: startSequence.get(makeTokenKey('comment', id)) ?? 0,
       })),
-    ].sort((a, b) =>
-      a.order === b.order
-        ? a.kind === 'suggestion'
-          ? -1
-          : 1
-        : a.order - b.order
-    );
+    ].sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      if (a.sequence !== b.sequence) return a.sequence - b.sequence;
+      return a.kind === 'comment' ? -1 : 1;
+    });
 
-    // Build sorted end tokens (comments before suggestions, later ends first)
+    // Build sorted end tokens (later starts close first)
     const endTokens = [
       ...endSuggestions.map((id) => ({
         id,
         kind: 'suggestion' as const,
         order: suggestionStartOrder.get(id) ?? index,
+        sequence: startSequence.get(makeTokenKey('suggestion', id)) ?? 0,
       })),
       ...endComments.map((id) => ({
         id,
         kind: 'comment' as const,
         order: commentStartOrder.get(id) ?? index,
+        sequence: startSequence.get(makeTokenKey('comment', id)) ?? 0,
       })),
-    ].sort((a, b) =>
-      a.order === b.order ? (a.kind === 'comment' ? -1 : 1) : b.order - a.order
-    );
+    ].sort((a, b) => {
+      if (a.order !== b.order) return b.order - a.order;
+      if (a.sequence !== b.sequence) return b.sequence - a.sequence;
+      return a.kind === 'suggestion' ? -1 : 1;
+    });
 
     // Generate token strings
     const prefixTokens = startTokens

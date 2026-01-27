@@ -8,6 +8,7 @@ import {
   type DocxExportDiscussion,
   type DocxExportSuggestionMeta,
 } from './exportTrackChanges';
+import { splitDocxTrackingTokens } from './html-to-docx/tracking';
 
 describe('injectDocxTrackingTokens', () => {
   describe('utility functions', () => {
@@ -200,6 +201,65 @@ describe('injectDocxTrackingTokens', () => {
       expect(text).toContain('[[DOCX_CMT_START:');
       expect(text).toContain('[[DOCX_CMT_END:');
       expect(text).toContain('Commented text');
+    });
+
+    it('expands threaded comments into reply tokens', () => {
+      const discussions: DocxExportDiscussion[] = [
+        {
+          id: 'discussion1',
+          comments: [
+            {
+              id: 'comment1',
+              contentRich: 'Parent comment',
+              user: { id: 'user-1', name: 'Alice' },
+              userId: 'user-1',
+            },
+            {
+              id: 'comment2',
+              contentRich: 'Reply comment',
+              parentCommentId: 'comment1',
+              user: { id: 'user-2', name: 'Bob' },
+              userId: 'user-2',
+            },
+          ],
+          user: { id: 'user-1', name: 'Alice' },
+          userId: 'user-1',
+        },
+      ];
+
+      const value = [
+        {
+          type: 'p',
+          children: [
+            {
+              text: 'Threaded text',
+              comment_discussion1: true,
+            },
+          ],
+        },
+      ];
+
+      const result = injectDocxTrackingTokens(value, { discussions });
+      const text = (result[0] as any).children[0].text;
+      const parts = splitDocxTrackingTokens(text);
+
+      const commentStarts = parts.filter(
+        (
+          part
+        ): part is {
+          type: 'commentStart';
+          data: { id: string };
+        } => part.type === 'commentStart'
+      );
+      const commentEnds = parts.filter(
+        (part): part is { type: 'commentEnd'; id: string } =>
+          part.type === 'commentEnd'
+      );
+
+      expect(commentStarts.map((part) => part.data.id)).toEqual([
+        'discussion1',
+      ]);
+      expect(commentEnds.map((part) => part.id)).toEqual(['discussion1']);
     });
 
     it('handles multiple text nodes with same suggestion', () => {
