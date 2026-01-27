@@ -20,6 +20,7 @@ export default defineConfig([
       '**/*.d.ts',
       '.changeset/**',
       'tooling/**',
+      'packages/docx-io/tmp'
     ],
   },
   // React Hooks config for apps/www (React 19 with React Compiler)

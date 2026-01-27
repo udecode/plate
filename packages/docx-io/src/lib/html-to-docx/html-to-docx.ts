@@ -12,6 +12,10 @@ import VText from 'virtual-dom/vnode/vtext';
 import { create } from 'xmlbuilder2';
 
 import {
+  commentsType,
+  commentsExtendedType,
+  commentsExtensibleType,
+  commentsIdsType,
   defaultDocumentOptions,
   defaultHTMLString,
   documentFileName,
@@ -49,6 +53,7 @@ interface VTree {
 }
 
 interface NormalizedDocumentOptions {
+  commentThreads?: DocumentOptions['commentThreads'];
   complexScriptFontSize?: number | null;
   createdAt?: Date;
   creator?: string;
@@ -63,7 +68,7 @@ interface NormalizedDocumentOptions {
   headerType?: 'default' | 'even' | 'first';
   keywords?: string[];
   lastModifiedBy?: string;
-  lineNumber?: boolean;
+  lineNumber?: boolean | LineNumberOptions;
   lineNumberOptions?: LineNumberOptions;
   margins?: NormalizedMargins | null;
   modifiedAt?: Date;
@@ -209,6 +214,8 @@ const normalizeDocumentOptions = (
   const result: NormalizedDocumentOptions = {};
 
   // Copy over non-transformed properties
+  if (documentOptions.commentThreads !== undefined)
+    result.commentThreads = documentOptions.commentThreads;
   if (documentOptions.createdAt !== undefined)
     result.createdAt = documentOptions.createdAt;
   if (documentOptions.creator !== undefined)
@@ -325,6 +332,34 @@ async function addFilesToContainer(
   // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   docxDocument.documentXML = await renderDocumentFile(docxDocument);
 
+  // Create comments relationship if there are comments (populated by renderDocumentFile)
+  if (docxDocument.comments.length > 0) {
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsType,
+      'comments.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtendedType,
+      'commentsExtended.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsIdsType,
+      'commentsIds.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtensibleType,
+      'commentsExtensible.xml',
+      internalRelationship
+    );
+  }
+
   zip.folder(relsFolderName)!.file(
     '.rels',
     create({ encoding: 'UTF-8', standalone: true }, relsXML).toString({
@@ -426,6 +461,38 @@ async function addFilesToContainer(
     .file('webSettings.xml', docxDocument.generateWebSettingsXML(), {
       createFolders: false,
     });
+
+  // Add comments.xml if there are comments
+  if (docxDocument.comments.length > 0) {
+    zip
+      .folder(wordFolder)!
+      .file('comments.xml', docxDocument.generateCommentsXML(), {
+        createFolders: false,
+      });
+    zip
+      .folder(wordFolder)!
+      .file(
+        'commentsExtended.xml',
+        docxDocument.generateCommentsExtendedXML(),
+        {
+          createFolders: false,
+        }
+      );
+    zip
+      .folder(wordFolder)!
+      .file('commentsIds.xml', docxDocument.generateCommentsIdsXML(), {
+        createFolders: false,
+      });
+    zip
+      .folder(wordFolder)!
+      .file(
+        'commentsExtensible.xml',
+        docxDocument.generateCommentsExtensibleXML(),
+        {
+          createFolders: false,
+        }
+      );
+  }
 
   const relationshipXMLs = docxDocument.generateRelsXML();
 

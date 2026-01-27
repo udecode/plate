@@ -215,8 +215,8 @@ async function runSync(options: DepSyncOptions) {
   if (!currentPackageJson) return; // Error handled in getPackageJson
 
   const allDependencies = {
-    ...(currentPackageJson.dependencies || {}),
-    ...(currentPackageJson.devDependencies || {}),
+    ...currentPackageJson.dependencies,
+    ...currentPackageJson.devDependencies,
   };
 
   const packagesToFetch = Object.keys(allDependencies).filter(packageFilterFn);

@@ -1,19 +1,65 @@
 import type { TNode } from 'platejs';
 
-/** Comment extracted from DOCX file */
-export type DocxComment = {
-  /** Comment ID from the DOCX file */
+// ============================================================================
+// Tracked Changes Types
+// ============================================================================
+
+/** Tracked change (insertion or deletion) from DOCX file */
+export type DocxTrackedChange = {
+  /** Unique ID for this change */
   id: string;
-  /** Comment text content */
-  text: string;
+  /** Type of change: 'insert' for additions, 'remove' for deletions */
+  type: 'insert' | 'remove';
+  /** Author who made the change */
+  author?: string;
+  /** Date when the change was made (ISO string) */
+  date?: string;
+  /** The full start token string (for searching in editor) */
+  startToken: string;
+  /** The full end token string (for searching in editor) */
+  endToken: string;
 };
 
-/** Result of importing a DOCX file */
+/** Comment with full metadata from DOCX file */
+export type DocxTrackedComment = {
+  /** Unique ID for this comment */
+  id: string;
+  /** Author display name */
+  authorName?: string;
+  /** Author initials (for Word compatibility) */
+  authorInitials?: string;
+  /** Date when the comment was made (ISO string) */
+  date?: string;
+  /** Comment text content */
+  text?: string;
+  /** The full start token string (for searching in editor) */
+  startToken: string;
+  /** The full end token string (for searching in editor) */
+  endToken: string;
+  /** Whether the start token was found in HTML */
+  hasStartToken: boolean;
+  /** Whether the end token was found in HTML */
+  hasEndToken: boolean;
+};
+
+// ============================================================================
+// Import Result Types
+// ============================================================================
+
+/** Result of importing a DOCX file with tracking support */
 export type ImportDocxResult = {
   /** Deserialized editor nodes */
   nodes: TNode[];
-  /** Comments extracted from the DOCX file (not yet applied to editor) */
-  comments: DocxComment[];
+  /** Tracked changes (insertions and deletions) */
+  trackedChanges: DocxTrackedChange[];
+  /** Comments with full metadata */
+  trackedComments: DocxTrackedComment[];
+  /** Number of insertions found */
+  insertionCount: number;
+  /** Number of deletions found */
+  deletionCount: number;
+  /** Whether any tracking tokens were found */
+  hasTracking: boolean;
   /** Warnings from mammoth conversion */
   warnings: string[];
 };

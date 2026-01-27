@@ -13,6 +13,7 @@
   "files": {
     "includes": [
       "**",
+      "!packages/docx-io/src/lib/mammoth.js",
       "!!node_modules/@opentelemetry",
       "!!node_modules/@effect-ts",
       "!!node_modules/pdf-lib",
@@ -27,7 +28,8 @@
       "!!tooling/config/global.d.ts",
       "!!templates",
       "!**/__registry__",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!packages/docx-io/tmp"
     ]
   },
   "linter": {

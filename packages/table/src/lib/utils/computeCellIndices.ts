@@ -57,19 +57,26 @@ export function computeCellIndices(
       }
 
       const currentIndices = { col: colIndex, row: rowIndex };
-      const prevIndicesForCell = prevIndices[cellElement.id!];
 
-      // Check if indices changed for this cell
-      if (
-        prevIndicesForCell?.col !== currentIndices.col ||
-        prevIndicesForCell?.row !== currentIndices.row
-      ) {
-        hasIndicesChanged = true;
+      // Check if indices changed for this cell (only for cells with IDs)
+      if (cellElement.id) {
+        const prevIndicesForCell = prevIndices[cellElement.id];
+
+        if (
+          prevIndicesForCell?.col !== currentIndices.col ||
+          prevIndicesForCell?.row !== currentIndices.row
+        ) {
+          hasIndicesChanged = true;
+        }
       }
 
-      cellIndices[cellElement.id!] = currentIndices;
+      // Store by ID if available, otherwise skip caching for cells without IDs
+      if (cellElement.id) {
+        cellIndices[cellElement.id] = currentIndices;
+      }
 
-      if (cellElement.id === cellNode?.id) {
+      // Use object identity to match the target cell (works even without IDs)
+      if (cellElement === cellNode) {
         targetIndices = currentIndices;
 
         if (!all) break;

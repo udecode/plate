@@ -173,7 +173,7 @@
     "use-file-picker": "2.1.2",
     "vaul": "1.1.2",
     "y-webrtc": "10.3.0",
-    "zod": "3.25.61"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@shikijs/compat": "1.1.7",

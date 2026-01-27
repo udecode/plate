@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { exportToDocx } from '@platejs/docx-io';
+import { exportToDocx, type DocxExportDiscussion } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import type { SlatePlugin } from 'platejs';
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -151,8 +152,39 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
+    // Get discussions from the discussion plugin for comment export
+    const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+    const users = editor.getOption(discussionPlugin, 'users') ?? {};
+    const userNameMap = new Map(
+      Object.values(users)
+        .filter((user) => user?.id && user?.name)
+        .map((user) => [user.id, user.name])
+    );
+
+    // Convert discussions to export format
+    const exportDiscussions: DocxExportDiscussion[] = discussions.map((d) => ({
+      id: d.id,
+      comments: d.comments?.map((c) => ({
+        authorInitials: c.authorInitials,
+        authorName: c.authorName,
+        contentRich: c.contentRich,
+        createdAt: c.createdAt,
+        id: c.id,
+        userId: c.userId,
+      })),
+      createdAt: d.createdAt,
+      documentContent: d.documentContent,
+      isResolved: d.isResolved,
+      userId: d.userId,
+      user: d.authorName ? { id: d.userId, name: d.authorName } : undefined,
+    }));
+
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+      tracking: {
+        discussions: exportDiscussions,
+        userNameMap,
+      },
     });
 
     const url = URL.createObjectURL(blob);

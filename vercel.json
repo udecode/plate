@@ -3,5 +3,9 @@
     "app/**/*": {
       "maxDuration": 1
     }
-  }
+  },
+  "framework": "nextjs",
+  "buildCommand": "cd apps/www && yarn build",
+  "installCommand": "yarn install",
+  "outputDirectory": "apps/www/.next"
 }
