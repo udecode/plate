@@ -1,0 +1,10 @@
+.sd-editor-mention {
+  background-color: #1355ff15;
+  color: #222;
+  font-weight: 400;
+  border-radius: 3px;
+  padding: 0 5px;
+  cursor: default;
+  display: inline-block;
+  box-sizing: border-box;
+}

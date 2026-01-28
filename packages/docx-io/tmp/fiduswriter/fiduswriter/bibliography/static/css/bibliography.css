@@ -1,0 +1,163 @@
+#bib-dialog .ui-tabs-panel {
+    min-height: 0;
+    height: calc(100vh - 278px);
+}
+
+div.literal,
+pre.long-literal {
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.33em;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 11px 10px 0;
+    min-height: 38px;
+    color: var(--cs-light-text);
+    background-color: var(--input-background-color);
+}
+
+pre.long-literal {
+    min-height: 112px;
+    height: auto;
+}
+
+div.literal strong,
+pre.long-literal strong {
+    font-weight: bold;
+}
+
+div.literal em,
+pre.long-literal em {
+    font-style: italic;
+}
+
+#bib-dialog .ProseMirror-focused div.literal,
+#bib-dialog .ProseMirror-focused pre.long-literal {
+    background-color: var(--input-focus-background-color);
+}
+
+#bib-dialog .fw-pulldown.fw-center {
+    left: 10px;
+    top: 40px;
+}
+
+#bib-dialog .date-form input {
+    width: 66px;
+    margin-right: 1px;
+}
+
+#bib-dialog .date-form .separator {
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+}
+
+#bib-dialog td .dk-selected,
+#bib-dialog td .dk-select-options {
+    width: 486px !important;
+}
+
+#bib-dialog th .dk-selected,
+#bib-dialog th .dk-select-options {
+    width: 140px !important;
+}
+
+#bib-dialog sup {
+    vertical-align: super;
+    font-size: smaller;
+}
+
+#bib-dialog sub {
+    vertical-align: sub;
+    font-size: smaller;
+}
+
+#bib-dialog .smallcaps {
+    font-variant: small-caps;
+}
+
+#bib-dialog .nocase {
+    text-decoration: underline;
+}
+
+.checkable-label {
+    width: 462px;
+    height: 36px;
+    border: solid 1px var(--cs-white-border);
+    line-height: 36px;
+    background-color: var(--cs-white-background);
+    padding: 0 12px;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+#source-type-selection {
+    position: relative;
+    display: block;
+    z-index: 2;
+    margin-bottom: 18px;
+    margin-right: 49px;
+}
+
+#source-type-selection .fw-pulldown > ul {
+    max-height: 230px;
+    overflow: scroll;
+}
+
+#selected-source-type-title {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#source-type-selection .icon-down-dir {
+    position: absolute;
+    right: 10px;
+}
+
+#edit-categories {
+    width: 369px !important;
+}
+
+#edit-categories input[type="text"] {
+    width: 310px;
+}
+
+/* api search */
+
+#bibimport-api-search button.api-import {
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+#bibimport-api-search div.item {
+    margin-bottom: 10px;
+}
+
+#bibimport-api-search h3 {
+    font-weight: 700;
+    margin: 10px 0 10px 20px;
+    font-size: 1.1em;
+}
+
+#bibimport-api-search .bibimport-search-result,
+#bibimport-api-search div.item {
+    clear: left;
+}
+
+/**
+Modal header
+ */
+.bib-dialog-header .fw-select-container {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.bib-dialog-header .ui-tabs-nav {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    height: auto;
+}

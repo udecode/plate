@@ -1,0 +1,41 @@
+.ui-tabs-nav {
+    width: auto;
+    height: 41px;
+    margin-right: 49px;
+}
+
+.ui-tabs-nav > li {
+    position: relative;
+    float: left;
+    margin-right: 4px;
+}
+
+.ui-tabs-nav .fw-button {
+    color: var(--cs-light-text);
+    border-color: var(--cs-light-border);
+    background: var(--cs-light-background);
+}
+
+.ui-tabs-nav .fw-button:hover,
+.ui-tabs-nav .ui-tabs-active .fw-button {
+    background: var(--cs-light-background);
+}
+
+.ui-tabs-panel {
+    height: auto;
+    overflow: auto;
+    min-height: 220px;
+    padding: 0;
+    margin-top: 24px;
+}
+
+.tab-link-inner {
+    display: block;
+    margin-left: 20px;
+    color: var(--cs-light-text-secondary);
+}
+
+.current-tab .tab-link-inner,
+.tab-link-inner:hover {
+    color: var(--cs-light-text);
+}

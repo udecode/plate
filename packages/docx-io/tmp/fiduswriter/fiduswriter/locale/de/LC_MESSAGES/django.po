@@ -1,0 +1,349 @@
+#
+# (null) <>, 2025.
+# Johannes Wilm <johannes@fiduswriter.org>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Fidus Writer backend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-04 20:29+0000\n"
+"PO-Revision-Date: 2025-04-17 18:43+0200\n"
+"Last-Translator: Johannes Wilm <johannes@fiduswriter.org>\n"
+"Language-Team:  <johannes@fiduswriter.org>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Gtranslator 46.0\n"
+
+#: base/settings.py:256
+msgid "English"
+msgstr "Englisch"
+
+#: base/settings.py:257
+msgid "Bulgarian"
+msgstr "Bulgarisch"
+
+#: base/settings.py:258
+msgid "German"
+msgstr "Deutsch"
+
+#: base/settings.py:259
+msgid "French"
+msgstr "Französisch"
+
+#: base/settings.py:260
+msgid "Italian"
+msgstr "Italienisch"
+
+#: base/settings.py:261
+msgid "Spanish"
+msgstr "Spanisch"
+
+#: base/settings.py:262
+msgid "Portuguese (Brazil)"
+msgstr "Portugiesisch (Brasilien)"
+
+#: base/settings.py:346
+msgid "Fidus Writer Admin"
+msgstr "Fidus Writer Admin"
+
+#: base/settings.py:347
+msgid "Fidus Writer Administration Site"
+msgstr "Fidus Writer Administrationsseite"
+
+#: base/settings.py:348
+msgid "Welcome to the Fidus Writer Administration Site"
+msgstr "Willkommen auf der Administrationsseite von Fidus Writer"
+
+#: base/templates/500.html:5 base/templates/500.html:8
+msgid "Error 500"
+msgstr "Fehler 500"
+
+#: base/templates/500.html:9
+msgid ""
+"We are sorry, but a server error occured. Our team will be looking into the "
+"issue shortly."
+msgstr ""
+"Es tut uns leid, aber ein Serverfehler ist aufgetreten. Unser Team wird sich "
+"in Kürze mit dem Thema befassen."
+
+#: base/templates/admin/console.html:4 base/templates/admin/console.html:16
+#: base/templates/admin/overview.html:14
+msgid "Admin Console"
+msgstr "Admin-Konsole"
+
+#: base/templates/admin/console.html:18
+msgid "Current number of users:"
+msgstr "Aktuelle Anzahl der Benutzer:"
+
+#: base/templates/admin/console.html:21
+msgid "Current number of user sessions:"
+msgstr "Aktuelle Anzahl der Benutzersitzungen:"
+
+#: base/templates/admin/console.html:23
+msgid "Send a system message to all connected users:"
+msgstr "Senden Sie eine Systemnachricht an alle verbundenen Benutzer:"
+
+#: base/templates/admin/console.html:27
+msgid "Message"
+msgstr "Nachricht"
+
+#: base/templates/admin/console.html:29
+msgid ""
+"This system will go offline for scheduled maintenance in 30 minutes. All "
+"your work will be saved automatically and we will be back shortly."
+msgstr ""
+"Dieses System wird zur geplanten Wartung in 30 Minuten offline geschaltet. "
+"Alle Ihre Arbeiten werden automatisch gespeichert und wir sind in Kürze "
+"wieder für Sie da."
+
+#: base/templates/admin/console.html:36
+msgid "Send to connected users"
+msgstr "An verbundene Benutzer senden"
+
+#: base/templates/admin/overview.html:10
+msgid "Extras"
+msgstr "Extras"
+
+#: base/templates/admin/overview.html:17
+#: document/templates/admin/document/maintenance.html:17
+msgid "Document Maintenance"
+msgstr "Dokumentenverwaltung"
+
+#: base/templates/api_404.html:5 base/templates/api_404.html:8
+msgid "Error 404"
+msgstr "Fehler 404"
+
+#: base/templates/api_404.html:9
+msgid "We are sorry, but this page was not found."
+msgstr "Es tut uns leid, aber diese Seite wurde nicht gefunden."
+
+#: base/templates/app.html:9
+msgid "The all in one solution for collaborative academic writing."
+msgstr "Die Komplettlösung zum Erstellen wissenschaftlicher Texte"
+
+#: base/templates/app.html:45
+msgid "JavaScript disabled"
+msgstr "JavaScript deaktiviert"
+
+#: base/templates/app.html:46
+msgid "Fidus Writer requires you to enable JavaScript."
+msgstr "Für Fidus Writer muss JavaScript aktiviert sein."
+
+#: browser_check/templates/browser_check/browser_not_supported.html:4
+#: browser_check/templates/browser_check/browser_not_supported.html:27
+msgid "Browser not supported"
+msgstr "Browser wird nicht unterstützt"
+
+#: browser_check/templates/browser_check/browser_not_supported.html:28
+msgid ""
+"\n"
+"                Your browser is not supported by Fidus Writer.\n"
+"                Please update! We recommend using a current\n"
+"                version of Chrome/Chromium or Firefox on a\n"
+"                desktop computer.\n"
+"            "
+msgstr ""
+"\n"
+"                Ihr Browser wird von Fidus Writer nicht unterstützt.\n"
+"                Bitte aktualisieren Sie! Wir empfehlen die Verwendung einer\n"
+"                akutellen Version von Chrome / Chromium oder Firefox auf \n"
+"                einem Desktop-Computer.\n"
+"                        "
+
+#: document/admin.py:57
+msgid "Duplicate selected document templates"
+msgstr "Duplizieren Sie ausgewählte Dokumentvorlagen"
+
+#: document/emails.py:18 document/views.py:702
+msgid "Untitled"
+msgstr "Ohne Titel"
+
+#: document/emails.py:97
+msgid "shared"
+msgstr "geteilt"
+
+#: document/emails.py:99 document/emails.py:225
+msgid "Document"
+msgstr "Dokument"
+
+#: document/emails.py:101 document/emails.py:227
+msgid "Author"
+msgstr "Autor"
+
+#: document/emails.py:103
+msgid "Access Rights"
+msgstr "Zugangsrechte"
+
+#: document/emails.py:106 document/emails.py:232
+msgid "Access the document"
+msgstr "Greifen Sie auf das Dokument zu"
+
+#: document/emails.py:109
+#, python-format
+msgid "Document shared: %(document_title)s"
+msgstr "Dokument geteilt: %(document_title)s"
+
+#: document/emails.py:155
+#, python-format
+msgid "Comment on : %(document_title)s"
+msgstr "Kommentar in : %(document_title)s"
+
+#: document/emails.py:182
+#, python-format
+msgid "Comment assignment on : %(document_title)s"
+msgstr "Kommentarzuweisung in : %(document_title)s"
+
+#: document/emails.py:229
+msgid "Comment"
+msgstr "Kommentar"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:8
+#, python-format
+msgid "Add %(name)s"
+msgstr "Füge %(name)s hinzu"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:13
+#: document/templates/admin/document/maintenance.html:4
+msgid "Maintenance"
+msgstr "Instandhaltung"
+
+#: document/templates/admin/document/maintenance.html:19
+msgid ""
+"\n"
+"            Before and after upgrading Fidus Writer, you should update all "
+"the documents\n"
+"            of all users to the newest document version. Only do this if you "
+"know that\n"
+"            no user is currently editing any document!\n"
+"            "
+msgstr ""
+"\n"
+"            Vor und nach dem Upgrade von Fidus Writer sollten Sie alle "
+"Dokumente aller Benutzer auf die neueste Dokumentversion aktualisieren. Tun "
+"Sie dies nur, wenn Sie das wissen dass\n"
+"            derzeit kein Benutzer ein Dokument bearbeitet!\n"
+"                        "
+
+#: document/templates/admin/document/maintenance.html:27
+msgid "Update all documents (DANGER!)"
+msgstr "Aktualisieren Sie alle Dokumente (GEFAHR!)"
+
+#: style/models.py:74
+msgid "Default"
+msgstr "Standard"
+
+#: style/views.py:27
+msgid "The template needs at least 1 document style"
+msgstr "Die Vorlage benötigt mindestens 1 Dokumentstil"
+
+#: user/admin.py:10
+msgid "Connections"
+msgstr "Verbindungen"
+
+#: user/emails.py:38
+msgid "Invite for Fidus Writer"
+msgstr "Einladung für Fidus Writer"
+
+#: user/emails.py:41
+msgid "Sign up/log in and accept/reject the invite"
+msgstr "Anmelden/einloggen und Einladung annehmen/ablehnen"
+
+#: user/emails.py:44
+msgid "Fidus Writer contact invite"
+msgstr "Fidus Writer-Kontakteinladung"
+
+#: user/emails.py:84
+msgid "Invite for Fidus Writer declined"
+msgstr "Einladung für Fidus Writer abgelehnt"
+
+#: user/emails.py:87 user/emails.py:133
+msgid "See your list of contacts"
+msgstr "Sehen Sie sich Ihre Kontaktliste an"
+
+#: user/emails.py:90
+msgid "Fidus Writer invite declined"
+msgstr "Fidus Writer-Einladung abgelehnt"
+
+#: user/emails.py:130
+msgid "Invite for Fidus Writer accepted"
+msgstr "Einladung für Fidus Writer akzeptiert"
+
+#: user/emails.py:136
+msgid "Fidus Writer invite accepted"
+msgstr "Fidus Writer-Einladung akzeptiert"
+
+#: user/models.py:53
+msgid "Interface language preference"
+msgstr "Bevorzugte Sprache der Benutzeroberfläche"
+
+#: user/models.py:66
+msgid "Can login as another user"
+msgstr "Kann sich als anderer Benutzer anmelden"
+
+#: user/models.py:74
+msgid "email address"
+msgstr "E-Mail-Addresse"
+
+#: user/templates/account/email/email_confirmation_message.html:7
+#: user/templates/account/email/password_reset_key_message.html:7
+#, python-format
+msgid "Hello from %(site_name)s!"
+msgstr "Hallo von %(site_name)s!"
+
+#: user/templates/account/email/email_confirmation_message.html:12
+#, python-format
+msgid ""
+"You are receiving this e-mail because user %(user_display)s has given yours "
+"as an e-mail address to connect their account."
+msgstr ""
+"Sie erhalten diese E-Mail, weil Benutzer %(user_display)s Ihre als E-Mail-"
+"Adresse angegeben hat, um sein Konto zu verbinden."
+
+#: user/templates/account/email/email_confirmation_message.html:16
+#, python-format
+msgid "To confirm this is correct, go to <a href=\"%(url)s\">%(url)s</a>."
+msgstr ""
+"Um zu bestätigen, dass dies korrekt ist, gehen Sie zu <a "
+"href=\"%(url)s\">%(url)s</a>."
+
+#: user/templates/account/email/email_confirmation_message.html:20
+#: user/templates/account/email/password_reset_key_message.html:26
+#, python-format
+msgid "Thank you from %(site_name)s!"
+msgstr "Vielen Dank von %(site_name)s!"
+
+#: user/templates/account/email/password_reset_key_message.html:11
+msgid ""
+"You are receiving this e-mail because you or someone else has requested a "
+"password for your user account."
+msgstr ""
+"Sie erhalten diese E-Mail, weil Sie oder eine andere Person ein Kennwort für "
+"Ihr Benutzerkonto angefordert haben."
+
+#: user/templates/account/email/password_reset_key_message.html:14
+msgid ""
+"It can be safely ignored if you did not request a password reset. Click the "
+"link below to reset your password."
+msgstr ""
+"Es kann ignoriert werden, wenn Sie kein Zurücksetzen des Passworts "
+"angefordert haben. Klicken Sie auf den Link unten, um Ihr Passwort "
+"zurückzusetzen."
+
+#: user/templates/account/email/password_reset_key_message.html:21
+#, python-format
+msgid "In case you forgot, your username is %(username)s."
+msgstr "Falls Sie es vergessen haben, Ihr Benutzername lautet %(username)s."
+
+#: usermedia/views.py:37
+msgid "Filetype not supported"
+msgstr "Dateityp wird nicht unterstützt"
+
+#: usermedia/views.py:44
+msgid "Image too large"
+msgstr "Bild zu groß"
+
+#: usermedia/views.py:71
+msgid "No file uploaded"
+msgstr "Keine Datei hochgeladen"

@@ -1,0 +1,78 @@
+.superdoc *,
+.superdoc ::before,
+.superdoc ::after,
+.superdoc-toolbar *,
+.superdoc-toolbar ::before,
+.superdoc-toolbar ::after {
+  box-sizing: border-box;
+}
+
+.superdoc .disabled,
+.super-editor .disabled,
+.superdoc-toolbar .disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.super-editor p {
+  padding: 0;
+  margin: 0;
+}
+
+.sd-button {
+  border-radius: 8px;
+  background-color: white;
+  padding: 8px 12px;
+  outline: none;
+  border: 1px solid #dbdbdb;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 250ms ease;
+}
+
+.sd-button:hover {
+  background-color: #dbdbdb;
+}
+
+.sd-button.primary {
+  background-color: #1355ff;
+  border: none;
+  color: white;
+}
+
+.sd-button.primary:hover {
+  background-color: #0d3fcc;
+}
+
+.sd-comment-box {
+  width: 300px;
+}
+
+.superdoc-field {
+  border-radius: 8px;
+  padding: 12px;
+  outline: none;
+  border: 1px solid #dbdbdb;
+  width: 100%;
+}
+
+.superdoc-field:focus,
+.superdoc-field:active {
+  border: 1px solid #1355ff;
+}
+
+.superdoc-field .ProseMirror {
+  border: 0;
+  outline: 0;
+  margin: 0;
+}
+
+.sd-editor-placeholder::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block;
+  height: 0;
+}

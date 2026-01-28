@@ -1,0 +1,360 @@
+@charset "UTF-8";
+
+/*
+ * font awesome styles for special icons
+ */
+[class^="icon-"],
+[class*=" icon-"] {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Used instead of .fa when only ::before is to be styled. */
+.fa-before::before {
+    font-family: var(--fa-style-family, "Font Awesome 6 Free");
+    font-weight: var(--fa-style, 900);
+}
+
+/* last list item is a plus, others are minuses */
+.icon-addremove::before {
+    content: "\f056";
+} /* '' */
+.fw-list-input:last-child .fw-add-input::before {
+    content: "\f055";
+} /* '' */
+
+/* User rights */
+.icon-access-write::before {
+    content: "\f303";
+} /* '✎' */
+.icon-access-write-tracked::before {
+    content: "\f303";
+} /* '✎' */
+.icon-access-read::before {
+    content: "\f06e";
+} /* '' */
+.icon-access-comment::before {
+    content: "\f075";
+} /* '' */
+
+/* Review related user rights */
+.icon-access-read-without-comments::before {
+    content: "\f06e";
+} /* '' */
+.icon-access-review::before {
+    content: "\f075";
+} /* '' */
+.icon-access-review-tracked::before {
+    content: "\f303";
+} /* '✎' */
+
+.icon-access-read-without-comments::before,
+.icon-access-review::before,
+.icon-access-write-tracked::before {
+    background-color: var(--cs-dark-text);
+    color: var(--cs-dark-background);
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.fw-checkable.checked::after,
+tr.fw-checkable.checked > td:last-child::after {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f00c";
+    position: absolute;
+    right: 12px;
+}
+
+.editor-toolbar div.multi-buttons .multi-buttons-cover::after {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f107";
+}
+
+/* stylelint-disable selector-id-pattern */
+#cite-source-table_filter label::after {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f002";
+    margin-left: -25px;
+}
+/* stylelint-enable selector-id-pattern */
+
+.margin-box.active::after {
+    display: block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f0d9";
+}
+
+.fw-nav-item.active-menu-wrapper::after {
+    display: block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f0d7";
+}
+
+.ui-icon-closethick::before,
+.ui-icon-help::before {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f057";
+}
+
+.fw-add-button::after {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f055";
+}
+
+.datatable-pagination-list button,
+table.datatable-table th button {
+    color: inherit;
+    border: 0;
+    background-color: inherit;
+    cursor: pointer;
+    text-align: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+}
+
+table.datatable-table thead th button::after {
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: 80%;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin-left: 8px;
+}
+
+table.datatable-table
+    thead
+    th[data-sortable]:not([data-sortable="false"])
+    button::after {
+    content: "\f0dc";
+}
+
+table.datatable-table
+    thead
+    th[data-sortable]:not([data-sortable="false"]).asc
+    button::after {
+    content: "\f0de";
+}
+
+table.datatable-table
+    thead
+    th[data-sortable]:not([data-sortable="false"]).desc
+    button::after {
+    content: "\f0dd";
+}
+
+.fw-data-table-body tr.checked td.checkable::after {
+    display: inline-block;
+    font-family: "Font Awesome 6 Free", monospace;
+    font-weight: 900;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: "\f00c";
+}
+
+/*
+ * styles for Lato
+ */
+
+/* latin-ext */
+@font-face {
+    font-family: Lato;
+    font-style: italic;
+    font-weight: 400;
+    src: local("Lato Italic"), local("Lato-Italic"),
+        url("../fonts/lato/lato-ext-italic-400.woff2") format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+        U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+    font-family: Lato;
+    font-style: italic;
+    font-weight: 400;
+    src: local("Lato Italic"), local("Lato-Italic"),
+        url("../fonts/lato/lato-italic-400.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 300;
+    src: local("Lato Light"), local("Lato-Light"),
+        url("../fonts/lato/lato-ext-300.woff2") format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+        U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 300;
+    src: local("Lato Light"), local("Lato-Light"),
+        url("../fonts/lato/lato-300.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 400;
+    src: local("Lato Regular"), local("Lato-Regular"),
+        url("../fonts/lato/lato-ext-400.woff2") format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+        U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 400;
+    src: local("Lato Regular"), local("Lato-Regular"),
+        url("../fonts/lato/lato-400.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 700;
+    src: local("Lato Bold"), local("Lato-Bold"),
+        url("../fonts/lato/lato-ext-700.woff2") format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+        U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 700;
+    src: local("Lato Bold"), local("Lato-Bold"),
+        url("../fonts/lato/lato-700.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 900;
+    src: local("Lato Black"), local("Lato-Black"),
+        url("../fonts/lato/lato-ext-900.woff2") format("woff2");
+    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+        U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 900;
+    src: local("Lato Black"), local("Lato-Black"),
+        url("../fonts/lato/lato-900.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 300;
+    src: local("Roboto Light"), local("Roboto-Light"),
+        url("../fonts/roboto/roboto-300.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 700;
+    src: local("Roboto Bold"), local("Roboto-Bold"),
+        url("../fonts/roboto/roboto-700.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: 700;
+    src: local("Roboto Bold"), local("Roboto-Bold"),
+        url("../fonts/roboto/roboto-700.woff2") format("woff2");
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+        U+2215, U+FEFF, U+FFFD;
+}

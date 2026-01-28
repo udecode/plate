@@ -1,0 +1,18 @@
+{
+  "git": {
+    "commitMessage": "chore: release v${version} [skip ci]",
+    "tag": false,
+    "push": true,
+    "requireCleanWorkingDir": false
+  },
+  "npm": {
+    "publish": true,
+    "skipChecks": true,
+    "tag": "next"
+  },
+  "preRelease": "next",
+  "hooks": {
+    "after:bump": ["npm run build"],
+    "after:release": "echo Successfully released v${version}"
+  }
+}

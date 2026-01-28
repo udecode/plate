@@ -1,0 +1,45 @@
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  header {
+    padding: 1rem;
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  button {
+    padding: 0.5rem 1rem;
+    background: #1355ff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background: #0044ff;
+  }
+  
+  main {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #superdoc-toolbar {
+    border-bottom: 1px solid #eee;
+  }
+  
+  #superdoc {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+    overflow: auto;
+  }
+  

@@ -1,0 +1,253 @@
+#document-editable,
+#footnote-box-container {
+    counter-reset: cat-figure cat-equation cat-photo cat-table footnote-counter
+        footnote-marker-counter;
+}
+
+/* CSL */
+
+.csl-bib-body {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.csl-left-margin {
+    padding-right: 1ch;
+    clear: left;
+    float: left;
+    white-space: pre;
+}
+
+.csl-entry i,
+.citation i {
+    font-style: italic;
+}
+
+.csl-entry b,
+.citation b {
+    font-weight: bold;
+}
+
+.csl-entry sup,
+.citation sup {
+    vertical-align: super;
+    font-size: smaller;
+}
+
+.csl-entry sub,
+.citation sub {
+    vertical-align: sub;
+    font-size: smaller;
+}
+
+.csl-indent {
+    padding-left: 0.5in;
+}
+
+.csl-entry {
+    clear: left;
+}
+
+.csl-right-inline {
+    padding-left: 20px;
+}
+
+span.anchor {
+    text-decoration: underline;
+    color: var(--cs-4-text);
+}
+
+figure figcaption {
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+figure img {
+    max-width: 100%;
+}
+
+figure {
+    width: calc(80% - 12px);
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+    break-inside: avoid;
+    cursor: pointer;
+    margin: 10%;
+    clear: none;
+}
+
+.aligned-right {
+    float: right;
+}
+
+.aligned-left {
+    float: left;
+}
+
+.aligned-center {
+    float: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    align-content: center;
+}
+
+.image-width-100 {
+    width: 80%;
+    box-sizing: border-box;
+}
+
+.image-width-75 {
+    width: 55%;
+    box-sizing: border-box;
+}
+
+.image-width-50 {
+    width: 40%;
+    box-sizing: border-box;
+}
+
+.image-width-25 {
+    width: 21%;
+    box-sizing: border-box;
+}
+
+figure[data-category="figure"] figcaption span.label::after {
+    counter-increment: cat-figure;
+    content: " " counter(cat-figure);
+}
+
+figure[data-category="equation"] figcaption span.label::after {
+    counter-increment: cat-equation;
+    content: " " counter(cat-equation);
+}
+
+figure[data-category="photo"] figcaption span.label::after {
+    counter-increment: cat-photo;
+    content: " " counter(cat-photo);
+}
+
+figure[data-category="table"] figcaption span.label::after,
+table[data-category="table"] caption span.label::after {
+    counter-increment: cat-table;
+    content: " " counter(cat-table);
+}
+
+#footnote-box-container
+    figure[data-category="figure"]
+    figcaption
+    span.label::after {
+    content: " " counter(cat-figure) "A";
+}
+
+#footnote-box-container
+    figure[data-category="photo"]
+    figcaption
+    span.label::after {
+    content: " " counter(cat-photo) "A";
+}
+
+#footnote-box-container
+    figure[data-category="table"]
+    figcaption
+    span.label::after,
+#footnote-box-container table[data-category="table"] caption span.label::after {
+    content: " " counter(cat-table) "A";
+}
+
+figure[data-category="table"] figcaption span.text::before,
+figure[data-category="photo"] figcaption span.text::before,
+figure[data-category="figure"] figcaption span.text::before,
+table[data-category="table"] caption span.text::before {
+    content: ": ";
+}
+
+table {
+    clear: both;
+}
+
+.table-25 {
+    width: 25%;
+}
+
+.table-50 {
+    width: 50%;
+}
+
+.table-75 {
+    width: 75%;
+}
+
+.table-100 {
+    width: 100%;
+}
+
+.table-center {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    clear: both;
+}
+
+.table-left {
+    float: left;
+}
+
+.table-right {
+    float: right;
+}
+
+.user-contents a {
+    text-decoration: underline;
+}
+
+.doc table[data-layout="fixed"] {
+    table-layout: fixed !important;
+}
+
+.doc table[data-layout="auto"] {
+    table-layout: auto !important;
+}
+
+.doc-title {
+    font-size: 48px;
+}
+
+.doc .table-of-contents h1,
+.doc .table-of-contents h2,
+.doc .table-of-contents h3,
+.doc .table-of-contents h4,
+.doc .table-of-contents h5,
+.doc .table-of-contents h6 {
+    font-size: 1em;
+    font-weight: normal;
+    margin-bottom: unset;
+}
+
+.doc .table-of-contents h2 {
+    padding-left: 1em;
+}
+
+.doc .table-of-contents h3 {
+    padding-left: 2em;
+}
+
+.doc .table-of-contents h4 {
+    padding-left: 3em;
+}
+
+.doc .table-of-contents h5 {
+    padding-left: 4em;
+}
+
+.doc .table-of-contents h6 {
+    padding-left: 5em;
+}
+
+.doc .table-of-contents h1.toc {
+    font-style: italic;
+}
+
+.underline {
+    text-decoration: underline;
+}

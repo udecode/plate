@@ -1,0 +1,15 @@
+.superdoc-toolbar svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+  path {
+    stroke: currentColor;
+  }
+}
+
+.sd-editor-toolbar-dropdown .n-dropdown-option .dropdown-select-icon {
+  display: flex;
+  width: 12px;
+  height: 12px;
+}

@@ -1,0 +1,94 @@
+.ui-content-menu {
+    position: absolute;
+    color: var(--cs-white-text);
+    background-color: var(--cs-white-background);
+    box-shadow: 0 0 20px rgba(var(--dropup-box-shadow-color));
+    font-size: 14px;
+    z-index: 101;
+    padding: 0;
+    border: 0 none;
+    border-image: initial;
+    overflow: hidden;
+    border-radius: 6px;
+    outline: 0;
+}
+
+.ui-content-menu-content.ui-scrollable {
+    overflow-y: scroll;
+}
+
+.ui-content-menu-content {
+    position: relative;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.ui-widget-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--overlay-color));
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.ui-widget-overlay.no-blur {
+    backdrop-filter: none;
+}
+
+.content-menu-list {
+    list-style: none;
+    padding: 0 0 5px;
+    cursor: pointer;
+}
+
+.content-menu-item {
+    padding: 18px 31px 15px;
+    color: var(--cs-white-text);
+    font-family: Lato, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1em;
+}
+
+.content-menu-item.disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.content-menu-item.selected {
+    color: var(--cs-white-selected);
+    background-color: var(--cs-white-background-selected);
+}
+
+.content-menu-item:hover {
+    color: var(--cs-white-hover);
+    background-color: var(--cs-white-background-hover);
+}
+
+.content-menu-item:focus {
+    color: var(--cs-white-focus);
+    background-color: var(--cs-white-background-focus);
+    outline: none;
+}
+
+.content-menu-item-divider {
+    border: 0 none;
+    border-top: 1px solid var(--pulldown-separator-color) !important;
+}
+
+.content-menu-item-header {
+    line-height: 18px;
+    background-color: var(--pulldown-header-background-color);
+    color: var(--pulldown-header-text-color);
+    display: block;
+    text-align: center;
+}
+
+.content-menu-item-icon {
+    position: absolute;
+    right: 40px;
+    color: var(--cs-white-text);
+}

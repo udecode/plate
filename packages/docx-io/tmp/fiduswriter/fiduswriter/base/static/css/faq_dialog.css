@@ -1,0 +1,16 @@
+div.faq {
+    line-height: 1.5em;
+}
+
+.faq-answer {
+    padding: 5px;
+    font-size: medium;
+}
+
+.faq-item {
+    padding: 10px;
+}
+
+.faq-question i {
+    padding: 3px;
+}

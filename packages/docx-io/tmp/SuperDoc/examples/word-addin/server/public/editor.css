@@ -1,0 +1,459 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    background-color: #f5f5fa;
+    color: #323130;
+    line-height: 1.6;
+}
+
+.header {
+    background: radial-gradient(circle at -40% -70%, #28a745, #8968f6, #b785f1, #fcd361e6, #e8caec, #f1e0f0, #f1e0f0, #f5f5fa, #f5f5fa, #f5f5fa);
+    padding: 20px;
+    text-align: center;
+    color: white;
+}
+
+.logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 10px;
+    display: block;
+    background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0id2hpdGUiLz4KPHN2ZyB4PSIxNiIgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+CjxwYXRoIGQ9Ik0xNiA4QzE2IDMuNTggMTkuNTggMCAyNCAwUzMyIDMuNTggMzIgOFYyNEMzMiAyOC40MiAyOC40MiAzMiAyNCAzMlMxNiAyOC40MiAxNiAyNFY4WiIgZmlsbD0iIzEyNTVGRSIvPgo8cGF0aCBkPSJNMjQgMTZMMzIgOEw0MCAyNEwyNCAzMkw4IDI0TDE2IDhMMjQgMTZaIiBmaWxsPSIjODk2OEY2Ii8+CjwvY3ZnPgo8L3N2Zz4K');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.status-card {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+}
+
+.status-success {
+    background: #28a745;
+}
+
+.status-failure {
+    background: #dc3545;
+}
+
+.status-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.status-message {
+    font-size: 16px;
+    color: #605e5c;
+    margin-bottom: 20px;
+}
+
+.user-info {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 20px;
+    border-left: 4px solid #28a745;
+}
+
+.timestamp {
+    font-size: 14px;
+    color: #8a8886;
+    margin-top: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    margin-top: 15px;
+    transition: background 0.2s;
+}
+
+.button:hover {
+    background: #106ebe;
+}
+
+.superdoc {
+    justify-content: center;
+}
+
+.document-editor-wrapper {
+    position: relative;
+}
+
+.user-card {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+    min-width: 200px;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(0);
+}
+
+.user-card-hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+}
+
+.user-card-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #8968f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+#user-avatar-initials {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #8968f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #323130;
+    margin-bottom: 2px;
+    text-transform: capitalize;
+    text-align: left;
+}
+
+.user-email {
+    font-size: 12px;
+    color: #605e5c;
+}
+
+/* CSS Animations */
+@keyframes connectionPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+@keyframes syncPulse {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 6px rgba(40, 167, 69, 0.3);
+        transform: scale(1.2);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+        transform: scale(1);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* UI State Container Styles */
+.loading-container,
+.timeout-container,
+.error-container,
+.auth-required-container {
+    display: block;
+    margin-top: -40px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 5;
+}
+
+.state-card {
+    background: white;
+    border-radius: 8px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.loading-spinner {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #28a745;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner-inner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid white;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.timeout-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #ff8800;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+}
+
+.error-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #dc3545;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: white;
+}
+
+.state-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #323130;
+}
+
+.state-message {
+    font-size: 16px;
+    color: #605e5c;
+}
+
+/* Mode option hover effects */
+.mode-option:hover {
+    background-color: #f5f5f5;
+}
+
+.mode-option.selected {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+/* Status Indicator Styles */
+.status-indicator-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.status-text {
+    transition: color 0.3s ease;
+}
+
+/* Status States */
+.status-connecting .status-dot {
+    background: #ccc;
+    animation: connectionPulse 2s ease-in-out infinite;
+}
+
+.status-connecting .status-text {
+    color: #666;
+}
+
+.status-connected .status-dot {
+    background: #28a745;
+}
+
+.status-connected .status-text {
+    color: #28a745;
+}
+
+.status-syncing .status-dot {
+    background: #28a745;
+    animation: syncPulse 1.5s ease-out;
+}
+
+.status-syncing .status-text {
+    color: #28a745;
+}
+
+.status-disconnected .status-dot {
+    background: #ff8800;
+}
+
+.status-disconnected .status-text {
+    color: #ff8800;
+}
+
+.status-error .status-dot {
+    background: #dc3545;
+}
+
+.status-error .status-text {
+    color: #dc3545;
+}
+
+/* Status Indicator Animations */
+@keyframes statusWobble {
+    0% { 
+        transform: scale(1) rotate(0deg);
+    }
+    10% { 
+        transform: scale(1.3) rotate(-5deg);
+    }
+    20% { 
+        transform: scale(1.3) rotate(5deg);
+    }
+    30% { 
+        transform: scale(1.3) rotate(-5deg);
+    }
+    40% { 
+        transform: scale(1.3) rotate(5deg);
+    }
+    50% { 
+        transform: scale(1.3) rotate(-2deg);
+    }
+    60% { 
+        transform: scale(1.3) rotate(2deg);
+    }
+    70% { 
+        transform: scale(1.2) rotate(0deg);
+    }
+    100% { 
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.status-wobble .status-dot {
+    animation: statusWobble 0.8s ease-out;
+}
+
+/* Mode Icon Classes */
+#mode-icon {
+    margin-right: 8px;
+    width: 16px;
+    transition: all 0.2s ease;
+}
+
+/* Icon class overrides */
+.mode-icon-editing.fas::before {
+    content: "\f303"; /* fa-pencil-alt */
+}
+
+.mode-icon-suggesting.fas::before {
+    content: "\f075"; /* fa-comment */
+}
+
+.mode-icon-viewing.fas::before {
+    content: "\f06e"; /* fa-eye */
+}

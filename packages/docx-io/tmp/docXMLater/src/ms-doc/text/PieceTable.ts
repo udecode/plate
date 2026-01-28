@@ -1,0 +1,275 @@
+/**
+ * Piece Table Parser
+ *
+ * Parses the Clx structure which contains the piece table (PlcPcd)
+ * that maps character positions to locations in the WordDocument stream.
+ *
+ * References:
+ * - [MS-DOC] 2.8.35 Clx
+ * - [MS-DOC] 2.8.36 Pcdt
+ * - [MS-DOC] 2.8.37 PlcPcd
+ * - [MS-DOC] 2.8.38 Pcd
+ */
+
+import { PieceTable, PieceDescriptor, TextRange } from '../types/DocTypes';
+
+/**
+ * Error thrown when piece table parsing fails
+ */
+export class PieceTableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PieceTableError';
+  }
+}
+
+/**
+ * Clx structure type identifiers
+ */
+const CLX_TYPES = {
+  /** Prc (Property modifier) - variable length */
+  PRC: 0x01,
+  /** Pcdt (Piece descriptor table) */
+  PCDT: 0x02,
+} as const;
+
+/**
+ * Parse piece table from Clx structure
+ */
+export class PieceTableParser {
+  private data: Uint8Array;
+  private view: DataView;
+  private wordDocumentStream: Uint8Array;
+
+  /**
+   * @param clxData The Clx structure from the Table stream
+   * @param wordDocumentStream The WordDocument stream containing text
+   */
+  constructor(clxData: Uint8Array, wordDocumentStream: Uint8Array) {
+    this.data = clxData;
+    this.view = new DataView(this.data.buffer, this.data.byteOffset, this.data.byteLength);
+    this.wordDocumentStream = wordDocumentStream;
+  }
+
+  /**
+   * Parse the piece table
+   */
+  parse(): PieceTable {
+    let offset = 0;
+
+    // Skip any Prc structures
+    while (offset < this.data.length) {
+      const clxType = this.data[offset];
+
+      if (clxType === CLX_TYPES.PRC) {
+        // Prc structure: 1 byte type + 2 bytes length + data
+        offset++; // Skip type
+        const prcLen = this.view.getInt16(offset, true);
+        offset += 2 + prcLen; // Skip length and data
+      } else if (clxType === CLX_TYPES.PCDT) {
+        // Found the Pcdt
+        offset++; // Skip type
+        return this.parsePcdt(offset);
+      } else {
+        throw new PieceTableError(`Unknown Clx type: 0x${clxType?.toString(16)}`);
+      }
+    }
+
+    throw new PieceTableError('No Pcdt found in Clx structure');
+  }
+
+  /**
+   * Parse Pcdt structure
+   */
+  private parsePcdt(offset: number): PieceTable {
+    // Pcdt: 4 bytes length + PlcPcd
+    const pcdtLen = this.view.getUint32(offset, true);
+    offset += 4;
+
+    return this.parsePlcPcd(offset, pcdtLen);
+  }
+
+  /**
+   * Parse PlcPcd (Piece descriptor PLC)
+   *
+   * Structure: array of (n+1) CPs followed by array of n Pcd structures
+   * Each Pcd is 8 bytes
+   */
+  private parsePlcPcd(offset: number, length: number): PieceTable {
+    const PCD_SIZE = 8;
+
+    // Calculate number of pieces
+    // length = (n+1) * 4 + n * 8
+    // length = 4n + 4 + 8n = 12n + 4
+    // n = (length - 4) / 12
+    const numPieces = (length - 4) / 12;
+
+    if (!Number.isInteger(numPieces) || numPieces < 0) {
+      throw new PieceTableError(`Invalid PlcPcd length: ${length}`);
+    }
+
+    // Read CPs (n+1 values)
+    const cps: number[] = [];
+    for (let i = 0; i <= numPieces; i++) {
+      cps.push(this.view.getUint32(offset + i * 4, true));
+    }
+
+    // Read Pcd structures
+    const pcdOffset = offset + (numPieces + 1) * 4;
+    const pieces: PieceDescriptor[] = [];
+
+    for (let i = 0; i < numPieces; i++) {
+      const pcd = this.parsePcd(pcdOffset + i * PCD_SIZE, cps[i] ?? 0, cps[i + 1] ?? 0);
+      pieces.push(pcd);
+    }
+
+    return { cps, pieces };
+  }
+
+  /**
+   * Parse a single Pcd structure (8 bytes)
+   *
+   * Structure:
+   * - 2 bytes: fNoParaLast (unused in reading)
+   * - 4 bytes: fc (file character position, includes compression flag)
+   * - 2 bytes: prm (property modifier)
+   */
+  private parsePcd(offset: number, cpStart: number, cpEnd: number): PieceDescriptor {
+    // Skip first 2 bytes (fNoParaLast)
+    const fcRaw = this.view.getUint32(offset + 2, true);
+    const prm = this.view.getUint16(offset + 6, true);
+
+    // Bit 30 indicates compression (1 = compressed ANSI, 0 = Unicode)
+    const fCompressed = (fcRaw & 0x40000000) !== 0;
+
+    // The actual file offset (mask out the compression bit)
+    // For compressed text, divide by 2 to get actual offset
+    let fc = fcRaw & 0x3fffffff;
+    if (fCompressed) {
+      fc = fc >> 1;
+    }
+
+    return {
+      fc,
+      fCompressed,
+      prm,
+      cpStart,
+      cpEnd,
+    };
+  }
+
+  /**
+   * Extract text from all pieces
+   */
+  extractText(): TextRange[] {
+    const pieceTable = this.parse();
+    const ranges: TextRange[] = [];
+
+    for (const piece of pieceTable.pieces) {
+      const text = this.extractPieceText(piece);
+      ranges.push({
+        cpStart: piece.cpStart,
+        cpEnd: piece.cpEnd,
+        text,
+      });
+    }
+
+    return ranges;
+  }
+
+  /**
+   * Extract text from a single piece
+   */
+  private extractPieceText(piece: PieceDescriptor): string {
+    const charCount = piece.cpEnd - piece.cpStart;
+
+    if (piece.fCompressed) {
+      // ANSI (1 byte per character)
+      const bytes = this.wordDocumentStream.slice(piece.fc, piece.fc + charCount);
+      return this.decodeANSI(bytes);
+    } else {
+      // Unicode (2 bytes per character)
+      const bytes = this.wordDocumentStream.slice(piece.fc, piece.fc + charCount * 2);
+      return this.decodeUTF16LE(bytes);
+    }
+  }
+
+  /**
+   * Decode ANSI bytes to string (Windows-1252)
+   */
+  private decodeANSI(bytes: Uint8Array): string {
+    // Windows-1252 to Unicode mapping for bytes 0x80-0x9F
+    const cp1252Map: { [key: number]: number } = {
+      0x80: 0x20ac, // Euro sign
+      0x82: 0x201a, // Single low-9 quotation mark
+      0x83: 0x0192, // Latin small f with hook
+      0x84: 0x201e, // Double low-9 quotation mark
+      0x85: 0x2026, // Horizontal ellipsis
+      0x86: 0x2020, // Dagger
+      0x87: 0x2021, // Double dagger
+      0x88: 0x02c6, // Modifier letter circumflex accent
+      0x89: 0x2030, // Per mille sign
+      0x8a: 0x0160, // Latin capital S with caron
+      0x8b: 0x2039, // Single left-pointing angle quotation mark
+      0x8c: 0x0152, // Latin capital ligature OE
+      0x8e: 0x017d, // Latin capital Z with caron
+      0x91: 0x2018, // Left single quotation mark
+      0x92: 0x2019, // Right single quotation mark
+      0x93: 0x201c, // Left double quotation mark
+      0x94: 0x201d, // Right double quotation mark
+      0x95: 0x2022, // Bullet
+      0x96: 0x2013, // En dash
+      0x97: 0x2014, // Em dash
+      0x98: 0x02dc, // Small tilde
+      0x99: 0x2122, // Trade mark sign
+      0x9a: 0x0161, // Latin small s with caron
+      0x9b: 0x203a, // Single right-pointing angle quotation mark
+      0x9c: 0x0153, // Latin small ligature oe
+      0x9e: 0x017e, // Latin small z with caron
+      0x9f: 0x0178, // Latin capital Y with diaeresis
+    };
+
+    const chars: string[] = [];
+    for (let i = 0; i < bytes.length; i++) {
+      const byte = bytes[i];
+      if (byte === undefined) continue;
+
+      if (byte >= 0x80 && byte <= 0x9f && cp1252Map[byte] !== undefined) {
+        chars.push(String.fromCharCode(cp1252Map[byte]!));
+      } else {
+        chars.push(String.fromCharCode(byte));
+      }
+    }
+    return chars.join('');
+  }
+
+  /**
+   * Decode UTF-16LE bytes to string
+   */
+  private decodeUTF16LE(bytes: Uint8Array): string {
+    const chars: string[] = [];
+    for (let i = 0; i < bytes.length - 1; i += 2) {
+      const low = bytes[i];
+      const high = bytes[i + 1];
+      if (low === undefined || high === undefined) break;
+      chars.push(String.fromCharCode(low | (high << 8)));
+    }
+    return chars.join('');
+  }
+
+  /**
+   * Get combined text as single string
+   */
+  getFullText(): string {
+    const ranges = this.extractText();
+    return ranges.map((r) => r.text).join('');
+  }
+
+  /**
+   * Static method to parse and extract text
+   */
+  static extractText(clxData: Uint8Array, wordDocumentStream: Uint8Array): TextRange[] {
+    const parser = new PieceTableParser(clxData, wordDocumentStream);
+    return parser.extractText();
+  }
+}

@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load transpile %}
+{% block title %}{% trans "Admin Console" %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link type="text/css" rel="stylesheet" href="{% static "css/alerts.css" %}" />
+<!--  Translations -->
+<script type="text/javascript" src="/api/jsi18n/"></script>
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+<!-- JS error handling -->
+<script type="text/javascript" src="{% static "js/error_hook.mjs" %}" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static "js/admin_console.mjs" %}"></script>
+{% endblock %}
+{% block content %}
+    <div>
+        <h1>{% trans "Admin Console" %}</h1>
+        <p>
+            {% trans "Current number of users:" %} <strong><span id="user_count"></span></strong>
+        </p>
+        <p>
+            {% trans "Current number of user sessions:" %} <strong><span id="session_count"></span></strong>
+        </p>
+        <p>{% trans "Send a system message to all connected users:" %}</p>
+        <fieldset class="module aligned">
+            <div class="form-row">
+                <div>
+                    <label class="required" for="user_message">{% trans "Message" %}:</label>
+                    <textarea id="user_message" class="vTextField" cols="40" rows="10" required>
+{% blocktrans %}This system will go offline for scheduled maintenance in 30 minutes. All your work will be saved automatically and we will be back shortly.{% endblocktrans %}
+                    </textarea>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="submit_row">
+            <input type="submit" class="default" id="submit_user_message" value="{% trans "Send to connected users" %}">
+        </div>
+    </div>
+{% endblock %}

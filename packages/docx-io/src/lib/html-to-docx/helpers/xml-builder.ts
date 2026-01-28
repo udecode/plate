@@ -37,6 +37,7 @@ import {
   splitDocxTrackingTokens,
   wrapRunWithSuggestion,
   type ActiveSuggestion,
+  type CommentPayload,
   type TrackingDocumentInstance,
 } from '../tracking';
 import namespaces from '../namespaces';
@@ -287,6 +288,76 @@ const fixupColorCode = (colorCodeString: string): string => {
   return '000000';
 };
 
+const resolveCssVar = (
+  value: string,
+  style: Record<string, string>
+): string => {
+  const match = value.match(/var\((--[^)]+)\)/i);
+  if (!match) return value;
+  const varName = match[1];
+  return style[varName] || style[varName.toLowerCase()] || value;
+};
+
+const extractColorToken = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (!trimmed) return;
+  if (colorlessColors.includes(trimmed.toLowerCase())) return;
+
+  if (
+    hexRegex.test(trimmed) ||
+    hex3Regex.test(trimmed) ||
+    rgbRegex.test(trimmed) ||
+    hslRegex.test(trimmed) ||
+    Object.hasOwn(colorNames, trimmed.toLowerCase())
+  ) {
+    return trimmed;
+  }
+
+  const hexMatch = trimmed.match(/#([0-9A-F]{3}|[0-9A-F]{6})/i);
+  if (hexMatch) return hexMatch[0];
+
+  const rgbMatch = trimmed.match(/rgba?\(([^)]+)\)/i);
+  if (rgbMatch) {
+    const parts = rgbMatch[1].split(',').map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})`;
+    }
+  }
+
+  const hslMatch = trimmed.match(/hsla?\(([^)]+)\)/i);
+  if (hslMatch) {
+    const parts = hslMatch[1].split(',').map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `hsl(${parts[0]}, ${parts[1]}, ${parts[2]})`;
+    }
+  }
+
+  const tokens = trimmed.split(/[\s,/]+/);
+  for (const token of tokens) {
+    const lower = token.toLowerCase();
+    if (Object.hasOwn(colorNames, lower)) return lower;
+  }
+
+  return;
+};
+
+const resolveBackgroundColor = (
+  style: Record<string, string>
+): string | undefined => {
+  const rawBackground =
+    style['background-color'] ??
+    (style as Record<string, string>).backgroundColor ??
+    style.background ??
+    style['background'] ??
+    style['--cellBackground'] ??
+    style['--cellbackground'] ??
+    style['--cell-background'];
+
+  if (!rawBackground) return;
+  const resolved = resolveCssVar(rawBackground, style);
+  return extractColorToken(resolved);
+};
+
 const buildRunFontFragment = (fontName: string = defaultFont): XMLBuilderType =>
   fragment({ namespaceAlias: { w: namespaces.w } })
     .ele('@w', 'rFonts')
@@ -480,6 +551,29 @@ const buildRunsFromTextWithTokens = (
     >
   );
 
+  const ensureCommentThread = (
+    payload: CommentPayload,
+    parentId?: string
+  ): number => {
+    const resolvedParentId = parentId ?? payload.parentId;
+    const commentId = docxDocumentInstance.ensureComment({
+      id: payload.id,
+      authorName: payload.authorName,
+      authorInitials: payload.authorInitials,
+      date: payload.date,
+      parentId: resolvedParentId,
+      text: payload.text,
+    });
+
+    if (payload.replies?.length) {
+      payload.replies.forEach((reply) =>
+        ensureCommentThread(reply, payload.id)
+      );
+    }
+
+    return commentId;
+  };
+
   for (const part of parts) {
     if (part.type === 'text') {
       if (!part.value) continue;
@@ -500,13 +594,7 @@ const buildRunsFromTextWithTokens = (
 
     if (part.type === 'commentStart') {
       const data = part.data;
-      const commentId = docxDocumentInstance.ensureComment({
-        id: data.id,
-        authorName: data.authorName,
-        authorInitials: data.authorInitials,
-        date: data.date,
-        text: data.text,
-      });
+      const commentId = ensureCommentThread(data);
       fragments.push(buildCommentRangeStart(commentId));
       continue;
     }
@@ -710,8 +798,7 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.color = fixupColorCode(style.color);
     }
 
-    const backgroundColor =
-      style['background-color'] ?? (style as Record<string, string>).backgroundColor;
+    const backgroundColor = resolveBackgroundColor(style);
     if (backgroundColor && !colorlessColors.includes(backgroundColor)) {
       modifiedAttributes.backgroundColor = fixupColorCode(backgroundColor);
     }

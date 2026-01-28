@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SuperDoc Authentication</title>
+    
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    
+    <!-- Auth0 JavaScript API -->
+    <script type="text/javascript" src="https://cdn.auth0.com/js/auth0/9.28.0/auth0.min.js"></script>
+    
+    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+    
+    <link rel="stylesheet" href="auth-dialog.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img width="60" src="/assets/logo.png" alt="SuperDoc Logo" title="SuperDoc" />
+            <h1>SuperDoc</h1>
+            <p>Secure Authentication powered by Auth0</p>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email address" required>
+        </div>
+        
+        <button class="btn" id="sendCode">Send Verification Code</button>
+        
+        <div id="codeSection" class="code-section hidden">
+            <div class="form-group">
+                <label for="code">Verification Code</label>
+                <input type="text" id="code" placeholder="Enter 6-digit code" maxlength="6" required>
+            </div>
+            <button class="btn" id="verifyCode">Verify Code & Login</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script src="../auth0-config.js"></script>
+    <script src="./auth-dialog.js"></script>
+</body>
+</html>

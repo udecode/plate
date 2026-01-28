@@ -33,7 +33,9 @@ export interface CommentPayload {
   authorName?: string;
   authorInitials?: string;
   date?: string;
+  parentId?: string;
   text?: string;
+  replies?: CommentPayload[];
 }
 
 /** Parsed token from text */
@@ -62,6 +64,8 @@ export interface StoredComment {
   authorInitials: string;
   date?: string;
   text: string;
+  parentId?: number;
+  paraId?: string;
 }
 
 /** Tracking state maintained during document generation */

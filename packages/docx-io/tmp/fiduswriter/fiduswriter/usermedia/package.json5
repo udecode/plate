@@ -1,0 +1,10 @@
+{
+    scripts: {
+        copy_croppedjs_css: "mkdir -p ../static-libs/css/ && cp --preserve=mode node_modules/cropperjs/dist/cropper.min.css ../static-libs/css/",
+        postinstall: "npm run copy_croppedjs_css"
+    },
+
+    dependencies: {
+        cropperjs: "^1.5.9"
+    }
+}

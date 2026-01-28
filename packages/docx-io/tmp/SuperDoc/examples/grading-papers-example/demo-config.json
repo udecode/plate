@@ -1,0 +1,11 @@
+{
+    "dirname": "grading-papers-example",
+    "tags": [
+        "editing",
+        "next-js",
+        "LMS",
+        "ssr",
+        "react"
+    ],
+    "title": "Grading assignments"
+}

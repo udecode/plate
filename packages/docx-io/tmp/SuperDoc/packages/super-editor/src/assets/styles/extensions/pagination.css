@@ -1,0 +1,91 @@
+:root {
+  --sd-editor-separator-height: 18px;
+}
+
+.pagination-section-header {
+  cursor: default;
+  /* To not inherit styles from the wrapper paragraph */
+  p {
+    text-align: initial;
+  }
+}
+
+.pagination-section-footer {
+  position: relative;
+  width: 100%;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  cursor: default;
+  /* To not inherit styles from the wrapper paragraph */
+  p {
+    text-align: initial;
+  }
+}
+
+.pagination-break-wrapper {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  position: relative;
+}
+
+.pagination-separator {
+  position: relative;
+  display: block;
+  height: var(--sd-editor-separator-height);
+  min-height: var(--sd-editor-separator-height);
+  min-width: 100%;
+  width: 100%;
+  border-top: 1px solid #dbdbdb;
+  border-bottom: 1px solid #dbdbdb;
+  cursor: default;
+}
+
+.pagination-separator--table {
+  border: 0;
+}
+
+.pagination-separator-floating {
+  position: absolute;
+  height: var(--sd-editor-separator-height);
+  border-top: 1px solid #dbdbdb;
+  border-bottom: 1px solid #dbdbdb;
+  pointer-events: none;
+}
+
+.pagination-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+/**
+Workaround to display pagination in footer 
+on the right if it is inside shape textbox.
+*/
+.pagination-section-footer .sd-editor-shape-container:has([data-id='auto-page-number'], [data-id='auto-total-pages']) {
+  margin-left: auto;
+}
+
+.pagination-section-header img[contenteditable='false'],
+.pagination-section-footer img[contenteditable='false'] {
+  pointer-events: none;
+}
+
+.pagination-break-wrapper {
+  font-weight: normal;
+  font-style: normal;
+  color: initial;
+}
+
+/* TODO: This is going to be enabled again */
+/* .pagination-section-header div[contenteditable="false"]:not([documentmode="viewing"]),
+.pagination-section-footer div[contenteditable="false"]:not([documentmode="viewing"]) {
+  opacity: 0.5;
+} */

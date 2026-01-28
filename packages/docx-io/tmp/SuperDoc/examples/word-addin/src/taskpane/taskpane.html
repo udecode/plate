@@ -1,0 +1,96 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
+<!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SuperDoc</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+    <!-- Auth0 JavaScript API -->
+    <script type="text/javascript" src="https://cdn.auth0.com/js/auth0/9.28.0/auth0.min.js"></script>
+
+    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Template styles -->
+    <link href="taskpane.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body class="ms-font-m ms-welcome ms-Fabric">
+    <header class="ms-welcome__header ms-bgColor-neutralLighter" style="background:radial-gradient(circle at -40% -70%,#1255fe,#8968f6,#b785f1,#fcd361e6,#e8caec,#f1e0f0,#f1e0f0,#f5f5fa,#f5f5fa,#f5f5fa)">
+        <img width="90" src="/assets/logo.png" alt="Logo" title="Logo" />
+        <h1 class="ms-font-su">SuperDoc</h1>
+    </header>
+    <section id="sideload-msg" class="ms-welcome__main">
+        <h2 class="ms-font-xl">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in to see app body.</h2>
+    </section>
+    <main id="app-body" class="ms-welcome__main" style="display: none;">
+        <h1 class="ms-font-xl">Continue in our WebApp editor</h1>
+        <!-- Auth0 Login Section -->
+            
+            <!-- Login Button -->
+            <div role="button" id="openLoginDialog" class="ms-welcome__action ms-Button ms-Button--hero ms-font-s" style="margin-bottom: 10px;">
+                <span class="ms-Button-label" style="background-color: #1255fe;border-radius: 4px;padding:6px 12px; font-weight:400; font-size: 16px; color:white;">
+                    Login
+                </span>
+            </div>
+            
+            <!-- User Info Card (initially hidden) -->
+            <div id="userInfo" class="user-info-card" style="display: none; margin: 20px 0; padding: 20px; border: 1px solid #e1e5e9; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <img id="userPicture" src="#" alt="User Avatar" style="width: 48px; height: 48px; border-radius: 50%; margin-right: 15px; object-fit: cover; border: 2px solid #e1e5e9;">
+                    <div>
+                        <h4 class="ms-font-m" style="margin: 0; color: #323130; font-weight: 600;" id="userDisplayName">Welcome back!</h4>
+                        <p class="ms-font-s" style="margin: 2px 0 0 0; color: #605e5c;" id="userEmail"></p>
+                    </div>
+                </div>
+                
+                <!-- New Action Buttons -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div role="button" id="getDocument" class="ms-welcome__action ms-Button ms-Button--hero ms-font-s" style="flex: 1;">
+                        <span class="ms-Button-label" style="background-color: #1255fe;border-radius: 4px;padding:8px 12px; font-weight:400; font-size: 14px; color:white; text-align: center; display: block;">
+                            <i class="fas fa-download" style="margin-right: 6px;"></i>Get doc
+                        </span>
+                    </div>
+                    <div role="button" id="sendDocument" class="ms-welcome__action ms-Button ms-Button--hero ms-font-s" style="flex: 1;">
+                        <span class="ms-Button-label" style="background-color: #1255fe;border-radius: 4px;padding:8px 12px; font-weight:400; font-size: 14px; color:white; text-align: center; display: block;">
+                            <i class="fas fa-upload" style="margin-right: 6px;"></i>Send doc
+                        </span>
+                    </div>
+                </div>
+                
+                
+                <div id="userDetails" style="display:none;margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                        <div><strong>Email Verified:</strong> <span id="userEmailVerified"></span></div>
+                        <div><strong>Nickname:</strong> <span id="userNickname"></span></div>
+                        <div><strong>User ID:</strong> <span id="userSub" style="font-family: monospace; word-break: break-all;"></span></div>
+                        <div><strong>Last Updated:</strong> <span id="userUpdated"></span></div>
+                    </div>
+                </div>
+                
+                <!-- Logout Button -->
+                <div role="button" id="logout" class="ms-welcome__action ms-Button ms-Button--hero ms-font-s">
+                    <span class="ms-Button-label" style="background-color: #dc3545;border-radius: 4px;padding:6px 12px; font-weight:400; font-size: 14px; color:white;">
+                        Logout
+                    </span>
+                </div>
+            </div>
+        
+        <div id="status"></div>
+        
+        
+    </main>
+</body>
+
+</html>

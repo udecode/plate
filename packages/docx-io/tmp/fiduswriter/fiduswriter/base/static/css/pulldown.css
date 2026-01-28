@@ -1,0 +1,114 @@
+/* pulldown menu box */
+.fw-pulldown {
+    position: absolute;
+    display: none;
+    z-index: 101;
+    box-shadow: 0 0 20px rgba(var(--pulldown-box-shadow-color));
+    background-color: var(--cs-white-background);
+    border-radius: 6px;
+    color: var(--cs-white-text);
+}
+
+.fw-pulldown.fw-open {
+    display: block;
+}
+
+.fw-pulldown.fw-left,
+.fw-pulldown.fw-center {
+    left: -10px;
+}
+
+.fw-pulldown.fw-right {
+    right: 0;
+}
+
+/* sub menu */
+.fw-pulldown .fw-pulldown {
+    top: 0;
+    left: 100%;
+    margin-top: 0;
+}
+
+.marginbox-options.fw-pulldown .fw-pulldown {
+    right: 100%;
+    left: auto;
+}
+
+.fw-pulldown.fw-right .fw-pulldown {
+    left: auto;
+    right: 100%;
+}
+
+.fw-pulldown > ul {
+    position: relative;
+    padding: 12px 0;
+    border: 0 none;
+}
+
+.fw-pulldown-item {
+    position: relative;
+    display: block;
+    width: auto;
+    height: auto;
+    min-width: 110px;
+    padding: 16px 30px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.disabled .fw-pulldown-item {
+    color: var(--cs-disabled);
+}
+
+.fw-pulldown-item.selected {
+    color: var(--cs-white-selected);
+    background-color: var(--cs-white-background-selected);
+}
+
+.fw-pulldown-item:hover,
+.fw-pulldown-item.selected:hover {
+    color: var(--cs-white-hover);
+    background-color: var(--cs-white-background-hover);
+}
+
+.fw-pulldown li:last-child .fw-pulldown-item {
+    border-bottom: 0 none;
+}
+
+.fw-pulldown-item .fw-icon-right {
+    position: absolute;
+    right: 10px;
+}
+
+.fw-pulldown li {
+    position: relative;
+}
+
+.fw-pulldown hr {
+    width: 80%;
+    display: block;
+    height: 1px;
+    border: 0;
+    background-color: var(--pulldown-separator-color);
+}
+
+.fw-pulldown .delete-comment::after {
+    font-family: "Font Awesome 5 Free", monospace;
+    content: "\f2ed";
+    opacity: 0.4;
+    float: right;
+    display: block;
+}
+
+.fw-pulldown-icon {
+    margin-left: 0;
+}
+
+.fw-pulldown input[type="radio"] {
+    display: none;
+}

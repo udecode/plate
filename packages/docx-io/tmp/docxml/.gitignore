@@ -1,0 +1,13 @@
+/deno.lock
+/examples/feature--*
+/examples/readme--*
+/examples/usage--*
+/examples/*.docx
+/node_modules
+/npm
+package-lock.json
+.DS_Store
+~*.dotx
+~*.docx
+/*.docx
+/coverage

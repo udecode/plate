@@ -1,0 +1,4665 @@
+/*
+  this is a modified build of SuperDoc v0.13.4
+  https://github.com/Harbour-Enterprises/SuperDoc/blob/HAR-9892/packages/superdoc/package.json#L4
+*/
+
+:root {
+  /* CSS variables */
+}
+.superdoc *,
+.superdoc ::before,
+.superdoc ::after,
+.superdoc-toolbar *,
+.superdoc-toolbar ::before,
+.superdoc-toolbar ::after {
+  box-sizing: border-box;
+}
+.superdoc .disabled,
+.super-editor .disabled,
+.superdoc-toolbar .disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.super-editor p {
+  padding: 0;
+  margin: 0;
+}
+.sd-button {
+  border-radius: 8px;
+  background-color: white;
+  padding: 8px 12px;
+  outline: none;
+  border: 1px solid #dbdbdb;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 250ms ease;
+}
+.sd-button:hover {
+  background-color: #dbdbdb;
+}
+.sd-button.primary {
+  background-color: #1355ff;
+  border: none;
+  color: white;
+}
+.sd-button.primary:hover {
+  background-color: #0d3fcc;
+}
+.sd-comment-box {
+  width: 300px;
+}
+.superdoc-field {
+  border-radius: 8px;
+  padding: 12px;
+  outline: none;
+  border: 1px solid #dbdbdb;
+  width: 100%;
+}
+.superdoc-field:focus,
+.superdoc-field:active {
+  border: 1px solid #1355ff;
+}
+.superdoc-field .ProseMirror {
+  border: 0;
+  outline: 0;
+  margin: 0;
+}
+.sd-editor-placeholder::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block;
+  height: 0;
+}
+.superdoc svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+/* Override global svg styles above for AI Writer error state */
+.superdoc .ai-textarea-icon.error > svg {
+  fill: #ed4337;
+}
+
+.selected[data-v-0a2a8b4e] {
+  background-color: #dbdbdb;
+}
+.mentions-container[data-v-0a2a8b4e] {
+  outline: none !important;
+  border: none;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.mentions-container[data-v-0a2a8b4e]:focus {
+  border: none;
+  outline: none !important;
+}
+.user-row[data-v-0a2a8b4e] {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.toolbar-icon[data-v-6d7523ab] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.toolbar-icon__icon[data-v-6d7523ab] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 16px;
+}
+.toolbar-icon__icon--highlight[data-v-6d7523ab] {
+    width: 16px;
+    margin-left: 3px;
+    margin-bottom: 1px;
+}
+.toolbar-icon__icon[data-v-6d7523ab] svg {
+  width: auto; /* needed for safari */
+  max-height: 16px;
+}
+.toolbar-icon__icon--color[data-v-6d7523ab] svg {
+  max-height: 14px;
+  margin-top: -3px;
+}
+.toolbar-button[data-v-6d7523ab]:hover {
+  color: black;
+  background-color: #d8dee5;
+}
+.toolbar-button[data-v-6d7523ab]:active,
+.active[data-v-6d7523ab] {
+  background-color: #c8d0d8;
+}
+.color-bar[data-v-6d7523ab] {
+  border-radius: 4px;
+  position: absolute;
+  z-index: 5;
+  height: 4px;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 16px;
+}
+
+.toolbar-item[data-v-2518a3d1] {
+  position: relative;
+  z-index: 1;
+  min-width: 30px;
+  margin: 0 1px;
+}
+.visually-hidden[data-v-2518a3d1] {
+  position: absolute;
+  left: -9999px;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+.toolbar-button[data-v-2518a3d1] {
+  padding: 5px;
+  height: 32px;
+  max-height: 32px;
+  border-radius: 6px;
+  overflow-y: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #47484a;
+  transition: all 0.2s ease-out;
+  user-select: none;
+  position: relative;
+  box-sizing: border-box;
+}
+.toolbar-button[data-v-2518a3d1]:hover {
+  background-color: #dbdbdb;
+}
+.toolbar-button:hover .toolbar-icon.high-contrast[data-v-2518a3d1] {
+      color: #fff;
+}
+.toolbar-button:hover.high-contrast[data-v-2518a3d1] {
+    background-color: #000;
+    color: #fff;
+}
+.toolbar-button[data-v-2518a3d1]:active,
+.active[data-v-2518a3d1] {
+  background-color: #c8d0d8;
+}
+.button-label[data-v-2518a3d1] {
+  overflow: hidden;
+  width: 100%;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 15px;
+  margin: 5px;
+}
+.toolbar-icon+.dropdown-caret[data-v-2518a3d1] {
+  margin-left: 4px;
+}
+.left[data-v-2518a3d1],
+.right[data-v-2518a3d1] {
+  width: 50%;
+  height: 100%;
+  background-color: #dbdbdb;
+  border-radius: 60%;
+}
+.has-inline-text-input[data-v-2518a3d1]:hover {
+  cursor: text;
+}
+.disabled[data-v-2518a3d1] {
+  cursor: default;
+}
+.disabled[data-v-2518a3d1]:hover {
+  cursor: default;
+  background-color: initial;
+}
+.disabled .toolbar-icon[data-v-2518a3d1],
+.disabled .caret[data-v-2518a3d1],
+.disabled .button-label[data-v-2518a3d1] {
+  opacity: 0.35;
+}
+.caret[data-v-2518a3d1] {
+  font-size: 1em;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+.button-text-input[data-v-2518a3d1] {
+  color: #47484a;
+  border-radius: 4px;
+  text-align: center;
+  width: 30px;
+  font-size: 14px;
+  margin-right: 5px;
+  font-weight: 400;
+  background-color: transparent;
+  padding: 2px 0;
+  outline: none;
+  border: 1px solid #d8dee5;
+  box-sizing: border-box;
+}
+.button-text-input.high-contrast[data-v-2518a3d1] {
+    background-color: #fff;
+}
+.button-text-input[data-v-2518a3d1]::placeholder {
+  color: #47484a;
+}
+.dropdown-caret[data-v-2518a3d1] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: auto;
+  width: 10px;
+  height: 10px;
+}
+@media (max-width: 1280px) {
+.toolbar-item--doc-mode .button-label[data-v-2518a3d1] {
+    display: none;
+}
+.toolbar-item--doc-mode .toolbar-icon[data-v-2518a3d1] {
+    margin-right: 5px;
+}
+.toolbar-item--linked-styles[data-v-2518a3d1] {
+    width: auto !important;
+}
+.toolbar-item--linked-styles .button-label[data-v-2518a3d1] {
+    display: none;
+}
+}
+
+.toolbar-separator[data-v-b240fc3a] {
+  height: 32px;
+  border-radius: 6px;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dbdbdb;
+  transition: all 0.2s ease-out;
+  user-select: none;
+  overflow: hidden;
+}
+.toolbar-separator .separator-inner[data-v-b240fc3a] {
+  width: 1.5px;
+  height: 20px;
+}
+.toolbar-button[data-v-b240fc3a]:hover {
+  color: black;
+  background-color: #d8dee5;
+}
+.toolbar-button[data-v-b240fc3a]:active,
+.active[data-v-b240fc3a] {
+  background-color: #c8d0d8;
+}
+
+.overflow-menu[data-v-53852ffa] {
+  position: relative;
+}
+.overflow-menu_items[data-v-53852ffa] {
+    position: absolute;
+    width: 200px;
+    top: calc(100% + 3px);
+    right: 0;
+    padding: 4px 8px;
+    background-color: #fff;
+    border-radius: 8px;
+    z-index: 100;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+}
+.superdoc-toolbar-overflow[data-v-53852ffa] {
+  min-width: auto !important;
+  max-width: 200px;
+  flex-wrap: wrap;
+}
+@media (max-width: 300px) {
+.overflow-menu_items[data-v-53852ffa] {
+    right: auto;
+    left: 0;
+    transform: translateX(-50%);
+}
+}
+
+.sd-editor-toolbar-dropdown {
+  border-radius: 8px;
+  min-width: 80px;
+  cursor: pointer;
+}
+.sd-editor-toolbar-dropdown.high-contrast .n-dropdown-option-body:hover::before,
+        .sd-editor-toolbar-dropdown.high-contrast .n-dropdown-option-body:hover::after {
+          background-color: #000 !important;
+}
+.sd-editor-toolbar-dropdown.high-contrast .n-dropdown-option-body__label:hover {
+          color: #fff !important;
+}
+.sd-editor-toolbar-dropdown .n-dropdown-option-body:hover::before,
+      .sd-editor-toolbar-dropdown .n-dropdown-option-body:hover::after {
+        background-color: #d8dee5 !important;
+}
+.sd-editor-toolbar-tooltip,
+.sd-editor-toolbar-tooltip.n-popover {
+  background-color: #333333 !important;
+  font-size: 14px;
+  border-radius: 8px !important;
+}
+
+.button-group[data-v-d4f36abf] {
+  display: flex;
+}
+
+.superdoc-toolbar[data-v-9d38c912] {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 4px 16px;
+  box-sizing: border-box;
+}
+@media (max-width: 1280px) {
+.superdoc-toolbar-group-side[data-v-9d38c912] {
+    min-width: auto !important;
+}
+}
+@media (max-width: 768px) {
+.superdoc-toolbar[data-v-9d38c912] {
+    padding: 4px 10px;
+    justify-content: inherit;
+}
+}
+
+/* Add isolation styles */
+.prosemirror-isolated[data-v-4cf86e1f] {
+  /* Make sure the component is above ProseMirror in z-index */
+  z-index: 100;
+  position: relative;
+}
+.ai-writer[data-v-4cf86e1f] {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  border-radius: 5px;
+  overflow-y: scroll;
+  /* Firefox */
+  scrollbar-width: none;
+  /* Internet Explorer and Edge */
+  -ms-overflow-style: none;
+
+  padding: 0.75rem;
+  box-shadow: 0 0 2px 2px #7715b366;
+  border: 1px solid #7715b3;
+}
+
+/* Chrome, Safari, and Opera */
+.ai-writer[data-v-4cf86e1f]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Replace .ai-editable with .ai-textarea */
+.ai-textarea[data-v-4cf86e1f] {
+  padding-left: 8px;
+  width: 100%;
+  color: #47484a;
+  font-size: 12px;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  height: 100%;
+  font-family: Inter, sans-serif;
+}
+
+/* Add specific styles for textarea placeholder */
+.ai-textarea[data-v-4cf86e1f]::placeholder {
+  color: #666;
+  font-weight: 400;
+}
+.ai-user-input-field[data-v-4cf86e1f] {
+  line-height: 13px;
+  display: flex;
+  flex-direction: row;
+  min-height: 50px;
+  resize: none;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.ai-textarea-icon[data-v-4cf86e1f] {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+}
+.ai-textarea-icon svg[data-v-4cf86e1f] {
+  height: 16px;
+  width: 16px;
+}
+.ai-textarea-icon.loading[data-v-4cf86e1f] {
+  animation: spin-4cf86e1f 2s linear infinite;
+}
+.loading i[data-v-4cf86e1f] {
+  display: flex;
+}
+.error[data-v-4cf86e1f] {
+  fill: #ed4337;
+}
+.ai-submit-button[data-v-4cf86e1f] {
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.ai-submit-button[data-v-4cf86e1f]:hover {
+  opacity: 0.8;
+}
+@keyframes spin-4cf86e1f {
+from {
+    transform: rotate(0deg);
+}
+to {
+    transform: rotate(360deg);
+}
+}
+.ai-loader[data-v-4cf86e1f] {
+  display: flex;
+  height: 14px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+:root {
+  /* CSS variables */
+}
+.sd-input-active {
+  border: 1px solid #1355ff !important;
+}
+.sd-super-editor-html .ProseMirror {
+  border: 1px solid #d9d9d9;
+  outline: none;
+  border-radius: 8px;
+  height: 100%;
+  width: 100%;
+  outline: none;
+}
+/**
+ * Basic ProseMirror styles.
+ * https://github.com/ProseMirror/prosemirror-view/blob/master/style/prosemirror.css
+ */
+.ProseMirror {
+  position: relative;
+}
+.ProseMirror {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0; /* the above doesn't seem to work in Edge */
+}
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
+.ProseMirror li {
+  position: relative;
+}
+.ProseMirror.header-footer-edit > p, .ProseMirror.header-footer-edit li, .ProseMirror.header-footer-edit span {
+    color: #7e7e7e !important;
+  }
+.ProseMirror.header-footer-edit > p:before, .ProseMirror.header-footer-edit > p:after, .ProseMirror.header-footer-edit li:before, .ProseMirror.header-footer-edit li:after, .ProseMirror.header-footer-edit span:before, .ProseMirror.header-footer-edit span:after {
+      color: #7e7e7e !important;
+    }
+.ProseMirror.header-footer-edit > p img, .ProseMirror.header-footer-edit > p a, .ProseMirror.header-footer-edit li img, .ProseMirror.header-footer-edit li a, .ProseMirror.header-footer-edit span img, .ProseMirror.header-footer-edit span a {
+      opacity: .5;
+    }
+.ProseMirror.header-footer-edit .pagination-break-wrapper {
+    color: initial !important;
+  }
+.ProseMirror.header-footer-edit .pagination-break-wrapper span {
+      color: initial !important;
+    }
+.ProseMirror.header-footer-edit .pagination-break-wrapper img, .ProseMirror.header-footer-edit .pagination-break-wrapper a {
+      opacity: 1;
+    }
+/**
+ * Hide marker for indented lists.
+ * If a list-item contains a list but doesn't contain a "p" tag with text.
+ */
+.ProseMirror ol {
+  margin: 0;
+}
+.ProseMirror li:has(> ul:first-child, > ol:first-child):not(:has(> p)) {
+  list-style-type: none;
+}
+.ProseMirror li:has(> ul:first-child, > ol:first-child):not(:has(> p))::marker {
+  content: '';
+}
+.ProseMirror li::marker {
+  font-size: var(--marker-font-size);
+  font-family: var(--marker-font-family);
+}
+.ProseMirror li[data-marker-type] {
+  list-style: none;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 0.5em;
+  align-items: start;
+}
+.ProseMirror li[data-marker-type]::marker {
+  content: "";
+}
+.ProseMirror li[data-marker-type]::before {
+  content: attr(data-marker-type);
+  white-space: pre;
+  font-size: var(--marker-font-size);
+  font-family: var(--marker-font-family);
+  grid-column: 1;
+}
+.ProseMirror li[data-marker-type] > * {
+  grid-column: 2;
+  margin: 0;
+}
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+.ProseMirror-hideselection *::-moz-selection {
+  background: transparent;
+}
+.ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+/* See https://github.com/ProseMirror/prosemirror/issues/1421#issuecomment-1759320191 */
+.ProseMirror [draggable][contenteditable=false] { 
+  user-select: text 
+}
+.ProseMirror-selectednode {
+  outline: 2px solid #8cf;
+}
+/* Make sure li selections wrap around markers */
+li.ProseMirror-selectednode {
+  outline: none;
+}
+li.ProseMirror-selectednode:after {
+  content: "";
+  position: absolute;
+  left: -32px;
+  right: -2px; top: -2px; bottom: -2px;
+  border: 2px solid #8cf;
+  pointer-events: none;
+}
+.ProseMirror img {
+  height: auto;
+  max-width: 100%;
+}
+/* Protect against generic img rules */
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+.ProseMirror .sd-editor-tab {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+.ProseMirror u .sd-editor-tab:not(.pagination-inner .sd-editor-tab) {
+  white-space: pre;
+  border-bottom: 1px solid #000;
+  margin-bottom: 1.5px;
+}
+/* 
+Tables 
+https://github.com/ProseMirror/prosemirror-tables/blob/master/style/tables.css
+https://github.com/ProseMirror/prosemirror-tables/blob/master/demo/index.html
+*/
+.ProseMirror.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize
+}
+.ProseMirror .tableWrapper {
+  --table-border-width: 1px;
+  --offset: 2px;
+
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overflow: hidden;
+
+  /* 
+  The border width does not need to be multiplied by two, 
+  for tables it works differently. */
+  width: calc(100% + (var(--table-border-width) + var(--offset)));
+}
+.ProseMirror table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  margin: 0;
+  /* width: 100%; */
+}
+.ProseMirror tr {
+  position: relative;
+}
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  position: relative;
+  vertical-align: top;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.ProseMirror th {
+  font-weight: bold;
+  text-align: left
+}
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px; /* 0 */
+  width: 4px;
+  z-index: 20;
+  background-color: #adf;
+  pointer-events: none;
+}
+.ProseMirror table .selectedCell:after {
+  position: absolute;
+  content: '';
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Tables - end */
+/* Track changes */
+.ProseMirror .track-insert-dec,
+.ProseMirror .track-delete-dec,
+.ProseMirror .track-format-dec {
+  pointer-events: none;
+}
+.ProseMirror .track-insert-dec.hidden,
+.ProseMirror .track-delete-dec.hidden {
+  display: none;
+}
+.ProseMirror .track-insert-dec.highlighted {
+  border-top: 1px dashed #00853D;
+  border-bottom: 1px dashed #00853D;
+  background-color: #399C7222;
+}
+.ProseMirror .track-delete-dec.highlighted {
+  border-top: 1px dashed #CB0E47;
+  border-bottom: 1px dashed #CB0E47;
+  background-color: #CB0E4722;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.ProseMirror .track-format-dec.highlighted {
+  border-bottom: 2px solid gold;
+}
+.ProseMirror .track-delete-widget {
+  visibility: hidden;
+}
+/* Track changes - end */
+/* Collaboration cursors */
+.ProseMirror > .ProseMirror-yjs-cursor:first-child {
+  margin-top: 16px;
+}
+.ProseMirror-yjs-cursor {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-color: orange;
+  word-break: normal;
+  pointer-events: none;
+}
+.ProseMirror-yjs-cursor > div {
+  position: absolute;
+  top: -1.05em;
+  left: -1px;
+  font-size: 13px;
+  background-color: rgb(250, 129, 0);
+  font-family: serif;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  user-select: none;
+  color: white;
+  padding-left: 2px;
+  padding-right: 2px;
+  white-space: nowrap;
+}
+/* Collaboration cursors - end */
+/* Image placeholder */
+.ProseMirror placeholder {
+  display: inline;
+  border: 1px solid #ccc;
+  color: #ccc;
+}
+.ProseMirror placeholder:after {
+  content: "☁";
+  font-size: 200%;
+  line-height: 0.1;
+  font-weight: bold;
+}
+/* Gapcursor */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+}
+.ProseMirror-gapcursor:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid black;
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+.ProseMirror div[data-type="contentBlock"] {
+  position: absolute; 
+  outline: none; 
+  user-select: none; 
+  z-index: -1;
+}
+.sd-editor-dropcap {
+  float: left;
+  display: flex;
+  align-items: baseline;
+  margin-top: -5px;
+}
+.ProseMirror-search-match {
+  background-color: #ffff0054;
+}
+.ProseMirror-active-search-match {
+  background-color: #ff6a0054;
+}
+.superdoc-toolbar svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.superdoc-toolbar svg path {
+    stroke: currentColor;
+  }
+.sd-editor-toolbar-dropdown .n-dropdown-option .dropdown-select-icon {
+  display: flex;
+  width: 12px;
+  height: 12px;
+}
+/* Custom toolbar styling */
+/* AI button icon styling with gradient */
+.toolbar-icon__icon--ai {
+  position: relative;
+  z-index: 1;
+}
+.toolbar-icon__icon--ai svg {
+  fill: transparent;
+}
+.toolbar-icon__icon--ai::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: linear-gradient(
+    270deg,
+    rgba(218, 215, 118, 0.5) -20%,
+    rgba(191, 100, 100, 1) 30%,
+    rgba(77, 82, 217, 1) 60%,
+    rgb(255, 219, 102) 150%
+  );
+  -webkit-mask: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path d='M224 96l16-32 32-16-32-16-16-32-16 32-32 16 32 16 16 32zM80 160l26.7-53.3L160 80l-53.3-26.7L80 0 53.3 53.3 0 80l53.3 26.7L80 160zm352 128l-26.7 53.3L352 368l53.3 26.7L432 448l26.7-53.3L512 368l-53.3-26.7L432 288zm70.6-193.8L417.8 9.4C411.5 3.1 403.3 0 395.2 0c-8.2 0-16.4 3.1-22.6 9.4L9.4 372.5c-12.5 12.5-12.5 32.8 0 45.3l84.9 84.9c6.3 6.3 14.4 9.4 22.6 9.4 8.2 0 16.4-3.1 22.6-9.4l363.1-363.2c12.5-12.5 12.5-32.8 0-45.2zM359.5 203.5l-50.9-50.9 86.6-86.6 50.9 50.9-86.6 86.6z'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path d='M224 96l16-32 32-16-32-16-16-32-16 32-32 16 32 16 16 32zM80 160l26.7-53.3L160 80l-53.3-26.7L80 0 53.3 53.3 0 80l53.3 26.7L80 160zm352 128l-26.7 53.3L352 368l53.3 26.7L432 448l26.7-53.3L512 368l-53.3-26.7L432 288zm70.6-193.8L417.8 9.4C411.5 3.1 403.3 0 395.2 0c-8.2 0-16.4 3.1-22.6 9.4L9.4 372.5c-12.5 12.5-12.5 32.8 0 45.3l84.9 84.9c6.3 6.3 14.4 9.4 22.6 9.4 8.2 0 16.4-3.1 22.6-9.4l363.1-363.2c12.5-12.5 12.5-32.8 0-45.2zM359.5 203.5l-50.9-50.9 86.6-86.6 50.9 50.9-86.6 86.6z'/></svg>") center / contain no-repeat;
+  filter: brightness(1.2);
+  transition: filter 0.2s ease;
+}
+.toolbar-icon__icon--ai:hover::before {
+  filter: brightness(1.3);
+}
+/* AI text appear animation */
+@keyframes aiTextAppear {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sd-ai-text-appear {
+  display: inline;
+  opacity: 0;
+  animation: aiTextAppear .7s ease-out forwards;
+  animation-fill-mode: both;
+  will-change: opacity, transform;
+  /* Ensure each mark is treated as a separate animation context */
+  contain: content;
+}
+.sd-ai-loader {
+  display: flex;
+  justify-content: flex-start;
+}
+.sd-ai-loader > img {
+  width: fit-content;
+  height: 40px;
+}
+@keyframes ai-pulse {
+  0% {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+  50% {
+    background-color: rgba(99, 102, 241, 0.375);
+  }
+  100% {
+    background-color: rgba(99, 102, 241, 0.1);
+  }
+}
+.sd-ai-highlight-pulse {
+  animation: ai-pulse 1.5s ease-in-out infinite;
+}
+.sd-editor-auto-page-number,
+.sd-editor-auto-total-pages {
+  transition: all 250ms ease;
+  border-bottom: 1px solid #9A9A9A;
+  cursor: not-allowed;
+}
+.sd-editor-auto-page-numbe:hover,
+.sd-editor-auto-total-pages:hover {
+  border-bottom: 1px solid #4f4f4f;
+}
+.sd-editor-auto-page-number-content {
+  pointer-events: none;
+}
+:root {
+  --sd-editor-separator-height: 18px;
+}
+.pagination-section-header {
+  cursor: default;
+}
+.pagination-section-footer {
+  position: relative;
+  width: 100%;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  cursor: default;
+}
+.pagination-break-wrapper {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  position: relative;
+}
+.pagination-separator {
+  position: relative;
+  display: block;
+  height: var(--sd-editor-separator-height);
+  min-height: var(--sd-editor-separator-height);
+  min-width: 100%;
+  width: 100%;
+  border-top: 1px solid #DBDBDB;
+  border-bottom: 1px solid #DBDBDB;
+  cursor: default;
+}
+.pagination-separator--table {
+  border: 0;
+}
+.pagination-separator-floating {
+  position: absolute;
+  height: var(--sd-editor-separator-height);
+  border-top: 1px solid #DBDBDB;
+  border-bottom: 1px solid #DBDBDB;
+  pointer-events: none;
+}
+.pagination-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+/**
+Workaround to display pagination in footer 
+on the right if it is inside shape textbox.
+*/
+.pagination-section-footer .sd-editor-shape-container:has(
+  [data-id="auto-page-number"],
+  [data-id="auto-total-pages"]
+) {
+  margin-left: auto;
+}
+.pagination-section-header img[contenteditable="false"],
+.pagination-section-footer img[contenteditable="false"] {
+  pointer-events: none;
+}
+.pagination-section-header div[contenteditable="false"]:not([documentmode="viewing"]),
+.pagination-section-footer div[contenteditable="false"]:not([documentmode="viewing"]) {
+  opacity: 0.5;
+}
+.sd-editor-popover {
+  background-color: #fff;
+  border-radius: 8px;
+  -webkit-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  -moz-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  padding: 0;
+  width: auto;
+  height: auto;
+  font-size: 14px;
+  color: #333;
+  z-index: 1000;
+}
+.sd-editor-popover .popover-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.tippy-box[data-theme~='sd-editor-popover'] {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border: none !important;
+  padding: 0 !important;
+}
+.tippy-box[data-theme~='sd-editor-popover'] .tippy-arrow {
+  color: #fff;
+  border: 1px solid #dbdbdb;
+}
+.tippy-box[data-theme~='sd-editor-popover'] .tippy-content {
+  padding: 0;
+}
+.sd-editor-placeholder::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block;
+  height: 0;
+}
+.sd-editor-mention {
+  background-color: #1355ff15;
+  color: #222;
+  font-weight: 400;
+  border-radius: 3px;
+  padding: 0 5px;
+  cursor: default;
+  display: inline-block;
+  box-sizing: border-box;
+}
+.sd-editor-comment-highlight {
+  transition: background-color 250ms ease;
+}
+.sd-editor-comment-highlight:hover {
+  background-color: #1354FF55;
+}
+/* Resize handles container */
+.sd-editor-resize-container {
+  position: absolute;
+  pointer-events: none;
+  z-index: 11;
+}
+/* Resize handles */
+.sd-editor-resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: #4dabf7;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  transition: all 0.1s ease;
+}
+.sd-editor-resize-handle:hover {
+  background-color: #228be6;
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+}
+/* Handle positions */
+.sd-editor-resize-handle-nw {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+.sd-editor-resize-handle-ne {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+.sd-editor-resize-handle-sw {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+.sd-editor-resize-handle-se {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+/* Hide handles when editor loses focus */
+.ProseMirror:not(.ProseMirror-focused) .sd-editor-resize-container {
+  display: none;
+}
+/* Smooth transitions for resizing */
+.sd-editor-resizable-wrapper * {
+  transition: none;
+}
+.sd-editor-resizable-wrapper *:not([style*='width']) {
+  transition: all 0.2s ease;
+}
+/* Resize feedback indicator */
+.sd-editor-resizable-wrapper::after {
+  content: 'Drag corners to resize';
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(77, 171, 247, 0.9);
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 12;
+}
+.sd-editor-resizable-wrapper:hover::after {
+  opacity: 1;
+}
+
+.alignment-buttons[data-v-3f28435a] {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+.alignment-buttons .button-icon[data-v-3f28435a] {
+    cursor: pointer;
+    padding: 5px;
+    font-size: 16px;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+.alignment-buttons .button-icon[data-v-3f28435a]:hover {
+      background-color: #d8dee5;
+}
+.alignment-buttons .button-icon[data-v-3f28435a] svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: currentColor;
+}
+.alignment-buttons.high-contrast .button-icon[data-v-3f28435a]:hover {
+        background-color: #000;
+        color: #fff;
+}
+
+.link-input-ctn[data-v-64aa14bc] {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  border-radius: 5px;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+.link-input-ctn[data-v-64aa14bc] svg {
+    width: 100%;
+      height: 100%;
+      display: block;
+      fill: currentColor;
+}
+.link-input-ctn .input-row[data-v-64aa14bc] {
+      align-content: baseline;
+      display: flex;
+      align-items: center;
+      font-size: 16px;
+}
+.link-input-ctn .input-row input[data-v-64aa14bc] {
+        font-size: 13px;
+        flex-grow: 1;
+        padding: 10px;
+        border-radius: 8px;
+        padding-left: 32px;
+        box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+        color: #666;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+}
+.link-input-ctn .input-row input[data-v-64aa14bc]:active,
+        .link-input-ctn .input-row input[data-v-64aa14bc]:focus {
+          outline: none;
+          border: 1px solid #1355ff;
+}
+.link-input-ctn .input-icon[data-v-64aa14bc] {
+  position: absolute;
+  transform: rotate(45deg);
+  left: 25px;
+  width: auto;
+  height: 12px;
+  color: #999;
+  pointer-events: none;
+}
+.link-input-ctn.high-contrast .input-icon[data-v-64aa14bc] {
+    color: #000;
+}
+.link-input-ctn.high-contrast .input-row input[data-v-64aa14bc] {
+    color: #000;
+    border-color: #000;
+}
+.open-link-icon[data-v-64aa14bc] {
+  margin-left: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.open-link-icon[data-v-64aa14bc]:hover {
+  color: #1355ff;
+  background-color: white;
+  border: 1px solid #dbdbdb;
+}
+.open-link-icon[data-v-64aa14bc] svg {
+  width: 15px;
+  height: 15px;
+}
+.disabled[data-v-64aa14bc] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.link-buttons[data-v-64aa14bc] {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.remove-btn__icon[data-v-64aa14bc] {
+  display: inline-flex;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.link-buttons button[data-v-64aa14bc] {
+  margin-left: 5px;
+}
+.disable-btn[data-v-64aa14bc] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.go-to-anchor a[data-v-64aa14bc] {
+  font-size: 14px;
+  text-decoration: underline;
+}
+.clickable[data-v-64aa14bc] {
+  cursor: pointer;
+}
+.link-title[data-v-64aa14bc] {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.hasBottomMargin[data-v-64aa14bc] {
+  margin-bottom: 1em;
+}
+.remove-btn[data-v-64aa14bc] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  outline: none;
+  background-color: white;
+  color: black;
+  font-weight: 400;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #ebebeb;
+  box-sizing: border-box;
+}
+.remove-btn[data-v-64aa14bc]:hover {
+  background-color: #dbdbdb;
+}
+.submit-btn[data-v-64aa14bc] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  outline: none;
+  border: none;
+  background-color: #1355ff;
+  color: white;
+  font-weight: 400;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+/* &.high-contrast {
+    background-color: black;
+  } */
+.submit-btn[data-v-64aa14bc]:hover {
+    background-color: #0d47c1;
+}
+.error[data-v-64aa14bc] {
+  border-color: red !important;
+  background-color: #ff00001a;
+}
+.submit[data-v-64aa14bc] {
+  cursor: pointer;
+}
+
+.document-mode[data-v-7febe4d9]  {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.document-mode[data-v-7febe4d9] svg {
+    width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.document-mode .option-item[data-v-7febe4d9] {
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.document-mode .option-item[data-v-7febe4d9]:hover {
+    background-color: #c8d0d8;
+}
+.document-mode.high-contrast .option-item[data-v-7febe4d9]:hover {
+      background-color: #000;
+      color: #fff;
+}
+.document-mode.high-contrast .option-item:hover .icon-column__icon[data-v-7febe4d9] {
+        color: #fff;
+}
+.document-mode.high-contrast .option-item:hover .text-column >.document-mode-type[data-v-7febe4d9],
+        .document-mode.high-contrast .option-item:hover .text-column >.document-mode-description[data-v-7febe4d9] {
+          color: #fff;
+}
+.disabled[data-v-7febe4d9] {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+.document-mode-column[data-v-7febe4d9] {
+  display: flex;
+  flex-direction: column;
+}
+.document-mode-type[data-v-7febe4d9] {
+  font-weight: 400;
+  font-size: 15px;
+  color: #222;
+}
+.icon-column[data-v-7febe4d9] {
+  margin-right: 5px;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0 5px;
+  color: black;
+  height: 100%;
+  box-sizing: border-box;
+}
+.icon-column__icon[data-v-7febe4d9] {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    height: 18px;
+    color: #47484a;
+}
+.icon-column__icon[data-v-7febe4d9] svg {
+  width: auto;
+  /* needed for safari */
+  max-height: 18px;
+}
+.document-mode-description[data-v-7febe4d9] {
+  font-size: 12px;
+  color: #666;
+}
+
+.style-name[data-v-2cf079a2] {
+  padding: 16px 10px;
+}
+.style-name[data-v-2cf079a2]:hover {
+  background-color: #c8d0d8;
+}
+.linked-style-buttons[data-v-2cf079a2] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  max-height: 400px;
+  width: 200px;
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+}
+.button-icon[data-v-2cf079a2] {
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  width: 25px;
+  height: 25px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+.button-icon[data-v-2cf079a2]:hover {
+  background-color: #d8dee5;
+}
+.button-icon[data-v-2cf079a2] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+.option-row[data-v-e89b7f5f] {
+  display: flex;
+  flex-direction: row;
+}
+.option[data-v-e89b7f5f] {
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+}
+.option[data-v-e89b7f5f]:hover {
+  background-color: #dbdbdb;
+}
+.option__icon[data-v-e89b7f5f] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.option__check[data-v-e89b7f5f] {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  position: absolute;
+}
+
+.options-grid-wrap[data-v-a00a9a3e] {
+  padding: 5px;
+  border-radius: 5px;
+}
+.none-option[data-v-a00a9a3e] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+}
+.none-option[data-v-a00a9a3e]:hover {
+    opacity: 0.65;
+}
+.none-icon[data-v-a00a9a3e] {
+  width: 16px;
+}
+.option-grid-ctn[data-v-a00a9a3e] {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  z-index: 3;
+  box-sizing: border-box;
+}
+.option-grid-ctn__subtitle[data-v-a00a9a3e] {
+    padding: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.option-grid-ctn[data-v-a00a9a3e] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+.toolbar-table-grid-wrapper .toolbar-table-grid[data-v-3e1154b8] {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+.toolbar-table-grid-wrapper .toolbar-table-grid__item[data-v-3e1154b8] {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #d3d3d3;
+    cursor: pointer;
+    transition: all .15s;
+}
+.toolbar-table-grid-wrapper .toolbar-table-grid__item.selected[data-v-3e1154b8] {
+    background-color: #dbdbdb;
+}
+.toolbar-table-grid-wrapper.high-contrast .toolbar-table-grid__item[data-v-3e1154b8] {
+      border-color: #000;
+}
+.toolbar-table-grid-wrapper.high-contrast .toolbar-table-grid__item.selected[data-v-3e1154b8] {
+      background: #000;
+}
+.toolbar-table-grid-wrapper .toolbar-table-grid-value[data-v-3e1154b8] {
+    font-size: 13px;
+    line-height: 1.1;
+    padding: 0px 8px 2px;
+}
+
+.toolbar-table-actions[data-v-f82e859a] {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.toolbar-table-actions[data-v-f82e859a] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.toolbar-table-actions__item[data-v-f82e859a] {
+  display: flex;
+  gap: 5px;
+  background-color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+  position: relative;
+}
+.toolbar-table-actions__item[data-v-f82e859a]:hover {
+  background-color: #c8d0d8;
+}
+.toolbar-table-actions__item--border[data-v-f82e859a]:after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: -3px;
+  left: -10px;
+  right: 0;
+  height: 1px;
+  width: calc(100% + 20px);
+  background: #c8d0d8;
+}
+.toolbar-table-actions__icon[data-v-f82e859a] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  color: black;
+  box-sizing: border-box;
+}
+.toolbar-table-actions__icon-wrapper[data-v-f82e859a] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  height: 14px;
+  color: #47484a;
+}
+.toolbar-table-actions__icon-wrapper[data-v-f82e859a] svg {
+  width: auto;
+  max-height: 14px;
+}
+.toolbar-table-actions__label[data-v-f82e859a] {
+  font-size: 15px;
+  font-weight: 400;
+  color: #222;
+  white-space: nowrap;
+}
+
+.search-input-ctn[data-v-af870fbd] {
+  padding: 10px;
+  border-radius: 5px;
+}
+.search-input-ctn .search-input[data-v-af870fbd] {
+    min-width: 200px;
+    font-size: 13px;
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 8px;
+    color: #666;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, .15);
+}
+.search-input-ctn .search-input[data-v-af870fbd]:active, .search-input-ctn .search-input[data-v-af870fbd]:focus {
+      outline: none;
+      border: 1px solid #1355ff;
+}
+.search-input-ctn .row[data-v-af870fbd] {
+    display: flex;
+}
+.search-input-ctn .row.submit[data-v-af870fbd] {
+      margin-top: 10px;
+      flex-direction: row-reverse;
+}
+.search-input-ctn .submit-btn[data-v-af870fbd] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 8px;
+    outline: none;
+    border: none;
+    background-color: #1355ff;
+    color: white;
+    font-weight: 400;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+.tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:"";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}
+.vertical-indicator[data-v-f63566b2] {
+  position: absolute;
+  height: 0px;
+  min-width: 1px;
+  background-color: #AAA;
+  top: 20px;
+  z-index: 100;
+}
+.margin-handle[data-v-f63566b2] {
+  width: 56px;
+  min-width: 5px;
+  max-width: 5px;
+  background-color: var(--ruler-handle-color);
+  height: 20px;
+  cursor: grab;
+  position: absolute;
+  margin-left: -2px;
+  border-radius: 4px 4px 0 0;
+  transition: background-color 250ms ease;
+}
+.margin-handle[data-v-f63566b2]:hover {
+  background-color: var(--ruler-handle-active-color);
+}
+.ruler[data-v-f63566b2] {
+  max-height: 25px;
+  height: 25px;
+  max-width: 8.5in;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  align-items: var(--alignment);
+  box-sizing: border-box;
+  position: relative;
+  color: #666;
+}
+.mouse-tracker[data-v-f63566b2] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background-color: var(--color);
+  pointer-events: none;
+}
+.numbering[data-v-f63566b2] {
+  position: absolute;
+  top: -16px;
+  left: -2px;
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+.ruler-section[data-v-f63566b2] {
+  position: relative;
+  display: flex;
+  align-items: var(--alignment);
+  pointer-events: none;
+  user-select: none;
+}
+
+.editor-element[data-v-4b700df1] {
+  position: relative;
+}
+.super-editor-container[data-v-4b700df1] {
+  width: auto;
+  height: auto;
+  min-width: 8in;
+  min-height: 11in;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.ruler[data-v-4b700df1] {
+  margin-bottom: 2px;
+}
+.super-editor[data-v-4b700df1] {
+  color: initial;
+}
+.placeholder-editor[data-v-4b700df1] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  padding: 1in;
+  z-index: 5;
+  background-color: white;
+  box-sizing: border-box;
+}
+.placeholder-title[data-v-4b700df1] {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.super-editor[data-v-4d5cff52] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #999;
+  outline: none;
+  transition: border 0.2s ease;
+  background-color: white;
+}
+.super-input[data-v-4d5cff52] {
+  font-size: 13px;
+  font-family: inherit;
+}
+.editor-element[data-v-4d5cff52] {
+  height: 100%;
+  width: 100%;
+  border: none;
+  outline: none;
+}
+.super-input-active[data-v-4d5cff52] {
+  border: 1px solid #007bff;
+  outline: none;
+}
+
+.user-container[data-v-53e13009] {
+  border-radius: 50%;
+  border: 2px solid #333;
+  font-size: 15px;
+  color: #fff;
+  background-color: #00000098;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+img[data-v-53e13009] {
+  border-radius: 50%;
+  width: 100%;
+  background-color: transparent;
+}
+span[data-v-53e13009] {
+  font-weight: 300;
+}
+
+.comment-option[data-v-c42ece92] {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+}
+.comment-option i[data-v-c42ece92] {
+  font-size: 11px;
+}
+.option-state[data-v-c42ece92] {
+  margin: 0 7px;
+}
+.active-icon[data-v-c42ece92] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.active-icon[data-v-c42ece92] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.dropdown-caret[data-v-c42ece92] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 10px;
+  height: 16px;
+}
+.dropdown-caret[data-v-c42ece92] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.internal-dropdown[data-v-c42ece92] {
+  transition: all 250ms ease;
+  display: inline-block;
+  cursor: pointer;
+  border-radius: 50px;
+  padding: 2px 8px;
+}
+.internal-dropdown[data-v-c42ece92]:hover {
+  background-color: #f3f3f5;
+}
+
+.internal-dropdown__item-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.internal-dropdown__item-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+.comment-header[data-v-7e86617a] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.comment-header-left[data-v-7e86617a] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.avatar[data-v-7e86617a] {
+  margin-right: 10px;
+}
+.user-info[data-v-7e86617a] {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+.user-name[data-v-7e86617a] {
+  font-weight: 600;
+  line-height: 1.2em;
+}
+.user-timestamp[data-v-7e86617a] {
+  line-height: 1.2em;
+  font-size: 12px;
+  color: #999;
+}
+.overflow-menu[data-v-7e86617a] {
+  flex-shrink: 1;
+  display: flex;
+  gap: 6px;
+}
+.overflow-menu__icon[data-v-7e86617a] {
+  box-sizing: content-box;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  padding: 3px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 250ms ease;
+}
+.overflow-menu__icon[data-v-7e86617a]:hover {
+  background-color: #DBDBDB;
+}
+.overflow-menu__icon[data-v-7e86617a] svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+.overflow-icon[data-v-7e86617a] {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  width: 10px;
+  height: 16px;
+}
+
+
+.comment-entry[data-v-dd84b4db] {
+  box-sizing: border-box;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 100%;
+  transition: all 250ms ease;
+}
+.internal-dropdown[data-v-dd84b4db] {
+  display: inline-block;
+}
+
+.change-type[data-v-ff48cd67] {
+  font-style: italic;
+  font-weight: 600;
+  font-size: 10px;
+  color: #555;
+}
+.tracked-change[data-v-ff48cd67] {
+  font-size: 12px;
+}
+.tracked-change-text[data-v-ff48cd67] {
+  color: #111;
+}
+.comment-separator[data-v-ff48cd67] {
+  background-color: #dbdbdb;
+  height: 1px;
+  width: 100%;
+  margin: 10px 0;
+  font-weight: 400;
+}
+.existing-internal-input[data-v-ff48cd67] {
+  margin-bottom: 10px;
+}
+.initial-internal-dropdown[data-v-ff48cd67] {
+  margin-top: 10px;
+}
+.comments-dialog[data-v-ff48cd67] {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 15px;
+  border-radius: 12px;
+  background-color: #f3f6fd;
+  transition: background-color 250ms ease;
+  -webkit-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  -moz-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  z-index: 5;
+  max-width: 300px;
+  min-width: 200px;
+  width: 100%;
+}
+.is-active[data-v-ff48cd67] {
+  z-index: 10;
+}
+.input-section[data-v-ff48cd67] {
+  margin-top: 10px;
+}
+.sd-button[data-v-ff48cd67] {
+  font-size: 12px;
+  margin-left: 5px;
+}
+.comment[data-v-ff48cd67] {
+  font-size: 13px;
+  margin: 10px 0;
+}
+.is-resolved[data-v-ff48cd67] {
+  background-color: #f0f0f0;
+}
+.comment-footer[data-v-ff48cd67] {
+  margin: 5px 0 5px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+.internal-dropdown[data-v-ff48cd67] {
+  display: inline-block;
+}
+.comment-editing[data-v-ff48cd67] {
+  padding-bottom: 10px;
+}
+.comment-editing button[data-v-ff48cd67] {
+  margin-left: 5px;
+}
+.tracked-change[data-v-ff48cd67] {
+  margin: 0;
+}
+
+.comments-list[data-v-12d3e3dd] {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 400px;
+}
+.comment-item[data-v-12d3e3dd] {
+  margin-bottom: 10px;
+}
+.comment-title[data-v-12d3e3dd] {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.sd-comment-anchor {
+  position: absolute;
+  cursor: pointer;
+  z-index: 3;
+  border-radius: 33px;
+  transition: background-color 250ms ease;
+}
+
+.sd-highlight {
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: #ddaf0955;
+  mix-blend-mode: multiply;
+  transition: background-color 250ms ease;
+}
+
+.sd-initial-highlight {
+  background-color: #1355ff7f;
+}
+
+.sd-highlight:hover,
+.sd-highlight:hover .sd-highlight-active {
+  background-color: #ddaf0999;
+}
+
+.sd-highlight-active {
+  background-color: #1355ff7f;
+}
+
+/** Global styles */
+/* Copyright 2014 Mozilla Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+.superdoc-pdf-viewer .dialog{
+  --dialog-bg-color:white;
+  --dialog-border-color:white;
+  --dialog-shadow:0 2px 14px 0 rgb(58 57 68 / 0.2);
+  --text-primary-color:#15141a;
+  --text-secondary-color:#5b5b66;
+  --hover-filter:brightness(0.9);
+  --focus-ring-color:#0060df;
+  --focus-ring-outline:2px solid var(--focus-ring-color);
+
+  --textarea-border-color:#8f8f9d;
+  --textarea-bg-color:white;
+  --textarea-fg-color:var(--text-secondary-color);
+
+  --radio-bg-color:#f0f0f4;
+  --radio-checked-bg-color:#fbfbfe;
+  --radio-border-color:#8f8f9d;
+  --radio-checked-border-color:#0060df;
+
+  --button-secondary-bg-color:#f0f0f4;
+  --button-secondary-fg-color:var(--text-primary-color);
+  --button-secondary-border-color:var(--button-secondary-bg-color);
+  --button-secondary-hover-bg-color:var(--button-secondary-bg-color);
+  --button-secondary-hover-fg-color:var(--button-secondary-fg-color);
+  --button-secondary-hover-border-color:var(--button-secondary-hover-bg-color);
+
+  --button-primary-bg-color:#0060df;
+  --button-primary-fg-color:#fbfbfe;
+  --button-primary-hover-bg-color:var(--button-primary-bg-color);
+  --button-primary-hover-fg-color:var(--button-primary-fg-color);
+  --button-primary-hover-border-color:var(--button-primary-hover-bg-color);
+
+  font:message-box;
+  font-size:13px;
+  font-weight:400;
+  line-height:150%;
+  border-radius:4px;
+  padding:12px 16px;
+  border:1px solid var(--dialog-border-color);
+  background:var(--dialog-bg-color);
+  color:var(--text-primary-color);
+  box-shadow:var(--dialog-shadow);
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer .dialog{
+    --dialog-bg-color:#1c1b22;
+    --dialog-border-color:#1c1b22;
+    --dialog-shadow:0 2px 14px 0 #15141a;
+    --text-primary-color:#fbfbfe;
+    --text-secondary-color:#cfcfd8;
+    --focus-ring-color:#0df;
+    --hover-filter:brightness(1.4);
+
+    --textarea-bg-color:#42414d;
+
+    --radio-bg-color:#2b2a33;
+    --radio-checked-bg-color:#15141a;
+    --radio-checked-border-color:#0df;
+
+    --button-secondary-bg-color:#2b2a33;
+    --button-primary-bg-color:#0df;
+    --button-primary-fg-color:#15141a;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .dialog{
+    --dialog-bg-color:Canvas;
+    --dialog-border-color:CanvasText;
+    --dialog-shadow:none;
+    --text-primary-color:CanvasText;
+    --text-secondary-color:CanvasText;
+    --hover-filter:none;
+    --focus-ring-color:ButtonBorder;
+
+    --textarea-border-color:ButtonBorder;
+    --textarea-bg-color:Field;
+    --textarea-fg-color:ButtonText;
+
+    --radio-bg-color:ButtonFace;
+    --radio-checked-bg-color:ButtonFace;
+    --radio-border-color:ButtonText;
+    --radio-checked-border-color:ButtonText;
+
+    --button-secondary-bg-color:ButtonFace;
+    --button-secondary-fg-color:ButtonText;
+    --button-secondary-border-color:ButtonText;
+    --button-secondary-hover-bg-color:AccentColor;
+    --button-secondary-hover-fg-color:AccentColorText;
+
+    --button-primary-bg-color:ButtonText;
+    --button-primary-fg-color:ButtonFace;
+    --button-primary-hover-bg-color:AccentColor;
+    --button-primary-hover-fg-color:AccentColorText;
+}
+}
+.superdoc-pdf-viewer .dialog .mainContainer *:focus-visible{
+      outline:var(--focus-ring-outline);
+      outline-offset:2px;
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:4px;
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioButton{
+        display:flex;
+        gap:8px;
+        align-self:stretch;
+        align-items:center;
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioButton input{
+          -webkit-appearance:none;
+             -moz-appearance:none;
+                  appearance:none;
+          box-sizing:border-box;
+          width:16px;
+          height:16px;
+          border-radius:50%;
+          background-color:var(--radio-bg-color);
+          border:1px solid var(--radio-border-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioButton input:hover{
+            filter:var(--hover-filter);
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioButton input:checked{
+            background-color:var(--radio-checked-bg-color);
+            border:4px solid var(--radio-checked-border-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioLabel{
+        display:flex;
+        padding-inline-start:24px;
+        align-items:flex-start;
+        gap:10px;
+        align-self:stretch;
+}
+.superdoc-pdf-viewer .dialog .mainContainer .radio > .radioLabel > span{
+          flex:1 0 0;
+          font-size:11px;
+          color:var(--text-secondary-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer button{
+      border-radius:4px;
+      border:1px solid;
+      font:menu;
+      font-weight:600;
+      padding:4px 16px;
+      width:auto;
+      height:32px;
+}
+.superdoc-pdf-viewer .dialog .mainContainer button:hover{
+        cursor:pointer;
+        filter:var(--hover-filter);
+}
+.superdoc-pdf-viewer .dialog .mainContainer button.secondaryButton{
+        color:var(--button-secondary-fg-color);
+        background-color:var(--button-secondary-bg-color);
+        border-color:var(--button-secondary-border-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer button.secondaryButton:hover{
+          color:var(--button-secondary-hover-fg-color);
+          background-color:var(--button-secondary-hover-bg-color);
+          border-color:var(--button-secondary-hover-border-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer button.primaryButton{
+        color:var(--button-primary-hover-fg-color);
+        background-color:var(--button-primary-hover-bg-color);
+        border-color:var(--button-primary-hover-border-color);
+        opacity:1;
+}
+.superdoc-pdf-viewer .dialog .mainContainer button.primaryButton:hover{
+          color:var(--button-primary-hover-fg-color);
+          background-color:var(--button-primary-hover-bg-color);
+          border-color:var(--button-primary-hover-border-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer textarea{
+      font:inherit;
+      padding:8px;
+      resize:none;
+      margin:0;
+      box-sizing:border-box;
+      border-radius:4px;
+      border:1px solid var(--textarea-border-color);
+      background:var(--textarea-bg-color);
+      color:var(--textarea-fg-color);
+}
+.superdoc-pdf-viewer .dialog .mainContainer textarea:focus{
+        outline-offset:0;
+        border-color:transparent;
+}
+.superdoc-pdf-viewer .dialog .mainContainer textarea:disabled{
+        pointer-events:none;
+        opacity:0.4;
+}
+.superdoc-pdf-viewer .textLayer{
+  position:absolute;
+  text-align:initial;
+  inset:0;
+  overflow:clip;
+  opacity:1;
+  line-height:1;
+  -webkit-text-size-adjust:none;
+     -moz-text-size-adjust:none;
+          text-size-adjust:none;
+  forced-color-adjust:none;
+  transform-origin:0 0;
+  caret-color:CanvasText;
+  z-index:0;
+}
+.superdoc-pdf-viewer .textLayer.highlighting{
+    touch-action:none;
+}
+.superdoc-pdf-viewer .textLayer :is(span, br){
+    color:transparent;
+    position:absolute;
+    white-space:pre;
+    cursor:text;
+    transform-origin:0% 0%;
+}
+.superdoc-pdf-viewer .textLayer > :not(.markedContent),
+  .superdoc-pdf-viewer .textLayer .markedContent span:not(.markedContent){
+    z-index:1;
+}
+.superdoc-pdf-viewer .textLayer span.markedContent{
+    top:0;
+    height:0;
+}
+.superdoc-pdf-viewer .textLayer .highlight{
+    --highlight-bg-color:rgb(180 0 170 / 0.25);
+    --highlight-selected-bg-color:rgb(0 100 0 / 0.25);
+    --highlight-backdrop-filter:none;
+    --highlight-selected-backdrop-filter:none;
+
+    margin:-1px;
+    padding:1px;
+    background-color:var(--highlight-bg-color);
+    -webkit-backdrop-filter:var(--highlight-backdrop-filter);
+            backdrop-filter:var(--highlight-backdrop-filter);
+    border-radius:4px;
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .textLayer .highlight{
+      --highlight-bg-color:transparent;
+      --highlight-selected-bg-color:transparent;
+      --highlight-backdrop-filter:var(--hcm-highlight-filter);
+      --highlight-selected-backdrop-filter:var(
+        --hcm-highlight-selected-filter
+      );
+}
+}
+.superdoc-pdf-viewer .textLayer .highlight.appended{
+      position:initial;
+}
+.superdoc-pdf-viewer .textLayer .highlight.begin{
+      border-radius:4px 0 0 4px;
+}
+.superdoc-pdf-viewer .textLayer .highlight.end{
+      border-radius:0 4px 4px 0;
+}
+.superdoc-pdf-viewer .textLayer .highlight.middle{
+      border-radius:0;
+}
+.superdoc-pdf-viewer .textLayer .highlight.selected{
+      background-color:var(--highlight-selected-bg-color);
+      -webkit-backdrop-filter:var(--highlight-selected-backdrop-filter);
+              backdrop-filter:var(--highlight-selected-backdrop-filter);
+}
+.superdoc-pdf-viewer .textLayer ::-moz-selection{
+    background:rgba(0 0 255 / 0.25);
+    background:color-mix(in srgb, AccentColor, transparent 75%);
+}
+.superdoc-pdf-viewer .textLayer ::selection{
+    background:rgba(0 0 255 / 0.25);
+    background:color-mix(in srgb, AccentColor, transparent 75%);
+}
+.superdoc-pdf-viewer .textLayer br::-moz-selection{
+    background:transparent;
+}
+.superdoc-pdf-viewer .textLayer br::selection{
+    background:transparent;
+}
+.superdoc-pdf-viewer .textLayer .endOfContent{
+    display:block;
+    position:absolute;
+    inset:100% 0 0;
+    z-index:0;
+    cursor:default;
+    -webkit-user-select:none;
+       -moz-user-select:none;
+            user-select:none;
+}
+.superdoc-pdf-viewer .textLayer .endOfContent.active{
+      top:0;
+}
+.superdoc-pdf-viewer .annotationLayer{
+  --annotation-unfocused-field-background:url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --input-focus-border-color:Highlight;
+  --input-focus-outline:1px solid Canvas;
+  --input-unfocused-border-color:transparent;
+  --input-disabled-border-color:transparent;
+  --input-hover-border-color:black;
+  --link-outline:none;
+
+  position:absolute;
+  top:0;
+  left:0;
+  pointer-events:none;
+  transform-origin:0 0;
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .annotationLayer{
+    --input-focus-border-color:CanvasText;
+    --input-unfocused-border-color:ActiveText;
+    --input-disabled-border-color:GrayText;
+    --input-hover-border-color:Highlight;
+    --link-outline:1.5px solid LinkText;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea):required, .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select:required, .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:required{
+      outline:1.5px solid selectedItem;
+}
+.superdoc-pdf-viewer .annotationLayer .linkAnnotation{
+      outline:var(--link-outline);
+}
+.superdoc-pdf-viewer .annotationLayer .linkAnnotation:hover{
+        -webkit-backdrop-filter:var(--hcm-highlight-filter);
+                backdrop-filter:var(--hcm-highlight-filter);
+}
+.superdoc-pdf-viewer .annotationLayer .linkAnnotation > a:hover{
+        opacity:0 !important;
+        background:none !important;
+        box-shadow:none;
+}
+.superdoc-pdf-viewer .annotationLayer .popupAnnotation .popup{
+      outline:calc(1.5px * var(--scale-factor)) solid CanvasText !important;
+      background-color:ButtonFace !important;
+      color:ButtonText !important;
+}
+.superdoc-pdf-viewer .annotationLayer .highlightArea:hover::after{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      -webkit-backdrop-filter:var(--hcm-highlight-filter);
+              backdrop-filter:var(--hcm-highlight-filter);
+      content:"";
+      pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationLayer .popupAnnotation.focused .popup{
+      outline:calc(3px * var(--scale-factor)) solid Highlight !important;
+}
+}
+.superdoc-pdf-viewer .annotationLayer[data-main-rotation="90"] .norotate{
+    transform:rotate(270deg) translateX(-100%);
+}
+.superdoc-pdf-viewer .annotationLayer[data-main-rotation="180"] .norotate{
+    transform:rotate(180deg) translate(-100%, -100%);
+}
+.superdoc-pdf-viewer .annotationLayer[data-main-rotation="270"] .norotate{
+    transform:rotate(90deg) translateY(-100%);
+}
+.superdoc-pdf-viewer .annotationLayer.disabled section,
+    .superdoc-pdf-viewer .annotationLayer.disabled .popup{
+      pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationLayer .annotationContent{
+    position:absolute;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationLayer .annotationContent.freetext{
+      background:transparent;
+      border:none;
+      inset:0;
+      overflow:visible;
+      white-space:nowrap;
+      font:10px sans-serif;
+      line-height:1.35;
+      -webkit-user-select:none;
+         -moz-user-select:none;
+              user-select:none;
+}
+.superdoc-pdf-viewer .annotationLayer section{
+    position:absolute;
+    text-align:initial;
+    pointer-events:auto;
+    box-sizing:border-box;
+    transform-origin:0 0;
+}
+.superdoc-pdf-viewer .annotationLayer section:has(div.annotationContent) canvas.annotationContent{
+        display:none;
+}
+.superdoc-pdf-viewer .annotationLayer :is(.linkAnnotation, .buttonWidgetAnnotation.pushButton) > a{
+    position:absolute;
+    font-size:1em;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+}
+.superdoc-pdf-viewer .annotationLayer :is(.linkAnnotation, .buttonWidgetAnnotation.pushButton):not(.hasBorder)
+    > a:hover{
+    opacity:0.2;
+    background-color:rgb(255 255 0);
+    box-shadow:0 2px 10px rgb(255 255 0);
+}
+.superdoc-pdf-viewer .annotationLayer .linkAnnotation.hasBorder:hover{
+    background-color:rgb(255 255 0 / 0.2);
+}
+.superdoc-pdf-viewer .annotationLayer .hasBorder{
+    background-size:100% 100%;
+}
+.superdoc-pdf-viewer .annotationLayer .textAnnotation img{
+    position:absolute;
+    cursor:pointer;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea), .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select, .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input{
+    background-image:var(--annotation-unfocused-field-background);
+    border:2px solid var(--input-unfocused-border-color);
+    box-sizing:border-box;
+    font:calc(9px * var(--scale-factor)) sans-serif;
+    height:100%;
+    margin:0;
+    vertical-align:top;
+    width:100%;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea):required, .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select:required, .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:required{
+    outline:1.5px solid red;
+}
+.superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select option{
+    padding:0;
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.radioButton input{
+    border-radius:50%;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation textarea{
+    resize:none;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation [disabled]:is(input, textarea), .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select[disabled], .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input[disabled]{
+    background:none;
+    border:2px solid var(--input-disabled-border-color);
+    cursor:not-allowed;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea):hover, .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select:hover, .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:hover{
+    border:2px solid var(--input-hover-border-color);
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea):hover, .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select:hover, .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:hover{
+    border-radius:2px;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation :is(input, textarea):focus, .superdoc-pdf-viewer .annotationLayer .choiceWidgetAnnotation select:focus{
+    background:none;
+    border:2px solid var(--input-focus-border-color);
+    border-radius:2px;
+    outline:var(--input-focus-outline);
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) :focus{
+    background-image:none;
+    background-color:transparent;
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox :focus{
+    border:2px solid var(--input-focus-border-color);
+    border-radius:2px;
+    outline:var(--input-focus-outline);
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.radioButton :focus{
+    border:2px solid var(--input-focus-border-color);
+    outline:var(--input-focus-outline);
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before,
+  .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after,
+  .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.radioButton input:checked::before{
+    background-color:CanvasText;
+    content:"";
+    display:block;
+    position:absolute;
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before,
+  .superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after{
+    height:80%;
+    left:45%;
+    width:1px;
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before{
+    transform:rotate(45deg);
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after{
+    transform:rotate(-45deg);
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation.radioButton input:checked::before{
+    border-radius:50%;
+    height:50%;
+    left:25%;
+    top:25%;
+    width:50%;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation input.comb{
+    font-family:monospace;
+    padding-left:2px;
+    padding-right:0;
+}
+.superdoc-pdf-viewer .annotationLayer .textWidgetAnnotation input.comb:focus{
+    width:103%;
+}
+.superdoc-pdf-viewer .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input{
+    -webkit-appearance:none;
+       -moz-appearance:none;
+            appearance:none;
+}
+.superdoc-pdf-viewer .annotationLayer .fileAttachmentAnnotation .popupTriggerArea{
+    height:100%;
+    width:100%;
+}
+.superdoc-pdf-viewer .annotationLayer .popupAnnotation{
+    position:absolute;
+    font-size:calc(9px * var(--scale-factor));
+    pointer-events:none;
+    width:-moz-max-content;
+    width:max-content;
+    max-width:45%;
+    height:auto;
+}
+.superdoc-pdf-viewer .annotationLayer .popup{
+    background-color:rgb(255 255 153);
+    box-shadow:0 calc(2px * var(--scale-factor)) calc(5px * var(--scale-factor)) rgb(136 136 136);
+    border-radius:calc(2px * var(--scale-factor));
+    outline:1.5px solid rgb(255 255 74);
+    padding:calc(6px * var(--scale-factor));
+    cursor:pointer;
+    font:message-box;
+    white-space:normal;
+    word-wrap:break-word;
+    pointer-events:auto;
+}
+.superdoc-pdf-viewer .annotationLayer .popupAnnotation.focused .popup{
+    outline-width:3px;
+}
+.superdoc-pdf-viewer .annotationLayer .popup *{
+    font-size:calc(9px * var(--scale-factor));
+}
+.superdoc-pdf-viewer .annotationLayer .popup > .header{
+    display:inline-block;
+}
+.superdoc-pdf-viewer .annotationLayer .popup > .header h1{
+    display:inline;
+}
+.superdoc-pdf-viewer .annotationLayer .popup > .header .popupDate{
+    display:inline-block;
+    margin-left:calc(5px * var(--scale-factor));
+    width:-moz-fit-content;
+    width:fit-content;
+}
+.superdoc-pdf-viewer .annotationLayer .popupContent{
+    border-top:1px solid rgb(51 51 51);
+    margin-top:calc(2px * var(--scale-factor));
+    padding-top:calc(2px * var(--scale-factor));
+}
+.superdoc-pdf-viewer .annotationLayer .richText > *{
+    white-space:pre-wrap;
+    font-size:calc(9px * var(--scale-factor));
+}
+.superdoc-pdf-viewer .annotationLayer .popupTriggerArea{
+    cursor:pointer;
+}
+.superdoc-pdf-viewer .annotationLayer section svg{
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+}
+.superdoc-pdf-viewer .annotationLayer .annotationTextContent{
+    position:absolute;
+    width:100%;
+    height:100%;
+    opacity:0;
+    color:transparent;
+    -webkit-user-select:none;
+       -moz-user-select:none;
+            user-select:none;
+    pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationLayer .annotationTextContent span{
+      width:100%;
+      display:inline-block;
+}
+.superdoc-pdf-viewer .annotationLayer svg.quadrilateralsContainer{
+    contain:strict;
+    width:0;
+    height:0;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:-1;
+}
+.superdoc-pdf-viewer :root{
+  --xfa-unfocused-field-background:url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --xfa-focus-outline:auto;
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer :root{
+    --xfa-focus-outline:2px solid CanvasText;
+}
+.superdoc-pdf-viewer .xfaLayer *:required{
+    outline:1.5px solid selectedItem;
+}
+}
+.superdoc-pdf-viewer .xfaLayer{
+  background-color:transparent;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight{
+  margin:-1px;
+  padding:1px;
+  background-color:rgb(239 203 237);
+  border-radius:4px;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight.appended{
+  position:initial;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight.begin{
+  border-radius:4px 0 0 4px;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight.end{
+  border-radius:0 4px 4px 0;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight.middle{
+  border-radius:0;
+}
+.superdoc-pdf-viewer .xfaLayer .highlight.selected{
+  background-color:rgb(203 223 203);
+}
+.superdoc-pdf-viewer .xfaPage{
+  overflow:hidden;
+  position:relative;
+}
+.superdoc-pdf-viewer .xfaContentarea{
+  position:absolute;
+}
+.superdoc-pdf-viewer .xfaPrintOnly{
+  display:none;
+}
+.superdoc-pdf-viewer .xfaLayer{
+  position:absolute;
+  text-align:initial;
+  top:0;
+  left:0;
+  transform-origin:0 0;
+  line-height:1.2;
+}
+.superdoc-pdf-viewer .xfaLayer *{
+  color:inherit;
+  font:inherit;
+  font-style:inherit;
+  font-weight:inherit;
+  font-kerning:inherit;
+  letter-spacing:-0.01px;
+  text-align:inherit;
+  text-decoration:inherit;
+  box-sizing:border-box;
+  background-color:transparent;
+  padding:0;
+  margin:0;
+  pointer-events:auto;
+  line-height:inherit;
+}
+.superdoc-pdf-viewer .xfaLayer *:required{
+  outline:1.5px solid red;
+}
+.superdoc-pdf-viewer .xfaLayer div,
+.superdoc-pdf-viewer .xfaLayer svg,
+.superdoc-pdf-viewer .xfaLayer svg *{
+  pointer-events:none;
+}
+.superdoc-pdf-viewer .xfaLayer a{
+  color:blue;
+}
+.superdoc-pdf-viewer .xfaRich li{
+  margin-left:3em;
+}
+.superdoc-pdf-viewer .xfaFont{
+  color:black;
+  font-weight:normal;
+  font-kerning:none;
+  font-size:10px;
+  font-style:normal;
+  letter-spacing:0;
+  text-decoration:none;
+  vertical-align:0;
+}
+.superdoc-pdf-viewer .xfaCaption{
+  overflow:hidden;
+  flex:0 0 auto;
+}
+.superdoc-pdf-viewer .xfaCaptionForCheckButton{
+  overflow:hidden;
+  flex:1 1 auto;
+}
+.superdoc-pdf-viewer .xfaLabel{
+  height:100%;
+  width:100%;
+}
+.superdoc-pdf-viewer .xfaLeft{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+}
+.superdoc-pdf-viewer .xfaRight{
+  display:flex;
+  flex-direction:row-reverse;
+  align-items:center;
+}
+.superdoc-pdf-viewer :is(.xfaLeft, .xfaRight) > :is(.xfaCaption, .xfaCaptionForCheckButton){
+  max-height:100%;
+}
+.superdoc-pdf-viewer .xfaTop{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+.superdoc-pdf-viewer .xfaBottom{
+  display:flex;
+  flex-direction:column-reverse;
+  align-items:flex-start;
+}
+.superdoc-pdf-viewer :is(.xfaTop, .xfaBottom) > :is(.xfaCaption, .xfaCaptionForCheckButton){
+  width:100%;
+}
+.superdoc-pdf-viewer .xfaBorder{
+  background-color:transparent;
+  position:absolute;
+  pointer-events:none;
+}
+.superdoc-pdf-viewer .xfaWrapped{
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer :is(.xfaTextfield, .xfaSelect):focus{
+  background-image:none;
+  background-color:transparent;
+  outline:var(--xfa-focus-outline);
+  outline-offset:-1px;
+}
+.superdoc-pdf-viewer :is(.xfaCheckbox, .xfaRadio):focus{
+  outline:var(--xfa-focus-outline);
+}
+.superdoc-pdf-viewer .xfaTextfield,
+.superdoc-pdf-viewer .xfaSelect{
+  height:100%;
+  width:100%;
+  flex:1 1 auto;
+  border:none;
+  resize:none;
+  background-image:var(--xfa-unfocused-field-background);
+}
+.superdoc-pdf-viewer .xfaSelect{
+  padding-inline:2px;
+}
+.superdoc-pdf-viewer :is(.xfaTop, .xfaBottom) > :is(.xfaTextfield, .xfaSelect){
+  flex:0 1 auto;
+}
+.superdoc-pdf-viewer .xfaButton{
+  cursor:pointer;
+  width:100%;
+  height:100%;
+  border:none;
+  text-align:center;
+}
+.superdoc-pdf-viewer .xfaLink{
+  width:100%;
+  height:100%;
+  position:absolute;
+  top:0;
+  left:0;
+}
+.superdoc-pdf-viewer .xfaCheckbox,
+.superdoc-pdf-viewer .xfaRadio{
+  width:100%;
+  height:100%;
+  flex:0 0 auto;
+  border:none;
+}
+.superdoc-pdf-viewer .xfaRich{
+  white-space:pre-wrap;
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer .xfaImage{
+  -o-object-position:left top;
+     object-position:left top;
+  -o-object-fit:contain;
+     object-fit:contain;
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer .xfaLrTb,
+.superdoc-pdf-viewer .xfaRlTb,
+.superdoc-pdf-viewer .xfaTb{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.superdoc-pdf-viewer .xfaLr{
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+}
+.superdoc-pdf-viewer .xfaRl{
+  display:flex;
+  flex-direction:row-reverse;
+  align-items:stretch;
+}
+.superdoc-pdf-viewer .xfaTb > div{
+  justify-content:left;
+}
+.superdoc-pdf-viewer .xfaPosition{
+  position:relative;
+}
+.superdoc-pdf-viewer .xfaArea{
+  position:relative;
+}
+.superdoc-pdf-viewer .xfaValignMiddle{
+  display:flex;
+  align-items:center;
+}
+.superdoc-pdf-viewer .xfaTable{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+}
+.superdoc-pdf-viewer .xfaTable .xfaRow{
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+}
+.superdoc-pdf-viewer .xfaTable .xfaRlRow{
+  display:flex;
+  flex-direction:row-reverse;
+  align-items:stretch;
+  flex:1;
+}
+.superdoc-pdf-viewer .xfaTable .xfaRlRow > div{
+  flex:1;
+}
+.superdoc-pdf-viewer :is(.xfaNonInteractive, .xfaDisabled, .xfaReadOnly) :is(input, textarea){
+  background:initial;
+}
+@media print{
+.superdoc-pdf-viewer .xfaTextfield,
+  .superdoc-pdf-viewer .xfaSelect{
+    background:transparent;
+}
+.superdoc-pdf-viewer .xfaSelect{
+    -webkit-appearance:none;
+       -moz-appearance:none;
+            appearance:none;
+    text-indent:1px;
+    text-overflow:"";
+}
+}
+.superdoc-pdf-viewer .canvasWrapper svg{
+    transform:none;
+}
+.superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="90"] mask,
+      .superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="90"] use:not(.clip, .mask){
+        transform:matrix(0, 1, -1, 0, 1, 0);
+}
+.superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="180"] mask,
+      .superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="180"] use:not(.clip, .mask){
+        transform:matrix(-1, 0, 0, -1, 1, 1);
+}
+.superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="270"] mask,
+      .superdoc-pdf-viewer .canvasWrapper svg[data-main-rotation="270"] use:not(.clip, .mask){
+        transform:matrix(0, -1, 1, 0, 0, 1);
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlight{
+      --blend-mode:multiply;
+
+      position:absolute;
+      mix-blend-mode:var(--blend-mode);
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .canvasWrapper svg.highlight{
+        --blend-mode:difference;
+}
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlight:not(.free){
+        fill-rule:evenodd;
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline{
+      position:absolute;
+      mix-blend-mode:normal;
+      fill-rule:evenodd;
+      fill:none;
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.hovered:not(.free):not(.selected){
+          stroke:var(--hover-outline-color);
+          stroke-width:var(--outline-width);
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.selected:not(.free) .mainOutline{
+            stroke:var(--outline-around-color);
+            stroke-width:calc(
+              var(--outline-width) + 2 * var(--outline-around-width)
+            );
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.selected:not(.free) .secondaryOutline{
+            stroke:var(--outline-color);
+            stroke-width:var(--outline-width);
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.free.hovered:not(.selected){
+          stroke:var(--hover-outline-color);
+          stroke-width:calc(2 * var(--outline-width));
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.free.selected .mainOutline{
+            stroke:var(--outline-around-color);
+            stroke-width:calc(
+              2 * (var(--outline-width) + var(--outline-around-width))
+            );
+}
+.superdoc-pdf-viewer .canvasWrapper svg.highlightOutline.free.selected .secondaryOutline{
+            stroke:var(--outline-color);
+            stroke-width:calc(2 * var(--outline-width));
+}
+.superdoc-pdf-viewer .toggle-button{
+  --button-background-color:#f0f0f4;
+  --button-background-color-hover:#e0e0e6;
+  --button-background-color-active:#cfcfd8;
+  --color-accent-primary:#0060df;
+  --color-accent-primary-hover:#0250bb;
+  --color-accent-primary-active:#054096;
+  --border-interactive-color:#8f8f9d;
+  --border-radius-circle:9999px;
+  --border-width:1px;
+  --size-item-small:16px;
+  --size-item-large:32px;
+  --color-canvas:white;
+
+  --toggle-background-color:var(--button-background-color);
+  --toggle-background-color-hover:var(--button-background-color-hover);
+  --toggle-background-color-active:var(--button-background-color-active);
+  --toggle-background-color-pressed:var(--color-accent-primary);
+  --toggle-background-color-pressed-hover:var(--color-accent-primary-hover);
+  --toggle-background-color-pressed-active:var(--color-accent-primary-active);
+  --toggle-border-color:var(--border-interactive-color);
+  --toggle-border-color-hover:var(--toggle-border-color);
+  --toggle-border-color-active:var(--toggle-border-color);
+  --toggle-border-radius:var(--border-radius-circle);
+  --toggle-border-width:var(--border-width);
+  --toggle-height:var(--size-item-small);
+  --toggle-width:var(--size-item-large);
+  --toggle-dot-background-color:var(--toggle-border-color);
+  --toggle-dot-background-color-hover:var(--toggle-dot-background-color);
+  --toggle-dot-background-color-active:var(--toggle-dot-background-color);
+  --toggle-dot-background-color-on-pressed:var(--color-canvas);
+  --toggle-dot-margin:1px;
+  --toggle-dot-height:calc(
+    var(--toggle-height) - 2 * var(--toggle-dot-margin) - 2 *
+      var(--toggle-border-width)
+  );
+  --toggle-dot-width:var(--toggle-dot-height);
+  --toggle-dot-transform-x:calc(
+    var(--toggle-width) - 4 * var(--toggle-dot-margin) - var(--toggle-dot-width)
+  );
+
+  -webkit-appearance:none;
+
+     -moz-appearance:none;
+
+          appearance:none;
+  padding:0;
+  margin:0;
+  border:var(--toggle-border-width) solid var(--toggle-border-color);
+  height:var(--toggle-height);
+  width:var(--toggle-width);
+  border-radius:var(--toggle-border-radius);
+  background:var(--toggle-background-color);
+  box-sizing:border-box;
+  flex-shrink:0;
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer .toggle-button{
+    --button-background-color:color-mix(in srgb, currentColor 7%, transparent);
+    --button-background-color-hover:color-mix(
+      in srgb,
+      currentColor 14%,
+      transparent
+    );
+    --button-background-color-active:color-mix(
+      in srgb,
+      currentColor 21%,
+      transparent
+    );
+    --color-accent-primary:#0df;
+    --color-accent-primary-hover:#80ebff;
+    --color-accent-primary-active:#aaf2ff;
+    --border-interactive-color:#bfbfc9;
+    --color-canvas:#1c1b22;
+}
+}
+@media (forced-colors: active){
+.superdoc-pdf-viewer .toggle-button{
+    --color-accent-primary:ButtonText;
+    --color-accent-primary-hover:SelectedItem;
+    --color-accent-primary-active:SelectedItem;
+    --border-interactive-color:ButtonText;
+    --button-background-color:ButtonFace;
+    --border-interactive-color-hover:SelectedItem;
+    --border-interactive-color-active:SelectedItem;
+    --border-interactive-color-disabled:GrayText;
+    --color-canvas:ButtonText;
+}
+}
+.superdoc-pdf-viewer .toggle-button:focus-visible{
+    outline:var(--focus-outline);
+    outline-offset:var(--focus-outline-offset);
+}
+.superdoc-pdf-viewer .toggle-button:enabled:hover{
+    background:var(--toggle-background-color-hover);
+    border-color:var(--toggle-border-color);
+}
+.superdoc-pdf-viewer .toggle-button:enabled:active{
+    background:var(--toggle-background-color-active);
+    border-color:var(--toggle-border-color);
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]{
+    background:var(--toggle-background-color-pressed);
+    border-color:transparent;
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:hover{
+    background:var(--toggle-background-color-pressed-hover);
+    border-color:transparent;
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:active{
+    background:var(--toggle-background-color-pressed-active);
+    border-color:transparent;
+}
+.superdoc-pdf-viewer .toggle-button::before{
+    display:block;
+    content:"";
+    background-color:var(--toggle-dot-background-color);
+    height:var(--toggle-dot-height);
+    width:var(--toggle-dot-width);
+    margin:var(--toggle-dot-margin);
+    border-radius:var(--toggle-border-radius);
+    translate:0;
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]::before{
+    translate:var(--toggle-dot-transform-x);
+    background-color:var(--toggle-dot-background-color-on-pressed);
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:hover::before,
+  .superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:active::before{
+    background-color:var(--toggle-dot-background-color-on-pressed);
+}
+.superdoc-pdf-viewer [dir="rtl"] .toggle-button[aria-pressed="true"]::before{
+    translate:calc(-1 * var(--toggle-dot-transform-x));
+}
+@media (prefers-reduced-motion: no-preference){
+.superdoc-pdf-viewer .toggle-button::before{
+      transition:translate 100ms;
+}
+}
+@media (prefers-contrast){
+.superdoc-pdf-viewer .toggle-button:enabled:hover{
+      border-color:var(--toggle-border-color-hover);
+}
+.superdoc-pdf-viewer .toggle-button:enabled:active{
+      border-color:var(--toggle-border-color-active);
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled{
+      border-color:var(--toggle-border-color);
+      position:relative;
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:hover,
+    .superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:hover:active{
+      border-color:var(--toggle-border-color-hover);
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:active{
+      background-color:var(--toggle-dot-background-color-active);
+      border-color:var(--toggle-dot-background-color-hover);
+}
+.superdoc-pdf-viewer .toggle-button:hover::before,
+    .superdoc-pdf-viewer .toggle-button:active::before{
+      background-color:var(--toggle-dot-background-color-hover);
+}
+}
+@media (forced-colors){
+.superdoc-pdf-viewer .toggle-button{
+    --toggle-dot-background-color:var(--color-accent-primary);
+    --toggle-dot-background-color-hover:var(--color-accent-primary-hover);
+    --toggle-dot-background-color-active:var(--color-accent-primary-active);
+    --toggle-dot-background-color-on-pressed:var(--button-background-color);
+    --toggle-background-color-disabled:var(--button-background-color-disabled);
+    --toggle-border-color-hover:var(--border-interactive-color-hover);
+    --toggle-border-color-active:var(--border-interactive-color-active);
+    --toggle-border-color-disabled:var(--border-interactive-color-disabled);
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled::after{
+      border:1px solid var(--button-background-color);
+      content:"";
+      position:absolute;
+      height:var(--toggle-height);
+      width:var(--toggle-width);
+      display:block;
+      border-radius:var(--toggle-border-radius);
+      inset:-2px;
+}
+.superdoc-pdf-viewer .toggle-button[aria-pressed="true"]:enabled:active::after{
+      border-color:var(--toggle-border-color-active);
+}
+}
+.superdoc-pdf-viewer :root{
+  --outline-width:2px;
+  --outline-color:#0060df;
+  --outline-around-width:1px;
+  --outline-around-color:#f0f0f4;
+  --hover-outline-around-color:var(--outline-around-color);
+  --focus-outline:solid var(--outline-width) var(--outline-color);
+  --unfocus-outline:solid var(--outline-width) transparent;
+  --focus-outline-around:solid var(--outline-around-width) var(--outline-around-color);
+  --hover-outline-color:#8f8f9d;
+  --hover-outline:solid var(--outline-width) var(--hover-outline-color);
+  --hover-outline-around:solid var(--outline-around-width) var(--hover-outline-around-color);
+  --freetext-line-height:1.35;
+  --freetext-padding:2px;
+  --resizer-bg-color:var(--outline-color);
+  --resizer-size:6px;
+  --resizer-shift:calc(
+    0px - (var(--outline-width) + var(--resizer-size)) / 2 -
+      var(--outline-around-width)
+  );
+  --editorFreeText-editing-cursor:text;
+  --editorInk-editing-cursor:url(images/cursor-editorInk.svg) 0 16, pointer;
+  --editorHighlight-editing-cursor:url(images/cursor-editorTextHighlight.svg) 24 24, text;
+  --editorFreeHighlight-editing-cursor:url(images/cursor-editorFreeHighlight.svg) 1 18, pointer;
+}
+.superdoc-pdf-viewer .visuallyHidden{
+  position:absolute;
+  top:0;
+  left:0;
+  border:0;
+  margin:0;
+  padding:0;
+  width:0;
+  height:0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-size:0;
+}
+.superdoc-pdf-viewer .textLayer.highlighting{
+  cursor:var(--editorFreeHighlight-editing-cursor);
+}
+.superdoc-pdf-viewer .textLayer.highlighting:not(.free) span{
+    cursor:var(--editorHighlight-editing-cursor);
+}
+.superdoc-pdf-viewer .textLayer.highlighting.free span{
+    cursor:var(--editorFreeHighlight-editing-cursor);
+}
+@media (min-resolution: 1.1dppx){
+.superdoc-pdf-viewer :root{
+    --editorFreeText-editing-cursor:url(images/cursor-editorFreeText.svg) 0 16, text;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer :root{
+    --outline-color:CanvasText;
+    --outline-around-color:ButtonFace;
+    --resizer-bg-color:ButtonText;
+    --hover-outline-color:Highlight;
+    --hover-outline-around-color:SelectedItemText;
+}
+}
+.superdoc-pdf-viewer [data-editor-rotation="90"]{
+  transform:rotate(90deg);
+}
+.superdoc-pdf-viewer [data-editor-rotation="180"]{
+  transform:rotate(180deg);
+}
+.superdoc-pdf-viewer [data-editor-rotation="270"]{
+  transform:rotate(270deg);
+}
+.superdoc-pdf-viewer .annotationEditorLayer{
+  background:transparent;
+  position:absolute;
+  inset:0;
+  font-size:calc(100px * var(--scale-factor));
+  transform-origin:0 0;
+  cursor:auto;
+}
+.superdoc-pdf-viewer .annotationEditorLayer.waiting{
+  content:"";
+  cursor:wait;
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer .annotationEditorLayer.disabled{
+  pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer.freetextEditing{
+  cursor:var(--editorFreeText-editing-cursor);
+}
+.superdoc-pdf-viewer .annotationEditorLayer.inkEditing{
+  cursor:var(--editorInk-editing-cursor);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor){
+  position:absolute;
+  background:transparent;
+  z-index:1;
+  transform-origin:0 0;
+  cursor:auto;
+  max-width:100%;
+  max-height:100%;
+  border:var(--unfocus-outline);
+}
+.superdoc-pdf-viewer .annotationEditorLayer .draggable.selectedEditor:is(.freeTextEditor, .inkEditor, .stampEditor){
+    cursor:move;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .moving:is(.freeTextEditor, .inkEditor, .stampEditor){
+    touch-action:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .selectedEditor:is(.freeTextEditor, .inkEditor, .stampEditor){
+    border:var(--focus-outline);
+    outline:var(--focus-outline-around);
+}
+.superdoc-pdf-viewer .annotationEditorLayer .selectedEditor:is(.freeTextEditor, .inkEditor, .stampEditor)::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border:var(--focus-outline-around);
+      pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor):hover:not(.selectedEditor){
+    border:var(--hover-outline);
+    outline:var(--hover-outline-around);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor):hover:not(.selectedEditor)::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border:var(--focus-outline-around);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar{
+    --editor-toolbar-delete-image:url(images/editor-toolbar-delete.svg);
+    --editor-toolbar-bg-color:#f0f0f4;
+    --editor-toolbar-highlight-image:url(images/toolbarButton-editorHighlight.svg);
+    --editor-toolbar-fg-color:#2e2e56;
+    --editor-toolbar-border-color:#8f8f9d;
+    --editor-toolbar-hover-border-color:var(--editor-toolbar-border-color);
+    --editor-toolbar-hover-bg-color:#e0e0e6;
+    --editor-toolbar-hover-fg-color:var(--editor-toolbar-fg-color);
+    --editor-toolbar-hover-outline:none;
+    --editor-toolbar-focus-outline-color:#0060df;
+    --editor-toolbar-shadow:0 2px 6px 0 rgb(58 57 68 / 0.2);
+    --editor-toolbar-vert-offset:6px;
+    --editor-toolbar-height:28px;
+    --editor-toolbar-padding:2px;
+
+    display:flex;
+    width:-moz-fit-content;
+    width:fit-content;
+    height:var(--editor-toolbar-height);
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    cursor:default;
+    pointer-events:auto;
+    box-sizing:content-box;
+    padding:var(--editor-toolbar-padding);
+
+    position:absolute;
+    inset-inline-end:0;
+    inset-block-start:calc(100% + var(--editor-toolbar-vert-offset));
+
+    border-radius:6px;
+    background-color:var(--editor-toolbar-bg-color);
+    border:1px solid var(--editor-toolbar-border-color);
+    box-shadow:var(--editor-toolbar-shadow);
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar{
+      --editor-toolbar-bg-color:#2b2a33;
+      --editor-toolbar-fg-color:#fbfbfe;
+      --editor-toolbar-hover-bg-color:#52525e;
+      --editor-toolbar-focus-outline-color:#0df;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar{
+      --editor-toolbar-bg-color:ButtonFace;
+      --editor-toolbar-fg-color:ButtonText;
+      --editor-toolbar-border-color:ButtonText;
+      --editor-toolbar-hover-border-color:AccentColor;
+      --editor-toolbar-hover-bg-color:ButtonFace;
+      --editor-toolbar-hover-fg-color:AccentColor;
+      --editor-toolbar-hover-outline:2px solid var(--editor-toolbar-hover-border-color);
+      --editor-toolbar-focus-outline-color:ButtonBorder;
+      --editor-toolbar-shadow:none;
+}
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar.hidden{
+      display:none;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar:has(:focus-visible){
+      border-color:transparent;
+}
+.superdoc-pdf-viewer [dir="ltr"] :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar{
+      transform-origin:100% 0;
+}
+.superdoc-pdf-viewer [dir="rtl"] :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar{
+      transform-origin:0 0;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:0;
+      height:100%;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .divider{
+        width:1px;
+        height:calc(
+          2 * var(--editor-toolbar-padding) + var(--editor-toolbar-height)
+        );
+        background-color:var(--editor-toolbar-border-color);
+        display:inline-block;
+        margin-inline:2px;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .highlightButton{
+        width:var(--editor-toolbar-height);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .highlightButton::before{
+          content:"";
+          -webkit-mask-image:var(--editor-toolbar-highlight-image);
+                  mask-image:var(--editor-toolbar-highlight-image);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          background-color:var(--editor-toolbar-fg-color);
+          width:100%;
+          height:100%;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .highlightButton:hover::before{
+          background-color:var(--editor-toolbar-hover-fg-color);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .delete{
+        width:var(--editor-toolbar-height);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .delete::before{
+          content:"";
+          -webkit-mask-image:var(--editor-toolbar-delete-image);
+                  mask-image:var(--editor-toolbar-delete-image);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          background-color:var(--editor-toolbar-fg-color);
+          width:100%;
+          height:100%;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .delete:hover::before{
+          background-color:var(--editor-toolbar-hover-fg-color);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons > *{
+        height:var(--editor-toolbar-height);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons > :not(.divider){
+        border:none;
+        background-color:transparent;
+        cursor:pointer;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons > :not(.divider):hover{
+          border-radius:2px;
+          background-color:var(--editor-toolbar-hover-bg-color);
+          color:var(--editor-toolbar-hover-fg-color);
+          outline:var(--editor-toolbar-hover-outline);
+          outline-offset:1px;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons > :not(.divider):hover:active{
+            outline:none;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons > :not(.divider):focus-visible{
+          border-radius:2px;
+          outline:2px solid var(--editor-toolbar-focus-outline-color);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText{
+        --alt-text-add-image:url(images/altText_add.svg);
+        --alt-text-done-image:url(images/altText_done.svg);
+
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:-moz-max-content;
+        width:max-content;
+        padding-inline:8px;
+        pointer-events:all;
+        font:menu;
+        font-weight:590;
+        font-size:12px;
+        color:var(--editor-toolbar-fg-color);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText:disabled{
+          pointer-events:none;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText::before{
+          content:"";
+          -webkit-mask-image:var(--alt-text-add-image);
+                  mask-image:var(--alt-text-add-image);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          width:12px;
+          height:13px;
+          background-color:var(--editor-toolbar-fg-color);
+          margin-inline-end:4px;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText:hover::before{
+          background-color:var(--editor-toolbar-hover-fg-color);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText.done::before{
+          -webkit-mask-image:var(--alt-text-done-image);
+                  mask-image:var(--alt-text-done-image);
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText .tooltip{
+          display:none;
+}
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText .tooltip.show{
+            --alt-text-tooltip-bg:#f0f0f4;
+            --alt-text-tooltip-fg:#15141a;
+            --alt-text-tooltip-border:#8f8f9d;
+            --alt-text-tooltip-shadow:0px 2px 6px 0px rgb(58 57 68 / 0.2);
+
+            display:inline-flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            position:absolute;
+            top:calc(100% + 2px);
+            inset-inline-start:0;
+            padding-block:2px 3px;
+            padding-inline:3px;
+            max-width:300px;
+            width:-moz-max-content;
+            width:max-content;
+            height:auto;
+            font-size:12px;
+
+            border:0.5px solid var(--alt-text-tooltip-border);
+            background:var(--alt-text-tooltip-bg);
+            box-shadow:var(--alt-text-tooltip-shadow);
+            color:var(--alt-text-tooltip-fg);
+
+            pointer-events:none;
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText .tooltip.show{
+              --alt-text-tooltip-bg:#1c1b22;
+              --alt-text-tooltip-fg:#fbfbfe;
+              --alt-text-tooltip-shadow:0px 2px 6px 0px #15141a;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer :is(.annotationEditorLayer
+  :is(.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor),.textLayer) .editToolbar .buttons .altText .tooltip.show{
+              --alt-text-tooltip-bg:Canvas;
+              --alt-text-tooltip-fg:CanvasText;
+              --alt-text-tooltip-border:CanvasText;
+              --alt-text-tooltip-shadow:none;
+}
+}
+.superdoc-pdf-viewer .annotationEditorLayer .freeTextEditor{
+  padding:calc(var(--freetext-padding) * var(--scale-factor));
+  width:auto;
+  height:auto;
+  touch-action:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .freeTextEditor .internal{
+  background:transparent;
+  border:none;
+  inset:0;
+  overflow:visible;
+  white-space:nowrap;
+  font:10px sans-serif;
+  line-height:var(--freetext-line-height);
+  -webkit-user-select:none;
+     -moz-user-select:none;
+          user-select:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .freeTextEditor .overlay{
+  position:absolute;
+  display:none;
+  background:transparent;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer .annotationEditorLayer freeTextEditor .overlay.enabled{
+  display:block;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .freeTextEditor .internal:empty::before{
+  content:attr(default-content);
+  color:gray;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .freeTextEditor .internal:focus{
+  outline:none;
+  -webkit-user-select:auto;
+     -moz-user-select:auto;
+          user-select:auto;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .inkEditor{
+  width:100%;
+  height:100%;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .inkEditor.editing{
+  cursor:inherit;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .inkEditor .inkEditorCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  touch-action:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .stampEditor{
+  width:auto;
+  height:auto;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .stampEditor canvas{
+    position:absolute;
+    width:100%;
+    height:100%;
+    margin:0;
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers{
+      position:absolute;
+      inset:0;
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers.hidden{
+        display:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer{
+        width:var(--resizer-size);
+        height:var(--resizer-size);
+        background:content-box var(--resizer-bg-color);
+        border:var(--focus-outline-around);
+        border-radius:2px;
+        position:absolute;
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.topLeft{
+          top:var(--resizer-shift);
+          left:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.topMiddle{
+          top:var(--resizer-shift);
+          left:calc(50% + var(--resizer-shift));
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.topRight{
+          top:var(--resizer-shift);
+          right:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.middleRight{
+          top:calc(50% + var(--resizer-shift));
+          right:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.bottomRight{
+          bottom:var(--resizer-shift);
+          right:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.bottomMiddle{
+          bottom:var(--resizer-shift);
+          left:calc(50% + var(--resizer-shift));
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.bottomLeft{
+          bottom:var(--resizer-shift);
+          left:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer :is(.freeTextEditor, .inkEditor, .stampEditor) > .resizers > .resizer.middleLeft{
+          top:calc(50% + var(--resizer-shift));
+          left:var(--resizer-shift);
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomRight{
+        cursor:nwse-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomMiddle{
+        cursor:ns-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomLeft{
+        cursor:nesw-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.middleLeft{
+        cursor:ew-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomRight{
+        cursor:nesw-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomMiddle, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomMiddle{
+        cursor:ew-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.topRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.bottomLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.bottomLeft{
+        cursor:nwse-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.middleRight, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"]
+    :is([data-editor-rotation="90"], [data-editor-rotation="270"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"]
+    :is([data-editor-rotation="0"], [data-editor-rotation="180"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"]
+    :is([data-editor-rotation="270"], [data-editor-rotation="90"]) > .resizers > .resizer.middleLeft, .superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"]
+    :is([data-editor-rotation="180"], [data-editor-rotation="0"]) > .resizers > .resizer.middleLeft{
+        cursor:ns-resize;
+}
+.superdoc-pdf-viewer .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="90"],
+      [data-main-rotation="90"] [data-editor-rotation="0"],
+      [data-main-rotation="180"] [data-editor-rotation="270"],
+      [data-main-rotation="270"] [data-editor-rotation="180"]
+    ) .editToolbar{
+      rotate:270deg;
+}
+.superdoc-pdf-viewer [dir="ltr"] .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="90"],
+      [data-main-rotation="90"] [data-editor-rotation="0"],
+      [data-main-rotation="180"] [data-editor-rotation="270"],
+      [data-main-rotation="270"] [data-editor-rotation="180"]
+    ) .editToolbar{
+        inset-inline-end:calc(0px - var(--editor-toolbar-vert-offset));
+        inset-block-start:0;
+}
+.superdoc-pdf-viewer [dir="rtl"] .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="90"],
+      [data-main-rotation="90"] [data-editor-rotation="0"],
+      [data-main-rotation="180"] [data-editor-rotation="270"],
+      [data-main-rotation="270"] [data-editor-rotation="180"]
+    ) .editToolbar{
+        inset-inline-end:calc(100% + var(--editor-toolbar-vert-offset));
+        inset-block-start:0;
+}
+.superdoc-pdf-viewer .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="180"],
+      [data-main-rotation="90"] [data-editor-rotation="90"],
+      [data-main-rotation="180"] [data-editor-rotation="0"],
+      [data-main-rotation="270"] [data-editor-rotation="270"]
+    ) .editToolbar{
+      rotate:180deg;
+      inset-inline-end:100%;
+      inset-block-start:calc(0pc - var(--editor-toolbar-vert-offset));
+}
+.superdoc-pdf-viewer .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="270"],
+      [data-main-rotation="90"] [data-editor-rotation="180"],
+      [data-main-rotation="180"] [data-editor-rotation="90"],
+      [data-main-rotation="270"] [data-editor-rotation="0"]
+    ) .editToolbar{
+      rotate:90deg;
+}
+.superdoc-pdf-viewer [dir="ltr"] .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="270"],
+      [data-main-rotation="90"] [data-editor-rotation="180"],
+      [data-main-rotation="180"] [data-editor-rotation="90"],
+      [data-main-rotation="270"] [data-editor-rotation="0"]
+    ) .editToolbar{
+        inset-inline-end:calc(100% + var(--editor-toolbar-vert-offset));
+        inset-block-start:100%;
+}
+.superdoc-pdf-viewer [dir="rtl"] .annotationEditorLayer
+    :is(
+      [data-main-rotation="0"] [data-editor-rotation="270"],
+      [data-main-rotation="90"] [data-editor-rotation="180"],
+      [data-main-rotation="180"] [data-editor-rotation="90"],
+      [data-main-rotation="270"] [data-editor-rotation="0"]
+    ) .editToolbar{
+        inset-inline-start:calc(0px - var(--editor-toolbar-vert-offset));
+        inset-block-start:0;
+}
+.superdoc-pdf-viewer .dialog.altText::backdrop{
+    -webkit-mask:url(#alttext-manager-mask);
+            mask:url(#alttext-manager-mask);
+}
+.superdoc-pdf-viewer .dialog.altText.positioned{
+    margin:0;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer{
+    width:300px;
+    height:-moz-fit-content;
+    height:fit-content;
+    display:inline-flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:16px;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #overallDescription{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:4px;
+      align-self:stretch;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #overallDescription span{
+        align-self:stretch;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #overallDescription .title{
+        font-size:13px;
+        font-style:normal;
+        font-weight:590;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #addDescription{
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      gap:8px;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #addDescription .descriptionArea{
+        flex:1;
+        padding-inline:24px 10px;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #addDescription .descriptionArea textarea{
+          width:100%;
+          min-height:75px;
+}
+.superdoc-pdf-viewer .dialog.altText #altTextContainer #buttons{
+      display:flex;
+      justify-content:flex-end;
+      align-items:flex-start;
+      gap:8px;
+      align-self:stretch;
+}
+.superdoc-pdf-viewer .colorPicker{
+  --hover-outline-color:#0250bb;
+  --selected-outline-color:#0060df;
+  --swatch-border-color:#cfcfd8;
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer .colorPicker{
+    --hover-outline-color:#80ebff;
+    --selected-outline-color:#aaf2ff;
+    --swatch-border-color:#52525e;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .colorPicker{
+    --hover-outline-color:Highlight;
+    --selected-outline-color:var(--hover-outline-color);
+    --swatch-border-color:ButtonText;
+}
+}
+.superdoc-pdf-viewer .colorPicker .swatch{
+    width:16px;
+    height:16px;
+    border:1px solid var(--swatch-border-color);
+    border-radius:100%;
+    outline-offset:2px;
+    box-sizing:border-box;
+    forced-color-adjust:none;
+}
+.superdoc-pdf-viewer .colorPicker button:is(:hover, .selected) > .swatch{
+    border:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="0"] .highlightEditor:not(.free) > .editToolbar{
+      rotate:0deg;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="90"] .highlightEditor:not(.free) > .editToolbar{
+      rotate:270deg;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="180"] .highlightEditor:not(.free) > .editToolbar{
+      rotate:180deg;
+}
+.superdoc-pdf-viewer .annotationEditorLayer[data-main-rotation="270"] .highlightEditor:not(.free) > .editToolbar{
+      rotate:90deg;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor{
+    position:absolute;
+    background:transparent;
+    z-index:1;
+    cursor:auto;
+    max-width:100%;
+    max-height:100%;
+    border:none;
+    outline:none;
+    pointer-events:none;
+    transform-origin:0 0;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor:not(.free){
+      transform:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .internal{
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      pointer-events:auto;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor.disabled .internal{
+      pointer-events:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor.selectedEditor .internal{
+        cursor:pointer;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar{
+      --editor-toolbar-colorpicker-arrow-image:url(images/toolbarButton-menuArrow.svg);
+
+      transform-origin:center !important;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker{
+          position:relative;
+          width:auto;
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          gap:4px;
+          padding:4px;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker::after{
+            content:"";
+            -webkit-mask-image:var(--editor-toolbar-colorpicker-arrow-image);
+                    mask-image:var(--editor-toolbar-colorpicker-arrow-image);
+            -webkit-mask-repeat:no-repeat;
+                    mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+                    mask-position:center;
+            display:inline-block;
+            background-color:var(--editor-toolbar-fg-color);
+            width:12px;
+            height:12px;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker:hover::after{
+            background-color:var(--editor-toolbar-hover-fg-color);
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker:has(.dropdown:not(.hidden)){
+            background-color:var(--editor-toolbar-hover-bg-color);
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker:has(.dropdown:not(.hidden))::after{
+              scale:-1;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown{
+            position:absolute;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            flex-direction:column;
+            gap:11px;
+            padding-block:8px;
+            border-radius:6px;
+            background-color:var(--editor-toolbar-bg-color);
+            border:1px solid var(--editor-toolbar-border-color);
+            box-shadow:var(--editor-toolbar-shadow);
+            inset-block-start:calc(100% + 4px);
+            width:calc(100% + 2 * var(--editor-toolbar-padding));
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown button{
+              width:100%;
+              height:auto;
+              border:none;
+              cursor:pointer;
+              display:flex;
+              justify-content:center;
+              align-items:center;
+              background:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown button:is(:active, :focus-visible){
+                outline:none;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown button > .swatch{
+                outline-offset:2px;
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown button[aria-selected="true"] > .swatch{
+                outline:2px solid var(--selected-outline-color);
+}
+.superdoc-pdf-viewer .annotationEditorLayer .highlightEditor .editToolbar .buttons .colorPicker .dropdown button:is(:hover, :active, :focus-visible) > .swatch{
+                outline:2px solid var(--hover-outline-color);
+}
+.superdoc-pdf-viewer .editorParamsToolbar:has(#highlightParamsToolbarContainer){
+  padding:unset;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer{
+  height:auto;
+  padding-inline:10px;
+  padding-block:10px 16px;
+  gap:16px;
+  display:flex;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .editorParamsLabel{
+    width:-moz-fit-content;
+    width:fit-content;
+    inset-inline-start:0;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-direction:row;
+      height:auto;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown button{
+        width:auto;
+        height:auto;
+        border:none;
+        cursor:pointer;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        background:none;
+        flex:0 0 auto;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown button .swatch{
+          width:24px;
+          height:24px;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown button:is(:active, :focus-visible){
+          outline:none;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown button[aria-selected="true"] > .swatch{
+          outline:2px solid var(--selected-outline-color);
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer .colorPicker .dropdown button:is(:hover, :active, :focus-visible) > .swatch{
+          outline:2px solid var(--hover-outline-color);
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    align-self:stretch;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .editorParamsLabel{
+      width:100%;
+      height:auto;
+      align-self:stretch;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      align-self:stretch;
+
+      --example-color:#bfbfc9;
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker{
+        --example-color:#80808e;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker{
+        --example-color:CanvasText;
+}
+}
+.superdoc-pdf-viewer :is(#highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker > .editorParamsSlider[disabled]){
+        opacity:0.4;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker::before,
+      .superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker::after{
+        content:"";
+        width:8px;
+        aspect-ratio:1;
+        display:block;
+        border-radius:100%;
+        background-color:var(--example-color);
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker::after{
+        width:24px;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightThickness .thicknessPicker .editorParamsSlider{
+        width:unset;
+        height:14px;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightVisibility{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+    align-self:stretch;
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightVisibility .divider{
+      --divider-color:#d7d7db;
+
+      margin-block:4px;
+      width:100%;
+      height:1px;
+      background-color:var(--divider-color);
+}
+@media (prefers-color-scheme: dark){
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightVisibility .divider{
+        --divider-color:#8f8f9d;
+}
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightVisibility .divider{
+        --divider-color:CanvasText;
+}
+}
+.superdoc-pdf-viewer #highlightParamsToolbarContainer #editorHighlightVisibility .toggler{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      align-self:stretch;
+}
+.superdoc-pdf-viewer :root{
+  --viewer-container-height:0;
+  --pdfViewer-padding-bottom:0;
+  --page-margin:1px auto -8px;
+  --page-border:9px solid transparent;
+  --spreadHorizontalWrapped-margin-LR:-3.5px;
+  --loading-icon-delay:400ms;
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer :root{
+    --pdfViewer-padding-bottom:9px;
+    --page-margin:8px auto -1px;
+    --page-border:1px solid CanvasText;
+    --spreadHorizontalWrapped-margin-LR:3.5px;
+}
+}
+.superdoc-pdf-viewer [data-main-rotation="90"]{
+  transform:rotate(90deg) translateY(-100%);
+}
+.superdoc-pdf-viewer [data-main-rotation="180"]{
+  transform:rotate(180deg) translate(-100%, -100%);
+}
+.superdoc-pdf-viewer [data-main-rotation="270"]{
+  transform:rotate(270deg) translateX(-100%);
+}
+.superdoc-pdf-viewer #hiddenCopyElement,
+.superdoc-pdf-viewer .hiddenCanvasElement{
+  position:absolute;
+  top:0;
+  left:0;
+  width:0;
+  height:0;
+  display:none;
+}
+.superdoc-pdf-viewer .pdfViewer{
+  --scale-factor:1;
+
+  padding-bottom:var(--pdfViewer-padding-bottom);
+
+  --hcm-highlight-filter:none;
+  --hcm-highlight-selected-filter:none;
+}
+@media screen and (forced-colors: active){
+.superdoc-pdf-viewer .pdfViewer{
+    --hcm-highlight-filter:invert(100%);
+}
+}
+.superdoc-pdf-viewer .pdfViewer .canvasWrapper{
+    overflow:hidden;
+    width:100%;
+    height:100%;
+}
+.superdoc-pdf-viewer .pdfViewer .canvasWrapper canvas{
+      margin:0;
+      display:block;
+}
+.superdoc-pdf-viewer .pdfViewer .canvasWrapper canvas[hidden]{
+        display:none;
+}
+.superdoc-pdf-viewer .pdfViewer .canvasWrapper canvas[zooming]{
+        width:100%;
+        height:100%;
+}
+.superdoc-pdf-viewer .pdfViewer .canvasWrapper canvas .structTree{
+        contain:strict;
+}
+.superdoc-pdf-viewer .pdfViewer .page{
+  direction:ltr;
+  width:816px;
+  height:1056px;
+  margin:var(--page-margin);
+  position:relative;
+  overflow:visible;
+  border:var(--page-border);
+  background-clip:content-box;
+  background-color:rgb(255 255 255);
+}
+.superdoc-pdf-viewer .pdfViewer .dummyPage{
+  position:relative;
+  width:0;
+  height:var(--viewer-container-height);
+}
+.superdoc-pdf-viewer .pdfViewer.noUserSelect{
+  -webkit-user-select:none;
+     -moz-user-select:none;
+          user-select:none;
+}
+.superdoc-pdf-viewer .pdfViewer.removePageBorders .page{
+  margin:0 auto 10px;
+  border:none;
+}
+.superdoc-pdf-viewer .pdfViewer.singlePageView{
+  display:inline-block;
+}
+.superdoc-pdf-viewer .pdfViewer.singlePageView .page{
+  margin:0;
+  border:none;
+}
+.superdoc-pdf-viewer .pdfViewer:is(.scrollHorizontal, .scrollWrapped), .superdoc-pdf-viewer .spread{
+  margin-inline:3.5px;
+  text-align:center;
+}
+.superdoc-pdf-viewer .pdfViewer.scrollHorizontal,
+.superdoc-pdf-viewer .spread{
+  white-space:nowrap;
+}
+.superdoc-pdf-viewer .pdfViewer.removePageBorders,
+.superdoc-pdf-viewer .pdfViewer:is(.scrollHorizontal, .scrollWrapped) .spread{
+  margin-inline:0;
+}
+.superdoc-pdf-viewer .spread :is(.page, .dummyPage), .superdoc-pdf-viewer .pdfViewer:is(.scrollHorizontal, .scrollWrapped) :is(.page, .spread){
+  display:inline-block;
+  vertical-align:middle;
+}
+.superdoc-pdf-viewer .spread .page,
+.superdoc-pdf-viewer .pdfViewer:is(.scrollHorizontal, .scrollWrapped) .page{
+  margin-inline:var(--spreadHorizontalWrapped-margin-LR);
+}
+.superdoc-pdf-viewer .pdfViewer.removePageBorders .spread .page,
+.superdoc-pdf-viewer .pdfViewer.removePageBorders:is(.scrollHorizontal, .scrollWrapped) .page{
+  margin-inline:5px;
+}
+.superdoc-pdf-viewer .pdfViewer .page.loadingIcon::after{
+  position:absolute;
+  top:0;
+  left:0;
+  content:"";
+  width:100%;
+  height:100%;
+  background:url("images/loading-icon.gif") center no-repeat;
+  display:none;
+  transition-property:display;
+  transition-delay:var(--loading-icon-delay);
+  z-index:5;
+  contain:strict;
+}
+.superdoc-pdf-viewer .pdfViewer .page.loading::after{
+  display:block;
+}
+.superdoc-pdf-viewer .pdfViewer .page:not(.loading)::after{
+  transition-property:none;
+  display:none;
+}
+.superdoc-pdf-viewer .pdfPresentationMode .pdfViewer{
+  padding-bottom:0;
+}
+.superdoc-pdf-viewer .pdfPresentationMode .spread{
+  margin:0;
+}
+.superdoc-pdf-viewer .pdfPresentationMode .pdfViewer .page{
+  margin:0 auto;
+  border:2px solid transparent;
+}
+
+.superdoc-pdf-viewer-container[data-v-6d611c0c] {
+  width: 100%;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+}
+.superdoc-pdf-viewer__loader[data-v-6d611c0c] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-width: 150px;
+    min-height: 150px;
+}
+.superdoc-pdf-viewer__loader[data-v-6d611c0c] .n-spin {
+      --n-color: #1354ff !important;
+      --n-text-color: #1354ff !important;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] .pdf-page {
+    border-top: 1px solid #dfdfdf;
+    border-bottom: 1px solid #dfdfdf;
+    margin: 0 0 20px 0;
+    position: relative;
+    overflow: hidden;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] .pdf-page:first-child {
+      border-radius: 16px 16px 0 0;
+      border-top: none;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] .pdf-page:last-child {
+      border-radius: 0 0 16px 16px;
+      border-bottom: none;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] .textLayer {
+    z-index: 2;
+    position: absolute;
+}
+.superdoc-pdf-viewer[data-v-6d611c0c] .textLayer::selection {
+      background-color: #1355ff66;
+      mix-blend-mode: difference;
+}
+
+.comment-doc[data-v-0dbcad34] {
+  position: relative;
+}
+.comments-layer[data-v-0dbcad34] {
+  position: relative;
+}
+.sd-comment-anchor[data-v-0dbcad34] {
+  position: absolute;
+  cursor: pointer;
+  z-index: 3;
+  border-radius: 4px;
+  transition: background-color 250ms ease;
+}
+.bypass[data-v-0dbcad34] {
+  display: none;
+}
+.comments-container[data-v-0dbcad34] {
+  /* pointer-events: none;  */
+}
+
+.measure-comment[data-v-e6543c90] {
+  box-sizing: border-box;
+  height: auto;
+}
+.floating-comment[data-v-e6543c90] {
+  position: absolute;
+  display: block;
+}
+.sidebar-container[data-v-e6543c90] {
+  position: absolute;
+  width: 300px;
+  min-height: 300px;
+}
+.section-wrapper[data-v-e6543c90] {
+  position: relative;
+  min-height: 100%;
+  width: 300px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.floating-comment[data-v-e6543c90] {
+  position: absolute;
+  min-width: 300px;
+}
+.calculation-container[data-v-e6543c90] {
+  visibility: hidden;
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+}
+
+.text-field[data-v-f3984d30] {
+  white-space: nowrap;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.paragraph-field[data-v-98d7a2df] {
+  margin: 0;
+  padding: 1px;
+}
+
+.image-field[data-v-7dd69850] {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+}
+img[data-v-7dd69850] {
+  max-height: 100%;
+}
+
+.checkbox-container[data-v-fc53fd29] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  margin-top: 5px;
+}
+
+.select-container[data-v-b8cacb22] {
+  padding: 1px;
+}
+
+.field-container[data-v-22e6ae02] {
+  border-radius: 2px;
+  background-color: #efd0f0 !important;
+  border: 2px solid #b015b3;
+}
+.field-container--no-style[data-v-22e6ae02] {
+  background: none !important;
+  border-color: transparent;
+}
+
+.superdoc-html-viewer[data-v-7bd2cb5d] {
+  font-family: initial;
+  color: initial;
+  width: 100%;
+  height: auto;
+  position: relative;
+}
+.superdoc-html-viewer__document[data-v-7bd2cb5d] {
+  width: 100%;
+  height: auto;
+}
+.superdoc-html-viewer__content[data-v-7bd2cb5d] {
+  width: 100%;
+  min-width: 800px;
+  padding: 38px 75px 75px;
+}
+
+.ai-highlight-layer[data-v-37270b07] {
+  position: relative;
+}
+.ai-highlight-anchor[data-v-37270b07] {
+  position: absolute;
+  cursor: pointer;
+  z-index: 3;
+  border-radius: 4px;
+  transition: background-color 250ms ease;
+}
+.bypass[data-v-37270b07] {
+  display: none;
+}
+
+
+.superdoc.high-contrast {
+    border-color: #000;
+}
+.superdoc.high-contrast .super-editor {
+      border-color: #000;
+}
+.superdoc.high-contrast .super-editor:focus-within {
+        border-color: blue;
+}
+.superdoc .super-editor {
+    border-radius: 8px;
+    border: 1px solid #d3d3d3;
+    box-shadow: 0 0 5px hsla(0, 0%, 0%, .05);
+}
+
+.superdoc[data-v-fc218ba5] {
+  display: flex;
+}
+.right-sidebar[data-v-fc218ba5] {
+  min-width: 320px;
+}
+.floating-comments[data-v-fc218ba5] {
+  min-width: 300px;
+  width: 300px;
+}
+.superdoc__layers[data-v-fc218ba5] {
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+.superdoc__document[data-v-fc218ba5] {
+  width: 100%;
+  position: relative;
+}
+.superdoc__sub-document[data-v-fc218ba5] {
+  width: 100%;
+  position: relative;
+}
+.superdoc__selection-layer[data-v-fc218ba5] {
+  position: absolute;
+  min-width: 100%;
+  min-height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+.superdoc__temp-selection[data-v-fc218ba5] {
+  position: absolute;
+}
+.superdoc__comments-layer[data-v-fc218ba5] {
+  /* position: absolute; */
+  top: 0;
+  height: 100%;
+  position: relative;
+}
+.superdoc__right-sidebar[data-v-fc218ba5] {
+  width: 320px;
+  min-width: 320px;
+  padding: 0 10px;
+  min-height: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Tools styles */
+.tools[data-v-fc218ba5] {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tools .tool-icon[data-v-fc218ba5] {
+  font-size: 20px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background-color: #dbdbdb;
+  cursor: pointer;
+}
+.tools-item[data-v-fc218ba5] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(219, 219, 219, 0.6);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.tools-item i[data-v-fc218ba5] {
+  cursor: pointer;
+}
+.superdoc__tools-icon[data-v-fc218ba5] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+/* Tools styles - end */
+
+/* .docx {
+  border: 1px solid #dfdfdf;
+  pointer-events: auto;
+} */
+
+/* 834px is iPad screen size in portrait orientation */
+@media (max-width: 834px) {
+.superdoc .superdoc__layers[data-v-fc218ba5] {
+    margin: 0;
+    border: 0 !important;
+    box-shadow: none;
+}
+.superdoc__sub-document[data-v-fc218ba5] {
+    max-width: 100%;
+}
+.superdoc__right-sidebar[data-v-fc218ba5] {
+    padding: 10px;
+    width: 55px;
+    position: relative;
+}
+}
+
+/* AI Writer styles */
+.ai-writer-container[data-v-fc218ba5] {
+  position: fixed;
+  z-index: 1000;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Remove the AI Sidebar styles */
+/* .ai-sidebar-container {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+} */
+
+/* Tools styles */
+.tools[data-v-fc218ba5] {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+}
+.tools .tool-icon[data-v-fc218ba5] {
+  font-size: 20px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background-color: #dbdbdb;
+  cursor: pointer;
+}
+.tools-item[data-v-fc218ba5] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(219, 219, 219, 0.6);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.tools-item i[data-v-fc218ba5] {
+  cursor: pointer;
+}
+.superdoc__tools-icon[data-v-fc218ba5] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.ai-tool > svg[data-v-fc218ba5] {
+  fill: transparent;
+}
+.ai-tool[data-v-fc218ba5]::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+
+  z-index: 1;
+  background: linear-gradient(
+    270deg,
+    rgba(218, 215, 118, 0.5) -20%,
+    rgba(191, 100, 100, 1) 30%,
+    rgba(77, 82, 217, 1) 60%,
+    rgb(255, 219, 102) 150%
+  );
+  -webkit-mask: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path d='M224 96l16-32 32-16-32-16-16-32-16 32-32 16 32 16 16 32zM80 160l26.7-53.3L160 80l-53.3-26.7L80 0 53.3 53.3 0 80l53.3 26.7L80 160zm352 128l-26.7 53.3L352 368l53.3 26.7L432 448l26.7-53.3L512 368l-53.3-26.7L432 288zm70.6-193.8L417.8 9.4C411.5 3.1 403.3 0 395.2 0c-8.2 0-16.4 3.1-22.6 9.4L9.4 372.5c-12.5 12.5-12.5 32.8 0 45.3l84.9 84.9c6.3 6.3 14.4 9.4 22.6 9.4 8.2 0 16.4-3.1 22.6-9.4l363.1-363.2c12.5-12.5 12.5-32.8 0-45.2zM359.5 203.5l-50.9-50.9 86.6-86.6 50.9 50.9-86.6 86.6z'/></svg>") center / contain no-repeat;
+  mask: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path d='M224 96l16-32 32-16-32-16-16-32-16 32-32 16 32 16 16 32zM80 160l26.7-53.3L160 80l-53.3-26.7L80 0 53.3 53.3 0 80l53.3 26.7L80 160zm352 128l-26.7 53.3L352 368l53.3 26.7L432 448l26.7-53.3L512 368l-53.3-26.7L432 288zm70.6-193.8L417.8 9.4C411.5 3.1 403.3 0 395.2 0c-8.2 0-16.4 3.1-22.6 9.4L9.4 372.5c-12.5 12.5-12.5 32.8 0 45.3l84.9 84.9c6.3 6.3 14.4 9.4 22.6 9.4 8.2 0 16.4-3.1 22.6-9.4l363.1-363.2c12.5-12.5 12.5-32.8 0-45.2zM359.5 203.5l-50.9-50.9 86.6-86.6 50.9 50.9-86.6 86.6z'/></svg>") center / contain no-repeat;
+  filter: brightness(1.2);
+  transition: filter 0.2s ease;
+}
+.ai-tool[data-v-fc218ba5]:hover::before {
+  filter: brightness(1.3);
+} 
+/* Tools styles - end */

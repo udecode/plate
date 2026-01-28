@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev": "vitepress dev --port 3005",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "vitepress": "^1.6.3"
+  }
+}

@@ -1,0 +1,1 @@
+export {navigatorFilterModel} from "./model"

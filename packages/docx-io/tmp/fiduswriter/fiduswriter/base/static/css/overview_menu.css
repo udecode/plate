@@ -1,0 +1,187 @@
+.fw-overview-menu-wrapper {
+    position: relative;
+    background-color: var(--cs-white-background);
+    padding: 11px 8px;
+}
+
+#fw-overview-menu {
+    position: relative;
+    margin: 0 213px;
+}
+
+#fw-overview-menu::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+@media (width <= 1429px) {
+    #fw-overview-menu {
+        margin: 0 auto;
+        max-width: 1004px;
+    }
+}
+
+.fw-overview-menu-item {
+    position: relative;
+    float: left;
+    margin-right: 14px;
+}
+
+.fw-search-field-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.fw-search-field-container .fw-search-label {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    pointer-events: none; /* Makes the label non-interactive */
+    user-select: none;
+    z-index: 1;
+}
+
+.fw-search-field-container input.fw-search-field[type="search"] {
+    position: relative;
+    z-index: 2;
+    background: transparent; /* Makes input background transparent to show label */
+}
+
+.fw-search-field-container:has(
+        input.fw-search-field[type="search"]:not(:placeholder-shown)
+    )
+    label.fw-search-label {
+    display: none;
+}
+
+.fw-search-field-container i.fa {
+    position: relative;
+    z-index: 3;
+    margin-left: 8px;
+}
+
+.fw-overview-menu-item.search {
+    float: right;
+    margin-right: 0;
+}
+
+.fw-overview-menu-item.search div.fw-button.disabled {
+    background-color: var(--input-background-color);
+}
+
+.fw-overview-menu-item.search div.fw-button.disabled:focus-within {
+    background-color: var(--input-focus-background-color);
+}
+
+.fw-button .fw-search-label {
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Hide label visually while keeping it accessible for screen readers
+   when the search box is narrow */
+@media (width <= 600px) {
+    .fw-button .fw-search-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+    }
+}
+
+.fw-button input[type="text"] {
+    border: 1px solid #cccccc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: calc(100% - 30px);
+    height: 30px;
+}
+
+.fw-button input[type="text"]:focus {
+    outline: 2px solid #007bff;
+    border-color: #007bff;
+}
+
+.fw-text-menu {
+    height: 40px;
+    color: var(--cs-white-text-secondary);
+    padding: 0;
+    border: 0 none;
+    background-color: transparent;
+    font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    padding-left: 5px;
+}
+
+.fw-text-menu:focus::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px; /* Width of the border */
+    background-color: var(--menu-cursor-border-color); /* Color of the border */
+}
+
+.fw-text-menu:hover {
+    color: var(--cs-white-text);
+}
+
+.fw-dropdown-menu {
+    padding-top: 14px;
+    font-size: 14px;
+    color: var(--cs-white-text-secondary);
+    cursor: pointer;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+.fw-dropdown-menu:hover {
+    color: var(--cs-white-text);
+}
+
+.fw-dropdown-menu label {
+    cursor: pointer;
+}
+
+div.select-action {
+    cursor: pointer;
+    min-width: 38px;
+}
+
+div.select-action input[type="checkbox"] {
+    cursor: default;
+}
+
+span.select-action-dropdown {
+    margin-left: 5px;
+}
+
+.fw-button.fw-white input[type="text"] {
+    color: var(--cs-light-text);
+    background-color: var(--cs-light-background);
+}
+
+.fw-button.fw-white:focus-within {
+    background-color: var(--input-focus-background-color);
+}
+
+.fw-button.fw-white input[type="text"]:focus,
+.fw-white.fw-input:hover {
+    background-color: var(--input-focus-background-color);
+}
+
+.fw-pulldown-item.selected {
+    background-color: #f0f0f0;
+}

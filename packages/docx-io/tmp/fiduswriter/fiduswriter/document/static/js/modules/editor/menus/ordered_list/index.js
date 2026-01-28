@@ -1,0 +1,1 @@
+export {orderedListMenuModel} from "./model"

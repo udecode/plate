@@ -1,0 +1,84 @@
+{
+  "name": "@harbour-enterprises/superdoc",
+  "type": "module",
+  "version": "0.15.16-next.11",
+  "license": "AGPL-3.0",
+  "readme": "../../README.md",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/superdoc.es.js",
+      "require": "./dist/superdoc.cjs"
+    },
+    "./converter": {
+      "import": "./dist/super-editor/converter.es.js"
+    },
+    "./docx-zipper": {
+      "import": "./dist/super-editor/docx-zipper.es.js"
+    },
+    "./super-editor": {
+      "types": "./dist/super-editor/index.d.ts",
+      "import": "./dist/super-editor.es.js",
+      "require": "./dist/super-editor.cjs"
+    },
+    "./super-editor/style.css": {
+      "import": "./dist/super-editor/style.css"
+    },
+    "./common": {
+      "import": "./dist/common.es.js"
+    },
+    "./file-zipper": {
+      "import": "./dist/super-editor/file-zipper.es.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/superdoc.umd.js",
+  "module": "./dist/superdoc.es.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "cd ../super-editor && npm run build && cd ../superdoc && vite build && tsc && npm run build:umd",
+    "build:es": "cd ../super-editor && npm run build && cd ../superdoc && vite build",
+    "watch:es": "nodemon --watch src --watch ../super-editor/src --ext js,ts,vue --exec \"npm run build:es\" --delay 100ms",
+    "build:umd": "vite build --config vite.config.umd.js",
+    "release": "release-it --ci --increment=patch",
+    "release:next": "release-it --config .release-it.next.json",
+    "clean": "rm -rf dist",
+    "pack:local": "npm run build:es && npm pack && mv $(ls harbour-enterprises-superdoc-*.tgz) ./superdoc.tgz",
+    "pack": "npm run build:es && npm pack && mv $(ls harbour-enterprises-superdoc-*.tgz) ./superdoc.tgz"
+  },
+  "dependencies": {
+    "buffer-crc32": "^1.0.0",
+    "eventemitter3": "^5.0.1",
+    "jsdom": "^25.0.1",
+    "naive-ui": "^2.39.0",
+    "pinia": "^2.1.7",
+    "rollup-plugin-copy": "^3.5.0",
+    "tippy": "^0.0.0",
+    "vue": "^3.4.21",
+    "y-websocket": "^3.0.0"
+  },
+  "peerDependencies": {
+    "@hocuspocus/provider": "^2.13.6",
+    "pdfjs-dist": "4.3.136",
+    "y-prosemirror": "^1.2.12",
+    "yjs": "13.6.19"
+  },
+  "devDependencies": {
+    "@hocuspocus/provider": "^2.13.6",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "nodemon": "^3.1.10",
+    "pdfjs-dist": "4.3.136",
+    "postcss-nested": "^6.0.1",
+    "postcss-nested-import": "^1.3.0",
+    "release-it": "^19.0.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.3.5",
+    "vue-draggable-next": "^2.2.1"
+  }
+}

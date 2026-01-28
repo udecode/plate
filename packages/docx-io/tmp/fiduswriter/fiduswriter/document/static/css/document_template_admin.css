@@ -1,0 +1,34 @@
+/* stylelint-disable csstools/value-no-unknown-custom-properties */
+
+/* This file is used only on the admin screen and therefore contains original Django colors. */
+
+form .aligned ul.object-tools.right {
+    margin-left: inherit;
+    height: 3em;
+}
+
+.object-tools span.link {
+    float: left;
+    background: var(--object-tools-bg) !important;
+    color: var(--object-tools-fg) !important;
+    font-weight: 400;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 15px;
+    padding: 3px 12px;
+    cursor: pointer;
+}
+
+.object-tools span.link:focus,
+.object-tools span.link:hover {
+    background-color: var(--object-tools-hover-bg);
+}
+
+.doc-part-block .object-tools {
+    margin-top: 0 !important;
+}
+
+body {
+    overflow-y: auto !important;
+}

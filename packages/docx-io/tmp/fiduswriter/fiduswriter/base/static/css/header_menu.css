@@ -1,0 +1,114 @@
+.fw-header > .fw-container {
+    z-index: 100;
+    overflow: visible;
+    padding: 19.5px 34px 21.5px;
+}
+
+.fw-logo,
+#header-nav {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.fw-logo > img {
+    width: auto;
+    height: 27px;
+}
+
+.fw-logo-text {
+    line-height: 0;
+    position: relative;
+    top: -4px;
+    font-family: Roboto, sans-serif;
+    text-transform: uppercase;
+    color: var(--cs-5-text);
+    font-size: 15pt;
+}
+
+.fw-login-logo .fw-logo-text {
+    font-size: 30pt;
+}
+
+.fw-login-logo img {
+    height: 38px;
+}
+
+.fw-logo-text::before {
+    content: "Fidus";
+    font-weight: 700;
+}
+
+.fw-logo-text::after {
+    content: "Writer ";
+    font-weight: 300;
+}
+
+.fw-user-preferences {
+    float: right;
+}
+
+.fw-user-preferences .fw-name {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.fw-nav-container {
+    overflow: visible;
+    padding-left: 22px;
+}
+
+.fw-nav-item {
+    position: relative;
+    display: inline-block;
+    width: auto;
+    margin-right: 22px;
+    margin-top: 4px;
+}
+
+.fw-nav-item.active-menu-wrapper::after {
+    position: absolute;
+    left: 50%;
+    top: 34px;
+    line-height: 100%;
+    font-size: 24px;
+    margin-left: -8px;
+    color: var(--cs-4-text);
+}
+
+.fw-nav-item a {
+    color: var(--nagivation-link-text-color);
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.fw-nav-item a:hover,
+.fw-nav-item.active-menu-wrapper a {
+    color: var(--nagivation-link-active-text-color);
+    text-shadow: 1px 0 0 var(--nagivation-link-active-text-color);
+}
+
+#user-preferences {
+    z-index: 2;
+    margin-left: 8px;
+}
+
+#user-preferences .fw-button {
+    padding: 0;
+    border: 0 none;
+}
+
+#preferences-btn .fw-avatar,
+#preferences-btn .fw-string-avatar {
+    width: 35px;
+    height: 35px;
+}
+
+#preferences-btn .fw-avatar:hover,
+#preferences-btn .fw-string-avatar:hover {
+    opacity: 0.7;
+}
+
+#header-nav a:focus {
+    outline: 2px solid var(--cs-6-background-focus);
+    outline-offset: 2px;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "@harbour-enterprises/common",
+  "private": true,
+  "main": "index.js",
+  "type": "module"
+}

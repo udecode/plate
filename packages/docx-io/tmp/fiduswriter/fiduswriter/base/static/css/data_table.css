@@ -1,0 +1,191 @@
+table.fw-data-table {
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+table.fw-data-table:focus {
+    outline: none;
+}
+
+table.fw-data-table thead,
+table.datatable-table thead {
+    font-weight: 900;
+    font-size: 11px;
+}
+
+table.datatable-table thead th a {
+    color: var(--cs-1-hover);
+}
+
+table.fw-data-table td,
+table.datatable-table td {
+    padding: 15px 0;
+    vertical-align: top;
+    border-bottom: solid 1px var(--cs-white-border);
+}
+
+/* Align text with top of images */
+table.fw-data-table tbody td {
+    vertical-align: top;
+}
+
+table.fw-data-table th,
+table.datatable-table th {
+    padding: 15px 0;
+    vertical-align: top;
+    border-bottom: solid 1px var(--cs-white-header-border);
+}
+
+table.fw-data-table th:last-child,
+table.fw-data-table td:last-child,
+table.datatable-table th:last-child,
+table.datatable-table td:last-child {
+    padding-right: 0;
+}
+
+table.fw-data-table:focus tbody td {
+    border-bottom-color: var(--menu-cursor-border-color);
+}
+
+table.fw-data-table .date,
+table.datatable-table .date {
+    white-space: nowrap;
+}
+
+table.fw-data-table.fw-large tbody {
+    width: 985px;
+    max-height: calc(100vh - 320px);
+}
+
+table.fw-data-table.fw-middle tbody {
+    width: 600px;
+    max-height: calc(100vh - 320px);
+}
+
+table.fw-data-table.fw-small tbody {
+    width: 342px;
+    height: 270px;
+}
+
+table.fw-data-table.fw-min tbody {
+    width: 342px;
+    height: 225px;
+}
+
+table.fw-data-table td.td-icon {
+    text-align: center;
+}
+
+table.fw-data-table-title {
+    color: var(--cs-1-text);
+}
+
+table.fw-data-table-title i.fa,
+table.fw-data-table-title i.far,
+table.fw-data-table-title i.fas {
+    margin-right: 10px;
+}
+
+table.fw-data-table .icon-trash {
+    font-size: 15px;
+}
+
+.owned-by-user .icon-access-right,
+table.fw-data-table .fa-clock,
+table.fw-data-table .fa-trash,
+table.fw-data-table .fa-download,
+table.fw-data-table .fa-history {
+    color: var(--cs-1-icon);
+    cursor: pointer;
+}
+
+.owned-by-user .icon-access-right:hover,
+table.fw-data-table .fa-clock:hover,
+table.fw-data-table .fa-trash:hover,
+table.fw-data-table .fa-download:hover,
+table.fw-data-table .fa-history:hover {
+    color: var(--cs-1-hover);
+}
+
+/* A deleted access rights row */
+.collaborator-tr[data-right="delete"] {
+    display: none;
+}
+
+table.fw-data-table .fw-avatar,
+table.fw-data-table .fw-string-avatar {
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    vertical-align: top;
+    margin: -4px 10px -5px 0;
+}
+
+table.fw-data-table > tbody > tr > td:first-child {
+    padding-left: 2px;
+}
+
+table.fw-data-table:focus > tbody > tr.datatable-cursor {
+    background-color: var(--cs-white-background-selected);
+}
+
+/* the usermedia table */
+.fw-usermedia-title {
+    display: inline-block;
+    height: auto;
+}
+
+.fw-usermedia-type {
+    display: block;
+    margin-top: 3px;
+}
+
+.fw-usermedia-image {
+    display: inline-block;
+    max-width: 60px;
+    max-height: 60px;
+    overflow: hidden;
+    vertical-align: top;
+    margin: 0 14px 2px 0;
+}
+
+.fw-usermedia-image > img {
+    min-width: 100%;
+    min-height: 100%;
+}
+
+table.fw-data-table tbody td.checkable {
+    position: relative;
+}
+
+table.fw-data-table tbody tr.checked td.checkable::after {
+    width: 1em;
+    height: 1em;
+    position: absolute;
+    right: 12px;
+    top: 12px;
+}
+
+/* Word counter dialog table */
+.fw-word-counter-tbody {
+    line-height: 38px;
+}
+
+/* Bulk action */
+.dt-bulk {
+    display: block;
+    position: relative;
+    min-width: 30px;
+}
+
+.dt-bulk .fw-check + label {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.dt-bulk-dropdown {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 3px;
+    cursor: pointer;
+}

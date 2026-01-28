@@ -1,0 +1,38 @@
+.fw-basic-text {
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    line-height: 1.33em;
+    color: var(--cs-1-hover);
+    font-weight: 400;
+}
+
+a,
+.fw-link-text {
+    cursor: pointer;
+    color: var(--cs-1-text);
+}
+
+a:hover,
+.fw-link-text:hover {
+    cursor: pointer;
+    color: var(--cs-1-hover);
+}
+
+.fw-header-text {
+    color: var(--cs-5-text);
+    font-size: 14px;
+}
+
+.fw-header-navigation-text {
+    color: var(--cs-5-text);
+    font-weight: 400;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    font-size: 15px;
+}
+
+.fw-green-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cs-4-text);
+}

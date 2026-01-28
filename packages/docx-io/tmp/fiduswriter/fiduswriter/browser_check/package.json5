@@ -1,0 +1,10 @@
+{
+    browserslist: "> 0.5%, last 2 versions, Firefox ESR, not dead, not ie 11",
+    dependencies: {
+        "browserslist-useragent-regexp": "4.1.3"
+    },
+    scripts: {
+        create_browser_check: "mkdir -p ../static-libs/js/ && echo \"if(!$(browserslist-useragent-regexp --allowHigherVersions).test(navigator.userAgent)) {window.location = '/api/browser_check/';}\" > ../static-libs/js/browser_check.mjs",
+        postinstall: "npm run create_browser_check"
+    }
+}

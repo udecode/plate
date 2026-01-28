@@ -9,6 +9,7 @@ import type { CommentPayload, StoredComment, TrackingState } from './tracking';
 
 import {
   applicationName,
+  commentsExtendedType,
   commentsType,
   defaultDocumentOptions,
   defaultFont,
@@ -61,6 +62,9 @@ const getBulletChar = (level: number): string => {
   ];
   return bullets[level % bullets.length];
 };
+
+const formatCommentParaId = (id: number): string =>
+  id.toString(16).toUpperCase().padStart(8, '0');
 
 /** Virtual DOM tree node */
 export interface VTree {
@@ -483,6 +487,7 @@ class DocxDocument {
     this.generateFooterXML = this.generateFooterXML.bind(this);
     this.generateSectionXML = generateSectionXML.bind(this);
     this.generateCommentsXML = this.generateCommentsXML.bind(this);
+    this.generateCommentsExtendedXML = this.generateCommentsExtendedXML.bind(this);
     this.ensureComment = this.ensureComment.bind(this);
     this.getCommentId = this.getCommentId.bind(this);
     this.getRevisionId = this.getRevisionId.bind(this);
@@ -526,6 +531,24 @@ class DocxDocument {
         .up();
 
       contentTypesXML.root().import(commentsContentTypeFragment);
+    }
+
+    const hasCommentThreads = this.comments.some(
+      (comment) => comment.parentId !== undefined
+    );
+    if (hasCommentThreads) {
+      const commentsExtendedContentTypeFragment = fragment({
+        defaultNamespace: { ele: namespaces.contentTypes },
+      })
+        .ele('Override')
+        .att('PartName', '/word/commentsExtended.xml')
+        .att(
+          'ContentType',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml'
+        )
+        .up();
+
+      contentTypesXML.root().import(commentsExtendedContentTypeFragment);
     }
 
     return contentTypesXML.toString({ prettyPrint: true });
@@ -970,6 +993,9 @@ class DocxDocument {
       case commentsType:
         relationshipType = namespaces.comments;
         break;
+      case commentsExtendedType:
+        relationshipType = namespaces.commentsExtended;
+        break;
       case headerFileType:
         relationshipType = namespaces.headers;
         break;
@@ -1028,9 +1054,13 @@ class DocxDocument {
    * Updates metadata if the comment already exists but had missing fields.
    */
   ensureComment(data: Partial<CommentPayload>): number {
-    const { id, authorName, authorInitials, date, text } = data;
+    const { id, authorName, authorInitials, date, parentId, text } = data;
     const commentId = id || `comment-${this.lastCommentId + 1}`;
     let numericId = this.commentIdMap.get(commentId);
+    const parentKey = parentId ? String(parentId) : undefined;
+    const parentNumericId = parentKey
+      ? this.commentIdMap.get(parentKey)
+      : undefined;
 
     if (numericId === undefined) {
       this.lastCommentId += 1;
@@ -1053,6 +1083,12 @@ class DocxDocument {
       if (!existing.text && text) {
         existing.text = text;
       }
+      if (!existing.parentId && parentNumericId !== undefined) {
+        existing.parentId = parentNumericId;
+      }
+      if (!existing.paraId) {
+        existing.paraId = formatCommentParaId(numericId);
+      }
       return numericId;
     }
 
@@ -1061,6 +1097,8 @@ class DocxDocument {
       authorName: authorName || 'unknown',
       authorInitials: authorInitials || '',
       date,
+      parentId: parentNumericId,
+      paraId: formatCommentParaId(numericId),
       text: text || 'Imported comment',
     });
 
@@ -1083,11 +1121,12 @@ class DocxDocument {
   generateCommentsXML(): string {
     const commentsXML = create({
       encoding: 'UTF-8',
-      namespaceAlias: { w: namespaces.w },
+      namespaceAlias: { w: namespaces.w, w14: namespaces.w14 },
       standalone: true,
     }).ele('@w', 'comments');
 
     this.comments.forEach((comment) => {
+      const paraId = comment.paraId || formatCommentParaId(comment.id);
       const commentElement = commentsXML
         .ele('@w', 'comment')
         .att('@w', 'id', String(comment.id))
@@ -1105,9 +1144,13 @@ class DocxDocument {
         .split(/\r?\n/)
         .filter((line, index, arr) => line.length > 0 || arr.length === 1);
 
-      paragraphs.forEach((line) => {
-        commentElement
-          .ele('@w', 'p')
+      paragraphs.forEach((line, index) => {
+        const paragraph = commentElement.ele('@w', 'p');
+        if (index === 0) {
+          paragraph.att('@w14', 'paraId', paraId);
+          paragraph.att('@w14', 'textId', paraId);
+        }
+        paragraph
           .ele('@w', 'r')
           .ele('@w', 't')
           .att('@xml', 'space', 'preserve')
@@ -1123,6 +1166,40 @@ class DocxDocument {
     commentsXML.up();
 
     return commentsXML.toString({ prettyPrint: true });
+  }
+
+  /**
+   * Generate the commentsExtended.xml file content for threaded comments.
+   */
+  generateCommentsExtendedXML(): string {
+    const commentsExtendedXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { w15: namespaces.w15 },
+      standalone: true,
+    }).ele('@w15', 'commentsEx');
+
+    this.comments.forEach((comment) => {
+      const paraId = comment.paraId || formatCommentParaId(comment.id);
+      const commentEx = commentsExtendedXML
+        .ele('@w15', 'commentEx')
+        .att('@w15', 'paraId', paraId);
+
+      if (comment.parentId !== undefined) {
+        const parentComment = this.comments.find(
+          (item) => item.id === comment.parentId
+        );
+        const parentParaId = parentComment?.paraId
+          ? parentComment.paraId
+          : formatCommentParaId(comment.parentId);
+        commentEx.att('@w15', 'paraIdParent', parentParaId);
+      }
+
+      commentEx.up();
+    });
+
+    commentsExtendedXML.up();
+
+    return commentsExtendedXML.toString({ prettyPrint: true });
   }
 }
 

@@ -1,0 +1,42 @@
+repos:
+    - repo: https://github.com/psf/black-pre-commit-mirror
+      rev: 24.10.0
+      hooks:
+          - id: black
+            args: [--line-length=79]
+            language_version: python3.14
+    - repo: https://github.com/asottile/pyupgrade
+      rev: v3.21.2
+      hooks:
+          - id: pyupgrade
+            args: [--py311-plus]
+    - repo: https://github.com/pycqa/flake8
+      rev: '7.1.1'
+      hooks:
+         - id: flake8
+           entry: flake8 --extend-ignore E203,E501
+    - repo: https://github.com/biomejs/pre-commit
+      rev: "75149f4e3b63c4df805860d7b04186d56dcbc05c"
+      hooks:
+          - id: biome-check
+            #entry: biome check --files-ignore-unknown=true --no-errors-on-unmatched --fix --unsafe
+            additional_dependencies: ["@biomejs/biome@1.9.2"]
+    - repo: https://github.com/awebdeveloper/pre-commit-stylelint
+      rev: "4200758f4cb2f53dd06898dd8dca35e4b8cfb785"
+      hooks:
+          - id: stylelint
+            additional_dependencies:
+                [
+                    "stylelint@15.11.0",
+                    "stylelint-config-standard@34.0.0",
+                    "stylelint-value-no-unknown-custom-properties@5.0.0",
+                    "postcss@8.4.32",
+                ]
+    - repo: local
+      hooks:
+          - id: django-import-resolver
+            name: Django Import Resolver
+            entry: node lint/django_import_resolver.js
+            language: node
+            files: \.js$
+            additional_dependencies: ["acorn@8.10.0"]

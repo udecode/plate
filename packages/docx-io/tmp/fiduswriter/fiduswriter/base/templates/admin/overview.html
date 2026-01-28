@@ -1,0 +1,23 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block sidebar %}
+{{ block.super }}
+<div id="content-extra" style="float: left;">
+    <div class="module">
+        <table style="width: 600px;">
+            <caption>
+                {% trans "Extras"%}
+            </caption>
+            <tbody>
+                <tr>
+                    <th scope="row"><a href="/admin/console/">{% trans "Admin Console" %}</a></th>
+                </tr>
+                <tr>
+                    <th scope="row"><a href="/admin/document/document/maintenance/">{% trans "Document Maintenance" %}</a></th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

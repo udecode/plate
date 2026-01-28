@@ -1,0 +1,367 @@
+/**
+ * Basic ProseMirror styles.
+ * https://github.com/ProseMirror/prosemirror-view/blob/master/style/prosemirror.css
+ */
+.ProseMirror {
+  position: relative;
+}
+
+.ProseMirror {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0; /* the above doesn't seem to work in Edge */
+}
+
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
+
+.ProseMirror ol,
+.ProseMirror ul {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+.ProseMirror ol,
+.ProseMirror ul {
+  padding-inline-start: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.ProseMirror li::marker {
+  content: none;
+}
+
+.ProseMirror li::marker {
+  padding: 0;
+  margin: 0;
+}
+
+.ProseMirror li > p {
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+
+.ProseMirror.header-footer-edit {
+  > p,
+  li,
+  span {
+    img,
+    a {
+      opacity: 1;
+    }
+  }
+  .pagination-break-wrapper {
+    color: initial !important;
+    span {
+      color: initial !important;
+    }
+    img,
+    a {
+      opacity: 1;
+    }
+  }
+}
+.pagination-section-header div[contenteditable='false'] {
+  user-select: none;
+}
+
+/**
+ * Hide marker for indented lists.
+ * If a list-item contains a list but doesn't contain a "p" tag with text.
+ */
+.ProseMirror ol {
+  margin: 0;
+}
+.ProseMirror li:has(> ul:first-child, > ol:first-child):not(:has(> p)) {
+  list-style-type: none;
+}
+
+.ProseMirror li:has(> ul:first-child, > ol:first-child):not(:has(> p))::marker {
+  content: '';
+}
+
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection *::-moz-selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+
+/* See https://github.com/ProseMirror/prosemirror/issues/1421#issuecomment-1759320191 */
+.ProseMirror [draggable][contenteditable='false'] {
+  user-select: text;
+}
+
+.ProseMirror-selectednode {
+  outline: 2px solid #8cf;
+}
+
+/* Make sure li selections wrap around markers */
+li.ProseMirror-selectednode {
+  outline: none;
+}
+
+li.ProseMirror-selectednode:after {
+  content: '';
+  position: absolute;
+  left: -32px;
+  right: -2px;
+  top: -2px;
+  bottom: -2px;
+  border: 2px solid #8cf;
+  pointer-events: none;
+}
+
+.ProseMirror img {
+  height: auto;
+  max-width: 100%;
+}
+
+/* Protect against generic img rules */
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+.ProseMirror .sd-editor-tab {
+  display: inline-block;
+  vertical-align: text-bottom;
+}
+
+.ProseMirror u .sd-editor-tab:not(.pagination-inner .sd-editor-tab) {
+  white-space: pre;
+  border-bottom: 1px solid #000;
+  margin-bottom: 1.5px;
+}
+
+/* 
+Tables 
+https://github.com/ProseMirror/prosemirror-tables/blob/master/style/tables.css
+https://github.com/ProseMirror/prosemirror-tables/blob/master/demo/index.html
+*/
+.ProseMirror.resize-cursor {
+  cursor: ew-resize;
+  cursor: col-resize;
+}
+
+.ProseMirror .tableWrapper {
+  --table-border-width: 1px;
+  --offset: 2px;
+
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overflow: hidden;
+
+  /* 
+  The border width does not need to be multiplied by two, 
+  for tables it works differently. */
+  width: calc(100% + (var(--table-border-width) + var(--offset)));
+}
+
+.ProseMirror table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  margin: 0;
+  /* width: 100%; */
+}
+
+.ProseMirror tr {
+  position: relative;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  position: relative;
+  vertical-align: top;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.ProseMirror th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px; /* 0 */
+  width: 4px;
+  z-index: 20;
+  background-color: #adf;
+  pointer-events: none;
+}
+
+.ProseMirror table .selectedCell:after {
+  position: absolute;
+  content: '';
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Tables - end */
+
+/* Track changes */
+.ProseMirror .track-insert-dec,
+.ProseMirror .track-delete-dec,
+.ProseMirror .track-format-dec {
+  pointer-events: none;
+}
+
+.ProseMirror .track-insert-dec.hidden,
+.ProseMirror .track-delete-dec.hidden {
+  display: none;
+}
+
+.ProseMirror .track-insert-dec.highlighted {
+  border-top: 1px dashed #00853d;
+  border-bottom: 1px dashed #00853d;
+  background-color: #399c7222;
+}
+
+.ProseMirror .track-delete-dec.highlighted {
+  border-top: 1px dashed #cb0e47;
+  border-bottom: 1px dashed #cb0e47;
+  background-color: #cb0e4722;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.ProseMirror .track-format-dec.highlighted {
+  border-bottom: 2px solid gold;
+}
+
+.ProseMirror .track-delete-widget {
+  visibility: hidden;
+}
+/* Track changes - end */
+
+/* Collaboration cursors */
+.ProseMirror > .ProseMirror-yjs-cursor:first-child {
+  margin-top: 16px;
+}
+
+.ProseMirror-yjs-cursor {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -1px;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-color: orange;
+  word-break: normal;
+  pointer-events: none;
+}
+
+.ProseMirror-yjs-cursor > div {
+  position: absolute;
+  top: -1.05em;
+  left: -1px;
+  font-size: 13px;
+  background-color: rgb(250, 129, 0);
+  font-family: serif;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  user-select: none;
+  color: white;
+  padding-left: 2px;
+  padding-right: 2px;
+  white-space: nowrap;
+}
+/* Collaboration cursors - end */
+
+/* Image placeholder */
+.ProseMirror placeholder {
+  display: inline;
+  border: 1px solid #ccc;
+  color: #ccc;
+}
+
+.ProseMirror placeholder:after {
+  content: '☁';
+  font-size: 200%;
+  line-height: 0.1;
+  font-weight: bold;
+}
+
+/* Gapcursor */
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+}
+
+.ProseMirror-gapcursor:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 20px;
+  border-top: 1px solid black;
+  animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes ProseMirror-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+.ProseMirror div[data-type='contentBlock'] {
+  position: absolute;
+  outline: none;
+  user-select: none;
+  z-index: -1;
+}
+
+.ProseMirror div[data-horizontal-rule='true'] {
+  margin-top: auto;
+  align-self: flex-end;
+}
+
+.sd-editor-dropcap {
+  float: left;
+  display: flex;
+  align-items: baseline;
+  margin-top: -5px;
+}
+
+.ProseMirror-search-match {
+  background-color: #ffff0054;
+}
+.ProseMirror-active-search-match {
+  background-color: #ff6a0054;
+}
+.ProseMirror span.sd-custom-selection::selection {
+  background: transparent;
+}
+.sd-custom-selection {
+  background-color: #d9d9d9;
+  border-radius: 0.1em;
+}

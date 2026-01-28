@@ -277,43 +277,71 @@ function resolveCommentMeta(
   nodeToString?: (node: unknown) => string
 ): CommentPayload {
   const discussion = discussions?.find((item) => item?.id === id);
-  const comment = discussion?.comments?.[0];
-  const commentContent = comment?.contentRich;
-  let text = '';
+  const discussionComments = discussion?.comments ?? [];
+  const [rootComment, ...replyComments] = discussionComments;
 
-  if (Array.isArray(commentContent) && nodeToString) {
-    try {
-      text = nodeToString({
-        children: commentContent,
-        type: 'root',
-      });
-    } catch {
-      text = '';
+  const buildCommentPayload = (
+    commentId: string,
+    comment?: DocxExportComment | null,
+    fallbackText?: string
+  ): CommentPayload => {
+    const commentContent = comment?.contentRich;
+    let text = '';
+
+    if (Array.isArray(commentContent) && nodeToString) {
+      try {
+        text = nodeToString({
+          children: commentContent,
+          type: 'root',
+        });
+      } catch {
+        text = '';
+      }
     }
-  }
 
-  if (!text) {
-    text = discussion?.documentContent ?? 'Imported comment';
-  }
+    if (!text) {
+      text = fallbackText ?? 'Imported comment';
+    }
 
-  const authorName =
-    comment?.user?.name ??
-    discussion?.user?.name ??
-    userNameMap?.get(comment?.userId ?? '') ??
-    userNameMap?.get(discussion?.userId ?? '') ??
-    comment?.userId ??
-    discussion?.userId ??
-    'unknown';
+    const authorName =
+      comment?.user?.name ??
+      discussion?.user?.name ??
+      userNameMap?.get(comment?.userId ?? '') ??
+      userNameMap?.get(discussion?.userId ?? '') ??
+      comment?.userId ??
+      discussion?.userId ??
+      'unknown';
 
-  const date = normalizeDate(comment?.createdAt ?? discussion?.createdAt);
+    const date = normalizeDate(comment?.createdAt ?? discussion?.createdAt);
 
-  return {
-    authorInitials: toInitials(authorName),
-    authorName,
-    date,
-    id,
-    text,
+    return {
+      authorInitials: toInitials(authorName),
+      authorName,
+      date,
+      id: commentId,
+      text,
+    };
   };
+
+  const rootPayload = buildCommentPayload(
+    id,
+    rootComment,
+    discussion?.documentContent
+  );
+
+  if (replyComments.length > 0) {
+    rootPayload.replies = replyComments.map((comment, index) => {
+      const replyPayload = buildCommentPayload(
+        `${id}-reply-${index + 1}`,
+        comment,
+        'Imported comment'
+      );
+      replyPayload.parentId = id;
+      return replyPayload;
+    });
+  }
+
+  return rootPayload;
 }
 
 // ============================================================================

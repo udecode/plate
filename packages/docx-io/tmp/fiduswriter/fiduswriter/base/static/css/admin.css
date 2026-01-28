@@ -1,0 +1,23 @@
+/* uses standard Django colors */
+
+.fw-link-text {
+    cursor: pointer;
+    color: #b73717;
+}
+
+.fw-link-text:hover {
+    color: #2c2723;
+}
+
+.fw-button {
+    background: #79aec8;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    vertical-align: middle;
+    font-family: Roboto, "Lucida Grande", Verdana, Arial, sans-serif;
+    font-weight: normal;
+    font-size: 13px;
+}

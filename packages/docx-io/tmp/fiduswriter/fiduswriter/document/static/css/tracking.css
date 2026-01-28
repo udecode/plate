@@ -1,0 +1,63 @@
+span.deletion {
+    text-decoration: line-through;
+}
+
+.selected-insertion,
+.selected-deletion,
+.selected-format_change,
+.selected-block_change {
+    background-color: var(--editor-active-track-background-color);
+}
+
+.tag.selected-insertion,
+.contributor.selected-insertion,
+.tag.selected-deletion,
+.contributor.selected-deletion {
+    background-color: var(--editor-active-track-background-color);
+    color: var(--cs-white-text);
+}
+
+.margin-box.track > div {
+    padding: 10px;
+}
+
+.margin-box .track-title {
+    font-weight: 700;
+}
+
+.margin-box .format-change-info {
+    margin-bottom: 9px;
+}
+
+.margin-box .format-change-info b {
+    font-weight: 700;
+}
+
+[data-track] {
+    position: relative;
+}
+
+[data-track]::before {
+    content: "";
+    position: absolute;
+    border-left: 1px solid black;
+    left: -10px;
+    height: 22px;
+}
+
+li[data-track]::before {
+    content: inherit;
+}
+
+li[data-track]::before,
+li [data-track]::before {
+    left: -5px;
+}
+
+.track-ctas {
+    display: none;
+}
+
+.track.active .track-ctas {
+    display: block;
+}

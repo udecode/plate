@@ -1,0 +1,6 @@
+# Documentation Directory
+
+## Structure
+- `dev/` - Development notes and personal Claude files (gitignored)
+- `releases/` - Release notes and changelogs
+- Root docs/ - Public-facing documentation

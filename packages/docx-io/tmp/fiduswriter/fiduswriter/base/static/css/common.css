@@ -1,0 +1,183 @@
+body {
+    width: 100%;
+    height: 100%;
+    background-color: var(--main-background-color);
+    color: var(--main-text-color);
+    min-width: calc(380px - 100vw + 100%); /* to substract scrollbar width. */
+    overflow-y: hidden;
+}
+
+body.scrollable {
+    overflow-y: auto;
+}
+
+.fw-header {
+    width: 100%;
+    height: auto;
+    background-color: var(--cs-5-background);
+    z-index: 2;
+}
+
+.fw-container {
+    position: relative;
+    height: auto;
+    margin: 0 auto;
+    padding: 0 34px;
+    overflow: hidden;
+}
+
+.fw-contents {
+    position: relative;
+    width: auto;
+    height: auto;
+    min-width: 985px;
+    margin: 0 213px;
+    padding: 40px 8px 20px;
+}
+
+@media (width <= 1429px) {
+    .fw-contents {
+        min-width: unset;
+        margin: 0 auto;
+        max-width: 1004px;
+    }
+}
+
+.fw-contents h1 {
+    font-size: 2em;
+    font-weight: bold;
+    margin-bottom: 0.2em;
+}
+
+.fw-contents .errorlist {
+    border: 2px solid var(--error-border-color);
+    background-color: var(--error-background-color);
+    color: var(--error-text-color);
+    margin: 10px 0;
+    display: inline-block;
+    font-size: 1.4em;
+}
+
+.fw-contents .errorlist:empty {
+    display: none;
+}
+
+.fw-contents label[for="id-password1"],
+.fw-contents label[for="id-password2"] {
+    display: none;
+}
+
+.fw-contents input#id-password1,
+.fw-contents input#id-password2 {
+    margin: 10px 0;
+}
+
+table {
+    width: 100%;
+    text-align: left;
+}
+
+table .fw-inline {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    padding: 5px 0;
+}
+
+.fw-avatar {
+    border: solid 1px var(--cs-light-border);
+}
+
+.fw-string-avatar {
+    display: inline-block;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+    border-radius: 50%;
+    background-color: grey;
+    color: white;
+}
+
+.fw-string-avatar > span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.fw-string-avatar::before,
+.fw-string-avatar::after {
+    display: inline-block;
+    width: 0;
+    padding-top: 100%;
+    vertical-align: middle;
+    content: "";
+}
+
+.fw-avatar-card {
+    display: block;
+}
+
+.fw-avatar-card .fw-avatar-card-avatar .fw-avatar,
+.fw-avatar-card .fw-avatar-card-avatar .fw-string-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 23px;
+}
+
+.fw-avatar-card-avatar {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.fw-avatar-card-name {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 8px;
+    font-size: 17px;
+}
+
+.fw-avatar-card-email {
+    font-size: 13px;
+    display: block;
+    padding-top: 6px;
+    color: var(--cs-white-text-secondary);
+}
+
+.ProseMirror span.placeholder::before {
+    color: var(--cs-white-placeholder-text);
+    content: attr(data-placeholder);
+    cursor: text;
+}
+
+.ProseMirror-focused span.placeholder.selected {
+    display: none;
+}
+
+.ProseMirror-focused
+    .ProseMirror:not(.ProseMirror-focused)
+    span.placeholder.selected {
+    display: inline;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: block;
+}
+
+div.input {
+    box-sizing: border-box;
+    font-size: 14px;
+    line-height: 1.33em;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 11px 10px 0;
+    min-height: 38px;
+    color: var(--cs-light-text);
+    background-color: var(--cs-light-background);
+}
+
+.access-key {
+    text-decoration: underline;
+    text-underline-offset: 2px; /* Adjust for better visibility */
+    pointer-events: none;
+}

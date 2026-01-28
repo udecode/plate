@@ -1,0 +1,36 @@
+/* Tags */
+
+.tag-input {
+    display: inline-block;
+    min-width: 200px;
+}
+
+.tag-input input {
+    border: 0;
+    background-color: white;
+}
+
+.tag-input input:focus {
+    background-color: white;
+}
+
+.tag-input .ProseMirror:focus {
+    outline-width: 0;
+}
+
+.tags-inner br,
+.contributors-inner br {
+    display: none;
+}
+
+.tag {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 0 5px;
+    border-radius: 3px;
+    line-height: 2em;
+    cursor: pointer;
+    color: var(--cs-6-text);
+    background: var(--cs-6-background);
+    border: 1px solid var(--cs-6-border);
+}

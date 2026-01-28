@@ -13,6 +13,7 @@ import { create } from 'xmlbuilder2';
 
 import {
   commentsType,
+  commentsExtendedType,
   defaultDocumentOptions,
   defaultHTMLString,
   documentFileName,
@@ -335,6 +336,17 @@ async function addFilesToContainer(
       internalRelationship
     );
   }
+  const hasCommentThreads = docxDocument.comments.some(
+    (comment) => comment.parentId !== undefined
+  );
+  if (hasCommentThreads) {
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtendedType,
+      'commentsExtended.xml',
+      internalRelationship
+    );
+  }
 
   zip.folder(relsFolderName)!.file(
     '.rels',
@@ -443,6 +455,13 @@ async function addFilesToContainer(
     zip
       .folder(wordFolder)!
       .file('comments.xml', docxDocument.generateCommentsXML(), {
+        createFolders: false,
+      });
+  }
+  if (hasCommentThreads) {
+    zip
+      .folder(wordFolder)!
+      .file('commentsExtended.xml', docxDocument.generateCommentsExtendedXML(), {
         createFolders: false,
       });
   }

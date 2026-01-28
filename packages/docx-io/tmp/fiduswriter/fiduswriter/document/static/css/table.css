@@ -1,0 +1,13 @@
+table.fw-small {
+    width: 342px;
+}
+
+table.fw-small tr,
+table th {
+    padding: 15px 0;
+}
+
+table.fw-small td {
+    border-bottom: 0;
+    vertical-align: middle;
+}

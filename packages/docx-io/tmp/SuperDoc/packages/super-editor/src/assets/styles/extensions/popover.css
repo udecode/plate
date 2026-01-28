@@ -1,0 +1,35 @@
+.sd-editor-popover {
+  background-color: #fff;
+  border-radius: 8px;
+  -webkit-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  -moz-box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  box-shadow: 0px 4px 12px 0px rgba(50, 50, 50, 0.15);
+  padding: 0;
+  width: auto;
+  height: auto;
+  font-size: 14px;
+  color: #333;
+  z-index: 1000;
+}
+
+.sd-editor-popover .popover-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.tippy-box[data-theme~='sd-editor-popover'] {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border: none !important;
+  padding: 0 !important;
+}
+
+.tippy-box[data-theme~='sd-editor-popover'] .tippy-arrow {
+  color: #fff;
+  border: 1px solid #dbdbdb;
+}
+
+.tippy-box[data-theme~='sd-editor-popover'] .tippy-content {
+  padding: 0;
+}

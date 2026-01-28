@@ -169,6 +169,7 @@ const headerType = 'header';
 const footerType = 'footer';
 const themeType = 'theme';
 const commentsType = 'comments';
+const commentsExtendedType = 'commentsExtended';
 const hyperlinkType = 'hyperlink';
 const imageType = 'image';
 const internalRelationship = 'Internal';
@@ -203,6 +204,7 @@ export {
   applicationName,
   colorlessColors,
   commentsType,
+  commentsExtendedType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,

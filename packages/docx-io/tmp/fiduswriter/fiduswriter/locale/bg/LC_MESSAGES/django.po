@@ -1,0 +1,343 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Fidus Writer backend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-17 15:34+0000\n"
+"Language: bg\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+
+#: base/settings.py:256
+msgid "English"
+msgstr "Английски"
+
+#: base/settings.py:257
+msgid "Bulgarian"
+msgstr "Български"
+
+#: base/settings.py:258
+msgid "German"
+msgstr "Немски"
+
+#: base/settings.py:259
+msgid "French"
+msgstr "Френски"
+
+#: base/settings.py:260
+msgid "Italian"
+msgstr "Италиански"
+
+#: base/settings.py:261
+msgid "Spanish"
+msgstr "Испански"
+
+#: base/settings.py:262
+msgid "Portuguese (Brazil)"
+msgstr "Португалски (Бразилия)"
+
+#: base/settings.py:346
+msgid "Fidus Writer Admin"
+msgstr "Fidus Writer Admin"
+
+#: base/settings.py:347
+msgid "Fidus Writer Administration Site"
+msgstr "Сайт за администрация на Fidus Writer"
+
+#: base/settings.py:348
+msgid "Welcome to the Fidus Writer Administration Site"
+msgstr "Добре дошли в сайта за администрация на Fidus Writer"
+
+#: base/templates/500.html:5 base/templates/500.html:8
+msgid "Error 500"
+msgstr "Грешка 500"
+
+#: base/templates/500.html:9
+msgid ""
+"We are sorry, but a server error occured. Our team will be looking into the "
+"issue shortly."
+msgstr ""
+"Съжаляваме, но възникна грешка в сървъра. Екипът ни ще разгледа въпроса "
+"скоро."
+
+#: base/templates/admin/console.html:4 base/templates/admin/console.html:16
+#: base/templates/admin/overview.html:14
+msgid "Admin Console"
+msgstr "Административна конзола"
+
+#: base/templates/admin/console.html:18
+#, fuzzy
+#| msgid "Current number of user sessions:"
+msgid "Current number of users:"
+msgstr "Текущ брой потребителски сесии:"
+
+#: base/templates/admin/console.html:21
+msgid "Current number of user sessions:"
+msgstr "Текущ брой потребителски сесии:"
+
+#: base/templates/admin/console.html:23
+msgid "Send a system message to all connected users:"
+msgstr "Изпратете системно съобщение до всички свързани потребители:"
+
+#: base/templates/admin/console.html:27
+msgid "Message"
+msgstr "съобщение"
+
+#: base/templates/admin/console.html:29
+msgid ""
+"This system will go offline for scheduled maintenance in 30 minutes. All "
+"your work will be saved automatically and we will be back shortly."
+msgstr ""
+"Тази система ще премине офлайн за планирана поддръжка след 30 минути. Цялата "
+"ви работа ще бъде запазена автоматично и скоро ще се върнем."
+
+#: base/templates/admin/console.html:36
+msgid "Send to connected users"
+msgstr "Изпращане на свързани потребители"
+
+#: base/templates/admin/overview.html:10
+msgid "Extras"
+msgstr "Екстри"
+
+#: base/templates/admin/overview.html:17
+#: document/templates/admin/document/maintenance.html:17
+msgid "Document Maintenance"
+msgstr "Поддръжка на документи"
+
+#: base/templates/api_404.html:5 base/templates/api_404.html:8
+msgid "Error 404"
+msgstr "Грешка 404"
+
+#: base/templates/api_404.html:9
+msgid "We are sorry, but this page was not found."
+msgstr "Съжаляваме, но тази страница не беше намерена."
+
+#: base/templates/app.html:9
+msgid "The all in one solution for collaborative academic writing."
+msgstr "Комплексно решение за съвместно създаване на академични документи."
+
+#: base/templates/app.html:45
+msgid "JavaScript disabled"
+msgstr "JavaScript е деактивиран"
+
+#: base/templates/app.html:46
+msgid "Fidus Writer requires you to enable JavaScript."
+msgstr "Fidus Writer изисква от вас да активирате JavaScript."
+
+#: browser_check/templates/browser_check/browser_not_supported.html:4
+#: browser_check/templates/browser_check/browser_not_supported.html:27
+msgid "Browser not supported"
+msgstr "Браузърът не се поддържа"
+
+#: browser_check/templates/browser_check/browser_not_supported.html:28
+msgid ""
+"\n"
+"                Your browser is not supported by Fidus Writer.\n"
+"                Please update! We recommend using a current\n"
+"                version of Chrome/Chromium or Firefox on a\n"
+"                desktop computer.\n"
+"            "
+msgstr ""
+"\n"
+"                Вашият браузър не се поддържа от Fidus Writer.\n"
+"                Моля обновете! Препоръчваме да използвате ток\n"
+"                версия на Chrome / Chromium или Firefox на a\n"
+"                настолен компютър.\n"
+"                        "
+
+#: document/admin.py:57
+msgid "Duplicate selected document templates"
+msgstr "Дублирайте избраните шаблони за документи"
+
+#: document/emails.py:18 document/views.py:702
+msgid "Untitled"
+msgstr "неозаглавен"
+
+#: document/emails.py:97
+msgid "shared"
+msgstr "споделено"
+
+#: document/emails.py:99 document/emails.py:225
+msgid "Document"
+msgstr "документ"
+
+#: document/emails.py:101 document/emails.py:227
+msgid "Author"
+msgstr "Автор"
+
+#: document/emails.py:103
+msgid "Access Rights"
+msgstr "Права за достъп"
+
+#: document/emails.py:106 document/emails.py:232
+msgid "Access the document"
+msgstr "Достъп до документа"
+
+#: document/emails.py:109
+#, fuzzy, python-format
+msgid "Document shared: %(document_title)s"
+msgstr "Споделен документ: %(document_title)s"
+
+#: document/emails.py:155
+#, fuzzy, python-format
+msgid "Comment on : %(document_title)s"
+msgstr "Коментирайте: %(document_title)s"
+
+#: document/emails.py:182
+#, fuzzy, python-format
+msgid "Comment assignment on : %(document_title)s"
+msgstr "Присвояване на коментар на: %(document_title)s"
+
+#: document/emails.py:229
+msgid "Comment"
+msgstr "коментар"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:8
+#, python-format
+msgid "Add %(name)s"
+msgstr "Добавете %(name)s"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:13
+#: document/templates/admin/document/maintenance.html:4
+msgid "Maintenance"
+msgstr "Поддръжка"
+
+#: document/templates/admin/document/maintenance.html:19
+msgid ""
+"\n"
+"            Before and after upgrading Fidus Writer, you should update all "
+"the documents\n"
+"            of all users to the newest document version. Only do this if you "
+"know that\n"
+"            no user is currently editing any document!\n"
+"            "
+msgstr ""
+"\n"
+"            Преди и след надграждането на Fidus Writer трябва да "
+"актуализирате всички документи\n"
+"            на всички потребители до най-новата версия на документа. Правете "
+"това само ако знаете това\n"
+"            в момента никой потребител не редактира никакъв документ!\n"
+"                        "
+
+#: document/templates/admin/document/maintenance.html:27
+msgid "Update all documents (DANGER!)"
+msgstr "Актуализирайте всички документи (ОПАСНОСТ!)"
+
+#: style/models.py:74
+msgid "Default"
+msgstr "По подразбиране"
+
+#: style/views.py:27
+msgid "The template needs at least 1 document style"
+msgstr "Шаблонът се нуждае от поне 1 стил на документ"
+
+#: user/admin.py:10
+msgid "Connections"
+msgstr "Връзки"
+
+#: user/emails.py:38
+msgid "Invite for Fidus Writer"
+msgstr "Поканете за Fidus Writer"
+
+#: user/emails.py:41
+msgid "Sign up/log in and accept/reject the invite"
+msgstr "Регистрирайте се / влезте и приемете / отхвърлете поканата"
+
+#: user/emails.py:44
+msgid "Fidus Writer contact invite"
+msgstr "Покана за контакт на Fidus Writer"
+
+#: user/emails.py:84
+msgid "Invite for Fidus Writer declined"
+msgstr "Поканата за Fidus Writer отказа"
+
+#: user/emails.py:87 user/emails.py:133
+msgid "See your list of contacts"
+msgstr "Вижте списъка си с контакти"
+
+#: user/emails.py:90
+msgid "Fidus Writer invite declined"
+msgstr "Поканата за Fidus Writer е отхвърлена"
+
+#: user/emails.py:130
+msgid "Invite for Fidus Writer accepted"
+msgstr "Поканата за Fidus Writer е приета"
+
+#: user/emails.py:136
+msgid "Fidus Writer invite accepted"
+msgstr "Поканата за Fidus Writer е приета"
+
+#: user/models.py:53
+msgid "Interface language preference"
+msgstr ""
+
+#: user/models.py:66
+msgid "Can login as another user"
+msgstr "Може да влезе като друг потребител"
+
+#: user/models.py:74
+msgid "email address"
+msgstr "имейл адрес"
+
+#: user/templates/account/email/email_confirmation_message.html:7
+#: user/templates/account/email/password_reset_key_message.html:7
+#, python-format
+msgid "Hello from %(site_name)s!"
+msgstr "Здравейте от %(site_name)s!"
+
+#: user/templates/account/email/email_confirmation_message.html:12
+#, python-format
+msgid ""
+"You are receiving this e-mail because user %(user_display)s has given yours "
+"as an e-mail address to connect their account."
+msgstr ""
+"Получавате този имейл, защото потребителят %(user_display)s е дал вашия като "
+"имейл адрес, за да свърже своя акаунт."
+
+#: user/templates/account/email/email_confirmation_message.html:16
+#, python-format
+msgid "To confirm this is correct, go to <a href=\"%(url)s\">%(url)s</a>."
+msgstr ""
+"За да потвърдите, че това е правилно, отидете на <a "
+"href=\"%(url)s\">%(url)s</a>."
+
+#: user/templates/account/email/email_confirmation_message.html:20
+#: user/templates/account/email/password_reset_key_message.html:26
+#, python-format
+msgid "Thank you from %(site_name)s!"
+msgstr "Благодаря ви от %(site_name)s!"
+
+#: user/templates/account/email/password_reset_key_message.html:11
+msgid ""
+"You are receiving this e-mail because you or someone else has requested a "
+"password for your user account."
+msgstr ""
+"Получавате този имейл, защото вие или някой друг е поискал парола за вашия "
+"потребителски акаунт."
+
+#: user/templates/account/email/password_reset_key_message.html:14
+msgid ""
+"It can be safely ignored if you did not request a password reset. Click the "
+"link below to reset your password."
+msgstr ""
+"Той може безопасно да бъде игнориран, ако не сте поискали нулиране на "
+"парола. Щракнете върху връзката по-долу, за да нулирате паролата си."
+
+#: user/templates/account/email/password_reset_key_message.html:21
+#, python-format
+msgid "In case you forgot, your username is %(username)s."
+msgstr "В случай, че сте забравили, вашето потребителско име е %(username)s."
+
+#: usermedia/views.py:37
+msgid "Filetype not supported"
+msgstr "Типът файл не се поддържа"
+
+#: usermedia/views.py:44
+msgid "Image too large"
+msgstr "Изображението е твърде голямо"
+
+#: usermedia/views.py:71
+msgid "No file uploaded"
+msgstr "Не е качен файл"

@@ -1,0 +1,15 @@
+{
+    "name": "vanilla-superdoc-example",
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "scripts": {
+        "dev": "vite"
+    },
+    "dependencies": {
+        "@harbour-enterprises/superdoc": "^0.11.45"
+    },
+    "devDependencies": {
+        "vite": "^4.4.6"
+    }
+}

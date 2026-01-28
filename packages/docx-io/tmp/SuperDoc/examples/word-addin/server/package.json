@@ -1,0 +1,30 @@
+{
+  "name": "nodejs-example",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "",
+  "dependencies": {
+    "@google-cloud/storage": "^7.16.0",
+    "@harbour-enterprises/superdoc": "^0.14.15",
+    "busboy": "0.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-oauth2-jwt-bearer": "^1.6.0",
+    "jsdom": "^25.0.1",
+    "multer": "^2.0.0",
+    "prosemirror-state": "^1.4.3",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

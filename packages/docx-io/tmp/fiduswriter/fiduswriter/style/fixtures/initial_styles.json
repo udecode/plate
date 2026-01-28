@@ -1,0 +1,288 @@
+[
+	{
+		"model": "style.documentstyle",
+		"pk": 1,
+		"fields": {
+			"title": "Comfy Elephant",
+			"slug": "elephant",
+			"contents": "@font-face {font-family: 'Source Sans Pro';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(SourceSansPro-Bold.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold Italic'), local('NoticiaText-BoldItalic'), url(NoticiaText-BoldItalic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text Italic'), local('NoticiaText-Italic'), url(NoticiaText-Italic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text'), local('NoticiaText-Regular'), url(NoticiaText-Regular.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold'), local('NoticiaText-Bold'), url(NoticiaText-Bold_2.woff) format('woff');}\n\n.user-contents {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    font-size: 1.2em;\r\n    /*text-align: justify;*/\r\n    word-wrap: break-word;\r\n}\r\n\r\n.doc-authors, .doc-keywords {\r\n    line-height: 1.6em;\r\n}\r\n\r\n.doc-title {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-size: 48px;\r\n    font-weight: 700;\r\n}\r\n\r\n.doc-subtitle {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-size: 40px;\r\n    font-weight: 900;\r\n}\r\n\r\n.doc-abstract {\r\n    margin-left: 50px;\r\n    margin-right: 50px;\r\n}\r\n\r\n.doc-part.metadata {\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.pagination-footnote:before,\r\n.pagination-footnote > * > *:first-child:before {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    font-size: 9px;\r\n    text-align: left;\r\n    vertical-align: super;\r\n    line-height: 0;\r\n}\r\n\r\n.pagination-footnote > * > *:first-child:before {\r\n    margin-right: 5px;\r\n}\r\n\r\n.pagination-footnote > * > * {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    font-size: 10px;\r\n}\r\n\r\n.pagination-pagenumber {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-size: 12px;\r\n    font-weight: 700;\r\n}\r\n\r\n.pagination-footnotes {\r\n    margin-top: 25px;\r\n}\r\n\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6,\r\n.user-contents p,\r\n.user-contents blockquote,\r\n.user-contents code,\r\n.user-contents ol,\r\n.user-contents ul {\r\n    margin-bottom: 35px;\r\n}\r\n\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6 {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-weight: 700;\r\n    line-height: 1.25em;\r\n}\r\n\r\n.user-contents h1  {\r\n    font-size: 36px;\r\n}\r\n\r\n.user-contents h2 {\r\n    font-size: 32px;\r\n}\r\n\r\n.user-contents h3 {\r\n    font-size: 28px;\r\n}\r\n\r\n.user-contents h4 {\r\n    font-size: 26px;\r\n    font-style: italic;\r\n}\r\n\r\n.user-contents h5 {\r\n    font-size: 24px;\r\n    font-variant: small-caps;\r\n}\r\n\r\n\r\n.user-contents h6 {\r\n    font-size: 22px;\r\n    text-decoration: underline;\r\n}\r\n\r\n\r\n.user-contents p,\r\n.user-contents ol li,\r\n.user-contents ul li {\r\n    font-size: 16px;\r\n    line-height: 1.75em;\r\n}\r\n\r\n.user-contents strong {\r\n    font-weight: 700;\r\n}\r\n\r\n.user-contents em {\r\n    font-style: italic;\r\n}\r\n\r\n.user-contents ul,\r\n.user-contents ol {\r\n    padding-left: 15px;\r\n}\r\n.user-contents ul {\r\n    list-style: square;\r\n}\r\n\r\n.user-contents ol {\r\n    list-style: decimal;\r\n}\r\n\r\n.user-contents blockquote {\r\n    margin-left: 40px;\r\n    margin-right: 40px;\r\n    font-size: 13px;\r\n    line-height: 1.8em;\r\n}\r\n\r\n.user-contents code {\r\n    display: block;\r\n    font-family: \"Courier New\", Courier, mono-space;\r\n    font-size: 13px;\r\n    line-height: 1.75em;\r\n}\r\n\r\n.doc-bibliography p {\r\n    font-size: 14px;\r\n    margin-bottom: 18px;\r\n}\r\n\r\n.equation {\r\n    font-size: 80%;\r\n}",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.documentstyle",
+		"pk": 2,
+		"fields": {
+			"title": "Foxy Fox",
+			"slug": "fox",
+			"contents": "@font-face {font-family: 'Lobster 1.4';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Lobster 1.4'), local('Lobster-1.4'), url(Lobster-1.4.woff) format('woff');}\n\n@font-face {font-family: 'Crimson Text';\r\nfont-style: italic;\r\nfont-weight: 700;\r\nsrc: local('Crimson Text Bold Italic'), local('CrimsonText-BoldItalic'), url(CrimsonText-BoldItalic.woff) format('woff');}\n\n@font-face {font-family: 'Crimson Text';\r\nfont-style: italic;\r\nfont-weight: 400;\r\nsrc: local('Crimson Text Italic'), local('CrimsonText-Italic'), url(CrimsonText-Italic.woff) format('woff');}\n\n@font-face {font-family: 'Crimson Text';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Crimson Text Bold'), local('CrimsonText-Bold'), url(CrimsonText-Bold.woff) format('woff');}\n\n@font-face {font-family: 'Crimson Text';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Crimson Text'), local('CrimsonText-Roman'), url(CrimsonText-Roman.woff) format('woff');}\n\n.user-contents {\r\n    font-family: 'Crimson Text', serif;\r\n    font-weight: 400;\r\n    font-size: 1.2em;\r\n    /*text-align: justify;*/\r\n    word-wrap: break-word;\r\n}\r\n\r\n.doc-authors, .doc-keywords  {\r\n    line-height: 1.6em;\r\n}\r\n\r\n.doc-title {\r\n    font-family: 'Lobster 1.4', sans-serif;\r\n    font-size: 48px;\r\n    font-weight: 700;\r\n    text-align: center;\r\n}\r\n\r\n.doc-subtitle {\r\n    font-family: 'Lobster 1.4', sans-serif;\r\n    font-size: 40px;\r\n    font-weight: 900;\r\n}\r\n\r\n.doc-abstract {\r\n    margin-left: 50px;\r\n    margin-right: 50px;\r\n}\r\n\r\n.doc-part.metadata {\r\n    margin-bottom: 20px;\r\n}\r\n\r\n.pagination-footnote:before,\r\n.pagination-footnote > * > *:first-child:before {\r\n    font-family: 'Crimson Text', serif;\r\n    font-weight: 700;\r\n    font-size: 9px;\r\n    text-align: left;\r\n    font-style: normal;\r\n    vertical-align: super;\r\n    line-height: 0;\r\n}\r\n\r\n.pagination-footnote > * > *:first-child:before {\r\n    margin-right: 5px;\r\n}\r\n\r\n.pagination-footnote > * > * {\r\n    font-family: 'Crimson Text', serif;\r\n    font-weight: 400;\r\n    font-size: 13px;\r\n    line-height: 1.35em;\r\n}\r\n\r\n.pagination-pagenumber {\r\n    font-family: 'Lobster 1.4', sans-serif;\r\n    font-size: 12px;\r\n    font-weight: 400;\r\n    text-align: center !important;\r\n}\r\n\r\n.pagination-footnotes {\r\n    margin-top: 25px;\r\n}\r\n\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6,\r\n.user-contents p,\r\n.user-contents blockquote,\r\n.user-contents code,\r\n.user-contents ol,\r\n.user-contents ul {\r\n    margin-bottom: 35px;\r\n}\r\n\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6 {\r\n    font-family: 'Lobster 1.4', sans-serif;\r\n    font-weight: 400;\r\n    line-height: 1.35em;\r\n    text-align: center;\r\n}\r\n\r\n.user-contents h1  {\r\n    font-size: 25px;\r\n}\r\n\r\n.user-contents h2 {\r\n    font-size: 23px;\r\n}\r\n\r\n.user-contents h3 {\r\n    font-size: 21px;\r\n}\r\n\r\n.user-contents h4 {\r\n    font-size: 19px;\r\n}\r\n\r\n.user-contents h5 {\r\n    font-size: 17px;\r\n}\r\n\r\n.user-contents h6 {\r\n    font-size: 15px;\r\n}\r\n\r\n.user-contents p,\r\n.user-contents ol li,\r\n.user-contents ul li {\r\n    font-size: 20px;\r\n    line-height: 1.4em;\r\n}\r\n\r\n.user-contents strong {\r\n    font-weight: 700;\r\n}\r\n\r\n.user-contents em {\r\n    font-style: italic;\r\n}\r\n\r\n.user-contents ul,\r\n.user-contents ol {\r\n    padding-left: 15px;\r\n}\r\n.user-contents ul {\r\n    list-style: disc;\r\n}\r\n\r\n.user-contents ol {\r\n    list-style: decimal;\r\n}\r\n\r\n.user-contents blockquote {\r\n    font-style: italic;\r\n    margin-left: 20px;\r\n    margin-right: 20px;\r\n    font-size: 20px;\r\n    line-height: 1.4em;\r\n}\r\n\r\n.user-contents code {\r\n    display: block;\r\n    font-family: \"Courier New\", Courier, mono-space;\r\n    font-size: 13px;\r\n    line-height: 1.75em;\r\n}\r\n\r\n.doc-bibliography p {\r\n    font-size: 14px;\r\n    margin-bottom: 18px;\r\n}\r\n.equation {\r\n    font-size: 260%;\r\n}\r\n\r\n.pagination-page .pagination-contents-container {\r\n    right: 80px !important;\r\n    left: 80px !important;\r\n}",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.documentstyle",
+		"pk": 3,
+		"fields": {
+			"title": "Drowsy Owl",
+			"slug": "owl",
+			"contents": "@font-face {font-family: 'Open Sans';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Open Sans Bold'), local('OpenSans-Bold'), url(OpenSans-Bold.woff) format('woff');}\n\n@font-face {font-family: 'Open Sans';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Open Sans'), local('OpenSans-Regular'), url(OpenSans-Regular.woff) format('woff');}\n\n@font-face {font-family: 'Cardo';\r\nfont-style: italic;\r\nfont-weight: 400;\r\nsrc: local('Cardo Italic'), local('Cardo-Italic'), url(Cardo-Italic.woff) format('woff');}\n\n@font-face {font-family: 'Cardo';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Cardo Bold'), local('Cardo-Bold'), url(Cardo-Bold.woff) format('woff');}\n\n@font-face {font-family: 'Cardo';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Cardo'), local('Cardo-Regular'), url(Cardo-Regular.woff) format('woff');}\n\n.user-contents {\r\n    font-family: 'Cardo', serif;\r\n    font-weight: 400;\r\n    font-size: 1.2em;\r\n    /*text-align: justify;*/\r\n    \r\n    word-wrap: break-word;\r\n}\r\n.doc-authors,\r\n.doc-keywords {\r\n    line-height: 1.6em;\r\n}\r\n.doc-title {\r\n    font-family: 'Open Sans', sans-serif;\r\n    font-size: 48px;\r\n    font-weight: 700;\r\n}\r\n.doc-subtitle {\r\n    font-family: 'Open Sans', sans-serif;\r\n    font-size: 40px;\r\n    font-weight: 900;\r\n}\r\n.doc-abstract {\r\n    margin-left: 50px;\r\n    margin-right: 50px;\r\n}\r\n.doc-part.metadata {\r\n    margin-bottom: 20px;\r\n}\r\n.pagination-footnote:before,\r\n.pagination-footnote > * > *:first-child:before {\r\n    font-family: 'Cardo', serif;\r\n    font-weight: 700;\r\n    font-size: 9px;\r\n    text-align: left;\r\n    font-style: normal;\r\n    vertical-align: super;\r\n    line-height: 0;\r\n}\r\n.pagination-footnote > * > *:first-child:before {\r\n    margin-right: 5px;\r\n}\r\n.pagination-footnote > * > * {\r\n    font-family: 'Cardo', serif;\r\n    font-weight: 400;\r\n    font-size: 12px;\r\n    line-height: 1.35em;\r\n}\r\n.pagination-pagenumber {\r\n    font-family: 'Open Sans', sans-serif;\r\n    font-size: 12px;\r\n    font-weight: 400;\r\n    text-align: center !important;\r\n    line-height: 30px;\r\n    right: auto !important;\r\n    left: 50% !important;\r\n    width: 60px;\r\n    height: 30px;\r\n    background-color: #f3f3f3;\r\n    -webkit-border-radius: 15px;\r\n    border-radius: 15px;\r\n    vertical-align: middle;\r\n    margin-left: -25px;\r\n}\r\n.pagination-footnotes {\r\n    margin-top: 25px;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6,\r\n.user-contents p,\r\n.user-contents blockquote,\r\n.user-contents code,\r\n.user-contents ol,\r\n.user-contents ul {\r\n    margin-bottom: 35px;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6 {\r\n    font-family: 'Open Sans', sans-serif;\r\n    font-weight: 400;\r\n    line-height: 1.35em;\r\n    text-align: left;\r\n}\r\n.user-contents h1 {\r\n    font-size: 28px;\r\n}\r\n.user-contents h2 {\r\n    font-size: 26px;\r\n}\r\n.user-contents h3 {\r\n    font-size: 24px;\r\n}\r\n.user-contents h4 {\r\n    font-size: 22px;\r\n}\r\n.user-contents h5 {\r\n    font-size: 20px;\r\n}\r\n.user-contents h6 {\r\n    font-size: 18px;\r\n}\r\n.user-contents p,\r\n.user-contents ol li,\r\n.user-contents ul li {\r\n    font-size: 18px;\r\n    line-height: 1.5em;\r\n}\r\n.user-contents strong {\r\n    font-weight: 700;\r\n}\r\n.user-contents em {\r\n    font-style: italic;\r\n}\r\n.user-contents ul,\r\n.user-contents ol {\r\n    padding-left: 15px;\r\n}\r\n.user-contents ul {\r\n    list-style: disc;\r\n}\r\n.user-contents ol {\r\n    list-style: decimal;\r\n}\r\n.user-contents blockquote {\r\n    font-style: italic;\r\n    margin-left: 50px;\r\n    font-size: 18px;\r\n    line-height: 1.5em;\r\n}\r\n.user-contents code {\r\n    display: block;\r\n    font-family: \"Courier New\", Courier, mono-space;\r\n    font-size: 13px;\r\n    line-height: 1.75em;\r\n}\r\n.doc-bibliography p {\r\n    font-size: 14px;\r\n    margin-bottom: 18px;\r\n}\r\n.equation {\r\n    font-size: 80%;\r\n}\r\n.pagination-contents-container {\r\n    bottom: 120px;\r\n    top: 80px;\r\n    height: auto;\r\n}",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.documentstyle",
+		"pk": 4,
+		"fields": {
+			"title": "ACM",
+			"slug": "acm",
+			"contents": "@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold Italic'), local('NoticiaText-BoldItalic'), url(NoticiaText-BoldItalic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text Italic'), local('NoticiaText-Italic'), url(NoticiaText-Italic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text'), local('NoticiaText-Regular'), url(NoticiaText-Regular.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold'), local('NoticiaText-Bold'), url(NoticiaText-Bold_2.woff) format('woff');}\n\n.user-contents {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    line-height: 18pt;\r\n    text-align: justify;\r\n    word-wrap: break-word;\r\n    hyphens: auto;\r\n}\r\ndiv#flow {\r\n    font-size: 12pt;\r\n}\r\ndiv#print {\r\n    font-size: 9pt;\r\n}\r\ndiv#print,\r\ndiv#flow,\r\nbody {\r\n    counter-reset: footnote-counter footnote-marker-counter heading section subsection figure-cat-0 figure-cat-1 figure-cat-2 !important;\r\n}\r\n.doc-title {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    margin: 0 0 0.333em;\r\n    font-size: 2em;\r\n    font-weight: 700;\r\n    text-transform: capitalize;\r\n}\r\ndiv#print .doc-title {\r\n    justify-content: center;\r\n    display: flex;\r\n    align-items: center;\r\n}\r\n.doc-subtitle {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-size: 1.6em;\r\n    font-weight: 400;\r\n}\r\ndiv#print .doc-subtitle {\r\n    justify-content: center;\r\n}\r\n.doc-authors {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-weight: 400;\r\n    break-after: always;\r\n    font-size: 1.25em;\r\n    margin-top: 20px;\r\n    margin-bottom: 20px;\r\n    text-decoration: none;\r\n}\r\ndiv#print .doc-authors {\r\n    display: center;\r\n    text-align: center;\r\n}\r\n.doc-abstract {\r\n    margin: 0 0 0.5em;\r\n    line-height: 15pt;\r\n}\r\n.doc-part.doc-abstract::before {\r\n    content: 'ABSTRACT';\r\n    color: black;\r\n    font-weight: 700;\r\n}\r\ndiv#print .doc-abstract {\r\n    column-count: 2;\r\n    column-fill: auto;\r\n    -moz-column-count: 2;\r\n}\r\n.doc-part.doc-keywords::before {\r\n    content: 'Keywords\\A';\r\n    color: black;\r\n    font-weight: 700;\r\n}\r\n.doc-keywords {\r\n    margin: 0 -10 0.5em;\r\n    line-height: 15pt;\r\n}\r\n.doc-part.metadata {\r\n    margin-top: 30px;\r\n    margin-bottom: 40px;\r\n    line-height: 25px;\r\n}\r\n.pagination-footnote:before,\r\n.pagination-footnote > * > *:first-child:before {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 700;\r\n    font-size: 1em;\r\n    text-align: left;\r\n    font-style: normal;\r\n    vertical-align: super;\r\n    line-height: 0;\r\n}\r\n.pagination-footnote > * > *:first-child:before {\r\n    margin-right: 5px;\r\n}\r\n.pagination-footnote > * > * {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    font-size: 1.1em;\r\n    line-height: 1.35em;\r\n}\r\n.pagination-pagenumber {\r\n    font-family: 'Source Sans Pro', sans-serif;\r\n    font-size: 1em;\r\n    font-weight: 400;\r\n    text-align: center !important;\r\n}\r\n.pagination-footnotes {\r\n    margin-top: 25px;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents p,\r\n.user-contents dl,\r\n.user-contents blockquote,\r\n.user-contents code,\r\n.user-contents ol,\r\n.user-contents ul {\r\n    margin-bottom: 18px;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6 {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 700;\r\n    hyphens: none;\r\n    line-height: 1.0 em;\r\n}\r\n.user-contents h1 {\r\n    font-size: 1.4em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h2 {\r\n    font-size: 1.3em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h3 {\r\n    font-size: 1.2em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h4 {\r\n    margin: 1.33333333em 0 0 0;\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    font-style: italic;\r\n}\r\n.user-contents h5 {\r\n    margin: 1.33333333em 0 0 0;\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    font-variant: small-caps;\r\n}\r\n.user-contents h6 {\r\n    margin: 1.33333333em 0 0 0;\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    text-decoration: underline;\r\n}\r\ndiv#print .doc-body {\r\n    column-count: 2;\r\n    column-fill: auto;\r\n    -moz-column-count: 2;\r\n}\r\n.doc-body h1:before {\r\n    counter-increment: heading;\r\n    /* add 1 to heading */\r\n    \r\n    content: counter(heading) \". \";\r\n}\r\n.doc-body h1 {\r\n    counter-reset: subheading section;\r\n    /* set section to 0 */\r\n}\r\n.doc-body h2:before {\r\n    content: counter(heading) \".\" counter(subheading) \" \";\r\n    counter-increment: subheading subsection;\r\n}\r\n.doc-body h2 {\r\n    counter-reset: section;\r\n}\r\n.doc-body h3:before {\r\n    content: counter(heading) \".\" counter(subheading) \".\" counter(section) \" \";\r\n    counter-increment: section;\r\n}\r\n.doc-body h3 {\r\n    counter-reset: subsection;\r\n}\r\ndiv#print .doc-body,\r\n.pagination-footnote > * > * {\r\n    font-size: 1em;\r\n}\r\n/*unordered lists (<ul>) - the list items are marked with bullets*/\r\n/*ordered lists (<ol>) - the list items are marked with numbers or letters*/\r\n/*Anything added to the <ol> or <ul> tag, affects the entire list, while properties added to the <li> tag will affect the individual list items*/\r\n\r\n.user-contents p,\r\n.user-contents ol li,\r\n.user-contents ul li {\r\n    font-size: 1em;\r\n    margin: 0 0 0.5em;\r\n    line-height: 18pt;\r\n    text-indent: 0;\r\n    counter-reset: figures;\r\n}\r\n.user-contents strong,\r\ndiv#print strong {\r\n    font-weight: 700;\r\n}\r\n.user-contents em,\r\ndiv#print em {\r\n    font-style: italic;\r\n}\r\n.user-contents ul,\r\n.user-contents ol {\r\n    padding-left: 15px;\r\n}\r\n.user-contents ul {\r\n    list-style: disc;\r\n    /*A filled circle*/\r\n}\r\n.user-contents ol {\r\n    list-style: decimal;\r\n}\r\n.user-contents blockquote {\r\n    font-style: italic;\r\n    margin-left: 20px;\r\n    margin-right: 20px;\r\n    font-size: 1.8em;\r\n    line-height: 1.4em;\r\n}\r\n.user-contents code {\r\n    display: block;\r\n    font-family: 'Courier', monospace;\r\n    font-size: 1.1em;\r\n    line-height: 1.75em;\r\n    white-space: pre-line;\r\n}\r\n.doc-bibliography p {\r\n    font-size: 1.2em;\r\n    margin-bottom: 18px;\r\n}\r\n.figure {\r\n    counter-increment: figures;\r\n}\r\n.figcaption:before {\r\n    content: \"Fig. \" counter(figures) \" - \";\r\n}\r\n.equation {\r\n    margin: 3pt 0;\r\n    align-items: center;\r\n    justify-content: center;\r\n    font-size: 1.1em;\r\n}\r\n.pagination-page .pagination-contents-container {\r\n    right: 80px !important;\r\n    left: 80px !important;\r\n}\r\n.pagination-page .pagination-main-contents-container {\r\n    height: 927px;\r\n}\r\ndiv#print table {\r\n    border-collapse: initial;\r\n    border-spacing: initial;\r\n    margin-bottom: 30px;\r\n}\r\ndiv#print tr,\r\ndiv#print td {\r\n    padding: 4px;\r\n    border: 1px solid black;\r\n}\r\ndiv#print figure {\r\n    margin: 0 0 30px 0;\r\n}\r\n.doc-bibliography-header {\r\n    text-transform: 'uppercase';\r\n}\r\ndiv#print .doc-bibliography {\r\n    margin-top: 30px;\r\n    column-count: 2;\r\n    column-fill: auto;\r\n    -moz-column-count: 2;\r\n}",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.documentstyle",
+		"pk": 5,
+		"fields": {
+			"title": "Springer",
+			"slug": "springer",
+			"contents": "@font-face {font-family: 'Source Sans Pro';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url(SourceSansPro-Bold.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold Italic'), local('NoticiaText-BoldItalic'), url(NoticiaText-BoldItalic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: italic;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text Italic'), local('NoticiaText-Italic'), url(NoticiaText-Italic.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 400;\r\nsrc: local('Noticia Text'), local('NoticiaText-Regular'), url(NoticiaText-Regular.woff) format('woff');}\n\n@font-face {font-family: 'Noticia Text';\r\nfont-style: normal;\r\nfont-weight: 700;\r\nsrc: local('Noticia Text Bold'), local('NoticiaText-Bold'), url(NoticiaText-Bold_2.woff) format('woff');}\n\ndiv#print {\r\n    font-size: 9pt;\r\n}\r\ndiv#flow {\r\n    font-size: 12pt;\r\n}\r\n.user-contents {\r\n    font-family: 'Noticia Text', serif;\r\n    font-weight: 400;\r\n    line-height: 1.25em;\r\n    text-align: justify;\r\n    word-wrap: break-word;\r\n    hyphens: auto;\r\n}\r\ndiv#print,\r\ndiv#flow,\r\nbody {\r\n    counter-reset: footnote-counter footnote-marker-counter heading section subsection figure-cat-0 figure-cat-1 figure-cat-2 !important;\r\n}\r\n.doc-title {\r\n    margin-bottom: 30px;\r\n    font-size: 2em;\r\n    font-weight: 700;\r\n    text-transform: initial;\r\n}\r\n.doc-title,\r\n.doc-part.metadata {\r\n    padding-left: 50px;\r\n    padding-right: 50px;\r\n}\r\ndiv#print .doc-title {\r\n    display: flex;\r\n    justify-content: center;\r\n    text-align: center;\r\n    align-items: center;\r\n}\r\n.doc-subtitle {\r\n    font-size: 1.5em;\r\n    font-weight: 400;\r\n    display: inline;\r\n    text-align: justify;\r\n}\r\ndiv#print .doc-subtitle:not([data-hidden]) {\r\n    display: flex;\r\n    justify-content: center;\r\n}\r\n.doc-authors {\r\n    font-weight: 400;\r\n    break-after: always;\r\n    font-size: 1em;\r\n    text-decoration: none;\r\n    margin-top: 20pt;\r\n    margin-bottom: 20pt;\r\n    -moz-hyphens: none;\r\n    -webkit-hyphens: none;\r\n    -ms-hyphens: none;\r\n    hyphens: none;\r\n}\r\ndiv#print .doc-authors {\r\n    text-align: center;\r\n}\r\n.doc-abstract {\r\n    font-size: 0.9em;\r\n    margin: 1cm 0 0;\r\n    line-height: 0.999000;\r\n    min-height: 1.5em;\r\n    text-align: justify;\r\n}\r\n.doc-part.doc-abstract:before {\r\n    content: '';\r\n}\r\n.doc-abstract > p:first-child:before {\r\n    content: 'Abstract. ';\r\n    color: black;\r\n    font-weight: 700;\r\n}\r\n.doc-keywords {\r\n    font-size: 0.9em;\r\n    padding: 0 2.5em;\r\n    margin: 15px 0 0;\r\n    line-height: 1.2em;\r\n    text-align: justify;\r\n}\r\n.doc-part.metadata.doc-keywords:before {\r\n    content: 'Keywords: ';\r\n    color: black;\r\n    font-weight: 700;\r\n}\r\n.doc-part.metadata {\r\n    margin-top: 30px;\r\n    margin-bottom: 20px;\r\n    line-height: 18px;\r\n}\r\n.pagination-footnote:before,\r\n.pagination-footnote > * > *:first-child:before {\r\n    font-weight: 400;\r\n    font-size: 1em;\r\n    text-align: center;\r\n    font-style: normal;\r\n    vertical-align: super;\r\n    line-height: 0;\r\n}\r\n.pagination-footnote > * > *:first-child:before {\r\n    margin-right: 5px;\r\n}\r\n.pagination-footnote > * > * {\r\n    font-weight: 400;\r\n    font-size: 1.3em;\r\n    line-height: 1.35em;\r\n}\r\n.pagination-pagenumber {\r\n    font-size: 1.25em;\r\n    font-weight: 400;\r\n    text-align: left !important;\r\n}\r\n.pagination-footnotes {\r\n    padding-top: 25px;\r\n}\r\nfigure {\r\n    font-style: italic;\r\n    font-size: 1.25em;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6,\r\n.user-contents p,\r\n.user-contents dl,\r\n.user-contents blockquote,\r\n.user-contents code,\r\n.user-contents ol,\r\n.user-contents ul {\r\n    margin-bottom: 12px;\r\n    margin-top: 12px;\r\n}\r\n.user-contents h1,\r\n.user-contents h2,\r\n.user-contents h3,\r\n.user-contents h4,\r\n.user-contents h5,\r\n.user-contents h6 {\r\n    hyphens: none;\r\n    line-height: 1.5em;\r\n    font-size: 1em;\r\n}\r\n.user-contents h1 {\r\n    font-size: 1.4em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h2 {\r\n    font-size: 1.3em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h3 {\r\n    font-size: 1.2em;\r\n    font-weight: 700;\r\n}\r\n.user-contents h4 {\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    font-style: italic;\r\n}\r\n.user-contents h5 {\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    font-variant: small-caps;\r\n}\r\n.user-contents h6 {\r\n    font-size: 1.1em;\r\n    font-weight: 400;\r\n    text-decoration: underline;\r\n}\r\n.doc-body h1:not(:empty):before {\r\n    counter-increment: heading;\r\n    /* add 1 to heading */\r\n    \r\n    content: counter(heading) \" \";\r\n    width: 2em;\r\n    display: inline-block;\r\n}\r\n.doc-body h1:not(:empty) {\r\n    counter-reset: subheading section;\r\n    /* set section to 0 */\r\n}\r\n.doc-body h2:not(:empty):before {\r\n    content: counter(heading) \".\" counter(subheading) \" \";\r\n    counter-increment: subheading subsection;\r\n    width: 2em;\r\n    display: inline-block;\r\n}\r\n.doc-body h2:not(:empty) {\r\n    counter-reset: section;\r\n}\r\n.doc-body h3:not(:empty):before {\r\n    content: counter(heading) \".\" counter(subheading) \".\" counter(section) \" \";\r\n    counter-increment: section;\r\n    width: 2em;\r\n    display: inline-block;\r\n}\r\n.doc-body h3:not(:empty) {\r\n    counter-reset: subsection;\r\n}\r\ndiv#print .doc-body,\r\n.pagination-footnote > * > * {\r\n    font-size: 1em;\r\n}\r\n/*unordered lists (<ul>) - the list items are marked with bullets*/\r\n/*ordered lists (<ol>) - the list items are marked with numbers or letters*/\r\n/*Anything added to the <ol> or <ul> tag, affects the entire list, while properties added to the <li> tag will affect the individual list items*/\r\n\r\n.user-contents p,\r\n.user-contents ol li,\r\n.user-contents ul li {\r\n    font-size: 1em;\r\n    margin: auto;\r\n    line-height: 1.4em;\r\n    text-indent: 0;\r\n    margin-block-start: 7px;\r\n    margin-inline-start: 5px;\r\n}\r\n.user-contents strong {\r\n    font-weight: 700;\r\n}\r\n.user-contents em {\r\n    font-style: italic;\r\n}\r\n.user-contents ul,\r\n.user-contents ol {\r\n    padding-left: 15px;\r\n}\r\n.user-contents ul {\r\n    list-style: disc;\r\n    /*A filled circle*/\r\n}\r\n.user-contents ol {\r\n    list-style: decimal;\r\n}\r\n.user-contents blockquote {\r\n    font-style: italic;\r\n    margin-left: 10px;\r\n    margin-right: 10px;\r\n    font-size: 2.2em;\r\n    line-height: 2.3em;\r\n}\r\n.user-contents code {\r\n    display: block;\r\n    font-family: \"Courier New\", Courier, mono-space;\r\n    font-size: 1.3em;\r\n    line-height: 1.75em;\r\n}\r\n#flow .doc-bibliography {\r\n    background-color: lightgrey;\r\n}\r\n#flow .doc-bibliography p {\r\n    font-size: 1.4em;\r\n    margin-bottom: 18px;\r\n}\r\n#flow .doc-bibliography ol li {\r\n    counter-increment: list-order;\r\n    list-style-position: outside;\r\n    list-style-type: none;\r\n    margin-left: 1.1em;\r\n    font-size: 0.923em;\r\n}\r\n.equation {\r\n    margin: 3pt 0;\r\n    align-items: center;\r\n    justify-content: center;\r\n    font-size: 1.3em;\r\n}\r\n.pagination-page .pagination-main-contents-container {\r\n    height: 957px;\r\n}\r\ndiv#print table {\r\n    border-collapse: initial;\r\n    border-spacing: initial;\r\n    margin-bottom: 10px;\r\n}\r\ndiv#print tr,\r\ndiv#print td {\r\n    padding: 4px;\r\n    border: 1px solid black;\r\n}\r\ndiv#print figure {\r\n    margin: 0 0 10px 0;\r\n}",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 1,
+		"fields": {
+			"file": "style-files/NoticiaText-Bold_2.woff",
+			"filename": "NoticiaText-Bold_2.woff",
+			"style": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 2,
+		"fields": {
+			"file": "style-files/NoticiaText-Regular.woff",
+			"filename": "NoticiaText-Regular.woff",
+			"style": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 3,
+		"fields": {
+			"file": "style-files/NoticiaText-Italic.woff",
+			"filename": "NoticiaText-Italic.woff",
+			"style": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 4,
+		"fields": {
+			"file": "style-files/NoticiaText-BoldItalic.woff",
+			"filename": "NoticiaText-BoldItalic.woff",
+			"style": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 5,
+		"fields": {
+			"file": "style-files/SourceSansPro-Bold.woff",
+			"filename": "SourceSansPro-Bold.woff",
+			"style": 1
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 6,
+		"fields": {
+			"file": "style-files/CrimsonText-Roman.woff",
+			"filename": "CrimsonText-Roman.woff",
+			"style": 2
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 7,
+		"fields": {
+			"file": "style-files/CrimsonText-Bold.woff",
+			"filename": "CrimsonText-Bold.woff",
+			"style": 2
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 8,
+		"fields": {
+			"file": "style-files/CrimsonText-Italic.woff",
+			"filename": "CrimsonText-Italic.woff",
+			"style": 2
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 9,
+		"fields": {
+			"file": "style-files/CrimsonText-BoldItalic.woff",
+			"filename": "CrimsonText-BoldItalic.woff",
+			"style": 2
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 10,
+		"fields": {
+			"file": "style-files/Lobster-1.4.woff",
+			"filename": "Lobster-1.4.woff",
+			"style": 2
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 11,
+		"fields": {
+			"file": "style-files/Cardo-Regular.woff",
+			"filename": "Cardo-Regular.woff",
+			"style": 3
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 12,
+		"fields": {
+			"file": "style-files/Cardo-Bold.woff",
+			"filename": "Cardo-Bold.woff",
+			"style": 3
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 13,
+		"fields": {
+			"file": "style-files/Cardo-Italic.woff",
+			"filename": "Cardo-Italic.woff",
+			"style": 3
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 14,
+		"fields": {
+			"file": "style-files/OpenSans-Regular.woff",
+			"filename": "OpenSans-Regular.woff",
+			"style": 3
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 15,
+		"fields": {
+			"file": "style-files/OpenSans-Bold.woff",
+			"filename": "OpenSans-Bold.woff",
+			"style": 3
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 16,
+		"fields": {
+			"file": "style-files/NoticiaText-Bold_2_qiGg4Ow.woff",
+			"filename": "NoticiaText-Bold_2.woff",
+			"style": 4
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 17,
+		"fields": {
+			"file": "style-files/NoticiaText-Regular_eNSdC3U.woff",
+			"filename": "NoticiaText-Regular.woff",
+			"style": 4
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 18,
+		"fields": {
+			"file": "style-files/NoticiaText-Italic_3AoQkPt.woff",
+			"filename": "NoticiaText-Italic.woff",
+			"style": 4
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 19,
+		"fields": {
+			"file": "style-files/NoticiaText-BoldItalic_KMSnKTE.woff",
+			"filename": "NoticiaText-BoldItalic.woff",
+			"style": 4
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 20,
+		"fields": {
+			"file": "style-files/NoticiaText-Bold_2_77vhC50.woff",
+			"filename": "NoticiaText-Bold_2.woff",
+			"style": 5
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 21,
+		"fields": {
+			"file": "style-files/NoticiaText-Regular_zGx3t7x.woff",
+			"filename": "NoticiaText-Regular.woff",
+			"style": 5
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 22,
+		"fields": {
+			"file": "style-files/NoticiaText-Italic_ai8IvB3.woff",
+			"filename": "NoticiaText-Italic.woff",
+			"style": 5
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 23,
+		"fields": {
+			"file": "style-files/NoticiaText-BoldItalic_Xg38HXg.woff",
+			"filename": "NoticiaText-BoldItalic.woff",
+			"style": 5
+		}
+	},
+	{
+		"model": "style.documentstylefile",
+		"pk": 24,
+		"fields": {
+			"file": "style-files/SourceSansPro-Bold_ySHS5jh.woff",
+			"filename": "SourceSansPro-Bold.woff",
+			"style": 5
+		}
+	},
+	{
+		"model": "style.exporttemplate",
+		"pk": 1,
+		"fields": {
+			"template_file": "export-template-files/Classic.docx",
+			"title": "Classic",
+			"file_type": "docx",
+			"document_template": 1
+		}
+	},
+	{
+		"model": "style.exporttemplate",
+		"pk": 2,
+		"fields": {
+			"template_file": "export-template-files/Free.odt",
+			"title": "Free",
+			"file_type": "odt",
+			"document_template": 1
+		}
+	}
+]

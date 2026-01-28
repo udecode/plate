@@ -1,0 +1,1200 @@
+body.editor {
+    height: 100%;
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+body.editor header {
+    position: fixed;
+    width: 100%;
+    z-index: 91;
+}
+
+.user-contents figure {
+    border: 1px solid var(--cs-white-border);
+}
+
+.user-contents .figure figure {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.ProseMirror figcaption.empty span.text,
+.ProseMirror caption.empty span.text {
+    display: inline-block;
+}
+
+.ProseMirror figcaption.empty::after,
+.ProseMirror caption.empty::after {
+    color: var(--cs-white-placeholder-text);
+    content: attr(data-placeholder);
+    cursor: text;
+}
+
+.user-contents a,
+.user-contents a:hover {
+    color: var(--cs-1-text);
+}
+
+.pagination-footnote-item {
+    width: 100%;
+}
+
+.pagination-footnote-item-container {
+    cursor: pointer;
+}
+
+.pagination-footnote-item-container::before {
+    content: "\0000a0x";
+    position: absolute;
+    visibility: hidden;
+    font-weight: bold;
+}
+
+.pagination-footnote-item-container:hover::before {
+    visibility: visible;
+}
+
+.pagination-footnote-item-container > div {
+    margin-left: 15px;
+}
+
+.doc-body,
+.pagination-footnote > * > * {
+    font-size: 12pt;
+}
+
+#document-top {
+    padding: 16px 0;
+    background-color: var(--cs-5-background);
+    width: 100%;
+    border-bottom: 1px solid var(--cs-5-border);
+}
+
+#document-top > h1 {
+    font-size: 22px;
+    color: var(--cs-5-text);
+    font-style: italic;
+    padding: 0 48px 0 110px;
+    background: url("../img/fidus_face.avif") no-repeat 42px 0;
+    background-size: 23px auto;
+    line-height: 32px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: 1.45em;
+}
+
+#header-navigation {
+    position: relative;
+    margin: 20px 0 0 110px;
+    user-select: none;
+}
+
+#header-navigation > div {
+    position: relative;
+    display: inline-block;
+    margin-right: 18px;
+    height: 18px;
+    overflow: visible;
+}
+
+#header-navigation span {
+    cursor: pointer;
+}
+
+#header-navigation .header-nav-item {
+    line-height: 35px;
+    color: var(--nagivation-link-text-color);
+    letter-spacing: 1px;
+}
+
+.fw-pulldown-item.cursor {
+    border-left: 3px var(--menu-cursor-border-color) solid;
+}
+
+#header-navigation .header-nav-item:hover {
+    color: var(--nagivation-link-active-text-color);
+    text-shadow: 1px 0 0 var(--nagivation-link-active-text-color);
+}
+
+#header-navigation span.deactivated {
+    text-decoration: line-through;
+}
+
+#header-navigation span.disabled,
+#toolbar span.disabled {
+    color: var(--cs-disabled) !important;
+    text-shadow: none;
+}
+
+#header-navigation span.selected.disabled,
+#toolbar span.selected.disabled {
+    background-color: var(--cs-disabled-background);
+    color: var(--cs-disabled) !important;
+}
+
+/*
+ * Selection Menu style
+ */
+#selection-menu {
+    margin-left: -23px;
+    z-index: 1;
+}
+
+#selection-menu > div {
+    width: 46px;
+}
+
+/*
+ * Toolbar Style
+ */
+
+#toolbar {
+    display: block;
+    z-index: 108;
+    width: 100%;
+    user-select: none;
+    padding-top: 34px;
+    padding-bottom: 34px;
+    background-color: var(--main-background-color);
+}
+
+#ice-control {
+    right: 0;
+}
+
+#comments-display {
+    left: 100%;
+    margin-left: 14px;
+    background-color: var(--input-focus-background-color);
+    vertical-align: top;
+}
+
+#comments-display.selected {
+    background-color: var(--cs-light-background);
+}
+
+#comments-display:hover {
+    background-color: var(--cs-light-background-hover);
+}
+
+#comments-display.disabled {
+    color: var(--cs-disabled);
+    background-color: var(--cs-disabled-background);
+}
+
+#reviewed {
+    left: 100%;
+    margin-left: 14px;
+    background-color: var(--editor-reviewed);
+}
+
+#reviewed:hover {
+    background-color: var(--cs-light-background-hover);
+}
+
+.editor-toolbar {
+    position: relative;
+    width: auto !important;
+    padding-left: 110px;
+}
+
+.editor-toolbar div.ui-buttonset {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: top;
+    margin-right: 6px;
+}
+
+.editor-toolbar div.ui-buttonset:first-child {
+    position: absolute;
+    left: 30px;
+}
+
+.editor-toolbar div.info {
+    /* max-width: 90px; */
+    min-width: 62px;
+    color: var(--cs-white-text);
+    background-color: var(--cs-white-background);
+    text-shadow: none;
+    border-color: var(--cs-white-border);
+    height: 46px;
+    line-height: 46px;
+    padding: 0 10px;
+    display: inline-block;
+    font-size: 14px;
+    border-width: 0;
+    border-radius: 23px;
+    text-decoration: none;
+    box-shadow: none;
+    box-sizing: content-box;
+    white-space: nowrap;
+    margin-right: 6px;
+    text-align: center;
+}
+
+.editor-toolbar div.multi-buttons {
+    width: auto;
+}
+
+.editor-toolbar div.multi-buttons .multi-buttons-cover {
+    position: relative;
+    min-width: 35px;
+    max-width: 120px;
+    color: var(--cs-light-text);
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.07px;
+    padding: 0 40px 0 20px;
+}
+
+.editor-toolbar div.multi-buttons .multi-buttons-cover::after {
+    display: block;
+    position: absolute;
+    right: 10px;
+    top: 16px;
+    text-align: right;
+    margin-top: 0;
+    width: 9px;
+    height: 5px;
+    opacity: 0.5;
+    color: var(--cs-light-text);
+    font-size: 15px;
+    line-height: 15.75px;
+    letter-spacing: 0.15px;
+}
+
+.editor-toolbar div.multi-buttons .multi-buttons-cover.disabled::after {
+    display: none;
+}
+
+.editor-toolbar .fw-button.no-border {
+    background: transparent;
+    border-color: transparent;
+}
+
+.editor-toolbar .fw-button.no-border .ui-button-text {
+    width: 10px;
+    height: 10px;
+    opacity: 0.4;
+    color: var(--cs-light-text);
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 15.75px;
+    letter-spacing: 0.17px;
+}
+
+.editor-toolbar .fw-button,
+.editor-selection-menu .fw-button {
+    border-width: 0;
+}
+
+.editor-selection-menu .fw-button {
+    margin-bottom: 4px;
+}
+
+.editor-toolbar .fw-button.fw-large,
+.editor-selection-menu .fw-button.fw-large {
+    height: 46px;
+    line-height: 46px;
+    border-radius: 23px;
+}
+
+.editor-toolbar .fw-button.fw-large.fw-square,
+.editor-selection-menu .fw-button.fw-large.fw-square {
+    width: 46px;
+}
+
+.ui-dialog-content.math {
+    min-width: 200px;
+    padding-right: 50px;
+    padding-bottom: 10px;
+}
+
+/* stylelint-disable selector-class-pattern */
+.ML__popover {
+    z-index: 1000;
+}
+
+.ML__fieldcontainer__field {
+    min-height: 23px;
+}
+/* stylelint-enable selector-class-pattern */
+
+math-field {
+    border: 0;
+    min-width: calc(100% - 10px);
+}
+
+#editor-content {
+    display: flex;
+    position: relative;
+    top: 225px;
+    max-width: 1600px;
+    padding: 0.5in 54px 0 110px;
+}
+
+body.header-closed #toolbar {
+    padding-top: 12px;
+}
+
+body.header-closed #editor-content {
+    top: 72px;
+}
+
+#flow .doc-bibliography {
+    background-color: var(--editor-text-content-item-background-color);
+}
+
+#paper-editable .citation,
+#paper-editable .cross-reference,
+#paper-editable .equation {
+    cursor: pointer;
+    background-color: var(--editor-text-content-item-background-color);
+}
+
+#paper-editable .citation:hover,
+#paper-editable .cross-reference:hover,
+#paper-editable .equation:hover {
+    background-color: var(--editor-text-content-item-hover-background-color);
+}
+
+#paper-editable .cross-reference.missing-target {
+    text-transform: uppercase;
+}
+
+#paper-editable .cross-reference.missing-target,
+#paper-editable .cross-reference.missing-target:hover,
+#paper-editable a.missing-target {
+    background-color: var(--error-background-color);
+}
+
+#paper-editable .search {
+    background-color: var(--cs-5-background);
+}
+
+#paper-editable .search.selected {
+    background-color: var(--cs-5-background-hover);
+}
+
+div.search-result-count {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+#paper-editable {
+    display: table;
+    width: 100%;
+}
+
+#document-editable {
+    display: table-cell;
+    vertical-align: top;
+    white-space: pre-wrap;
+}
+
+div#layout {
+    padding-top: 60px;
+}
+
+/*
+ * Dialog
+ */
+
+.dialogSubmit {
+    text-align: right;
+    margin-top: 20px;
+}
+
+/* for forms */
+
+input.required,
+input.error {
+    border: 2px solid var(--error-border-color);
+}
+
+/* Overwrite color changes through font in editor. Webkit bug */
+
+font {
+    color: inherit !important;
+}
+
+/* Borders in editor */
+
+.ProseMirror {
+    border: none !important;
+    padding: 0 !important;
+    line-height: inherit !important;
+}
+
+.ProseMirror table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.ProseMirror td,
+.ProseMirror th,
+.ProseMirror caption {
+    vertical-align: top;
+    border: 1px solid #dddddd;
+    padding: 3px 5px;
+}
+
+.ProseMirror th {
+    background-color: var(--cs-6-background);
+    color: var(--cs-6-text);
+}
+
+/* Don't show parts marked as hidden */
+
+.ProseMirror .doc-part[data-hidden] {
+    display: none;
+}
+
+.ProseMirror table[data-caption-hidden][data-category="none"] caption,
+.ProseMirror figure[data-caption-hidden][data-category="none"] figcaption,
+.ProseMirror table[data-caption-hidden] caption span.text,
+.ProseMirror table[data-category="none"] caption span.label,
+.ProseMirror figure[data-caption-hidden] figcaption span.text,
+.ProseMirror figure[data-category="none"] figcaption span.label {
+    display: none;
+}
+
+/* For default contents of title and contents field */
+
+.doc-part::before {
+    text-transform: none;
+    color: var(--cs-white-border);
+}
+
+/* For Firefox problem: shows input fields without height. */
+
+.doc-part {
+    min-height: 1.5em;
+    line-height: initial;
+
+    /* Cancel out 1.6em line height for metadata/title. */
+}
+
+/* overwrite dropkick layout for access rights dialogue */
+
+.access-rights-dialog select {
+    position: static;
+    visibility: inherit;
+    top: 0;
+}
+
+/* delete icon in access rights dialogue */
+
+span.delete {
+    cursor: pointer;
+}
+
+.doc-title:focus,
+.doc-body:focus {
+    outline: none;
+}
+
+/* Prevent user from writing in the footnote editor while there are no footnotes. */
+
+#footnote-box-container div.ProseMirror:empty {
+    display: none;
+}
+
+#flow {
+    padding: 50px;
+    position: relative;
+    width: 100%;
+    bottom: 50px;
+    color: var(--cs-white-text);
+    background-color: var(--cs-white-background);
+}
+
+#flow.hide {
+    display: none;
+}
+
+#comments-filter {
+    margin-left: 7px;
+}
+
+#unobtrusive-messages {
+    position: fixed;
+    bottom: 0;
+    left: 100px;
+    background-color: var(--cs-light-background);
+    border-top: 1px solid var(--cs-light-border);
+    border-right: 1px solid var(--cs-light-border);
+    border-left: 1px solid var(--cs-light-border);
+    padding: 4px;
+}
+
+#unobtrusive-messages .warn {
+    color: var(--warning-text-color);
+    background-color: rgba(var(--warning-background-color));
+}
+
+#unobtrusive-messages:empty {
+    display: none;
+}
+
+/* Show key bindings menu */
+
+.help-key {
+    float: none;
+    line-height: 1.5;
+    position: relative;
+    bottom: 4px;
+}
+
+.help-list-wrap {
+    overflow: hidden;
+    margin: 0 auto;
+    transition: width 0.2s linear;
+}
+
+.help-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 10px;
+    overflow: hidden;
+    float: left;
+    width: 420px;
+}
+
+.help-list li {
+    margin-right: 40px;
+}
+
+.help-key-unit {
+    line-height: 1.8;
+    margin-right: 2em;
+    padding: 5px 0;
+}
+
+.help-key-def {
+    display: inline-block;
+    margin-left: 1em;
+    float: right;
+}
+
+.image-selection-table tr {
+    cursor: pointer;
+}
+
+.image-selection-table .datatable-container tbody tr:nth-child(2n + 1) {
+    background-color: var(--table-row-background-color);
+}
+
+/* MathLive Editor Overwrite */
+
+.math-field {
+    background-color: var(--cs-white-background);
+    margin: 9px 10px 7px;
+    padding-left: 5px;
+    font-size: 20px;
+    display: block;
+    height: 59px;
+    border: solid 1px var(--cs-white-border);
+    cursor: text;
+    position: relative;
+}
+
+.math-field .placeholder {
+    position: absolute;
+    top: 20px;
+    left: 10px;
+    color: var(--editor-text-content-item-background-color);
+}
+
+.math-latex {
+    display: block;
+    min-width: 250px;
+    margin: 5px 0;
+    font-size: 18px;
+    padding-left: 5px;
+}
+
+.fw-media-uploader {
+    margin-top: 15px;
+    margin-right: 30px;
+}
+
+.math-field-outer {
+    margin-top: 32px;
+}
+
+div.table-edit-button-group {
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+table.insert-table-selection {
+    margin: 10px 0;
+}
+
+table.insert-table-selection,
+table.insert-table-selection td {
+    border: 1px solid var(--cs-white-border);
+}
+
+table.insert-table-selection td {
+    min-width: 30px;
+    height: 18px;
+}
+
+table.insert-table-selection td.hover {
+    color: var(--cs-white-hover);
+    background-color: var(--cs-white-background-hover);
+}
+
+table.insert-table-selection td.selected {
+    color: var(--cs-white-selected);
+    background-color: var(--cs-white-background-selected);
+}
+
+.ProseMirror td.selectedCell {
+    background-color: var(--cs-2-background);
+    caret-color: transparent;
+}
+
+/* Wide table: used for submission dialog */
+
+.fw-dialog-table-wide .entry-field input[type="text"],
+.fw-dialog-table-wide .entry-field textarea {
+    width: 678px;
+}
+
+.fw-dialog-table-wide .entry-field textarea {
+    resize: none;
+}
+
+.fw-dialog-table-wide th {
+    vertical-align: top;
+    padding: 0 6px 0 8px;
+    width: 164px;
+}
+
+/* Links  & Anchors */
+
+.drop-up-outer {
+    position: absolute;
+}
+
+.drop-up-inner {
+    position: relative;
+    background-color: var(--cs-white-background);
+    z-index: 1;
+    font-weight: normal;
+    color: var(--cs-white-text);
+    left: 10px;
+}
+
+.drop-up-head {
+    padding: 20px 22px;
+    background-color: var(--cs-dark-background);
+    color: var(--cs-dark-text);
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 18px;
+    letter-spacing: 0.13px;
+    border-radius: 6px 6px 0 0;
+}
+
+.drop-up-head .link-href a {
+    color: var(--cs-dark-text);
+    font-family: Lato, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.drop-up-head > * + * {
+    margin-top: 14px;
+}
+
+.link.drop-up-inner {
+    box-shadow: 0 0 20px rgba(var(--dropup-box-shadow-color));
+    border-radius: 6px;
+}
+
+.user-contents ul.drop-up-options li {
+    border-top: 1px solid var(--cs-light-border);
+    padding: 16px 30px;
+    color: var(--cs-light-text);
+    background: var(--cs-light-background);
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1em;
+}
+
+.user-contents ul.drop-up-options {
+    list-style: none;
+    padding: 0 0 12px;
+    cursor: pointer;
+}
+
+ul.drop-up-options li:hover,
+ul.drop-up-options li.focused {
+    background-color: var(--cs-light-background-hover);
+}
+
+ul.drop-up-options li.focused {
+    outline: 2px solid var(--cs-light-border);
+    outline-offset: -2px;
+}
+
+.drop-up-options .remove-link::after {
+    font-family: "Font Awesome 5 Free", monospace;
+    content: "\f2ed";
+    opacity: 0.4;
+    float: right;
+    display: block;
+}
+
+.drop-up-inner .edit {
+    font-size: 0.8em;
+    text-align: right;
+}
+
+*:focus {
+    outline: none;
+}
+
+.ProseMirror-gapcursor {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+}
+
+/* gapcursor related */
+
+.ProseMirror-gapcursor::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -2px;
+    width: 20px;
+    border-top: 1px solid black;
+    animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
+}
+
+/* stylelint-disable keyframes-name-pattern */
+@keyframes ProseMirror-cursor-blink {
+    to {
+        visibility: hidden;
+    }
+}
+/* stylelint-enable keyframes-name-pattern */
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+    display: block;
+}
+
+/* For users who use one of the inverted high contrast modes. Likely want
+as much black as possible. */
+
+html[hc="a3"] .ui-widget-overlay,
+html[hc="a4"] .ui-widget-overlay,
+html[hc="a5"] .ui-widget-overlay {
+    background-color: rgba(var(--highcontrast-overlay-color));
+}
+
+html[hc="a3"] body,
+html[hc="a4"] body,
+html[hc="a5"] body {
+    background-color: var(--highcontrast-background-color);
+}
+
+html[hc="a3"] #toolbar,
+html[hc="a4"] #toolbar,
+html[hc="a5"] #toolbar {
+    border-bottom: 1px solid var(--highcontrast-border-color);
+}
+
+#close-document-top {
+    position: fixed;
+    right: 30px;
+    top: 28px;
+    z-index: 100;
+}
+
+#close-document-top a,
+#close-document-top .fw-link-text {
+    width: 10px;
+    height: 10px;
+    opacity: 0.6;
+    color: var(--cs-5-text);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 25px;
+    letter-spacing: -0.35px;
+}
+
+.doc-part.doc-deleted {
+    border: 3px solid rgba(var(--warning-border-color));
+    border-radius: 5px;
+    padding: 10px 20px 10px 10px;
+    margin: 5px 0;
+    position: relative;
+}
+
+.remove-doc-part {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--cs-1-icon);
+}
+
+.remove-doc-part:hover {
+    color: var(--cs-1-hover);
+}
+
+.editor .doc .table-of-contents {
+    background-color: var(--editor-text-content-item-background-color);
+    font-family: Lato, sans-serif;
+    padding: 10px;
+}
+
+#navigator {
+    top: 250px;
+    left: 0;
+    position: fixed;
+    z-index: 9;
+}
+
+#navigator-content {
+    position: fixed;
+    top: auto;
+    left: 0;
+    display: block;
+    background-color: rgba(var(--editor-navigator-background-color));
+    min-width: 216px;
+    max-width: 480px;
+    color: var(--editor-navigator-color);
+    padding: 15px 30px 15px 50px;
+    box-sizing: border-box;
+    font-size: 13px;
+    line-height: 1.2;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+    overflow-y: auto;
+}
+
+#navigator.opened #navigator-content {
+    transform: translateX(0);
+}
+
+#navigator-list {
+    max-height: min(550px, 100vh - 315px);
+    overflow-y: hidden scroll;
+}
+
+#navigator-content a {
+    color: var(--editor-navigator-color);
+}
+
+#navigator-list a:focus {
+    outline: var(--editor-navigator-focus-color) solid 2px;
+    outline-offset: 2px;
+}
+
+#navigator-filter span {
+    display: block;
+    padding-bottom: 10px;
+}
+
+#navigator-list.hide,
+#navigator-filter.hide {
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+
+#navigator-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--editor-navigator-scrollbar-background-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    cursor: pointer;
+    background: var(--editor-navigator-scrollbar-background-color-hover);
+}
+
+#navigator-list > * {
+    padding-bottom: 12px;
+}
+
+#navigator-list a:hover {
+    text-decoration: underline;
+}
+
+#navigator-content h2 {
+    padding-left: 1em;
+}
+
+#navigator-content h3 {
+    padding-left: 2em;
+}
+
+#navigator-content h4 {
+    padding-left: 3em;
+}
+
+#navigator-content h5 {
+    padding-left: 4em;
+}
+
+#navigator-content h6 {
+    padding-left: 5em;
+}
+
+#navigator-content .header {
+    text-transform: uppercase;
+    padding-bottom: 20px;
+}
+
+.header-container {
+    position: relative;
+    padding-right: 28px;
+}
+
+.active-heading {
+    text-decoration: underline;
+}
+
+#navigator-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    width: 42px;
+    height: 42px;
+    text-align: center;
+    line-height: 42px;
+    background-color: rgba(var(--editor-navigator-background-color));
+    cursor: pointer;
+    z-index: 4;
+}
+
+#navigator.opened #navigator-button {
+    background-color: inherit;
+}
+
+.navigator-arrow-icon {
+    color: var(--editor-navigator-color);
+}
+
+.navigator-arrow-icon i {
+    transition: all 0.5s 0.25s;
+}
+
+.rotate {
+    transform: rotate(180deg);
+}
+
+#navigator-filter-icon,
+#navigator-filter-back {
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+#navigator-filter-icon {
+    transition: transform 0.2s;
+}
+
+#navigator-filter-icon:hover {
+    transform: rotate(90deg);
+}
+
+.form-checkbox {
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    background-color: var(--editor-navigator-color);
+    color: var(--editor-navigator-checkbox-color);
+    top: 5px;
+    height: 18px;
+    width: 18px;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 7px;
+    outline: none;
+}
+
+.form-checkbox:checked::before {
+    position: absolute;
+    left: 3px;
+    content: "\2713";
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.navigator-label {
+    color: var(--editor-navigator-color);
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.hide {
+    display: none;
+}
+
+body.no-scroll {
+    overflow: hidden;
+}
+
+/* Additions for tablets + mobile */
+@media screen and (width <= 1279px) {
+    #document-top > h1 {
+        padding-left: 52px;
+        background-position: 14px 0;
+    }
+
+    #header-navigation {
+        margin-left: 52px;
+    }
+
+    .editor-toolbar div.ui-buttonset:first-child {
+        left: 3px;
+    }
+
+    .editor-toolbar {
+        padding-left: 52px;
+    }
+
+    #editor-content {
+        padding-left: 52px;
+        padding-right: 30px;
+    }
+}
+
+@media screen and (width <= 1023px) {
+    #toolbar {
+        padding-bottom: 6px;
+    }
+
+    #editor-content {
+        padding-right: 0;
+        padding-left: 15px;
+    }
+
+    #flow {
+        padding: 16px 25px 8px 8px;
+    }
+
+    #document-top > h1 {
+        background: initial;
+        padding-left: 8px;
+    }
+
+    #header-navigation {
+        margin-left: 8px;
+    }
+
+    #navigator {
+        top: 195px;
+        z-index: 90;
+    }
+
+    #navigator-button {
+        width: 46px;
+        height: 46px;
+        line-height: 46px;
+    }
+
+    body.header-closed #navigator {
+        top: 64px;
+    }
+
+    body.header-closed #editor-content {
+        top: 96px;
+    }
+
+    /* Show footnotes at bottom rather than next to main editor. */
+    #footnote-box-container {
+        display: block !important;
+        width: auto !important;
+    }
+
+    #document-editable {
+        display: block;
+    }
+
+    .margin-box.inactive {
+        display: none;
+    }
+
+    #margin-box-filter {
+        position: fixed !important;
+        top: 195px !important;
+        right: 8px;
+    }
+
+    body.header-closed #margin-box-filter {
+        top: 64px !important;
+    }
+
+    #margin-box-column {
+        width: auto;
+        position: absolute;
+    }
+
+    #margin-box-container {
+        overflow: hidden auto;
+        bottom: 0;
+        position: fixed;
+        left: -1px;
+        right: 0;
+        max-height: 35vh;
+        z-index: 2;
+    }
+
+    .comment-btns {
+        text-align: left !important;
+    }
+
+    .margin-box.active {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        margin-top: 0 !important;
+    }
+
+    .footnote-container {
+        margin-top: 0 !important;
+    }
+
+    .margin-box.comment.active .comment-answer-container {
+        max-height: none !important;
+    }
+}
+
+@media screen and (width <= 420px) {
+    .editor-toolbar div.ui-buttonset {
+        margin-right: 0;
+    }
+
+    .editor-toolbar div.multi-buttons .multi-buttons-cover {
+        padding: 0 25px 0 15px;
+    }
+}

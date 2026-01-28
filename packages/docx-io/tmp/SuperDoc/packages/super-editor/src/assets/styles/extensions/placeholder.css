@@ -1,0 +1,7 @@
+.sd-editor-placeholder::before {
+  content: attr(data-placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block;
+  height: 0;
+}

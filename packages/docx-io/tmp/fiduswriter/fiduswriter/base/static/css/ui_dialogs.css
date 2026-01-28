@@ -1,0 +1,144 @@
+.ui-widget-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--overlay-color));
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.ui-widget-overlay.no-blur {
+    backdrop-filter: none;
+}
+
+.ui-dialog {
+    position: absolute;
+    padding: 19px;
+    background-color: var(--cs-light-background);
+    border: solid 1px var(--cs-light-border);
+    box-shadow: 0 0 10px var(--cs-light-box-shadow);
+    overflow: hidden;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: 0;
+    z-index: 1000; /* Ensure dialog stays on top */
+    user-select: none; /* Prevent interaction with background content */
+}
+
+.ui-dialog-titlebar {
+    position: relative;
+    padding: 0;
+}
+
+.ui-dialog-title {
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.ui-dialog-buttonpane {
+    padding-top: 20px;
+}
+
+.ui-button {
+    font-size: 14px;
+    line-height: 1em;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.ui-dialog-titlebar-close,
+.ui-dialog-titlebar-help {
+    position: absolute;
+    right: 0.3em;
+    top: 50%;
+    width: 20px;
+    margin: -10px 0 0;
+    padding: 1px;
+    height: 20px;
+}
+
+.ui-button-icon-only {
+    width: 2em;
+    box-sizing: border-box;
+    text-indent: -9999px;
+    white-space: nowrap;
+}
+
+.ui-button-icon-only .ui-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+}
+
+.ui-button-icon-only .ui-icon::before {
+    text-indent: 5019px;
+}
+
+/* Style for the close button specifically */
+.ui-dialog-titlebar-close {
+    order: 99; /* Push to end of flex container */
+}
+
+.ui-dialog-titlebar-close:hover,
+.ui-dialog-titlebar-help:hover {
+    color: var(--cs-dark-hover);
+}
+
+.ui-icon-closethick::before {
+    width: 0.7em;
+    height: 1em;
+    padding-top: 5px;
+    content: "\f00d";
+}
+
+.ui-icon-help::before {
+    width: 0.7em;
+    height: 1em;
+    padding-top: 5px;
+    content: "\f128";
+}
+
+.ui-dialog-content {
+    position: relative;
+    margin-top: 24px;
+    overflow: auto;
+}
+
+.ui-dialog-buttonset {
+    position: relative;
+    text-align: right;
+}
+
+.ui-dialog-buttonset .fw-button {
+    margin-left: 6px;
+}
+
+/* Make focus visible on all focusable elements */
+.ui-dialog *:focus {
+    outline: 2px solid var(--cs-dark-background);
+    outline-offset: 2px;
+}
+
+/* Style the title bar buttons specifically */
+.ui-dialog-titlebar .ui-button-icon-only {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px;
+    background: transparent;
+    border: none;
+}
+
+.ui-dialog-titlebar .ui-button-icon-only:focus {
+    outline: 2px solid var(--cs-dark-text);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
