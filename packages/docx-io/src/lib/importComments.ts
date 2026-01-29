@@ -25,6 +25,7 @@ import {
 } from './importTrackChanges';
 import type { TRange } from './searchRange';
 
+// TODO: Migrate to adapters module in a future PR (html-to-docx is deprecated)
 import {
   DOCX_COMMENT_END_TOKEN_PREFIX,
   DOCX_COMMENT_START_TOKEN_PREFIX,
@@ -32,6 +33,7 @@ import {
 } from './html-to-docx/tracking';
 
 // Re-export token constants for test usage
+// TODO: Migrate to adapters module in a future PR (html-to-docx is deprecated)
 export {
   DOCX_COMMENT_END_TOKEN_PREFIX,
   DOCX_COMMENT_START_TOKEN_PREFIX,

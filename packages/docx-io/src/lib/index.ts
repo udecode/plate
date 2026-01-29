@@ -93,6 +93,7 @@ export * from './types';
 // via './exportDocx' which re-exports them from html-to-docx
 
 // Export tracking token constants from html-to-docx
+// TODO: Migrate to adapters module in a future PR (html-to-docx is deprecated)
 export {
   DOCX_COMMENT_END_TOKEN_PREFIX,
   DOCX_COMMENT_START_TOKEN_PREFIX,
@@ -108,3 +109,9 @@ export {
   type SuggestionPayload,
   type TrackingState,
 } from './html-to-docx/tracking';
+
+// ============================================================================
+// Adapters - docXMLater adapter layer (new export pipeline)
+// ============================================================================
+
+export * from './adapters';

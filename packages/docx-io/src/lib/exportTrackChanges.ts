@@ -2,25 +2,30 @@
  * DOCX Export Token Injection
  *
  * This module injects tracking tokens into Plate editor values for export.
- * Tokens are embedded in text nodes and later processed by html-to-docx
- * to generate Word tracked changes and comments XML.
+ * Tokens are embedded in text nodes and later processed by the docXMLater
+ * library to generate Word tracked changes and comments XML.
  *
- * Token Format:
- * - Insertions: [[DOCX_INS_START:{payload}]] ... [[DOCX_INS_END:id]]
- * - Deletions: [[DOCX_DEL_START:{payload}]] ... [[DOCX_DEL_END:id]]
- * - Comments: [[DOCX_CMT_START:{payload}]] ... [[DOCX_CMT_END:id]]
+ * Token Format (docXMLater-compatible):
+ * - Insertions: {{TC:insert:id:author:date:start}} ... {{TC:insert:id:end}}
+ * - Deletions: {{TC:delete:id:author:date:start}} ... {{TC:delete:id:end}}
+ * - Comments: {{TC:comment:id:author:date:start}} ... {{TC:comment:id:end}}
+ *
+ * This format integrates directly with docXMLater's RevisionManager and
+ * CommentManager for proper OOXML generation.
  */
 
 import type { TNode, TText } from 'platejs';
 
-import {
-  buildCommentEndToken,
-  buildCommentStartToken,
-  buildSuggestionEndToken,
-  buildSuggestionStartToken,
-  type CommentPayload,
-  type SuggestionPayload,
-} from './html-to-docx/tracking';
+// ============================================================================
+// Token Constants (docXMLater-compatible format)
+// ============================================================================
+
+/** Token marker for track changes - compatible with docXMLater */
+export const TRACKING_TOKEN_START = '{{TC:';
+export const TRACKING_TOKEN_END = '}}';
+
+/** Token types for track changes */
+export type TrackingTokenType = 'insert' | 'delete' | 'comment';
 
 // ============================================================================
 // Top-level Regex Patterns (for performance)
@@ -29,6 +34,92 @@ import {
 const WHITESPACE_REGEX = /\s+/;
 const ZERO_WIDTH_SPACE = '\u200B';
 const ZERO_WIDTH_SPACE_REGEX = /\u200B/g;
+
+// ============================================================================
+// Token Building Functions (docXMLater-compatible)
+// ============================================================================
+
+/**
+ * Payload structure for suggestion tokens (docXMLater-compatible)
+ */
+export interface SuggestionPayload {
+  id: string;
+  author: string;
+  date?: string;
+}
+
+/**
+ * Payload structure for comment tokens (docXMLater-compatible)
+ */
+export interface CommentPayload {
+  id: string;
+  authorName: string;
+  authorInitials?: string;
+  date?: string;
+  text?: string;
+}
+
+/**
+ * Build a suggestion start token (docXMLater-compatible format).
+ * Format: {{TC:type:id:author:date:start}}
+ *
+ * @param payload - Suggestion metadata
+ * @param type - Either 'insert' or 'delete' (mapped from 'remove')
+ * @returns Token string
+ */
+export function buildSuggestionStartToken(
+  payload: SuggestionPayload,
+  type: 'insert' | 'remove'
+): string {
+  const tokenType: TrackingTokenType = type === 'remove' ? 'delete' : 'insert';
+  const date = payload.date ?? new Date().toISOString();
+  // Escape colons in author names to avoid parsing issues
+  const escapedAuthor = payload.author.replace(/:/g, '::');
+  return `${TRACKING_TOKEN_START}${tokenType}:${payload.id}:${escapedAuthor}:${date}:start${TRACKING_TOKEN_END}`;
+}
+
+/**
+ * Build a suggestion end token (docXMLater-compatible format).
+ * Format: {{TC:type:id:end}}
+ *
+ * @param id - Suggestion ID
+ * @param type - Either 'insert' or 'delete'
+ * @returns Token string
+ */
+export function buildSuggestionEndToken(
+  id: string,
+  type: 'insert' | 'remove'
+): string {
+  const tokenType: TrackingTokenType = type === 'remove' ? 'delete' : 'insert';
+  return `${TRACKING_TOKEN_START}${tokenType}:${id}:end${TRACKING_TOKEN_END}`;
+}
+
+/**
+ * Build a comment start token (docXMLater-compatible format).
+ * Format: {{TC:comment:id:author:date:start|text}}
+ *
+ * @param payload - Comment metadata including text content
+ * @returns Token string
+ */
+export function buildCommentStartToken(payload: CommentPayload): string {
+  const date = payload.date ?? new Date().toISOString();
+  const escapedAuthor = payload.authorName.replace(/:/g, '::');
+  const escapedText = (payload.text ?? '')
+    .replace(/\|/g, '||')
+    .replace(/}/g, '}​');
+  return `${TRACKING_TOKEN_START}comment:${payload.id}:${escapedAuthor}:${date}:start|${escapedText}${TRACKING_TOKEN_END}`;
+}
+
+/**
+ * Build a comment end token (docXMLater-compatible format).
+ * Format: {{TC:comment:id:end}}
+ *
+ * @param id - Comment ID
+ * @returns Token string
+ */
+export function buildCommentEndToken(id: string): string {
+  return `${TRACKING_TOKEN_START}comment:${id}:end${TRACKING_TOKEN_END}`;
+}
 
 // ============================================================================
 // Types

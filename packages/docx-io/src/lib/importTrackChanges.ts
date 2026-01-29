@@ -13,6 +13,7 @@
 
 import type { Point, TRange } from './searchRange';
 
+// TODO: Migrate to adapters module in a future PR (html-to-docx is deprecated)
 import {
   DOCX_DELETION_END_TOKEN_PREFIX,
   DOCX_DELETION_START_TOKEN_PREFIX,
@@ -24,6 +25,7 @@ import {
 import type { DocxTrackedChange } from './types';
 
 // Re-export token constants for test usage
+// TODO: Migrate to adapters module in a future PR (html-to-docx is deprecated)
 export {
   DOCX_DELETION_END_TOKEN_PREFIX,
   DOCX_DELETION_START_TOKEN_PREFIX,
