@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* Footnote and Endnote Styles */
+.footnote-link,
+.endnote-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footnote-link:hover,
+.endnote-link:hover {
+  text-decoration: underline;
+}
+
+.footnotes,
+.endnotes {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footnotes-separator,
+.endnotes-separator {
+  width: 33%;
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid #9ca3af;
+}
+
+.footnote,
+.endnote {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: #4b5563;
+}
+
+.footnote-backlink,
+.endnote-backlink {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.footnote-backlink:hover,
+.endnote-backlink:hover {
+  text-decoration: underline;
+}
+
+/* Comment Range Highlighting Styles */
+.comment-highlight {
+  background-color: rgba(255, 235, 59, 0.3);
+  border-radius: 2px;
+  padding: 0;
+  transition: background-color 0.2s ease;
+}
+
+.comment-highlight:hover {
+  background-color: rgba(255, 235, 59, 0.45);
+}

@@ -1,0 +1,173 @@
+.fw-header.prelogin {
+    border-bottom: solid 1px var(--cs-white-border);
+    height: 123px;
+}
+
+.fw-login-logo {
+    margin-top: 38px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.prelogin #header-nav {
+    float: right;
+    font-size: 14px;
+    color: var(--cs-5-text);
+    line-height: 34px;
+    margin-left: 25px;
+}
+
+.prelogin .fw-login-branding-logo {
+    float: right;
+}
+
+.prelogin .fw-login-branding-logo img {
+    max-height: 34px;
+}
+
+.prelogin .fw-header > .fw-container {
+    padding-right: 19.5px;
+}
+
+@media (width <= 540px) {
+    .prelogin #header-nav {
+        top: 2px;
+    }
+}
+
+.submit-wrapper .fw-button {
+    margin-right: 15px;
+}
+
+.prelogin #header-nav .fw-button {
+    margin-left: 12px;
+}
+
+.fw-contents.prelogin {
+    top: 45px;
+    padding-bottom: 160px;
+    line-height: 2em;
+}
+
+.fw-contents.prelogin::after {
+    display: block;
+    content: " ";
+    clear: both;
+}
+
+.fw-login-left {
+    width: 340px;
+    float: left;
+    margin-bottom: 65px;
+}
+
+.fw-login-title {
+    text-transform: uppercase;
+    font-weight: 300;
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.fw-login-left p {
+    margin-top: 20px;
+    font-size: 15px;
+    line-height: 20px;
+}
+
+.socialaccount_ballot {
+    margin-top: 50px;
+}
+
+.socialaccount_ballot li {
+    margin-top: 10px;
+}
+
+.fw-login-right {
+    width: 280px;
+    padding: 25px;
+    float: right;
+    background-color: var(--cs-light-background);
+    border: solid 1px var(--cs-light-border);
+    color: var(--cs-light-text);
+}
+
+.input-wrapper label {
+    font-size: 13px;
+    font-weight: 900;
+    display: block;
+}
+
+.input-wrapper input {
+    display: block;
+    width: 270px;
+    margin: 10px 0;
+}
+
+.submit-wrapper {
+    margin-top: 14px;
+    line-height: 34px;
+}
+
+.submit-wrapper label {
+    font-size: 14px;
+    color: var(--cs-light-text-secondary);
+    margin-left: 4px;
+}
+
+#lost-passwd {
+    display: block;
+    margin-top: 35px;
+    font-size: 15px;
+}
+
+footer.prelogin {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    border-top: solid 1px var(--cs-white-border);
+    background-color: var(--cs-white-background);
+    text-align: right;
+    padding: 27px 0;
+    z-index: 2;
+}
+
+.fw-footer-links {
+    float: left;
+}
+
+.fw-footer-links > li {
+    display: inline-block;
+    margin-right: 15px;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.fw-footer-links > li a {
+    color: var(--cs-1-text);
+}
+
+.fw-footer-links > li a:hover {
+    color: var(--cs-1-hover);
+}
+
+#lang-selection {
+    vertical-align: top;
+    margin-bottom: 10px;
+}
+
+.prelogin .star {
+    position: relative;
+    margin: 0 auto;
+}
+
+.prelogin .star img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+    height: 73px;
+}

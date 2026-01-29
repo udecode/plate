@@ -1,0 +1,42 @@
+<comments xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <comment xmlns:ns1="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns1:id="0" ns1:author="Charlie" ns1:initials="C" ns1:date="2026-01-26T00:15:18.169Z">
+    <p xmlns:ns2="http://schemas.microsoft.com/office/word/2010/wordml" ns2:paraId="E61C1E29">
+      <r>
+        <commentReference ns1:id="0"/>
+      </r>
+      <r>
+        <t xml:space="preserve">comments</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns3="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns3:id="1" ns3:author="Bob" ns3:initials="B" ns3:date="2026-01-26T00:16:58.169Z">
+    <p xmlns:ns4="http://schemas.microsoft.com/office/word/2010/wordml" ns4:paraId="FC95F8FC">
+      <r>
+        <commentReference ns3:id="1"/>
+      </r>
+      <r>
+        <t xml:space="preserve">Imported comment</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns5="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns5:id="2" ns5:author="Bob" ns5:initials="B" ns5:date="2026-01-26T00:20:18.169Z">
+    <p xmlns:ns6="http://schemas.microsoft.com/office/word/2010/wordml" ns6:paraId="97E96682">
+      <r>
+        <commentReference ns5:id="2"/>
+      </r>
+      <r>
+        <t xml:space="preserve">overlapping</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns7="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns7:id="3" ns7:author="Charlie" ns7:initials="C" ns7:date="2026-01-26T00:21:58.169Z">
+    <p xmlns:ns8="http://schemas.microsoft.com/office/word/2010/wordml" ns8:paraId="E9B6CFEE">
+      <r>
+        <commentReference ns7:id="3"/>
+      </r>
+      <r>
+        <t xml:space="preserve">Imported comment</t>
+      </r>
+    </p>
+  </comment>
+</comments>

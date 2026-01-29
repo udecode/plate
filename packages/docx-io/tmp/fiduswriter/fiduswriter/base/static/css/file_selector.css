@@ -1,0 +1,25 @@
+.fw-file-selector {
+    line-height: 1.2em;
+    padding: 10px 10px 10px 20px;
+}
+
+.fw-file-selector p.file {
+    text-indent: -10px;
+}
+
+.fw-file-selector .fa-plus-square,
+.fw-file-selector .fa-minus-square {
+    margin-left: -16px;
+}
+
+.fw-file-selector .fa-plus-square,
+.fw-file-selector .fa-minus-square,
+.fw-file-selector .file-name,
+.fw-file-selector .folder-name {
+    cursor: pointer;
+}
+
+.fw-file-selector .file-name.selected,
+.fw-file-selector .folder-name.selected {
+    text-decoration: underline;
+}

@@ -1,0 +1,141 @@
+<!-- just for testing by downloading different documents -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        
+        .file-select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .file-select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .download-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        
+        .download-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .note {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Document Download</h1>
+        <p>Click the button below to download the document</p>
+        
+        <select id="file-select" class="file-select">
+            <option value="">Select a file to download...</option>
+            <option value="test_docs/Mutual NDA_draft (1).docx">Mutual NDA_draft (1).docx</option>
+            <option value="test_docs/Nda Formatted Doc.docx">Nda Formatted Doc.docx</option>
+            <option value="test_docs/Nda Formatted Doc MS WORD.docx">Nda Formatted Doc MS WORD.docx</option>
+            <option value="test_docs/sdpr (23).docx">sdpr (23).docx</option>
+            <option value="test_docs/Lunch Haiku (5).docx">Lunch Haiku.docx</option>
+            <option value="test_docs/nda_formatted_doc (1).md">nda_formatted_doc (1).md</option>
+        </select>
+        
+        <button class="download-btn" onclick="downloadFile()" id="download-btn" disabled>
+            📄 Download Selected File
+        </button>
+    </div>
+
+    <script>
+        // Enable/disable download button based on selection
+        document.getElementById('file-select').addEventListener('change', function() {
+            const downloadBtn = document.getElementById('download-btn');
+            downloadBtn.disabled = !this.value;
+        });
+        
+        function downloadFile() {
+            const fileSelect = document.getElementById('file-select');
+            const selectedFile = fileSelect.value;
+            
+            if (!selectedFile) {
+                alert('Please select a file first!');
+                return;
+            }
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            
+            // Set the file path from the selected option
+            link.href = selectedFile;
+            
+            // Extract filename from path for download
+            const filename = selectedFile.split('/').pop();
+            link.download = filename;
+            
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

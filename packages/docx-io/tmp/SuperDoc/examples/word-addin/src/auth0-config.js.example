@@ -1,0 +1,7 @@
+window.auth0Config = {
+    domain: "",
+    clientId: "",
+    redirectUri: window.location.origin + "/auth-dialog.html",
+    scope: "openid profile email",
+    responseType: "token id_token"
+};

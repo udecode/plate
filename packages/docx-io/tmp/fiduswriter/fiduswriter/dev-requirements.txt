@@ -1,0 +1,3 @@
+setuptools==78.1.1
+twine==4.0.2
+pre-commit==4.0.1

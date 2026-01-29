@@ -1,0 +1,39 @@
+.sd-document-section-block {
+  background-color: #fafafa;
+  border: 1px solid #ababab;
+  border-radius: 4px;
+  position: relative;
+}
+.sd-document-section-block-info {
+  position: absolute;
+  top: -19px;
+  left: -1px;
+  max-width: 100px;
+  min-width: 0;
+  height: 18px;
+  border: 1px solid #ababab;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 0 8px;
+  align-items: center;
+  font-size: 10px;
+  display: none;
+  z-index: 100;
+  background-color: #fafafa;
+}
+
+.sd-document-section-block:hover {
+  border-radius: 0 4px 4px 4px;
+}
+
+.sd-document-section-block:hover .sd-document-section-block-info {
+  display: flex;
+  align-items: center;
+}
+
+.sd-document-section-block-info span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

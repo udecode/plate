@@ -1,0 +1,88 @@
+.fw-media-uploader .fw-media-title {
+    width: 276px;
+}
+
+.fw-media-uploader .figure-preview {
+    display: table;
+    margin: 0 10px 18px 0;
+    max-width: calc(100vw - 200px);
+    max-height: calc(100vh - 100px);
+}
+
+.fw-media-uploader .figure-preview .inner-figure-preview {
+    display: table-cell;
+    width: 406px;
+    height: 226px;
+    border: 2px dashed var(--cs-white-border);
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+}
+
+.fw-media-uploader .figure-preview .inner-figure-preview .dot-menu-icon {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    cursor: pointer;
+}
+
+.fw-media-uploader .figure-preview .inner-figure-preview > img {
+    max-width: 400px;
+    max-height: 220px;
+}
+
+.fw-media-uploader .figure-preview .inner-figure-preview > p {
+    padding: 10px;
+}
+
+#insert-figure-image {
+    display: block;
+    width: 360px;
+    text-align: left;
+    height: 59px;
+    font-size: 20px;
+}
+
+#insert-figure-image i {
+    float: right;
+    margin-top: 8px;
+}
+
+.fw-media-uploader .fw-media-category {
+    padding-bottom: 30px;
+}
+
+.fw-media-uploader .fw-media-category .fw-checkable-label {
+    margin: 10px 0 0;
+    width: 396px;
+}
+
+th.figure-preview-row,
+td.figure-preview-row {
+    vertical-align: top;
+}
+
+.figure-edit-menu {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: 1px;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+    position: absolute;
+    right: -5px;
+}
+
+.crop-mode {
+    height: 500px !important;
+    width: 800px !important;
+}
+
+.crop-icon {
+    font-size: 1.2em;
+    color: white;
+}
+
+.hide {
+    display: none;
+}

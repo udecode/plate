@@ -1,0 +1,16 @@
+bleach==6.1.0
+channels==4.3.2
+daphne==4.1.2
+Twisted[tls,http2] # Version is given by daphne.
+Django==5.2.9
+django-allauth[socialaccount]==65.0.2
+django-avatar==8.0.1
+django-js-error-hook==1.0
+django-npm-mjs==3.3.0
+django-loginas==0.3.11
+httpx==0.27.2
+httpx-ws==0.6.2
+Pillow==11.3.0
+python-magic==0.4.27
+prosemirror==0.5.0
+watchdog==5.0.3

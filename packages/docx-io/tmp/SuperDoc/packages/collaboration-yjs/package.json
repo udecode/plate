@@ -1,0 +1,36 @@
+{
+  "name": "@harbour-enterprises/superdoc-yjs-collaboration",
+  "version": "1.0.0-alpha.1",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "readme": "./README.md",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.js --format cjs,esm --dts --outDir dist",
+    "watch:lib": "tsup src/index.js --format cjs,esm --dts --outDir dist --watch",
+    "watch:example": "nodemon --watch examples/fastify --ext js --exec \"node examples/fastify/index.js\"",
+    "dev": "concurrently -k -n LIB,SERVER -c yellow,green \"npm run watch:lib\" \"npm run watch:example\"",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,md}\"",
+    "check-format": "prettier --check \"src/**/*.{js,jsx,ts,tsx,md}\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "AGPL-3.0",
+  "description": "A quick-start collaboration server for SuperDoc",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.5.3",
+    "tsup": "^8.5.0"
+  }
+}

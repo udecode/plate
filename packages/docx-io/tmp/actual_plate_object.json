@@ -1,0 +1,318 @@
+{
+    "frames": [
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js",
+            "line1": 2189,
+            "column1": 71,
+            "methodName": "createConsoleError",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js",
+            "line1": 2970,
+            "column1": 54,
+            "methodName": "handleConsoleError",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js",
+            "line1": 3114,
+            "column1": 57,
+            "methodName": "console.error",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 4817,
+            "column1": 53,
+            "methodName": "Object.useMemoCache",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_268451e0._.js",
+            "line1": 1055,
+            "column1": 27,
+            "methodName": "exports.c",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 7019,
+            "column1": 196,
+            "methodName": "useCommentEditor",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 7088,
+            "column1": 27,
+            "methodName": "CommentCreateForm",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 14816,
+            "column1": 24,
+            "methodName": "Object.react_stack_bottom_frame",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 4700,
+            "column1": 24,
+            "methodName": "renderWithHooksAgain",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 4651,
+            "column1": 28,
+            "methodName": "renderWithHooks",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 6106,
+            "column1": 21,
+            "methodName": "updateFunctionComponent",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 6702,
+            "column1": 24,
+            "methodName": "beginWork",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 959,
+            "column1": 74,
+            "methodName": "runWithFiberInDEV",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 9556,
+            "column1": 97,
+            "methodName": "performUnitOfWork",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 9450,
+            "column1": 40,
+            "methodName": "workLoopSync",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 9434,
+            "column1": 13,
+            "methodName": "renderRootSync",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 9062,
+            "column1": 186,
+            "methodName": "performWorkOnRoot",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 10232,
+            "column1": 9,
+            "methodName": "performSyncWorkOnRoot",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 10148,
+            "column1": 316,
+            "methodName": "flushSyncWorkAcrossRoots_impl",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 10169,
+            "column1": 106,
+            "methodName": "processRootScheduleInMicrotask",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js",
+            "line1": 10243,
+            "column1": 158,
+            "methodName": "<unknown>",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 8640,
+            "column1": 216,
+            "methodName": "BlockComment",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 8481,
+            "column1": 274,
+            "methodName": "<unknown>",
+            "arguments": []
+        },
+        {
+            "file": "<anonymous>",
+            "line1": null,
+            "column1": null,
+            "methodName": "Array.map",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 8473,
+            "column1": 98,
+            "methodName": "BlockCommentContent",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 8351,
+            "column1": 223,
+            "methodName": "<unknown>",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js",
+            "line1": 6430,
+            "column1": 29,
+            "methodName": "ElementContent[editor.meta.pluginCache.render.aboveNodes.forEach()]",
+            "arguments": []
+        },
+        {
+            "file": "<anonymous>",
+            "line1": null,
+            "column1": null,
+            "methodName": "Array.forEach",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js",
+            "line1": 6419,
+            "column1": 47,
+            "methodName": "ElementContent",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js",
+            "line1": 6523,
+            "column1": 211,
+            "methodName": "render",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js",
+            "line1": 6538,
+            "column1": 79,
+            "methodName": "render",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 1502,
+            "column1": 12,
+            "methodName": "Element",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 2228,
+            "column1": 199,
+            "methodName": "useChildren.useCallback[renderElementComponent]",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 2183,
+            "column1": 16,
+            "methodName": "<unknown>",
+            "arguments": []
+        },
+        {
+            "file": "<anonymous>",
+            "line1": null,
+            "column1": null,
+            "methodName": "Array.map",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 2161,
+            "column1": 30,
+            "methodName": "ChunkAncestor",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 2281,
+            "column1": 195,
+            "methodName": "useChildren",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 2651,
+            "column1": 407,
+            "methodName": "Children",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js",
+            "line1": 4044,
+            "column1": 192,
+            "methodName": "<unknown>",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js",
+            "line1": 7992,
+            "column1": 221,
+            "methodName": "PlateContent",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js",
+            "line1": 5975,
+            "column1": 216,
+            "methodName": "Editor",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_examples_a1f524de._.js",
+            "line1": 13277,
+            "column1": 217,
+            "methodName": "PlaygroundDemo",
+            "arguments": []
+        },
+        {
+            "file": "file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_components_fcff8995._.js",
+            "line1": 5765,
+            "column1": 233,
+            "methodName": "PlaygroundPreview",
+            "arguments": []
+        },
+        {
+            "file": "about://React/Server/file:///Users/arthrod/temp/Manual%20Library/temp/plate/apps/www/.next/dev/server/chunks/ssr/%5Broot-of-the-server%5D__c6f87cef._.js?52",
+            "line1": 519,
+            "column1": 288,
+            "methodName": "IndexPage",
+            "arguments": []
+        }
+    ],
+    "isServer": false,
+    "isEdgeServer": false,
+    "isAppDirectory": true
+}
+
+
+{"frames":[{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js","line1":2189,"column1":71,"methodName":"createConsoleError","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js","line1":2970,"column1":54,"methodName":"handleConsoleError","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_7a8122d0._.js","line1":3114,"column1":57,"methodName":"console.error","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":4817,"column1":53,"methodName":"Object.useMemoCache","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_268451e0._.js","line1":1055,"column1":27,"methodName":"exports.c","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":7019,"column1":196,"methodName":"useCommentEditor","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":7088,"column1":27,"methodName":"CommentCreateForm","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":14816,"column1":24,"methodName":"Object.react_stack_bottom_frame","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":4700,"column1":24,"methodName":"renderWithHooksAgain","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":4651,"column1":28,"methodName":"renderWithHooks","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":6106,"column1":21,"methodName":"updateFunctionComponent","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":6702,"column1":24,"methodName":"beginWork","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":959,"column1":74,"methodName":"runWithFiberInDEV","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":9556,"column1":97,"methodName":"performUnitOfWork","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":9450,"column1":40,"methodName":"workLoopSync","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":9434,"column1":13,"methodName":"renderRootSync","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":9062,"column1":186,"methodName":"performWorkOnRoot","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":10232,"column1":9,"methodName":"performSyncWorkOnRoot","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":10148,"column1":316,"methodName":"flushSyncWorkAcrossRoots_impl","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":10169,"column1":106,"methodName":"processRootScheduleInMicrotask","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_1e674e59._.js","line1":10243,"column1":158,"methodName":"<unknown>","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":8640,"column1":216,"methodName":"BlockComment","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":8481,"column1":274,"methodName":"<unknown>","arguments":[]},{"file":"<anonymous>","line1":null,"column1":null,"methodName":"Array.map","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":8473,"column1":98,"methodName":"BlockCommentContent","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_registry_ui_5f1ea0c1._.js","line1":8351,"column1":223,"methodName":"<unknown>","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js","line1":6430,"column1":29,"methodName":"ElementContent[editor.meta.pluginCache.render.aboveNodes.forEach()]","arguments":[]},{"file":"<anonymous>","line1":null,"column1":null,"methodName":"Array.forEach","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js","line1":6419,"column1":47,"methodName":"ElementContent","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js","line1":6523,"column1":211,"methodName":"render","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/packages_core_dist_a491ab67._.js","line1":6538,"column1":79,"methodName":"render","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":1502,"column1":12,"methodName":"Element","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":2228,"column1":199,"methodName":"useChildren.useCallback[renderElementComponent]","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":2183,"column1":16,"methodName":"<unknown>","arguments":[]},{"file":"<anonymous>","line1":null,"column1":null,"methodName":"Array.map","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":2161,"column1":30,"methodName":"ChunkAncestor","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":2281,"column1":195,"methodName":"useChildren","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":2651,"column1":407,"methodName":"Children","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/node_modules_slate-react_dist_index_es_355219c2.js","line1":4044,"column1":192,"methodName":"<unknown>","arguments":[]},{"file":"file:///Users/arthrod/temp/Manual Library/temp/plate/apps/www/.next/dev/static/chunks/apps_www_src_components_fcff8995._.js","line1":5765,"column1":233,"methodName":"PlaygroundPreview","arguments":[]},{"file":"about://React/Server/file:///Users/arthrod/temp/Manual%20Library/temp/plate/apps/www/.next/dev/server/chunks/ssr/%5Broot-of-the-server%5D__c6f87cef._.js?52","line1":519,"column1":288,"methodName":"IndexPage","arguments":[]}],"isServer":false,"isEdgeServer":false,"isAppDirectory":true}

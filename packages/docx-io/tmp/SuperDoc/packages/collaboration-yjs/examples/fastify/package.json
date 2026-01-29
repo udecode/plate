@@ -1,0 +1,20 @@
+{
+  "name": "fastify-esm-example",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch index.js --exec node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@fastify/websocket": "^11.1.0",
+    "fastify": "^5.3.3",
+    "y-protocols": "^1.0.6",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.27"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "nodemon": "^3.1.10"
+  }
+}

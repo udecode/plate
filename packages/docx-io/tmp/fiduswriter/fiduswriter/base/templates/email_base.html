@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="theme-color" content="#4c6860">
+        <style type="text/css">
+            .body {
+                background-color: rgb(249, 249, 249);
+                font-family: "Liberation Sans", Helvetica, Arial, sans-serif;
+                font-weight: 300;
+                font-size: 15px;
+                padding: 44.5px;
+                width: 100%;
+                height: 100%;
+            }
+            h1 {
+                font-size: 18px;
+                opacity: 0.8;
+                font-weight: 300;
+            }
+            .content {
+                width: 615px;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 44px;
+            }
+            .header, .footer {
+                text-align: center;
+                background-color: rgb(249, 249, 249);
+            }
+            div.actions {
+                width: 100%;
+                text-align: center;
+            }
+            a.button {
+                margin-top: 28px;
+                height: 28px;
+                background-color: #83b3a7;
+                color: #fff;
+                font-weight: 700;
+                border-radius: 22px;
+                display: inline-block;
+                padding: 14px 20px 8px 20px;
+                text-decoration: none;
+            }
+            table {
+                width: 100%;
+                border-spacing: 0;
+            }
+            tr {
+                height: 55px;
+            }
+            td {
+                border-bottom: .5px solid #ccc;
+            }
+            td:first-child {
+                font-weight: 300;
+                color: rgba(44, 39, 35, 0.8);
+            }
+            td:last-child {
+                font-weight: 400;
+                color: #2c2723;
+            }
+            table.mbm {
+                width: auto;
+            }
+            table.mbm td {
+                height: 1px;
+                width: 1px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="body">
+            <div class="content">
+                {% block content %}{% endblock %}
+            <div>
+        </div>
+    </body>
+</html>

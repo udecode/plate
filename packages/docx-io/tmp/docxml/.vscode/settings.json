@@ -1,0 +1,51 @@
+{
+	"deno.enable": true,
+	"deno.documentPreloadLimit": 5000,
+
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"editor.inlineSuggest.enabled": true,
+	"editor.codeActionsOnSave": {
+		"source.sortImports": "explicit"
+	},
+
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
+	"[css]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode",
+		"editor.formatOnSave": true
+	},
+	"[json]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[csharp]": {
+		"editor.defaultFormatter": "ms-dotnettools.csharp"
+	},
+	"[xml]": {
+		"editor.formatOnSave": false,
+		"editor.defaultFormatter": "DotJoshJohnson.xml"
+	},
+	"files.associations": {
+		"*.tsx": "typescriptreact",
+		"*.pgsql": "sql",
+		"*.xqm": "xquery"
+	},
+
+	"prettier.enable": true,
+	"prettier.trailingComma": "all",
+	"prettier.singleQuote": true,
+	"prettier.jsxSingleQuote": true,
+	"prettier.arrowParens": "avoid",
+	"prettier.tabWidth": 4,
+	"prettier.printWidth": 120,
+	"prettier.useTabs": true
+}

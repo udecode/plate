@@ -3408,20 +3408,28 @@ __metadata:
   dependencies:
     "@platejs/docx": "workspace:^"
     "@platejs/markdown": "workspace:^"
+    "@xmldom/xmldom": "npm:^0.8.6"
+    argparse: "npm:~1.0.3"
+    base64-js: "npm:^1.5.1"
+    bluebird: "npm:~3.4.0"
     color-name: "npm:^2.0.0"
+    dingbat-to-unicode: "npm:^1.0.1"
     html-entities: "npm:^2.5.2"
     html-to-vdom: "npm:^0.7.0"
     jszip: "npm:^3.10.1"
-    juice: "npm:^11.0.1"
     lodash: "npm:^4.17.21"
-    mammoth: "npm:^1.9.0"
+    lop: "npm:^0.4.2"
     mime-types: "npm:^2.1.35"
     nanoid: "npm:^5.0.9"
+    path-is-absolute: "npm:^1.0.0"
     platejs: "workspace:^"
     react-compiler-runtime: "npm:^1.0.0"
+    underscore: "npm:^1.13.1"
     validator: "npm:^13.15.15"
     virtual-dom: "npm:^2.1.1"
+    xmlbuilder: "npm:^10.0.0"
     xmlbuilder2: "npm:^3.1.1"
+    yarn: "npm:^1.22.22"
   peerDependencies:
     "@platejs/docx": ">=52.0.0"
     "@platejs/markdown": ">=52.0.0"
@@ -7780,6 +7788,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bun-types@npm:^1.3.6":
+  version: 1.3.6
+  resolution: "bun-types@npm:1.3.6"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/9eef556e07f95f28a85fa5b12c2ae7a63ee55ca856785d6b678ef07c699e2c19c19f07179158df34bd7ce671c67af2a23493fa22fbd56a9848547052b664179a
+  languageName: node
+  linkType: hard
+
 "bytes@npm:3.1.2, bytes@npm:^3.1.2":
   version: 3.1.2
   resolution: "bytes@npm:3.1.2"
@@ -8098,7 +8115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-variance-authority@npm:0.7.1":
+"class-variance-authority@npm:0.7.1, class-variance-authority@npm:^0.7.1":
   version: 0.7.1
   resolution: "class-variance-authority@npm:0.7.1"
   dependencies:
@@ -8669,7 +8686,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.2.2":
+"csstype@npm:^3.2.2, csstype@npm:^3.2.3":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
@@ -12727,7 +12744,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jszip@npm:^3.10.1, jszip@npm:^3.7.1":
+"jszip@npm:^3.10.1":
   version: 3.10.1
   resolution: "jszip@npm:3.10.1"
   dependencies:
@@ -13311,26 +13328,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mammoth@npm:^1.9.0":
-  version: 1.11.0
-  resolution: "mammoth@npm:1.11.0"
-  dependencies:
-    "@xmldom/xmldom": "npm:^0.8.6"
-    argparse: "npm:~1.0.3"
-    base64-js: "npm:^1.5.1"
-    bluebird: "npm:~3.4.0"
-    dingbat-to-unicode: "npm:^1.0.1"
-    jszip: "npm:^3.7.1"
-    lop: "npm:^0.4.2"
-    path-is-absolute: "npm:^1.0.0"
-    underscore: "npm:^1.13.1"
-    xmlbuilder: "npm:^10.0.0"
-  bin:
-    mammoth: bin/mammoth
-  checksum: 10c0/20fa5b902a9ec3ed4b86d247f45cf08e9dedb22ad175a156839e921280211b40fbd9db4cabdeb25368fe1fc038dd385deaddfa997e1779e45d663790f80fdff7
-  languageName: node
-  linkType: hard
-
 "map-stream@npm:~0.1.0":
   version: 0.1.0
   resolution: "map-stream@npm:0.1.0"
@@ -13358,6 +13355,15 @@ __metadata:
   bin:
     marked: bin/marked.js
   checksum: 10c0/e09da211544b787ecfb25fed07af206060bf7cd6d9de6cb123f15c496a57f83b7aabea93340aaa94dae9c94e097ae129377cad6310abc16009590972e85f4212
+  languageName: node
+  linkType: hard
+
+"marked@npm:^17.0.1":
+  version: 17.0.1
+  resolution: "marked@npm:17.0.1"
+  bin:
+    marked: bin/marked.js
+  checksum: 10c0/0197337aad33882308cea52d2c86d7b830a89be729a4010a26a488ae1c224cdc7520b8cce056832a81a127fc39a3827f45e3865c1ff257324cb553cb06ce0e57
   languageName: node
   linkType: hard
 
@@ -16130,20 +16136,30 @@ __metadata:
     autoprefixer: "npm:10.4.21"
     babel-plugin-react-compiler: "npm:1.0.0"
     barrelsby: "npm:2.8.1"
+    bun-types: "npm:^1.3.6"
+    class-variance-authority: "npm:^0.7.1"
+    clsx: "npm:^2.1.1"
     commander: "npm:14.0.1"
     concurrently: "npm:9.1.2"
     cross-env: "npm:7.0.3"
+    csstype: "npm:^3.2.3"
     dotenv: "npm:16.5.0"
     eslint: "npm:^9.39.1"
     eslint-plugin-react-hooks: "npm:7.0.1"
+    is-plain-object: "npm:^5.0.0"
+    lodash: "npm:^4.17.21"
+    marked: "npm:^17.0.1"
     openai: "npm:5.3.0"
     patch-package: "npm:8.0.0"
     prompts: "npm:2.4.2"
     react: "npm:19.2.3"
     react-dnd-test-backend: "npm:16.0.1"
     react-dom: "npm:19.2.3"
+    remark-mdx: "npm:^3.1.1"
     rimraf: "npm:6.0.1"
+    scroll-into-view-if-needed: "npm:^3.1.0"
     slate-test-utils: "npm:1.3.2"
+    tailwind-merge: "npm:^3.4.0"
     tailwindcss: "npm:4.1.8"
     tinyglobby: "npm:0.2.14"
     tsdown: "npm:0.16.6"
@@ -16152,6 +16168,10 @@ __metadata:
     typescript: "npm:5.8.3"
     typescript-eslint: "npm:^8.47.0"
     ultracite: "npm:6.3.4"
+    unist-util-visit: "npm:^5.0.0"
+    validator: "npm:^13.15.26"
+    y-webrtc: "npm:^10.3.0"
+    yarn: "npm:^1.22.22"
     zod: "npm:4.1.12"
   languageName: unknown
   linkType: soft
@@ -17333,6 +17353,16 @@ __metadata:
     mdast-util-mdx: "npm:^3.0.0"
     micromark-extension-mdxjs: "npm:^3.0.0"
   checksum: 10c0/247800fa8561624bdca5776457c5965d99e5e60080e80262c600fe12ddd573862e029e39349e1e36e4c3bf79c8e571ecf4d3d2d8c13485b758391fb500e24a1a
+  languageName: node
+  linkType: hard
+
+"remark-mdx@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "remark-mdx@npm:3.1.1"
+  dependencies:
+    mdast-util-mdx: "npm:^3.0.0"
+    micromark-extension-mdxjs: "npm:^3.0.0"
+  checksum: 10c0/3e5585d4c2448d8ac7548b1d148f04b89251ff47fbfc80be1428cecec2fc2530abe30a5da53bb031283f8a78933259df6120c1cd4cc7cc1d43978d508798ba88
   languageName: node
   linkType: hard
 
@@ -18855,6 +18885,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwind-merge@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "tailwind-merge@npm:3.4.0"
+  checksum: 10c0/eaf17bb695c51c7bb7a90366a9c62be295473ee97fcfd1da54287714d4a5788a88ff4ad1ab9e0128638257fda777d6c9ea88682e36195e31a7fa2cf43f45e310
+  languageName: node
+  linkType: hard
+
 "tailwind-scrollbar-hide@npm:4.0.0":
   version: 4.0.0
   resolution: "tailwind-scrollbar-hide@npm:4.0.0"
@@ -20124,6 +20161,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"validator@npm:^13.15.26":
+  version: 13.15.26
+  resolution: "validator@npm:13.15.26"
+  checksum: 10c0/d66041685c531423f6b514d0481228503b96682fe30ed7925ad77ff3cd08c3983dc94f45e18457e44f62f89027b94a3342009d65421800ce65f6e0d2c6eaf7fc
+  languageName: node
+  linkType: hard
+
 "vary@npm:^1, vary@npm:^1.1.2":
   version: 1.1.2
   resolution: "vary@npm:1.1.2"
@@ -20680,7 +20724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"y-webrtc@npm:10.3.0":
+"y-webrtc@npm:10.3.0, y-webrtc@npm:^10.3.0":
   version: 10.3.0
   resolution: "y-webrtc@npm:10.3.0"
   dependencies:
@@ -20755,6 +20799,16 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
+  languageName: node
+  linkType: hard
+
+"yarn@npm:^1.22.22":
+  version: 1.22.22
+  resolution: "yarn@npm:1.22.22"
+  bin:
+    yarn: bin/yarn.js
+    yarnpkg: bin/yarn.js
+  checksum: 10c0/8c77198c93d7542e7f4e131c63b66de357b7076ecfbcfe709ec0d674115c2dd9edaa45196e5510e6e9366d368707a802579e3402071002e1c9d9a99d491478de
   languageName: node
   linkType: hard
 

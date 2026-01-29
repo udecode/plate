@@ -1,4 +1,5 @@
 /* biome-ignore-all lint/nursery/useMaxParams: legacy code */
+/** biome-ignore-all lint/style/useAtIndex: legacy code */
 /* biome-ignore-all lint/performance/useTopLevelRegex: legacy code */
 /* biome-ignore-all lint/style/noParameterAssign: legacy code */
 /* biome-ignore-all lint/style/useForOf: legacy code */
@@ -26,6 +27,19 @@ import {
   paragraphBordersObject,
   verticalAlignValues,
 } from '../constants';
+import {
+  buildCommentRangeEnd,
+  buildCommentRangeStart,
+  buildCommentReferenceRun,
+  buildDeletedTextElement,
+  ensureTrackingState,
+  hasTrackingTokens,
+  splitDocxTrackingTokens,
+  wrapRunWithSuggestion,
+  type ActiveSuggestion,
+  type CommentPayload,
+  type TrackingDocumentInstance,
+} from '../tracking';
 import namespaces from '../namespaces';
 import {
   hex3Regex,
@@ -93,7 +107,7 @@ type MediaFileResponse = {
   id: number;
 };
 
-type DocxDocumentInstance = {
+type DocxDocumentInstance = Partial<TrackingDocumentInstance> & {
   availableDocumentSpace: number;
   createDocumentRelationships: (
     filename: string,
@@ -274,6 +288,76 @@ const fixupColorCode = (colorCodeString: string): string => {
   return '000000';
 };
 
+const resolveCssVar = (
+  value: string,
+  style: Record<string, string>
+): string => {
+  const match = value.match(/var\((--[^)]+)\)/i);
+  if (!match) return value;
+  const varName = match[1];
+  return style[varName] || style[varName.toLowerCase()] || value;
+};
+
+const extractColorToken = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (!trimmed) return;
+  if (colorlessColors.includes(trimmed.toLowerCase())) return;
+
+  if (
+    hexRegex.test(trimmed) ||
+    hex3Regex.test(trimmed) ||
+    rgbRegex.test(trimmed) ||
+    hslRegex.test(trimmed) ||
+    Object.hasOwn(colorNames, trimmed.toLowerCase())
+  ) {
+    return trimmed;
+  }
+
+  const hexMatch = trimmed.match(/#([0-9A-F]{3}|[0-9A-F]{6})/i);
+  if (hexMatch) return hexMatch[0];
+
+  const rgbMatch = trimmed.match(/rgba?\(([^)]+)\)/i);
+  if (rgbMatch) {
+    const parts = rgbMatch[1].split(',').map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `rgb(${parts[0]}, ${parts[1]}, ${parts[2]})`;
+    }
+  }
+
+  const hslMatch = trimmed.match(/hsla?\(([^)]+)\)/i);
+  if (hslMatch) {
+    const parts = hslMatch[1].split(',').map((part) => part.trim());
+    if (parts.length >= 3) {
+      return `hsl(${parts[0]}, ${parts[1]}, ${parts[2]})`;
+    }
+  }
+
+  const tokens = trimmed.split(/[\s,/]+/);
+  for (const token of tokens) {
+    const lower = token.toLowerCase();
+    if (Object.hasOwn(colorNames, lower)) return lower;
+  }
+
+  return;
+};
+
+const resolveBackgroundColor = (
+  style: Record<string, string>
+): string | undefined => {
+  const rawBackground =
+    style['background-color'] ??
+    (style as Record<string, string>).backgroundColor ??
+    style.background ??
+    style['background'] ??
+    style['--cellBackground'] ??
+    style['--cellbackground'] ??
+    style['--cell-background'];
+
+  if (!rawBackground) return;
+  const resolved = resolveCssVar(rawBackground, style);
+  return extractColorToken(resolved);
+};
+
 const buildRunFontFragment = (fontName: string = defaultFont): XMLBuilderType =>
   fragment({ namespaceAlias: { w: namespaces.w } })
     .ele('@w', 'rFonts')
@@ -396,6 +480,161 @@ const buildTextElement = (text: string): XMLBuilderType =>
     .att('@xml', 'space', 'preserve')
     .txt(text)
     .up();
+
+/**
+ * Build a text run fragment with run properties.
+ * Used for building runs within tracked changes.
+ */
+const buildTextRunFragment = (
+  text: string,
+  attributes: RunAttributes,
+  options?: { deleted?: boolean }
+): XMLBuilderType => {
+  const runFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
+    '@w',
+    'r'
+  );
+  const runPropertiesFragment = buildRunProperties(cloneDeep(attributes));
+
+  runFragment.import(runPropertiesFragment);
+  runFragment.import(
+    options?.deleted ? buildDeletedTextElement(text) : buildTextElement(text)
+  );
+  runFragment.up();
+
+  return runFragment;
+};
+
+/**
+ * Build runs from text that may contain DOCX tracking tokens.
+ * Handles insertions, deletions, and comments by parsing tokens
+ * and generating appropriate XML structures.
+ *
+ * Returns null if text has no tracking tokens (use normal processing).
+ */
+const buildRunsFromTextWithTokens = (
+  text: string,
+  attributes: RunAttributes,
+  docxDocumentInstance: DocxDocumentInstance
+): XMLBuilderType[] | null => {
+  // Check if document instance has tracking support
+  if (
+    !docxDocumentInstance.ensureComment ||
+    !docxDocumentInstance.getCommentId ||
+    !docxDocumentInstance.getRevisionId
+  ) {
+    return null;
+  }
+
+  const parts = splitDocxTrackingTokens(text);
+
+  // If just a single text part, return null to use normal processing
+  if (parts.length === 1 && parts[0].type === 'text') {
+    return null;
+  }
+
+  const fragments: XMLBuilderType[] = [];
+  const trackingState = ensureTrackingState(
+    docxDocumentInstance as Required<
+      Pick<
+        DocxDocumentInstance,
+        | '_trackingState'
+        | 'comments'
+        | 'commentIdMap'
+        | 'lastCommentId'
+        | 'revisionIdMap'
+        | 'lastRevisionId'
+        | 'ensureComment'
+        | 'getCommentId'
+        | 'getRevisionId'
+      >
+    >
+  );
+
+  const ensureCommentThread = (
+    payload: CommentPayload,
+    parentId?: string
+  ): number => {
+    const resolvedParentId = parentId ?? payload.parentId;
+    const commentId = docxDocumentInstance.ensureComment({
+      id: payload.id,
+      authorName: payload.authorName,
+      authorInitials: payload.authorInitials,
+      date: payload.date,
+      parentId: resolvedParentId,
+      text: payload.text,
+    });
+
+    if (payload.replies?.length) {
+      payload.replies.forEach((reply) =>
+        ensureCommentThread(reply, payload.id)
+      );
+    }
+
+    return commentId;
+  };
+
+  for (const part of parts) {
+    if (part.type === 'text') {
+      if (!part.value) continue;
+
+      const activeSuggestion: ActiveSuggestion | undefined =
+        trackingState.suggestionStack[trackingState.suggestionStack.length - 1];
+      const runFragment = buildTextRunFragment(part.value, attributes, {
+        deleted: activeSuggestion?.type === 'remove',
+      });
+
+      fragments.push(
+        activeSuggestion
+          ? wrapRunWithSuggestion(runFragment, activeSuggestion)
+          : runFragment
+      );
+      continue;
+    }
+
+    if (part.type === 'commentStart') {
+      const data = part.data;
+      const commentId = ensureCommentThread(data);
+      fragments.push(buildCommentRangeStart(commentId));
+      continue;
+    }
+
+    if (part.type === 'commentEnd') {
+      const commentId = docxDocumentInstance.getCommentId(part.id);
+      fragments.push(buildCommentRangeEnd(commentId));
+      fragments.push(buildCommentReferenceRun(commentId));
+      continue;
+    }
+
+    if (part.type === 'insStart' || part.type === 'delStart') {
+      const data = part.data;
+      const revisionId = docxDocumentInstance.getRevisionId(data.id);
+      const suggestionId = data.id || `suggestion-${revisionId}`;
+      const suggestion: ActiveSuggestion = {
+        id: suggestionId,
+        type: part.type === 'delStart' ? 'remove' : 'insert',
+        author: data.author,
+        date: data.date,
+        revisionId,
+      };
+
+      // Remove any existing suggestion with same ID before pushing
+      trackingState.suggestionStack = trackingState.suggestionStack.filter(
+        (item) => item.id !== suggestionId
+      );
+      trackingState.suggestionStack.push(suggestion);
+      continue;
+    }
+
+    if (part.type === 'insEnd' || part.type === 'delEnd') {
+      trackingState.suggestionStack = trackingState.suggestionStack.filter(
+        (item) => item.id !== part.id
+      );
+    }
+  }
+
+  return fragments;
+};
 
 const fixupLineHeight = (
   lineHeight: number,
@@ -559,13 +798,9 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.color = fixupColorCode(style.color);
     }
 
-    if (
-      style['background-color'] &&
-      !colorlessColors.includes(style['background-color'])
-    ) {
-      modifiedAttributes.backgroundColor = fixupColorCode(
-        style['background-color']
-      );
+    const backgroundColor = resolveBackgroundColor(style);
+    if (backgroundColor && !colorlessColors.includes(backgroundColor)) {
+      modifiedAttributes.backgroundColor = fixupColorCode(backgroundColor);
     }
 
     if (
@@ -781,11 +1016,30 @@ const buildRun = async (
     while (vNodes.length) {
       const tempVNode = vNodes.shift()!;
       if (isVText(tempVNode)) {
-        const textFragment = buildTextElement((tempVNode as VTextType).text);
-        const tempRunPropertiesFragment = buildRunProperties({
-          ...attributes,
-          ...tempAttributes,
-        });
+        const textContent = (tempVNode as VTextType).text;
+        const mergedAttributes = { ...attributes, ...tempAttributes };
+
+        // Check for tracking tokens in text
+        if (docxDocumentInstance && hasTrackingTokens(textContent)) {
+          const trackingFragments = buildRunsFromTextWithTokens(
+            textContent,
+            mergedAttributes,
+            docxDocumentInstance
+          );
+          if (trackingFragments) {
+            runFragmentsArray.push(...trackingFragments);
+            // re initialize temp run fragments with new fragment
+            tempAttributes = cloneDeep(attributes);
+            tempRunFragment = fragment({
+              namespaceAlias: { w: namespaces.w },
+            }).ele('@w', 'r');
+            continue;
+          }
+        }
+
+        // Normal text processing
+        const textFragment = buildTextElement(textContent);
+        const tempRunPropertiesFragment = buildRunProperties(mergedAttributes);
         tempRunFragment.import(tempRunPropertiesFragment);
         tempRunFragment.import(textFragment);
         runFragmentsArray.push(tempRunFragment);
@@ -895,7 +1149,22 @@ const buildRun = async (
 
   runFragment.import(runPropertiesFragment);
   if (isVText(vNode)) {
-    const textFragment = buildTextElement((vNode as VTextType).text);
+    const textContent = (vNode as VTextType).text;
+
+    // Check for tracking tokens in text
+    if (docxDocumentInstance && hasTrackingTokens(textContent)) {
+      const trackingFragments = buildRunsFromTextWithTokens(
+        textContent,
+        attributes,
+        docxDocumentInstance
+      );
+      if (trackingFragments) {
+        return trackingFragments;
+      }
+    }
+
+    // Normal text processing
+    const textFragment = buildTextElement(textContent);
     runFragment.import(textFragment);
   } else if (attributes && attributes.type === 'picture') {
     let response: MediaFileResponse | null = null;
@@ -3205,4 +3474,7 @@ export {
   buildUnderline,
   buildDrawing,
   fixupLineHeight,
+  // Tracking support exports
+  buildRunsFromTextWithTokens,
+  buildTextRunFragment,
 };

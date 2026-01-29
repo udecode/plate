@@ -1,0 +1,28 @@
+.sd-comment-anchor {
+  position: absolute;
+  cursor: pointer;
+  z-index: 3;
+  border-radius: 33px;
+  transition: background-color 250ms ease;
+}
+
+.sd-highlight {
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: #ddaf0955;
+  mix-blend-mode: multiply;
+  transition: background-color 250ms ease;
+}
+
+.sd-initial-highlight {
+  background-color: #1355ff7f;
+}
+
+.sd-highlight:hover,
+.sd-highlight:hover .sd-highlight-active {
+  background-color: #ddaf0999;
+}
+
+.sd-highlight-active {
+  background-color: #1355ff7f;
+}

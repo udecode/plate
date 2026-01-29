@@ -1,0 +1,14 @@
+ul.errorlist {
+    margin: 0 0 4px;
+    padding: 0;
+    color: var(--error-text-color);
+    background: var(--error-background-color);
+}
+
+ul.errorlist li {
+    list-style: none;
+}
+
+ul.errorlist li:first-child {
+    margin-top: 0;
+}

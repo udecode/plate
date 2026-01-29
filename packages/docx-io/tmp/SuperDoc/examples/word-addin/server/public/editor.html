@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/@harbour-enterprises/superdoc@latest/dist/style.css">
+    <link rel="stylesheet" href="./public/editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="module" src="https://unpkg.com/@harbour-enterprises/superdoc@latest/dist/superdoc.umd.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Editor</title>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"></div>
+    </div>
+    
+    <!-- Authentication Required Message -->
+    <div id="auth-required-container" style="display: none; margin-top: -40px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; padding: 0 20px; position: relative; z-index: 5;">
+        <div style="background: white; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #dc3545; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; color: white;">✗</div>
+            <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #323130;">Authentication Required</div>
+            <div style="font-size: 16px; color: #605e5c; margin-bottom: 20px;">Please provide a valid authentication token to access the document editor.</div>
+        </div>
+    </div>
+    
+    <!-- Status Indicator -->
+    <div id="status-indicator" class="status-indicator-container status-connecting">
+        <div class="status-dot"></div>
+        <span class="status-text">Connecting...</span>
+    </div>
+
+    <!-- SuperDoc Editor Container -->
+    <div id="superdoc-container" style="display: none; margin-top: -40px; width: 100%; max-width: 1220px; margin-left: auto; margin-right: auto; padding: 0 20px; position: relative; z-index: 5;">
+        <div class="document-editor-wrapper" style="background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+            <!-- User Card -->
+            <div id="user-card" class="user-card user-card-hidden">
+                <div class="user-avatar">
+                    <img id="user-avatar-img" src="" alt="" style="display: none;">
+                    <span id="user-avatar-initials"></span>
+                </div>
+                <div class="user-details">
+                    <div id="user-name" class="user-name"></div>
+                    <div id="user-email" class="user-email"></div>
+                </div>
+            </div>
+            
+            <!-- Document Mode Dropdown -->
+            <div style="position: relative; margin-bottom: 20px;">
+                <div style="font-size: 24px; font-weight: 600; margin-bottom: 20px; color: #323130;">Document Editor</div>
+                <div id="document-mode-dropdown" style="position: absolute; top: 0; left: 0;">
+                    <div id="mode-selector" style="
+                        position: relative;
+                        display: inline-block;
+                        min-width: 140px;
+                    ">
+                        <div id="mode-button" style="
+                            padding: 8px 12px;
+                            border: 1px solid #e1e5e9;
+                            border-radius: 4px;
+                            background: white;
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: #323130;
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            user-select: none;
+                        ">
+                            <span id="mode-text">
+                                <i id="mode-icon" class="fas fa-pencil-alt mode-icon-editing"></i>
+                                <span id="mode-label">Editing</span>
+                            </span>
+                            <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 12px;"></i>
+                        </div>
+                        <div id="mode-options" style="
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            width: 100%;
+                            background: white;
+                            border: 1px solid #e1e5e9;
+                            border-top: none;
+                            border-radius: 0 0 4px 4px;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                            z-index: 1000;
+                            display: none;
+                        ">
+                            <div class="mode-option" data-value="editing" style="
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                font-size: 14px;
+                                color: #323130;
+                            ">
+                                <i class="fas fa-pencil-alt" style="margin-right: 8px; width: 16px;"></i> Editing
+                            </div>
+                            <div class="mode-option" data-value="suggesting" style="
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                font-size: 14px;
+                                color: #323130;
+                            ">
+                                <i class="fas fa-comment" style="margin-right: 8px; width: 16px;"></i> Suggesting
+                            </div>
+                            <div class="mode-option" data-value="viewing" style="
+                                padding: 8px 12px;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                font-size: 14px;
+                                color: #323130;
+                            ">
+                                <i class="fas fa-eye" style="margin-right: 8px; width: 16px;"></i> Viewing
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="my-toolbar" style="margin-bottom: 15px;"></div>
+            <div id="superdoc" style="min-height: 600px; border: 1px solid #e1e5e9; border-radius: 4px; width: 100%;"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./public/editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+.sd-input-active {
+  border: 1px solid #1355ff !important;
+}
+
+.sd-super-editor-html .ProseMirror {
+  border: 1px solid #d9d9d9;
+  outline: none;
+  border-radius: 8px;
+  height: 100%;
+  width: 100%;
+  outline: none;
+}
+
+a {
+  text-decoration: auto;
+}

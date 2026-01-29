@@ -1,0 +1,38 @@
+#wait i {
+    display: none;
+}
+
+#wait.active {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(var(--wait-active-background-color));
+    z-index: 1500;
+}
+
+#wait.active.full {
+    background-color: rgba(var(--wait-active-full-background-color));
+}
+
+#wait.active i {
+    display: block;
+    height: 1em;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    font-size: 24px;
+    margin-top: -0.5em;
+    margin-left: -0.5em;
+}
+
+#wait span {
+    display: none;
+}
+
+#wait.active span.message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 105vh;
+    font-size: 15px;
+    margin-top: 20px;
+}

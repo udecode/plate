@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load transpile %}
+{% block title %}{% trans "Maintenance" %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link type="text/css" rel="stylesheet" href="{% static "css/colors.css" %}" />
+<link type="text/css" rel="stylesheet" href="{% static "css/alerts.css" %}" />
+<!--  Translations -->
+<script type="text/javascript" src="/api/jsi18n/"></script>
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+<!-- JS error handling -->
+<script type="text/javascript" src="{% static "js/error_hook.mjs" %}" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static "js/maintenance.mjs" %}"></script>
+{% endblock %}
+{% block content %}
+    <div>
+        <h1>{% trans "Document Maintenance" %}</h1>
+        <p>
+            {% blocktrans %}
+            Before and after upgrading Fidus Writer, you should update all the documents
+            of all users to the newest document version. Only do this if you know that
+            no user is currently editing any document!
+            {% endblocktrans %}
+        </p>
+    </div>
+    <div class="submit_row">
+        <input type="submit" class="default" id="update" value="{% trans "Update all documents (DANGER!)" %}">
+    </div>
+{% endblock %}

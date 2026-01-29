@@ -1,0 +1,17 @@
+.bibliography-header-value input[type="text"] {
+    margin: 10px;
+    background-color: var(--cs-white-background);
+    border: 1px solid var(--cs-white-border);
+}
+
+.bibliography-header-value table.fw-small {
+    width: 100%;
+}
+
+#template-editor table.title-id input[type="text"] {
+    margin-bottom: 4px;
+}
+
+.fw-contents.template-editor-wrapper {
+    margin-bottom: 80px;
+}

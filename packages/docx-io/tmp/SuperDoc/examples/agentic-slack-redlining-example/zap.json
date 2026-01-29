@@ -1,0 +1,875 @@
+{
+    "metadata": { "version": 2 },
+    "zaps": [
+      {
+        "id": 1,
+        "title": "slackbot-zap-test",
+        "nodes": {
+          "1": {
+            "id": 1,
+            "paused": false,
+            "type_of": "read",
+            "params": { "key": "" },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "timezone": "America/New_York",
+              "parammap": {}
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": null,
+            "root_id": null,
+            "action": "hook_v2",
+            "selected_api": "WebHookCLIAPI@1.0.22",
+            "title": "slackbot-zap-test",
+            "authentication_id": null
+          },
+          "2": {
+            "id": 2,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "Working on \"*{{1__text}}*\"",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" },
+              "stepTitle": "Copy: Copy: Send Channel Message in Slack (1.15.0)"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 1,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Copy: Send Channel Message in Slack (1.15.0)",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "3": {
+            "id": 3,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "provider_id": "openai",
+              "authentication_id": "YOUR_OPENAI_AUTH_ID",
+              "model_id": "openai/gpt-4.1",
+              "isOutputArray": "false",
+              "instructions": "Extract a search string and a possible type of clause (without a description) from the following text: {{1__text}}\n\nAlso generate text about searching for a document. Return success as true.\n\nIf a search string or type of clause could not be extracted, generate a message informing the user that they should format their message to include a possible document name and clause. Also, return success as false.",
+              "outputSchema": {
+                "Document Name": "The possible name or title of the document extracted from the given text",
+                "Clause Name": "A brief description or summary of the body of text extracted from the given content",
+                "Message": "",
+                "Success": ""
+              },
+              "options_Document Name": [],
+              "options_Text Description": [],
+              "options_Clause Name": [],
+              "required_Document Name": true,
+              "type_Document Name": "text",
+              "required_Clause Name": true,
+              "type_Clause Name": "text",
+              "required_Message": true,
+              "type_Message": "text",
+              "options_Message": [],
+              "required_Success": false,
+              "type_Success": "boolean"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {
+                "provider_id": "openai",
+                "model_id": "GPT-4.1",
+                "authentication_id": "YOUR_OPENAI_ACCOUNT_LABEL"
+              },
+              "stepTitle": "Get search string and clause name, message"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 2,
+            "root_id": 1,
+            "action": "get_completion",
+            "selected_api": "AICLIAPI@3.1.12",
+            "title": null,
+            "authentication_id": null
+          },
+          "4": {
+            "id": 4,
+            "paused": true,
+            "type_of": "write",
+            "params": {},
+            "meta": { "$editor": { "has_automatic_issues": false } },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 3,
+            "root_id": 1,
+            "action": "branch",
+            "selected_api": "BranchingAPI",
+            "title": null,
+            "authentication_id": null
+          },
+          "5": {
+            "id": 5,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Dark Olive Green",
+              "emoji": "E",
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_1",
+                  "group": "FILTER_GROUP_ID_1",
+                  "key": "3__Success",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "continue"
+                }
+              ],
+              "path_eval_index": 0
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Valid user input (search string + clause)"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 4,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Valid user input (search string + clause)",
+            "authentication_id": null
+          },
+          "6": {
+            "id": 6,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Light Slate Gray",
+              "emoji": "F",
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_2",
+                  "group": "FILTER_GROUP_ID_2",
+                  "key": "3__Success",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "stop"
+                }
+              ],
+              "path_eval_index": 1
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Invalid user input"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 4,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Invalid user input",
+            "authentication_id": null
+          },
+          "7": {
+            "id": 7,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{3__Message}}\nCancelled.",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" },
+              "stepTitle": "Copy: Send Channel Message in Slack (1.15.0)"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 6,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Send Channel Message in Slack (1.15.0)",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "8": {
+            "id": 8,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{3__Message}}",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" }
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 5,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": null,
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "9": {
+            "id": 9,
+            "paused": true,
+            "type_of": "search",
+            "params": {
+              "_zap_search_success_on_miss": true,
+              "_zap_search_multiple_results": "first",
+              "search_type": "contains",
+              "title": "{{3__Document Name}}",
+              "drive": "YOUR_GOOGLE_DRIVE_ID",
+              "folder": null,
+              "file_types": ["text/"]
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "drive": "YOUR_GOOGLE_DRIVE_NAME" }
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 8,
+            "root_id": 1,
+            "action": "file_v2",
+            "selected_api": "GoogleDriveCLIAPI@1.9.0",
+            "title": null,
+            "authentication_id": "YOUR_GOOGLE_DRIVE_AUTH_ID"
+          },
+          "10": {
+            "id": 10,
+            "paused": true,
+            "type_of": "write",
+            "params": {},
+            "meta": { "$editor": { "has_automatic_issues": false } },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 9,
+            "root_id": 1,
+            "action": "branch",
+            "selected_api": "BranchingAPI",
+            "title": null,
+            "authentication_id": null
+          },
+          "11": {
+            "id": 11,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Heroine Blue",
+              "emoji": "A",
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_3",
+                  "group": "FILTER_GROUP_ID_3",
+                  "key": "9___zap_search_was_found_status",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "continue"
+                }
+              ],
+              "path_eval_index": 0
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Doc found"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 10,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Path A",
+            "authentication_id": null
+          },
+          "12": {
+            "id": 12,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Peru",
+              "emoji": "B",
+              "path_eval_index": 1,
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_4",
+                  "group": "FILTER_GROUP_ID_4",
+                  "key": "9___zap_search_was_found_status",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "stop"
+                }
+              ]
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Doc not found"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 10,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Path B",
+            "authentication_id": null
+          },
+          "13": {
+            "id": 13,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "provider_id": "openai",
+              "authentication_id": "YOUR_OPENAI_AUTH_ID",
+              "model_id": "openai/gpt-4.1",
+              "isOutputArray": "false",
+              "instructions": "Generate a message about not being able to find a document using the following text: {{3__Document Name}}",
+              "outputSchema": { "Message": "" },
+              "options_Document Name": [],
+              "options_Text Description": [],
+              "options_Clause Name": [],
+              "options_Message": [],
+              "required_Message": true,
+              "type_Message": "text"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {
+                "provider_id": "openai",
+                "model_id": "GPT-4.1",
+                "authentication_id": "YOUR_OPENAI_ACCOUNT_LABEL"
+              },
+              "stepTitle": "Generate \"not found\" message"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 12,
+            "root_id": 1,
+            "action": "get_completion",
+            "selected_api": "AICLIAPI@3.1.12",
+            "title": "Generate \"not found\" message",
+            "authentication_id": null
+          },
+          "14": {
+            "id": 14,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{13__Message}}",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" },
+              "stepTitle": "Copy: Copy: Send Channel Message in Slack"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 13,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Copy: Send Channel Message in Slack",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "15": {
+            "id": 15,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "provider_id": "openai",
+              "authentication_id": "YOUR_OPENAI_AUTH_ID",
+              "model_id": "openai/gpt-4.1",
+              "isOutputArray": "false",
+              "instructions": "Generate a message about successfully finding a document using the following text: {{3__Document Name}}\nAlso, let the user know that you are making a copy of the document and inserting the following text: {{3__Clause Name}}",
+              "outputSchema": { "Message": "" },
+              "options_Document Name": [],
+              "options_Text Description": [],
+              "options_Clause Name": [],
+              "options_Message": [],
+              "required_Message": true,
+              "type_Message": "text"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {
+                "provider_id": "openai",
+                "model_id": "GPT-4.1",
+                "authentication_id": "YOUR_OPENAI_ACCOUNT_LABEL"
+              },
+              "stepTitle": "Generate \"found\" message"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 11,
+            "root_id": 1,
+            "action": "get_completion",
+            "selected_api": "AICLIAPI@3.1.12",
+            "title": "Generate \"found\" message",
+            "authentication_id": null
+          },
+          "16": {
+            "id": 16,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{15__Message}}",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" },
+              "stepTitle": "Copy: Send Channel Message in Slack"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 15,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Send Channel Message in Slack",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "17": {
+            "id": 17,
+            "paused": true,
+            "type_of": "write",
+            "params": { "key": "file", "value": "{{9__file}}" },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {},
+              "stepTitle": "generate public url via zapier storage"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 16,
+            "root_id": 1,
+            "action": "set_value",
+            "selected_api": "StorageCLIAPI@1.2.1",
+            "title": "generate public url via zapier storage",
+            "authentication_id": "YOUR_ZAPIER_STORAGE_AUTH_ID"
+          },
+          "18": {
+            "id": 18,
+            "paused": true,
+            "type_of": "search",
+            "params": {
+              "_zap_search_success_on_miss": "False",
+              "_zap_search_multiple_results": "first",
+              "key": "file"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {},
+              "stepTitle": "retrieve public url"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 17,
+            "root_id": 1,
+            "action": "get_value",
+            "selected_api": "StorageCLIAPI@1.2.1",
+            "title": "retrieve public url",
+            "authentication_id": "YOUR_ZAPIER_STORAGE_AUTH_ID"
+          },
+          "19": {
+            "id": 19,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "payload_type": "json",
+              "wrap_in_array": "no",
+              "unflatten": "yes",
+              "url": "YOUR_WEBHOOK_ENDPOINT_URL",
+              "file": "",
+              "auth": "",
+              "data": {
+                "clauseType": "{{3__Clause Name}}",
+                "fileUrl": "{{18__value}}"
+              }
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {}
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 18,
+            "root_id": 1,
+            "action": "post",
+            "selected_api": "WebHookCLIAPI@1.0.22",
+            "title": null,
+            "authentication_id": null
+          },
+          "20": {
+            "id": 20,
+            "paused": true,
+            "type_of": "write",
+            "params": {},
+            "meta": { "$editor": { "has_automatic_issues": false } },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 19,
+            "root_id": 1,
+            "action": "branch",
+            "selected_api": "BranchingAPI",
+            "title": null,
+            "authentication_id": null
+          },
+          "21": {
+            "id": 21,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Yellow Green",
+              "emoji": "C",
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_5",
+                  "group": "FILTER_GROUP_ID_5",
+                  "key": "19__success",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "continue"
+                }
+              ],
+              "path_eval_index": 0
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Webhook success"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 20,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Webhook success",
+            "authentication_id": null
+          },
+          "22": {
+            "id": 22,
+            "paused": true,
+            "type_of": "filter",
+            "params": {
+              "color": "Dark Magenta",
+              "emoji": "D",
+              "path_eval_index": 1,
+              "filter_criteria": [
+                {
+                  "id": "FILTER_CRITERIA_ID_6",
+                  "group": "FILTER_GROUP_ID_6",
+                  "key": "19__success",
+                  "value": "",
+                  "match": "boolean",
+                  "action": "stop"
+                }
+              ]
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "stepTitle": "Webhook failure"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 20,
+            "root_id": 1,
+            "action": "filter",
+            "selected_api": "BranchingAPI",
+            "title": "Webhook failure",
+            "authentication_id": null
+          },
+          "23": {
+            "id": 23,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "provider_id": "openai",
+              "authentication_id": "YOUR_OPENAI_AUTH_ID",
+              "model_id": "openai/gpt-4.1",
+              "isOutputArray": "false",
+              "instructions": "Generate a message about being unable to insert a suggestion into the document. Encourage the user to try again.",
+              "outputSchema": { "Message": "" },
+              "options_Document Name": [],
+              "options_Text Description": [],
+              "options_Clause Name": [],
+              "options_Message": [],
+              "required_Message": true,
+              "type_Message": "text"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": {
+                "provider_id": "openai",
+                "model_id": "GPT-4.1",
+                "authentication_id": "YOUR_OPENAI_ACCOUNT_LABEL"
+              },
+              "stepTitle": "Generate webhook failure message"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 22,
+            "root_id": 1,
+            "action": "get_completion",
+            "selected_api": "AICLIAPI@3.1.12",
+            "title": "Generate webhook failure message",
+            "authentication_id": null
+          },
+          "24": {
+            "id": 24,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{23__Message}}",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": ""
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "demo-superdoc-agentic" },
+              "stepTitle": "Copy: Copy: Send Channel Message in Slack"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 23,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Copy: Send Channel Message in Slack",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          },
+          "25": {
+            "id": 25,
+            "paused": true,
+            "type_of": "write",
+            "params": {
+              "add_app_to_channel": "yes",
+              "as_bot": "yes",
+              "add_edit_link": false,
+              "unfurl": "yes",
+              "link_names": "yes",
+              "reply_broadcast": "no",
+              "channel": "YOUR_SLACK_CHANNEL_ID",
+              "text": "{{9__title}} (Copy)\n\n...{{19__clauseBefore}}\n>*{{19__clause}}*\n{{19__clauseAfter}}...\n",
+              "username": "SuperDocBot",
+              "icon": "https://superdoc.dev/logos/logo.webp",
+              "image_url": "",
+              "post_at": "",
+              "file": "{{19__file}}"
+            },
+            "meta": {
+              "$editor": { "has_automatic_issues": false },
+              "parammap": { "channel": "YOUR_SLACK_CHANNEL_NAME" },
+              "stepTitle": "Copy: Send Channel Message in Slack"
+            },
+            "triple_stores": {
+              "copied_from": null,
+              "created_by": null,
+              "polling_interval_override": 0,
+              "block_and_release_limit_override": 0,
+              "spread_tasks": 1
+            },
+            "parent_id": 21,
+            "root_id": 1,
+            "action": "channel_message",
+            "selected_api": "SlackCLIAPI@1.19.0",
+            "title": "Copy: Send Channel Message in Slack",
+            "authentication_id": "YOUR_SLACK_AUTH_ID"
+          }
+        }
+      }
+    ]
+  }
+  

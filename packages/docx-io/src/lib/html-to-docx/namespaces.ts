@@ -18,6 +18,10 @@ export type OoxmlNamespaces = {
   dcmitype: string;
   /** Dublin Core terms namespace */
   dcterms: string;
+  /** Comments relationship namespace */
+  comments: string;
+  /** Comments extended relationship namespace */
+  commentsExtended: string;
   /** Font table relationship namespace */
   fontTable: string;
   /** Footer relationship namespace */
@@ -60,6 +64,10 @@ export type OoxmlNamespaces = {
   w: string;
   /** Word 2010 namespace */
   w10: string;
+  /** Word 2010 namespace for paraId support */
+  w14: string;
+  /** Word 2012 namespace for commentsEx support */
+  w15: string;
   /** Web settings relationship namespace */
   webSettingsRelation: string;
   /** Word 2006 WordML namespace */
@@ -84,6 +92,10 @@ const namespaces: OoxmlNamespaces = {
   dc: 'http://purl.org/dc/elements/1.1/',
   dcmitype: 'http://purl.org/dc/dcmitype/',
   dcterms: 'http://purl.org/dc/terms/',
+  comments:
+    'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments',
+  commentsExtended:
+    'http://schemas.microsoft.com/office/2011/relationships/commentsExtended',
   fontTable:
     'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable',
   footers:
@@ -115,6 +127,8 @@ const namespaces: OoxmlNamespaces = {
   vt: 'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes',
   w: 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
   w10: 'urn:schemas-microsoft-com:office:word',
+  w14: 'http://schemas.microsoft.com/office/word/2010/wordml',
+  w15: 'http://schemas.microsoft.com/office/word/2012/wordml',
   webSettingsRelation:
     'http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings',
   wne: 'http://schemas.microsoft.com/office/word/2006/wordml',

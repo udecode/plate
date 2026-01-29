@@ -1,0 +1,32 @@
+// Fidus Writer will combine this file with package.json files in other installed
+// apps before executing npm commands. Different from a regular package.json, comments
+// are allowed in this file.
+
+{
+    name: "fidus-writer",
+    description: "Install dependencies for ES6 transpilation",
+    scripts: {
+        copy_fontawesome: "mkdir -p ../static-libs/css/fontawesome/css/ && rsync -av --no-perms --checksum node_modules/@fortawesome/fontawesome-free/css/ ../static-libs/css/fontawesome/css/ && rsync -av --no-perms --checksum node_modules/@fortawesome/fontawesome-free/webfonts/ ../static-libs/css/fontawesome/webfonts/",
+        copy_prosemirror_css: "mkdir -p ../static-libs/css/ && rsync -av --no-perms --checksum node_modules/prosemirror-view/style/prosemirror.css ../static-libs/css/ && rsync -av --no-perms --checksum node_modules/prosemirror-menu/style/menu.css ../static-libs/css/prosemirror-menu.css && rsync -av --no-perms --checksum node_modules/prosemirror-example-setup/style/style.css ../static-libs/css/prosemirror-example-setup.css",
+        copy_mathlive_css: "mkdir -p ../static-libs/css/ && rsync -av --no-perms --no-perms --checksum node_modules/mathlive/dist/mathlive-static.css ../static-libs/css/mathlive.css",
+        copy_mathlive_fonts: "mkdir -p ../static-libs/css/fonts/ && rsync -av --no-perms --checksum node_modules/mathlive/dist/fonts/ ../static-libs/css/fonts/",
+        postinstall: "npm run copy_fontawesome && npm run copy_prosemirror_css && npm run copy_mathlive_css && npm run copy_mathlive_fonts",
+        "babel-transform-template-literals": "babel --plugins @babel/plugin-transform-template-literals"
+    },
+    author: "Johannes Wilm",
+    license: "AGPL",
+    private: true,
+    dependencies: {
+        "file-loader": "^6.0.0",
+        "diff-dom": "5.1.3",
+        downloadjs: "1.4.7",
+        "@fortawesome/fontawesome-free": "^6.1.1",
+        "simple-datatables": "^10.0.0",
+        "@vivliostyle/print": "^2.34.0",
+        "w3c-keyname": "2.2.8",
+        "source-map-loader": "4.0.1",
+        "stacktrace-js": "2.0.2",
+        "regenerator-runtime": "0.14.0",
+        "@aaroon/workbox-rspack-plugin": "0.3.2"
+    }
+}

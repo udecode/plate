@@ -1,0 +1,10 @@
+[run]
+parallel = True
+concurrency = thread,multiprocessing
+sigterm = True
+relative_files = True
+omit =
+	*migrations*
+	venv/*
+	*virtualenv*
+    menu/*

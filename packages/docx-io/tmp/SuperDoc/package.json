@@ -1,0 +1,70 @@
+{
+  "name": "harbour-enterprises",
+  "private": true,
+  "license": "AGPL-3.0",
+  "workspaces": [
+    "packages/*",
+    "shared/*"
+  ],
+  "scripts": {
+    "test": "vitest --root ./packages/super-editor",
+    "unzip": "bash packages/super-editor/src/tests/helpers/unzip.sh",
+    "dev": "npm --workspace=@harbour-enterprises/superdoc run dev",
+    "dev:superdoc": "npm run dev --workspace=packages/superdoc",
+    "dev:super-editor": "npm run dev --workspace=packages/super-editor",
+    "watch:super-editor": "npm run build:watch --workspace=packages/super-editor",
+    "build:superdoc": "npm run build --workspace=packages/superdoc",
+    "build:super-editor": "npm run build --workspace=packages/super-editor",
+    "build": "npm run build:super-editor && npm run build:superdoc",
+    "release:superdoc": "npm run release --workspace=packages/superdoc",
+    "release:next": "npm run release:next --workspace=packages/superdoc",
+    "clean:packages": "rm -rf ./packages/*/dist",
+    "reset": "npm run clean:packages && rm -rf ./node_modules && rm -rf ./packages/*/node_modules && rm -rf ./package-lock.json && npm install",
+    "publish": "npm run build && cd packages/superdoc && npm publish --access public",
+    "format": "prettier --write \"**/*.{js,jsx,vue,css,scss,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,vue,css,scss,json,md}\"",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "lint:jsdoc": "eslint packages/super-editor/src/extensions/field-annotation/field-annotation.js --config eslint.config.docs.mjs",
+    "lint:jsdoc:fix": "eslint packages/super-editor/src/extensions/field-annotation/field-annotation.js --config eslint.config.docs.mjs --fix",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "pack": "npm run build:super-editor && npm --prefix ./packages/superdoc run pack",
+    "prepare": "husky",
+    "lint:staged": "lint-staged",
+    "watch": "npm run watch:es --workspace=packages/superdoc"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,scss,json,md}": [
+      "prettier --write"
+    ],
+    "*.vue": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.31.0",
+    "@types/node": "^22.13.1",
+    "@vuepress/bundler-vite": "^2.0.0-rc.18",
+    "@vuepress/plugin-redirect": "^2.0.0-rc.60",
+    "@vuepress/theme-default": "^2.0.0-rc.60",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsdoc": "^54.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.4",
+    "prettier": "3.3.3",
+    "rollup": "^4.46.2",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "sass-embedded": "^1.80.7",
+    "vitest": "^3.0.8",
+    "vuepress": "^2.0.0-rc.18",
+    "xml-js": "^1.6.11"
+  }
+}

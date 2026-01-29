@@ -1,0 +1,1623 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+  <w:body>
+    <w:sectPr>
+      <w:pgSz w:w="12240" w:h="15840" w:orient="portrait"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/>
+    </w:sectPr>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+  </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+  </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="10" w:name="Aui8iD3641"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Welcome to the Plate Playground!</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="10"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Experience a modern rich-text editor built with </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId6">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Slate</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> and </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId7">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">React</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. This playground showcases just a part of Plate's capabilities. </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId8">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Explore the documentation</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> to discover more.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="11" w:name="NDzi6gZBHi"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Collaborative Editing</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="11"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Review and refine content seamlessly. Use </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId9">
+        <w:ins w:id="1" w:author="Alice" w:date="2026-01-26T00:25:18.139Z">
+          <w:r>
+            <w:rPr>
+              <w:rStyle w:val="Hyperlink"/>
+              <w:u w:val="single"/>
+            </w:rPr>
+            <w:t xml:space="preserve">suggestions</w:t>
+          </w:r>
+        </w:ins>
+      </w:hyperlink>
+      <w:ins w:id="1" w:author="Alice" w:date="2026-01-26T00:25:18.139Z">
+        <w:r>
+          <w:rPr>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t xml:space="preserve"> like this added text</w:t>
+        </w:r>
+      </w:ins>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> or to </w:t>
+      </w:r>
+      <w:del w:id="2" w:author="Bob" w:date="2026-01-26T00:25:18.139Z">
+        <w:r>
+          <w:rPr>
+            <w:strike w:val="true"/>
+          </w:rPr>
+          <w:delText xml:space="preserve">mark text for removal</w:delText>
+        </w:r>
+      </w:del>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. Discuss changes using </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId10">
+        <w:commentRangeStart w:id="0"/>
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">comments</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> on many text segments</w:t>
+      </w:r>
+      <w:commentRangeEnd w:id="0"/>
+      <w:r>
+        <w:commentReference w:id="0"/>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. You can even have </w:t>
+      </w:r>
+      <w:commentRangeStart w:id="2"/>
+      <w:ins w:id="3" w:author="Charlie" w:date="2026-01-26T00:25:18.139Z">
+        <w:r>
+          <w:rPr>
+            <w:u w:val="single"/>
+          </w:rPr>
+          <w:t xml:space="preserve">overlapping</w:t>
+        </w:r>
+      </w:ins>
+      <w:commentRangeEnd w:id="2"/>
+      <w:r>
+        <w:commentReference w:id="2"/>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> annotations!</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="12" w:name="zh3z0FHUet"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">AI-Powered Editing</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="12"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Boost your productivity with integrated </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId11">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">AI SDK</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. Press </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">⌘+J</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> or </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Space</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> in an empty line to:</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Generate content (continue writing, summarize, explain)</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Edit existing text (improve, fix grammar, change tone)</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="13" w:name="8Y8LtGn_Kj"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Rich Content Editing</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="13"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Structure your content with </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId12">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">headings</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId13">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">lists</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, and </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId14">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">quotes</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. Apply </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId15">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">marks</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> like </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">bold</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+        </w:rPr>
+        <w:t xml:space="preserve">italic</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t xml:space="preserve">underline</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:strike w:val="true"/>
+        </w:rPr>
+        <w:t xml:space="preserve">strikethrough</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, and </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">code</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">. Use </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId16">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">autoformatting</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> for </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId17">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Markdown</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">-like shortcuts (e.g., </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve">* </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> for lists, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:highlight w:val="lightGray"/>
+        </w:rPr>
+        <w:t xml:space="preserve"># </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> for H1).</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:ind w:left="284"/>
+        <w:pBdr>
+          <w:left w:val="single" w:sz="18" w:space="4" w:color="CCCCCC"/>
+        </w:pBdr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Blockquotes are great for highlighting important information.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+          <w:color w:val="d73a49"/>
+        </w:rPr>
+        <w:t xml:space="preserve">function</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+          <w:color w:val="6f42c1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">hello</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">(</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">) {</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">  </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+          <w:color w:val="005cc5"/>
+        </w:rPr>
+        <w:t xml:space="preserve">console</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+          <w:color w:val="6f42c1"/>
+        </w:rPr>
+        <w:t xml:space="preserve">info</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">(</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+          <w:color w:val="032f62"/>
+        </w:rPr>
+        <w:t xml:space="preserve">'Code blocks are supported!'</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">);</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">}</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Create </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId18">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">links</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId19">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">@mention</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> users like </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Alice</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">, or insert </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId20">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">emojis</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> ✨. Use the </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId21">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">slash command</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> (/) for quick access to elements.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="14" w:name="2nt52Hf1YV"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">How Plate Compares</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="14"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Plate offers many features out-of-the-box as free, open-source plugins.</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:bottom w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:left w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:right w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideV w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+          <w:insideH w:val="single" w:sz="2" w:space="0" w:color="000000"/>
+        </w:tblBorders>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="9360"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3120"/>
+        <w:gridCol w:w="3120"/>
+        <w:gridCol w:w="3120"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Feature</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Plate (Free &amp; OSS)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b/>
+              </w:rPr>
+              <w:t xml:space="preserve">Tiptap</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">AI</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid Extension</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Comments</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid Extension</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Suggestions</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid (Comments Pro)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Emoji Picker</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid Extension</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Table of Contents</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid Extension</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Drag Handle</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Paid Extension</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Collaboration (Yjs)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">✅</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vMerge w:val="restart"/>
+            <w:gridSpan w:val="1"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Hocuspocus (OSS/Paid)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="15" w:name="kPU8SLzX2O"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Images and Media</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="15"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Embed rich media like images directly in your content. Supports </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId22">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Media uploads</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> and </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId23">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">drag &amp; drop</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> for a smooth experience.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:drawing>
+          <wp:inline distB="0" distL="0" distR="0" distT="0">
+            <wp:extent cx="5715000" cy="3810000"/>
+            <wp:effectExtent b="0" l="0" r="0" t="0"/>
+            <wp:docPr id="2" name="image-C9VptDFuuJfXeJPqFP668.jpeg"/>
+            <a:graphic>
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic>
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="2" name="image-C9VptDFuuJfXeJPqFP668.jpeg" descr=""/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId25" cstate="print"/>
+                    <a:srcRect b="0" l="0" r="0" t="0"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5715000" cy="3810000"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect"/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Images with captions provide context.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink r:id="rId26">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="16" w:name="MD9lQV1nCg"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Table of Contents</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="16"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="Aui8iD3641">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Welcome to the Plate Playground!</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="NDzi6gZBHi">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Collaborative Editing</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="zh3z0FHUet">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">AI-Powered Editing</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="8Y8LtGn_Kj">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Rich Content Editing</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="2nt52Hf1YV">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">How Plate Compares</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="kPU8SLzX2O">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Images and Media</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="MD9lQV1nCg">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Table of Contents</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="51mZxEHMeC">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Dates and Equations</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="I59p8gN287">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Callouts and Toggles</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:hyperlink w:anchor="PkIt8qtm9i">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Multi-column Layout</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/>
+        </w:pBdr>
+      </w:pPr>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="17" w:name="51mZxEHMeC"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Dates and Equations</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="17"/>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Insert dates like </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">January 14, 2024</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve"> or use inline equations: </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+        </w:rPr>
+        <w:t xml:space="preserve">E = mc^2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">.</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="18" w:name="I59p8gN287"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Callouts and Toggles</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="18"/>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="9360"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4680"/>
+        <w:gridCol w:w="4680"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="450" w:type="dxa"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="27"/>
+              </w:rPr>
+              <w:t xml:space="preserve">💡</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">This is a callout block for important information.</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:bookmarkStart w:id="19" w:name="PkIt8qtm9i"/>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">Multi-column Layout</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="19"/>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblCellSpacing w:w="0" w:type="dxa"/>
+        <w:tblW w:type="dxa" w:w="9360"/>
+        <w:tblCellMar>
+          <w:top w:type="dxa" w:w="80"/>
+          <w:bottom w:type="dxa" w:w="80"/>
+          <w:left w:type="dxa" w:w="160"/>
+          <w:right w:type="dxa" w:w="160"/>
+        </w:tblCellMar>
+        <w:jc w:val="center"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4680"/>
+        <w:gridCol w:w="4680"/>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr/>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2500" w:type="pct"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">First column content. Great for side-by-side comparisons.</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="2500" w:type="pct"/>
+            <w:vAlign w:val="top"/>
+          </w:tcPr>
+          <w:p>
+            <w:pPr>
+              <w:spacing w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr/>
+              <w:t xml:space="preserve">Second column content. Layout flexibility at its best.</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">﻿</w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+  </w:t>
+      </w:r>
+    </w:p>
+    <w:p>
+      <w:pPr>
+        <w:spacing w:lineRule="auto"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+        <w:t xml:space="preserve">
+</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>

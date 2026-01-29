@@ -1,0 +1,162 @@
+:root {
+    --main-text-color: #2c2723;
+    --main-background-color: #f2f2f2;
+    --overlay-color: 170, 170, 170, 0.3;
+    --input-focus-background-color: #fbf9d2;
+    --input-background-color: #f3f3f3;
+    --input-dialog-border-color: #e0e0e0;
+    --wait-active-background-color: 240, 240, 240, 0.7;
+    --wait-active-full-background-color: 240, 240, 240, 1;
+    --highcontrast-overlay-color: 255, 255, 255, 0.8;
+    --highcontrast-background-color: #ffffff;
+    --highcontrast-border-color: #e0e0e0;
+    --alert-box-shadow-color: 240, 240, 240, 1;
+    --dropup-box-shadow-color: 0, 0, 0, 0.11;
+    --nagivation-link-text-color: #dde7e3;
+    --nagivation-link-active-text-color: #ffffff;
+    --tokenfield-color: #555555;
+    --tooltip-background-color: 38, 38, 38, 0.6;
+    --chat-highlight-background-color: #6495ed;
+    --info-text-color: #ffffff;
+    --info-background-color: 36, 113, 176, 0.8;
+    --success-text-color: #ffffff;
+    --success-background-color: 109, 164, 147, 0.8;
+    --warning-text-color: #ffffff;
+    --warning-background-color: 221, 208, 63, 0.8;
+    --warning-border-color: 200, 63, 27, 0.8;
+    --error-border-color: #af3515;
+    --error-background-color: #cc3f1a;
+    --input-error-background-color: #f34141;
+    --error-text-color: #ffffff;
+    --pulldown-header-text-color: #ffffff;
+    --pulldown-header-background-color: #2c2723;
+    --pulldown-separator-color: #f2f2f2;
+    --pulldown-box-shadow-color: 0, 0, 0, 0.2;
+    --table-row-background-color: #bfedc1;
+    --menu-cursor-border-color: #63ab0d;
+
+    /* Color Schemes (CS) */
+
+    /* red text */
+    --cs-1-text: #b73717;
+    --cs-1-icon: #a7321f;
+    --cs-1-hover: #2c2723;
+
+    /* white on blue */
+    --cs-2-background-from: #0d78be;
+    --cs-2-background-to: #0d63ab;
+    --cs-2-background: #0d78be; /* flat */
+    --cs-2-border: #0557a1;
+    --cs-2-background-hover: #0d63ab;
+    --cs-2-background-selected: #63ab0d;
+    --cs-2-box-shadow: #3c9fdf;
+    --cs-2-text: #ffffff;
+
+    /* white on orange */
+    --cs-3-text: #ffffff;
+    --cs-3-background-from: #d3421c;
+    --cs-3-background-to: #b13615;
+    --cs-3-background-hover: #b13615;
+    --cs-3-border: #7d331f;
+
+    /* light green text */
+    --cs-4-text: #4c6860;
+
+    /* white on light green */
+    --cs-5-text: #ffffff;
+    --cs-5-background: #4c6860;
+    --cs-5-border: #f2f2f2;
+    --cs-5-background-hover: #97cdbe;
+
+    /* white on dark green */
+    --cs-6-text: #ffffff;
+    --cs-6-background: #5a7e73;
+    --cs-6-border: #7d948e;
+    --cs-6-background-focus: #8ab5a6;
+    --cs-6-background-hover: #96c6b8;
+
+    /* white on dark */
+    --cs-dark-text: #ffffff;
+    --cs-dark-hover: #e0e0e0;
+    --cs-dark-border: #4f4d4f;
+    --cs-dark-background-hover: #585858;
+    --cs-dark-background: #585858; /* flat */
+    --cs-dark-background-from: #6a6a6a;
+    --cs-dark-background-to: #585858;
+    --cs-dark-box-shadow: #7f7f7f;
+
+    /* dark on white-ish background */
+    --cs-light-text: #2c2723;
+    --cs-light-hover: #000000;
+    --cs-light-text-secondary: #6e6e6e;
+    --cs-light-border: #e0e0e0;
+    --cs-light-background: #f9f9f9;
+    --cs-light-background-hover: #e0e0e0;
+    --cs-light-box-shadow: #9e9e9e;
+
+    /* black on white */
+    --cs-white-text: #000000;
+    --cs-white-hover: #000000;
+    --cs-white-focus: #000000;
+    --cs-white-selected: #000000;
+    --cs-white-border: #cccccc;
+    --cs-white-header-border: #888888;
+    --cs-white-text-secondary: #727272;
+    --cs-white-placeholder-text: #cecece;
+    --cs-white-background: #ffffff;
+    --cs-white-background-hover: #cccccc;
+    --cs-white-background-focus: #cccccc;
+    --cs-white-background-selected: #dddddd;
+
+    /* disabled */
+    --cs-disabled: #a9a9a9;
+    --cs-disabled-background: #d3d3d3;
+    --cs-disabled-border: #a9a9a9;
+    --overview-checkbox-color: #000000;
+    --overview-checkbox-background-color-from: 255, 255, 255, 1;
+    --overview-checkbox-background-color-to: 255, 255, 255, 0;
+    --overview-checkbox-border: #a9a9a9;
+
+    /* template manager */
+    --part-neutral-background-color: #f0f8ff;
+    --part-neutral-border-color: #000000;
+    --part-heading-background-color: #84c4fe;
+    --part-contributors-background-color: #928efe;
+    --part-richtext-background-color: #ffc87b;
+    --part-tags-background-color: #ffdf7b;
+    --part-table-background-color: #bfedc1;
+    --part-toc-background-color: #985f99;
+
+    /* editor */
+    --editor-track-background-color: 45, 82, 144, 0.63;
+    --editor-track-active-background-color: #788fb4;
+    --editor-track-text-color: #ffffff;
+    --editor-reviewed: #81f781;
+    --editor-text-content-item-background-color: #d3d3d3; /* citations, toc and other content that is a single unit */
+    --editor-text-content-item-hover-background-color: #808080;
+    --editor-navigator-background-color: 0, 0, 0, 0.8;
+    --editor-navigator-color: #ffffff;
+    --editor-navigator-scrollbar-background-color: #181818;
+    --editor-navigator-scrollbar-background-color-hover: #0f0f0f;
+    --editor-navigator-checkbox-color: #444444;
+    --editor-navigator-focus-color: #dddddd;
+    --editor-active-comment-background-color: #fffacf;
+    --editor-active-help-background-color: #fafafa;
+    --editor-active-help-arrow-color: #fafafa;
+    --editor-active-track-background-color: #afbed4;
+    --editor-major-comment-background-color: #f4c9d9;
+    --editor-resolved-comment-icon-color: #3c3c3c;
+    --editor-major-comment-icon-color: #af3515;
+    --editor-comment-resolved-opacity: 0.7;
+    --editor-comment-resolved-text-color: #ffffff;
+    --editor-comment-resolved-border-color: #ffffff;
+
+    /* feedback tab */
+    --feedback-tab-background-color: #4da4f1;
+    --feedback-tab-background-hover-color: #e6d180;
+    --feedback-background-color: #ecdc9e;
+    --feedback-text-color: #d3421c;
+    --feedback-icon-color: #555555;
+    --feedback-icon-hover-color: #999999;
+    --feedback-icon-focus-color: #999999;
+}

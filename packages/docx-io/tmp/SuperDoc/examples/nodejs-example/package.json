@@ -1,0 +1,21 @@
+{
+  "name": "nodejs-example",
+  "type": "module",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "description": "",
+  "dependencies": {
+    "@harbour-enterprises/superdoc": "^0.11.45",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

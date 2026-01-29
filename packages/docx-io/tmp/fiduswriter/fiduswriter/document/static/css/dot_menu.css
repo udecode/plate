@@ -1,0 +1,42 @@
+.content-container {
+    position: relative;
+    z-index: 5;
+}
+
+.content-menu-btn {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: 1px;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+    position: absolute;
+    right: -15px;
+    top: 0;
+}
+
+table .content-menu-btn {
+    right: -7px;
+}
+
+.figure-menu-btn {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: 1px;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+    right: -22px;
+    top: -7px;
+    float: right;
+    position: relative;
+}
+
+.dot-menu-icon {
+    font-size: 18px;
+    color: var(--cs-white-text-secondary);
+}
+
+.dot-menu-icon:hover {
+    color: var(--cs-white-text);
+}

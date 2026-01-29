@@ -1,0 +1,76 @@
+#profile-avatar {
+    position: relative;
+    float: left;
+    width: 166px;
+    text-align: center;
+    padding-right: 46px;
+    box-sizing: border-box;
+}
+
+#profile-avatar .fw-avatar,
+#profile-avatar .fw-string-avatar {
+    width: 100%;
+    height: auto;
+    font-size: 50px;
+}
+
+#profile-data {
+    float: left;
+    width: calc(100% - 166px);
+    max-width: 505px;
+}
+
+.profile-data-row {
+    position: relative;
+    padding-right: 21px;
+}
+
+.profile-data-row + .profile-data-row {
+    margin-top: 12px;
+}
+
+.profile-data-row select {
+    width: calc(100% - 21px);
+    color: var(--cs-white-text);
+    background-color: var(--input-background-color);
+    appearance: none;
+}
+
+.profile-data-row .fw-select-arrow {
+    position: absolute;
+    top: 28px;
+    right: 37px;
+    pointer-events: none;
+}
+
+#fw-edit-profile-pwd {
+    position: absolute;
+    right: 0;
+    top: 30px;
+}
+
+#avatar-pulldown-wrapper {
+    margin-top: 23px;
+}
+
+#edit-avatar-btn {
+    color: var(--cs-4-text);
+}
+
+#edit-avatar-btn:hover {
+    text-decoration: underline;
+}
+
+.profile-email-action {
+    text-align: center;
+}
+
+.profile-email-table tbody tr:last-child td {
+    border-bottom: 0 none;
+}
+
+#profile-submit-wrapper {
+    margin-top: 36px;
+    text-align: right;
+    padding-right: 21px;
+}

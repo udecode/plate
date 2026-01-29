@@ -1,0 +1,43 @@
+logs
+*.log
+.cache
+.DS_Store
+.temp
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.npmrc
+.eslintcache
+types/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/setings.json.sample
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# VitePress
+.vitepress/.temp
+.vitepress/.cache
+.vitepress/dist
+
+packages/super-editor/src/tests/data/*/
+
+# Playwright
+test-results
+*.tgz
+
+!examples/chrome-extension/dist

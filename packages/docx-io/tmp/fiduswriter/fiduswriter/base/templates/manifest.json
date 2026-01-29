@@ -1,0 +1,22 @@
+{% load transpile %}
+{
+  "name": "Fidus Writer",
+  "short_name": "fidus",
+  "theme_color": "#4c6860",
+  "background_color": "#f9f9f9",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "{% static "img/icon_192.avif" %}",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "{% static "img/icon_512.avif" %}",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

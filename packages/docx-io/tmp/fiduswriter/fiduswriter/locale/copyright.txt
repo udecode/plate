@@ -1,0 +1,11 @@
+# All localization files are distributed under the same license as the Fidus Writer source code.
+#
+# Copyright:
+# Bulgarian: Vladimir Vitkov <vvitkov@linux-bg.org> (2013)
+# French: Nicolas Rochard <nrochard@gmail.com> (2016)
+# German: Daniel Frebel <daniel@fiduswriter.com> (2013), Johannes Wilm <johannes@fiduswriter.org> (2019)
+# Italian: Eugenio Battaglia <contafinoasette@gmail.com> (2013)
+# Portuguese (Brazil): Job Diogenes Ribeiro Borges <jobdrb@gmail.com> (2015, 2019), Ana Carolina Vera Resquin <ani.tavr77@gmail.com> (2019)
+# Spanish: Ana Carolina Vera Resquin <ani.tavr77@gmail.com> (2013, 2019)
+
+

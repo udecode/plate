@@ -1,0 +1,54 @@
+<comments xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <comment xmlns:ns1="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns1:id="0" ns1:author="Charlie" ns1:initials="C" ns1:date="2026-01-27T03:27:52.859Z">
+    <p xmlns:ns2="http://schemas.microsoft.com/office/word/2010/wordml" ns2:paraId="B912AF6D">
+      <r>
+        <rPr>
+          <rStyle ns1:val="CommentReference"/>
+        </rPr>
+        <annotationRef/>
+      </r>
+      <r>
+        <t xml:space="preserve">comments</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns3="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns3:id="1" ns3:author="Bob" ns3:initials="B" ns3:date="2026-01-27T03:29:32.859Z">
+    <p xmlns:ns4="http://schemas.microsoft.com/office/word/2010/wordml" ns4:paraId="F38D7C3D">
+      <r>
+        <rPr>
+          <rStyle ns3:val="CommentReference"/>
+        </rPr>
+        <annotationRef/>
+      </r>
+      <r>
+        <t xml:space="preserve">Imported comment</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns5="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns5:id="2" ns5:author="Bob" ns5:initials="B" ns5:date="2026-01-27T03:32:52.859Z">
+    <p xmlns:ns6="http://schemas.microsoft.com/office/word/2010/wordml" ns6:paraId="24D48A21">
+      <r>
+        <rPr>
+          <rStyle ns5:val="CommentReference"/>
+        </rPr>
+        <annotationRef/>
+      </r>
+      <r>
+        <t xml:space="preserve">overlapping</t>
+      </r>
+    </p>
+  </comment>
+  <comment xmlns:ns7="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ns7:id="3" ns7:author="Charlie" ns7:initials="C" ns7:date="2026-01-27T03:34:32.859Z">
+    <p xmlns:ns8="http://schemas.microsoft.com/office/word/2010/wordml" ns8:paraId="73DFE43D">
+      <r>
+        <rPr>
+          <rStyle ns7:val="CommentReference"/>
+        </rPr>
+        <annotationRef/>
+      </r>
+      <r>
+        <t xml:space="preserve">Imported comment</t>
+      </r>
+    </p>
+  </comment>
+</comments>

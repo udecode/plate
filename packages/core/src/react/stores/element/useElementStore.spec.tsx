@@ -188,17 +188,17 @@ describe('ElementProvider', () => {
     (expect(getByText('Age 1: 20')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge1').click());
+    act(() => getByText('updateAge1').click());
 
     (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 140')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge2').click());
+    act(() => getByText('updateAge2').click());
 
     (expect(getByText('Age 1: 30')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
 
-    void act(() => getByText('updateAge1').click());
+    act(() => getByText('updateAge1').click());
 
     (expect(getByText('Age 1: 40')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();

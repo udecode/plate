@@ -1,0 +1,150 @@
+.ui-dialog {
+    position: absolute;
+    background-color: var(--cs-light-background);
+    font-size: 14px;
+    border-image: initial;
+    overflow: hidden;
+    outline: 0;
+    padding: 0 19px 19px;
+    box-shadow: none;
+    border: 0 none;
+    border-radius: 0;
+    z-index: 1000; /* Ensure dialog stays on top */
+    user-select: none; /* Prevent interaction with background content */
+}
+
+.ui-dialog-fullpage {
+    position: initial !important;
+}
+
+.ui-dialog-content.ui-scrollable {
+    overflow-y: auto;
+}
+
+.ui-dialog-titlebar {
+    position: relative;
+    margin: 0 -19px;
+    padding: 19px 40px 19px 19px;
+    background: var(--cs-dark-background);
+    color: var(--cs-dark-text);
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: grab;
+    user-select: none;
+}
+
+.ui-dialog-title {
+    font-size: 15px;
+    font-weight: 400;
+    text-transform: none;
+}
+
+.ui-dialog-titlebar-close {
+    right: 19px;
+}
+
+.ui-dialog-titlebar-help {
+    right: 39px;
+}
+
+.ui-button-icon-only {
+    width: 2em;
+    box-sizing: border-box;
+    text-indent: -9999px;
+    white-space: nowrap;
+}
+
+.ui-dialog-titlebar .ui-button-icon-only {
+    color: var(--cs-dark-text);
+}
+
+.ui-dialog-titlebar .ui-button-icon-only:hover {
+    color: var(--cs-dark-hover);
+}
+
+.ui-button-icon-only .ui-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: -2px;
+    margin-left: 0;
+}
+
+.ui-dialog-content {
+    position: relative;
+    margin-top: 24px;
+    overflow: hidden auto;
+    max-height: calc(100vh - 133px);
+    min-height: 20px;
+    max-width: calc(100vw - 4px);
+}
+
+.input-list-wrapper > tbody > tr:last-child > td {
+    padding-bottom: 0;
+}
+
+.input-list-wrapper td.input-field-list-ctrl {
+    padding-right: 20px;
+    text-align: right;
+    vertical-align: middle;
+}
+
+.input-list-wrapper td.input-field-list-ctrl .fa {
+    display: inline;
+}
+
+.entry-field input[type="text"],
+.entry-field input[type="number"] {
+    margin: 0;
+}
+
+.ui-dialog-buttonpane {
+    padding-top: 20px;
+}
+
+.ui-dialog-buttonset {
+    position: relative;
+    text-align: right;
+}
+
+.ui-dialog-buttonset .fw-button {
+    margin-left: 6px;
+}
+
+.ui-widget-overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--overlay-color));
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.ui-widget-overlay.no-blur {
+    backdrop-filter: none;
+}
+
+.ui-dialog-content textarea {
+    min-height: 112px;
+    min-width: 350px;
+    height: auto;
+}
+
+.fw-media-file-input {
+    display: none;
+}
+
+.ui-dialog-content .noteEl {
+    margin-bottom: 10px;
+    font-size: smaller;
+    color: var(--error-background-color);
+}
+
+.ui-dialog-content .noteEl.hide {
+    display: none;
+}
+
+.ui-dialog form {
+    padding: 8px;
+}

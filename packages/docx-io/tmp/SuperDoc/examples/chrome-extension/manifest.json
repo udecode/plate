@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "SuperDoc Anywhere",
+  "version": "1.0",
+  "description": "Open a downloaded document in SuperDoc",
+  "icons": {
+    "16": "icons/icon-16x16.png",
+    "19": "icons/icon-19x19.png",
+    "48": "icons/icon-48x48.png",
+    "128": "icons/icon-128x128.png"
+  },
+  "permissions": [
+    "downloads",
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SuperDoc Anywhere"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["lib/superdoc.umd.js", "content.js"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/logo.webp", "lib/style.css", "lib/superdoc.umd.js", "modal.html", "modal.css", "dist/docx-validator.bundle.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

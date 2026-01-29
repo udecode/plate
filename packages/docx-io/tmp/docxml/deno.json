@@ -1,0 +1,26 @@
+{
+	"name": "@fontoxml/docxml",
+	"version": "5.17.0",
+	"description": "A module for making .docx documents from scratch or from an existing .docx or .dotx template.",
+	"license": "MIT",
+	"homepage": "https://jsr.io/@fontoxml/docxml",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/fontoxml/docxml"
+	},
+	"exports": "./mod.ts",
+	"compilerOptions": {
+		"strict": true,
+		"lib": ["deno.ns", "dom", "dom.iterable"],
+		"useUnknownInCatchVariables": true,
+		"noImplicitAny": true
+	},
+	"importMap": "imports.json",
+	"tasks": {
+		"check": "deno check .",
+		"lint": "deno lint",
+		"test": "deno task lint && deno task check && deno test -A lib",
+		"test:coverage": "deno task test --coverage=coverage && deno coverage --exclude='utils/xml-validation/fontoxml' --exclude='vendor' --lcov --output=coverage/cov.lcov coverage && genhtml --ignore-errors inconsistent --output-directory ./coverage/html_cov ./coverage/cov.lcov && open ./coverage/html_cov/index.html",
+		"precommit": "deno task lint && deno task test"
+	}
+}

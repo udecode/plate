@@ -1,0 +1,84 @@
+Create a simple document editor using SuperDoc and the following code below:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/superdoc/0.14.9/style.css" integrity="sha512-VL/f0AT3OBcMEO/x4HAjufuReyx8/3REGaXWBXZtNx/tSbe342dzj5KCXtkj3w/Ee3ORYKAMl/r2zB1y4O8F1Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/superdoc/0.14.9/superdoc.umd.min.js" integrity="sha512-htw0gWgJeb6bv8uu8L7oiwhiPuBc9GjMSnOEnuvDwqiwkwAJWjqvhtdQUWSvcd1kYUN+SXoCeQhRZEoDADKvLQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <link rel="stylesheet" href="./file-upload.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SuperDoc - CDN example</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-size: 18px;
+    }
+    .file-upload-button {
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 10px;
+        outline: none;
+        border: none;
+        background-color: #1355ff;
+        color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title">SuperDoc - CDN example</div>
+  <div id="my-toolbar"></div>
+
+  <button class="file-upload-button">Load Document</button>
+  <input class="file-upload-input" style="display: none;" type="file" accept=".docx">
+
+  <div id="superdoc"></div>
+
+  <script type="module">
+    // claude support
+    if (!console.debug) {
+      console.debug = console.log;
+    }
+
+    const config = {
+      selector: '#superdoc',
+      toolbar: '#my-toolbar',
+      // document: './sample.docx', // URL, File or document config
+      documentMode: 'editing',
+      pagination: true,
+      rulers: true,
+      onReady: (event) => {
+        console.log('SuperDoc is ready', event);
+      },
+      onEditorCreate: (event) => {
+        console.log('Editor is created', event);
+      },
+    };
+
+    const superdoc = new SuperDocLibrary.SuperDoc(config);
+
+    const uploadBtn = document.querySelector('.file-upload-button');
+    const fileInput = document.querySelector('.file-upload-input');
+    uploadBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
+        const uploadEvent = new CustomEvent("file-upload", { detail: file });
+        if (file) window.dispatchEvent(uploadEvent);
+    });
+
+    window.addEventListener('file-upload', (event) => {
+      new SuperDocLibrary.SuperDoc({...config, document: event.detail}); 
+    });
+  </script>
+
+</body>
+</html>

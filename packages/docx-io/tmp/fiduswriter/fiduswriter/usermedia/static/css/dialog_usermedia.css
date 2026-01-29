@@ -1,0 +1,8 @@
+.img {
+    width: calc(100vw - 100px);
+    height: calc(100vh - 200px);
+    max-width: 640px;
+    max-height: 480px;
+    background: transparent no-repeat center;
+    background-size: contain;
+}

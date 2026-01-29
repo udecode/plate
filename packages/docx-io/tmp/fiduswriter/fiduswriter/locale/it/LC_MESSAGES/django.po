@@ -1,0 +1,344 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Fidus Writer backend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-17 15:34+0000\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+
+#: base/settings.py:256
+msgid "English"
+msgstr "Inglese"
+
+#: base/settings.py:257
+msgid "Bulgarian"
+msgstr "Bulgaro"
+
+#: base/settings.py:258
+msgid "German"
+msgstr "Tedesco"
+
+#: base/settings.py:259
+msgid "French"
+msgstr "francese"
+
+#: base/settings.py:260
+msgid "Italian"
+msgstr "italiano"
+
+#: base/settings.py:261
+msgid "Spanish"
+msgstr "Spagnolo"
+
+#: base/settings.py:262
+msgid "Portuguese (Brazil)"
+msgstr "Portoghese (Brasile)"
+
+#: base/settings.py:346
+msgid "Fidus Writer Admin"
+msgstr "Fidus Writer Admin"
+
+#: base/settings.py:347
+msgid "Fidus Writer Administration Site"
+msgstr "Sito di amministrazione di Fidus Writer"
+
+#: base/settings.py:348
+msgid "Welcome to the Fidus Writer Administration Site"
+msgstr "Benvenuti nel sito di amministrazione di Fidus Writer"
+
+#: base/templates/500.html:5 base/templates/500.html:8
+msgid "Error 500"
+msgstr "Errore 500"
+
+#: base/templates/500.html:9
+msgid ""
+"We are sorry, but a server error occured. Our team will be looking into the "
+"issue shortly."
+msgstr ""
+"Siamo spiacenti, si è verificato un errore del server. Il nostro team "
+"esaminerà il problema a breve."
+
+#: base/templates/admin/console.html:4 base/templates/admin/console.html:16
+#: base/templates/admin/overview.html:14
+msgid "Admin Console"
+msgstr "Admin Console"
+
+#: base/templates/admin/console.html:18
+#, fuzzy
+#| msgid "Current number of user sessions:"
+msgid "Current number of users:"
+msgstr "Numero corrente di sessioni utente:"
+
+#: base/templates/admin/console.html:21
+msgid "Current number of user sessions:"
+msgstr "Numero corrente di sessioni utente:"
+
+#: base/templates/admin/console.html:23
+msgid "Send a system message to all connected users:"
+msgstr "Invia un messaggio di sistema a tutti gli utenti connessi:"
+
+#: base/templates/admin/console.html:27
+msgid "Message"
+msgstr "Messaggio"
+
+#: base/templates/admin/console.html:29
+msgid ""
+"This system will go offline for scheduled maintenance in 30 minutes. All "
+"your work will be saved automatically and we will be back shortly."
+msgstr ""
+"Questo sistema andrà offline per la manutenzione programmata tra 30 minuti. "
+"Tutto il tuo lavoro verrà salvato automaticamente e torneremo a breve."
+
+#: base/templates/admin/console.html:36
+msgid "Send to connected users"
+msgstr "Invia agli utenti connessi"
+
+#: base/templates/admin/overview.html:10
+msgid "Extras"
+msgstr "extra"
+
+#: base/templates/admin/overview.html:17
+#: document/templates/admin/document/maintenance.html:17
+msgid "Document Maintenance"
+msgstr "Manutenzione del documento"
+
+#: base/templates/api_404.html:5 base/templates/api_404.html:8
+msgid "Error 404"
+msgstr "Errore 404"
+
+#: base/templates/api_404.html:9
+msgid "We are sorry, but this page was not found."
+msgstr "Siamo spiacenti, ma questa pagina non è stata trovata."
+
+#: base/templates/app.html:9
+msgid "The all in one solution for collaborative academic writing."
+msgstr "La soluzione completa per la stesura collaborativa di testi accademici"
+
+#: base/templates/app.html:45
+msgid "JavaScript disabled"
+msgstr "JavaScript disabilitato"
+
+#: base/templates/app.html:46
+msgid "Fidus Writer requires you to enable JavaScript."
+msgstr "Fidus Writer richiede di abilitare JavaScript."
+
+#: browser_check/templates/browser_check/browser_not_supported.html:4
+#: browser_check/templates/browser_check/browser_not_supported.html:27
+msgid "Browser not supported"
+msgstr "Browser non supportato"
+
+#: browser_check/templates/browser_check/browser_not_supported.html:28
+msgid ""
+"\n"
+"                Your browser is not supported by Fidus Writer.\n"
+"                Please update! We recommend using a current\n"
+"                version of Chrome/Chromium or Firefox on a\n"
+"                desktop computer.\n"
+"            "
+msgstr ""
+"\n"
+"                Il tuo browser non è supportato da Fidus Writer.\n"
+"                Per favore aggiornare! Si consiglia di utilizzare una "
+"corrente\n"
+"                versione di Chrome / Chromium o Firefox su a\n"
+"                computer desktop.\n"
+"                        "
+
+#: document/admin.py:57
+msgid "Duplicate selected document templates"
+msgstr "Duplica i modelli di documenti selezionati"
+
+#: document/emails.py:18 document/views.py:702
+msgid "Untitled"
+msgstr "Senza titolo"
+
+#: document/emails.py:97
+msgid "shared"
+msgstr "condivisa"
+
+#: document/emails.py:99 document/emails.py:225
+msgid "Document"
+msgstr "Documento"
+
+#: document/emails.py:101 document/emails.py:227
+msgid "Author"
+msgstr "Autore"
+
+#: document/emails.py:103
+msgid "Access Rights"
+msgstr "Diritti di accesso"
+
+#: document/emails.py:106 document/emails.py:232
+msgid "Access the document"
+msgstr "Accedi al documento"
+
+#: document/emails.py:109
+#, python-format
+msgid "Document shared: %(document_title)s"
+msgstr "Documento condiviso: %(document_title)s"
+
+#: document/emails.py:155
+#, python-format
+msgid "Comment on : %(document_title)s"
+msgstr "Commenta su: %(document_title)s"
+
+#: document/emails.py:182
+#, python-format
+msgid "Comment assignment on : %(document_title)s"
+msgstr "Assegnazione commento su: %(document_title)s"
+
+#: document/emails.py:229
+msgid "Comment"
+msgstr "Commento"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:8
+#, python-format
+msgid "Add %(name)s"
+msgstr "Aggiungi %(name)s"
+
+#: document/templates/admin/document/document/change_list_object_tools.html:13
+#: document/templates/admin/document/maintenance.html:4
+msgid "Maintenance"
+msgstr "Manutenzione"
+
+#: document/templates/admin/document/maintenance.html:19
+msgid ""
+"\n"
+"            Before and after upgrading Fidus Writer, you should update all "
+"the documents\n"
+"            of all users to the newest document version. Only do this if you "
+"know that\n"
+"            no user is currently editing any document!\n"
+"            "
+msgstr ""
+"\n"
+"            Prima e dopo l'aggiornamento di Fidus Writer, è necessario "
+"aggiornare tutti i documenti\n"
+"            di tutti gli utenti alla versione più recente del documento. "
+"Fallo solo se lo sai\n"
+"            nessun utente sta attualmente modificando alcun documento!\n"
+"                        "
+
+#: document/templates/admin/document/maintenance.html:27
+msgid "Update all documents (DANGER!)"
+msgstr "Aggiorna tutti i documenti (PERICOLO!)"
+
+#: style/models.py:74
+msgid "Default"
+msgstr "Predefinito"
+
+#: style/views.py:27
+msgid "The template needs at least 1 document style"
+msgstr "Il modello richiede almeno 1 stile documento"
+
+#: user/admin.py:10
+msgid "Connections"
+msgstr "Connessioni"
+
+#: user/emails.py:38
+msgid "Invite for Fidus Writer"
+msgstr "Invito per Fidus Writer"
+
+#: user/emails.py:41
+msgid "Sign up/log in and accept/reject the invite"
+msgstr "Iscriviti/accedi e accetta/rifiuta l'invito"
+
+#: user/emails.py:44
+msgid "Fidus Writer contact invite"
+msgstr "Invito di contatto di Fidus Writer"
+
+#: user/emails.py:84
+msgid "Invite for Fidus Writer declined"
+msgstr "Invito per Fidus Writer rifiutato"
+
+#: user/emails.py:87 user/emails.py:133
+msgid "See your list of contacts"
+msgstr "Vedi il tuo elenco di contatti"
+
+#: user/emails.py:90
+msgid "Fidus Writer invite declined"
+msgstr "Invito allo scrittore Fidus rifiutato"
+
+#: user/emails.py:130
+msgid "Invite for Fidus Writer accepted"
+msgstr "Invito per Fidus Writer accettato"
+
+#: user/emails.py:136
+msgid "Fidus Writer invite accepted"
+msgstr "Invito Fidus Writer accettato"
+
+#: user/models.py:53
+msgid "Interface language preference"
+msgstr ""
+
+#: user/models.py:66
+msgid "Can login as another user"
+msgstr "Può accedere come un altro utente"
+
+#: user/models.py:74
+msgid "email address"
+msgstr "indirizzo e-mail"
+
+#: user/templates/account/email/email_confirmation_message.html:7
+#: user/templates/account/email/password_reset_key_message.html:7
+#, python-format
+msgid "Hello from %(site_name)s!"
+msgstr "Ciao da %(site_name)s!"
+
+#: user/templates/account/email/email_confirmation_message.html:12
+#, python-format
+msgid ""
+"You are receiving this e-mail because user %(user_display)s has given yours "
+"as an e-mail address to connect their account."
+msgstr ""
+"Hai ricevuto questa e-mail perché l'utente %(user_display)s ha fornito il "
+"tuo come indirizzo e-mail per collegare il proprio account."
+
+#: user/templates/account/email/email_confirmation_message.html:16
+#, python-format
+msgid "To confirm this is correct, go to <a href=\"%(url)s\">%(url)s</a>."
+msgstr ""
+"Per confermare che sia corretto, vai a <a href=\"%(url)s\">%(url)s </a>."
+
+#: user/templates/account/email/email_confirmation_message.html:20
+#: user/templates/account/email/password_reset_key_message.html:26
+#, python-format
+msgid "Thank you from %(site_name)s!"
+msgstr "Grazie da %(site_name)s!"
+
+#: user/templates/account/email/password_reset_key_message.html:11
+msgid ""
+"You are receiving this e-mail because you or someone else has requested a "
+"password for your user account."
+msgstr ""
+"Ricevi questa e-mail perché tu o qualcun altro avete richiesto una password "
+"per il tuo account utente."
+
+#: user/templates/account/email/password_reset_key_message.html:14
+msgid ""
+"It can be safely ignored if you did not request a password reset. Click the "
+"link below to reset your password."
+msgstr ""
+"Può essere tranquillamente ignorato se non hai richiesto la reimpostazione "
+"della password. Fare clic sul collegamento sottostante per reimpostare la "
+"password."
+
+#: user/templates/account/email/password_reset_key_message.html:21
+#, python-format
+msgid "In case you forgot, your username is %(username)s."
+msgstr "Nel caso in cui hai dimenticato, il tuo nome utente è %(username)s."
+
+#: usermedia/views.py:37
+msgid "Filetype not supported"
+msgstr "Tipo di file non supportato"
+
+#: usermedia/views.py:44
+msgid "Image too large"
+msgstr "Immagine troppo grande"
+
+#: usermedia/views.py:71
+msgid "No file uploaded"
+msgstr "Nessun file caricato"

@@ -1,0 +1,25 @@
+{
+  "name": "collaboration-from-scratch",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon server.js --workspace server",
+    "dev:client": "npm run dev --workspace client",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "lib0": "^0.2.102",
+    "y-leveldb": "^0.1.0",
+    "y-protocols": "^1.0.5",
+    "yjs": "^13.6.27"
+  }
+}

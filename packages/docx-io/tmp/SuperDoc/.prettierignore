@@ -1,0 +1,29 @@
+examples
+public
+dist
+node_modules
+**/dist
+**/dist/**
+**/node_modules
+**/node_modules/**
+
+# docs cache and build files
+docs/.vitepress/cache
+docs/.vitepress/dist
+
+# vite config
+vite.config.js
+
+# pdf.js workers
+packages/superdoc/src/components/PdfViewer/worker.js
+packages/superdoc/src/components/PdfViewer/helpers/pdfjs-worker.js
+
+# Test data directories
+**/data/**
+**/data
+packages/super-editor/src/tests/data
+packages/super-editor/src/tests/data/**
+src/tests/data
+src/tests/data/**
+tests/data
+tests/data/**

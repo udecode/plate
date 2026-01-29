@@ -1,0 +1,21 @@
+{
+	"imports": {
+		"@util-path": "./lib/utilities/src/path.ts",
+
+		"eslint/config": "npm:eslint@9.39.2/config",
+		"fontoxpath": "npm:fontoxpath@3.34.0",
+		"jszip": "npm:jszip@3.10.1",
+		"slimdom": "npm:slimdom@4.3.5",
+		"std/expect": "jsr:@std/expect@1.0.17",
+		"std/fmt/colors": "jsr:@std/fmt@1.0.8/colors",
+		"std/path": "jsr:@std/path@1.1.4",
+		"std/path/posix/basename": "jsr:@std/path@1.1.4/posix/basename",
+		"std/path/posix/dirname": "jsr:@std/path@1.1.4/posix/dirname",
+		"std/path/posix/join": "jsr:@std/path@1.1.4/posix/join",
+		"std/path/posix/relative": "jsr:@std/path@1.1.4/posix/relative",
+		"std/path/posix/resolve": "jsr:@std/path@1.1.4/posix/resolve",
+		"std/testing/bdd": "jsr:@std/testing@1.0.16/bdd",
+
+		"xml_renderer": "./vendor/xml_renderer/mod.ts"
+	}
+}

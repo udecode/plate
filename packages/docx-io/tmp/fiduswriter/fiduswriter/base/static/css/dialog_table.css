@@ -1,0 +1,66 @@
+.fw-dialog-table td {
+    padding-bottom: 7px;
+    position: relative;
+}
+
+.fw-tablerow-title {
+    display: table-cell;
+    padding-top: 10px;
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: bold;
+}
+
+.fw-dialog-table tr > td .fa-minus-circle,
+.fw-dialog-table tr > td .fa-plus-circle {
+    cursor: pointer;
+}
+
+.input-list-wrapper > tbody > tr:last-child > td > .fa-minus-circle {
+    display: none;
+}
+
+.fw-tablerow-title.wtooltip {
+    position: relative;
+}
+
+.fw-tablerow-title.wtooltip::after {
+    display: inline-block;
+    vertical-align: baseline;
+    content: "?";
+    line-height: 1;
+    color: white;
+    background-color: rgba(var(--tooltip-background-color));
+    width: 12px;
+    height: 10px;
+    border-radius: 6px;
+    margin-left: 5px;
+    text-align: center;
+    padding-top: 2px;
+}
+
+.fw-tablerow-title .tooltip {
+    position: absolute;
+    min-width: 260px;
+    top: calc(100% + 2px);
+    left: calc(100% - 13px);
+    background-color: var(--cs-dark-background);
+    color: var(--cs-dark-text);
+    border-radius: 6px;
+    line-height: 1.5;
+    padding: 14px 18px;
+    font-size: 12px;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 1s;
+    z-index: 1;
+}
+
+.fw-tablerow-title:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip em {
+    font-style: italic;
+}

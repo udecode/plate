@@ -1,0 +1,36 @@
+<!DOCTYPE html>{% load i18n %}{% load transpile %}
+<html>
+    <head>
+        <title>{% trans "Browser not supported" %}</title>
+        <style>
+            @import url({% static "css/fonts.css" %}");
+            body {
+                background-color: #f9f9f9;
+            }
+            h1 {
+                margin-top: 63px;
+                font-family: 'Lato Black', sans-serif;
+                color: #af3515;
+                font-size: 30px;
+            }
+            p {
+                font-family: 'Lato', sans-serif;
+                color: #af3515;
+                font-size: 15px;
+            }
+        </style>
+        <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    </head>
+    <body>
+        <center>
+            <img src="{% static "img/error.avif" %}">
+            <h1>{% trans "Browser not supported" %}</h1>
+            <p>{% blocktrans %}
+                Your browser is not supported by Fidus Writer.
+                Please update! We recommend using a current
+                version of Chrome/Chromium or Firefox on a
+                desktop computer.
+            {% endblocktrans %}</p>
+        </center>
+    </body>
+</html>

@@ -1,0 +1,11 @@
+.sd-editor-comment-highlight {
+  transition: background-color 250ms ease;
+}
+
+.sd-editor-comment-highlight:hover {
+  background-color: #1354ff55;
+}
+
+.sd-editor-comment-highlight.sd-custom-selection {
+  background-color: #d6c0c6 !important;
+}

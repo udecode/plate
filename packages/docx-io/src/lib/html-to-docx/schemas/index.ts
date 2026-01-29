@@ -1,8 +1,14 @@
+/**
+ * Barrel file for html-to-docx schemas
+ */
+
 export { default as contentTypesXML } from './content-types';
 export { default as generateCoreXML } from './core';
-export { default as generateDocumentTemplate } from './document.template';
-export type { DocumentMargins } from './document.template';
 export { default as documentRelsXML } from './document-rels';
+export {
+  default as generateDocumentTemplate,
+  type DocumentMargins,
+} from './document.template';
 export { default as fontTableXML } from './font-table';
 export { default as genericRelsXML } from './generic-rels';
 export { default as generateNumberingXMLTemplate } from './numbering';

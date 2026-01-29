@@ -1,0 +1,13 @@
+.contributor {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 0 12px;
+    height: 34px;
+    display: inline-block;
+    border-radius: 3px;
+    line-height: 34px;
+    cursor: pointer;
+    color: var(--cs-6-text);
+    background: var(--cs-6-background);
+    border: 1px solid var(--cs-6-border);
+}

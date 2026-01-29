@@ -1,0 +1,70 @@
+/* For profile list */
+
+.avatar {
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+}
+
+#chat {
+    position: fixed;
+    bottom: 0;
+    right: 5px;
+    background-color: var(--cs-white-background);
+    width: 250px;
+    padding: 10px;
+    border: 1px solid var(--cs-white-border);
+    border-bottom: 0;
+    display: none;
+    z-index: 100;
+    transition: top 2s ease;
+}
+
+#chat.highlighted {
+    background-color: var(--chat-highlight-background-color);
+}
+
+#chat .resize-button {
+    text-align: right;
+    cursor: pointer;
+    display: block;
+}
+
+#chat-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#chat-container .message {
+    padding-top: 5px;
+}
+
+#chat-container .message:last-child {
+    border-bottom: 1px solid var(--cs-white-border);
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+}
+
+#connected-collaborators {
+    position: fixed;
+    right: 85px;
+    top: 16px;
+}
+
+#connected-collaborators .fw-string-avatar,
+#connected-collaborators img {
+    box-sizing: border-box;
+    width: 35px;
+    height: 35px;
+    margin-left: -10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#connected-collaborators .fw-string-avatar:first-child,
+#connected-collaborators img:first-child {
+    margin-left: 0;
+}
+
+#messageform.empty::before {
+    color: var(--cs-white-placeholder-text);
+}

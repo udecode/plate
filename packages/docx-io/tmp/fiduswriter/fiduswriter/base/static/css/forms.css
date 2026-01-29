@@ -1,0 +1,553 @@
+input,
+textarea,
+button {
+    font-family: Lato, sans-serif;
+    margin: 0;
+    outline-width: 0;
+}
+
+input[type="text"].category-form {
+    width: calc(100% - 38px);
+}
+
+textarea {
+    padding: 2px;
+}
+
+input[type="text"]:not(.fw-inline),
+input[type="password"]:not(.fw-inline),
+input[type="search"]:not(.fw-inline),
+input[type="email"]:not(.fw-inline),
+input[type="number"]:not(.fw-inline),
+textarea {
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    padding: 0 10px;
+    font-size: 14px;
+    line-height: 1.33em;
+    box-shadow: none;
+    border-radius: 0;
+    margin: 5px 0;
+    color: var(--cs-white-text);
+    background-color: var(--input-background-color);
+    border: 0 none;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="email"]:focus,
+div.input:focus-within,
+textarea:focus {
+    background-color: var(--input-focus-background-color);
+}
+
+.fw-select-container select {
+    display: inline-block;
+    width: calc(100% - 22px);
+    appearance: none;
+    cursor: pointer;
+}
+
+.fw-select-container select option.placeholder {
+    display: none;
+}
+
+.entry-field .ProseMirror,
+.entry-field input[type="text"],
+.entry-field input[type="number"] {
+    width: 686px;
+    max-width: 80vw;
+}
+
+.entry-field select {
+    padding: 0 3px 0 13px;
+    border: 0 none;
+    color: var(--cs-light-text);
+    background-color: var(--input-background-color);
+    height: 38px;
+    width: 561px;
+    appearance: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.ui-dialog input[type="text"]:not(.fw-inline),
+.ui-dialog input[type="password"]:not(.fw-inline),
+.ui-dialog input[type="search"]:not(.fw-inline),
+.ui-dialog input[type="email"]:not(.fw-inline),
+.ui-dialog input[type="number"]:not(.fw-inline),
+.ui-dialog textarea,
+.ui-dialog div[contenteditable="true"],
+.ui-dialog select,
+.ui-dialog .entry-field select {
+    border: 1px solid var(--input-dialog-border-color);
+}
+
+.form-label {
+    font-size: 11px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/*
+ * Bibliography entry input
+ */
+#uploadimage input.entry-form,
+#uploadimage input.fw-input {
+    width: 486px;
+}
+
+/*
+ * Name input fields
+ */
+.fw-name-input {
+    width: 226px;
+}
+
+.fw-name-input.fw-first {
+    margin-right: 23px;
+}
+
+/*
+ * checkable label / td
+ */
+.fw-checkable {
+    cursor: pointer;
+}
+
+tr.fw-checkable.checked::after {
+    display: none;
+    content: "";
+}
+
+.fw-checkable-td,
+.fw-checkable > td {
+    position: relative;
+}
+
+.fw-checkable-td.checked::after,
+tr.fw-checkable.checked > td:last-child::after {
+    top: 17px;
+}
+
+.fw-checkable-label {
+    position: relative;
+    display: block;
+    width: 462px;
+    height: 36px;
+    line-height: 36px;
+    border: solid 1px var(--cs-light-border);
+    padding-left: 12px;
+    margin-bottom: 10px;
+}
+
+.fw-checkable-input {
+    display: none;
+}
+
+/**
+ * Checkbox
+ */
+.fw-check {
+    position: absolute;
+    opacity: 0;
+}
+
+.fw-check + label {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.fw-check + label::before {
+    content: "";
+    position: relative;
+    display: block;
+    width: 13px;
+    height: 13px;
+    border: 1px solid var(--overview-checkbox-border);
+    border-radius: 2px;
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--overview-checkbox-background-color-from)) 0%,
+        rgba(var(--overview-checkbox-background-color-to)) 100%
+    );
+}
+
+.fw-check:checked + label::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    display: block;
+    width: 3px;
+    height: 7px;
+    border-bottom: 2px solid var(--overview-checkbox-color);
+    border-right: 2px solid var(--overview-checkbox-color);
+    transform: rotate(45deg);
+}
+
+.fw-label-check + label {
+    line-height: 15px;
+}
+
+.fw-label-check + label::before {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 6px;
+}
+
+/*
+ * addable input fields button
+ */
+.fw-add-input {
+    cursor: pointer;
+    margin-left: 14px;
+}
+
+.fw-add-input::before {
+    width: 0.7em;
+}
+
+.fw-list-input {
+    margin-top: 7px;
+}
+
+.fw-list-input:first-child {
+    margin-top: 0;
+}
+
+/*
+ * form error
+ */
+.fw-fomt-error {
+    color: #ff0000;
+}
+
+/*
+ * ajax file uploader
+ */
+.ajax-upload input[type="file"] {
+    display: none;
+}
+
+.ajax-upload-label {
+    margin-left: 10px;
+}
+
+/*
+ * checkbox in a fw-button
+ */
+.fw-button input[type="checkbox"] {
+    margin-right: 3px;
+}
+
+/*
+ * radio buttons
+ */
+.fw-radio input[type="radio"] {
+    display: inline-block;
+    width: 40px;
+    margin-bottom: 20px;
+}
+
+.fw-select-container {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.fw-select-container .fw-select-arrow {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    pointer-events: none;
+}
+
+/* bibliography and license form input */
+
+.entry-field.fw-fomt-error input[type="text"],
+.entry-field.fw-fomt-error input[type="number"] {
+    background-color: var(--input-error-background-color);
+}
+
+.entry-field input[type="checkbox"] {
+    margin-top: 12px;
+}
+
+.entry-field .selection-list {
+    position: relative;
+}
+
+.entry-field .type-switch-input-inner select {
+    width: 100%;
+}
+
+.entry-field .fw-select-arrow {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    pointer-events: none;
+}
+
+.type-switch {
+    position: relative;
+    width: 140px;
+    height: 38px;
+    float: left;
+    margin-right: 5px;
+    font-size: 14px;
+    color: var(--cs-6-text);
+    background-color: var(--cs-6-background);
+    border: 0 none;
+    border-radius: 19px;
+    white-space: nowrap;
+    padding: 0;
+    line-height: 38px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.type-switch.disabled {
+    color: var(--cs-disabled);
+    background-color: var(--cs-disabled-background);
+}
+
+.type-switch-inner {
+    position: absolute;
+    display: block;
+    left: 0;
+    top: 0;
+    width: calc(200% - 38px);
+    transition: left 0.3s;
+}
+
+.type-switch-inner::after {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    left: calc(50% - 19px);
+    top: 0;
+    content: "";
+    width: 38px;
+    height: 38px;
+    border-radius: 19px;
+    background-color: var(--cs-light-background);
+    border: 1px solid var(--cs-light-border);
+}
+
+.value2 .type-switch-inner {
+    left: calc(-100% + 38px);
+}
+
+.type-switch-label {
+    box-sizing: border-box;
+    display: block;
+    width: 50%;
+    float: left;
+}
+
+.type-switch-label:first-child {
+    padding-right: 12px;
+}
+
+.type-switch-label:last-child {
+    padding-left: 12px;
+}
+
+.type-switch-input-wrapper {
+    width: 686px;
+    max-width: 80vw;
+}
+
+.type-switch-input-wrapper::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.type-switch-input-inner {
+    position: relative;
+    float: left;
+    width: calc(100% - 145px);
+}
+
+.type-switch-input-inner .field-part {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.type-switch-input-inner .field-part:last-child {
+    margin-right: 0;
+}
+
+.field-part-short .ProseMirror {
+    width: 64px;
+}
+
+.type-switch-input-inner .field-part-huge input,
+.type-switch-input-inner .field-part-huge .ProseMirror {
+    width: 250px;
+}
+
+.type-switch-input-inner .field-part-long input,
+.type-switch-input-inner .field-part-long .ProseMirror {
+    width: 130px;
+}
+
+.type-switch-input-inner .field-part-single {
+    width: 100% !important;
+}
+
+.type-switch-input-inner .field-part-single .ProseMirror {
+    width: 100%;
+}
+
+.fw-dialog-table th {
+    vertical-align: top;
+    padding: 0 6px 0 8px;
+    width: 164px;
+}
+
+.tokenfield {
+    width: 686px;
+    position: relative;
+    max-width: 80vw;
+}
+
+.tokenfield::before,
+.tokenfield::after {
+    content: " ";
+    display: table;
+}
+
+.tokenfield::after {
+    clear: both;
+}
+
+.tokenfield.tokenfield-mode-tokens {
+    display: block;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.4286;
+    color: var(--tokenfield-color);
+    background-color: var(--cs-light-background-hover);
+}
+
+.tokenfield-set {
+    position: relative;
+    padding: 0 10px;
+}
+
+.tokenfield .tokenfield-set > ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
+.tokenfield .tokenfield-set > ul > li {
+    display: inline-block;
+    margin: 8px 5px 0 0;
+    padding: 0 5px;
+    border-radius: 3px;
+    line-height: 1.5;
+    cursor: pointer;
+    color: var(--cs-6-text);
+    background: var(--cs-6-background);
+    border: 1px solid var(--cs-6-border);
+}
+
+.tokenfield .tokenfield-set > ul > li:last-child {
+    margin-bottom: 8px;
+}
+
+.tokenfield .tokenfield-set > ul > li a {
+    color: var(--cs-6-text);
+}
+
+.tokenfield .tokenfield-input {
+    outline: none;
+}
+
+.list-input-wrapper .add-remove-list {
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 14px;
+}
+
+.list-input-wrapper .add-remove-list::before {
+    content: "\2796";
+    width: 0.7em;
+}
+
+.list-input-wrapper:last-child .add-remove-list::before {
+    content: "\2795";
+}
+
+@media screen and (width <= 740px) {
+    .entry-field .ProseMirror,
+    .entry-field input[type="text"],
+    .entry-field input[type="number"] {
+        max-width: 70vw;
+    }
+
+    .type-switch-input-wrapper {
+        max-width: 70vw;
+    }
+
+    .tokenfield {
+        max-width: 70vw;
+    }
+}
+
+@media screen and (width <= 560px) {
+    .entry-field .ProseMirror,
+    .entry-field input[type="text"],
+    .entry-field input[type="number"] {
+        max-width: 50vw;
+    }
+
+    .type-switch-input-wrapper {
+        max-width: 50vw;
+    }
+
+    .tokenfield {
+        max-width: 50vw;
+    }
+
+    .type-switch {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .type-switch-input-inner {
+        width: auto;
+    }
+}
+
+@media screen and (width <= 460px) {
+    .entry-field .ProseMirror,
+    .entry-field input[type="text"],
+    .entry-field input[type="number"] {
+        max-width: 40vw;
+    }
+
+    .type-switch-input-wrapper {
+        max-width: 40vw;
+    }
+
+    .tokenfield {
+        max-width: 40vw;
+    }
+
+    .fw-dialog-table th {
+        width: 140px;
+    }
+
+    .ui-tabs-panel {
+        overflow-x: hidden;
+    }
+}

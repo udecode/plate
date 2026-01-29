@@ -1,0 +1,136 @@
+.feedback-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: rgba(var(--overlay-color));
+    font-family: scalareg, "courier new", courier, monospace;
+    display: none;
+}
+
+#feedback-wrapper {
+    position: absolute;
+    top: 200px;
+    left: 50%;
+    width: auto;
+    margin-left: -148px;
+    padding: 65px 27px 12px;
+    background: var(--feedback-background-color);
+}
+
+a.feedback-tab {
+    display: block;
+    width: 35px;
+    height: 35px;
+    overflow: hidden;
+    background-color: var(--feedback-tab-background-color);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1;
+    float: right;
+}
+
+a.feedback-tab:hover {
+    background-color: var(--feedback-tab-background-hover-color);
+}
+
+a.feedback-tab:focus {
+    outline: 2px solid var(--cs-6-background-focus);
+    outline-offset: 2px;
+}
+
+body.header-closed a.feedback-tab {
+    display: none;
+}
+
+a.feedback-tab::before {
+    display: block;
+    font-family: "Font Awesome 5 Free", monospace;
+    font-size: 16px;
+    content: "\f075";
+    color: white;
+    text-indent: 0;
+    text-align: center;
+    line-height: 1;
+    vertical-align: middle;
+    padding-top: 9px;
+}
+
+#headerbar a.feedback-tab {
+    position: absolute;
+    right: 60px;
+    top: 16px;
+}
+
+#footer-menu.prelogin a.feedback-tab {
+    position: relative;
+    right: auto;
+    top: auto;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+@media (width <= 1079px) {
+    #footer-menu.prelogin a.feedback-tab {
+        margin-left: 12px;
+    }
+}
+
+#feedback-wrapper textarea {
+    width: 287px;
+    height: 190px;
+    padding: 3px;
+    resize: none;
+}
+
+#feedbackbutton {
+    display: block;
+    margin: 17px 0 0 auto;
+}
+
+#feedback-title {
+    position: absolute;
+    left: 27px;
+    top: 20px;
+    font-family: Lato, sans-serif;
+    font-size: 27px;
+    color: var(--feedback-text-color);
+    padding-right: 60px;
+}
+
+#response-message {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    display: none;
+}
+
+#close-feedback {
+    display: block;
+    position: absolute;
+    right: 25px;
+    top: 20px;
+    cursor: pointer;
+    color: var(--feedback-icon-color);
+}
+
+#close-feedback:hover {
+    color: var(--feedback-icon-hover-color);
+}
+
+#close-feedback:focus {
+    color: var(--feedback-icon-focus-color);
+}
+
+@media print {
+    .feedback-tab,
+    .feedback-panel {
+        display: none;
+    }
+}

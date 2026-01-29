@@ -1,0 +1,84 @@
+.inline-tools {
+    position: absolute;
+    left: auto;
+    top: auto;
+    margin-top: 3px;
+    display: none;
+}
+
+.ProseMirror-focused + .inline-tools {
+    display: block;
+    z-index: 10;
+}
+
+.inline-tools .menuicon {
+    position: relative;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    overflow: hidden;
+    text-indent: -999px;
+    background-color: var(--cs-2-background);
+    color: var(--cs-2-text);
+    cursor: pointer;
+}
+
+.inline-tools .menuicon:hover {
+    background-color: var(--cs-2-background-hover);
+}
+
+.inline-tools .menuicon.active {
+    background-color: var(--cs-2-background-selected);
+}
+
+.inline-tools .menuicon + .menuicon {
+    margin-left: 2px;
+}
+
+.inline-tools .menuicon::before {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-indent: 0;
+    text-align: center;
+    line-height: 25px;
+    font-size: 13px;
+}
+
+.menuicon.strong::before,
+.menuicon.em::before,
+.menuicon.sup::before,
+.menuicon.sub::before {
+    font-family: "Font Awesome 5 Free", monospace;
+    font-weight: 900;
+}
+
+.menuicon.strong::before {
+    content: "\f032";
+}
+
+.menuicon.em::before {
+    content: "\f033";
+}
+
+.menuicon.sup::before {
+    content: "\f12b";
+}
+
+.menuicon.sub::before {
+    content: "\f12c";
+}
+
+.menuicon.smallcaps::before {
+    content: "Tt";
+    font-weight: bold;
+    font-variant: small-caps;
+}
+
+.menuicon.nocase::before {
+    content: "cP";
+    font-weight: bold;
+}

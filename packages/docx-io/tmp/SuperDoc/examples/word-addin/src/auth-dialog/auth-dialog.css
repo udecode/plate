@@ -1,0 +1,133 @@
+body {
+    font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at -40% -70%, #1255fe, #8968f6, #b785f1, #fcd361e6, #e8caec, #f1e0f0, #f1e0f0, #f5f5fa, #f5f5fa, #f5f5fa);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    max-width: 400px;
+    width: 90%;
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.header img {
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    color: #323130;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.header p {
+    color: #605e5c;
+    margin: 5px 0 0 0;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #323130;
+    font-size: 14px;
+}
+
+input[type="email"], input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+input[type="email"]:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: #1255fe;
+    box-shadow: 0 0 0 1px #1255fe;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: #1255fe;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: #106ebe;
+}
+
+.btn:disabled {
+    background: #a19f9d;
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 2px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.status.success {
+    background: #dff6dd;
+    color: #107c10;
+    border: 1px solid #92c353;
+}
+
+.status.error {
+    background: #fde7e9;
+    color: #a80000;
+    border: 1px solid #d13438;
+}
+
+.status.info {
+    background: #deecf9;
+    color: #004578;
+    border: 1px solid #0078d4;
+}
+
+.hidden {
+    display: none;
+}
+
+.code-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f3f2f1;
+    border-radius: 2px;
+    border: 1px solid #edebe9;
+}
