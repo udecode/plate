@@ -5,8 +5,11 @@ import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+import type { CommentPayload, StoredComment, TrackingState } from './tracking';
+
 import {
   applicationName,
+  commentsType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
@@ -378,6 +381,14 @@ class DocxDocument {
   width: number;
   zip: JSZip;
 
+  // Tracking support for comments and suggestions
+  _trackingState?: TrackingState;
+  comments: StoredComment[];
+  commentIdMap: Map<string, number>;
+  lastCommentId: number;
+  revisionIdMap: Map<string, number>;
+  lastRevisionId: number;
+
   constructor(properties: DocxDocumentProperties) {
     this.zip = properties.zip;
     this.htmlString = properties.htmlString;
@@ -448,6 +459,13 @@ class DocxDocument {
     this.footerObjects = [];
     this.documentXML = null;
 
+    // Initialize tracking support
+    this.comments = [];
+    this.commentIdMap = new Map();
+    this.lastCommentId = 0;
+    this.revisionIdMap = new Map();
+    this.lastRevisionId = 0;
+
     this.generateContentTypesXML = this.generateContentTypesXML.bind(this);
     this.generateDocumentXML = this.generateDocumentXML.bind(this);
     this.generateCoreXML = this.generateCoreXML.bind(this);
@@ -464,6 +482,10 @@ class DocxDocument {
     this.generateHeaderXML = this.generateHeaderXML.bind(this);
     this.generateFooterXML = this.generateFooterXML.bind(this);
     this.generateSectionXML = generateSectionXML.bind(this);
+    this.generateCommentsXML = this.generateCommentsXML.bind(this);
+    this.ensureComment = this.ensureComment.bind(this);
+    this.getCommentId = this.getCommentId.bind(this);
+    this.getRevisionId = this.getRevisionId.bind(this);
 
     this.ListStyleBuilder = new ListStyleBuilder(properties.numbering);
   }
@@ -489,6 +511,22 @@ class DocxDocument {
       'footer',
       this.footerObjects
     );
+
+    // Add comments content type if there are comments
+    if (this.comments.length > 0) {
+      const commentsContentTypeFragment = fragment({
+        defaultNamespace: { ele: namespaces.contentTypes },
+      })
+        .ele('Override')
+        .att('PartName', '/word/comments.xml')
+        .att(
+          'ContentType',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml'
+        )
+        .up();
+
+      contentTypesXML.root().import(commentsContentTypeFragment);
+    }
 
     return contentTypesXML.toString({ prettyPrint: true });
   }
@@ -730,7 +768,7 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      [...new Array(8).keys()].forEach((level) => {
+      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
           .att('@w', 'ilvl', String(level))
@@ -929,6 +967,9 @@ class DocxDocument {
       case imageType:
         relationshipType = namespaces.images;
         break;
+      case commentsType:
+        relationshipType = namespaces.comments;
+        break;
       case headerFileType:
         relationshipType = namespaces.headers;
         break;
@@ -956,6 +997,132 @@ class DocxDocument {
 
   generateFooterXML(vTree: VTree): Promise<FooterResult> {
     return this.generateSectionXML(vTree, 'footer') as Promise<FooterResult>;
+  }
+
+  // ============================================================================
+  // Tracking Support Methods (Comments and Suggestions)
+  // ============================================================================
+
+  /**
+   * Get a revision ID for a suggestion. Creates a new one if needed.
+   * Ensures consistent IDs for the same suggestion across multiple occurrences.
+   */
+  getRevisionId(id?: string): number {
+    if (!id) {
+      this.lastRevisionId += 1;
+      return this.lastRevisionId;
+    }
+
+    const existing = this.revisionIdMap.get(id);
+    if (existing !== undefined) {
+      return existing;
+    }
+
+    this.lastRevisionId += 1;
+    this.revisionIdMap.set(id, this.lastRevisionId);
+    return this.lastRevisionId;
+  }
+
+  /**
+   * Ensure a comment exists in the document and return its numeric ID.
+   * Updates metadata if the comment already exists but had missing fields.
+   */
+  ensureComment(data: Partial<CommentPayload>): number {
+    const { id, authorName, authorInitials, date, text } = data;
+    const commentId = id || `comment-${this.lastCommentId + 1}`;
+    let numericId = this.commentIdMap.get(commentId);
+
+    if (numericId === undefined) {
+      this.lastCommentId += 1;
+      numericId = this.lastCommentId;
+      this.commentIdMap.set(commentId, numericId);
+    }
+
+    const existing = this.comments.find((item) => item.id === numericId);
+    if (existing) {
+      // Update missing fields
+      if (!existing.authorName && authorName) {
+        existing.authorName = authorName;
+      }
+      if (!existing.authorInitials && authorInitials) {
+        existing.authorInitials = authorInitials;
+      }
+      if (!existing.date && date) {
+        existing.date = date;
+      }
+      if (!existing.text && text) {
+        existing.text = text;
+      }
+      return numericId;
+    }
+
+    this.comments.push({
+      id: numericId,
+      authorName: authorName || 'unknown',
+      authorInitials: authorInitials || '',
+      date,
+      text: text || 'Imported comment',
+    });
+
+    return numericId;
+  }
+
+  /**
+   * Get the numeric ID for a comment, creating it if necessary.
+   */
+  getCommentId(id: string): number {
+    if (!id) {
+      return this.ensureComment({ id: undefined });
+    }
+    return this.ensureComment({ id });
+  }
+
+  /**
+   * Generate the comments.xml file content.
+   */
+  generateCommentsXML(): string {
+    const commentsXML = create({
+      encoding: 'UTF-8',
+      namespaceAlias: { w: namespaces.w },
+      standalone: true,
+    }).ele('@w', 'comments');
+
+    this.comments.forEach((comment) => {
+      const commentElement = commentsXML
+        .ele('@w', 'comment')
+        .att('@w', 'id', String(comment.id))
+        .att('@w', 'author', comment.authorName || 'unknown');
+
+      if (comment.authorInitials) {
+        commentElement.att('@w', 'initials', comment.authorInitials);
+      }
+      if (comment.date) {
+        commentElement.att('@w', 'date', comment.date);
+      }
+
+      // Split multi-line comment text into paragraphs
+      const paragraphs = String(comment.text || '')
+        .split(/\r?\n/)
+        .filter((line, index, arr) => line.length > 0 || arr.length === 1);
+
+      paragraphs.forEach((line) => {
+        commentElement
+          .ele('@w', 'p')
+          .ele('@w', 'r')
+          .ele('@w', 't')
+          .att('@xml', 'space', 'preserve')
+          .txt(line)
+          .up()
+          .up()
+          .up();
+      });
+
+      commentElement.up();
+    });
+
+    commentsXML.up();
+
+    return commentsXML.toString({ prettyPrint: true });
   }
 }
 

@@ -1,9 +1,100 @@
-/* eslint-disable no-useless-escape */
-import JSZip from 'jszip';
+/**
+ * HTML to DOCX converter
+ *
+ * This module provides tools for converting HTML to DOCX format.
+ */
 
-import addFilesToContainer from './html-to-docx';
+// Main converter function (default export)
+export { default as HTMLtoDOCX, default } from './html-to-docx';
 
-/** Document options for DOCX generation */
+// Re-export types for backwards compatibility
+export type { DocumentMargins } from './schemas';
+
+// Re-export tracking utilities
+export * from './tracking';
+
+// Re-export constants
+export * from './constants';
+
+// Re-export namespaces
+export { default as namespaces } from './namespaces';
+
+// ============================================================================
+// Type definitions (matching index.d.ts namespace types)
+// ============================================================================
+
+export type Margins = {
+  bottom?: number;
+  footer?: number;
+  gutter?: number;
+  header?: number;
+  left?: number;
+  right?: number;
+  top?: number;
+};
+
+export type PageSize = {
+  height?: number;
+  width?: number;
+};
+
+export type Row = {
+  cantSplit?: boolean;
+};
+
+export type BorderOptions = {
+  color?: string;
+  size?: number;
+};
+
+export type TableOptions = {
+  borderOptions?: BorderOptions;
+  row?: Row;
+};
+
+export type TableBorderOptions = BorderOptions;
+
+export type LineNumberOptions = {
+  countBy?: number;
+  distance?: number;
+  restart?: 'continuous' | 'newPage' | 'newSection';
+  start?: number;
+};
+
+export type HeadingSpacing = {
+  after?: number;
+  before?: number;
+  line?: number;
+  lineRule?: 'atLeast' | 'auto' | 'exact';
+};
+
+export type HeadingStyleOptions = {
+  bold?: boolean;
+  color?: string;
+  font?: string;
+  fontSize?: number;
+  italic?: boolean;
+  spacing?: HeadingSpacing;
+  underline?: boolean;
+};
+
+export type HeadingOptions = {
+  heading1?: HeadingStyleOptions;
+  heading2?: HeadingStyleOptions;
+  heading3?: HeadingStyleOptions;
+  heading4?: HeadingStyleOptions;
+  heading5?: HeadingStyleOptions;
+  heading6?: HeadingStyleOptions;
+};
+
+export type ImageProcessing = {
+  svgHandling?: 'convert' | 'native';
+};
+
+export type NumberingOptions = {
+  defaultOrderedListStyleType?: string;
+};
+
 export type DocumentOptions = {
   complexScriptFontSize?: number | string;
   createdAt?: Date;
@@ -17,9 +108,11 @@ export type DocumentOptions = {
   footerType?: 'default' | 'even' | 'first';
   header?: boolean;
   headerType?: 'default' | 'even' | 'first';
+  heading?: HeadingOptions;
+  imageProcessing?: ImageProcessing;
   keywords?: string[];
   lastModifiedBy?: string;
-  lineNumber?: boolean;
+  lineNumber?: boolean | LineNumberOptions;
   lineNumberOptions?: LineNumberOptions;
   margins?: Margins;
   modifiedAt?: Date;
@@ -33,103 +126,3 @@ export type DocumentOptions = {
   table?: TableOptions;
   title?: string;
 };
-
-export type LineNumberOptions = {
-  countBy?: number;
-  restart?: 'continuous' | 'newPage' | 'newSection';
-  start?: number;
-};
-
-export type Margins = {
-  bottom?: number | string;
-  footer?: number | string;
-  gutter?: number | string;
-  header?: number | string;
-  left?: number | string;
-  right?: number | string;
-  top?: number | string;
-};
-
-export type NumberingOptions = {
-  defaultOrderedListStyleType?: string;
-};
-
-export type PageSize = {
-  height?: number | string;
-  width?: number | string;
-};
-
-export type TableOptions = {
-  row?: {
-    cantSplit?: boolean;
-  };
-};
-
-const minifyHTMLString = (htmlString: string): string | null => {
-  try {
-    if (typeof htmlString === 'string') {
-      const minifiedHTMLString = htmlString
-        .replace(/\n/g, ' ')
-        .replace(/\r/g, ' ')
-        .replace(/\r\n/g, ' ')
-        .replace(/[\t]+</g, '<')
-        .replace(/>[\t ]+</g, '><')
-        .replace(/>[\t ]+$/g, '>');
-
-      return minifiedHTMLString;
-    }
-
-    throw new Error('invalid html string');
-  } catch (_error) {
-    return null;
-  }
-};
-
-async function generateContainer(
-  htmlString: string,
-  headerHTMLString: string | null | undefined,
-  documentOptions: DocumentOptions,
-  footerHTMLString?: string | null
-): Promise<Blob | Buffer> {
-  const zip = new JSZip();
-
-  let contentHTML: string | null = htmlString;
-  let headerHTML: string | null | undefined = headerHTMLString;
-  let footerHTML: string | null | undefined = footerHTMLString;
-
-  if (htmlString) {
-    contentHTML = minifyHTMLString(contentHTML as string);
-  }
-  if (headerHTMLString) {
-    headerHTML = minifyHTMLString(headerHTML as string);
-  }
-  if (footerHTMLString) {
-    footerHTML = minifyHTMLString(footerHTML as string);
-  }
-
-  await addFilesToContainer(
-    zip,
-    contentHTML,
-    documentOptions,
-    headerHTML,
-    footerHTML
-  );
-
-  const buffer = await zip.generateAsync({ type: 'arraybuffer' });
-
-  if (Object.hasOwn(global, 'Buffer')) {
-    return Buffer.from(new Uint8Array(buffer));
-  }
-  if (Object.hasOwn(global, 'Blob')) {
-    // eslint-disable-next-line no-undef
-    return new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    });
-  }
-
-  throw new Error(
-    'Add blob support using a polyfill eg https://github.com/bjornstar/blob-polyfill'
-  );
-}
-
-export default generateContainer;

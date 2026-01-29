@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { exportToDocx } from '@platejs/docx-io';
+import { exportToDocx, type DocxExportDiscussion } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import type { SlatePlugin } from 'platejs';
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -151,8 +152,28 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
+    // Get discussions from the discussion plugin for comment export
+    const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+
+    // Convert discussions to export format
+    const exportDiscussions: DocxExportDiscussion[] = discussions.map((d) => ({
+      id: d.id,
+      comments: d.comments?.map((c) => ({
+        contentRich: c.contentRich,
+        createdAt: c.createdAt,
+        userId: c.userId,
+      })),
+      createdAt: d.createdAt,
+      documentContent: d.documentContent,
+      userId: d.userId,
+      user: d.authorName ? { id: d.userId, name: d.authorName } : undefined,
+    }));
+
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+      tracking: {
+        discussions: exportDiscussions,
+      },
     });
 
     const url = URL.createObjectURL(blob);

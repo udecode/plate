@@ -1,0 +1,64 @@
+{
+  "name": "docxmlater",
+  "version": "9.5.1",
+  "description": "A comprehensive DOCX editing framework for creating, reading, and manipulating Microsoft Word documents",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "dev": "ts-node src/index.ts",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run clean && npm run build",
+    "docs:metrics": "echo 'Source Files:' && find src -name '*.ts' | wc -l && echo 'Test Files:' && find tests -name '*.test.ts' | wc -l && echo 'Lines of Code:' && find src -name '*.ts' -exec wc -l {} + | tail -1",
+    "docs:check": "echo 'Checking documentation...' && ls -1 CLAUDE.md README.md CHANGELOG.md src/*/CLAUDE.md 2>/dev/null || echo 'Missing documentation files'",
+    "test-list-arch": "ts-node examples/test-list-formatting-architecture.ts"
+  },
+  "keywords": [
+    "docx",
+    "word",
+    "document",
+    "office",
+    "openxml",
+    "xml",
+    "wordprocessingml",
+    "microsoft-word",
+    "document-generation",
+    "docx-editor",
+    "openxml-sdk"
+  ],
+  "author": "DiaTech",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ItMeDiaTech/docXMLater.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ItMeDiaTech/docXMLater/issues"
+  },
+  "homepage": "https://github.com/ItMeDiaTech/docXMLater#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.3",
+    "jest": "^30.2.0",
+    "rimraf": "^6.1.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "all": "^0.0.0",
+    "jszip": "^3.10.1",
+    "tailwindcss": "^4.1.18"
+  }
+}

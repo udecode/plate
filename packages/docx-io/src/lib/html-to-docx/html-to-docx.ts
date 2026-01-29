@@ -12,6 +12,7 @@ import VText from 'virtual-dom/vnode/vtext';
 import { create } from 'xmlbuilder2';
 
 import {
+  commentsType,
   defaultDocumentOptions,
   defaultHTMLString,
   documentFileName,
@@ -63,7 +64,7 @@ interface NormalizedDocumentOptions {
   headerType?: 'default' | 'even' | 'first';
   keywords?: string[];
   lastModifiedBy?: string;
-  lineNumber?: boolean;
+  lineNumber?: boolean | LineNumberOptions;
   lineNumberOptions?: LineNumberOptions;
   margins?: NormalizedMargins | null;
   modifiedAt?: Date;
@@ -325,6 +326,16 @@ async function addFilesToContainer(
   // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   docxDocument.documentXML = await renderDocumentFile(docxDocument);
 
+  // Create comments relationship if there are comments (populated by renderDocumentFile)
+  if (docxDocument.comments.length > 0) {
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsType,
+      'comments.xml',
+      internalRelationship
+    );
+  }
+
   zip.folder(relsFolderName)!.file(
     '.rels',
     create({ encoding: 'UTF-8', standalone: true }, relsXML).toString({
@@ -426,6 +437,15 @@ async function addFilesToContainer(
     .file('webSettings.xml', docxDocument.generateWebSettingsXML(), {
       createFolders: false,
     });
+
+  // Add comments.xml if there are comments
+  if (docxDocument.comments.length > 0) {
+    zip
+      .folder(wordFolder)!
+      .file('comments.xml', docxDocument.generateCommentsXML(), {
+        createFolders: false,
+      });
+  }
 
   const relationshipXMLs = docxDocument.generateRelsXML();
 

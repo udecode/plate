@@ -37,11 +37,23 @@ import { createSlateEditor, createSlatePlugin } from 'platejs';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
 
-import juice from 'juice';
+// Import from adapters module (new architecture)
+import { htmlToDocument, type HtmlToDocumentOptions } from './adapters';
 
-import type { DocumentMargins } from './html-to-docx';
+// Import Document class for direct manipulation
+import type { Document, Margins } from './docXMLater/src';
 
-import { htmlToDocxBlob } from './html-to-docx';
+// Re-export Margins type as DocumentMargins for backwards compatibility
+export type DocumentMargins = Margins;
+
+// Import from exportDocx for backwards compatibility
+import { htmlToDocxBlob } from './exportDocx';
+import {
+  buildUserNameMap,
+  injectDocxTrackingTokens,
+  type DocxExportDiscussion,
+  type InjectDocxTrackingTokensOptions,
+} from './exportTrackChanges';
 
 // =============================================================================
 // CSS Styles for DOCX Export
@@ -156,6 +168,35 @@ export type DocxExportMargins = DocumentMargins;
 export type DocxExportOrientation = 'landscape' | 'portrait';
 
 /**
+ * Options for tracked changes/comments export.
+ */
+export type DocxTrackingExportOptions = {
+  /**
+   * Discussion threads for comment metadata.
+   * Each discussion represents a comment thread with its comments.
+   */
+  discussions?: DocxExportDiscussion[] | null;
+
+  /**
+   * Custom function to get comment IDs from a text node.
+   * If not provided, uses default implementation that looks for 'comment_' prefixed keys.
+   */
+  getCommentIds?: InjectDocxTrackingTokensOptions['getCommentIds'];
+
+  /**
+   * Custom function to get suggestion metadata from a text node.
+   * If not provided, uses default implementation that looks for 'suggestion_' prefixed keys.
+   */
+  getSuggestions?: InjectDocxTrackingTokensOptions['getSuggestions'];
+
+  /**
+   * Function to convert rich content to plain text.
+   * Used for extracting comment text from rich content.
+   */
+  nodeToString?: InjectDocxTrackingTokensOptions['nodeToString'];
+};
+
+/**
  * Options for DOCX export operations.
  */
 export type DocxExportOperationOptions = {
@@ -202,6 +243,13 @@ export type DocxExportOperationOptions = {
    * Document title (for metadata purposes).
    */
   title?: string;
+
+  /**
+   * Options for exporting tracked changes and comments.
+   * When provided, tracking tokens will be injected into the document
+   * and converted to Word tracked changes format.
+   */
+  tracking?: DocxTrackingExportOptions;
 };
 
 /**
@@ -409,8 +457,23 @@ async function exportToDocxInternal(
     fontFamily,
     margins = DEFAULT_DOCX_MARGINS,
     orientation = 'portrait',
+    tracking,
     value,
   } = options;
+
+  // Process tracking tokens if enabled
+  let processedValue: Value = value;
+
+  if (tracking) {
+    const userNameMap = buildUserNameMap(tracking.discussions);
+    processedValue = injectDocxTrackingTokens(value, {
+      discussions: tracking.discussions,
+      getCommentIds: tracking.getCommentIds,
+      getSuggestions: tracking.getSuggestions,
+      nodeToString: tracking.nodeToString,
+      userNameMap,
+    }) as Value;
+  }
 
   // Serialize editor content to HTML
   const bodyHtml = await serializeToHtml({
@@ -418,21 +481,14 @@ async function exportToDocxInternal(
     components,
     fontFamily,
     plugins: editorPlugins,
-    value,
+    value: processedValue,
   });
 
   // Wrap in complete HTML document
   const fullHtml = wrapHtmlForDocx(bodyHtml, customStyles);
 
-  // Inline CSS styles using juice for DOCX compatibility
-  const inlinedHtml = juice(fullHtml, {
-    removeStyleTags: false,
-    preserveMediaQueries: false,
-    preserveFontFaces: false,
-  });
-
   // Convert to DOCX using browser-compatible implementation
-  const blob = await htmlToDocxBlob(inlinedHtml, {
+  const result = await htmlToDocxBlob(fullHtml, {
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,
@@ -440,7 +496,16 @@ async function exportToDocxInternal(
     orientation,
   });
 
-  return blob;
+  // Extract blob from result
+  if (!result.success || !result.blob) {
+    const errorMessage =
+      result.errors && result.errors.length > 0
+        ? result.errors[0].message
+        : 'Unknown error during DOCX conversion';
+    throw new Error(errorMessage);
+  }
+
+  return result.blob;
 }
 
 /**
@@ -505,6 +570,129 @@ export async function exportToDocx(
     editorStaticComponent,
     value,
   });
+}
+
+/**
+ * Export Plate.js editor content to a docXMLater Document object.
+ *
+ * This function provides direct access to the Document object, allowing
+ * advanced manipulation before generating the final output. Use this when
+ * you need to add custom sections, headers, footers, or other elements
+ * not supported through the standard export options.
+ *
+ * @param value - The Plate.js editor value (array of nodes)
+ * @param options - Export options (orientation, margins, styles, etc.)
+ * @returns A Promise that resolves to an object containing the Document and metadata
+ *
+ * @example
+ * ```typescript
+ * import { exportToDocument } from '@platejs/docx-export';
+ *
+ * const { document, warnings } = await exportToDocument(editor.children, {
+ *   orientation: 'portrait',
+ * });
+ *
+ * // Add custom header
+ * const header = document.createHeader('default');
+ * header.createParagraph().addText('My Document');
+ *
+ * // Generate the final blob
+ * const buffer = await document.toBuffer();
+ * const blob = new Blob([buffer], {
+ *   type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+ * });
+ * ```
+ */
+export async function exportToDocument(
+  value: Value,
+  options: DocxExportOptions = {}
+): Promise<{
+  document: Document;
+  warnings: string[];
+  stats: { paragraphCount: number; imageCount: number; tableCount: number };
+}> {
+  const {
+    customStyles,
+    editorPlugins,
+    editorStaticComponent,
+    fontFamily,
+    margins = DEFAULT_DOCX_MARGINS,
+    orientation = 'portrait',
+    tracking,
+  } = options;
+
+  // Process tracking tokens if enabled
+  let processedValue: Value = value;
+
+  if (tracking) {
+    const userNameMap = buildUserNameMap(tracking.discussions);
+    processedValue = injectDocxTrackingTokens(value, {
+      discussions: tracking.discussions,
+      getCommentIds: tracking.getCommentIds,
+      getSuggestions: tracking.getSuggestions,
+      nodeToString: tracking.nodeToString,
+      userNameMap,
+    }) as Value;
+  }
+
+  // Extract component overrides from plugins
+  let components: Record<string, React.ComponentType<any>> | undefined;
+
+  if (editorPlugins) {
+    for (const plugin of editorPlugins) {
+      let pluginOverride = (plugin as any).override;
+      if (
+        (!pluginOverride || !pluginOverride.components) &&
+        (plugin as any).__configuration
+      ) {
+        const configResult = (plugin as any).__configuration({});
+        pluginOverride = configResult?.override;
+      }
+      if (pluginOverride?.components) {
+        components = { ...components, ...pluginOverride.components };
+      }
+    }
+  }
+
+  // Serialize editor content to HTML
+  const bodyHtml = await serializeToHtml({
+    EditorStaticComponent: editorStaticComponent,
+    components,
+    fontFamily,
+    plugins: editorPlugins,
+    value: processedValue,
+  });
+
+  // Wrap in complete HTML document
+  const fullHtml = wrapHtmlForDocx(bodyHtml, customStyles);
+
+  // Convert to Document using adapters
+  const conversionOptions: HtmlToDocumentOptions = {
+    html: fullHtml,
+    pageSize: 'letter',
+    orientation,
+    margins: {
+      top: margins.top ?? DEFAULT_DOCX_MARGINS.top,
+      right: margins.right ?? DEFAULT_DOCX_MARGINS.right,
+      bottom: margins.bottom ?? DEFAULT_DOCX_MARGINS.bottom,
+      left: margins.left ?? DEFAULT_DOCX_MARGINS.left,
+      header: margins.header ?? DEFAULT_DOCX_MARGINS.header,
+      footer: margins.footer ?? DEFAULT_DOCX_MARGINS.footer,
+    },
+    defaultFontFamily: fontFamily,
+  };
+
+  const result = await htmlToDocument(conversionOptions);
+
+  return {
+    document: result.document,
+    warnings: result.warnings.map((w) => w.message),
+    stats: {
+      paragraphCount: result.stats.paragraphCount,
+      imageCount: result.stats.imageCount,
+      tableCount: result.stats.tableCount,
+    },
+  };
 }
 
 /**
@@ -670,4 +858,43 @@ export const DocxExportPlugin = createSlatePlugin({
 // Re-exports
 // =============================================================================
 
-export { htmlToDocxBlob } from './html-to-docx';
+export { htmlToDocxBlob } from './exportDocx';
+
+// Re-export tracking types and utilities for convenience
+export type { DocxExportDiscussion } from './exportTrackChanges';
+export {
+  injectDocxTrackingTokens,
+  buildUserNameMap,
+} from './exportTrackChanges';
+
+// Re-export adapter utilities for advanced usage
+export {
+  // HTML to Document conversion
+  htmlToDocument,
+  htmlToDocumentSync,
+  validateHtmlForConversion,
+  type HtmlToDocumentOptions,
+  type HtmlToDocumentResult,
+  type ConversionWarning,
+  type ConversionStats,
+  // Pagination handling
+  extractPaginationProperties,
+  isPageBreakElement,
+  isColumnBreakElement,
+  createPageBreakParagraph,
+  createPageBreakRun,
+  createColumnBreakRun,
+  applyPaginationToParagraph,
+  hasPaginationStyles,
+  createLetterSettings,
+  createA4Settings,
+  createLegalSettings,
+  createNarrowSettings,
+  createWideSettings,
+  type DocumentSettings,
+  type PaginationOptions,
+  type ExtractedPaginationProperties,
+} from './adapters';
+
+// Re-export Document class for advanced manipulation
+export { Document } from './docXMLater/src';

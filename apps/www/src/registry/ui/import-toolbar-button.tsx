@@ -4,9 +4,12 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { importDocx } from '@platejs/docx-io';
+import { getCommentKey } from '@platejs/comment';
+import { importDocxWithTracking } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { getSuggestionKey } from '@platejs/suggestion';
 import { ArrowUpToLineIcon } from 'lucide-react';
+import { KEYS, TextApi } from 'platejs';
 import { getEditorDOMFromHtmlString } from 'platejs/static';
 import { useEditorRef } from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
@@ -19,6 +22,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import {
+  discussionPlugin,
+  type TDiscussion,
+} from '@/registry/components/editor/plugins/discussion-kit';
 import { ToolbarButton } from './toolbar';
 
 type ImportType = 'html' | 'markdown';
@@ -73,9 +80,56 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
-      const result = await importDocx(editor, arrayBuffer);
 
-      editor.tf.insertNodes(result.nodes as typeof editor.children);
+      // Import with full tracking support (suggestions + comments)
+      const result = await importDocxWithTracking(editor as any, arrayBuffer, {
+        suggestionKey: KEYS.suggestion,
+        getSuggestionKey,
+        commentKey: KEYS.comment,
+        getCommentKey,
+        isText: TextApi.isText,
+        generateId: () => crypto.randomUUID(),
+      });
+
+      // Add imported discussions to the discussion plugin
+      if (result.discussions.length > 0) {
+        const existingDiscussions =
+          editor.getOption(discussionPlugin, 'discussions') ?? [];
+
+        // Convert imported discussions to TDiscussion format
+        const newDiscussions: TDiscussion[] = result.discussions.map((d) => ({
+          id: d.id,
+          comments: (d.comments ?? []).map((c, index) => ({
+            id: `${d.id}-comment-${index}`,
+            contentRich:
+              c.contentRich as TDiscussion['comments'][number]['contentRich'],
+            createdAt: c.createdAt ?? new Date(),
+            discussionId: d.id,
+            isEdited: false,
+            userId: c.userId ?? c.user?.id ?? 'imported-unknown',
+          })),
+          createdAt: d.createdAt ?? new Date(),
+          documentContent: d.documentContent,
+          isResolved: false,
+          userId: d.userId ?? d.user?.id ?? 'imported-unknown',
+          authorName: d.user?.name,
+        }));
+
+        editor.setOption(discussionPlugin, 'discussions', [
+          ...existingDiscussions,
+          ...newDiscussions,
+        ]);
+      }
+
+      // Log import results
+      if (result.hasTracking) {
+        console.log(
+          `[DOCX Import] Imported ${result.insertions} insertions, ${result.deletions} deletions, ${result.comments} comments`
+        );
+        if (result.errors.length > 0) {
+          console.warn('[DOCX Import] Errors:', result.errors);
+        }
+      }
     },
   });
 

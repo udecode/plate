@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "technologies": [
+    {
+      "name": "JavaScript",
+      "type": "language",
+      "version": null,
+      "confidence": 1.0,
+      "source_file": "package.json"
+    },
+    {
+      "name": "TypeScript",
+      "type": "language",
+      "version": null,
+      "confidence": 1.0,
+      "source_file": "tsconfig.json"
+    }
+  ],
+  "sources": [
+    {
+      "name": "JavaScript",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+      "priority": 1,
+      "doc_type": "official"
+    },
+    {
+      "name": "TypeScript",
+      "url": "https://www.typescriptlang.org/docs/",
+      "priority": 1,
+      "doc_type": "official"
+    },
+    {
+      "name": "JavaScript",
+      "url": "https://javascript.info/",
+      "priority": 2,
+      "doc_type": "tutorial"
+    }
+  ],
+  "results": [
+    {
+      "source": "JavaScript",
+      "documents_added": 0,
+      "success": false,
+      "error": "Expected document to be a str, got {'char_count': 5764, 'token_count': 1441, 'line_count': 192, 'source': 'text_input', 'url': 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', 'title': 'JavaScript', 'doc_type': 'text', 'scraped_at': '2025-11-05 23:15:11', 'doc_id': '5ae50850be5bf6a6', 'chunk_index': 0, 'total_chunks': 5} in add.",
+      "duration_seconds": 405.0036904811859
+    },
+    {
+      "source": "TypeScript",
+      "documents_added": 0,
+      "success": false,
+      "error": "Expected document to be a str, got {'char_count': 2421, 'token_count': 605, 'line_count': 125, 'source': 'text_input', 'url': 'https://www.typescriptlang.org/docs/', 'title': 'TypeScript Documentation', 'doc_type': 'text', 'scraped_at': '2025-11-05 23:21:56', 'doc_id': '0d8efd245657be29', 'chunk_index': 0, 'total_chunks': 3} in add.",
+      "duration_seconds": 390.4760503768921
+    },
+    {
+      "source": "JavaScript",
+      "documents_added": 0,
+      "success": false,
+      "error": "Expected document to be a str, got {'char_count': 5351, 'token_count': 1337, 'line_count': 230, 'source': 'text_input', 'url': 'https://javascript.info/', 'title': 'The Modern JavaScript Tutorial', 'doc_type': 'text', 'scraped_at': '2025-11-05 23:28:28', 'doc_id': 'ad318d2be77b1ab3', 'chunk_index': 0, 'total_chunks': 4} in add.",
+      "duration_seconds": 387.0103838443756
+    }
+  ],
+  "total_documents": 0,
+  "duration_seconds": 1185.1608364582062
+}

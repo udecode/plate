@@ -18,6 +18,8 @@ export type OoxmlNamespaces = {
   dcmitype: string;
   /** Dublin Core terms namespace */
   dcterms: string;
+  /** Comments relationship namespace */
+  comments: string;
   /** Font table relationship namespace */
   fontTable: string;
   /** Footer relationship namespace */
@@ -84,6 +86,8 @@ const namespaces: OoxmlNamespaces = {
   dc: 'http://purl.org/dc/elements/1.1/',
   dcmitype: 'http://purl.org/dc/dcmitype/',
   dcterms: 'http://purl.org/dc/terms/',
+  comments:
+    'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments',
   fontTable:
     'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable',
   footers:
