@@ -113,6 +113,7 @@ export const KEYS = {
   trailingBlock: 'trailingBlock',
   ul: 'disc',
   yjs: 'yjs',
+  codeDrawing: 'code_drawing',
 } as const;
 
 export type NodeKey = (typeof NODES)[keyof typeof NODES];
