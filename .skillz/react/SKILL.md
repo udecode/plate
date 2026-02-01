@@ -1,7 +1,6 @@
 ---
-description: React patterns with destructured props, compiler optimization, Effects, and Tailwind v4 syntax. ALWAYS use when using React.
-globs: *.tsx,**/globals.css
-alwaysApply: false
+name: react
+description: React patterns with destructured props, compiler optimization, Effects, and Tailwind v4 syntax. ALWAYS use when using React. Applies to files matching: *.tsx, **/globals.css.
 ---
 
 > **React Version Compatibility**

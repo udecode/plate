@@ -13,6 +13,8 @@
 
 import type { TNode, TText } from 'platejs';
 
+import { nanoid } from 'nanoid';
+
 import {
   buildCommentEndToken,
   buildCommentStartToken,
@@ -68,14 +70,20 @@ export type DocxExportSuggestionMeta = {
 
 /** Options for token injection */
 export type InjectDocxTrackingTokensOptions = {
+  /** Default author name for transient comments (default: 'Draft') */
+  defaultTransientAuthor?: string;
   /** Discussion threads for comment metadata */
   discussions?: DocxExportDiscussion[] | null;
   /** Function to get comment IDs from a text node */
   getCommentIds?: (node: TText) => string[];
   /** Function to get suggestion metadata from a text node */
   getSuggestions?: (node: TText) => DocxExportSuggestionMeta[];
+  /** Include transient (uncommitted) comment marks in export */
+  includeTransientComments?: boolean;
   /** Function to convert rich content to plain text */
   nodeToString?: (node: unknown) => string;
+  /** Key used for transient comment marks (default: 'commentTransient') */
+  transientCommentKey?: string;
   /** Pre-built user name map (userId -> name) */
   userNameMap?: Map<string, string>;
 };
@@ -505,6 +513,178 @@ function buildResolvedCommentStartToken(
 }
 
 // ============================================================================
+// Transient Comment Preprocessing
+// ============================================================================
+
+/** Default key for transient comment marks */
+const DEFAULT_TRANSIENT_KEY = 'commentTransient';
+
+/** Default author for transient comments */
+const DEFAULT_TRANSIENT_AUTHOR = 'Draft';
+
+/**
+ * Internal type for tracking transient text nodes during preprocessing.
+ */
+type TransientTextEntry = {
+  node: TText;
+  path: number[];
+};
+
+/**
+ * Recursively collect all text nodes with transient comment marks.
+ */
+function collectTransientTextNodes(
+  node: Record<string, unknown>,
+  transientKey: string,
+  entries: TransientTextEntry[],
+  currentPath: number[] = []
+): void {
+  if (typeof node.text === 'string') {
+    if (node[transientKey]) {
+      entries.push({
+        node: node as unknown as TText,
+        path: [...currentPath],
+      });
+    }
+    return;
+  }
+
+  if (!Array.isArray(node.children)) return;
+
+  (node.children as Record<string, unknown>[]).forEach((child, index) => {
+    collectTransientTextNodes(child, transientKey, entries, [
+      ...currentPath,
+      index,
+    ]);
+  });
+}
+
+/**
+ * Group consecutive transient text entries into ranges.
+ * Two entries are consecutive if they are adjacent siblings or in sequence.
+ */
+function groupTransientRanges(
+  entries: TransientTextEntry[]
+): TransientTextEntry[][] {
+  if (entries.length === 0) return [];
+
+  const ranges: TransientTextEntry[][] = [];
+  let currentRange: TransientTextEntry[] = [entries[0]!];
+
+  for (let i = 1; i < entries.length; i++) {
+    const prev = entries[i - 1]!;
+    const curr = entries[i]!;
+
+    // Check if consecutive (same parent, adjacent indices)
+    const prevParent = prev.path.slice(0, -1);
+    const currParent = curr.path.slice(0, -1);
+    const prevIndex = prev.path.at(-1) ?? -1;
+    const currIndex = curr.path.at(-1) ?? -1;
+
+    const sameParent =
+      prevParent.length === currParent.length &&
+      prevParent.every((v, i) => v === currParent[i]);
+    const adjacent = currIndex === prevIndex + 1;
+
+    if (sameParent && adjacent) {
+      currentRange.push(curr);
+    } else {
+      ranges.push(currentRange);
+      currentRange = [curr];
+    }
+  }
+
+  ranges.push(currentRange);
+  return ranges;
+}
+
+/**
+ * Extract text content from a range of transient text entries.
+ */
+function extractRangeText(entries: TransientTextEntry[]): string {
+  return entries.map((e) => e.node.text).join('');
+}
+
+/**
+ * Preprocess transient comment marks in cloned editor value.
+ *
+ * This function:
+ * 1. Finds all text nodes with transient comment marks
+ * 2. Groups consecutive nodes into ranges
+ * 3. Generates a unique ID for each range
+ * 4. Mutates nodes to add `comment_<id>` marks
+ * 5. Returns DocxExportDiscussion entries for metadata resolution
+ *
+ * @param clonedValue - The cloned editor value (will be mutated)
+ * @param options - Options for transient comment processing
+ * @returns Array of generated discussions for transient comments
+ */
+export function createDiscussionsForTransientComments(
+  clonedValue: TNode[],
+  options: {
+    /** Default author name (default: 'Draft') */
+    defaultAuthor?: string;
+    /** Key used for transient marks (default: 'commentTransient') */
+    transientKey?: string;
+  } = {}
+): DocxExportDiscussion[] {
+  const {
+    defaultAuthor = DEFAULT_TRANSIENT_AUTHOR,
+    transientKey = DEFAULT_TRANSIENT_KEY,
+  } = options;
+
+  const discussions: DocxExportDiscussion[] = [];
+  const allEntries: TransientTextEntry[] = [];
+
+  // Collect all transient text nodes
+  clonedValue.forEach((node, index) => {
+    collectTransientTextNodes(
+      node as Record<string, unknown>,
+      transientKey,
+      allEntries,
+      [index]
+    );
+  });
+
+  if (allEntries.length === 0) return discussions;
+
+  // Group into contiguous ranges
+  const ranges = groupTransientRanges(allEntries);
+
+  // Process each range
+  for (const range of ranges) {
+    const id = nanoid();
+    const text = extractRangeText(range);
+    const now = new Date();
+
+    // Mutate nodes to add comment_<id> mark
+    for (const entry of range) {
+      (entry.node as Record<string, unknown>)[`${COMMENT_KEY_PREFIX}${id}`] =
+        true;
+    }
+
+    // Create discussion entry
+    discussions.push({
+      id,
+      comments: [
+        {
+          contentRich: [{ type: 'p', children: [{ text }] }],
+          createdAt: now,
+          user: { id: 'draft', name: defaultAuthor },
+          userId: 'draft',
+        },
+      ],
+      createdAt: now,
+      documentContent: text,
+      user: { id: 'draft', name: defaultAuthor },
+      userId: 'draft',
+    });
+  }
+
+  return discussions;
+}
+
+// ============================================================================
 // Main Export Function
 // ============================================================================
 
@@ -529,11 +709,28 @@ export function injectDocxTrackingTokens(
   options: InjectDocxTrackingTokensOptions = {}
 ): TNode[] {
   const cloned = cloneValue(value);
+
+  // Preprocess transient comments if enabled
+  let mergedDiscussions = options.discussions ?? [];
+  if (options.includeTransientComments) {
+    const transientDiscussions = createDiscussionsForTransientComments(cloned, {
+      defaultAuthor: options.defaultTransientAuthor,
+      transientKey: options.transientCommentKey,
+    });
+    mergedDiscussions = [...mergedDiscussions, ...transientDiscussions];
+  }
+
+  // Create options with merged discussions
+  const resolvedOptions: InjectDocxTrackingTokensOptions = {
+    ...options,
+    discussions: mergedDiscussions,
+  };
+
   const leaves: LeafEntry[] = [];
 
   // Collect all leaves from all top-level nodes
   cloned.forEach((node) => {
-    collectLeaves(node as Record<string, unknown>, leaves, options);
+    collectLeaves(node as Record<string, unknown>, leaves, resolvedOptions);
   });
 
   ensureNonEmptyCommentRanges(leaves);
@@ -626,9 +823,9 @@ export function injectDocxTrackingTokens(
         token.kind === 'suggestion'
           ? buildResolvedSuggestionStartToken(
               leaf.suggestions.get(token.id) ?? { id: token.id },
-              options.userNameMap
+              resolvedOptions.userNameMap
             )
-          : buildResolvedCommentStartToken(token.id, options)
+          : buildResolvedCommentStartToken(token.id, resolvedOptions)
       )
       .join('');
 

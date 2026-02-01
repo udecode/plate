@@ -1,7 +1,6 @@
 ---
-description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun test patterns with JSX pragma, proper matchers, and spy cleanup
-globs: **/*.spec.*,**/*.test.*
-alwaysApply: false
+name: testing
+description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun test patterns with JSX pragma, proper matchers, and spy cleanup Applies to files matching: **/*.spec.*, **/*.test.*.
 ---
 
 # Plate Testing Patterns with Bun
