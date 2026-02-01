@@ -278,6 +278,70 @@ function resolveSuggestionAuthor(
 /**
  * Resolve comment metadata from discussions.
  */
+/** Extract plain text from Plate node tree without nodeToString. */
+function extractPlainText(nodes: unknown[]): string {
+  const parts: string[] = [];
+
+  for (const node of nodes) {
+    if (!node || typeof node !== 'object') continue;
+    const n = node as Record<string, unknown>;
+
+    if (typeof n.text === 'string') {
+      parts.push(n.text);
+    }
+    if (Array.isArray(n.children)) {
+      parts.push(extractPlainText(n.children));
+    }
+  }
+
+  return parts.join('');
+}
+
+function resolveCommentText(
+  comment: DocxExportComment | null | undefined,
+  fallback: string | null | undefined,
+  nodeToString?: (node: unknown) => string
+): string {
+  const contentRich = comment?.contentRich;
+  let text = '';
+
+  if (Array.isArray(contentRich)) {
+    if (nodeToString) {
+      try {
+        text = nodeToString({
+          children: contentRich,
+          type: 'root',
+        });
+      } catch {
+        text = '';
+      }
+    }
+
+    // Fallback: extract plain text from known Plate node structure
+    if (!text) {
+      text = extractPlainText(contentRich);
+    }
+  }
+
+  return text || fallback || 'Imported comment';
+}
+
+function resolveCommentAuthorName(
+  comment: DocxExportComment | null | undefined,
+  discussion: DocxExportDiscussion | null | undefined,
+  userNameMap?: Map<string, string>
+): string {
+  return (
+    comment?.user?.name ??
+    discussion?.user?.name ??
+    userNameMap?.get(comment?.userId ?? '') ??
+    userNameMap?.get(discussion?.userId ?? '') ??
+    comment?.userId ??
+    discussion?.userId ??
+    'unknown'
+  );
+}
+
 function resolveCommentMeta(
   id: string,
   discussions?: DocxExportDiscussion[] | null,
@@ -286,40 +350,43 @@ function resolveCommentMeta(
 ): CommentPayload {
   const discussion = discussions?.find((item) => item?.id === id);
   const comment = discussion?.comments?.[0];
-  const commentContent = comment?.contentRich;
-  let text = '';
 
-  if (Array.isArray(commentContent) && nodeToString) {
-    try {
-      text = nodeToString({
-        children: commentContent,
-        type: 'root',
-      });
-    } catch {
-      text = '';
-    }
-  }
-
-  if (!text) {
-    text = discussion?.documentContent ?? 'Imported comment';
-  }
-
-  const authorName =
-    comment?.user?.name ??
-    discussion?.user?.name ??
-    userNameMap?.get(comment?.userId ?? '') ??
-    userNameMap?.get(discussion?.userId ?? '') ??
-    comment?.userId ??
-    discussion?.userId ??
-    'unknown';
-
+  const text = resolveCommentText(
+    comment,
+    discussion?.documentContent,
+    nodeToString
+  );
+  const authorName = resolveCommentAuthorName(comment, discussion, userNameMap);
   const date = normalizeDate(comment?.createdAt ?? discussion?.createdAt);
+
+  // Build replies from discussion.comments[1..n]
+  const replyComments = discussion?.comments?.slice(1);
+  const replies: CommentPayload['replies'] =
+    replyComments && replyComments.length > 0
+      ? replyComments.map((reply) => {
+          const replyAuthorName = resolveCommentAuthorName(
+            reply,
+            discussion,
+            userNameMap
+          );
+          const replyText = resolveCommentText(reply, undefined, nodeToString);
+          const replyDate = normalizeDate(reply?.createdAt);
+
+          return {
+            authorInitials: toInitials(replyAuthorName),
+            authorName: replyAuthorName,
+            date: replyDate,
+            text: replyText,
+          };
+        })
+      : undefined;
 
   return {
     authorInitials: toInitials(authorName),
     authorName,
     date,
     id,
+    replies,
     text,
   };
 }

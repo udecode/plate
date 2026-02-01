@@ -74,8 +74,20 @@ export type DocxCommentData = {
   replies?: DocxCommentData[];
 };
 
+/** Reply within an imported DOCX comment */
+export type DocxImportCommentReply = {
+  /** Author display name */
+  authorName?: string;
+  /** Author initials (for Word compatibility) */
+  authorInitials?: string;
+  /** Date when the reply was made (ISO string) */
+  date?: string;
+  /** Reply text content */
+  text?: string;
+};
+
 /** Comment parsed from HTML with token metadata */
-export type DocxImportComment = DocxCommentData & {
+export type DocxImportComment = Omit<DocxCommentData, 'replies'> & {
   /** The full start token string (for searching in editor) */
   startToken: string;
   /** The full end token string (for searching in editor) */
@@ -84,6 +96,8 @@ export type DocxImportComment = DocxCommentData & {
   hasStartToken: boolean;
   /** Whether the end token was found in HTML */
   hasEndToken: boolean;
+  /** Nested replies (use DocxImportCommentReply which omits fields like id) */
+  replies?: DocxImportCommentReply[];
 };
 
 /** Result of parsing comments from HTML */
@@ -187,6 +201,7 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         paraId: patch.paraId,
         parentParaId: patch.parentParaId,
         isPoint: patch.isPoint,
+        replies: patch.replies as DocxImportCommentReply[],
         startToken: patch.startToken ?? patch.endToken ?? '',
         endToken: patch.endToken ?? '',
         hasStartToken: Boolean(patch.hasStartToken),
@@ -205,6 +220,7 @@ export function parseDocxComments(html: string): ParseCommentsResult {
       paraId: patch.paraId ?? existing.paraId,
       parentParaId: patch.parentParaId ?? existing.parentParaId,
       isPoint: patch.isPoint ?? existing.isPoint,
+      replies: (patch.replies as DocxImportCommentReply[]) ?? existing.replies,
       startToken: existing.hasStartToken
         ? existing.startToken
         : (patch.startToken ?? existing.startToken),
@@ -785,7 +801,13 @@ export function applyTrackedCommentsLocal(
       const discussionComments: NonNullable<DocxImportDiscussion['comments']> =
         [];
 
-      const addCommentRecursive = (c: DocxCommentData) => {
+      const addCommentRecursive = (
+        c: Pick<DocxCommentData, 'authorName' | 'body' | 'date' | 'text'> & {
+          replies?: Array<
+            Pick<DocxCommentData, 'authorName' | 'body' | 'date' | 'text'>
+          >;
+        }
+      ) => {
         const userId = formatAuthorAsUserId(c.authorName);
         const createdAt = parseDateToDate(c.date, documentDate);
 

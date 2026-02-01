@@ -107,12 +107,27 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
             discussionId: d.id,
             isEdited: false,
             userId: c.userId ?? c.user?.id ?? 'imported-unknown',
+            authorName: c.user?.name,
+            authorInitials: c.user?.name
+              ? c.user.name
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((w) => w[0]?.toUpperCase() ?? '')
+                  .join('')
+              : undefined,
           })),
           createdAt: d.createdAt ?? new Date(),
           documentContent: d.documentContent,
           isResolved: false,
           userId: d.userId ?? d.user?.id ?? 'imported-unknown',
           authorName: d.user?.name,
+          authorInitials: d.user?.name
+            ? d.user.name
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((w) => w[0]?.toUpperCase() ?? '')
+                .join('')
+            : undefined,
         }));
 
         editor.setOption(discussionPlugin, 'discussions', [

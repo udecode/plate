@@ -174,6 +174,84 @@
 
 ---
 
+## Phase 7: Regression Prevention & Integration Verification
+
+**Purpose**: Verify no regressions in existing comment/suggestion/discussion functionality. Based on investigation of codebase interactions.
+
+### Investigation Context
+
+**Key findings from codebase investigation:**
+- Comments (`comment_<id>` marks) and suggestions (`suggestion_<id>` marks) are **independent systems** with separate export/import pipelines
+- DOCX export uses **custom token-based serialization** (NOT Plate's `serializeHtml`), embedding `[[DOCX_CMT_START:...]]` tokens in HTML text before converting to Word XML
+- UI shows comments via `CommentLeaf` component rendering `comment_{id}` marks as highlighted text, with `BlockDiscussion` popover for thread display
+- Transient/state-only comments require `createDiscussionsForTransientComments()` preprocessing before export; discussions must be explicitly passed to export options
+- HTML serialization docs at platejs.org/docs/html do **NOT** apply to DOCX comment handling — DOCX pipeline is entirely custom
+- `import-toolbar-button.tsx:85-122` converts imported discussions to `TDiscussion` format for UI display
+
+### Regression Tests
+
+- [ ] T047 [P] Add regression test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "suggestion+comment coexistence survives threading changes". Create Plate value with BOTH a suggestion mark (`suggestion_<id>`) AND a comment mark (`comment_<id>`) on the same text node. Export to DOCX. Verify both `[[DOCX_INS_START:...]]` and `[[DOCX_CMT_START:...]]` tokens are present. Reimport and verify both marks survive. Key regression risk: token injection order in `exportTrackChanges.ts:784-843` — suggestions sort before comments, and threading must not break this ordering.
+
+- [ ] T048 [P] Add regression test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "transient comments export correctly with threading". Create Plate value with `commentTransient` marks (state-only comments). Call `injectDocxTrackingTokens()` with `includeTransientComments: true`. Verify `createDiscussionsForTransientComments()` (exportTrackChanges.ts:622-685) converts them to `comment_<id>` marks and creates synthetic discussion entries. Ensure threading changes don't break the transient → persistent mark conversion.
+
+- [ ] T049 [P] Add regression test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "overlapping comment marks roundtrip correctly". Create Plate value with two overlapping comment marks (same text range, different discussion IDs). Export and reimport. Verify both `comment_<id1>` and `comment_<id2>` marks survive. UI renders overlapping comments with different styling (`border-b-2 border-b-highlight/[.7] bg-highlight/25` per `comment-node.tsx:32`).
+
+- [ ] T050 [P] Add regression test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "single-comment discussions (no replies) still work after threading changes". Create Plate value with a simple single-comment discussion (the common case before threading support). Export and reimport. Verify the discussion has exactly 1 comment. This guards against `resolveCommentMeta()` changes breaking the base case.
+
+### Integration Verification
+
+- [ ] T051 [P] Verify import-to-UI integration in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "imported discussions match TDiscussion format". After importing a DOCX with threaded comments via `importDocxWithTracking()`, verify the returned `ImportDocxWithTrackingResult.discussions` array contains discussions with correct structure: `{id, comments: [{contentRich, createdAt, userId, user}, ...], createdAt, isResolved, userId}`. This is what `import-toolbar-button.tsx:100-116` expects. Verify `comments.length` matches parent + replies count.
+
+- [ ] T052 [P] Verify comment marks are correctly applied to editor after import in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "imported comment marks have correct keys". After importing threaded DOCX, iterate text nodes and verify: (a) commented text has `comment_<discussionId>: true` mark, (b) the mark key matches a discussion ID in the returned discussions array. This confirms the UI's `BlockDiscussion` component (`block-discussion.tsx:311-367`) can resolve marks → discussions via `uniquePathMap`.
+
+- [ ] T053 [P] Add test in `packages/docx-io/src/lib/__tests__/export-replies.spec.ts`: "block-level suggestions on commented blocks export without interference". Create a paragraph with BOTH a block-level suggestion (`{suggestion: {id, type: 'insert', userId}}`) AND inline comment marks. Export and verify both suggestion tokens and comment tokens are present in the output. This guards against `injectDocxTrackingTokens()` (exportTrackChanges.ts:707-847) not handling the interaction correctly.
+
+### Documentation Verification
+
+- [ ] T054 [P] Verify in `packages/docx-io/src/lib/docx-export-plugin.tsx`: the `DocxTrackingExportOptions.discussions` parameter documentation is accurate after threading changes. Ensure the JSDoc on `discussions` field (line 152-158) notes that discussions with multiple comments will have replies exported as separate DOCX comment entries linked via `commentsExtended.xml`. No code change needed if docs already accurate — just verify.
+
+---
+
+## Phase 8: OOXML Schema Validation (Reference Library Parity)
+
+**Purpose**: Certify our exported DOCX matches the structure validated by the reference Python library's `Document.validate()` method. The Python `Document` class (`.claude/skills/docx/scripts/document.py`) produces DOCX files that pass both XSD schema validation and redlining validation. Our TypeScript export MUST produce structurally identical XML.
+
+### Reference Library Contract
+
+The Python `Document` class enforces these invariants during `add_comment()` and `reply_to_comment()`:
+
+1. **comments.xml**: Each `<w:comment>` has `w:id`, `w:author`, `w:date`, `w:initials`. Inner `<w:p>` has `w14:paraId` and `w14:textId="77777777"`. First run has `<w:rStyle w:val="CommentReference"/>` + `<w:annotationRef/>`. Text run has `<w:color w:val="000000"/><w:sz w:val="20"/><w:szCs w:val="20"/>`.
+2. **commentsExtended.xml**: Each `<w15:commentEx>` has `w15:paraId` and `w15:done="0"`. Replies add `w15:paraIdParent`.
+3. **commentsIds.xml**: Each `<w16cid:commentId>` has `w16cid:paraId` and `w16cid:durableId`.
+4. **commentsExtensible.xml**: Each `<w16cex:commentExtensible>` has `w16cex:durableId`.
+5. **people.xml**: Each `<w15:person>` has `w15:author` and child `<w15:presenceInfo w15:providerId="None" w15:userId="{author}"/>`.
+6. **document.xml**: Reply `commentRangeStart` inserted after parent's `commentRangeStart`. Reply `commentRangeEnd` + `commentReference` run inserted after parent's reference run.
+7. **document.xml.rels**: 4 relationship entries (comments, commentsExtended, commentsIds, commentsExtensible) with correct Type URIs. rIds don't collide.
+8. **[Content_Types].xml**: 4 Override entries with correct PartName (leading `/`) and ContentType strings.
+9. **Text escaping**: `&`, `<`, `>` escaped in comment text before XML insertion.
+
+### Validation Tasks
+
+- [ ] T055 [P] Add comprehensive structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "exported comments.xml matches reference library structure". Export a discussion with 1 parent + 1 reply. Unzip and parse `word/comments.xml`. For each `<w:comment>`: assert `w:id`, `w:author`, `w:date`, `w:initials` attributes exist. For inner `<w:p>`: assert `w14:paraId` is 8-char hex, `w14:textId` exists. Assert first `<w:r>` contains `<w:rStyle w:val="CommentReference"/>` and `<w:annotationRef/>`. Assert text `<w:r>` contains `<w:t>` with `xml:space="preserve"`.
+
+- [ ] T056 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "commentsExtended.xml has correct w15:done and parent linking". Parse exported `word/commentsExtended.xml`. For parent comment: assert `<w15:commentEx>` has `w15:paraId` matching comments.xml's `<w:p w14:paraId>` and `w15:done="0"` and NO `w15:paraIdParent`. For reply: assert `w15:paraIdParent` matches parent's `w15:paraId`.
+
+- [ ] T057 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "commentsIds.xml and commentsExtensible.xml cross-reference correctly". Parse both files from exported ZIP. For each comment: assert `<w16cid:commentId>` has both `w16cid:paraId` (matching commentsExtended) and `w16cid:durableId`. Assert `<w16cex:commentExtensible>` has `w16cex:durableId` matching the same durableId. This validates the paraId ↔ durableId linkage chain.
+
+- [ ] T058 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "document.xml reply anchoring matches reference library". Export discussion with parent + reply. Parse `word/document.xml`. Assert: (a) reply's `<w:commentRangeStart>` appears AFTER parent's `<w:commentRangeStart>`, (b) reply's `<w:commentRangeEnd>` + `<w:commentReference>` run appear AFTER parent's `<w:commentReference>` run. This matches the Python `reply_to_comment()` anchoring pattern.
+
+- [ ] T059 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "document.xml.rels has all 4 comment relationship types". Parse `word/_rels/document.xml.rels` from exported ZIP. Assert 4 relationships exist with exact Type URIs: `http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments`, `http://schemas.microsoft.com/office/2011/relationships/commentsExtended`, `http://schemas.microsoft.com/office/2016/09/relationships/commentsIds`, `http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible`. Assert all rId values are unique.
+
+- [ ] T060 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "[Content_Types].xml has all comment overrides with leading slash". Parse `[Content_Types].xml` from exported ZIP. Assert 4 Override entries exist with PartNames `/word/comments.xml`, `/word/commentsExtended.xml`, `/word/commentsIds.xml`, `/word/commentsExtensible.xml` (leading `/` required). Assert correct ContentType for each.
+
+- [ ] T061 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "people.xml matches reference library format". Parse `word/people.xml`. For each unique author: assert `<w15:person w15:author="{name}">` with child `<w15:presenceInfo w15:providerId="None" w15:userId="{name}"/>`. Assert no duplicate authors.
+
+- [ ] T062 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "XML-unsafe characters in comment text and author names are escaped". Export a discussion with author name `O'Brien & <Co>` and comment text `Check x < y && z > 0`. Parse exported XML files. Assert no raw `&`, `<`, `>` appear in attribute values or text content (should be `&amp;`, `&lt;`, `&gt;`). Assert Word can open the file (no parse errors).
+
+- [ ] T063 [P] Add structural validation test in `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx`: "paraId values are 8-char hex < 0x7FFFFFFF and unique across all XML files". Collect ALL `w14:paraId` values from `word/document.xml` and `word/comments.xml`. Collect all `w15:paraId` values from `word/commentsExtended.xml` and `w16cid:paraId` from `word/commentsIds.xml`. Assert: (a) each is 8-char hex, (b) numeric value < 0x7FFFFFFF, (c) no duplicates across the entire set.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -184,6 +262,8 @@
 - **Phase 4 (US2 Import)**: Depends on Phase 2. Can run in parallel with Phase 3 for implementation, but T024 (fixture) benefits from Phase 3 export. Tests T024-T026 first, then T027-T034 (mostly sequential).
 - **Phase 5 (US3 Round-trip)**: Depends on Phase 3 AND Phase 4 both complete.
 - **Phase 6 (Polish)**: Depends on Phase 5. All T038-T046 are parallel.
+- **Phase 7 (Regression)**: Depends on Phase 5 (US3 complete). All T047-T054 are parallel. Can run concurrently with Phase 6.
+- **Phase 8 (OOXML Validation)**: Depends on Phase 3 (US1 Export complete). All T055-T063 are parallel. Can start as soon as export works; should run before US2/US3 to catch structural issues early.
 
 ### Within Each Phase
 
@@ -206,6 +286,8 @@ T007, T008 (parallel)
     +--- (both complete) ---> US3: T035-T037 (test) -> verify pass
     |
     +--- T038-T046 (polish, parallel)
+    +--- T047-T054 (regression, parallel) — can run concurrently with polish
+    +--- T055-T063 (OOXML validation, parallel) — can start after US1 export works
 ```
 
 ### Parallel Opportunities
@@ -214,6 +296,8 @@ T007, T008 (parallel)
 - All Phase 3 tests (T009-T013): different test cases, same file but no conflict
 - T016-T020: different methods in `docx-document.ts`, can be written in parallel if careful
 - All Phase 6 tasks (T038-T046): independent edge cases and cleanup
+- All Phase 7 tasks (T047-T054): independent regression tests, can run in parallel with Phase 6
+- All Phase 8 tasks (T055-T063): independent structural validation tests, can start after Phase 3
 
 ---
 

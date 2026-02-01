@@ -500,14 +500,45 @@ const buildRunsFromTextWithTokens = (
 
     if (part.type === 'commentStart') {
       const data = part.data;
-      const commentId = docxDocumentInstance.ensureComment({
+      // Register parent comment
+      const parentCommentId = docxDocumentInstance.ensureComment({
         id: data.id,
         authorName: data.authorName,
         authorInitials: data.authorInitials,
         date: data.date,
         text: data.text,
       });
-      fragments.push(buildCommentRangeStart(commentId));
+      fragments.push(buildCommentRangeStart(parentCommentId));
+
+      // Register and anchor reply comments
+      if (
+        data.replies &&
+        data.replies.length > 0 &&
+        docxDocumentInstance.comments &&
+        docxDocumentInstance.ensureComment
+      ) {
+        // Find parent's paraId for threading
+        const parentComment = docxDocumentInstance.comments.find(
+          (c) => c.id === parentCommentId
+        );
+        const parentParaId = parentComment?.paraId;
+
+        data.replies.forEach((reply, idx) => {
+          const replyId = `${data.id}-reply-${idx}`;
+          const replyCommentId = docxDocumentInstance.ensureComment!(
+            {
+              id: replyId,
+              authorName: reply.authorName,
+              authorInitials: reply.authorInitials,
+              date: reply.date,
+              text: reply.text,
+            },
+            parentParaId
+          );
+          // Reply commentRangeStart anchored after parent's
+          fragments.push(buildCommentRangeStart(replyCommentId));
+        });
+      }
       continue;
     }
 
@@ -515,6 +546,25 @@ const buildRunsFromTextWithTokens = (
       const commentId = docxDocumentInstance.getCommentId(part.id);
       fragments.push(buildCommentRangeEnd(commentId));
       fragments.push(buildCommentReferenceRun(commentId));
+
+      // Emit range end + reference for reply comments
+      const replyIds: number[] = [];
+      if (docxDocumentInstance.commentIdMap) {
+        for (const [
+          key,
+          numId,
+        ] of docxDocumentInstance.commentIdMap.entries()) {
+          if (key.startsWith(`${part.id}-reply-`)) {
+            replyIds.push(numId);
+          }
+        }
+      }
+      // Sort to preserve insertion order
+      replyIds.sort((a, b) => a - b);
+      for (const replyNumId of replyIds) {
+        fragments.push(buildCommentRangeEnd(replyNumId));
+        fragments.push(buildCommentReferenceRun(replyNumId));
+      }
       continue;
     }
 
@@ -711,7 +761,8 @@ const modifiedStyleAttributesBuilder = (
     }
 
     const backgroundColor =
-      style['background-color'] ?? (style as Record<string, string>).backgroundColor;
+      style['background-color'] ??
+      (style as Record<string, string>).backgroundColor;
     if (backgroundColor && !colorlessColors.includes(backgroundColor)) {
       modifiedAttributes.backgroundColor = fixupColorCode(backgroundColor);
     }

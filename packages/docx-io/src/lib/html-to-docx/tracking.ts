@@ -27,6 +27,14 @@ export interface SuggestionPayload {
   date?: string;
 }
 
+/** Payload for a single comment reply */
+export interface CommentReply {
+  authorName?: string;
+  authorInitials?: string;
+  date?: string;
+  text?: string;
+}
+
 /** Payload for comment tokens */
 export interface CommentPayload {
   id: string;
@@ -34,6 +42,7 @@ export interface CommentPayload {
   authorInitials?: string;
   date?: string;
   text?: string;
+  replies?: CommentReply[];
 }
 
 /** Parsed token from text */
@@ -62,6 +71,12 @@ export interface StoredComment {
   authorInitials: string;
   date?: string;
   text: string;
+  /** 8-char uppercase hex ID < 0x7FFFFFFF, links comments.xml <-> commentsExtended.xml <-> commentsIds.xml */
+  paraId: string;
+  /** 8-char uppercase hex ID < 0x7FFFFFFF, links commentsIds.xml <-> commentsExtensible.xml */
+  durableId: string;
+  /** paraId of parent comment; present only on replies */
+  parentParaId?: string;
 }
 
 /** Tracking state maintained during document generation */
@@ -77,9 +92,35 @@ export interface TrackingDocumentInstance {
   lastCommentId: number;
   revisionIdMap: Map<string, number>;
   lastRevisionId: number;
-  ensureComment: (data: Partial<CommentPayload>) => number;
+  ensureComment: (data: Partial<CommentPayload>, parentParaId?: string) => number;
   getCommentId: (id: string) => number;
   getRevisionId: (id?: string) => number;
+}
+
+// ============================================================================
+// Hex ID Generation (OOXML spec: 8-char uppercase hex < 0x7FFFFFFF)
+// ============================================================================
+
+/** Document-wide set of allocated hex IDs to ensure uniqueness (per R12). */
+export const allocatedIds = new Set<string>();
+
+/** Reset allocated IDs between documents. */
+export function resetAllocatedIds(): void {
+  allocatedIds.clear();
+}
+
+/** Generate a unique 8-char uppercase hex ID < 0x7FFFFFFF per OOXML spec. */
+export function generateHexId(): string {
+  let id: string;
+
+  do {
+    const val = Math.floor(Math.random() * 0x7ffffffe) + 1;
+    id = val.toString(16).toUpperCase().padStart(8, '0');
+  } while (allocatedIds.has(id));
+
+  allocatedIds.add(id);
+
+  return id;
 }
 
 // ============================================================================

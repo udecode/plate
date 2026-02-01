@@ -12,6 +12,12 @@ import VText from 'virtual-dom/vnode/vtext';
 import { create } from 'xmlbuilder2';
 
 import {
+  commentsExtendedRelationshipType,
+  commentsExtendedType,
+  commentsExtensibleRelationshipType,
+  commentsExtensibleType,
+  commentsIdsRelationshipType,
+  commentsIdsType,
   commentsType,
   defaultDocumentOptions,
   defaultHTMLString,
@@ -21,6 +27,8 @@ import {
   headerFileName,
   headerType,
   internalRelationship,
+  peopleRelationshipType,
+  peopleType,
   relsFolderName,
   themeFileName,
   themeFolder,
@@ -438,13 +446,59 @@ async function addFilesToContainer(
       createFolders: false,
     });
 
-  // Add comments.xml if there are comments
+  // Add comment-related XML files if there are comments
   if (docxDocument.comments.length > 0) {
     zip
       .folder(wordFolder)!
       .file('comments.xml', docxDocument.generateCommentsXML(), {
         createFolders: false,
+      })
+      .file(
+        'commentsExtended.xml',
+        docxDocument.generateCommentsExtendedXML(),
+        {
+          createFolders: false,
+        }
+      )
+      .file('commentsIds.xml', docxDocument.generateCommentsIdsXML(), {
+        createFolders: false,
+      })
+      .file(
+        'commentsExtensible.xml',
+        docxDocument.generateCommentsExtensibleXML(),
+        {
+          createFolders: false,
+        }
+      )
+      .file('people.xml', docxDocument.generatePeopleXML(), {
+        createFolders: false,
       });
+
+    // Add relationships for the 4 new comment-related files
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtendedType,
+      'commentsExtended.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsIdsType,
+      'commentsIds.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtensibleType,
+      'commentsExtensible.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      peopleType,
+      'people.xml',
+      internalRelationship
+    );
   }
 
   const relationshipXMLs = docxDocument.generateRelsXML();

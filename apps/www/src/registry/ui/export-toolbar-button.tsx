@@ -152,8 +152,18 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
-    // Get discussions from the discussion plugin for comment export
+    // Get discussions and users from the discussion plugin for comment export
     const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+    const users = editor.getOption(discussionPlugin, 'users') ?? {};
+
+    // Resolve display name: prefer authorName (from DOCX import), fall back to users lookup
+    const resolveUser = (
+      userId: string,
+      authorName?: string
+    ): { id: string; name: string } | undefined => {
+      const name = authorName ?? users[userId]?.name;
+      return name ? { id: userId, name } : undefined;
+    };
 
     // Convert discussions to export format
     const exportDiscussions: DocxExportDiscussion[] = discussions.map((d) => ({
@@ -162,11 +172,12 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
         contentRich: c.contentRich,
         createdAt: c.createdAt,
         userId: c.userId,
+        user: resolveUser(c.userId, c.authorName),
       })),
       createdAt: d.createdAt,
       documentContent: d.documentContent,
       userId: d.userId,
-      user: d.authorName ? { id: d.userId, name: d.authorName } : undefined,
+      user: resolveUser(d.userId, d.authorName),
     }));
 
     const blob = await exportToDocx(editor.children, {
