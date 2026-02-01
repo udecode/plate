@@ -15,6 +15,7 @@ var numberingXml = require('./numbering-xml');
 var stylesReader = require('./styles-reader');
 var notesReader = require('./notes-reader');
 var commentsReader = require('./comments-reader');
+var commentsExtendedReader = require('./comments-extended-reader');
 var Files = require('./files').Files;
 
 function read(docxFile, input, options) {
@@ -44,6 +45,17 @@ function read(docxFile, input, options) {
       ),
     }))
     .also((result) => ({
+      commentsExtended: readXmlFromZipFile(
+        result.docxFile,
+        result.partPaths.commentsExtended
+      ).then((xml) => {
+        if (xml) {
+          return commentsExtendedReader.createCommentsExtendedReader()(xml);
+        }
+        return new Result({});
+      }),
+    }))
+    .also((result) => ({
       footnotes: readXmlFileWithBody(
         result.partPaths.footnotes,
         result,
@@ -69,7 +81,10 @@ function read(docxFile, input, options) {
         result,
         (bodyReader, xml) => {
           if (xml) {
-            return commentsReader.createCommentsReader(bodyReader)(xml);
+            return commentsReader.createCommentsReader(
+              bodyReader,
+              result.commentsExtended
+            )(xml);
           }
           return new Result([]);
         }
@@ -138,6 +153,14 @@ function findPartPaths(docxFile) {
       return {
         mainDocument: mainDocumentPath,
         comments: findPartRelatedToMainDocument('comments'),
+        commentsExtended: findPartPath({
+          docxFile,
+          relationships: documentRelationships,
+          relationshipType:
+            'http://schemas.microsoft.com/office/2011/relationships/commentsExtended',
+          basePath: zipfile.splitPath(mainDocumentPath).dirname,
+          fallbackPath: 'word/commentsExtended.xml',
+        }),
         endnotes: findPartRelatedToMainDocument('endnotes'),
         footnotes: findPartRelatedToMainDocument('footnotes'),
         numbering: findPartRelatedToMainDocument('numbering'),

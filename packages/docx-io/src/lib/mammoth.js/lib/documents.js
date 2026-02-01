@@ -154,6 +154,8 @@ function comment(options) {
     authorName: options.authorName || null,
     authorInitials: options.authorInitials || null,
     date: options.date || null,
+    paraId: options.paraId || null,
+    parentParaId: options.parentParaId || null,
   };
 }
 

@@ -306,21 +306,69 @@ function DocumentConversion(options, comments) {
       ),
     ];
   }
+  function getReplies(paraId) {
+    if (!paraId) return [];
+    var replies = [];
+    for (var id in comments) {
+      var c = comments[id];
+      if (c.parentParaId === paraId) {
+        replies.push(c);
+      }
+    }
+    replies.sort((a, b) => ((a.date || '') > (b.date || '') ? 1 : -1));
+    return replies;
+  }
+
+  function buildCommentPayload(comment, messages, options) {
+    var payload = {
+      id: comment.commentId,
+      authorName: comment.authorName,
+      authorInitials: comment.authorInitials,
+      date: comment.date,
+      paraId: comment.paraId,
+      parentParaId: comment.parentParaId,
+    };
+
+    if (comment.body && comment.body.length > 0) {
+      payload.text = extractTextFromElements(comment.body);
+      try {
+        var richContent = convertElements(comment.body, messages, options);
+        payload.body = Html.simplify(richContent);
+      } catch (e) {}
+    }
+
+    // Recursive replies
+    var replies = getReplies(comment.paraId);
+    if (replies.length > 0) {
+      payload.replies = replies.map((r) =>
+        buildCommentPayload(r, messages, options)
+      );
+    }
+
+    return payload;
+  }
 
   function convertCommentReference(reference, messages, options) {
-    // Since we use [[DOCX_CMT_START/END:...]] tokens for comments,
-    // we don't need footnote-style references. Return empty.
-    // The comment data is already embedded in the tokens.
-    void reference;
-    void messages;
-    void options;
-    return [];
+    var comment = comments[reference.commentId];
+    if (!comment) return [];
+
+    var payload = buildCommentPayload(comment, messages, options);
+    payload.isPoint = true;
+
+    var startToken =
+      DOCX_COMMENT_START_TOKEN_PREFIX +
+      encodeURIComponent(JSON.stringify(payload)) +
+      DOCX_COMMENT_TOKEN_SUFFIX;
+    var endToken =
+      DOCX_COMMENT_END_TOKEN_PREFIX +
+      encodeURIComponent(reference.commentId) +
+      DOCX_COMMENT_TOKEN_SUFFIX;
+
+    return [Html.text(startToken + endToken)];
   }
 
   function convertComment(referencedComment, messages, options) {
-    // Since we use [[DOCX_CMT_START/END:...]] tokens for comments,
-    // we don't need footnote-style definition lists. Return empty.
-    // The comment data is already embedded in the tokens.
+    // Legacy support or ignore. We use inline tokens.
     void referencedComment;
     void messages;
     void options;
@@ -431,11 +479,7 @@ function DocumentConversion(options, comments) {
     comment: convertComment,
     commentRangeStart(element, messages, options) {
       void options;
-      // Get the comment data for this range
       var comment = comments[element.commentId];
-      var payload = {
-        id: element.commentId,
-      };
       if (!comment) {
         messages.push(
           results.warning(
@@ -444,17 +488,13 @@ function DocumentConversion(options, comments) {
               ' was referenced by a range but not found in the document'
           )
         );
+        // Still emit token to prevent errors if desired?
+        // No, if missing, we can't do much.
+        return [];
       }
-      if (comment) {
-        payload.authorName = comment.authorName;
-        payload.authorInitials = comment.authorInitials;
-        payload.date = comment.date;
-        // Convert comment body to plain text
-        if (comment.body && comment.body.length > 0) {
-          payload.text = extractTextFromElements(comment.body);
-        }
-      }
-      // Emit token for comment range start - will be parsed by import-toolbar-button.tsx
+
+      var payload = buildCommentPayload(comment, messages, options);
+
       var token =
         DOCX_COMMENT_START_TOKEN_PREFIX +
         encodeURIComponent(JSON.stringify(payload)) +

@@ -321,7 +321,10 @@ function BodyReader(options) {
       return ReadResult.map(
         readParagraphProperties(paragraphPropertiesElement),
         readXmlElements(childrenXml),
-        (properties, children) => new documents.Paragraph(children, properties)
+        (properties, children) => {
+          properties.paraId = element.attributes['w14:paraId'];
+          return new documents.Paragraph(children, properties);
+        }
       ).insertExtra();
     },
     'w:r'(element) {
