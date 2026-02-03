@@ -487,12 +487,30 @@ export async function importDocxWithTracking(
   const doc = parser.parseFromString(result.value, 'text/html');
   const nodes = editor.api.html.deserialize({ element: doc.body });
 
-  // Replace editor content with deserialized nodes
-  // Note: The caller should handle this, but we need nodes in editor for searchRange
+  // Replace editor content with deserialized nodes using transforms when possible.
+  // This keeps Slate internals in sync (node maps, paths) to avoid render issues.
   const originalChildren = [...editor.children];
-  (editor.children as unknown[]).length = 0;
-  (editor.children as unknown[]).push(...nodes);
-  console.log('[DOCX DEBUG] Plate editor.children:', JSON.stringify(editor.children, null, 2));
+  const setEditorValue = (nextValue: unknown[]) => {
+    const tfAny = editor.tf as unknown as {
+      setValue?: (value: unknown[]) => void;
+      replaceNodes?: (value: unknown[], options: { at: number[]; children: true }) => void;
+    };
+    if (tfAny?.setValue) {
+      tfAny.setValue(nextValue);
+      return;
+    }
+    if (tfAny?.replaceNodes) {
+      tfAny.replaceNodes(nextValue, { at: [], children: true });
+      return;
+    }
+    (editor.children as unknown[]).length = 0;
+    (editor.children as unknown[]).push(...nextValue);
+  };
+  setEditorValue(nodes as unknown[]);
+  console.log(
+    '[DOCX DEBUG] Plate editor.children:',
+    JSON.stringify(editor.children, null, 2)
+  );
 
   try {
     // Create search function adapter
@@ -536,8 +554,7 @@ export async function importDocxWithTracking(
     }
   } catch (error) {
     // Restore original content on failure
-    (editor.children as unknown[]).length = 0;
-    (editor.children as unknown[]).push(...originalChildren);
+    setEditorValue(originalChildren as unknown[]);
     throw error;
   }
 
