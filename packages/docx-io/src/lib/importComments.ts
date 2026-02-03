@@ -92,10 +92,14 @@ export type DocxImportComment = Omit<DocxCommentData, 'replies'> & {
   startToken: string;
   /** The full end token string (for searching in editor) */
   endToken: string;
+  /** The full point token string (comment reference) */
+  pointToken?: string;
   /** Whether the start token was found in HTML */
   hasStartToken: boolean;
   /** Whether the end token was found in HTML */
   hasEndToken: boolean;
+  /** Whether a point token was found in HTML */
+  hasPointToken?: boolean;
   /** Nested replies (use DocxImportCommentReply which omits fields like id) */
   replies?: DocxImportCommentReply[];
 };
@@ -131,6 +135,55 @@ export type DocxImportDiscussion = {
   userId?: string;
   /** Optional user object for direct author info */
   user?: { id: string; name: string };
+};
+
+// ============================================================================
+// Comment Content Normalization
+// ============================================================================
+
+const isPlateText = (node: any): node is { text: string } =>
+  !!node && typeof node === 'object' && typeof node.text === 'string';
+
+const isPlateElement = (node: any): node is { children: unknown[] } =>
+  !!node && typeof node === 'object' && Array.isArray(node.children);
+
+const isPlateNode = (node: any): boolean =>
+  isPlateText(node) ||
+  (isPlateElement(node) && node.children.every((child) => isPlateNode(child)));
+
+const isPlateValue = (value: unknown): value is unknown[] =>
+  Array.isArray(value) && value.every((node) => isPlateNode(node));
+
+const extractCommentBodyText = (value: unknown): string => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    return value.map(extractCommentBodyText).join('');
+  }
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+
+    if (typeof record.text === 'string') return record.text;
+    if (typeof record.value === 'string') return record.value;
+    if (Array.isArray(record.children)) {
+      return record.children.map(extractCommentBodyText).join('');
+    }
+  }
+  return '';
+};
+
+const normalizeCommentContent = (
+  body: unknown,
+  text?: string
+): unknown[] | undefined => {
+  if (isPlateValue(body)) return body as unknown[];
+
+  const bodyText = extractCommentBodyText(body);
+  const contentText = (bodyText || text || '').replace(/\s+$/g, '');
+
+  if (!contentText) return undefined;
+
+  return [{ type: 'p', children: [{ text: contentText }] }];
 };
 
 // ============================================================================
@@ -187,6 +240,7 @@ export function parseDocxComments(html: string): ParseCommentsResult {
     patch: Partial<DocxImportComment> & {
       hasStartToken?: boolean;
       hasEndToken?: boolean;
+      hasPointToken?: boolean;
     }
   ) => {
     const existing = commentsById.get(id);
@@ -204,8 +258,10 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         replies: patch.replies as DocxImportCommentReply[],
         startToken: patch.startToken ?? patch.endToken ?? '',
         endToken: patch.endToken ?? '',
+        pointToken: patch.pointToken,
         hasStartToken: Boolean(patch.hasStartToken),
         hasEndToken: Boolean(patch.hasEndToken),
+        hasPointToken: Boolean(patch.hasPointToken),
       });
       return;
     }
@@ -225,8 +281,10 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         ? existing.startToken
         : (patch.startToken ?? existing.startToken),
       endToken: patch.endToken ?? existing.endToken,
+      pointToken: patch.pointToken ?? existing.pointToken,
       hasStartToken: existing.hasStartToken || Boolean(patch.hasStartToken),
       hasEndToken: existing.hasEndToken || Boolean(patch.hasEndToken),
+      hasPointToken: existing.hasPointToken || Boolean(patch.hasPointToken),
     });
   };
 
@@ -251,6 +309,12 @@ export function parseDocxComments(html: string): ParseCommentsResult {
         startToken: `${DOCX_COMMENT_START_TOKEN_PREFIX}${rawPayload}${DOCX_COMMENT_TOKEN_SUFFIX}`,
         endToken: `${DOCX_COMMENT_END_TOKEN_PREFIX}${encodeURIComponent(payload.id)}${DOCX_COMMENT_TOKEN_SUFFIX}`,
         hasStartToken: true,
+        ...(payload.isPoint
+          ? {
+              pointToken: `${DOCX_COMMENT_START_TOKEN_PREFIX}${rawPayload}${DOCX_COMMENT_TOKEN_SUFFIX}`,
+              hasPointToken: true,
+            }
+          : {}),
       });
     } catch {
       // Skip malformed tokens
@@ -528,22 +592,29 @@ export async function applyTrackedComments(
       const endTokenRange = comment.hasEndToken
         ? searchRange(editor, comment.endToken)
         : null;
+      const pointTokenRange =
+        comment.hasPointToken && comment.pointToken
+          ? searchRange(editor, comment.pointToken)
+          : null;
 
       const hasStartMarker = Boolean(startTokenRange);
       const hasEndMarker = Boolean(endTokenRange);
+      const hasPointMarker = Boolean(pointTokenRange);
 
       // Golden rule: if we have ANY location marker, preserve the comment
       // - Has start, no end → end = start (point comment)
       // - Has end, no start → start = end (point comment)
       // - Has neither → skip (no location available)
-      if (!startTokenRange && !endTokenRange) {
+      if (!startTokenRange && !endTokenRange && !pointTokenRange) {
         skipped++;
         continue;
       }
 
       // Use whichever marker we have, fallback to the other for point comments
-      const effectiveStartRange = startTokenRange ?? endTokenRange;
-      const effectiveEndRange = endTokenRange ?? startTokenRange;
+      const effectiveStartRange =
+        startTokenRange ?? endTokenRange ?? pointTokenRange;
+      const effectiveEndRange =
+        endTokenRange ?? startTokenRange ?? pointTokenRange;
 
       if (!effectiveStartRange || !effectiveEndRange) {
         skipped++;
@@ -552,13 +623,21 @@ export async function applyTrackedComments(
 
       const startTokenRef = editor.api.rangeRef(effectiveStartRange);
       const endTokenRef = editor.api.rangeRef(effectiveEndRange);
+      const pointTokenRef =
+        hasPointMarker && pointTokenRange
+          ? editor.api.rangeRef(pointTokenRange)
+          : null;
 
       const currentStartRange = startTokenRef.current;
       const currentEndRange = endTokenRef.current;
+      const currentPointRange = pointTokenRef?.current ?? null;
 
       if (!currentStartRange || !currentEndRange) {
         startTokenRef.unref();
         endTokenRef.unref();
+        if (pointTokenRef) {
+          pointTokenRef.unref();
+        }
         skipped++;
         continue;
       }
@@ -572,13 +651,22 @@ export async function applyTrackedComments(
        */
       const resolveRanges = (
         startRange: TRange,
-        endRange: TRange
+        endRange: TRange,
+        pointRange: TRange | null
       ): { markRange: TRange | null; contentRange: TRange } => {
         const startTokenPoint = startRange.focus;
         const endTokenPoint = endRange.anchor;
+        const rangeSpansMultipleNodes = !isPathEqual(
+          startTokenPoint.path,
+          endTokenPoint.path
+        );
+        const shouldUsePointMarker =
+          !!pointRange &&
+          (!hasStartMarker || !hasEndMarker || rangeSpansMultipleNodes);
 
         // Detect point comments
         const isPointComment =
+          shouldUsePointMarker ||
           !hasStartMarker ||
           !hasEndMarker ||
           isPointEqual(startTokenPoint, endTokenPoint);
@@ -609,8 +697,11 @@ export async function applyTrackedComments(
         const preferBefore = !(hasStartMarker && !hasEndMarker);
 
         // Use the appropriate point for marking
-        const pointForMark =
-          hasStartMarker && !hasEndMarker ? startTokenPoint : endTokenPoint;
+        const pointForMark = shouldUsePointMarker
+          ? pointRange!.focus
+          : hasStartMarker && !hasEndMarker
+            ? startTokenPoint
+            : endTokenPoint;
 
         // Expand point to a single-character range
         const markRange = getPointCommentMarkRange(editor, pointForMark, {
@@ -631,7 +722,8 @@ export async function applyTrackedComments(
       // Get content range for document text extraction
       const { contentRange } = resolveRanges(
         currentStartRange,
-        currentEndRange
+        currentEndRange,
+        currentPointRange
       );
 
       let documentContent = editor.api.string(contentRange);
@@ -655,10 +747,15 @@ export async function applyTrackedComments(
       editor.tf.withMerging(() => {
         const currentStart = startTokenRef.current;
         const currentEnd = endTokenRef.current;
+        const currentPoint = pointTokenRef?.current ?? null;
 
         if (currentStart && currentEnd) {
           // Re-resolve ranges after potential mutations
-          const { markRange } = resolveRanges(currentStart, currentEnd);
+          const { markRange } = resolveRanges(
+            currentStart,
+            currentEnd,
+            currentPoint
+          );
 
           if (!markRange) {
             // Could not resolve a valid mark range
@@ -688,6 +785,7 @@ export async function applyTrackedComments(
 
       const endRange = endTokenRef.unref();
       const startRange = startTokenRef.unref();
+      const pointRange = pointTokenRef?.unref() ?? null;
 
       // Delete tokens (only delete tokens that actually existed)
       // For point comments, both refs may point to the same range
@@ -696,6 +794,14 @@ export async function applyTrackedComments(
       }
       if (hasStartMarker && startRange) {
         editor.tf.delete({ at: startRange });
+      }
+      if (
+        hasPointMarker &&
+        pointRange &&
+        !isRangeEqual(pointRange, startRange) &&
+        !isRangeEqual(pointRange, endRange)
+      ) {
+        editor.tf.delete({ at: pointRange });
       }
     } catch (error) {
       errors.push(
@@ -748,11 +854,16 @@ export function applyTrackedCommentsLocal(
       const endTokenRange = comment.hasEndToken
         ? searchRange(editor, comment.endToken)
         : null;
+      const pointTokenRange =
+        comment.hasPointToken && comment.pointToken
+          ? searchRange(editor, comment.pointToken)
+          : null;
 
       const hasStartMarker = Boolean(startTokenRange);
       const hasEndMarker = Boolean(endTokenRange);
+      const hasPointMarker = Boolean(pointTokenRange);
 
-      if (!startTokenRange && !endTokenRange) {
+      if (!startTokenRange && !endTokenRange && !pointTokenRange) {
         errors.push(`Comment ${comment.id}: no location markers found`);
         continue;
       }
@@ -760,8 +871,10 @@ export function applyTrackedCommentsLocal(
       const isSameTokenString = comment.startToken === comment.endToken;
       const isSameRange = isRangeEqual(startTokenRange, endTokenRange);
 
-      const effectiveStartRange = startTokenRange ?? endTokenRange;
-      const effectiveEndRange = endTokenRange ?? startTokenRange;
+      const effectiveStartRange =
+        startTokenRange ?? endTokenRange ?? pointTokenRange;
+      const effectiveEndRange =
+        endTokenRange ?? startTokenRange ?? pointTokenRange;
 
       if (!effectiveStartRange || !effectiveEndRange) {
         errors.push(`Comment ${comment.id}: invalid ranges`);
@@ -773,6 +886,10 @@ export function applyTrackedCommentsLocal(
         isSameRange || isSameTokenString
           ? startTokenRef
           : editor.api.rangeRef(effectiveEndRange);
+      const pointTokenRef =
+        hasPointMarker && pointTokenRange
+          ? editor.api.rangeRef(pointTokenRange)
+          : null;
 
       const currentStartRange = startTokenRef.current;
       const currentEndRange = endTokenRef.current;
@@ -782,19 +899,12 @@ export function applyTrackedCommentsLocal(
         if (!isSameRange && !isSameTokenString) {
           endTokenRef.unref();
         }
+        if (pointTokenRef) {
+          pointTokenRef.unref();
+        }
         errors.push(`Comment ${comment.id}: ranges became invalid`);
         continue;
       }
-
-      const startEnd = currentStartRange.focus;
-      const endStart = currentEndRange.anchor;
-      const isPointComment =
-        comment.isPoint ||
-        isSameRange ||
-        isSameTokenString ||
-        isPointEqual(startEnd, endStart) ||
-        (!hasStartMarker && hasEndMarker) ||
-        (hasStartMarker && !hasEndMarker);
 
       const discussionId = generateId();
 
@@ -811,9 +921,7 @@ export function applyTrackedCommentsLocal(
         const userId = formatAuthorAsUserId(c.authorName);
         const createdAt = parseDateToDate(c.date, documentDate);
 
-        const contentRich =
-          c.body ??
-          (c.text ? [{ type: 'p', children: [{ text: c.text }] }] : undefined);
+        const contentRich = normalizeCommentContent(c.body, c.text);
 
         discussionComments.push({
           contentRich,
@@ -841,16 +949,42 @@ export function applyTrackedCommentsLocal(
       editor.tf.withMerging(() => {
         const currentStart = startTokenRef.current;
         const currentEnd = endTokenRef.current;
+        const currentPoint = pointTokenRef?.current ?? null;
 
         if (currentStart && currentEnd) {
           let rangeToMark: TRange | null = null;
+          const startEnd = currentStart.focus;
+          const endStart = currentEnd.anchor;
+          const rangeSpansMultipleNodes = !isPathEqual(
+            startEnd.path,
+            endStart.path
+          );
+          const shouldUsePointMarker =
+            !!currentPoint &&
+            (!hasStartMarker || !hasEndMarker || rangeSpansMultipleNodes);
+          const isSameCurrentRange = isRangeEqual(currentStart, currentEnd);
+          const isPointComment =
+            shouldUsePointMarker ||
+            isSameCurrentRange ||
+            isSameTokenString ||
+            isPointEqual(startEnd, endStart) ||
+            (!hasStartMarker && hasEndMarker) ||
+            (hasStartMarker && !hasEndMarker);
 
           if (isPointComment) {
-            rangeToMark = getPointCommentMarkRange(editor, startEnd, {
+            const pointForMark = currentPoint
+              ? currentPoint.focus
+              : startEnd;
+            rangeToMark = getPointCommentMarkRange(editor, pointForMark, {
               isText,
             });
           } else {
-            rangeToMark = { anchor: startEnd, focus: endStart };
+            let anchor = startEnd;
+            let focus = endStart;
+            if (isPointAfter(anchor, focus)) {
+              [anchor, focus] = [focus, anchor];
+            }
+            rangeToMark = { anchor, focus };
           }
 
           if (rangeToMark) {
@@ -869,12 +1003,21 @@ export function applyTrackedCommentsLocal(
 
       const endRange = endTokenRef.unref();
       const startRange = startTokenRef.unref();
+      const pointRange = pointTokenRef?.unref() ?? null;
 
       if (hasEndMarker && endRange) {
         editor.tf.delete({ at: endRange });
       }
       if (hasStartMarker && startRange && !isSameTokenString) {
         editor.tf.delete({ at: startRange });
+      }
+      if (
+        hasPointMarker &&
+        pointRange &&
+        !isRangeEqual(pointRange, startRange) &&
+        !isRangeEqual(pointRange, endRange)
+      ) {
+        editor.tf.delete({ at: pointRange });
       }
 
       discussions.push(discussion);
