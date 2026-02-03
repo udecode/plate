@@ -41,7 +41,7 @@ export const useEditableProps = ({
   );
 
   const decorate: typeof decorateMemo = React.useMemo(() => {
-    if (!versionDecorate || !decorateMemo) return;
+    if (!versionDecorate || !decorateMemo) return () => [];
 
     return (entry) => decorateMemo(entry);
   }, [decorateMemo, versionDecorate]);

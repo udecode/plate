@@ -21,6 +21,7 @@ function createCommentsReader(bodyReader, commentsExtended) {
       var paraId = null;
       if (body) {
         for (var i = 0; i < body.length; i++) {
+          console.log('[DOCX DEBUG] comment ' + id + ' body[' + i + '] type:', body[i].type, 'paraId:', body[i].paraId);
           if (body[i].paraId) {
             paraId = body[i].paraId;
             break;
@@ -28,6 +29,7 @@ function createCommentsReader(bodyReader, commentsExtended) {
         }
       }
       var parentParaId = paraId ? commentsExtended[paraId] : null;
+      console.log('[DOCX DEBUG] comment ' + id + ': paraId=' + paraId + ' parentParaId=' + parentParaId + ' commentsExtended keys:', Object.keys(commentsExtended));
 
       return documents.comment({
         commentId: id,

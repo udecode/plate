@@ -49,6 +49,7 @@ function read(docxFile, input, options) {
         result.docxFile,
         result.partPaths.commentsExtended
       ).then((xml) => {
+        console.log('[DOCX DEBUG] commentsExtended path:', result.partPaths.commentsExtended, 'xml found:', !!xml);
         if (xml) {
           return commentsExtendedReader.createCommentsExtendedReader()(xml);
         }
@@ -83,7 +84,7 @@ function read(docxFile, input, options) {
           if (xml) {
             return commentsReader.createCommentsReader(
               bodyReader,
-              result.commentsExtended
+              result.commentsExtended.value || {}
             )(xml);
           }
           return new Result([]);

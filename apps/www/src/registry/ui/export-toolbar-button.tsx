@@ -180,6 +180,9 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
       user: resolveUser(d.userId, d.authorName),
     }));
 
+    console.log('[DOCX DEBUG] export discussions:', JSON.stringify(exportDiscussions, null, 2));
+    console.log('[DOCX DEBUG] export editor.children:', JSON.stringify(editor.children, null, 2));
+
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
       tracking: {

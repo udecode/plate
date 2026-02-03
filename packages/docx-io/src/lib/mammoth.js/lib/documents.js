@@ -50,6 +50,7 @@ function Paragraph(children, properties) {
       firstLine: indent.firstLine || null,
       hanging: indent.hanging || null,
     },
+    paraId: properties.paraId || null,
   };
 }
 

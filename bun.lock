@@ -566,6 +566,7 @@
         "nanoid": "^5.0.9",
         "path-is-absolute": "^1.0.0",
         "react-compiler-runtime": "^1.0.0",
+        "turbo": "^2.8.2",
         "underscore": "^1.13.1",
         "validator": "^13.15.15",
         "virtual-dom": "^2.1.1",
@@ -4541,6 +4542,8 @@
 
     "@opentelemetry/sdk-trace-base/@opentelemetry/semantic-conventions": ["@opentelemetry/semantic-conventions@1.28.0", "", {}, "sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA=="],
 
+    "@platejs/docx-io/turbo": ["turbo@2.8.2", "", { "optionalDependencies": { "turbo-darwin-64": "2.8.2", "turbo-darwin-arm64": "2.8.2", "turbo-linux-64": "2.8.2", "turbo-linux-arm64": "2.8.2", "turbo-windows-64": "2.8.2", "turbo-windows-arm64": "2.8.2" }, "bin": { "turbo": "bin/turbo" } }, "sha512-biW/S5hENCcJ5vxxJszCozEKcXtwGK29vxXzNbdfY/0q7QpYTCoyKdj0e8k/ADA6qkqaKDJwgrrHbC8Vy6wszg=="],
+
     "@platejs/markdown/marked": ["marked@15.0.12", "", { "bin": { "marked": "bin/marked.js" } }, "sha512-8dD6FusOQSrpv9Z1rdNMdlSgQOIP880DHqnohobOmYLElGEqAL/JvxvuxZO16r4HtjTlfPRDC1hbvxC9dPN2nA=="],
 
     "@quansync/fs/quansync": ["quansync@1.0.0", "", {}, "sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA=="],
@@ -5456,6 +5459,18 @@
     "@opentelemetry/sdk-metrics/@opentelemetry/core/@opentelemetry/semantic-conventions": ["@opentelemetry/semantic-conventions@1.24.1", "", {}, "sha512-VkliWlS4/+GHLLW7J/rVBA00uXus1SWvwFvcUDxDwmFxYfg/2VI6ekwdXS28cjI8Qz2ky2BzG8OUHo+WeYIWqw=="],
 
     "@opentelemetry/sdk-metrics/@opentelemetry/resources/@opentelemetry/semantic-conventions": ["@opentelemetry/semantic-conventions@1.24.1", "", {}, "sha512-VkliWlS4/+GHLLW7J/rVBA00uXus1SWvwFvcUDxDwmFxYfg/2VI6ekwdXS28cjI8Qz2ky2BzG8OUHo+WeYIWqw=="],
+
+    "@platejs/docx-io/turbo/turbo-darwin-64": ["turbo-darwin-64@2.8.2", "", { "os": "darwin", "cpu": "x64" }, "sha512-sumREbxABHxrWIwlK67sZEaDRE7+BFSU8gZj8OK+X7dLpgW1vTjsHzTECB5m2qzWlXHRdueAk8sKv7wyHqv9jw=="],
+
+    "@platejs/docx-io/turbo/turbo-darwin-arm64": ["turbo-darwin-arm64@2.8.2", "", { "os": "darwin", "cpu": "arm64" }, "sha512-J3zoDkf+k9yozdJmdNUOc9YfIoFs01Zm+GgNyfY8pU6siMWlPlgdt+3ezbIMeOns6CAQUzUcqo9awowykAS9Vw=="],
+
+    "@platejs/docx-io/turbo/turbo-linux-64": ["turbo-linux-64@2.8.2", "", { "os": "linux", "cpu": "x64" }, "sha512-iVYUM+tyNAPd34HhMSjYWi7OSXnxnDhPjFKVvzSb7cZmQS6GlDSr7MALc5Wt/zn6/7jm1FuS7c5Wffg9WD2e1Q=="],
+
+    "@platejs/docx-io/turbo/turbo-linux-arm64": ["turbo-linux-arm64@2.8.2", "", { "os": "linux", "cpu": "arm64" }, "sha512-v7FJAHUhY2nSEE87mr5ZBO51GmsFKp0EmK2P6rO+vGimCPmnGlLNj1at/eVcnp/cHRDnJj8J+b3QHWdUzTPTkg=="],
+
+    "@platejs/docx-io/turbo/turbo-windows-64": ["turbo-windows-64@2.8.2", "", { "os": "win32", "cpu": "x64" }, "sha512-d1X+U5JLhyAse0VXM0rpmu6iLbBTAvjwc7MX0PBkEaTz2aZQqOHBpQkkrxia7bZzRNbfXHbGSqY/vbE3GSFWzw=="],
+
+    "@platejs/docx-io/turbo/turbo-windows-arm64": ["turbo-windows-arm64@2.8.2", "", { "os": "win32", "cpu": "arm64" }, "sha512-fMln07/l/5kscs79V0kTwdf17gkZW+E2iyqnzz691gLM7Jf6la0afd3IMsNtLzUh+dxKIFCswNiFVmHe8g+2jA=="],
 
     "@radix-ui/react-accordion/@radix-ui/react-primitive/@radix-ui/react-slot": ["@radix-ui/react-slot@1.2.3", "", { "dependencies": { "@radix-ui/react-compose-refs": "1.1.2" }, "peerDependencies": { "@types/react": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react"] }, "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A=="],
 

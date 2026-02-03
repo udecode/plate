@@ -81,6 +81,11 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     onFilesSelected: async ({ plainFiles }) => {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
 
+      // Compute next discussion number to avoid ID collisions
+      const existingDiscussions =
+        editor.getOption(discussionPlugin, 'discussions') ?? [];
+      let discussionCounter = existingDiscussions.length;
+
       // Import with full tracking support (suggestions + comments)
       const result = await importDocxWithTracking(editor as any, arrayBuffer, {
         suggestionKey: KEYS.suggestion,
@@ -88,19 +93,18 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
         commentKey: KEYS.comment,
         getCommentKey,
         isText: TextApi.isText,
-        generateId: () => crypto.randomUUID(),
+        generateId: () => `discussion${++discussionCounter}`,
       });
+      console.log('[DOCX DEBUG] import result:', result);
+      console.log('[DOCX DEBUG] editor.children after import:', JSON.stringify(editor.children, null, 2));
 
       // Add imported discussions to the discussion plugin
       if (result.discussions.length > 0) {
-        const existingDiscussions =
-          editor.getOption(discussionPlugin, 'discussions') ?? [];
-
         // Convert imported discussions to TDiscussion format
         const newDiscussions: TDiscussion[] = result.discussions.map((d) => ({
           id: d.id,
           comments: (d.comments ?? []).map((c, index) => ({
-            id: `${d.id}-comment-${index}`,
+            id: `comment${index + 1}`,
             contentRich:
               c.contentRich as TDiscussion['comments'][number]['contentRich'],
             createdAt: c.createdAt ?? new Date(),

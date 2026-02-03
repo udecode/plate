@@ -472,10 +472,12 @@ export async function importDocxWithTracking(
 
   // Step 1: Convert DOCX to HTML with tracking tokens
   const result = await convertToHtmlWithTracking(arrayBuffer, convertOptions);
+  console.log('[DOCX DEBUG] mammoth HTML output:', result.value);
 
   // Step 2: Parse tracked changes and comments from HTML
   const trackedChanges = parseDocxTrackedChanges(result.value);
   const parsedComments = parseDocxComments(result.value);
+  console.log('[DOCX DEBUG] parsedComments:', parsedComments);
 
   const hasTracking =
     trackedChanges.changes.length > 0 || parsedComments.comments.length > 0;
@@ -490,6 +492,7 @@ export async function importDocxWithTracking(
   const originalChildren = [...editor.children];
   (editor.children as unknown[]).length = 0;
   (editor.children as unknown[]).push(...nodes);
+  console.log('[DOCX DEBUG] Plate editor.children:', JSON.stringify(editor.children, null, 2));
 
   try {
     // Create search function adapter
@@ -526,6 +529,7 @@ export async function importDocxWithTracking(
         generateId,
       });
 
+      console.log('[DOCX DEBUG] applyResult:', commentsResult);
       commentsApplied = commentsResult.applied;
       discussions.push(...commentsResult.discussions);
       errors.push(...commentsResult.errors);
@@ -535,6 +539,31 @@ export async function importDocxWithTracking(
     (editor.children as unknown[]).length = 0;
     (editor.children as unknown[]).push(...originalChildren);
     throw error;
+  }
+
+  // Post-processing: strip any remaining tracking tokens from text nodes.
+  // editor.tf.delete can fail after direct children mutation (Slate WeakMaps stale),
+  // so we clean up tokens by directly mutating text nodes.
+  if (hasTracking) {
+    const tokenPattern = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]*\]\]/g;
+    const stripTokensFromNodes = (nodes: any[]) => {
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        const node = nodes[i];
+        if (typeof node.text === 'string') {
+          const cleaned = node.text.replace(tokenPattern, '');
+          if (cleaned !== node.text) {
+            node.text = cleaned;
+          }
+          // Remove empty text nodes (but keep at least one child per parent)
+          if (cleaned === '' && nodes.length > 1) {
+            nodes.splice(i, 1);
+          }
+        } else if (Array.isArray(node.children)) {
+          stripTokensFromNodes(node.children);
+        }
+      }
+    };
+    stripTokensFromNodes(editor.children as any[]);
   }
 
   return {
