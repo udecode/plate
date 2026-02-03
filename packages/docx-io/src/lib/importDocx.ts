@@ -546,23 +546,75 @@ export async function importDocxWithTracking(
   // so we clean up tokens by directly mutating text nodes.
   if (hasTracking) {
     const tokenPattern = /\[\[DOCX_(INS|DEL|CMT)_(START|END):[^\]]*\]\]/g;
-    const stripTokensFromNodes = (nodes: any[]) => {
-      for (let i = nodes.length - 1; i >= 0; i--) {
-        const node = nodes[i];
-        if (typeof node.text === 'string') {
-          const cleaned = node.text.replace(tokenPattern, '');
-          if (cleaned !== node.text) {
-            node.text = cleaned;
-          }
-          // Remove empty text nodes (but keep at least one child per parent)
-          if (cleaned === '' && nodes.length > 1) {
-            nodes.splice(i, 1);
-          }
-        } else if (Array.isArray(node.children)) {
-          stripTokensFromNodes(node.children);
+
+    const stripTokensFromTextGroup = (group: Array<{ text: string }>) => {
+      if (group.length === 0) return;
+      const combined = group.map((node) => node.text).join('');
+      const matches = Array.from(combined.matchAll(tokenPattern));
+      if (matches.length === 0) return;
+
+      const removeMask = new Array(combined.length).fill(false);
+      for (const match of matches) {
+        const start = match.index ?? 0;
+        const end = start + match[0].length;
+        for (let i = start; i < end; i++) {
+          removeMask[i] = true;
         }
       }
+
+      let offset = 0;
+      for (const node of group) {
+        const length = node.text.length;
+        if (length === 0) continue;
+        let nextText = '';
+        for (let i = 0; i < length; i++) {
+          if (!removeMask[offset + i]) {
+            nextText += node.text[i] ?? '';
+          }
+        }
+        node.text = nextText;
+        offset += length;
+      }
     };
+
+    const stripTokensFromNodes = (nodes: any[]) => {
+      let textGroup: Array<{ text: string }> = [];
+
+      const flushTextGroup = () => {
+        if (textGroup.length === 0) return;
+        stripTokensFromTextGroup(textGroup);
+        // Remove empty text nodes (keep at least one if all are empty)
+        const nonEmpty = textGroup.filter((node) => node.text !== '');
+        if (nonEmpty.length === 0) {
+          textGroup[0].text = '';
+          for (let i = textGroup.length - 1; i >= 1; i--) {
+            const idx = nodes.indexOf(textGroup[i] as any);
+            if (idx !== -1) nodes.splice(idx, 1);
+          }
+        } else {
+          for (let i = textGroup.length - 1; i >= 0; i--) {
+            if (textGroup[i].text === '') {
+              const idx = nodes.indexOf(textGroup[i] as any);
+              if (idx !== -1) nodes.splice(idx, 1);
+            }
+          }
+        }
+        textGroup = [];
+      };
+
+      for (const node of [...nodes]) {
+        if (typeof node.text === 'string') {
+          textGroup.push(node);
+        } else {
+          flushTextGroup();
+          if (Array.isArray(node.children)) {
+            stripTokensFromNodes(node.children);
+          }
+        }
+      }
+      flushTextGroup();
+    };
+
     stripTokensFromNodes(editor.children as any[]);
   }
 
