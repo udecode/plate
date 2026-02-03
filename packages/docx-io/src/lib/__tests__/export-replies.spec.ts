@@ -45,7 +45,7 @@ function extractCommentPayload(
     return commentStart.data;
   }
 
-  return undefined;
+  return;
 }
 
 describe('resolveCommentMeta with replies', () => {
@@ -120,9 +120,7 @@ describe('resolveCommentMeta with replies', () => {
         id: discussionId,
         comments: [
           {
-            contentRich: [
-              { type: 'p', children: [{ text: 'Only comment' }] },
-            ],
+            contentRich: [{ type: 'p', children: [{ text: 'Only comment' }] }],
             createdAt: '2025-01-15T10:00:00.000Z',
             user: { id: 'user-1', name: 'Alice Author' },
             userId: 'user-1',

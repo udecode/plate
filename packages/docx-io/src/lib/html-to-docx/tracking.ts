@@ -92,7 +92,10 @@ export interface TrackingDocumentInstance {
   lastCommentId: number;
   revisionIdMap: Map<string, number>;
   lastRevisionId: number;
-  ensureComment: (data: Partial<CommentPayload>, parentParaId?: string) => number;
+  ensureComment: (
+    data: Partial<CommentPayload>,
+    parentParaId?: string
+  ) => number;
   getCommentId: (id: string) => number;
   getRevisionId: (id?: string) => number;
 }
@@ -114,7 +117,7 @@ export function generateHexId(): string {
   let id: string;
 
   do {
-    const val = Math.floor(Math.random() * 0x7ffffffe) + 1;
+    const val = Math.floor(Math.random() * 0x7f_ff_ff_fe) + 1;
     id = val.toString(16).toUpperCase().padStart(8, '0');
   } while (allocatedIds.has(id));
 

@@ -10,18 +10,18 @@
 
 // Re-export comment-related types from exportTrackChanges
 export type {
-    DocxExportComment,
-    DocxExportDiscussion,
-    DocxExportUser,
-    InjectDocxTrackingTokensOptions
+  DocxExportComment,
+  DocxExportDiscussion,
+  DocxExportUser,
+  InjectDocxTrackingTokensOptions,
 } from './exportTrackChanges';
 
 // Re-export utility functions useful for comments
 export {
-    buildUserNameMap,
-    createDiscussionsForTransientComments,
-    normalizeDate,
-    toInitials
+  buildUserNameMap,
+  createDiscussionsForTransientComments,
+  normalizeDate,
+  toInitials,
 } from './exportTrackChanges';
 
 // Re-export the main injection function

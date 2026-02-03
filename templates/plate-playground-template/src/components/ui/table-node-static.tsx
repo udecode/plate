@@ -37,6 +37,33 @@ export function TableRowElementStatic(props: SlateElementProps) {
   );
 }
 
+/** Build inline border styles for DOCX export (all 4 sides per cell). */
+const cellBorderStyles = (
+  element: TTableCellElement
+): Record<string, string> => {
+  const b = element.borders;
+  if (!b) return {};
+
+  const fmt = (dir: 'bottom' | 'left' | 'right' | 'top') => {
+    const border = b[dir];
+    if (!border || !border.size) return undefined;
+    return `${border.size}px ${border.style || 'solid'} ${border.color || '#000'}`;
+  };
+
+  const styles: Record<string, string> = {};
+  const top = fmt('top');
+  const right = fmt('right');
+  const bottom = fmt('bottom');
+  const left = fmt('left');
+
+  if (top) styles.borderTop = top;
+  if (right) styles.borderRight = right;
+  if (bottom) styles.borderBottom = bottom;
+  if (left) styles.borderLeft = left;
+
+  return styles;
+};
+
 export function TableCellElementStatic({
   isHeader,
   ...props
@@ -75,8 +102,12 @@ export function TableCellElementStatic({
       style={
         {
           '--cellBackground': element.background,
+          ...(element.background
+            ? { backgroundColor: element.background }
+            : {}),
           maxWidth: width || 240,
           minWidth: width || 120,
+          ...cellBorderStyles(element),
         } as React.CSSProperties
       }
     >

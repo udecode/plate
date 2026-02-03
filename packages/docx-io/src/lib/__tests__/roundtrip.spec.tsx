@@ -316,7 +316,9 @@ describe('docx roundtrip', () => {
         id: discussionId,
         comments: [
           {
-            contentRich: [{ type: 'p', children: [{ text: 'Parent comment' }] }],
+            contentRich: [
+              { type: 'p', children: [{ text: 'Parent comment' }] },
+            ],
             createdAt: new Date('2025-01-01T00:00:00Z'),
             userId: 'user-1',
             user: { id: 'user-1', name: 'Alice' },
@@ -372,10 +374,7 @@ describe('docx roundtrip', () => {
     const value: Value = [
       {
         type: 'p',
-        children: [
-          { text: 'Hello', comment_disc1: true },
-          { text: ' world' },
-        ],
+        children: [{ text: 'Hello', comment_disc1: true }, { text: ' world' }],
       },
     ];
 
@@ -392,7 +391,9 @@ describe('docx roundtrip', () => {
             userId: 'alice-id',
             user: { id: 'alice-id', name: 'Alice' },
             createdAt: new Date('2026-01-01T00:00:00Z'),
-            contentRich: [{ type: 'p', children: [{ text: 'Parent comment' }] }],
+            contentRich: [
+              { type: 'p', children: [{ text: 'Parent comment' }] },
+            ],
           },
           {
             userId: 'bob-id',
@@ -465,13 +466,17 @@ describe('docx roundtrip', () => {
         id: discussionId,
         comments: [
           {
-            contentRich: [{ type: 'p', children: [{ text: 'Parent comment' }] }],
+            contentRich: [
+              { type: 'p', children: [{ text: 'Parent comment' }] },
+            ],
             createdAt: new Date('2024-01-01T00:00:00Z'),
             user: { id: 'user1', name: 'Alice' },
             userId: 'user1',
           },
           {
-            contentRich: [{ type: 'p', children: [{ text: 'Reply to parent' }] }],
+            contentRich: [
+              { type: 'p', children: [{ text: 'Reply to parent' }] },
+            ],
             createdAt: new Date('2024-01-01T01:00:00Z'),
             user: { id: 'user2', name: 'Bob' },
             userId: 'user2',
@@ -590,9 +595,7 @@ describe('docx roundtrip', () => {
         discussions,
         nodeToString: (node: unknown) => {
           try {
-            return NodeApi.string(
-              node as Parameters<typeof NodeApi.string>[0]
-            );
+            return NodeApi.string(node as Parameters<typeof NodeApi.string>[0]);
           } catch {
             return '';
           }

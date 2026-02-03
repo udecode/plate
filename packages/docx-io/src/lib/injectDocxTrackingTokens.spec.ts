@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-    buildUserNameMap,
-    createDiscussionsForTransientComments,
-    injectDocxTrackingTokens,
-    normalizeDate,
-    toInitials,
-    type DocxExportDiscussion,
-    type DocxExportSuggestionMeta,
+  buildUserNameMap,
+  createDiscussionsForTransientComments,
+  injectDocxTrackingTokens,
+  normalizeDate,
+  toInitials,
+  type DocxExportDiscussion,
+  type DocxExportSuggestionMeta,
 } from './exportTrackChanges';
 
 describe('injectDocxTrackingTokens', () => {
