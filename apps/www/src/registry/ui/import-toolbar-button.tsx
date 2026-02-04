@@ -26,6 +26,7 @@ import {
   discussionPlugin,
   type TDiscussion,
 } from '@/registry/components/editor/plugins/discussion-kit';
+import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 import { ToolbarButton } from './toolbar';
 
 type ImportType = 'html' | 'markdown';
@@ -138,6 +139,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
           ...existingDiscussions,
           ...newDiscussions,
         ]);
+        editor.setOption(commentPlugin, 'uniquePathMap', new Map());
       }
 
       // Log import results

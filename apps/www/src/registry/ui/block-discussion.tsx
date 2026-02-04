@@ -4,7 +4,11 @@ import * as React from 'react';
 
 import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 
-import { getDraftCommentKey } from '@platejs/comment';
+import {
+  getCommentKeyId,
+  getCommentKeys,
+  getDraftCommentKey,
+} from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
@@ -316,31 +320,45 @@ const useResolvedDiscussion = (
 
   const discussions = usePluginOption(discussionPlugin, 'discussions');
 
+  const getLeafCommentIds = (leaf: TCommentText) =>
+    getCommentKeys(leaf)
+      .map(getCommentKeyId)
+      .filter((id): id is string => Boolean(id) && id !== 'draft');
+
+  const map = getOption('uniquePathMap');
+  const nextMap = new Map(map);
+  let mapChanged = false;
+
   commentNodes.forEach(([node]) => {
-    const id = api.comment.nodeId(node);
-    const map = getOption('uniquePathMap');
+    const ids = getLeafCommentIds(node);
+    if (ids.length === 0) return;
 
-    if (!id) return;
+    ids.forEach((id) => {
+      const previousPath = nextMap.get(id);
 
-    const previousPath = map.get(id);
+      // If there are no comment nodes in the corresponding path in the map, then update it.
+      if (PathApi.isPath(previousPath)) {
+        const nodes = api.comment.node({ id, at: previousPath });
 
-    // If there are no comment nodes in the corresponding path in the map, then update it.
-    if (PathApi.isPath(previousPath)) {
-      const nodes = api.comment.node({ id, at: previousPath });
+        if (!nodes) {
+          nextMap.set(id, blockPath);
+          mapChanged = true;
+        }
 
-      if (!nodes) {
-        setOption('uniquePathMap', new Map(map).set(id, blockPath));
         return;
       }
-
-      return;
-    }
-    // TODO: fix throw error
-    setOption('uniquePathMap', new Map(map).set(id, blockPath));
+      // TODO: fix throw error
+      nextMap.set(id, blockPath);
+      mapChanged = true;
+    });
   });
 
+  if (mapChanged) {
+    setOption('uniquePathMap', nextMap);
+  }
+
   const commentsIds = new Set(
-    commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean)
+    commentNodes.flatMap(([node]) => getLeafCommentIds(node))
   );
 
   const resolvedDiscussions = discussions
