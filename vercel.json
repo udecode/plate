@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "apps/www/src/pages/api/**/*.ts": {
-      "maxDuration": 1
-    }
-  },
   "installCommand": "yarn install",
   "buildCommand": "yarn workspace www build"
 }
