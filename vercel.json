@@ -3,5 +3,7 @@
     "src/pages/api/**/*.ts": {
       "maxDuration": 1
     }
-  }
+  },
+  "installCommand": "cd ../.. && yarn install",
+  "buildCommand": "cd ../.. && yarn workspace www build"
 }
