@@ -1,0 +1,26 @@
+diff --git a/node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js b/node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js
+index 276b52e..68671ee 100644
+--- a/node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js
++++ b/node_modules/@opennextjs/cloudflare/dist/cli/build/bundle-server.js
+@@ -26,6 +26,13 @@ import { setWranglerExternal } from "./patches/plugins/wrangler-external.js";
+ import { copyPackageCliFiles, needsExperimentalReact, normalizePath } from "./utils/index.js";
+ /** The dist directory of the Cloudflare adapter package */
+ const packageDistDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
++const defaultLoaders = {
++    ".woff": "file",
++    ".woff2": "file",
++    ".ttf": "file",
++    ".otf": "file",
++    ".eot": "file",
++};
+ /**
+  * List of optional Next.js dependencies.
+  * They are not required for Next.js to run but only needed to enabled specific features.
+@@ -69,6 +76,7 @@ export async function bundleServer(buildOpts, projectOpts) {
+         minifySyntax: projectOpts.minify && !debug,
+         legalComments: "none",
+         metafile: true,
++        loader: defaultLoaders,
+         // Next traces files using the default conditions from `nft` (`node`, `require`, `import` and `default`)
+         //
+         // Because we use the `node` platform for this build, the "module" condition is used when no conditions are defined.
