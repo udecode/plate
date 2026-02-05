@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/.open-next
+**/.contentlayer
+**/dist
+**/coverage
+**/.turbo
+**/.cache
+apps/www_worker
+packages/docx-io/tmp
