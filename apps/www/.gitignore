@@ -3,3 +3,5 @@
 .content-collections
 .source
 tsconfig.tsbuildinfo
+.vercel
+.env*.local
