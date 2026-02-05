@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toc-node",
+  "type": "registry:ui",
+  "title": "TOC Element",
+  "description": "A table of contents component with links to document headings.",
+  "dependencies": [
+    "@platejs/toc"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/toc-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useTocElement, useTocElementState } from '@platejs/toc/react';\nimport { cva } from 'class-variance-authority';\nimport { PlateElement } from 'platejs/react';\n\nimport { Button } from '@/components/ui/button';\n\nconst headingItemVariants = cva(\n  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',\n  {\n    variants: {\n      depth: {\n        1: 'pl-0.5',\n        2: 'pl-[26px]',\n        3: 'pl-[50px]',\n      },\n    },\n  }\n);\n\nexport function TocElement(props: PlateElementProps) {\n  const state = useTocElementState();\n  const { props: btnProps } = useTocElement(state);\n  const { headingList } = state;\n\n  return (\n    <PlateElement {...props} className=\"mb-1 p-0\">\n      <div contentEditable={false}>\n        {headingList.length > 0 ? (\n          headingList.map((item) => (\n            <Button\n              key={item.id}\n              variant=\"ghost\"\n              className={headingItemVariants({\n                depth: item.depth as 1 | 2 | 3,\n              })}\n              onClick={(e) => btnProps.onClick(e, item, 'smooth')}\n              aria-current\n            >\n              {item.title}\n            </Button>\n          ))\n        ) : (\n          <div className=\"text-gray-500 text-sm\">\n            Create a heading to display the table of contents.\n          </div>\n        )}\n      </div>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/toc-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';\nimport { cva } from 'class-variance-authority';\nimport { type SlateEditor, type TElement, NodeApi } from 'platejs';\nimport { SlateElement } from 'platejs/static';\n\nimport { Button } from '@/components/ui/button';\n\nconst headingItemVariants = cva(\n  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',\n  {\n    variants: {\n      depth: {\n        1: 'pl-0.5',\n        2: 'pl-[26px]',\n        3: 'pl-[50px]',\n      },\n    },\n  }\n);\n\nexport function TocElementStatic(props: SlateElementProps) {\n  const { editor } = props;\n  const headingList = getHeadingList(editor);\n\n  return (\n    <SlateElement {...props} className=\"mb-1 p-0\">\n      <div>\n        {headingList.length > 0 ? (\n          headingList.map((item) => (\n            <Button\n              key={item.title}\n              variant=\"ghost\"\n              className={headingItemVariants({\n                depth: item.depth as 1 | 2 | 3,\n              })}\n            >\n              {item.title}\n            </Button>\n          ))\n        ) : (\n          <div className=\"text-gray-500 text-sm\">\n            Create a heading to display the table of contents.\n          </div>\n        )}\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n\nconst headingDepth: Record<string, number> = {\n  h1: 1,\n  h2: 2,\n  h3: 3,\n  h4: 4,\n  h5: 5,\n  h6: 6,\n};\n\nconst getHeadingList = (editor?: SlateEditor) => {\n  if (!editor) return [];\n\n  const options = editor.getOptions(BaseTocPlugin);\n\n  if (options.queryHeading) {\n    return options.queryHeading(editor);\n  }\n\n  const headingList: Heading[] = [];\n\n  const values = editor.api.nodes<TElement>({\n    at: [],\n    match: (n) => isHeading(n),\n  });\n\n  if (!values) return [];\n\n  Array.from(values).forEach(([node, path]) => {\n    const { type } = node;\n    const title = NodeApi.string(node);\n    const depth = headingDepth[type];\n    const id = node.id as string;\n\n    if (title) {\n      headingList.push({ id, depth, path, title, type });\n    }\n  });\n\n  return headingList;\n};\n\n/**\n * DOCX-compatible TOC component.\n * Renders TOC items as anchor links for proper Word internal navigation.\n */\nexport function TocElementDocx(props: SlateElementProps) {\n  const { editor } = props;\n  const headingList = getHeadingList(editor);\n\n  const depthIndent: Record<number, string> = {\n    1: '0',\n    2: '24pt',\n    3: '48pt',\n  };\n\n  return (\n    <SlateElement {...props}>\n      <div\n        style={{\n          marginBottom: '12pt',\n          padding: '8pt 0',\n        }}\n      >\n        {headingList.length > 0 ? (\n          headingList.map((item) => (\n            <p\n              key={item.id}\n              style={{\n                margin: '4pt 0',\n                paddingLeft: depthIndent[item.depth] || '0',\n              }}\n            >\n              <a\n                href={`#${item.id}`}\n                style={{\n                  color: '#0066cc',\n                  textDecoration: 'underline',\n                }}\n              >\n                {item.title}\n              </a>\n            </p>\n          ))\n        ) : (\n          <p style={{ color: '#666', fontSize: '10pt' }}>\n            Create a heading to display the table of contents.\n          </p>\n        )}\n      </div>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toc"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/toc-node"
+      }
+    ],
+    "examples": [
+      "toc-demo",
+      "toc-pro"
+    ]
+  }
+}

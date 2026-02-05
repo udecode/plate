@@ -1,0 +1,45 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-image-node",
+  "type": "registry:ui",
+  "title": "Image Element",
+  "description": "Image element with lazy loading, resizing capabilities, and optional caption.",
+  "dependencies": [
+    "@platejs/media",
+    "@platejs/resizable"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/media-toolbar",
+    "https://platejs.org/r/caption",
+    "https://platejs.org/r/resize-handle"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-image-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TImageElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { useDraggable } from '@platejs/dnd';\nimport { Image, ImagePlugin, useMediaState } from '@platejs/media/react';\nimport { ResizableProvider, useResizableValue } from '@platejs/resizable';\nimport { PlateElement, withHOC } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nimport { Caption, CaptionTextarea } from './caption';\nimport { MediaToolbar } from './media-toolbar';\nimport {\n  mediaResizeHandleVariants,\n  Resizable,\n  ResizeHandle,\n} from './resize-handle';\n\nexport const ImageElement = withHOC(\n  ResizableProvider,\n  function ImageElement(props: PlateElementProps<TImageElement>) {\n    const { align = 'center', focused, readOnly, selected } = useMediaState();\n    const width = useResizableValue('width');\n\n    const { isDragging, handleRef } = useDraggable({\n      element: props.element,\n    });\n\n    return (\n      <MediaToolbar plugin={ImagePlugin}>\n        <PlateElement {...props} className=\"py-2.5\">\n          <figure className=\"group relative m-0\" contentEditable={false}>\n            <Resizable\n              align={align}\n              options={{\n                align,\n                readOnly,\n              }}\n            >\n              <ResizeHandle\n                className={mediaResizeHandleVariants({ direction: 'left' })}\n                options={{ direction: 'left' }}\n              />\n              <Image\n                ref={handleRef}\n                className={cn(\n                  'block w-full max-w-full cursor-pointer object-cover px-0',\n                  'rounded-sm',\n                  focused && selected && 'ring-2 ring-ring ring-offset-2',\n                  isDragging && 'opacity-50'\n                )}\n                alt={props.attributes.alt as string | undefined}\n              />\n              <ResizeHandle\n                className={mediaResizeHandleVariants({\n                  direction: 'right',\n                })}\n                options={{ direction: 'right' }}\n              />\n            </Resizable>\n\n            <Caption style={{ width }} align={align}>\n              <CaptionTextarea\n                readOnly={readOnly}\n                onFocus={(e) => {\n                  e.preventDefault();\n                }}\n                placeholder=\"Write a caption...\"\n              />\n            </Caption>\n          </figure>\n\n          {props.children}\n        </PlateElement>\n      </MediaToolbar>\n    );\n  }\n);\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/media-image-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TCaptionProps, TImageElement, TResizableProps } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { NodeApi } from 'platejs';\nimport { SlateElement } from 'platejs/static';\n\nimport { cn } from '@/lib/utils';\n\nexport function ImageElementStatic(\n  props: SlateElementProps<TImageElement & TCaptionProps & TResizableProps>\n) {\n  const { align = 'center', caption, url, width } = props.element;\n\n  return (\n    <SlateElement {...props} className=\"py-2.5\">\n      <figure className=\"group relative m-0 inline-block\" style={{ width }}>\n        <div\n          className=\"relative min-w-[92px] max-w-full\"\n          style={{ textAlign: align }}\n        >\n          <img\n            className={cn(\n              'w-full max-w-full cursor-default object-cover px-0',\n              'rounded-sm'\n            )}\n            alt={(props.attributes as any).alt}\n            src={url}\n          />\n          {caption && (\n            <figcaption\n              className=\"mx-auto mt-2 h-[24px] max-w-full\"\n              style={{ textAlign: 'center' }}\n            >\n              {NodeApi.string(caption[0])}\n            </figcaption>\n          )}\n        </div>\n      </figure>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      },
+      {
+        "route": "/docs/api/resizable"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/image-node"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

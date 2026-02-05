@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plate",
+  "type": "registry:lib",
+  "description": "Install Plate package",
+  "dependencies": [
+    "platejs"
+  ],
+  "devDependencies": [],
+  "registryDependencies": [],
+  "files": []
+}

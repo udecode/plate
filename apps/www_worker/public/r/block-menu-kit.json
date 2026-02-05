@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-menu-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/selection"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-context-menu",
+    "https://platejs.org/r/block-selection-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/block-menu-kit.tsx",
+      "content": "'use client';\n\nimport { BlockMenuPlugin } from '@platejs/selection/react';\n\nimport { BlockContextMenu } from '@/registry/ui/block-context-menu';\n\nimport { BlockSelectionKit } from './block-selection-kit';\n\nexport const BlockMenuKit = [\n  ...BlockSelectionKit,\n  BlockMenuPlugin.configure({\n    render: { aboveEditable: BlockContextMenu },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

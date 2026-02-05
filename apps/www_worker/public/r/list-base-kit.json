@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/list"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-list",
+    "https://platejs.org/r/indent-base-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/list-base-kit.tsx",
+      "content": "import { BaseListPlugin } from '@platejs/list';\nimport { KEYS } from 'platejs';\n\nimport { BaseIndentKit } from '@/registry/components/editor/plugins/indent-base-kit';\nimport { BlockListStatic } from '@/registry/ui/block-list-static';\n\nexport const BaseListKit = [\n  ...BaseIndentKit,\n  BaseListPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n      ],\n    },\n    render: {\n      belowNodes: BlockListStatic,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

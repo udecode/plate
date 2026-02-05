@@ -1,0 +1,34 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-toolbar",
+  "type": "registry:ui",
+  "title": "Media Toolbar",
+  "description": "A toolbar interface for media settings.",
+  "dependencies": [
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "button",
+    "input",
+    "popover",
+    "separator"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/media-toolbar.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { WithRequiredKey } from 'platejs';\n\nimport {\n  FloatingMedia as FloatingMediaPrimitive,\n  FloatingMediaStore,\n  useFloatingMediaValue,\n  useImagePreviewValue,\n} from '@platejs/media/react';\nimport { cva } from 'class-variance-authority';\nimport { Link, Trash2Icon } from 'lucide-react';\nimport {\n  useEditorRef,\n  useEditorSelector,\n  useElement,\n  useFocusedLast,\n  useReadOnly,\n  useRemoveNodeButton,\n  useSelected,\n} from 'platejs/react';\n\nimport { Button, buttonVariants } from '@/components/ui/button';\nimport {\n  Popover,\n  PopoverAnchor,\n  PopoverContent,\n} from '@/components/ui/popover';\nimport { Separator } from '@/components/ui/separator';\n\nimport { CaptionButton } from './caption';\n\nconst inputVariants = cva(\n  'flex h-[28px] w-full rounded-md border-none bg-transparent px-1.5 py-1 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-transparent md:text-sm'\n);\n\nexport function MediaToolbar({\n  children,\n  plugin,\n}: {\n  children: React.ReactNode;\n  plugin: WithRequiredKey;\n}) {\n  const editor = useEditorRef();\n  const readOnly = useReadOnly();\n  const selected = useSelected();\n  const isFocusedLast = useFocusedLast();\n  const selectionCollapsed = useEditorSelector(\n    (editor) => !editor.api.isExpanded(),\n    []\n  );\n  const isImagePreviewOpen = useImagePreviewValue('isOpen', editor.id);\n  const open =\n    isFocusedLast &&\n    !readOnly &&\n    selected &&\n    selectionCollapsed &&\n    !isImagePreviewOpen;\n  const isEditing = useFloatingMediaValue('isEditing');\n\n  React.useEffect(() => {\n    if (!open && isEditing) {\n      FloatingMediaStore.set('isEditing', false);\n    }\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [open]);\n\n  const element = useElement();\n  const { props: buttonProps } = useRemoveNodeButton({ element });\n\n  return (\n    <Popover open={open} modal={false}>\n      <PopoverAnchor>{children}</PopoverAnchor>\n\n      <PopoverContent\n        className=\"w-auto p-1\"\n        onOpenAutoFocus={(e) => e.preventDefault()}\n      >\n        {isEditing ? (\n          <div className=\"flex w-[330px] flex-col\">\n            <div className=\"flex items-center\">\n              <div className=\"flex items-center pr-1 pl-2 text-muted-foreground\">\n                <Link className=\"size-4\" />\n              </div>\n\n              <FloatingMediaPrimitive.UrlInput\n                className={inputVariants()}\n                placeholder=\"Paste the embed link...\"\n                options={{ plugin }}\n              />\n            </div>\n          </div>\n        ) : (\n          <div className=\"box-content flex items-center\">\n            <FloatingMediaPrimitive.EditButton\n              className={buttonVariants({ size: 'sm', variant: 'ghost' })}\n            >\n              Edit link\n            </FloatingMediaPrimitive.EditButton>\n\n            <CaptionButton size=\"sm\" variant=\"ghost\">\n              Caption\n            </CaptionButton>\n\n            <Separator orientation=\"vertical\" className=\"mx-1 h-6\" />\n\n            <Button size=\"sm\" variant=\"ghost\" {...buttonProps}>\n              <Trash2Icon />\n            </Button>\n          </div>\n        )}\n      </PopoverContent>\n    </Popover>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/media"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

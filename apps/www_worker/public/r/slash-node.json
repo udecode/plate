@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slash-node",
+  "type": "registry:ui",
+  "title": "Slash Input Element",
+  "description": "A command input component for inserting various elements.",
+  "dependencies": [
+    "@platejs/ai"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/inline-combobox",
+    "https://platejs.org/r/transforms"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/slash-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateEditor, PlateElementProps } from 'platejs/react';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport {\n  CalendarIcon,\n  ChevronRightIcon,\n  Code2,\n  Columns3Icon,\n  Heading1Icon,\n  Heading2Icon,\n  Heading3Icon,\n  LightbulbIcon,\n  ListIcon,\n  ListOrdered,\n  PenToolIcon,\n  PilcrowIcon,\n  Quote,\n  RadicalIcon,\n  SparklesIcon,\n  Square,\n  Table,\n  TableOfContentsIcon,\n} from 'lucide-react';\nimport { type TComboboxInputElement, KEYS } from 'platejs';\nimport { PlateElement } from 'platejs/react';\n\nimport {\n  insertBlock,\n  insertInlineElement,\n} from '@/registry/components/editor/transforms';\n\nimport {\n  InlineCombobox,\n  InlineComboboxContent,\n  InlineComboboxEmpty,\n  InlineComboboxGroup,\n  InlineComboboxGroupLabel,\n  InlineComboboxInput,\n  InlineComboboxItem,\n} from './inline-combobox';\n\ntype Group = {\n  group: string;\n  items: {\n    icon: React.ReactNode;\n    value: string;\n    onSelect: (editor: PlateEditor, value: string) => void;\n    className?: string;\n    focusEditor?: boolean;\n    keywords?: string[];\n    label?: string;\n  }[];\n};\n\nconst groups: Group[] = [\n  {\n    group: 'AI',\n    items: [\n      {\n        focusEditor: false,\n        icon: <SparklesIcon />,\n        value: 'AI',\n        onSelect: (editor) => {\n          editor.getApi(AIChatPlugin).aiChat.show();\n        },\n      },\n    ],\n  },\n  {\n    group: 'Basic blocks',\n    items: [\n      {\n        icon: <PilcrowIcon />,\n        keywords: ['paragraph'],\n        label: 'Text',\n        value: KEYS.p,\n      },\n      {\n        icon: <Heading1Icon />,\n        keywords: ['title', 'h1'],\n        label: 'Heading 1',\n        value: KEYS.h1,\n      },\n      {\n        icon: <Heading2Icon />,\n        keywords: ['subtitle', 'h2'],\n        label: 'Heading 2',\n        value: KEYS.h2,\n      },\n      {\n        icon: <Heading3Icon />,\n        keywords: ['subtitle', 'h3'],\n        label: 'Heading 3',\n        value: KEYS.h3,\n      },\n      {\n        icon: <ListIcon />,\n        keywords: ['unordered', 'ul', '-'],\n        label: 'Bulleted list',\n        value: KEYS.ul,\n      },\n      {\n        icon: <ListOrdered />,\n        keywords: ['ordered', 'ol', '1'],\n        label: 'Numbered list',\n        value: KEYS.ol,\n      },\n      {\n        icon: <Square />,\n        keywords: ['checklist', 'task', 'checkbox', '[]'],\n        label: 'To-do list',\n        value: KEYS.listTodo,\n      },\n      {\n        icon: <ChevronRightIcon />,\n        keywords: ['collapsible', 'expandable'],\n        label: 'Toggle',\n        value: KEYS.toggle,\n      },\n      {\n        icon: <Code2 />,\n        keywords: ['```'],\n        label: 'Code Block',\n        value: KEYS.codeBlock,\n      },\n      {\n        icon: <Table />,\n        label: 'Table',\n        value: KEYS.table,\n      },\n      {\n        icon: <Quote />,\n        keywords: ['citation', 'blockquote', 'quote', '>'],\n        label: 'Blockquote',\n        value: KEYS.blockquote,\n      },\n      {\n        description: 'Insert a highlighted block.',\n        icon: <LightbulbIcon />,\n        keywords: ['note'],\n        label: 'Callout',\n        value: KEYS.callout,\n      },\n    ].map((item) => ({\n      ...item,\n      onSelect: (editor, value) => {\n        insertBlock(editor, value, { upsert: true });\n      },\n    })),\n  },\n  {\n    group: 'Advanced blocks',\n    items: [\n      {\n        icon: <TableOfContentsIcon />,\n        keywords: ['toc'],\n        label: 'Table of contents',\n        value: KEYS.toc,\n      },\n      {\n        icon: <Columns3Icon />,\n        label: '3 columns',\n        value: 'action_three_columns',\n      },\n      {\n        focusEditor: false,\n        icon: <RadicalIcon />,\n        label: 'Equation',\n        value: KEYS.equation,\n      },\n      {\n        icon: <PenToolIcon />,\n        keywords: ['excalidraw'],\n        label: 'Excalidraw',\n        value: KEYS.excalidraw,\n      },\n      {\n        icon: <Code2 />,\n        keywords: [\n          'code-drawing',\n          'diagram',\n          'plantuml',\n          'graphviz',\n          'flowchart',\n          'mermaid',\n        ],\n        label: 'Code Drawing',\n        value: KEYS.codeDrawing,\n      },\n    ].map((item) => ({\n      ...item,\n      onSelect: (editor, value) => {\n        insertBlock(editor, value, { upsert: true });\n      },\n    })),\n  },\n  {\n    group: 'Inline',\n    items: [\n      {\n        focusEditor: true,\n        icon: <CalendarIcon />,\n        keywords: ['time'],\n        label: 'Date',\n        value: KEYS.date,\n      },\n      {\n        focusEditor: false,\n        icon: <RadicalIcon />,\n        label: 'Inline Equation',\n        value: KEYS.inlineEquation,\n      },\n    ].map((item) => ({\n      ...item,\n      onSelect: (editor, value) => {\n        insertInlineElement(editor, value);\n      },\n    })),\n  },\n];\n\nexport function SlashInputElement(\n  props: PlateElementProps<TComboboxInputElement>\n) {\n  const { editor, element } = props;\n\n  return (\n    <PlateElement {...props} as=\"span\">\n      <InlineCombobox element={element} trigger=\"/\">\n        <InlineComboboxInput />\n\n        <InlineComboboxContent>\n          <InlineComboboxEmpty>No results</InlineComboboxEmpty>\n\n          {groups.map(({ group, items }) => (\n            <InlineComboboxGroup key={group}>\n              <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>\n\n              {items.map(\n                ({ focusEditor, icon, keywords, label, value, onSelect }) => (\n                  <InlineComboboxItem\n                    key={value}\n                    value={value}\n                    onClick={() => onSelect(editor, value)}\n                    label={label}\n                    focusEditor={focusEditor}\n                    group={group}\n                    keywords={keywords}\n                  >\n                    <div className=\"mr-2 text-muted-foreground\">{icon}</div>\n                    {label ?? value}\n                  </InlineComboboxItem>\n                )\n              )}\n            </InlineComboboxGroup>\n          ))}\n        </InlineComboboxContent>\n      </InlineCombobox>\n\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/slash-command",
+        "title": "Slash"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/slash-node"
+      }
+    ],
+    "examples": [
+      "slash-command-demo",
+      "slash-command-pro"
+    ]
+  }
+}

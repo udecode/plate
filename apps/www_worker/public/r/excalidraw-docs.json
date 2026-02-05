@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "excalidraw-docs",
+  "type": "registry:file",
+  "title": "Excalidraw",
+  "description": "Documentation for Excalidraw",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(elements)/excalidraw.mdx",
+      "content": "---\ntitle: Excalidraw\ndocs:\n  - route: /docs/components/excalidraw-node\n    title: Excalidraw Element\n---\n\n<ComponentPreview name=\"excalidraw-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Integrates Excalidraw library for creation of drawings and diagrams.\n\n</PackageInfo>\n\n## Installation\n\n```bash\nnpm install @platejs/excalidraw\n```\n\n## Usage\n\n```tsx\nimport { ExcalidrawPlugin } from '@platejs/excalidraw/react';\n\nconst plugins = [\n  // ...otherPlugins\n  ExcalidrawPlugin,\n];\n```\n\n### Insert Toolbar Button\n\nYou can add this item to the [Insert Toolbar Button](/docs/toolbar#insert-toolbar-button) to insert Excalidraw elements:\n\n```tsx\n{\n  icon: <PenToolIcon />,\n  label: 'Excalidraw',\n  value: KEYS.excalidraw,\n}\n```\n\n## Plugins\n\n### `ExcalidrawPlugin`\n\nExcalidraw void element plugin.\n\n## API\n\n### `insertExcalidraw`\n\nInserts an Excalidraw element into the editor.\n\n<API name=\"insertExcalidraw\">\n<APIParameters>\n  <APIItem name=\"props\" type=\"NodeProps<TExcalidrawElement>\" optional>\n    Props for the Excalidraw element.\n  </APIItem>\n  <APIItem name=\"options\" type=\"InsertNodesOptions\" optional>\n    Options for inserting the Excalidraw element.\n  </APIItem>\n</APIParameters>\n</API>\n\n## Hooks\n\n### `useExcalidrawElement`\n\nA behavior hook for the Excalidraw component.\n\n<API name=\"useExcalidrawElement\">\n<APIState>\n  <APIItem name=\"element\" type=\"TExcalidrawElement\">\n    The Excalidraw element.\n  </APIItem>\n  <APIItem name=\"libraryItems\" type=\"LibraryItems\" optional>\n    Library items to display in the Excalidraw component.\n    - **Default:** `[]`\n  </APIItem>\n  <APIItem name=\"scrollToContent\" type=\"boolean\" optional>\n    Whether to scroll to content inside the Excalidraw component.\n    - **Default:** `true`\n  </APIItem>\n</APIState>\n\n<APIReturns type=\"object\">\n  <APIItem name=\"Excalidraw\" type=\"any\">\n    The Excalidraw component.\n  </APIItem>\n  <APIItem name=\"excalidrawProps\" type=\"ExcalidrawProps\">\n    Props to pass to the Excalidraw component.\n  </APIItem>\n</APIReturns>\n</API>",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(elements)/excalidraw.mdx"
+    }
+  ]
+}

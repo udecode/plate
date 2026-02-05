@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd-node",
+  "type": "registry:ui",
+  "title": "Keyboard Input Leaf",
+  "description": "A component for styling keyboard shortcuts.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/kbd-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateLeafProps } from 'platejs/react';\n\nimport { PlateLeaf } from 'platejs/react';\n\nexport function KbdLeaf(props: PlateLeafProps) {\n  return (\n    <PlateLeaf\n      {...props}\n      as=\"kbd\"\n      className=\"rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-sm shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]\"\n    >\n      {props.children}\n    </PlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/kbd-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateLeafProps } from 'platejs/static';\n\nimport { SlateLeaf } from 'platejs/static';\n\nexport function KbdLeafStatic(props: SlateLeafProps) {\n  return (\n    <SlateLeaf\n      {...props}\n      as=\"kbd\"\n      className=\"rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-sm shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(248,_249,_250)_0px_1px_5px_0px_inset,_rgb(193,_200,_205)_0px_0px_0px_0.5px,_rgb(193,_200,_205)_0px_2px_1px_-1px,_rgb(193,_200,_205)_0px_1px_0px_0px] dark:shadow-[rgba(255,_255,_255,_0.1)_0px_0.5px_0px_0px_inset,_rgb(26,_29,_30)_0px_1px_5px_0px_inset,_rgb(76,_81,_85)_0px_0px_0px_0.5px,_rgb(76,_81,_85)_0px_2px_1px_-1px,_rgb(76,_81,_85)_0px_1px_0px_0px]\"\n    >\n      {props.children}\n    </SlateLeaf>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/kbd",
+        "title": "Keyboard Input"
+      }
+    ],
+    "examples": [
+      "basic-marks-demo"
+    ]
+  }
+}

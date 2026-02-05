@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "api-slate-docs",
+  "type": "registry:file",
+  "title": "Slate",
+  "description": "API reference for @platejs/slate",
+  "files": [
+    {
+      "path": "../../docs/api/slate.mdx",
+      "content": "---\ntitle: Slate\ndescription: API reference for @platejs/slate\n---\n\nThis package provides is an extended version of [Slate API](https://docs.slatejs.org/api/transforms). It can be used without Plate dependencies.\n\n- [Node](/docs/api/slate/node)\n  - [Editor API](/docs/api/slate/editor-api)\n  - [Editor Transforms](/docs/api/slate/editor-api)\n  - [Element](/docs/api/slate/element)\n  - [Text](/docs/api/slate/text)\n- [Location](/docs/api/slate/location)\n  - [Path](/docs/api/slate/path)\n  - [Point](/docs/api/slate/point)\n  - [Range](/docs/api/slate/range)\n  - [Location Reference](/docs/api/slate/location-ref)\n- [Operation](/docs/api/slate/operation)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/api/slate.mdx"
+    }
+  ]
+}

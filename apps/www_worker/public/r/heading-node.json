@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "heading-node",
+  "type": "registry:ui",
+  "title": "Heading Element",
+  "description": "A heading with multiple level support.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/heading-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { type VariantProps, cva } from 'class-variance-authority';\nimport { PlateElement } from 'platejs/react';\n\nconst headingVariants = cva('relative mb-1', {\n  variants: {\n    variant: {\n      h1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',\n      h2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',\n      h3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',\n      h4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',\n      h5: 'mt-[0.75em] font-semibold text-lg tracking-tight',\n      h6: 'mt-[0.75em] font-semibold text-base tracking-tight',\n    },\n  },\n});\n\nexport function HeadingElement({\n  variant = 'h1',\n  ...props\n}: PlateElementProps & VariantProps<typeof headingVariants>) {\n  return (\n    <PlateElement\n      as={variant!}\n      className={headingVariants({ variant })}\n      {...props}\n    >\n      {props.children}\n    </PlateElement>\n  );\n}\n\nexport function H1Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h1\" {...props} />;\n}\n\nexport function H2Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h2\" {...props} />;\n}\n\nexport function H3Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h3\" {...props} />;\n}\n\nexport function H4Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h4\" {...props} />;\n}\n\nexport function H5Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h5\" {...props} />;\n}\n\nexport function H6Element(props: PlateElementProps) {\n  return <HeadingElement variant=\"h6\" {...props} />;\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/heading-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { type VariantProps, cva } from 'class-variance-authority';\nimport { SlateElement } from 'platejs/static';\n\nconst headingVariants = cva('relative mb-1', {\n  variants: {\n    variant: {\n      h1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',\n      h2: 'mt-[1.4em] pb-px font-heading font-semibold text-2xl tracking-tight',\n      h3: 'mt-[1em] pb-px font-heading font-semibold text-xl tracking-tight',\n      h4: 'mt-[0.75em] font-heading font-semibold text-lg tracking-tight',\n      h5: 'mt-[0.75em] font-semibold text-lg tracking-tight',\n      h6: 'mt-[0.75em] font-semibold text-base tracking-tight',\n    },\n  },\n});\n\nexport function HeadingElementStatic({\n  variant = 'h1',\n  ...props\n}: SlateElementProps & VariantProps<typeof headingVariants>) {\n  const id = props.element.id as string | undefined;\n\n  return (\n    <SlateElement\n      as={variant!}\n      className={headingVariants({ variant })}\n      {...props}\n    >\n      {/* Bookmark anchor for DOCX TOC internal links */}\n      {id && <span id={id} />}\n      {props.children}\n    </SlateElement>\n  );\n}\n\nexport function H1ElementStatic(props: SlateElementProps) {\n  return <HeadingElementStatic variant=\"h1\" {...props} />;\n}\n\nexport function H2ElementStatic(\n  props: React.ComponentProps<typeof HeadingElementStatic>\n) {\n  return <HeadingElementStatic variant=\"h2\" {...props} />;\n}\n\nexport function H3ElementStatic(\n  props: React.ComponentProps<typeof HeadingElementStatic>\n) {\n  return <HeadingElementStatic variant=\"h3\" {...props} />;\n}\n\nexport function H4ElementStatic(\n  props: React.ComponentProps<typeof HeadingElementStatic>\n) {\n  return <HeadingElementStatic variant=\"h4\" {...props} />;\n}\n\nexport function H5ElementStatic(\n  props: React.ComponentProps<typeof HeadingElementStatic>\n) {\n  return <HeadingElementStatic variant=\"h5\" {...props} />;\n}\n\nexport function H6ElementStatic(\n  props: React.ComponentProps<typeof HeadingElementStatic>\n) {\n  return <HeadingElementStatic variant=\"h6\" {...props} />;\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/heading"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/heading-node"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

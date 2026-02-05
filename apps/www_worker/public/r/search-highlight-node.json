@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "search-highlight-node",
+  "type": "registry:ui",
+  "title": "Search Highlight Leaf",
+  "description": "A component that highlights search results in text.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/search-highlight-node.tsx",
+      "content": "'use client';\n\nimport { type PlateLeafProps, PlateLeaf } from 'platejs/react';\n\nexport function SearchHighlightLeaf(props: PlateLeafProps) {\n  return <PlateLeaf {...props} className=\"bg-yellow-100\" />;\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/highlight"
+      }
+    ]
+  }
+}

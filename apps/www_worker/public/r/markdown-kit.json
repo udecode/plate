@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "markdown-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/markdown",
+    "remark-gfm",
+    "remark-math"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/markdown-kit.tsx",
+      "content": "import { MarkdownPlugin, remarkMdx, remarkMention } from '@platejs/markdown';\nimport { KEYS } from 'platejs';\nimport remarkGfm from 'remark-gfm';\nimport remarkMath from 'remark-math';\n\nexport const MarkdownKit = [\n  MarkdownPlugin.configure({\n    options: {\n      plainMarks: [KEYS.suggestion, KEYS.comment],\n      remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

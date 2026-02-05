@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "table-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/table"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/table-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/table-base-kit.tsx",
+      "content": "import {\n  BaseTableCellHeaderPlugin,\n  BaseTableCellPlugin,\n  BaseTablePlugin,\n  BaseTableRowPlugin,\n} from '@platejs/table';\n\nimport {\n  TableCellElementStatic,\n  TableCellHeaderElementStatic,\n  TableElementStatic,\n  TableRowElementStatic,\n} from '@/registry/ui/table-node-static';\n\nexport const BaseTableKit = [\n  BaseTablePlugin.withComponent(TableElementStatic),\n  BaseTableRowPlugin.withComponent(TableRowElementStatic),\n  BaseTableCellPlugin.withComponent(TableCellElementStatic),\n  BaseTableCellHeaderPlugin.withComponent(TableCellHeaderElementStatic),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

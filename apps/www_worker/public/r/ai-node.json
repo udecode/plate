@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ai-node",
+  "type": "registry:ui",
+  "title": "AI Leaf",
+  "description": "A text highlighter for AI-generated content.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/ai-node.tsx",
+      "content": "'use client';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport {\n  type PlateElementProps,\n  type PlateTextProps,\n  PlateElement,\n  PlateText,\n  usePluginOption,\n} from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function AILeaf(props: PlateTextProps) {\n  const streaming = usePluginOption(AIChatPlugin, 'streaming');\n  const streamingLeaf = props.editor\n    .getApi(AIChatPlugin)\n    .aiChat.node({ streaming: true });\n\n  const isLast = streamingLeaf?.[0] === props.text;\n\n  return (\n    <PlateText\n      className={cn(\n        'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',\n        'transition-all duration-200 ease-in-out',\n        isLast &&\n          streaming &&\n          'after:ml-1.5 after:inline-block after:h-3 after:w-3 after:rounded-full after:bg-primary after:align-middle after:content-[\"\"]'\n      )}\n      {...props}\n    />\n  );\n}\n\nexport function AIAnchorElement(props: PlateElementProps) {\n  return (\n    <PlateElement {...props}>\n      <div className=\"h-[0.1px]\" />\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-node",
+        "title": "AI Leaf"
+      }
+    ],
+    "examples": [
+      "ai-demo",
+      "ai-pro"
+    ],
+    "label": "New"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tabbable-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/tabbable"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/tabbable-kit.tsx",
+      "content": "'use client';\n\nimport { TabbablePlugin } from '@platejs/tabbable/react';\nimport { KEYS } from 'platejs';\n\nexport const TabbableKit = TabbablePlugin.configure(({ editor }) => ({\n  node: {\n    isElement: true,\n  },\n  options: {\n    query: () => {\n      if (editor.api.isAt({ start: true }) || editor.api.isAt({ end: true }))\n        return false;\n\n      return !editor.api.some({\n        match: (n) =>\n          !!(\n            (n.type &&\n              [\n                KEYS.codeBlock,\n                KEYS.li,\n                KEYS.listTodoClassic,\n                KEYS.table,\n              ].includes(n.type as any)) ||\n            n.listStyleType\n          ),\n      });\n    },\n  },\n  override: {\n    enabled: {\n      indent: false,\n    },\n  },\n}));\n",
+      "type": "registry:component"
+    }
+  ]
+}

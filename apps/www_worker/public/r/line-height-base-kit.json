@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "line-height-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/basic-styles"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/line-height-base-kit.tsx",
+      "content": "import { BaseLineHeightPlugin } from '@platejs/basic-styles';\nimport { KEYS } from 'platejs';\n\nexport const BaseLineHeightKit = [\n  BaseLineHeightPlugin.configure({\n    inject: {\n      nodeProps: {\n        defaultNodeValue: 1.5,\n        validNodeValues: [1, 1.2, 1.5, 2, 3],\n      },\n      targetPlugins: [...KEYS.heading, KEYS.p],\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

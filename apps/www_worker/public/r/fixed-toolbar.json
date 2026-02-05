@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "fixed-toolbar",
+  "type": "registry:ui",
+  "title": "Fixed Toolbar",
+  "description": "A fixed toolbar that stays at the top of the editor.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar",
+    "https://platejs.org/r/tailwind-scrollbar-hide"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/fixed-toolbar.tsx",
+      "content": "'use client';\n\nimport { cn } from '@/lib/utils';\n\nimport { Toolbar } from './toolbar';\n\nexport function FixedToolbar(props: React.ComponentProps<typeof Toolbar>) {\n  return (\n    <Toolbar\n      {...props}\n      className={cn(\n        'scrollbar-hide sticky top-0 left-0 z-50 w-full justify-between overflow-x-auto rounded-t-lg border-b border-b-border bg-background/95 p-1 backdrop-blur-sm supports-backdrop-blur:bg-background/60',\n        props.className\n      )}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
+}

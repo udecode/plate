@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-uploadthing-api",
+  "type": "registry:file",
+  "dependencies": [
+    "uploadthing@7.7.4"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/uploadthing"
+  ],
+  "files": [
+    {
+      "path": "src/registry/app/api/uploadthing/route.ts",
+      "content": "import { createRouteHandler } from 'uploadthing/next';\n\nimport { ourFileRouter } from '@/registry/lib/uploadthing';\n\nexport const { GET, POST } = createRouteHandler({ router: ourFileRouter });\n",
+      "type": "registry:file",
+      "target": "app/api/uploadthing/route.ts"
+    }
+  ]
+}

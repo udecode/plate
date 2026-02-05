@@ -1,0 +1,23 @@
+{
+  "component": false,
+  "description": "API reference for platejs.",
+  "featured": false,
+  "published": true,
+  "title": "Plate",
+  "toc": true,
+  "body": {
+    "raw": "\n`platejs` contains common types and functions for Plate:\n\n- [Slate](/docs/api/slate)\n- [Plate Core](/docs/api/core)\n- [Plate Utils](/docs/api/utils)\n- [React Utils](/docs/api/react-utils)\n",
+    "code": "var Component=(()=>{var p=Object.create;var i=Object.defineProperty;var f=Object.getOwnPropertyDescriptor;var u=Object.getOwnPropertyNames;var m=Object.getPrototypeOf,x=Object.prototype.hasOwnProperty;var j=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),_=(n,e)=>{for(var r in e)i(n,r,{get:e[r],enumerable:!0})},o=(n,e,r,l)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let c of u(e))!x.call(n,c)&&c!==r&&i(n,c,{get:()=>e[c],enumerable:!(l=f(e,c))||l.enumerable});return n};var P=(n,e,r)=>(r=n!=null?p(m(n)):{},o(e||!n||!n.__esModule?i(r,\"default\",{value:n,enumerable:!0}):r,n)),C=n=>o(i({},\"__esModule\",{value:!0}),n);var s=j((D,a)=>{a.exports=_jsx_runtime});var g={};_(g,{default:()=>h,frontmatter:()=>M});var t=P(s()),M={title:\"Plate\",description:\"API reference for platejs.\"};function d(n){let e={a:\"a\",code:\"code\",li:\"li\",p:\"p\",ul:\"ul\",...n.components};return(0,t.jsxs)(t.Fragment,{children:[(0,t.jsxs)(e.p,{children:[(0,t.jsx)(e.code,{children:\"platejs\"}),\" contains common types and functions for Plate:\"]}),`\n`,(0,t.jsxs)(e.ul,{children:[`\n`,(0,t.jsx)(e.li,{children:(0,t.jsx)(e.a,{href:\"/docs/api/slate\",children:\"Slate\"})}),`\n`,(0,t.jsx)(e.li,{children:(0,t.jsx)(e.a,{href:\"/docs/api/core\",children:\"Plate Core\"})}),`\n`,(0,t.jsx)(e.li,{children:(0,t.jsx)(e.a,{href:\"/docs/api/utils\",children:\"Plate Utils\"})}),`\n`,(0,t.jsx)(e.li,{children:(0,t.jsx)(e.a,{href:\"/docs/api/react-utils\",children:\"React Utils\"})}),`\n`]})]})}function h(n={}){let{wrapper:e}=n.components||{};return e?(0,t.jsx)(e,{...n,children:(0,t.jsx)(d,{...n})}):d(n)}return C(g);})();\n;return Component;"
+  },
+  "_id": "docs/api/plate.mdx",
+  "_raw": {
+    "sourceFilePath": "docs/api/plate.mdx",
+    "sourceFileName": "plate.mdx",
+    "sourceFileDir": "docs/api",
+    "contentType": "mdx",
+    "flattenedPath": "docs/api/plate"
+  },
+  "type": "Doc",
+  "slug": "/docs/docs/api/plate",
+  "slugAsParams": "docs/api/plate"
+}

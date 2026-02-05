@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plate-ui",
+  "type": "registry:style",
+  "description": "Install Plate package and styles",
+  "devDependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/plate"
+  ],
+  "files": [],
+  "cssVars": {
+    "light": {
+      "brand": "oklch(0.623 0.214 259.815)"
+    },
+    "dark": {
+      "brand": "oklch(0.707 0.165 254.624)"
+    }
+  }
+}

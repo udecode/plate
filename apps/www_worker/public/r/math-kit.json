@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "math-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/math"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/math-base-kit",
+    "https://platejs.org/r/equation-toolbar-button",
+    "https://platejs.org/r/equation-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/math-kit.tsx",
+      "content": "'use client';\n\nimport { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';\n\nimport {\n  EquationElement,\n  InlineEquationElement,\n} from '@/registry/ui/equation-node';\n\nexport const MathKit = [\n  InlineEquationPlugin.withComponent(InlineEquationElement),\n  EquationPlugin.withComponent(EquationElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

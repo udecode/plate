@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mark-toolbar-button",
+  "type": "registry:ui",
+  "title": "Mark Toolbar Button",
+  "description": "A toolbar control for basic text formatting.",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/mark-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { useMarkToolbarButton, useMarkToolbarButtonState } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function MarkToolbarButton({\n  clear,\n  nodeType,\n  ...props\n}: React.ComponentProps<typeof ToolbarButton> & {\n  nodeType: string;\n  clear?: string[] | string;\n}) {\n  const state = useMarkToolbarButtonState({ clear, nodeType });\n  const { props: buttonProps } = useMarkToolbarButton(state);\n\n  return <ToolbarButton {...props} {...buttonProps} />;\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/basic-marks"
+      }
+    ],
+    "examples": [
+      "basic-marks-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

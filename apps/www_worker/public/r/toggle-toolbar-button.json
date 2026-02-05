@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "toggle-toolbar-button",
+  "type": "registry:ui",
+  "title": "Toggle Toolbar Button",
+  "description": "A toolbar button for expanding and collapsing blocks.",
+  "dependencies": [
+    "@platejs/toggle"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/toggle-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport {\n  useToggleToolbarButton,\n  useToggleToolbarButtonState,\n} from '@platejs/toggle/react';\nimport { ListCollapseIcon } from 'lucide-react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function ToggleToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const state = useToggleToolbarButtonState();\n  const { props: buttonProps } = useToggleToolbarButton(state);\n\n  return (\n    <ToolbarButton {...props} {...buttonProps} tooltip=\"Toggle\">\n      <ListCollapseIcon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/toggle"
+      }
+    ],
+    "examples": [
+      "toggle-demo"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-base-kit",
+  "type": "registry:component",
+  "registryDependencies": [
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/align-base-kit",
+    "https://platejs.org/r/basic-blocks-base-kit",
+    "https://platejs.org/r/basic-marks-base-kit",
+    "https://platejs.org/r/callout-base-kit",
+    "https://platejs.org/r/code-block-base-kit",
+    "https://platejs.org/r/code-drawing-base-kit",
+    "https://platejs.org/r/column-base-kit",
+    "https://platejs.org/r/comment-base-kit",
+    "https://platejs.org/r/date-base-kit",
+    "https://platejs.org/r/font-base-kit",
+    "https://platejs.org/r/line-height-base-kit",
+    "https://platejs.org/r/link-base-kit",
+    "https://platejs.org/r/list-base-kit",
+    "https://platejs.org/r/math-base-kit",
+    "https://platejs.org/r/media-base-kit",
+    "https://platejs.org/r/mention-base-kit",
+    "https://platejs.org/r/suggestion-base-kit",
+    "https://platejs.org/r/table-base-kit",
+    "https://platejs.org/r/toc-base-kit",
+    "https://platejs.org/r/toggle-base-kit",
+    "https://platejs.org/r/markdown-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/editor-base-kit.tsx",
+      "content": "import { BaseAlignKit } from './plugins/align-base-kit';\nimport { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';\nimport { BaseBasicMarksKit } from './plugins/basic-marks-base-kit';\nimport { BaseCalloutKit } from './plugins/callout-base-kit';\nimport { BaseCodeBlockKit } from './plugins/code-block-base-kit';\nimport { BaseColumnKit } from './plugins/column-base-kit';\nimport { BaseCommentKit } from './plugins/comment-base-kit';\nimport { BaseDateKit } from './plugins/date-base-kit';\nimport { BaseFontKit } from './plugins/font-base-kit';\nimport { BaseLineHeightKit } from './plugins/line-height-base-kit';\nimport { BaseLinkKit } from './plugins/link-base-kit';\nimport { BaseListKit } from './plugins/list-base-kit';\nimport { MarkdownKit } from './plugins/markdown-kit';\nimport { BaseMathKit } from './plugins/math-base-kit';\nimport { BaseMediaKit } from './plugins/media-base-kit';\nimport { BaseMentionKit } from './plugins/mention-base-kit';\nimport { BaseSuggestionKit } from './plugins/suggestion-base-kit';\nimport { BaseTableKit } from './plugins/table-base-kit';\nimport { BaseTocKit } from './plugins/toc-base-kit';\nimport { BaseToggleKit } from './plugins/toggle-base-kit';\n\nexport const BaseEditorKit = [\n  ...BaseBasicBlocksKit,\n  ...BaseCodeBlockKit,\n  ...BaseTableKit,\n  ...BaseToggleKit,\n  ...BaseTocKit,\n  ...BaseMediaKit,\n  ...BaseCalloutKit,\n  ...BaseColumnKit,\n  ...BaseMathKit,\n  ...BaseDateKit,\n  ...BaseLinkKit,\n  ...BaseMentionKit,\n  ...BaseBasicMarksKit,\n  ...BaseFontKit,\n  ...BaseListKit,\n  ...BaseAlignKit,\n  ...BaseLineHeightKit,\n  ...BaseCommentKit,\n  ...BaseSuggestionKit,\n  ...MarkdownKit,\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "editor-kit",
+  "type": "registry:component",
+  "registryDependencies": [
+    "https://platejs.org/r/editor-base-kit",
+    "https://platejs.org/r/ai-kit",
+    "https://platejs.org/r/align-kit",
+    "https://platejs.org/r/autoformat-kit",
+    "https://platejs.org/r/basic-nodes-kit",
+    "https://platejs.org/r/block-menu-kit",
+    "https://platejs.org/r/block-placeholder-kit",
+    "https://platejs.org/r/callout-kit",
+    "https://platejs.org/r/code-block-kit",
+    "https://platejs.org/r/code-drawing-kit",
+    "https://platejs.org/r/column-kit",
+    "https://platejs.org/r/comment-kit",
+    "https://platejs.org/r/cursor-overlay-kit",
+    "https://platejs.org/r/date-kit",
+    "https://platejs.org/r/discussion-kit",
+    "https://platejs.org/r/dnd-kit",
+    "https://platejs.org/r/docx-kit",
+    "https://platejs.org/r/emoji-kit",
+    "https://platejs.org/r/excalidraw-kit",
+    "https://platejs.org/r/exit-break-kit",
+    "https://platejs.org/r/fixed-toolbar-kit",
+    "https://platejs.org/r/floating-toolbar-kit",
+    "https://platejs.org/r/font-kit",
+    "https://platejs.org/r/line-height-kit",
+    "https://platejs.org/r/link-kit",
+    "https://platejs.org/r/list-kit",
+    "https://platejs.org/r/markdown-kit",
+    "https://platejs.org/r/math-kit",
+    "https://platejs.org/r/media-kit",
+    "https://platejs.org/r/mention-kit",
+    "https://platejs.org/r/slash-kit",
+    "https://platejs.org/r/suggestion-kit",
+    "https://platejs.org/r/table-kit",
+    "https://platejs.org/r/toc-kit",
+    "https://platejs.org/r/toggle-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/editor-kit.tsx",
+      "content": "'use client';\n\nimport { type Value, TrailingBlockPlugin } from 'platejs';\nimport { type TPlateEditor, useEditorRef } from 'platejs/react';\n\nimport { AIKit } from './plugins/ai-kit';\nimport { AlignKit } from './plugins/align-kit';\nimport { AutoformatKit } from './plugins/autoformat-kit';\nimport { BasicBlocksKit } from './plugins/basic-blocks-kit';\nimport { BasicMarksKit } from './plugins/basic-marks-kit';\nimport { BlockMenuKit } from './plugins/block-menu-kit';\nimport { BlockPlaceholderKit } from './plugins/block-placeholder-kit';\nimport { CalloutKit } from './plugins/callout-kit';\nimport { CodeBlockKit } from './plugins/code-block-kit';\nimport { CodeDrawingKit } from './plugins/code-drawing-kit';\nimport { ColumnKit } from './plugins/column-kit';\nimport { CommentKit } from './plugins/comment-kit';\nimport { CursorOverlayKit } from './plugins/cursor-overlay-kit';\nimport { DateKit } from './plugins/date-kit';\nimport { DiscussionKit } from './plugins/discussion-kit';\nimport { DndKit } from './plugins/dnd-kit';\nimport { DocxKit } from './plugins/docx-kit';\nimport { EmojiKit } from './plugins/emoji-kit';\nimport { ExitBreakKit } from './plugins/exit-break-kit';\nimport { FixedToolbarKit } from './plugins/fixed-toolbar-kit';\nimport { FloatingToolbarKit } from './plugins/floating-toolbar-kit';\nimport { FontKit } from './plugins/font-kit';\nimport { LineHeightKit } from './plugins/line-height-kit';\nimport { LinkKit } from './plugins/link-kit';\nimport { ListKit } from './plugins/list-kit';\nimport { MarkdownKit } from './plugins/markdown-kit';\nimport { MathKit } from './plugins/math-kit';\nimport { MediaKit } from './plugins/media-kit';\nimport { MentionKit } from './plugins/mention-kit';\nimport { SlashKit } from './plugins/slash-kit';\nimport { SuggestionKit } from './plugins/suggestion-kit';\nimport { TableKit } from './plugins/table-kit';\nimport { TocKit } from './plugins/toc-kit';\nimport { ToggleKit } from './plugins/toggle-kit';\n\nexport const EditorKit = [\n  ...AIKit,\n  ...BlockMenuKit,\n\n  // Elements\n  ...BasicBlocksKit,\n  ...CodeBlockKit,\n  ...CodeDrawingKit,\n  ...TableKit,\n  ...ToggleKit,\n  ...TocKit,\n  ...MediaKit,\n  ...CalloutKit,\n  ...ColumnKit,\n  ...MathKit,\n  ...DateKit,\n  ...LinkKit,\n  ...MentionKit,\n\n  // Marks\n  ...BasicMarksKit,\n  ...FontKit,\n\n  // Block Style\n  ...ListKit,\n  ...AlignKit,\n  ...LineHeightKit,\n\n  // Collaboration\n  ...DiscussionKit,\n  ...CommentKit,\n  ...SuggestionKit,\n\n  // Editing\n  ...SlashKit,\n  ...AutoformatKit,\n  ...CursorOverlayKit,\n  ...DndKit,\n  ...EmojiKit,\n  ...ExitBreakKit,\n  TrailingBlockPlugin,\n\n  // Parsers\n  ...DocxKit,\n  ...MarkdownKit,\n\n  // UI\n  ...BlockPlaceholderKit,\n  ...FixedToolbarKit,\n  ...FloatingToolbarKit,\n];\n\nexport type MyEditor = TPlateEditor<Value, (typeof EditorKit)[number]>;\n\nexport const useEditor = () => useEditorRef<MyEditor>();\n",
+      "type": "registry:component"
+    }
+  ]
+}

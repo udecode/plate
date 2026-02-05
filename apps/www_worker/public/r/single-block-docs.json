@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "single-block-docs",
+  "type": "registry:file",
+  "title": "Single Block",
+  "description": "Documentation for Single Block",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(functionality)/(utils)/single-block.mdx",
+      "content": "---\ntitle: Single Block\n---\n\n<ComponentPreview name=\"single-block-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- **SingleLinePlugin**: Restricts editor to a single line of text with all line breaks removed\n- **SingleBlockPlugin**: Restricts editor to a single block with line breaks converted to soft breaks\n- Prevents creation of multiple blocks through normalization\n- Filters out line break characters from pasted content\n- Suitable for titles, labels, comments, or constrained text inputs\n\n</PackageInfo>\n\n## Manual Usage\n\n<Steps>\n\n### Add Plugins\n\n```tsx\nimport { SingleLinePlugin, SingleBlockPlugin } from 'platejs';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    SingleLinePlugin, // For single-line text\n    // OR\n    SingleBlockPlugin, // For single-block text with soft breaks\n  ],\n});\n```\n\n</Steps>\n\n## Plugins\n\n### `SingleLinePlugin`\n\nPlugin that restricts editor content to a single line of text by removing all line breaks and merging multiple blocks.\n\n**Key behaviors:**\n- Prevents `insertBreak` and `insertSoftBreak` operations\n- Filters out line break characters\n- Merges multiple blocks into the first block without separators\n\n### `SingleBlockPlugin`\n\nPlugin that restricts editor content to a single block while preserving line breaks.\n\n**Key behaviors:**\n- Converts `insertBreak` to `insertSoftBreak`\n- Merges multiple blocks into the first block with `\\n` separators\n- Preserves existing line break characters in text content\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(functionality)/(utils)/single-block.mdx"
+    }
+  ]
+}

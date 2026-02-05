@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "date-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/date"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/date-base-kit",
+    "https://platejs.org/r/date-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/date-kit.tsx",
+      "content": "'use client';\n\nimport { DatePlugin } from '@platejs/date/react';\n\nimport { DateElement } from '@/registry/ui/date-node';\n\nexport const DateKit = [DatePlugin.withComponent(DateElement)];\n",
+      "type": "registry:component"
+    }
+  ]
+}

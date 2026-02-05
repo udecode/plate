@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-marks-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-node",
+    "https://platejs.org/r/highlight-node",
+    "https://platejs.org/r/kbd-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/basic-marks-base-kit.tsx",
+      "content": "import {\n  BaseBoldPlugin,\n  BaseCodePlugin,\n  BaseHighlightPlugin,\n  BaseItalicPlugin,\n  BaseKbdPlugin,\n  BaseStrikethroughPlugin,\n  BaseSubscriptPlugin,\n  BaseSuperscriptPlugin,\n  BaseUnderlinePlugin,\n} from '@platejs/basic-nodes';\n\nimport { CodeLeafStatic } from '@/registry/ui/code-node-static';\nimport { HighlightLeafStatic } from '@/registry/ui/highlight-node-static';\nimport { KbdLeafStatic } from '@/registry/ui/kbd-node-static';\n\nexport const BaseBasicMarksKit = [\n  BaseBoldPlugin,\n  BaseItalicPlugin,\n  BaseUnderlinePlugin,\n  BaseCodePlugin.withComponent(CodeLeafStatic),\n  BaseStrikethroughPlugin,\n  BaseSubscriptPlugin,\n  BaseSuperscriptPlugin,\n  BaseHighlightPlugin.withComponent(HighlightLeafStatic),\n  BaseKbdPlugin.withComponent(KbdLeafStatic),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

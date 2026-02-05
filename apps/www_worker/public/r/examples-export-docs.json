@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-export-docs",
+  "type": "registry:file",
+  "title": "Export",
+  "description": "Documentation for Export",
+  "files": [
+    {
+      "path": "../../docs/examples/export.mdx",
+      "content": "---\ntitle: Export\ndocs:\n  - route: https://pro.platejs.org/docs/examples/export\n    title: Plus\n---\n\n<ComponentPreview name=\"playground-demo\" id=\"basic-blocks\" />\n\n<PackageInfo>\n\n## Features\n\n- Export editor content to:\n- Client-side export with no server dependencies\n\n</PackageInfo>\n\n## Usage\n\nInstall the [Export Toolbar Button](/docs/components/export-toolbar-button) component.\n\n## Plate Plus\n\n- Server-side PDF export:\n  - High-quality PDF generation\n  - Custom fonts and styling\n  - Headers and footers\n  - Page numbers\n  - Font selectable\n- Advanced export options:\n  - Paper size selection\n  - Margin controls\n  - Orientation settings\n  - Compression level\n{/* - Enterprise-ready features: */}\n  {/* - Batch processing */}\n  {/* - Watermarking */}\n  {/* - Custom templates */}\n  {/* - Password protection */}\n\nTry it out with our server-side PDF export:\n\n<ComponentPreviewPro name=\"export-pro\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/export.mdx"
+    }
+  ]
+}

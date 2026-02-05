@@ -1,0 +1,39 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "mention-node",
+  "type": "registry:ui",
+  "title": "Mention Nodes",
+  "description": "A mention element with customizable prefix and label, powered by a combobox.",
+  "dependencies": [
+    "@platejs/mention"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/use-mounted",
+    "https://platejs.org/r/inline-combobox"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/mention-node.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { TComboboxInputElement, TMentionElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { getMentionOnSelectItem } from '@platejs/mention';\nimport { IS_APPLE, KEYS } from 'platejs';\nimport {\n  PlateElement,\n  useFocused,\n  useReadOnly,\n  useSelected,\n} from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\nimport { useMounted } from '@/registry/hooks/use-mounted';\n\nimport {\n  InlineCombobox,\n  InlineComboboxContent,\n  InlineComboboxEmpty,\n  InlineComboboxGroup,\n  InlineComboboxInput,\n  InlineComboboxItem,\n} from './inline-combobox';\n\nexport function MentionElement(\n  props: PlateElementProps<TMentionElement> & {\n    prefix?: string;\n  }\n) {\n  const element = props.element;\n\n  const selected = useSelected();\n  const focused = useFocused();\n  const mounted = useMounted();\n  const readOnly = useReadOnly();\n\n  return (\n    <PlateElement\n      {...props}\n      className={cn(\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',\n        !readOnly && 'cursor-pointer',\n        selected && focused && 'ring-2 ring-ring',\n        element.children[0][KEYS.bold] === true && 'font-bold',\n        element.children[0][KEYS.italic] === true && 'italic',\n        element.children[0][KEYS.underline] === true && 'underline'\n      )}\n      attributes={{\n        ...props.attributes,\n        contentEditable: false,\n        'data-slate-value': element.value,\n        draggable: true,\n      }}\n    >\n      {mounted && IS_APPLE ? (\n        // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490\n        <>\n          {props.children}\n          {props.prefix}\n          {element.value}\n        </>\n      ) : (\n        // Others like Android https://github.com/ianstormtaylor/slate/pull/5360\n        <>\n          {props.prefix}\n          {element.value}\n          {props.children}\n        </>\n      )}\n    </PlateElement>\n  );\n}\n\nconst onSelectItem = getMentionOnSelectItem();\n\nexport function MentionInputElement(\n  props: PlateElementProps<TComboboxInputElement>\n) {\n  const { editor, element } = props;\n  const [search, setSearch] = React.useState('');\n\n  return (\n    <PlateElement {...props} as=\"span\">\n      <InlineCombobox\n        value={search}\n        element={element}\n        setValue={setSearch}\n        showTrigger={false}\n        trigger=\"@\"\n      >\n        <span className=\"inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2\">\n          <InlineComboboxInput />\n        </span>\n\n        <InlineComboboxContent className=\"my-1.5\">\n          <InlineComboboxEmpty>No results</InlineComboboxEmpty>\n\n          <InlineComboboxGroup>\n            {MENTIONABLES.map((item) => (\n              <InlineComboboxItem\n                key={item.key}\n                value={item.text}\n                onClick={() => onSelectItem(editor, item, search)}\n              >\n                {item.text}\n              </InlineComboboxItem>\n            ))}\n          </InlineComboboxGroup>\n        </InlineComboboxContent>\n      </InlineCombobox>\n\n      {props.children}\n    </PlateElement>\n  );\n}\n\nconst MENTIONABLES = [\n  { key: '0', text: 'Aayla Secura' },\n  { key: '1', text: 'Adi Gallia' },\n  {\n    key: '2',\n    text: 'Admiral Dodd Rancit',\n  },\n  {\n    key: '3',\n    text: 'Admiral Firmus Piett',\n  },\n  {\n    key: '4',\n    text: 'Admiral Gial Ackbar',\n  },\n  { key: '5', text: 'Admiral Ozzel' },\n  { key: '6', text: 'Admiral Raddus' },\n  {\n    key: '7',\n    text: 'Admiral Terrinald Screed',\n  },\n  { key: '8', text: 'Admiral Trench' },\n  {\n    key: '9',\n    text: 'Admiral U.O. Statura',\n  },\n  { key: '10', text: 'Agen Kolar' },\n  { key: '11', text: 'Agent Kallus' },\n  {\n    key: '12',\n    text: 'Aiolin and Morit Astarte',\n  },\n  { key: '13', text: 'Aks Moe' },\n  { key: '14', text: 'Almec' },\n  { key: '15', text: 'Alton Kastle' },\n  { key: '16', text: 'Amee' },\n  { key: '17', text: 'AP-5' },\n  { key: '18', text: 'Armitage Hux' },\n  { key: '19', text: 'Artoo' },\n  { key: '20', text: 'Arvel Crynyd' },\n  { key: '21', text: 'Asajj Ventress' },\n  { key: '22', text: 'Aurra Sing' },\n  { key: '23', text: 'AZI-3' },\n  { key: '24', text: 'Bala-Tik' },\n  { key: '25', text: 'Barada' },\n  { key: '26', text: 'Bargwill Tomder' },\n  { key: '27', text: 'Baron Papanoida' },\n  { key: '28', text: 'Barriss Offee' },\n  { key: '29', text: 'Baze Malbus' },\n  { key: '30', text: 'Bazine Netal' },\n  { key: '31', text: 'BB-8' },\n  { key: '32', text: 'BB-9E' },\n  { key: '33', text: 'Ben Quadinaros' },\n  { key: '34', text: 'Berch Teller' },\n  { key: '35', text: 'Beru Lars' },\n  { key: '36', text: 'Bib Fortuna' },\n  {\n    key: '37',\n    text: 'Biggs Darklighter',\n  },\n  { key: '38', text: 'Black Krrsantan' },\n  { key: '39', text: 'Bo-Katan Kryze' },\n  { key: '40', text: 'Boba Fett' },\n  { key: '41', text: 'Bobbajo' },\n  { key: '42', text: 'Bodhi Rook' },\n  { key: '43', text: 'Borvo the Hutt' },\n  { key: '44', text: 'Boss Nass' },\n  { key: '45', text: 'Bossk' },\n  {\n    key: '46',\n    text: 'Breha Antilles-Organa',\n  },\n  { key: '47', text: 'Bren Derlin' },\n  { key: '48', text: 'Brendol Hux' },\n  { key: '49', text: 'BT-1' },\n];\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/mention-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TMentionElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { KEYS } from 'platejs';\nimport { SlateElement } from 'platejs/static';\n\nimport { cn } from '@/lib/utils';\n\nexport function MentionElementStatic(\n  props: SlateElementProps<TMentionElement> & {\n    prefix?: string;\n  }\n) {\n  const { prefix } = props;\n  const element = props.element;\n\n  return (\n    <SlateElement\n      {...props}\n      as=\"span\"\n      className={cn(\n        'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',\n        element.children[0][KEYS.bold] === true && 'font-bold',\n        element.children[0][KEYS.italic] === true && 'italic',\n        element.children[0][KEYS.underline] === true && 'underline'\n      )}\n      attributes={{\n        ...props.attributes,\n        'data-slate-value': element.value,\n      }}\n    >\n      {props.children}\n      {prefix}\n      {element.value}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/mention"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/mention-node"
+      }
+    ],
+    "examples": [
+      "mention-demo"
+    ]
+  }
+}

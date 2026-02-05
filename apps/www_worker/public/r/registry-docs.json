@@ -1,0 +1,1785 @@
+{
+  "homepage": "https://platejs.org",
+  "items": [
+    {
+      "description": "All documentation files for plate",
+      "files": [],
+      "name": "docs",
+      "registryDependencies": [
+        "https://platejs.org/r/controlled-docs",
+        "https://platejs.org/r/debugging-docs",
+        "https://platejs.org/r/editor-methods-docs",
+        "https://platejs.org/r/editor-docs",
+        "https://platejs.org/r/feature-kits-docs",
+        "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/playwright-docs",
+        "https://platejs.org/r/plugin-components-docs",
+        "https://platejs.org/r/plugin-context-docs",
+        "https://platejs.org/r/plugin-methods-docs",
+        "https://platejs.org/r/plugin-rules-docs",
+        "https://platejs.org/r/plugin-shortcuts-docs",
+        "https://platejs.org/r/plugin-docs",
+        "https://platejs.org/r/static-docs",
+        "https://platejs.org/r/troubleshooting-docs",
+        "https://platejs.org/r/typescript-docs",
+        "https://platejs.org/r/unit-testing-docs",
+        "https://platejs.org/r/ai-docs",
+        "https://platejs.org/r/copilot-docs",
+        "https://platejs.org/r/comment-docs",
+        "https://platejs.org/r/discussion-docs",
+        "https://platejs.org/r/suggestion-docs",
+        "https://platejs.org/r/yjs-docs",
+        "https://platejs.org/r/basic-blocks-docs",
+        "https://platejs.org/r/blockquote-docs",
+        "https://platejs.org/r/callout-docs",
+        "https://platejs.org/r/code-block-docs",
+        "https://platejs.org/r/code-drawing-docs",
+        "https://platejs.org/r/column-docs",
+        "https://platejs.org/r/date-docs",
+        "https://platejs.org/r/equation-docs",
+        "https://platejs.org/r/excalidraw-docs",
+        "https://platejs.org/r/heading-docs",
+        "https://platejs.org/r/horizontal-rule-docs",
+        "https://platejs.org/r/link-docs",
+        "https://platejs.org/r/list-classic-docs",
+        "https://platejs.org/r/media-docs",
+        "https://platejs.org/r/mention-docs",
+        "https://platejs.org/r/table-docs",
+        "https://platejs.org/r/toc-docs",
+        "https://platejs.org/r/toggle-docs",
+        "https://platejs.org/r/combobox-docs",
+        "https://platejs.org/r/emoji-docs",
+        "https://platejs.org/r/slash-command-docs",
+        "https://platejs.org/r/exit-break-docs",
+        "https://platejs.org/r/forced-layout-docs",
+        "https://platejs.org/r/single-block-docs",
+        "https://platejs.org/r/trailing-block-docs",
+        "https://platejs.org/r/autoformat-docs",
+        "https://platejs.org/r/block-menu-docs",
+        "https://platejs.org/r/block-placeholder-docs",
+        "https://platejs.org/r/block-selection-docs",
+        "https://platejs.org/r/caption-docs",
+        "https://platejs.org/r/cursor-overlay-docs",
+        "https://platejs.org/r/dnd-docs",
+        "https://platejs.org/r/find-replace-docs",
+        "https://platejs.org/r/multi-select-docs",
+        "https://platejs.org/r/tabbable-docs",
+        "https://platejs.org/r/toolbar-docs",
+        "https://platejs.org/r/basic-marks-docs",
+        "https://platejs.org/r/bold-docs",
+        "https://platejs.org/r/code-docs",
+        "https://platejs.org/r/highlight-docs",
+        "https://platejs.org/r/italic-docs",
+        "https://platejs.org/r/kbd-docs",
+        "https://platejs.org/r/strikethrough-docs",
+        "https://platejs.org/r/subscript-docs",
+        "https://platejs.org/r/superscript-docs",
+        "https://platejs.org/r/underline-docs",
+        "https://platejs.org/r/csv-docs",
+        "https://platejs.org/r/docx-io-docs",
+        "https://platejs.org/r/docx-docs",
+        "https://platejs.org/r/html-docs",
+        "https://platejs.org/r/markdown-docs",
+        "https://platejs.org/r/font-docs",
+        "https://platejs.org/r/indent-docs",
+        "https://platejs.org/r/line-height-docs",
+        "https://platejs.org/r/list-docs",
+        "https://platejs.org/r/text-align-docs",
+        "https://platejs.org/r/api-cn-docs",
+        "https://platejs.org/r/api-core-plate-components-docs",
+        "https://platejs.org/r/api-core-plate-controller-docs",
+        "https://platejs.org/r/api-core-plate-editor-docs",
+        "https://platejs.org/r/api-core-plate-plugin-docs",
+        "https://platejs.org/r/api-core-plate-store-docs",
+        "https://platejs.org/r/api-core-docs",
+        "https://platejs.org/r/api-floating-docs",
+        "https://platejs.org/r/api-plate-docs",
+        "https://platejs.org/r/api-react-utils-docs",
+        "https://platejs.org/r/api-resizable-docs",
+        "https://platejs.org/r/api-slate-editor-api-docs",
+        "https://platejs.org/r/api-slate-editor-transforms-docs",
+        "https://platejs.org/r/api-slate-element-docs",
+        "https://platejs.org/r/api-slate-location-ref-docs",
+        "https://platejs.org/r/api-slate-location-docs",
+        "https://platejs.org/r/api-slate-node-docs",
+        "https://platejs.org/r/api-slate-operation-docs",
+        "https://platejs.org/r/api-slate-path-docs",
+        "https://platejs.org/r/api-slate-point-docs",
+        "https://platejs.org/r/api-slate-range-docs",
+        "https://platejs.org/r/api-slate-text-docs",
+        "https://platejs.org/r/api-slate-docs",
+        "https://platejs.org/r/api-utils-docs",
+        "https://platejs.org/r/components-changelog-docs",
+        "https://platejs.org/r/examples-collaboration-example-docs",
+        "https://platejs.org/r/examples-editable-voids-docs",
+        "https://platejs.org/r/examples-export-docs",
+        "https://platejs.org/r/examples-hundreds-blocks-docs",
+        "https://platejs.org/r/examples-hundreds-editors-docs",
+        "https://platejs.org/r/examples-preview-markdown-docs",
+        "https://platejs.org/r/examples-version-history-docs",
+        "https://platejs.org/r/index-docs",
+        "https://platejs.org/r/installation-docs-docs",
+        "https://platejs.org/r/installation-manual-docs",
+        "https://platejs.org/r/installation-mcp-docs",
+        "https://platejs.org/r/installation-next-docs",
+        "https://platejs.org/r/installation-node-docs",
+        "https://platejs.org/r/installation-plate-ui-docs",
+        "https://platejs.org/r/installation-react-docs",
+        "https://platejs.org/r/installation-rsc-docs",
+        "https://platejs.org/r/installation-docs",
+        "https://platejs.org/r/migration-index-docs",
+        "https://platejs.org/r/migration-slate-to-plate-docs",
+        "https://platejs.org/r/migration-v48-docs"
+      ],
+      "title": "Documentation",
+      "type": "registry:file"
+    },
+    {
+      "dependencies": [
+        "@radix-ui/react-separator",
+        "@radix-ui/react-accordion",
+        "lucide-react",
+        "class-variance-authority",
+        "tailwind-merge",
+        "clsx"
+      ],
+      "description": "Fumadocs app for plate",
+      "files": [
+        {
+          "path": "src/registry/blocks/fumadocs/content/docs/index.mdx",
+          "target": "content/docs/index.mdx",
+          "type": "registry:file"
+        },
+        {
+          "path": "src/registry/blocks/fumadocs/fumadocs-mdx-components.tsx",
+          "target": "mdx-components.tsx",
+          "type": "registry:file"
+        },
+        {
+          "path": "src/registry/blocks/fumadocs/mdx-plate-components.tsx",
+          "target": "mdx-plate-components.tsx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "fumadocs",
+      "registryDependencies": [
+        "https://platejs.org/r/docs"
+      ],
+      "title": "Fumadocs app",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to control the editor value.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/controlled.mdx",
+          "target": "content/docs/plate/(guides)/controlled.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "controlled-docs",
+      "title": "Controlled Editor Value",
+      "type": "registry:file"
+    },
+    {
+      "description": "Debugging in Plate.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/debugging.mdx",
+          "target": "content/docs/plate/(guides)/debugging.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "debugging-docs",
+      "title": "Debugging",
+      "type": "registry:file"
+    },
+    {
+      "description": "Explore the various methods available for interacting with and customizing the Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/editor-methods.mdx",
+          "target": "content/docs/plate/(guides)/editor-methods.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "editor-methods-docs",
+      "title": "Editor Methods",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to configure and customize the Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/editor.mdx",
+          "target": "content/docs/plate/(guides)/editor.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "editor-docs",
+      "title": "Editor Configuration",
+      "type": "registry:file"
+    },
+    {
+      "description": "Understand how to use Feature Kits for rapid editor setup with pre-configured plugins and UI components.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/feature-kits.mdx",
+          "target": "content/docs/plate/(guides)/feature-kits.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "feature-kits-docs",
+      "title": "Feature Kits",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to integrate Plate editor with react-hook-form.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/form.mdx",
+          "target": "content/docs/plate/(guides)/form.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "form-docs",
+      "title": "Form",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to write Playwright tests that integrate with Plate.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/playwright.mdx",
+          "target": "content/docs/plate/(guides)/playwright.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "playwright-docs",
+      "title": "Playwright Testing",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to create and style custom components for Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-components.mdx",
+          "target": "content/docs/plate/(guides)/plugin-components.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-components-docs",
+      "title": "Plugin Components",
+      "type": "registry:file"
+    },
+    {
+      "description": "Understanding and utilizing the Plugin Context in Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-context.mdx",
+          "target": "content/docs/plate/(guides)/plugin-context.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-context-docs",
+      "title": "Plugin Context",
+      "type": "registry:file"
+    },
+    {
+      "description": "Explore the various methods available for extending Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-methods.mdx",
+          "target": "content/docs/plate/(guides)/plugin-methods.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-methods-docs",
+      "title": "Plugin Methods",
+      "type": "registry:file"
+    },
+    {
+      "description": "Configure common editing behaviors.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-rules.mdx",
+          "target": "content/docs/plate/(guides)/plugin-rules.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-rules-docs",
+      "title": "Plugin Rules",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to configure keyboard shortcuts.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin-shortcuts.mdx",
+          "target": "content/docs/plate/(guides)/plugin-shortcuts.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-shortcuts-docs",
+      "title": "Plugin Shortcuts",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to configure and customize Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/plugin.mdx",
+          "target": "content/docs/plate/(guides)/plugin.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "plugin-docs",
+      "title": "Plugin Configuration",
+      "type": "registry:file"
+    },
+    {
+      "description": "A minimal, memoized, read-only version of Plate with RSC/SSR support.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/static.mdx",
+          "target": "content/docs/plate/(guides)/static.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "static-docs",
+      "title": "Static Rendering",
+      "type": "registry:file"
+    },
+    {
+      "description": "Solutions for common issues when working with Plate.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/troubleshooting.mdx",
+          "target": "content/docs/plate/(guides)/troubleshooting.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "troubleshooting-docs",
+      "title": "Troubleshooting",
+      "type": "registry:file"
+    },
+    {
+      "description": "Configure TypeScript (tsconfig) for using Plate, including module resolution solutions.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/typescript.mdx",
+          "target": "content/docs/plate/(guides)/typescript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "typescript-docs",
+      "title": "TypeScript",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to unit test Plate editor and plugins.",
+      "files": [
+        {
+          "path": "../../docs/(guides)/unit-testing.mdx",
+          "target": "content/docs/plate/(guides)/unit-testing.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "unit-testing-docs",
+      "title": "Unit Testing Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "AI-powered writing assistance.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(ai)/ai.mdx",
+          "target": "content/docs/plate/(plugins)/(ai)/ai.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "ai-docs",
+      "title": "AI",
+      "type": "registry:file"
+    },
+    {
+      "description": "AI-powered text completion suggestions.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(ai)/copilot.mdx",
+          "target": "content/docs/plate/(plugins)/(ai)/copilot.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "copilot-docs",
+      "title": "Copilot",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Comment",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(collaboration)/comment.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/comment.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "comment-docs",
+      "title": "Comment",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Discussion",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(collaboration)/discussion.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/discussion.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "discussion-docs",
+      "title": "Discussion",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Suggestion",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(collaboration)/suggestion.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/suggestion.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "suggestion-docs",
+      "title": "Suggestion",
+      "type": "registry:file"
+    },
+    {
+      "description": "Real-time collaboration with Yjs",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(collaboration)/yjs.mdx",
+          "target": "content/docs/plate/(plugins)/(collaboration)/yjs.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "yjs-docs",
+      "title": "Collaboration",
+      "type": "registry:file"
+    },
+    {
+      "description": "Commonly used block elements for structuring content.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/basic-blocks.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/basic-blocks.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "basic-blocks-docs",
+      "title": "Basic Elements",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Blockquote",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/blockquote.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/blockquote.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "blockquote-docs",
+      "title": "Blockquote",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Callout",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/callout.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/callout.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "callout-docs",
+      "title": "Callout",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code Block",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/code-block.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/code-block.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-block-docs",
+      "title": "Code Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code Drawing",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/code-drawing.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/code-drawing.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-drawing-docs",
+      "title": "Code Drawing",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Column",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/column.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/column.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "column-docs",
+      "title": "Column",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Date",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/date.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/date.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "date-docs",
+      "title": "Date",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Equation",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/equation.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/equation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "equation-docs",
+      "title": "Equation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Excalidraw",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/excalidraw.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/excalidraw.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "excalidraw-docs",
+      "title": "Excalidraw",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Heading",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/heading.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/heading.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "heading-docs",
+      "title": "Heading",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Horizontal Rule",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/horizontal-rule.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/horizontal-rule.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "horizontal-rule-docs",
+      "title": "Horizontal Rule",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Link",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/link.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/link.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "link-docs",
+      "title": "Link",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for List Classic",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/list-classic.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/list-classic.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "list-classic-docs",
+      "title": "List Classic",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Media",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/media.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/media.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "media-docs",
+      "title": "Media",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Mention",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/mention.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/mention.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "mention-docs",
+      "title": "Mention",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Table",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/table.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/table.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "table-docs",
+      "title": "Table",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Table of Contents",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/toc.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/toc.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toc-docs",
+      "title": "Table of Contents",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Toggle",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/toggle.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/toggle.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toggle-docs",
+      "title": "Toggle",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Combobox",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(combobox)/combobox.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(combobox)/combobox.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "combobox-docs",
+      "title": "Combobox",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Emoji",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(combobox)/emoji.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(combobox)/emoji.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "emoji-docs",
+      "title": "Emoji",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Slash Command",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(combobox)/slash-command.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(combobox)/slash-command.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "slash-command-docs",
+      "title": "Slash Command",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Exit Break",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(utils)/exit-break.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/exit-break.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "exit-break-docs",
+      "title": "Exit Break",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Forced Layout",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(utils)/forced-layout.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/forced-layout.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "forced-layout-docs",
+      "title": "Forced Layout",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Single Block",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(utils)/single-block.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/single-block.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "single-block-docs",
+      "title": "Single Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Trailing Block",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/(utils)/trailing-block.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/(utils)/trailing-block.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "trailing-block-docs",
+      "title": "Trailing Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Automatic text formatting via shortcodes and markdown-like shortcuts.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/autoformat.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/autoformat.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "autoformat-docs",
+      "title": "Autoformat",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Block Menu",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/block-menu.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/block-menu.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-menu-docs",
+      "title": "Block Menu",
+      "type": "registry:file"
+    },
+    {
+      "description": "Show placeholder when a block is empty.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/block-placeholder.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/block-placeholder.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-placeholder-docs",
+      "title": "Block Placeholder",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Block Selection",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/block-selection.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/block-selection.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "block-selection-docs",
+      "title": "Block Selection",
+      "type": "registry:file"
+    },
+    {
+      "description": "Add captions to media elements like images, videos, and files.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/caption.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/caption.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "caption-docs",
+      "title": "Caption",
+      "type": "registry:file"
+    },
+    {
+      "description": "Visual feedback for selections and cursor positions when editor loses focus.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/cursor-overlay.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/cursor-overlay.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "cursor-overlay-docs",
+      "title": "Cursor Overlay",
+      "type": "registry:file"
+    },
+    {
+      "description": "Drag and drop blocks to reorganize content within the editor.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/dnd.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/dnd.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "dnd-docs",
+      "title": "Drag & Drop",
+      "type": "registry:file"
+    },
+    {
+      "description": "Search and locate specific text or blocks within your document.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/find-replace.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/find-replace.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "find-replace-docs",
+      "title": "Find",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Multi Select",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/multi-select.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/multi-select.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "multi-select-docs",
+      "title": "Multi Select",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Tabbable",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/tabbable.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/tabbable.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "tabbable-docs",
+      "title": "Tabbable",
+      "type": "registry:file"
+    },
+    {
+      "description": "Fixed and floating toolbars for your editor.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(functionality)/toolbar.mdx",
+          "target": "content/docs/plate/(plugins)/(functionality)/toolbar.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "toolbar-docs",
+      "title": "Toolbar",
+      "type": "registry:file"
+    },
+    {
+      "description": "Commonly used text styling features.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/basic-marks.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/basic-marks.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "basic-marks-docs",
+      "title": "Basic Marks",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Bold",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/bold.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/bold.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "bold-docs",
+      "title": "Bold",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/code.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/code.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-docs",
+      "title": "Code",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Highlight",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/highlight.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/highlight.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "highlight-docs",
+      "title": "Highlight",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Italic",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/italic.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/italic.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "italic-docs",
+      "title": "Italic",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Kbd",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/kbd.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/kbd.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "kbd-docs",
+      "title": "Kbd",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Strikethrough",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/strikethrough.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/strikethrough.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "strikethrough-docs",
+      "title": "Strikethrough",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Subscript",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/subscript.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/subscript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "subscript-docs",
+      "title": "Subscript",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Superscript",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/superscript.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/superscript.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "superscript-docs",
+      "title": "Superscript",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Underline",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(marks)/underline.mdx",
+          "target": "content/docs/plate/(plugins)/(marks)/underline.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "underline-docs",
+      "title": "Underline",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Serializing CSV",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/csv.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/csv.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "csv-docs",
+      "title": "Serializing CSV",
+      "type": "registry:file"
+    },
+    {
+      "description": "Import DOCX files and export Plate content to Word documents.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/docx-io.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/docx-io.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "docx-io-docs",
+      "title": "DOCX Import/Export",
+      "type": "registry:file"
+    },
+    {
+      "description": "Paste content from Microsoft Word with automatic formatting.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/docx.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/docx.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "docx-docs",
+      "title": "DOCX Paste",
+      "type": "registry:file"
+    },
+    {
+      "description": "Convert Plate content to HTML and vice-versa.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/html.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/html.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "html-docs",
+      "title": "HTML",
+      "type": "registry:file"
+    },
+    {
+      "description": "Convert Plate content to Markdown and vice-versa.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(serializing)/markdown.mdx",
+          "target": "content/docs/plate/(plugins)/(serializing)/markdown.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "markdown-docs",
+      "title": "Markdown",
+      "type": "registry:file"
+    },
+    {
+      "description": "Provide extended formatting options for document content.",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(styles)/font.mdx",
+          "target": "content/docs/plate/(plugins)/(styles)/font.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "font-docs",
+      "title": "Font",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Indent",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(styles)/indent.mdx",
+          "target": "content/docs/plate/(plugins)/(styles)/indent.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "indent-docs",
+      "title": "Indent",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Line Height",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(styles)/line-height.mdx",
+          "target": "content/docs/plate/(plugins)/(styles)/line-height.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "line-height-docs",
+      "title": "Line Height",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for List",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(styles)/list.mdx",
+          "target": "content/docs/plate/(plugins)/(styles)/list.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "list-docs",
+      "title": "List",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Text Align",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(styles)/text-align.mdx",
+          "target": "content/docs/plate/(plugins)/(styles)/text-align.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "text-align-docs",
+      "title": "Text Align",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/cn.",
+      "files": [
+        {
+          "path": "../../docs/api/cn.mdx",
+          "target": "content/docs/plate/api/cn.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-cn-docs",
+      "title": "cn",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate component.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-components.mdx",
+          "target": "content/docs/plate/api/core/plate-components.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-components-docs",
+      "title": "Plate Components",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for PlateController component.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-controller.mdx",
+          "target": "content/docs/plate/api/core/plate-controller.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-controller-docs",
+      "title": "Plate Controller",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate editor.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-editor.mdx",
+          "target": "content/docs/plate/api/core/plate-editor.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-editor-docs",
+      "title": "Plate Editor",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate plugins.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-plugin.mdx",
+          "target": "content/docs/plate/api/core/plate-plugin.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-plugin-docs",
+      "title": "Plate Plugin",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for Plate store.",
+      "files": [
+        {
+          "path": "../../docs/api/core/plate-store.mdx",
+          "target": "content/docs/plate/api/core/plate-store.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-plate-store-docs",
+      "title": "Store",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @platejs/core.",
+      "files": [
+        {
+          "path": "../../docs/api/core.mdx",
+          "target": "content/docs/plate/api/core.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-core-docs",
+      "title": "Plate Core",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for floating UI components and hooks.",
+      "files": [
+        {
+          "path": "../../docs/api/floating.mdx",
+          "target": "content/docs/plate/api/floating.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-floating-docs",
+      "title": "Floating",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for platejs.",
+      "files": [
+        {
+          "path": "../../docs/api/plate.mdx",
+          "target": "content/docs/plate/api/plate.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-plate-docs",
+      "title": "Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @udecode/react-utils.",
+      "files": [
+        {
+          "path": "../../docs/api/react-utils.mdx",
+          "target": "content/docs/plate/api/react-utils.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-react-utils-docs",
+      "title": "React Utils",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @platejs/resizable.",
+      "files": [
+        {
+          "path": "../../docs/api/resizable.mdx",
+          "target": "content/docs/plate/api/resizable.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-resizable-docs",
+      "title": "Resizable",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for the Editor API.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/editor-api.mdx",
+          "target": "content/docs/plate/api/slate/editor-api.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-editor-api-docs",
+      "title": "Editor API",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for editor transformation operations in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/editor-transforms.mdx",
+          "target": "content/docs/plate/api/slate/editor-transforms.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-editor-transforms-docs",
+      "title": "Editor Transforms",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for elements in Slate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/element.mdx",
+          "target": "content/docs/plate/api/slate/element.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-element-docs",
+      "title": "Element",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for location references in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/location-ref.mdx",
+          "target": "content/docs/plate/api/slate/location-ref.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-location-ref-docs",
+      "title": "Location Ref",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for locations in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/location.mdx",
+          "target": "content/docs/plate/api/slate/location.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-location-docs",
+      "title": "Location",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for nodes in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/node.mdx",
+          "target": "content/docs/plate/api/slate/node.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-node-docs",
+      "title": "Node",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for operations in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/operation.mdx",
+          "target": "content/docs/plate/api/slate/operation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-operation-docs",
+      "title": "Operation",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for paths in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/path.mdx",
+          "target": "content/docs/plate/api/slate/path.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-path-docs",
+      "title": "Path",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for points in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/point.mdx",
+          "target": "content/docs/plate/api/slate/point.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-point-docs",
+      "title": "Point",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for ranges in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/range.mdx",
+          "target": "content/docs/plate/api/slate/range.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-range-docs",
+      "title": "Range",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for text nodes in Plate.",
+      "files": [
+        {
+          "path": "../../docs/api/slate/text.mdx",
+          "target": "content/docs/plate/api/slate/text.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-text-docs",
+      "title": "Text",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @platejs/slate",
+      "files": [
+        {
+          "path": "../../docs/api/slate.mdx",
+          "target": "content/docs/plate/api/slate.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-slate-docs",
+      "title": "Slate",
+      "type": "registry:file"
+    },
+    {
+      "description": "API reference for @platejs/utils.",
+      "files": [
+        {
+          "path": "../../docs/api/utils.mdx",
+          "target": "content/docs/plate/api/utils.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "api-utils-docs",
+      "title": "Plate Utils",
+      "type": "registry:file"
+    },
+    {
+      "description": "Latest component updates and announcements.",
+      "files": [
+        {
+          "path": "../../docs/components/changelog.mdx",
+          "target": "content/docs/plate/components/changelog.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "components-changelog-docs",
+      "title": "Changelog",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Collaboration Demo",
+      "files": [
+        {
+          "path": "../../docs/examples/collaboration-example.mdx",
+          "target": "content/docs/plate/examples/collaboration-example.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-collaboration-example-docs",
+      "title": "Collaboration Demo",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Editable Voids",
+      "files": [
+        {
+          "path": "../../docs/examples/editable-voids.mdx",
+          "target": "content/docs/plate/examples/editable-voids.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-editable-voids-docs",
+      "title": "Editable Voids",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Export",
+      "files": [
+        {
+          "path": "../../docs/examples/export.mdx",
+          "target": "content/docs/plate/examples/export.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-export-docs",
+      "title": "Export",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Hundreds Blocks",
+      "files": [
+        {
+          "path": "../../docs/examples/hundreds-blocks.mdx",
+          "target": "content/docs/plate/examples/hundreds-blocks.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-hundreds-blocks-docs",
+      "title": "Hundreds Blocks",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Hundreds Editors",
+      "files": [
+        {
+          "path": "../../docs/examples/hundreds-editors.mdx",
+          "target": "content/docs/plate/examples/hundreds-editors.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-hundreds-editors-docs",
+      "title": "Hundreds Editors",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Preview Markdown",
+      "files": [
+        {
+          "path": "../../docs/examples/preview-markdown.mdx",
+          "target": "content/docs/plate/examples/preview-markdown.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-preview-markdown-docs",
+      "title": "Preview Markdown",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Version History",
+      "files": [
+        {
+          "path": "../../docs/examples/version-history.mdx",
+          "target": "content/docs/plate/examples/version-history.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "examples-version-history-docs",
+      "title": "Version History",
+      "type": "registry:file"
+    },
+    {
+      "description": "Rich-text editor framework with AI, MCP, and shadcn/ui",
+      "files": [
+        {
+          "path": "../../docs/index.mdx",
+          "target": "content/docs/plate/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "index-docs",
+      "title": "Introduction",
+      "type": "registry:file"
+    },
+    {
+      "description": "Set up Plate's documentation locally for version-controlled, AI-enhanced development.",
+      "files": [
+        {
+          "path": "../../docs/installation/docs.mdx",
+          "target": "content/docs/plate/installation/docs.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-docs-docs",
+      "title": "Local Docs",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate in your React project without relying on UI component libraries.",
+      "files": [
+        {
+          "path": "../../docs/installation/manual.mdx",
+          "target": "content/docs/plate/installation/manual.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-manual-docs",
+      "title": "Manual Installation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Use the Model Context Protocol with Plate.",
+      "files": [
+        {
+          "path": "../../docs/installation/mcp.mdx",
+          "target": "content/docs/plate/installation/mcp.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-mcp-docs",
+      "title": "MCP Server",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate UI for Next.js",
+      "files": [
+        {
+          "path": "../../docs/installation/next.mdx",
+          "target": "content/docs/plate/installation/next.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-next-docs",
+      "title": "Next.js",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate for Node.js",
+      "files": [
+        {
+          "path": "../../docs/installation/node.mdx",
+          "target": "content/docs/plate/installation/node.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-node-docs",
+      "title": "Node.js",
+      "type": "registry:file"
+    },
+    {
+      "description": "How to set up Plate UI in your project.",
+      "files": [
+        {
+          "path": "../../docs/installation/plate-ui.mdx",
+          "target": "content/docs/plate/installation/plate-ui.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-plate-ui-docs",
+      "title": "Plate UI Installation",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate UI for React",
+      "files": [
+        {
+          "path": "../../docs/installation/react.mdx",
+          "target": "content/docs/plate/installation/react.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-react-docs",
+      "title": "React",
+      "type": "registry:file"
+    },
+    {
+      "description": "Install and configure Plate for React Server Components",
+      "files": [
+        {
+          "path": "../../docs/installation/rsc.mdx",
+          "target": "content/docs/plate/installation/rsc.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-rsc-docs",
+      "title": "RSC",
+      "type": "registry:file"
+    },
+    {
+      "description": "Choose your path to integrate the Plate rich-text editor framework into your React project.",
+      "files": [
+        {
+          "path": "../../docs/installation.mdx",
+          "target": "content/docs/plate/installation.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "installation-docs",
+      "title": "Getting Started",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Major Releases",
+      "files": [
+        {
+          "path": "../../docs/migration/index.mdx",
+          "target": "content/docs/plate/migration/index.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-index-docs",
+      "title": "Major Releases",
+      "type": "registry:file"
+    },
+    {
+      "description": "Learn how to migrate from Slate to Plate.",
+      "files": [
+        {
+          "path": "../../docs/migration/slate-to-plate.mdx",
+          "target": "content/docs/plate/migration/slate-to-plate.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-slate-to-plate-docs",
+      "title": "Migrating from Slate to Plate",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Major Releases",
+      "files": [
+        {
+          "path": "../../docs/migration/v48.mdx",
+          "target": "content/docs/plate/migration/v48.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "migration-v48-docs",
+      "title": "Major Releases",
+      "type": "registry:file"
+    }
+  ],
+  "name": "plate-docs"
+}

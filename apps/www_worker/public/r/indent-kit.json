@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "indent-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/indent"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/indent-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/indent-kit.tsx",
+      "content": "'use client';\n\nimport { IndentPlugin } from '@platejs/indent/react';\nimport { KEYS } from 'platejs';\n\nexport const IndentKit = [\n  IndentPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n        KEYS.img,\n      ],\n    },\n    options: {\n      offset: 24,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

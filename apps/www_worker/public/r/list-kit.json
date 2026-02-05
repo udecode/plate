@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "list-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/list"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/list-base-kit",
+    "https://platejs.org/r/block-list",
+    "https://platejs.org/r/list-toolbar-button",
+    "https://platejs.org/r/indent-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/list-kit.tsx",
+      "content": "'use client';\n\nimport { ListPlugin } from '@platejs/list/react';\nimport { KEYS } from 'platejs';\n\nimport { IndentKit } from '@/registry/components/editor/plugins/indent-kit';\nimport { BlockList } from '@/registry/ui/block-list';\n\nexport const ListKit = [\n  ...IndentKit,\n  ListPlugin.configure({\n    inject: {\n      targetPlugins: [\n        ...KEYS.heading,\n        KEYS.p,\n        KEYS.blockquote,\n        KEYS.codeBlock,\n        KEYS.toggle,\n        KEYS.img,\n      ],\n    },\n    render: {\n      belowNodes: BlockList,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

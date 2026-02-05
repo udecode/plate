@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-selection",
+  "type": "registry:ui",
+  "title": "Block Selection",
+  "description": "A visual overlay for selected blocks.",
+  "dependencies": [
+    "@platejs/selection"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/block-selection.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { DndPlugin } from '@platejs/dnd';\nimport { useBlockSelected } from '@platejs/selection/react';\nimport { cva } from 'class-variance-authority';\nimport { type PlateElementProps, usePluginOption } from 'platejs/react';\n\nexport const blockSelectionVariants = cva(\n  'pointer-events-none absolute inset-0 z-1 bg-brand/[.13] transition-opacity',\n  {\n    defaultVariants: {\n      active: true,\n    },\n    variants: {\n      active: {\n        false: 'opacity-0',\n        true: 'opacity-100',\n      },\n    },\n  }\n);\n\nexport function BlockSelection(props: PlateElementProps) {\n  const isBlockSelected = useBlockSelected();\n  const isDragging = usePluginOption(DndPlugin, 'isDragging');\n\n  if (\n    !isBlockSelected ||\n    props.plugin.key === 'tr' ||\n    props.plugin.key === 'table'\n  )\n    return null;\n\n  return (\n    <div\n      className={blockSelectionVariants({\n        active: isBlockSelected && !isDragging,\n      })}\n      data-slot=\"block-selection\"\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/block-selection"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/block-selection"
+      }
+    ],
+    "examples": [
+      "block-selection-demo",
+      "block-selection-pro"
+    ]
+  }
+}

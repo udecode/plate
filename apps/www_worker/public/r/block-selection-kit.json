@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "block-selection-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/selection"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/block-selection"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/block-selection-kit.tsx",
+      "content": "'use client';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport { BlockSelectionPlugin } from '@platejs/selection/react';\nimport { getPluginTypes, isHotkey, KEYS } from 'platejs';\n\nimport { BlockSelection } from '@/registry/ui/block-selection';\n\nexport const BlockSelectionKit = [\n  BlockSelectionPlugin.configure(({ editor }) => ({\n    options: {\n      enableContextMenu: true,\n      isSelectable: (element) =>\n        !getPluginTypes(editor, [KEYS.column, KEYS.codeLine, KEYS.td]).includes(\n          element.type\n        ),\n      onKeyDownSelecting: (editor, e) => {\n        if (isHotkey('mod+j')(e)) {\n          editor.getApi(AIChatPlugin).aiChat.show();\n        }\n      },\n    },\n    render: {\n      belowRootNodes: (props) => {\n        if (!props.attributes.className?.includes('slate-selectable'))\n          return null;\n\n        return <BlockSelection {...(props as any)} />;\n      },\n    },\n  })),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

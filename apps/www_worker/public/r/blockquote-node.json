@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "blockquote-node",
+  "type": "registry:ui",
+  "title": "Blockquote Element",
+  "description": "A quote component for block quotes.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/blockquote-node.tsx",
+      "content": "'use client';\n\nimport { type PlateElementProps, PlateElement } from 'platejs/react';\n\nexport function BlockquoteElement(props: PlateElementProps) {\n  return (\n    <PlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/blockquote-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport { type SlateElementProps, SlateElement } from 'platejs/static';\n\nexport function BlockquoteElementStatic(props: SlateElementProps) {\n  return (\n    <SlateElement\n      as=\"blockquote\"\n      className=\"my-1 border-l-2 pl-6 italic\"\n      {...props}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/blockquote"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/blockquote-node"
+      }
+    ],
+    "examples": [
+      "basic-blocks-demo",
+      "basic-nodes-pro"
+    ]
+  }
+}

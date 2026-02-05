@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "multiple-editors-demo",
+  "type": "registry:example",
+  "dependencies": [
+    "@platejs/basic-nodes",
+    "@platejs/basic-nodes",
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "separator",
+    "https://platejs.org/r/basic-nodes-kit",
+    "https://platejs.org/r/media-kit",
+    "https://platejs.org/r/editor",
+    "https://platejs.org/r/fixed-toolbar",
+    "https://platejs.org/r/turn-into-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/examples/multiple-editors-demo.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Plate, usePlateEditor } from 'platejs/react';\n\nimport { Separator } from '@/components/ui/separator';\nimport { BasicNodesKit } from '@/registry/components/editor/plugins/basic-nodes-kit';\nimport { MediaKit } from '@/registry/components/editor/plugins/media-kit';\nimport { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';\nimport { basicMarksValue } from '@/registry/examples/values/basic-marks-value';\nimport { imageValue } from '@/registry/examples/values/media-value';\nimport { Editor, EditorContainer } from '@/registry/ui/editor';\nimport { FixedToolbar } from '@/registry/ui/fixed-toolbar';\nimport { TurnIntoToolbarButton } from '@/registry/ui/turn-into-toolbar-button';\n\nexport default function MultipleEditorsDemo() {\n  const editor = usePlateEditor({\n    id: 'editor1',\n    plugins: BasicNodesKit,\n    value: basicBlocksValue,\n  });\n\n  const editorMarks = usePlateEditor({\n    id: 'marks',\n    plugins: BasicNodesKit,\n    value: basicMarksValue,\n  });\n\n  const editorImage = usePlateEditor({\n    id: 'image',\n    plugins: [...BasicNodesKit, ...MediaKit],\n    value: imageValue,\n  });\n\n  return (\n    <Plate editor={editor}>\n      <Plate editor={editorMarks}>\n        <Plate editor={editorImage}>\n          <FixedToolbar>\n            <TurnIntoToolbarButton />\n          </FixedToolbar>\n\n          <div>\n            <EditorContainer>\n              <Editor />\n            </EditorContainer>\n            <Separator />\n            <EditorContainer>\n              <Editor id=\"marks\" />\n            </EditorContainer>\n            <Separator />\n            <EditorContainer>\n              <Editor id=\"image\" />\n            </EditorContainer>\n          </div>\n        </Plate>\n      </Plate>\n    </Plate>\n  );\n}\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/basic-blocks-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\nimport { KEYS } from 'platejs';\n\njsx;\n\nexport const basicBlocksValue: any = (\n  <fragment>\n    <hh1>Heading 1</hh1>\n    <hp>\n      This is a top-level heading, typically used for main titles and major\n      section headers.\n    </hp>\n    <hh2>Heading 2</hh2>\n    <hp>\n      Secondary headings help organize content into clear sections and\n      subsections.\n    </hp>\n    <hh3>Heading 3</hh3>\n    <hp>\n      Third-level headings provide further content structure and hierarchy.\n    </hp>\n    <hblockquote>\n      \"Blockquotes are perfect for highlighting important information, quotes\n      from external sources, or emphasizing key points in your content.\"\n    </hblockquote>\n    <hp>\n      Use headings to create a clear document structure that helps readers\n      navigate your content effectively. Combine them with blockquotes to\n      emphasize important information.\n    </hp>\n    <element type={KEYS.hr}>\n      <htext />\n    </element>\n    <hp>\n      Horizontal rules help visually separate different sections of your\n      content, creating clear breaks between topics or ideas.\n    </hp>\n  </fragment>\n);\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/basic-marks-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const basicMarksValue: any = (\n  <fragment>\n    <hh2>Text Formatting</hh2>\n    <hp>\n      Add style and emphasis to your text using various formatting options.\n    </hp>\n    <hp>\n      Make text <htext bold>bold</htext>, <htext italic>italic</htext>,{' '}\n      <htext underline>underlined</htext>, or apply a{' '}\n      <htext bold italic underline>\n        combination\n      </htext>{' '}\n      of these styles for emphasis.\n    </hp>\n    <hp>\n      Add <htext strikethrough>strikethrough</htext> to indicate deleted\n      content, use <htext code>inline code</htext> for technical terms, or{' '}\n      <htext highlight>highlight</htext> important information.\n    </hp>\n    <hp>\n      Format mathematical expressions with <htext subscript>subscript</htext>{' '}\n      and <htext superscript>superscript</htext> text.\n    </hp>\n    <hp>\n      Show keyboard shortcuts like <htext kbd>⌘ + B</htext> for bold or{' '}\n      <htext kbd>⌘ + I</htext> for italic formatting.\n    </hp>\n  </fragment>\n);\n",
+      "type": "registry:example"
+    },
+    {
+      "path": "src/registry/examples/values/media-value.tsx",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test-utils';\n\njsx;\n\nexport const imageValue: any = (\n  <fragment>\n    <hh2>Image</hh2>\n    <hp>Add images by either uploading them or providing the image URL:</hp>\n    <himg\n      align=\"center\"\n      caption={[{ children: [{ text: 'Image caption' }] }]}\n      url=\"https://images.unsplash.com/photo-1712688930249-98e1963af7bd?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D\"\n      width=\"55%\"\n    >\n      <htext />\n    </himg>\n    <hp>Customize image captions and resize images.</hp>\n  </fragment>\n);\n\nexport const mediaPlaceholderValue: any = (\n  <fragment>\n    <hh2>Upload</hh2>\n    <hp>\n      Our editor supports various media types for upload, including images,\n      videos, audio, and files.\n    </hp>\n    <hfile\n      name=\"sample.pdf\"\n      align=\"center\"\n      url=\"https://s26.q4cdn.com/900411403/files/doc_downloads/test.pdf\"\n      width=\"80%\"\n      isUpload\n    >\n      <htext />\n    </hfile>\n    <hp indent={1} listStyleType=\"disc\">\n      Real-time upload status and progress tracking\n    </hp>\n    <haudio\n      align=\"center\"\n      url=\"https://samplelib.com/lib/preview/mp3/sample-3s.mp3\"\n      width=\"80%\"\n    >\n      <htext />\n    </haudio>\n    <hp indent={1} listStyleType=\"disc\">\n      Configurable file size limits and batch upload settings\n    </hp>\n    <hvideo\n      align=\"center\"\n      url=\"https://videos.pexels.com/video-files/6769791/6769791-uhd_2560_1440_24fps.mp4\"\n      width=\"80%\"\n      isUpload\n    >\n      <htext />\n    </hvideo>\n    <hp indent={1} listStyleType=\"disc\">\n      Clear error messages for any upload issues\n    </hp>\n    <hp indent={1} listStyleType=\"disc\">\n      Try it now - drag an image from your desktop or click the upload button in\n      the toolbar\n    </hp>\n  </fragment>\n);\n\nexport const mediaValue: any = (\n  <fragment>\n    {imageValue}\n    {mediaPlaceholderValue}\n\n    <hh2>Embed</hh2>\n    <hp>Embed various types of content, such as videos and tweets:</hp>\n    <hmediaembed\n      align=\"center\"\n      url=\"https://www.youtube.com/watch?v=MyiBAziEWUA\"\n    >\n      <htext />\n    </hmediaembed>\n    {/* BUG */}\n    {/* <hmediaembed\n      align=\"center\"\n      url=\"https://twitter.com/zbeyens/status/1677214892212776960\"\n    >\n      <htext />\n    </hmediaembed> */}\n  </fragment>\n);\n",
+      "type": "registry:example"
+    }
+  ]
+}

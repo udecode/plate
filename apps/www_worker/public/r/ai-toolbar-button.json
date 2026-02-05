@@ -1,0 +1,37 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "ai-toolbar-button",
+  "type": "registry:ui",
+  "title": "AI Toolbar Button",
+  "description": "A toolbar button for accessing AI features.",
+  "dependencies": [
+    "@platejs/ai"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/ai-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport { useEditorPlugin } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function AIToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const { api } = useEditorPlugin(AIChatPlugin);\n\n  return (\n    <ToolbarButton\n      {...props}\n      onClick={() => {\n        api.aiChat.show();\n      }}\n      onMouseDown={(e) => {\n        e.preventDefault();\n      }}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/ai",
+        "title": "AI"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/ai-toolbar-button"
+      }
+    ],
+    "examples": [
+      "ai-demo",
+      "floating-toolbar-demo",
+      "ai-pro"
+    ],
+    "label": "New"
+  }
+}

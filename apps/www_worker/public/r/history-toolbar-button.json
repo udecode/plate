@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "history-toolbar-button",
+  "type": "registry:ui",
+  "title": "History Toolbar Button",
+  "description": "Toolbar buttons for undo and redo operations.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/history-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { Redo2Icon, Undo2Icon } from 'lucide-react';\nimport { useEditorRef, useEditorSelector } from 'platejs/react';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function RedoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditorRef();\n  const disabled = useEditorSelector(\n    (editor) => editor.history.redos.length === 0,\n    []\n  );\n\n  return (\n    <ToolbarButton\n      {...props}\n      disabled={disabled}\n      onClick={() => editor.redo()}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Redo\"\n    >\n      <Redo2Icon />\n    </ToolbarButton>\n  );\n}\n\nexport function UndoToolbarButton(\n  props: React.ComponentProps<typeof ToolbarButton>\n) {\n  const editor = useEditorRef();\n  const disabled = useEditorSelector(\n    (editor) => editor.history.undos.length === 0,\n    []\n  );\n\n  return (\n    <ToolbarButton\n      {...props}\n      disabled={disabled}\n      onClick={() => editor.undo()}\n      onMouseDown={(e) => e.preventDefault()}\n      tooltip=\"Undo\"\n    >\n      <Undo2Icon />\n    </ToolbarButton>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "https://docs.slatejs.org/libraries/slate-history",
+        "title": "Slate History"
+      }
+    ],
+    "examples": [
+      "basic-nodes-demo"
+    ]
+  }
+}

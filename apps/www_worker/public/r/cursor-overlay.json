@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "cursor-overlay",
+  "type": "registry:ui",
+  "title": "Cursor Overlay",
+  "description": "A visual overlay for cursors and selections.",
+  "dependencies": [
+    "@platejs/selection"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/cursor-overlay.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport { AIChatPlugin } from '@platejs/ai/react';\nimport {\n  type CursorData,\n  type CursorOverlayState,\n  useCursorOverlay,\n} from '@platejs/selection/react';\nimport { getTableGridAbove } from '@platejs/table';\nimport { RangeApi } from 'platejs';\nimport { useEditorRef, usePluginOption } from 'platejs/react';\n\nimport { cn } from '@/lib/utils';\n\nexport function CursorOverlay() {\n  const { cursors } = useCursorOverlay();\n\n  return (\n    <>\n      {cursors.map((cursor) => (\n        <Cursor key={cursor.id} {...cursor} />\n      ))}\n    </>\n  );\n}\n\nfunction Cursor({\n  id,\n  caretPosition,\n  data,\n  selection,\n  selectionRects,\n}: CursorOverlayState<CursorData>) {\n  const editor = useEditorRef();\n  const streaming = usePluginOption(AIChatPlugin, 'streaming');\n  const { style, selectionStyle = style } = data ?? ({} as CursorData);\n  const isCursor = RangeApi.isCollapsed(selection);\n\n  if (streaming) return null;\n\n  // Skip overlay for multi-cell table selection (table has its own selection UI)\n  if (id === 'selection' && selection) {\n    const cellEntries = getTableGridAbove(editor, {\n      at: selection,\n      format: 'cell',\n    });\n\n    if (cellEntries.length > 1) {\n      return null;\n    }\n  }\n\n  return (\n    <>\n      {selectionRects.map((position, i) => (\n        <div\n          key={i}\n          className={cn(\n            'pointer-events-none absolute z-10',\n            id === 'selection' && 'bg-brand/25',\n            id === 'selection' && isCursor && 'bg-primary'\n          )}\n          style={{\n            ...selectionStyle,\n            ...position,\n          }}\n        />\n      ))}\n      {caretPosition && (\n        <div\n          className={cn(\n            'pointer-events-none absolute z-10 w-0.5',\n            id === 'drag' && 'w-px bg-brand'\n          )}\n          style={{ ...caretPosition, ...style }}\n        />\n      )}\n    </>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/cursor-overlay"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/cursor-overlay"
+      }
+    ],
+    "examples": [
+      "ai-demo"
+    ]
+  }
+}

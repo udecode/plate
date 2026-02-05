@@ -1,0 +1,38 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "date-node",
+  "type": "registry:ui",
+  "title": "Date Element",
+  "description": "A date field component with calendar picker.",
+  "dependencies": [
+    "@platejs/date"
+  ],
+  "registryDependencies": [
+    "calendar"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/date-node.tsx",
+      "content": "'use client';\n\nimport type { TDateElement } from 'platejs';\nimport type { PlateElementProps } from 'platejs/react';\n\nimport { PlateElement, useReadOnly } from 'platejs/react';\n\nimport { Calendar } from '@/components/ui/calendar';\nimport {\n  Popover,\n  PopoverContent,\n  PopoverTrigger,\n} from '@/components/ui/popover';\nimport { cn } from '@/lib/utils';\n\nexport function DateElement(props: PlateElementProps<TDateElement>) {\n  const { editor, element } = props;\n\n  const readOnly = useReadOnly();\n\n  const trigger = (\n    <span\n      className={cn(\n        'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground'\n      )}\n      contentEditable={false}\n      draggable\n    >\n      {element.date ? (\n        (() => {\n          const today = new Date();\n          const elementDate = new Date(element.date);\n          const isToday =\n            elementDate.getDate() === today.getDate() &&\n            elementDate.getMonth() === today.getMonth() &&\n            elementDate.getFullYear() === today.getFullYear();\n\n          const isYesterday =\n            new Date(today.setDate(today.getDate() - 1)).toDateString() ===\n            elementDate.toDateString();\n          const isTomorrow =\n            new Date(today.setDate(today.getDate() + 2)).toDateString() ===\n            elementDate.toDateString();\n\n          if (isToday) return 'Today';\n          if (isYesterday) return 'Yesterday';\n          if (isTomorrow) return 'Tomorrow';\n\n          return elementDate.toLocaleDateString(undefined, {\n            day: 'numeric',\n            month: 'long',\n            year: 'numeric',\n          });\n        })()\n      ) : (\n        <span>Pick a date</span>\n      )}\n    </span>\n  );\n\n  if (readOnly) {\n    return trigger;\n  }\n\n  return (\n    <PlateElement\n      {...props}\n      className=\"inline-block\"\n      attributes={{\n        ...props.attributes,\n        contentEditable: false,\n      }}\n    >\n      <Popover>\n        <PopoverTrigger asChild>{trigger}</PopoverTrigger>\n        <PopoverContent className=\"w-auto p-0\">\n          <Calendar\n            selected={new Date(element.date as string)}\n            onSelect={(date) => {\n              if (!date) return;\n\n              editor.tf.setNodes(\n                { date: date.toDateString() },\n                { at: element }\n              );\n            }}\n            mode=\"single\"\n            initialFocus\n          />\n        </PopoverContent>\n      </Popover>\n      {props.children}\n    </PlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    },
+    {
+      "path": "src/registry/ui/date-node-static.tsx",
+      "content": "import * as React from 'react';\n\nimport type { TDateElement } from 'platejs';\nimport type { SlateElementProps } from 'platejs/static';\n\nimport { SlateElement } from 'platejs/static';\n\nexport function DateElementStatic(props: SlateElementProps<TDateElement>) {\n  const { element } = props;\n\n  return (\n    <SlateElement as=\"span\" className=\"inline-block\" {...props}>\n      <span className=\"w-fit rounded-sm bg-muted px-1 text-muted-foreground\">\n        {element.date ? (\n          (() => {\n            const today = new Date();\n            const elementDate = new Date(element.date);\n            const isToday =\n              elementDate.getDate() === today.getDate() &&\n              elementDate.getMonth() === today.getMonth() &&\n              elementDate.getFullYear() === today.getFullYear();\n\n            const isYesterday =\n              new Date(today.setDate(today.getDate() - 1)).toDateString() ===\n              elementDate.toDateString();\n            const isTomorrow =\n              new Date(today.setDate(today.getDate() + 2)).toDateString() ===\n              elementDate.toDateString();\n\n            if (isToday) return 'Today';\n            if (isYesterday) return 'Yesterday';\n            if (isTomorrow) return 'Tomorrow';\n\n            return elementDate.toLocaleDateString(undefined, {\n              day: 'numeric',\n              month: 'long',\n              year: 'numeric',\n            });\n          })()\n        ) : (\n          <span>Pick a date</span>\n        )}\n      </span>\n      {props.children}\n    </SlateElement>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/date"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/date-node"
+      }
+    ],
+    "examples": [
+      "date-demo"
+    ]
+  }
+}

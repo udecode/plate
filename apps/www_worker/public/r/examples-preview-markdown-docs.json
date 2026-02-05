@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "examples-preview-markdown-docs",
+  "type": "registry:file",
+  "title": "Preview Markdown",
+  "description": "Documentation for Preview Markdown",
+  "files": [
+    {
+      "path": "../../docs/examples/preview-markdown.mdx",
+      "content": "---\ntitle: Preview Markdown\n---\n\n<ComponentPreview name=\"preview-markdown-demo\" />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/examples/preview-markdown.mdx"
+    }
+  ]
+}

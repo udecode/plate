@@ -1,0 +1,31 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "line-height-toolbar-button",
+  "type": "registry:ui",
+  "title": "Line Height Toolbar Button",
+  "description": "A menu for controlling text line spacing.",
+  "dependencies": [
+    "@platejs/basic-styles"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/toolbar",
+    "dropdown-menu"
+  ],
+  "files": [
+    {
+      "path": "src/registry/ui/line-height-toolbar-button.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';\n\nimport { LineHeightPlugin } from '@platejs/basic-styles/react';\nimport { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';\nimport { CheckIcon, WrapText } from 'lucide-react';\nimport { useEditorRef, useSelectionFragmentProp } from 'platejs/react';\n\nimport {\n  DropdownMenu,\n  DropdownMenuContent,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuTrigger,\n} from '@/components/ui/dropdown-menu';\n\nimport { ToolbarButton } from './toolbar';\n\nexport function LineHeightToolbarButton(props: DropdownMenuProps) {\n  const editor = useEditorRef();\n  const { defaultNodeValue, validNodeValues: values = [] } =\n    editor.getInjectProps(LineHeightPlugin);\n\n  const value = useSelectionFragmentProp({\n    defaultValue: defaultNodeValue,\n    getProp: (node) => node.lineHeight,\n  });\n\n  const [open, setOpen] = React.useState(false);\n\n  return (\n    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>\n      <DropdownMenuTrigger asChild>\n        <ToolbarButton pressed={open} tooltip=\"Line height\" isDropdown>\n          <WrapText />\n        </ToolbarButton>\n      </DropdownMenuTrigger>\n\n      <DropdownMenuContent className=\"min-w-0\" align=\"start\">\n        <DropdownMenuRadioGroup\n          value={value}\n          onValueChange={(newValue) => {\n            editor\n              .getTransforms(LineHeightPlugin)\n              .lineHeight.setNodes(Number(newValue));\n            editor.tf.focus();\n          }}\n        >\n          {values.map((value) => (\n            <DropdownMenuRadioItem\n              key={value}\n              className=\"min-w-[180px] pl-2 *:first:[span]:hidden\"\n              value={value}\n            >\n              <span className=\"pointer-events-none absolute right-2 flex size-3.5 items-center justify-center\">\n                <DropdownMenuItemIndicator>\n                  <CheckIcon />\n                </DropdownMenuItemIndicator>\n              </span>\n              {value}\n            </DropdownMenuRadioItem>\n          ))}\n        </DropdownMenuRadioGroup>\n      </DropdownMenuContent>\n    </DropdownMenu>\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/line-height"
+      }
+    ],
+    "examples": [
+      "line-height-demo"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "resize-handle",
+  "type": "registry:ui",
+  "title": "Resize Handle",
+  "description": "A resizable wrapper with resize handles.",
+  "dependencies": [
+    "@platejs/resizable"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "src/registry/ui/resize-handle.tsx",
+      "content": "'use client';\n\nimport * as React from 'react';\n\nimport type { VariantProps } from 'class-variance-authority';\n\nimport {\n  type ResizeHandle as ResizeHandlePrimitive,\n  Resizable as ResizablePrimitive,\n  useResizeHandle,\n  useResizeHandleState,\n} from '@platejs/resizable';\nimport { cva } from 'class-variance-authority';\n\nimport { cn } from '@/lib/utils';\n\nexport const mediaResizeHandleVariants = cva(\n  cn(\n    'top-0 flex w-6 select-none flex-col justify-center',\n    \"after:flex after:h-16 after:w-[3px] after:rounded-[6px] after:bg-ring after:opacity-0 after:content-['_'] group-hover:after:opacity-100\"\n  ),\n  {\n    variants: {\n      direction: {\n        left: '-left-3 -ml-3 pl-3',\n        right: '-right-3 -mr-3 items-end pr-3',\n      },\n    },\n  }\n);\n\nconst resizeHandleVariants = cva('absolute z-40', {\n  variants: {\n    direction: {\n      bottom: 'w-full cursor-row-resize',\n      left: 'h-full cursor-col-resize',\n      right: 'h-full cursor-col-resize',\n      top: 'w-full cursor-row-resize',\n    },\n  },\n});\n\nexport function ResizeHandle({\n  className,\n  options,\n  ...props\n}: React.ComponentProps<typeof ResizeHandlePrimitive> &\n  VariantProps<typeof resizeHandleVariants>) {\n  const state = useResizeHandleState(options ?? {});\n  const resizeHandle = useResizeHandle(state);\n\n  if (state.readOnly) return null;\n\n  return (\n    <div\n      className={cn(\n        resizeHandleVariants({ direction: options?.direction }),\n        className\n      )}\n      data-resizing={state.isResizing}\n      {...resizeHandle.props}\n      {...props}\n    />\n  );\n}\n\nconst resizableVariants = cva('', {\n  variants: {\n    align: {\n      center: 'mx-auto',\n      left: 'mr-auto',\n      right: 'ml-auto',\n    },\n  },\n});\n\nexport function Resizable({\n  align,\n  className,\n  ...props\n}: React.ComponentProps<typeof ResizablePrimitive> &\n  VariantProps<typeof resizableVariants>) {\n  return (\n    <ResizablePrimitive\n      {...props}\n      className={cn(resizableVariants({ align }), className)}\n    />\n  );\n}\n",
+      "type": "registry:ui"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/api/resizable"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/resizable"
+      }
+    ],
+    "examples": [
+      "media-demo",
+      "media-pro"
+    ]
+  }
+}

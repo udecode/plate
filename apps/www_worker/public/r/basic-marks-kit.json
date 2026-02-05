@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "basic-marks-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/basic-nodes"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/basic-marks-base-kit",
+    "https://platejs.org/r/code-node",
+    "https://platejs.org/r/highlight-node",
+    "https://platejs.org/r/kbd-node",
+    "https://platejs.org/r/mark-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/basic-marks-kit.tsx",
+      "content": "'use client';\n\nimport {\n  BoldPlugin,\n  CodePlugin,\n  HighlightPlugin,\n  ItalicPlugin,\n  KbdPlugin,\n  StrikethroughPlugin,\n  SubscriptPlugin,\n  SuperscriptPlugin,\n  UnderlinePlugin,\n} from '@platejs/basic-nodes/react';\n\nimport { CodeLeaf } from '@/registry/ui/code-node';\nimport { HighlightLeaf } from '@/registry/ui/highlight-node';\nimport { KbdLeaf } from '@/registry/ui/kbd-node';\n\nexport const BasicMarksKit = [\n  BoldPlugin,\n  ItalicPlugin,\n  UnderlinePlugin,\n  CodePlugin.configure({\n    node: { component: CodeLeaf },\n    shortcuts: { toggle: { keys: 'mod+e' } },\n  }),\n  StrikethroughPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+shift+x' } },\n  }),\n  SubscriptPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+comma' } },\n  }),\n  SuperscriptPlugin.configure({\n    shortcuts: { toggle: { keys: 'mod+period' } },\n  }),\n  HighlightPlugin.configure({\n    node: { component: HighlightLeaf },\n    shortcuts: { toggle: { keys: 'mod+shift+h' } },\n  }),\n  KbdPlugin.withComponent(KbdLeaf),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

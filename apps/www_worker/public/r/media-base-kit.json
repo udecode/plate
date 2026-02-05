@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "media-base-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/media"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/media-audio-node",
+    "https://platejs.org/r/media-file-node",
+    "https://platejs.org/r/media-image-node",
+    "https://platejs.org/r/media-video-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/media-base-kit.tsx",
+      "content": "import { BaseCaptionPlugin } from '@platejs/caption';\nimport {\n  BaseAudioPlugin,\n  BaseFilePlugin,\n  BaseImagePlugin,\n  BaseMediaEmbedPlugin,\n  BasePlaceholderPlugin,\n  BaseVideoPlugin,\n} from '@platejs/media';\nimport { KEYS } from 'platejs';\n\nimport { AudioElementStatic } from '@/registry/ui/media-audio-node-static';\nimport { FileElementStatic } from '@/registry/ui/media-file-node-static';\nimport { ImageElementStatic } from '@/registry/ui/media-image-node-static';\nimport { VideoElementStatic } from '@/registry/ui/media-video-node-static';\n\nexport const BaseMediaKit = [\n  BaseImagePlugin.withComponent(ImageElementStatic),\n  BaseVideoPlugin.withComponent(VideoElementStatic),\n  BaseAudioPlugin.withComponent(AudioElementStatic),\n  BaseFilePlugin.withComponent(FileElementStatic),\n  BaseCaptionPlugin.configure({\n    options: {\n      query: {\n        allow: [KEYS.img, KEYS.video, KEYS.audio, KEYS.file, KEYS.mediaEmbed],\n      },\n    },\n  }),\n  BaseMediaEmbedPlugin,\n  BasePlaceholderPlugin,\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

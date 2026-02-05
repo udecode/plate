@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "bold-docs",
+  "type": "registry:file",
+  "title": "Bold",
+  "description": "Documentation for Bold",
+  "files": [
+    {
+      "path": "../../docs/(plugins)/(marks)/bold.mdx",
+      "content": "---\ntitle: Bold\ndocs:\n  - route: /docs/components/mark-toolbar-button\n    title: Mark Toolbar Button\n---\n\n<ComponentPreview name=\"basic-marks-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- Apply bold formatting to emphasize important text\n- Keyboard shortcut support for quick formatting (`Cmd + B`)\n- Renders as `<strong>` HTML element by default\n\n</PackageInfo>\n\n## Kit Usage\n\n<Steps>\n\n### Installation\n\nThe fastest way to add the bold plugin is with the `BasicMarksKit`, which includes pre-configured `BoldPlugin` along with other basic marks and their [Plate UI](/docs/installation/plate-ui) components.\n\n<ComponentSource name=\"basic-marks-kit\" />\n\n### Add Kit\n\nAdd the kit to your plugins:\n\n```tsx\nimport { createPlateEditor } from 'platejs/react';\nimport { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    ...BasicMarksKit,\n  ],\n});\n```\n\n</Steps>\n\n## Manual Usage\n\n<Steps>\n\n### Installation\n\n```bash\nnpm install @platejs/basic-nodes\n```\n\n### Add Plugin\n\nInclude `BoldPlugin` in your Plate plugins array when creating the editor.\n\n```tsx\nimport { BoldPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    BoldPlugin,\n  ],\n});\n```\n\n### Configure Plugin\n\nYou can configure the `BoldPlugin` with custom keyboard shortcuts.\n\n```tsx\nimport { BoldPlugin } from '@platejs/basic-nodes/react';\nimport { createPlateEditor } from 'platejs/react';\n\nconst editor = createPlateEditor({\n  plugins: [\n    // ...otherPlugins,\n    BoldPlugin.configure({\n      shortcuts: { toggle: 'mod+b' },\n    }),\n  ],\n});\n```\n\n- `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle bold formatting.\n\n### Add Toolbar Button\n\nYou can add [`MarkToolbarButton`](/docs/components/mark-toolbar-button) to your [Toolbar](/docs/toolbar) to toggle bold formatting.\n\n</Steps>\n\n## Plugins\n\n### `BoldPlugin`\n\nPlugin for bold text formatting. Renders as `<strong>` HTML element by default.\n\n## Transforms\n\n### `tf.bold.toggle`\n\nToggles the bold formatting for the selected text.\n\nDefault Shortcut: `Cmd + B`\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/(plugins)/(marks)/bold.mdx"
+    }
+  ]
+}

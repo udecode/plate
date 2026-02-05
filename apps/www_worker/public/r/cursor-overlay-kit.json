@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "cursor-overlay-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/selection"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/cursor-overlay"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/cursor-overlay-kit.tsx",
+      "content": "'use client';\n\nimport { CursorOverlayPlugin } from '@platejs/selection/react';\n\nimport { CursorOverlay } from '@/registry/ui/cursor-overlay';\n\nexport const CursorOverlayKit = [\n  CursorOverlayPlugin.configure({\n    render: {\n      afterEditable: () => <CursorOverlay />,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

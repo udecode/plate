@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "comment-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/comment"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/comment-base-kit",
+    "https://platejs.org/r/comment-node",
+    "https://platejs.org/r/comment-toolbar-button",
+    "https://platejs.org/r/discussion-kit"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/comment-kit.tsx",
+      "content": "'use client';\n\nimport type { ExtendConfig, Path } from 'platejs';\n\nimport {\n  type BaseCommentConfig,\n  BaseCommentPlugin,\n  getDraftCommentKey,\n} from '@platejs/comment';\nimport { isSlateString } from 'platejs';\nimport { toTPlatePlugin } from 'platejs/react';\n\nimport { CommentLeaf } from '@/registry/ui/comment-node';\n\ntype CommentConfig = ExtendConfig<\n  BaseCommentConfig,\n  {\n    activeId: string | null;\n    commentingBlock: Path | null;\n    hoverId: string | null;\n    uniquePathMap: Map<string, Path>;\n  }\n>;\n\nexport const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {\n  handlers: {\n    onClick: ({ api, event, setOption, type }) => {\n      let leaf = event.target as HTMLElement;\n      let isSet = false;\n\n      const unsetActiveSuggestion = () => {\n        setOption('activeId', null);\n        isSet = true;\n      };\n\n      if (!isSlateString(leaf)) unsetActiveSuggestion();\n\n      while (leaf.parentElement) {\n        if (leaf.classList.contains(`slate-${type}`)) {\n          const commentsEntry = api.comment!.node();\n\n          if (!commentsEntry) {\n            unsetActiveSuggestion();\n\n            break;\n          }\n\n          const id = api.comment!.nodeId(commentsEntry[0]);\n\n          setOption('activeId', id ?? null);\n          isSet = true;\n\n          break;\n        }\n\n        leaf = leaf.parentElement;\n      }\n\n      if (!isSet) unsetActiveSuggestion();\n    },\n  },\n  options: {\n    activeId: null,\n    commentingBlock: null,\n    hoverId: null,\n    uniquePathMap: new Map(),\n  },\n})\n  .extendTransforms(\n    ({\n      editor,\n      setOption,\n      tf: {\n        comment: { setDraft },\n      },\n    }) => ({\n      setDraft: () => {\n        if (editor.api.isCollapsed()) {\n          editor.tf.select(editor.api.block()![1]);\n        }\n\n        setDraft();\n\n        editor.tf.collapse();\n        setOption('activeId', getDraftCommentKey());\n        setOption('commentingBlock', editor.selection!.focus.path.slice(0, 1));\n      },\n    })\n  )\n  .configure({\n    node: { component: CommentLeaf },\n    shortcuts: {\n      setDraft: { keys: 'mod+shift+m' },\n    },\n  });\n\nexport const CommentKit = [commentPlugin];\n",
+      "type": "registry:component"
+    }
+  ]
+}

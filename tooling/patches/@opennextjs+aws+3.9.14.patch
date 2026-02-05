@@ -1,0 +1,56 @@
+diff --git a/node_modules/@opennextjs/aws/dist/build/helper.js b/node_modules/@opennextjs/aws/dist/build/helper.js
+index b7b43ae..b934afd 100644
+--- a/node_modules/@opennextjs/aws/dist/build/helper.js
++++ b/node_modules/@opennextjs/aws/dist/build/helper.js
+@@ -6,6 +6,13 @@ import { build as buildAsync, buildSync } from "esbuild";
+ import logger from "../logger.js";
+ const require = createRequire(import.meta.url);
+ const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
++const defaultLoaders = {
++    ".woff": "file",
++    ".woff2": "file",
++    ".ttf": "file",
++    ".otf": "file",
++    ".eot": "file",
++};
+ export function normalizeOptions(config, distDir, tempBuildDir) {
+     const appPath = path.join(process.cwd(), config.appPath || ".");
+     const buildOutputPath = path.join(process.cwd(), config.buildOutputPath || ".");
+@@ -81,6 +88,10 @@ function findNextPackageJsonPath(appPath, root) {
+ }
+ export function esbuildSync(esbuildOptions, options) {
+     const { openNextVersion, debug, minify } = options;
++    const loader = {
++        ...defaultLoaders,
++        ...(esbuildOptions.loader ?? {}),
++    };
+     const result = buildSync({
+         target: "esnext",
+         format: "esm",
+@@ -91,6 +102,7 @@ export function esbuildSync(esbuildOptions, options) {
+         sourcemap: debug ? "inline" : false,
+         sourcesContent: false,
+         ...esbuildOptions,
++        loader,
+         external: ["./open-next.config.mjs", ...(esbuildOptions.external ?? [])],
+         banner: {
+             ...esbuildOptions.banner,
+@@ -108,6 +120,10 @@ export function esbuildSync(esbuildOptions, options) {
+ }
+ export async function esbuildAsync(esbuildOptions, options) {
+     const { openNextVersion, debug, minify } = options;
++    const loader = {
++        ...defaultLoaders,
++        ...(esbuildOptions.loader ?? {}),
++    };
+     // Dump ESBuild build metadata to file in debug mode
+     const metafile = debug && esbuildOptions.outfile !== undefined;
+     const result = await buildAsync({
+@@ -121,6 +137,7 @@ export async function esbuildAsync(esbuildOptions, options) {
+         sourcemap: debug ? "inline" : false,
+         sourcesContent: false,
+         ...esbuildOptions,
++        loader,
+         external: [
+             ...(esbuildOptions.external ?? []),
+             "next",

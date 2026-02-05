@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "exit-break-kit",
+  "type": "registry:component",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/exit-break-kit.tsx",
+      "content": "'use client';\n\nimport { ExitBreakPlugin } from 'platejs';\n\nexport const ExitBreakKit = [\n  ExitBreakPlugin.configure({\n    shortcuts: {\n      insert: { keys: 'mod+enter' },\n      insertBefore: { keys: 'mod+shift+enter' },\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

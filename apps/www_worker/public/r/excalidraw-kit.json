@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "excalidraw-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/excalidraw",
+    "@excalidraw/excalidraw"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/excalidraw-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/excalidraw-kit.tsx",
+      "content": "'use client';\n\nimport { ExcalidrawPlugin } from '@platejs/excalidraw/react';\n\nimport { ExcalidrawElement } from '@/registry/ui/excalidraw-node';\n\nexport const ExcalidrawKit = [\n  ExcalidrawPlugin.withComponent(ExcalidrawElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

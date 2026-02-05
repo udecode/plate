@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/link"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/link-base-kit",
+    "https://platejs.org/r/link-node",
+    "https://platejs.org/r/link-toolbar",
+    "https://platejs.org/r/link-toolbar-button"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/link-kit.tsx",
+      "content": "'use client';\n\nimport { LinkPlugin } from '@platejs/link/react';\n\nimport { LinkElement } from '@/registry/ui/link-node';\nimport { LinkFloatingToolbar } from '@/registry/ui/link-toolbar';\n\nexport const LinkKit = [\n  LinkPlugin.configure({\n    render: {\n      node: LinkElement,\n      afterEditable: () => <LinkFloatingToolbar />,\n    },\n  }),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}
