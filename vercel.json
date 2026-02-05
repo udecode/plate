@@ -1,4 +1,4 @@
 {
   "installCommand": "yarn install",
-  "buildCommand": "yarn workspace www build"
+  "buildCommand": "yarn turbo build --filter=./apps/www"
 }
