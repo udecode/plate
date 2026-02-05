@@ -1,4 +1,4 @@
 {
   "installCommand": "yarn install",
-  "buildCommand": "yarn turbo build --filter=./apps/www"
+  "buildCommand": "TURBO_CONCURRENCY=1 yarn turbo build --filter=./apps/www"
 }
