@@ -86,6 +86,8 @@
     "@changesets/cli": "2.29.7",
     "@changesets/get-github-info": "0.6.0",
     "@happy-dom/global-registrator": "20.0.10",
+    "@opennextjs/aws": "3.9.14",
+    "@opennextjs/cloudflare": "1.16.2",
     "@playwright/test": "1.53.0",
     "@roarr/cli": "5.12.4",
     "@rollup/plugin-babel": "6.1.0",
