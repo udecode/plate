@@ -3,17 +3,17 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
-import { allDocs } from 'contentlayer/generated';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
-import { ComponentInstallation } from '@/components/component-installation';
-import { ComponentPreview } from '@/components/component-preview';
+import { ClientComponentInstallation } from '@/components/client-component-installation';
+import { ClientComponentPreview } from '@/components/client-component-preview';
 import { Mdx } from '@/components/mdx-components';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
+import { fetchDocData } from '@/lib/docs-data';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -34,18 +34,13 @@ type DocPageProps = {
   }>;
 };
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
   const slug = slugParam?.join('/') || '';
 
-  // Look for Chinese version with .cn.mdx
-  const cnDoc = allDocs.find(
-    (doc) =>
-      doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
-      doc._raw.sourceFileName?.endsWith('.cn.mdx')
-  );
+  const cnDoc = await fetchDocData(`docs/${slug || 'index'}.cn`);
 
   if (cnDoc) {
     const path = slugParam?.join('/') || '';
@@ -55,7 +50,7 @@ async function getDocFromParams({ params }: DocPageProps) {
 
   // Fallback to English doc if no Chinese version exists
   const englishSlug = `docs${slug ? `/${slug}` : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === englishSlug);
+  const doc = await fetchDocData(englishSlug);
 
   if (!doc) {
     return null;
@@ -134,18 +129,6 @@ export async function generateMetadata({
 }
 
 const registryNames = new Set(registry.items.map((item) => item.name));
-const CN_SUFFIX_REGEX = /\.cn$/;
-
-export function generateStaticParams() {
-  // Generate params for CN docs - both .cn.mdx files and fallback to English
-  const cnDocs = allDocs
-    .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-    .map((doc) => ({
-      slug: doc.slugAsParams.replace(CN_SUFFIX_REGEX, '').split('/').slice(1),
-    }));
-
-  return cnDocs;
-}
 
 export default async function CNDocPage(props: DocPageProps) {
   const params = await props.params;
@@ -215,7 +198,7 @@ export default async function CNDocPage(props: DocPageProps) {
         }}
       >
         {category === 'component' ? (
-          <ComponentInstallation
+          <ClientComponentInstallation
             name={file.name}
             dependencies={dependencies}
             examples={componentExamples?.filter(Boolean) as any}
@@ -225,7 +208,7 @@ export default async function CNDocPage(props: DocPageProps) {
             usage={file.meta?.usage}
           />
         ) : (
-          <ComponentPreview
+          <ClientComponentPreview
             name={file.name}
             dependencies={dependencies}
             highlightedFiles={highlightedFiles}

@@ -1,10 +1,8 @@
-import { Suspense } from 'react';
-
 import type { Metadata } from 'next';
 
 import { siteConfig } from '@/config/site';
 import { cn } from '@/lib/utils';
-import PlaygroundDemo from '@/registry/examples/playground-demo';
+import { ClientPlaygroundDemo } from '@/components/client-playground-demo';
 
 const title = 'Playground';
 const description = `npx shadcn@latest add ${siteConfig.registryUrl}editor-ai`;
@@ -42,9 +40,7 @@ export default function PlaygroundPage() {
       className={cn('themes-wrapper bg-background', block.container?.className)}
     >
       {/* <BlockWrapper block={block}> */}
-      <Suspense fallback={null}>
-        <PlaygroundDemo className="h-dvh" />
-      </Suspense>
+      <ClientPlaygroundDemo className="h-dvh" />
       {/* {chunks?.map((chunk, index) => (
           <BlockChunk
             key={chunk.name}

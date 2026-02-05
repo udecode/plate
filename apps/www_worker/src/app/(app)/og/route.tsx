@@ -1,99 +1,34 @@
-import { ImageResponse } from 'next/og';
-
-async function loadAssets(): Promise<
-  { data: Buffer; name: string; style: 'normal'; weight: 400 | 600 }[]
-> {
-  const [
-    { base64Font: normal },
-    { base64Font: mono },
-    { base64Font: semibold },
-  ] = await Promise.all([
-    import('./geist-regular-otf.json').then((mod) => mod.default || mod),
-    import('./geistmono-regular-otf.json').then((mod) => mod.default || mod),
-    import('./geist-semibold-otf.json').then((mod) => mod.default || mod),
-  ]);
-
-  return [
-    {
-      data: Buffer.from(normal, 'base64'),
-      name: 'Geist',
-      style: 'normal' as const,
-      weight: 400 as const,
-    },
-    {
-      data: Buffer.from(mono, 'base64'),
-      name: 'Geist Mono',
-      style: 'normal' as const,
-      weight: 400 as const,
-    },
-    {
-      data: Buffer.from(semibold, 'base64'),
-      name: 'Geist',
-      style: 'normal' as const,
-      weight: 600 as const,
-    },
-  ];
-}
+const escapeXml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const title = searchParams.get('title');
-  const description = searchParams.get('description');
+  const title = escapeXml(searchParams.get('title') || 'Plate');
+  const description = escapeXml(searchParams.get('description') || '');
 
-  const [fonts] = await Promise.all([loadAssets()]);
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="628" viewBox="0 0 1200 628" role="img" aria-label="${title}">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0b0b" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="628" fill="url(#bg)" />
+  <rect x="64" y="64" width="1072" height="500" fill="none" stroke="#334155" stroke-width="2" />
+  <text x="120" y="240" fill="#f8fafc" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="72" font-weight="700">${title}</text>
+  <text x="120" y="340" fill="#cbd5f5" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="36" font-weight="500">${description}</text>
+</svg>`;
 
-  return new ImageResponse(
-    <div
-      style={{ fontFamily: 'Geist Sans' }}
-      tw="flex h-full w-full bg-black text-white"
-    >
-      <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 left-16 w-[1px]" />
-      <div tw="flex border absolute border-stone-700 border-dashed inset-y-0 right-16 w-[1px]" />
-      <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] top-16" />
-      <div tw="flex border absolute border-stone-700 inset-x-0 h-[1px] bottom-16" />
-      <div tw="flex absolute flex-row bottom-24 right-24 text-white">
-        <svg
-          fill="none"
-          height={48}
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          width={48}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <title>Decorative icon</title>
-          <path d="M5 12h14" />
-        </svg>
-      </div>
-      <div tw="flex flex-col absolute w-[896px] justify-center inset-32">
-        <div
-          style={{
-            fontSize: title && title.length > 20 ? 64 : 80,
-            fontWeight: 600,
-            letterSpacing: '-0.04em',
-            textWrap: 'balance',
-          }}
-          tw="tracking-tight flex-grow-1 flex flex-col justify-center leading-[1.1]"
-        >
-          {title}
-        </div>
-        <div
-          style={{
-            fontWeight: 500,
-            textWrap: 'balance',
-          }}
-          tw="text-[40px] leading-[1.5] flex-grow-1 text-stone-400"
-        >
-          {description}
-        </div>
-      </div>
-    </div>,
-    {
-      fonts,
-      height: 628,
-      width: 1200,
-    }
-  );
+  return new Response(svg, {
+    headers: {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    },
+  });
 }

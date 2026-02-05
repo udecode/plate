@@ -7,11 +7,11 @@ import { cva } from 'class-variance-authority';
 import { Provider } from 'jotai';
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 import { Card, Cards } from '@/components/cards';
 import { CodeTabs } from '@/components/code-tabs';
-import { ComponentInstallation } from '@/components/component-installation';
 import { packageInfoAtom } from '@/hooks/use-package-info';
 import { cn } from '@/lib/utils';
 
@@ -35,8 +35,6 @@ import { BadgeList, BadgePopover } from './badge-popover';
 import { Code } from './code';
 import { CodeBlockWrapper } from './code-block-wrapper';
 import { ComponentExample } from './component-example';
-import { ComponentPreview } from './component-preview';
-import { ComponentPreviewPro } from './component-preview-pro';
 import { ComponentSource } from './component-source';
 import { HydrateAtoms } from './context/hydrate-atoms';
 import { FrameworkDocs } from './framework-docs';
@@ -60,6 +58,49 @@ import {
   TableRow,
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+
+const ComponentInstallation = dynamic(
+  () =>
+    import('@/components/component-installation').then(
+      (mod) => mod.ComponentInstallation
+    ),
+  {
+    loading: () => (
+      <div className="mt-4 mb-12 text-sm text-muted-foreground">
+        Loading installation...
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ComponentPreview = dynamic(
+  () =>
+    import('./component-preview').then((mod) => mod.ComponentPreview),
+  {
+    loading: () => (
+      <div className="mt-4 mb-12 text-sm text-muted-foreground">
+        Loading preview...
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const ComponentPreviewPro = dynamic(
+  () =>
+    import('./component-preview-pro').then(
+      (mod) => mod.ComponentPreviewPro
+    ),
+  {
+    loading: () => (
+      <div className="mt-4 mb-12 text-sm text-muted-foreground">
+        Loading preview...
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 const components = {
   a: Link,

@@ -5,7 +5,7 @@
   "description": "Plate documentation website",
   "type": "module",
   "scripts": {
-    "prebuild": "bunx contentlayer2 build",
+    "prebuild": "bunx contentlayer2 build && bunx tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-docs-data.mts",
     "build": "bun run prebuild && bun run r && NODE_OPTIONS='--max-old-space-size=8192' bunx next build",
     "build:worker": "opennextjs-cloudflare build",
     "build:contentlayer": "bunx contentlayer2 build",

@@ -3,17 +3,17 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
-import { allDocs } from 'contentlayer/generated';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
-import { ComponentInstallation } from '@/components/component-installation';
-import { ComponentPreview } from '@/components/component-preview';
+import { ClientComponentInstallation } from '@/components/client-component-installation';
+import { ClientComponentPreview } from '@/components/client-component-preview';
 import { Mdx } from '@/components/mdx-components';
 import { docsMap } from '@/config/docs';
 import { slugToCategory } from '@/config/docs-utils';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
+import { fetchDocData } from '@/lib/docs-data';
 import {
   getCachedDependencies,
   getCachedFileTree,
@@ -34,12 +34,12 @@ type DocPageProps = {
   }>;
 };
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
   const slug = `docs${slugParam?.join('/') ? `/${slugParam.join('/')}` : ''}`;
-  const doc = allDocs.find((doc) => doc.slugAsParams === slug);
+  const doc = await fetchDocData(slug);
 
   if (!doc) {
     return null;
@@ -119,14 +119,6 @@ export async function generateMetadata({
 
 const registryNames = new Set(registry.items.map((item) => item.name));
 
-export function generateStaticParams() {
-  return allDocs
-    .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-    .map((doc) => ({
-      slug: doc.slugAsParams.split('/').slice(1),
-    }));
-}
-
 export default async function DocPage(props: DocPageProps) {
   const params = await props.params;
   const category = slugToCategory(params.slug);
@@ -195,7 +187,7 @@ export default async function DocPage(props: DocPageProps) {
         }}
       >
         {category === 'component' ? (
-          <ComponentInstallation
+          <ClientComponentInstallation
             name={file.name}
             dependencies={dependencies}
             examples={componentExamples?.filter(Boolean) as any}
@@ -205,7 +197,7 @@ export default async function DocPage(props: DocPageProps) {
             usage={file.meta?.usage}
           />
         ) : (
-          <ComponentPreview
+          <ClientComponentPreview
             name={file.name}
             dependencies={dependencies}
             highlightedFiles={highlightedFiles}

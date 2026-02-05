@@ -1,0 +1,23 @@
+{
+  "component": false,
+  "description": "Search and locate specific text or blocks within your document.",
+  "featured": false,
+  "published": true,
+  "title": "Find",
+  "toc": true,
+  "body": {
+    "raw": "\n<Callout type=\"info\">\n  Work in progress.\n</Callout>\n\n- Search for whole words, word parts, or phrases with case matching.\n\n[//]: # '- Use search input for find and replace operations.'\n\n<PackageInfo>\n\n## Installation\n\n```bash\nnpm install @platejs/find-replace\n```\n\n</PackageInfo>\n",
+    "code": "var Component=(()=>{var m=Object.create;var i=Object.defineProperty;var u=Object.getOwnPropertyDescriptor;var _=Object.getOwnPropertyNames;var f=Object.getPrototypeOf,g=Object.prototype.hasOwnProperty;var y=(n,e)=>()=>(e||n((e={exports:{}}).exports,e),e.exports),j=(n,e)=>{for(var t in e)i(n,t,{get:e[t],enumerable:!0})},o=(n,e,t,r)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let l of _(e))!g.call(n,l)&&l!==t&&i(n,l,{get:()=>e[l],enumerable:!(r=u(e,l))||r.enumerable});return n};var x=(n,e,t)=>(t=n!=null?m(f(n)):{},o(e||!n||!n.__esModule?i(t,\"default\",{value:n,enumerable:!0}):t,n)),b=n=>o(i({},\"__esModule\",{value:!0}),n);var c=y((k,d)=>{d.exports=_jsx_runtime});var w={};j(w,{default:()=>h,frontmatter:()=>C});var a=x(c()),C={title:\"Find\",description:\"Search and locate specific text or blocks within your document.\"};function s(n){let e={a:\"a\",code:\"code\",div:\"div\",h2:\"h2\",li:\"li\",p:\"p\",pre:\"pre\",span:\"span\",ul:\"ul\",...n.components},{Callout:t,PackageInfo:r}=e;return t||p(\"Callout\",!0),r||p(\"PackageInfo\",!0),(0,a.jsxs)(a.Fragment,{children:[(0,a.jsx)(t,{type:\"info\",children:(0,a.jsx)(e.p,{children:\"Work in progress.\"})}),`\n`,(0,a.jsxs)(e.ul,{children:[`\n`,(0,a.jsx)(e.li,{children:\"Search for whole words, word parts, or phrases with case matching.\"}),`\n`]}),`\n`,(0,a.jsxs)(r,{children:[(0,a.jsxs)(e.h2,{id:\"installation\",children:[(0,a.jsx)(e.a,{\"aria-label\":\"Link to section\",className:\"subheading-anchor group/subheading\",\"data-empty\":\"true\",href:\"#installation\",children:(0,a.jsx)(e.span,{className:\"icon icon-link\"})}),\"Installation\"]}),(0,a.jsx)(e.div,{\"data-rehype-pretty-code-fragment\":\"\",children:(0,a.jsx)(e.pre,{\"data-language\":\"bash\",\"data-theme\":\"default\",__rawString__:`npm install @platejs/find-replace\n`,__npmCommand__:`npm install @platejs/find-replace\n`,__yarnCommand__:`yarn add @platejs/find-replace\n`,__pnpmCommand__:`pnpm add @platejs/find-replace\n`,__bunCommand__:`bun add @platejs/find-replace\n`,children:(0,a.jsx)(e.code,{\"data-language\":\"bash\",\"data-theme\":\"default\",children:(0,a.jsxs)(e.span,{className:\"line\",children:[(0,a.jsx)(e.span,{style:{color:\"#B392F0\"},children:\"npm\"}),(0,a.jsx)(e.span,{style:{color:\"#9ECBFF\"},children:\" install\"}),(0,a.jsx)(e.span,{style:{color:\"#9ECBFF\"},children:\" @platejs/find-replace\"})]})})})})]})]})}function h(n={}){let{wrapper:e}=n.components||{};return e?(0,a.jsx)(e,{...n,children:(0,a.jsx)(s,{...n})}):s(n)}function p(n,e){throw new Error(\"Expected \"+(e?\"component\":\"object\")+\" `\"+n+\"` to be defined: you likely forgot to import, pass, or provide it.\")}return b(w);})();\n;return Component;"
+  },
+  "_id": "docs/(plugins)/(functionality)/find-replace.mdx",
+  "_raw": {
+    "sourceFilePath": "docs/(plugins)/(functionality)/find-replace.mdx",
+    "sourceFileName": "find-replace.mdx",
+    "sourceFileDir": "docs/(plugins)/(functionality)",
+    "contentType": "mdx",
+    "flattenedPath": "docs/(plugins)/(functionality)/find-replace"
+  },
+  "type": "Doc",
+  "slug": "/docs/docs/find-replace",
+  "slugAsParams": "docs/find-replace"
+}

@@ -1,10 +1,7 @@
-import React from 'react';
-
 import type { UnistNode } from '@/types/unist';
 import type { z } from 'zod';
 
 import { promises as fs } from 'node:fs';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   type Registry,
@@ -12,10 +9,8 @@ import {
   type registryItemFileSchema,
   registryItemSchema,
 } from 'shadcn/registry';
-import { Project, ScriptKind } from 'ts-morph';
 
 import registryShadcnData from '../../registry-shadcn.json';
-import { Index } from '../__registry__';
 import { registry } from '../registry/registry';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
@@ -220,36 +215,28 @@ export function getAllDependencies(
 //     .filter(Boolean) as any;
 // }
 
-const memoizedIndex: typeof Index = Object.fromEntries(
-  Object.entries(Index).map(([style, items]) => [style, { ...items }])
-);
-
-export function getRegistryComponent(name: string) {
-  if (name === 'slate-to-html') {
-    return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
-  }
-
-  return memoizedIndex[name]?.component;
-}
-
 export async function getRegistryItem(
   name: string,
   prefetch = false
 ): Promise<RegistryItem | null> {
-  const item = memoizedIndex[name];
+  const isShadcn = name.includes('shadcn/');
+  const normalizedName = isShadcn ? name.split('shadcn/')[1] : name;
+  const registryTarget = isShadcn ? registryShadcn : registry;
+  const item = registryTarget.items.find((entry) => entry.name === normalizedName);
 
-  if (!item) {
+  if (!item?.files?.length) {
     return null;
   }
 
-  // Convert all file paths to object.
-  // TODO: remove when we migrate to new registry.
-  item.files = item.files.map((file: unknown) =>
-    typeof file === 'string' ? { path: file } : file
-  );
+  const normalizedItem = {
+    ...item,
+    files: item.files.map((file: unknown) =>
+      typeof file === 'string' ? { path: file } : file
+    ),
+  };
 
   // Fail early before doing expensive file operations.
-  const result = registryItemSchema.safeParse(item);
+  const result = registryItemSchema.safeParse(normalizedItem);
 
   if (!result.success) {
     return null;
@@ -259,13 +246,14 @@ export async function getRegistryItem(
   const seen = new Set<string>();
 
   // Get all files including dependencies
-  const allFiles = await getAllItemFiles(name, seen);
+  const allFiles = await getAllItemFiles(normalizedName, seen, isShadcn);
+  const mainFilePath = normalizeRegistryPath(normalizedItem.files[0]?.path);
 
   for (const file of allFiles) {
     const relativePath = path.relative(process.cwd(), file.path);
 
     const content =
-      !prefetch || file.path === item.files[0].path
+      !prefetch || (mainFilePath ? file.path === mainFilePath : false)
         ? await getFileContent(file as any)
         : undefined;
 
@@ -355,6 +343,13 @@ async function getAllItemFiles(
   return uniqueFiles;
 }
 
+function normalizeRegistryPath(filePath?: string) {
+  if (!filePath) return undefined;
+  return filePath.startsWith('src/registry/')
+    ? filePath
+    : `src/registry/${filePath}`;
+}
+
 async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
   // Try different path resolutions
   const possiblePaths = [
@@ -377,21 +372,7 @@ async function getFileContent(file: z.infer<typeof registryItemFileSchema>) {
     throw new Error(`File not found: ${file.path}`);
   }
 
-  const project = new Project({
-    compilerOptions: {},
-  });
-
-  const tempFile = await createTempSourceFile(file.path);
-  const sourceFile = project.createSourceFile(tempFile, raw, {
-    scriptKind: ScriptKind.TSX,
-  });
-
-  let code = sourceFile.getFullText();
-
-  // Fix imports.
-  code = fixImport(code);
-
-  return code;
+  return fixImport(raw);
 }
 
 function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
@@ -418,12 +399,6 @@ function getFileTarget(file: z.infer<typeof registryItemFileSchema>) {
   }
 
   return target ?? '';
-}
-
-async function createTempSourceFile(filename: string) {
-  const dir = await fs.mkdtemp(path.join(tmpdir(), 'shadcn-'));
-
-  return path.join(dir, filename);
 }
 
 function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {

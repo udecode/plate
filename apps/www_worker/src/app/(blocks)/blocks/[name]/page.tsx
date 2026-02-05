@@ -6,8 +6,8 @@ import { notFound } from 'next/navigation';
 
 import { siteConfig } from '@/config/site';
 import { getAllBlocks } from '@/lib/blocks';
-import { getRegistryComponent, getRegistryItem } from '@/lib/rehype-utils';
-import { cn } from '@/lib/utils';
+import { getRegistryItem } from '@/lib/rehype-utils';
+import { ClientBlockPage } from '@/components/client-block-page';
 
 const getCachedRegistryItem = React.cache(
   async (name: string) => await getRegistryItem(name, true)
@@ -65,21 +65,15 @@ export default async function BlockPage({
 }) {
   const { name } = await params;
   const item = await getCachedRegistryItem(name);
-  const Component = getRegistryComponent(name);
 
-  if (!item || !Component) {
+  if (!item) {
     return notFound();
   }
 
   return (
-    <div
-      className={cn(
-        'themes-wrapper bg-background **:data-block-hide:hidden',
-        item.meta?.containerClassName ?? 'size-full'
-      )}
-    >
-      {/* eslint-disable-next-line react-hooks/static-components -- Dynamic block component loading is intentional */}
-      <Component />
-    </div>
+    <ClientBlockPage
+      containerClassName={item.meta?.containerClassName ?? 'size-full'}
+      name={name}
+    />
   );
 }

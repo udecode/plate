@@ -1,0 +1,23 @@
+{
+  "component": false,
+  "description": "\\@platejs/slate API 参考文档",
+  "featured": false,
+  "published": true,
+  "title": "Slate",
+  "toc": true,
+  "body": {
+    "raw": "\n该包提供了 [Slate API](https://docs.slatejs.org/api/transforms) 的扩展版本，可以独立于 Plate 依赖使用。\n\n- [节点(Node)](/docs/api/slate/node)\n  - [编辑器 API(Editor API)](/docs/api/slate/editor-api)\n  - [编辑器转换(Editor Transforms)](/docs/api/slate/editor-api)\n  - [元素(Element)](/docs/api/slate/element)\n  - [文本(Text)](/docs/api/slate/text)\n- [位置(Location)](/docs/api/slate/location)\n  - [路径(Path)](/docs/api/slate/path)\n  - [坐标点(Point)](/docs/api/slate/point)\n  - [范围(Range)](/docs/api/slate/range)\n  - [位置引用(Location Reference)](/docs/api/slate/location-ref)\n- [操作(Operation)](/docs/api/slate/operation)",
+    "code": "var Component=(()=>{var p=Object.create;var t=Object.defineProperty;var f=Object.getOwnPropertyDescriptor;var m=Object.getOwnPropertyNames;var u=Object.getPrototypeOf,x=Object.prototype.hasOwnProperty;var j=(i,e)=>()=>(e||i((e={exports:{}}).exports,e),e.exports),P=(i,e)=>{for(var l in e)t(i,l,{get:e[l],enumerable:!0})},c=(i,e,l,a)=>{if(e&&typeof e==\"object\"||typeof e==\"function\")for(let r of m(e))!x.call(i,r)&&r!==l&&t(i,r,{get:()=>e[r],enumerable:!(a=f(e,r))||a.enumerable});return i};var _=(i,e,l)=>(l=i!=null?p(u(i)):{},c(e||!i||!i.__esModule?t(l,\"default\",{value:i,enumerable:!0}):l,i)),g=i=>c(t({},\"__esModule\",{value:!0}),i);var d=j((L,o)=>{o.exports=_jsx_runtime});var I={};P(I,{default:()=>h,frontmatter:()=>A});var n=_(d()),A={title:\"Slate\",description:\"\\\\@platejs/slate API \\u53C2\\u8003\\u6587\\u6863\"};function s(i){let e={a:\"a\",li:\"li\",p:\"p\",ul:\"ul\",...i.components};return(0,n.jsxs)(n.Fragment,{children:[(0,n.jsxs)(e.p,{children:[\"\\u8BE5\\u5305\\u63D0\\u4F9B\\u4E86 \",(0,n.jsx)(e.a,{href:\"https://docs.slatejs.org/api/transforms\",children:\"Slate API\"}),\" \\u7684\\u6269\\u5C55\\u7248\\u672C\\uFF0C\\u53EF\\u4EE5\\u72EC\\u7ACB\\u4E8E Plate \\u4F9D\\u8D56\\u4F7F\\u7528\\u3002\"]}),`\n`,(0,n.jsxs)(e.ul,{children:[`\n`,(0,n.jsxs)(e.li,{children:[(0,n.jsx)(e.a,{href:\"/docs/api/slate/node\",children:\"\\u8282\\u70B9(Node)\"}),`\n`,(0,n.jsxs)(e.ul,{children:[`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/editor-api\",children:\"\\u7F16\\u8F91\\u5668 API(Editor API)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/editor-api\",children:\"\\u7F16\\u8F91\\u5668\\u8F6C\\u6362(Editor Transforms)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/element\",children:\"\\u5143\\u7D20(Element)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/text\",children:\"\\u6587\\u672C(Text)\"})}),`\n`]}),`\n`]}),`\n`,(0,n.jsxs)(e.li,{children:[(0,n.jsx)(e.a,{href:\"/docs/api/slate/location\",children:\"\\u4F4D\\u7F6E(Location)\"}),`\n`,(0,n.jsxs)(e.ul,{children:[`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/path\",children:\"\\u8DEF\\u5F84(Path)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/point\",children:\"\\u5750\\u6807\\u70B9(Point)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/range\",children:\"\\u8303\\u56F4(Range)\"})}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/location-ref\",children:\"\\u4F4D\\u7F6E\\u5F15\\u7528(Location Reference)\"})}),`\n`]}),`\n`]}),`\n`,(0,n.jsx)(e.li,{children:(0,n.jsx)(e.a,{href:\"/docs/api/slate/operation\",children:\"\\u64CD\\u4F5C(Operation)\"})}),`\n`]})]})}function h(i={}){let{wrapper:e}=i.components||{};return e?(0,n.jsx)(e,{...i,children:(0,n.jsx)(s,{...i})}):s(i)}return g(I);})();\n;return Component;"
+  },
+  "_id": "docs/api/slate.cn.mdx",
+  "_raw": {
+    "sourceFilePath": "docs/api/slate.cn.mdx",
+    "sourceFileName": "slate.cn.mdx",
+    "sourceFileDir": "docs/api",
+    "contentType": "mdx",
+    "flattenedPath": "docs/api/slate.cn"
+  },
+  "type": "Doc",
+  "slug": "/docs/docs/api/slate.cn",
+  "slugAsParams": "docs/api/slate.cn"
+}

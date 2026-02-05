@@ -1,14 +1,23 @@
-import type { NextConfig } from 'next';
-
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import { globSync } from 'glob';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const nextConfig = async (phase: string) => {
-  const config: NextConfig = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ogStubPath = path.join(__dirname, 'src/lib/og-stub.ts');
+
+const nextConfig = async (phase) => {
+  const config = {
     typescript: {
       ignoreBuildErrors: true,
     },
 
+    turbopack: {
+      resolveAlias: {
+        'next/dist/compiled/@vercel/og/index.edge.js': ogStubPath,
+        'next/dist/compiled/@vercel/og/index.node.js': ogStubPath,
+      },
+    },
     experimental: {
       turbopackFileSystemCacheForDev: true,
     },
@@ -48,8 +57,6 @@ const nextConfig = async (phase: string) => {
 
     staticPageGenerationTimeout: 1200,
 
-    transpilePackages: ['ts-morph'],
-
     async redirects() {
       return [
         {
@@ -82,6 +89,14 @@ const nextConfig = async (phase: string) => {
           source: '/:path*',
         },
       ];
+    },
+    webpack: (config) => {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        'next/dist/compiled/@vercel/og/index.edge.js': ogStubPath,
+        'next/dist/compiled/@vercel/og/index.node.js': ogStubPath,
+      };
+      return config;
     },
 
     // webpack: (config, { buildId, dev, isServer, webpack }) => {
@@ -117,7 +132,7 @@ const nextConfig = async (phase: string) => {
     const fs = await import('node:fs');
 
     const packageNames = globSync('../../packages/**/package.json')
-      .map((file: any) => {
+      .map((file) => {
         try {
           const packageJson = JSON.parse(fs.readFileSync(file, 'utf8'));
 

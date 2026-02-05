@@ -10,7 +10,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from '@/components/page-header';
-import { PlaygroundPreview } from '@/components/playground-preview';
+import { ClientPlaygroundPreview } from '@/components/client-playground-preview';
 import { SiteFooter } from '@/components/site-footer';
 import { ThemesButton } from '@/components/themes-button';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export default async function IndexPage() {
 
         <div className="container py-6">
           <section className="relative">
-            <PlaygroundPreview />
+            <ClientPlaygroundPreview />
 
             <CustomizerDrawer />
           </section>
