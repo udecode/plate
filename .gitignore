@@ -130,6 +130,7 @@ packages/plate/docs/
 /playwright/.cache/
 .turbo
 .vercel
+.open-next
 
 CLAUDE.local.md
 .codex
@@ -144,6 +145,7 @@ CLAUDE.local.md
 # END Skiller Generated Files
 .worktrees
 tmp/
+.claude/
 .claude/commands/
 .claude/skills/
 .claude/scripts/
