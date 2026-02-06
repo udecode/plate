@@ -771,20 +771,52 @@ export const defaultRules: MdRules = {
       return elements.length === 1 ? elements[0] : elements;
     },
     serialize: (node, options) => {
-      let enrichedChildren = node.children;
-
-      enrichedChildren = enrichedChildren.map((child) => {
+      // a child may be split in multiple parts, therefore use flatMap
+      const enrichedChildren = node.children.flatMap((child) => {
         if (child.text === '\n') {
-          return {
-            type: 'break',
-          } as any;
+          return [
+            {
+              type: 'break',
+            } as Descendant,
+          ];
         }
 
         if (child.text === '' && options.preserveEmptyParagraphs !== false) {
-          return { ...child, text: '\u200B' };
+          return [{ ...child, text: '\u200B' }];
         }
 
-        return child;
+        //support linebreaks within a single text node
+        if (
+          child.text &&
+          typeof child.text === 'string' &&
+          child.text.includes('\n')
+        ) {
+          const enrichedParts: Descendant[] = [];
+          const childParts = child.text.split('\n');
+          childParts.forEach((part, index) => {
+            // handle hard line breaks on empty lines
+            if (part.length === 0) {
+              // ignore superfluous empty childPart at the end of the childParts array as a result of split('\n')
+              if (childParts.length !== index + 1) {
+                enrichedParts.push({
+                  type: 'break',
+                } as Descendant);
+              }
+            } else {
+              //handle lines with text that should be followed by a break
+              enrichedParts.push({ ...child, text: part });
+              // do not add line break after the last text that ends this child node (read: the text node)
+              if (childParts.length !== index + 1) {
+                enrichedParts.push({
+                  type: 'break',
+                } as Descendant);
+              }
+            }
+          });
+          return enrichedParts;
+        }
+
+        return [child];
       });
 
       const convertedNodes = convertNodesSerialize(
@@ -796,10 +828,10 @@ export const defaultRules: MdRules = {
         convertedNodes.length > 0 &&
         enrichedChildren.at(-1)!.type === 'break'
       ) {
-        // if the last child of the paragraph is a line break add an additional one
+        // if the last child of the paragraph is a line break replace it by a html node with a <br /> (why?)
         convertedNodes.at(-1)!.type = 'html';
         // @ts-expect-error -- value is the right property here
-        convertedNodes.at(-1)!.value = '\n<br />';
+        convertedNodes.at(-1)!.value = '<br />';
       }
 
       return {

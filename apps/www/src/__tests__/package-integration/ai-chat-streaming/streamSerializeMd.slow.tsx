@@ -20,7 +20,7 @@ describe('streamSerializeMd', () => {
 
     const output = streamSerializeMd(editor, { value: input }, chunk);
 
-    expect(output).toBe('chunk1\n ');
+    expect(output).toBe('chunk1\\\n ');
   });
 
   it('preserves a trailing line break', () => {
@@ -29,7 +29,7 @@ describe('streamSerializeMd', () => {
 
     const output = streamSerializeMd(editor, { value: input }, chunk);
 
-    expect(output).toBe('chunk1\n');
+    expect(output).toBe('chunk1<br />\n');
   });
 
   it('drops an incomplete trailing block without a line break', () => {
