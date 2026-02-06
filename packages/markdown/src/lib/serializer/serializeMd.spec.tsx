@@ -254,6 +254,24 @@ describe('serializeMd', () => {
     expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
   });
 
+  it('should serialize new lines WITHIN a single text node to line breaks in Markdown', () => {
+    const slateNodes = [
+      {
+        children: [
+          {
+            text: 'Text followed by two empty lines\n\n\nFollowed by more text.',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    const result = serializeMd(editor as any, { value: slateNodes });
+    expect(result).toEqual(
+      `Text followed by two empty lines\\\n\\\n\\\nFollowed by more text.\n`
+    );
+  });
+
   it('should serialize lists with spread option correctly', () => {
     const listFragment = [
       {
