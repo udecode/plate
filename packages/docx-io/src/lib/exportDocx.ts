@@ -1,24 +1,37 @@
 /**
- * HTML to DOCX converter using @turbodocx/html-to-docx
+ * HTML to DOCX converter using html-to-docx
  *
- * This module wraps the @turbodocx/html-to-docx library to provide
+ * This module wraps the html-to-docx library to provide
  * a simple API for converting HTML content to DOCX format.
+ *
+ * IMPORTANT: This uses native DOCX element generation (not altChunk).
+ * altChunk embeds raw HTML and only works in Microsoft Word - it breaks
+ * in LibreOffice and Google Docs. This library converts HTML to native
+ * DOCX elements (<w:p>, <w:r>, <w:t>, tables, images, etc.) which works
+ * in all word processors.
  *
  * @packageDocumentation
  */
 
-import HTMLtoDOCX from './html-to-docx/index.js';
-import type { DocumentOptions, Margins } from './html-to-docx/index.js';
+import JSZip from 'jszip';
+
+import addFilesToContainer from './html-to-docx';
 
 // Re-export types from the library
 export type {
   DocumentOptions,
+  HeadingOptions,
+  HeadingSpacing,
+  HeadingStyleOptions,
   LineNumberOptions,
   Margins,
   NumberingOptions,
   PageSize,
+  TableBorderOptions,
   TableOptions,
-} from './html-to-docx/index.js';
+} from './html-to-docx';
+
+import type { DocumentOptions, Margins } from './html-to-docx';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
@@ -27,7 +40,7 @@ export type HtmlToDocxOptions = DocumentOptions;
 /**
  * Convert HTML content to a DOCX blob.
  *
- * This function uses @turbodocx/html-to-docx to create a valid DOCX file
+ * This function uses html-to-docx to create a valid DOCX file
  * from HTML content with proper support for images, tables, and styling.
  *
  * @param html - The HTML content to convert
@@ -54,16 +67,19 @@ export async function htmlToDocxBlob(
   // Handle empty HTML - the underlying library crashes on empty string
   const safeHtml = html.trim() === '' ? '<p></p>' : html;
 
-  const result = await HTMLtoDOCX(safeHtml, null, options, null);
+  // Create a new JSZip instance
+  const zip = new JSZip();
 
-  // In browser environment, result is a Blob
-  if (result instanceof Blob) {
-    return result;
-  }
+  // Add files to the zip container
+  // Parameters: (zip, htmlString, options, headerHTML, footerHTML)
+  const populatedZip = await addFilesToContainer(zip, safeHtml, options);
 
-  // In Node.js/Bun environment, result is a Buffer - convert to Blob
-  // Buffer.isBuffer is the type-safe way to check for Buffer
-  return new Blob([new Uint8Array(result)], {
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  // Generate the DOCX blob from the populated zip
+  const result = await populatedZip.generateAsync({
+    type: 'blob',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
+
+  return result;
 }

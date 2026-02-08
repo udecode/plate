@@ -147,6 +147,69 @@ const generateStylesXML = (
 		<w:szCs w:val="20" />
 	  </w:rPr>
 	</w:style>
+	<w:style w:type="paragraph" w:styleId="CommentText">
+	  <w:name w:val="annotation text" />
+	  <w:basedOn w:val="Normal" />
+	  <w:link w:val="CommentTextChar" />
+	  <w:uiPriority w:val="99" />
+	  <w:semiHidden />
+	  <w:unhideWhenUsed />
+	  <w:pPr>
+		<w:spacing w:line="240" w:lineRule="auto" />
+	  </w:pPr>
+	  <w:rPr>
+		<w:sz w:val="20" />
+		<w:szCs w:val="20" />
+	  </w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="CommentTextChar" w:customStyle="1">
+	  <w:name w:val="Comment Text Char" />
+	  <w:basedOn w:val="DefaultParagraphFont" />
+	  <w:link w:val="CommentText" />
+	  <w:uiPriority w:val="99" />
+	  <w:semiHidden />
+	  <w:rPr>
+		<w:sz w:val="20" />
+		<w:szCs w:val="20" />
+	  </w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="CommentReference">
+	  <w:name w:val="annotation reference" />
+	  <w:basedOn w:val="DefaultParagraphFont" />
+	  <w:uiPriority w:val="99" />
+	  <w:semiHidden />
+	  <w:unhideWhenUsed />
+	  <w:rPr>
+		<w:sz w:val="16" />
+		<w:szCs w:val="16" />
+	  </w:rPr>
+	</w:style>
+	<w:style w:type="paragraph" w:styleId="CommentSubject">
+	  <w:name w:val="annotation subject" />
+	  <w:basedOn w:val="CommentText" />
+	  <w:next w:val="CommentText" />
+	  <w:link w:val="CommentSubjectChar" />
+	  <w:uiPriority w:val="99" />
+	  <w:semiHidden />
+	  <w:unhideWhenUsed />
+	  <w:rPr>
+		<w:b />
+		<w:bCs />
+	  </w:rPr>
+	</w:style>
+	<w:style w:type="character" w:styleId="CommentSubjectChar" w:customStyle="1">
+	  <w:name w:val="Comment Subject Char" />
+	  <w:basedOn w:val="CommentTextChar" />
+	  <w:link w:val="CommentSubject" />
+	  <w:uiPriority w:val="99" />
+	  <w:semiHidden />
+	  <w:rPr>
+		<w:b />
+		<w:bCs />
+		<w:sz w:val="20" />
+		<w:szCs w:val="20" />
+	  </w:rPr>
+	</w:style>
   </w:styles>
   `;
 

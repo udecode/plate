@@ -20,9 +20,7 @@ import { ListPlugin } from '@platejs/list/react';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsx } from '@platejs/test-utils';
-import mammoth from 'mammoth';
-
-import { preprocessMammothHtml } from '../preprocessMammothHtml';
+import { mammoth, preprocessMammothHtml } from '../importDocx';
 
 // biome-ignore lint/nursery/noUnusedExpressions: test
 jsx;
@@ -81,9 +79,15 @@ export const testDocxImporter = ({
     // Read docx file as Node Buffer
     const buffer = readDocxFixture(filename);
 
-    // Use mammoth with buffer option (Node.js compatible)
+    // Convert Node Buffer to ArrayBuffer for mammoth
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    ) as ArrayBuffer;
+
+    // Use mammoth with arrayBuffer option
     const mammothResult = await mammoth.convertToHtml(
-      { buffer },
+      { arrayBuffer },
       { styleMap: ['comment-reference => sup'] }
     );
 
