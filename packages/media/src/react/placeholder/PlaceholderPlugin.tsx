@@ -42,6 +42,18 @@ export const PlaceholderPlugin = toTPlatePlugin<
     { placeholder: PlaceholderApi }
   >
 >(BasePlaceholderPlugin, {
+  normalizeInitialValue: ({ editor, getOptions, type }) => {
+    if (!getOptions().disableEmptyPlaceholder) return;
+
+    const placeholders = editor.api.nodes({
+      at: [],
+      match: { type },
+    });
+
+    for (const [, path] of placeholders) {
+      editor.tf.removeNodes({ at: path });
+    }
+  },
   options: {
     disableEmptyPlaceholder: false,
     disableFileDrop: false,
