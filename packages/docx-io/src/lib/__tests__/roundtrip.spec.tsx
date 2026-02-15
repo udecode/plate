@@ -516,7 +516,6 @@ describe('docx roundtrip', () => {
     const commentExElements: string[] = [];
     let ceMatch;
 
-    // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic regex loop
     while ((ceMatch = commentExRegex.exec(commentsExtXml)) !== null) {
       commentExElements.push(ceMatch[0]);
     }
