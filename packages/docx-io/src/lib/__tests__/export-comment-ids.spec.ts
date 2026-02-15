@@ -310,7 +310,7 @@ describe('export comment author resolution', () => {
     const value = [
       {
         type: 'p',
-        children: [{ text: 'text', ['comment_disc-1']: true }],
+        children: [{ text: 'text', 'comment_disc-1': true }],
       },
     ] as TNode[];
 
