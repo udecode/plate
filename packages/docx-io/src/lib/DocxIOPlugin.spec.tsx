@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
-  DocxExportPlugin,
   DocxIOKit,
   DocxIOPlugin,
   downloadDocx,
@@ -10,6 +9,7 @@ import {
   htmlToDocxBlob,
   importDocx,
 } from './DocxIOPlugin';
+import { DocxExportPlugin } from './docx-export-plugin';
 
 describe('DocxIOPlugin', () => {
   it('should export DocxIOPlugin', () => {
@@ -140,7 +140,7 @@ describe('htmlToDocxBlob function', () => {
 
   it('should create different blob sizes for different content', async () => {
     const shortHtml = '<p>Short</p>';
-    const longHtml = '<p>' + 'Long text content '.repeat(100) + '</p>';
+    const longHtml = `<p>${'Long text content '.repeat(100)}</p>`;
 
     const shortBlob = await htmlToDocxBlob(shortHtml);
     const longBlob = await htmlToDocxBlob(longHtml);

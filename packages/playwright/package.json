@@ -43,6 +43,7 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
+    "@playwright/test": ">=1.42.1",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

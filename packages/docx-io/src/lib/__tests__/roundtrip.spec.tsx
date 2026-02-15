@@ -36,7 +36,7 @@ import {
   BaseTableRowPlugin,
 } from '@platejs/table';
 import JSZip from 'jszip';
-import type { SlatePlugin, TNode, Value } from 'platejs';
+import type { TNode, Value } from 'platejs';
 import {
   BaseParagraphPlugin,
   createSlateEditor,
@@ -56,7 +56,8 @@ import { mammoth, preprocessMammothHtml } from '../importDocx';
 import { searchRange } from '../searchRange';
 
 /** Minimal editor kit for roundtrip tests (no registry dependency). */
-const editorPlugins: SlatePlugin[] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const editorPlugins: any[] = [
   BaseParagraphPlugin,
   BaseH1Plugin,
   BaseH2Plugin,
