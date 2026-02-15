@@ -13,7 +13,6 @@ enabled = false
 
 [skills]
 enabled = true
-generate_from_rules = true
 
 # Automatic .gitignore management
 [gitignore]
