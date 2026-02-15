@@ -36,7 +36,7 @@ import {
   BaseTableRowPlugin,
 } from '@platejs/table';
 import JSZip from 'jszip';
-import type { TNode, Value } from 'platejs';
+import type { SlatePlugin, TNode, Value } from 'platejs';
 import {
   BaseParagraphPlugin,
   createSlateEditor,
