@@ -139,6 +139,7 @@ CLAUDE.local.md
 /.codex/config.toml
 /.cursor/mcp.json
 /.cursor/rules
+/.cursor/skills
 /.mcp.json
 /.skillz
 /AGENTS.md
