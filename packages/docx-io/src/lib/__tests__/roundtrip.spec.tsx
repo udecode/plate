@@ -56,7 +56,7 @@ import { mammoth, preprocessMammothHtml } from '../importDocx';
 import { searchRange } from '../searchRange';
 
 /** Minimal editor kit for roundtrip tests (no registry dependency). */
-const editorPlugins: any[] = [
+const editorPlugins: SlatePlugin[] = [
   BaseParagraphPlugin,
   BaseH1Plugin,
   BaseH2Plugin,
