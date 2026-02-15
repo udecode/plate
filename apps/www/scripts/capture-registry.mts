@@ -1,3 +1,7 @@
+// NOTE: puppeteer was removed from devDependencies to reduce install size
+// (~500MB Chromium download) which caused OOM during CI builds.
+// To use this script, run: yarn add -D puppeteer
+// Then run: yarn registry:capture
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import puppeteer from 'puppeteer';
