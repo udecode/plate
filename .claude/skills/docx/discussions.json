@@ -1,0 +1,208 @@
+{
+  "value": [
+    {
+      "type": "h2",
+      "children": [{ "text": "Discussions" }]
+    },
+    {
+      "type": "p",
+      "children": [
+        { "text": "Review and refine content seamlessly. Use " },
+        {
+          "type": "a",
+          "url": "/docs/suggestion",
+          "children": [
+            {
+              "text": "suggestions",
+              "suggestion": true,
+              "suggestion_playground1": {
+                "id": "playground1",
+                "createdAt": 1705312800000,
+                "type": "insert",
+                "userId": "alice"
+              }
+            }
+          ]
+        },
+        {
+          "text": " ",
+          "suggestion": true,
+          "suggestion_playground1": {
+            "id": "playground1",
+            "createdAt": 1705312800000,
+            "type": "insert",
+            "userId": "alice"
+          }
+        },
+        {
+          "text": "like this added text",
+          "suggestion": true,
+          "suggestion_playground1": {
+            "id": "playground1",
+            "createdAt": 1705312800000,
+            "type": "insert",
+            "userId": "alice"
+          }
+        },
+        { "text": " or to " },
+        {
+          "text": "mark text for removal",
+          "suggestion": true,
+          "suggestion_playground2": {
+            "id": "playground2",
+            "createdAt": 1705316400000,
+            "type": "remove",
+            "userId": "bob"
+          }
+        },
+        { "text": ". Discuss changes using " },
+        {
+          "type": "a",
+          "url": "/docs/comment",
+          "children": [
+            {
+              "text": "comments",
+              "comment": true,
+              "comment_discussion1": true
+            }
+          ]
+        },
+        {
+          "text": " on many text segments",
+          "comment": true,
+          "comment_discussion1": true
+        },
+        { "text": ". You can even have " },
+        {
+          "text": "overlapping",
+          "comment": true,
+          "comment_discussion2": true,
+          "suggestion": true,
+          "suggestion_playground3": {
+            "id": "playground3",
+            "createdAt": 1705320000000,
+            "type": "insert",
+            "userId": "charlie"
+          }
+        },
+        { "text": " annotations!" }
+      ]
+    }
+  ],
+  "discussions": [
+    {
+      "id": "discussion1",
+      "comments": [
+        {
+          "id": "comment1",
+          "contentRich": [
+            {
+              "type": "p",
+              "children": [
+                {
+                  "text": "Comments are a great way to provide feedback and discuss changes."
+                }
+              ]
+            }
+          ],
+          "createdAt": "2025-01-15T10:00:00Z",
+          "discussionId": "discussion1",
+          "isEdited": false,
+          "userId": "charlie",
+          "authorName": "Charlie",
+          "authorInitials": "C"
+        },
+        {
+          "id": "comment2",
+          "contentRich": [
+            {
+              "type": "p",
+              "children": [
+                {
+                  "text": "Agreed! The link to the docs makes it easy to learn more."
+                }
+              ]
+            }
+          ],
+          "createdAt": "2025-01-15T10:30:00Z",
+          "discussionId": "discussion1",
+          "isEdited": false,
+          "userId": "bob",
+          "authorName": "Bob",
+          "authorInitials": "B"
+        }
+      ],
+      "createdAt": "2025-01-15T10:00:00Z",
+      "documentContent": "comments on many text segments",
+      "isResolved": false,
+      "userId": "charlie"
+    },
+    {
+      "id": "discussion2",
+      "comments": [
+        {
+          "id": "comment1",
+          "contentRich": [
+            {
+              "type": "p",
+              "children": [
+                {
+                  "text": "Nice demonstration of overlapping annotations with both comments and suggestions!"
+                }
+              ]
+            }
+          ],
+          "createdAt": "2025-01-15T11:00:00Z",
+          "discussionId": "discussion2",
+          "isEdited": false,
+          "userId": "bob",
+          "authorName": "Bob",
+          "authorInitials": "B"
+        },
+        {
+          "id": "comment2",
+          "contentRich": [
+            {
+              "type": "p",
+              "children": [
+                {
+                  "text": "This helps users understand how powerful the editor can be."
+                }
+              ]
+            }
+          ],
+          "createdAt": "2025-01-15T11:30:00Z",
+          "discussionId": "discussion2",
+          "isEdited": false,
+          "userId": "charlie",
+          "authorName": "Charlie",
+          "authorInitials": "C"
+        }
+      ],
+      "createdAt": "2025-01-15T11:00:00Z",
+      "documentContent": "overlapping",
+      "isResolved": false,
+      "userId": "bob"
+    }
+  ],
+  "suggestions": [
+    {
+      "id": "playground1",
+      "type": "insert",
+      "userId": "alice",
+      "createdAt": 1705312800000
+    },
+    {
+      "id": "playground2",
+      "type": "remove",
+      "userId": "bob",
+      "createdAt": 1705316400000
+    },
+    {
+      "id": "playground3",
+      "type": "insert",
+      "userId": "charlie",
+      "createdAt": 1705320000000
+    }
+  ]
+}
