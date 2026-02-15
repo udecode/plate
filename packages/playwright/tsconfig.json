@@ -1,5 +1,0 @@
-{
-  "extends": "../../tooling/config/tsconfig.base.json",
-  "include": ["src", "../../tooling/config/global.d.ts"],
-  "exclude": []
-}
