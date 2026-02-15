@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { PlaywrightPlugin } from '@platejs/playwright';
 import { KEYS, NormalizeTypesPlugin } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
@@ -31,7 +30,6 @@ export default function PlaygroundDemo({
           [KEYS.indent]: id !== 'listClassic',
           [KEYS.list]: id !== 'listClassic',
           [KEYS.listClassic]: id === 'listClassic',
-          [KEYS.playwright]: process.env.NODE_ENV !== 'production',
         },
       },
       plugins: [
@@ -45,9 +43,6 @@ export default function PlaygroundDemo({
             rules: [{ path: [0], strictType: 'h1' }],
           },
         }),
-
-        // Testing
-        PlaywrightPlugin,
       ],
       value,
     },

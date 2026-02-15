@@ -81,7 +81,6 @@
     "@platejs/math": "workspace:^",
     "@platejs/media": "workspace:^",
     "@platejs/mention": "workspace:^",
-    "@platejs/playwright": "workspace:^",
     "@platejs/resizable": "workspace:^",
     "@platejs/selection": "workspace:^",
     "@platejs/slash-command": "workspace:^",
