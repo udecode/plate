@@ -1,9 +1,3 @@
----
-description: React patterns with destructured props, compiler optimization, Effects, and Tailwind v4 syntax. ALWAYS use when using React.
-globs: *.tsx,**/globals.css
-alwaysApply: false
----
-
 > **React Version Compatibility**
 >
 > - **Packages** (`packages/**`): Still support React 18. DO NOT migrate or break compatibility with React 18 patterns.

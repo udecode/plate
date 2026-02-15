@@ -46,7 +46,7 @@ describe('getDiscussionCounterSeed', () => {
       { id: 'discussion999999' },
       { id: 'discussion100' },
     ];
-    expect(getDiscussionCounterSeed(discussions)).toBe(999999);
+    expect(getDiscussionCounterSeed(discussions)).toBe(999_999);
   });
 
   it('handles discussion IDs with leading zeros', () => {
@@ -74,10 +74,7 @@ describe('getDiscussionCounterSeed', () => {
   });
 
   it('ignores IDs with extra text after number', () => {
-    const discussions = [
-      { id: 'discussion5extra' },
-      { id: 'discussion3' },
-    ];
+    const discussions = [{ id: 'discussion5extra' }, { id: 'discussion3' }];
     expect(getDiscussionCounterSeed(discussions)).toBe(3);
   });
 
@@ -117,18 +114,12 @@ describe('getDiscussionCounterSeed', () => {
   });
 
   it('handles IDs that are just the prefix', () => {
-    const discussions = [
-      { id: 'discussion' },
-      { id: 'discussion5' },
-    ];
+    const discussions = [{ id: 'discussion' }, { id: 'discussion5' }];
     expect(getDiscussionCounterSeed(discussions)).toBe(5);
   });
 
   it('handles empty string IDs', () => {
-    const discussions = [
-      { id: '' },
-      { id: 'discussion5' },
-    ];
+    const discussions = [{ id: '' }, { id: 'discussion5' }];
     expect(getDiscussionCounterSeed(discussions)).toBe(5);
   });
 
@@ -142,18 +133,12 @@ describe('getDiscussionCounterSeed', () => {
   });
 
   it('handles NaN result from invalid number', () => {
-    const discussions = [
-      { id: 'discussionABC' },
-      { id: 'discussion5' },
-    ];
+    const discussions = [{ id: 'discussionABC' }, { id: 'discussion5' }];
     expect(getDiscussionCounterSeed(discussions)).toBe(5);
   });
 
   it('returns 0 when all IDs have NaN suffixes', () => {
-    const discussions = [
-      { id: 'discussionABC' },
-      { id: 'discussionXYZ' },
-    ];
+    const discussions = [{ id: 'discussionABC' }, { id: 'discussionXYZ' }];
     expect(getDiscussionCounterSeed(discussions)).toBe(0);
   });
 });

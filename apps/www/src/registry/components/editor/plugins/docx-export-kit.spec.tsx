@@ -165,7 +165,9 @@ describe('DocxExportKit component references', () => {
     const components = plugin.override?.components;
 
     expect(components?.[KEYS.equation]?.name).toBe('EquationElementDocx');
-    expect(components?.[KEYS.inlineEquation]?.name).toBe('InlineEquationElementDocx');
+    expect(components?.[KEYS.inlineEquation]?.name).toBe(
+      'InlineEquationElementDocx'
+    );
   });
 
   it('should reference CalloutElementDocx for callouts', () => {

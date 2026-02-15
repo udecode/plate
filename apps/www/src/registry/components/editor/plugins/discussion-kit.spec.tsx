@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { createPlateEditor } from 'platejs/react';
 
-import { discussionPlugin, type TDiscussion, DiscussionKit } from './discussion-kit';
+import {
+  discussionPlugin,
+  type TDiscussion,
+  DiscussionKit,
+} from './discussion-kit';
 
 describe('discussionPlugin', () => {
   it('should create plugin with default options', () => {

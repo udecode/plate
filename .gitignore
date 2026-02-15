@@ -136,10 +136,11 @@ CLAUDE.local.md
 
 # START Skiller Generated Files
 /.codex/config.toml
+/.codex/skills
 /.cursor/mcp.json
 /.cursor/rules
+/.cursor/skills
 /.mcp.json
-/.skillz
 /AGENTS.md
 /CLAUDE.md
 # END Skiller Generated Files
