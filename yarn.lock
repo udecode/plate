@@ -3597,6 +3597,7 @@ __metadata:
     "@platejs/markdown": "workspace:^"
     "@platejs/suggestion": "workspace:^"
     "@platejs/table": "workspace:^"
+    "@platejs/test-utils": "workspace:^"
     color-name: "npm:^2.0.0"
     html-entities: "npm:^2.5.2"
     html-to-vdom: "npm:^0.7.0"
