@@ -2,7 +2,7 @@ import type { DocIcons } from '@/config/docs-icons';
 
 export interface MainNavItem extends NavItem {}
 
-export type NavItem = {
+export interface NavItem {
   description?: string;
   disabled?: boolean;
   external?: boolean;
@@ -13,7 +13,7 @@ export type NavItem = {
   title?: string;
   titleCn?: string;
   value?: string;
-};
+}
 
 export interface NavItemWithChildren extends NavItem {
   headings?: string[];

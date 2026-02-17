@@ -1,6 +1,6 @@
-export type DiscussionIdLike = {
+export interface DiscussionIdLike {
   id: string;
-};
+}
 
 const discussionIdPattern = /^discussion(\d+)$/;
 

@@ -9,10 +9,10 @@ import { uiComponents, uiNodes } from '@/registry/registry-ui';
 
 import { siteConfig } from './site';
 
-export type DocsConfig = {
+export interface DocsConfig {
   mainNav: MainNavItem[];
   sidebarNav: SidebarNavItem[];
-};
+}
 
 export const componentNavGroups: SidebarNavItem[] = [
   {

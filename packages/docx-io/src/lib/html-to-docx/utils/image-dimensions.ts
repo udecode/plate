@@ -3,11 +3,11 @@
  * Parses image dimensions from a Buffer without using Node.js fs module
  */
 
-export type ImageDimensions = {
+export interface ImageDimensions {
   height: number;
   type: string;
   width: number;
-};
+}
 
 /**
  * Get image dimensions from a buffer

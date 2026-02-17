@@ -43,10 +43,10 @@ import { cn } from '@/lib/utils';
 
 import { aiChatPlugin } from './plugins/ai-kit';
 
-type Model = {
+interface Model {
   label: string;
   value: string;
-};
+}
 
 export const models: Model[] = [
   // OpenAI Models
@@ -265,7 +265,7 @@ export function SettingsDialog() {
     <div className="group relative">
       <div className="flex items-center justify-between">
         <label
-          className="-translate-y-1/2 absolute top-1/2 block cursor-text px-1 text-muted-foreground/70 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:font-medium group-focus-within:text-foreground group-focus-within:text-xs has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground has-[+input:not(:placeholder-shown)]:text-xs"
+          className="absolute top-1/2 block -translate-y-1/2 cursor-text px-1 text-muted-foreground/70 text-sm transition-all group-focus-within:pointer-events-none group-focus-within:top-0 group-focus-within:cursor-default group-focus-within:font-medium group-focus-within:text-foreground group-focus-within:text-xs has-[+input:not(:placeholder-shown)]:pointer-events-none has-[+input:not(:placeholder-shown)]:top-0 has-[+input:not(:placeholder-shown)]:cursor-default has-[+input:not(:placeholder-shown)]:font-medium has-[+input:not(:placeholder-shown)]:text-foreground has-[+input:not(:placeholder-shown)]:text-xs"
           htmlFor={label}
         >
           <span className="inline-flex bg-background px-2">{label}</span>
@@ -360,7 +360,7 @@ export function SettingsDialog() {
 
               <div className="group relative">
                 <label
-                  className="-translate-y-1/2 absolute start-1 top-0 z-10 block bg-background px-2 font-medium text-foreground text-xs group-has-disabled:opacity-50"
+                  className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 font-medium text-foreground text-xs group-has-disabled:opacity-50"
                   htmlFor="select-model"
                 >
                   Model

@@ -297,55 +297,55 @@ export type DescendantOf<N extends TNode> = N extends Editor
  */
 export type Node = TNode;
 
-export type NodeAncestorsOptions = {
+export interface NodeAncestorsOptions {
   reverse?: boolean;
-};
+}
 
-export type NodeChildrenOptions = {
+export interface NodeChildrenOptions {
   /** Get children starting from this index (inclusive) */
   from?: number;
   reverse?: boolean;
   /** Get children up to this index (exclusive) */
   to?: number;
-};
+}
 
-export type NodeDescendantsOptions<N extends TNode> = {
+export interface NodeDescendantsOptions<N extends TNode> {
   from?: Path;
   reverse?: boolean;
   to?: Path;
   pass?: (entry: NodeEntry<DescendantOf<N>>) => boolean;
-};
+}
 
-export type NodeElementsOptions<N extends TNode> = {
+export interface NodeElementsOptions<N extends TNode> {
   from?: Path;
   reverse?: boolean;
   to?: Path;
   pass?: (entry: NodeEntry<ElementOf<N>>) => boolean;
-};
+}
 
 /** A utility type to get all possible node types from a Value type */
 export type NodeIn<V extends Value> = NodeOf<Editor | V[number]>;
 
-export type NodeLevelsOptions = {
+export interface NodeLevelsOptions {
   reverse?: boolean;
-};
+}
 
-export type NodeNodesOptions<N extends TNode> = {
+export interface NodeNodesOptions<N extends TNode> {
   from?: Path;
   reverse?: boolean;
   to?: Path;
   pass?: (entry: NodeEntry<NodeOf<N>>) => boolean;
-};
+}
 
 /** A utility type to get all the node types from a root node type. */
 export type NodeOf<N extends TNode> = ElementOf<N> | N | TextOf<N>;
 
-export type NodeTextsOptions<N extends TNode> = {
+export interface NodeTextsOptions<N extends TNode> {
   from?: Path;
   reverse?: boolean;
   to?: Path;
   pass?: (entry: NodeEntry<TextOf<N>>) => boolean;
-};
+}
 
 /** A helper type for narrowing matched nodes with a predicate. */
 export type TNodeMatch<N extends TNode = TNode> =

@@ -27,14 +27,14 @@ export type UseOnClickOutsideCallback<T extends Event = Event> = (
   event: T
 ) => void;
 
-export type UseOnClickOutsideOptions = {
+export interface UseOnClickOutsideOptions {
   detectIFrame?: boolean;
   disabled?: boolean;
   eventTypes?: string[];
   excludeScrollbar?: boolean;
   ignoreClass?: string[] | string;
   refs?: Refs;
-};
+}
 
 export type UseOnClickOutsideReturn = (element: El | null) => void;
 

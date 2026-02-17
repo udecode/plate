@@ -1,20 +1,20 @@
-export type DiffDeletion = {
+export interface DiffDeletion {
   type: 'delete';
-};
+}
 
-export type DiffInsertion = {
+export interface DiffInsertion {
   type: 'insert';
-};
+}
 
 export type DiffOperation = DiffDeletion | DiffInsertion | DiffUpdate;
 
-export type DiffProps = {
+export interface DiffProps {
   diff: true;
   diffOperation: DiffOperation;
-};
+}
 
-export type DiffUpdate = {
+export interface DiffUpdate {
   newProperties: Record<string, any>;
   properties: Record<string, any>;
   type: 'update';
-};
+}

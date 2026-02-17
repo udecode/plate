@@ -15,7 +15,7 @@ export type UploadErrorCode =
 
 export type FileSize = `${PowOf2}${SizeUnit}`;
 
-export type MediaItemConfig = {
+export interface MediaItemConfig {
   // The type of media that this config is for.
   mediaType: MediaKeys;
   // The maximum number of files of this type that can be uploaded.
@@ -24,7 +24,7 @@ export type MediaItemConfig = {
   maxFileSize?: FileSize;
   // The minimum number of files of this type that must be uploaded.
   minFileCount?: number;
-};
+}
 
 export type MediaKeys =
   | typeof KEYS.audio

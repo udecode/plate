@@ -7,11 +7,11 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import { getPlateCopyMarkdown } from '@/lib/llm-context';
 import { cn } from '@/lib/utils';
 
-type LLMCopyButtonProps = {
+interface LLMCopyButtonProps {
   content: string;
   docUrl: string;
   title: string;
-};
+}
 
 export function LLMCopyButton({ content, docUrl, title }: LLMCopyButtonProps) {
   const { copyToClipboard, isCopied } = useCopyToClipboard({ timeout: 2000 });

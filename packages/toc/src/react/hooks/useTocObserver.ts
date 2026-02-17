@@ -1,10 +1,10 @@
 import React from 'react';
 
-type UseTocObserver = {
+interface UseTocObserver {
   activeId: string;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
-};
+}
 
 export const useTocObserver = ({
   activeId,

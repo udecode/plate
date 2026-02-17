@@ -44,13 +44,13 @@
     "@platejs/selection": "52.0.16",
     "@platejs/suggestion": "52.0.11",
     "fastest-levenshtein": "1.0.16",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@ai-sdk/react": "^3.0.0",
+    "@ai-sdk/react": "^3.0.91",
     "@platejs/combobox": "52.0.15",
-    "ai": "^6.0.0"
+    "ai": "^6.0.89"
   },
   "peerDependencies": {
     "platejs": ">=52.0.15",

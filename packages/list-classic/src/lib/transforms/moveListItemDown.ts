@@ -8,10 +8,10 @@ import {
 
 import { getListTypes } from '../queries/index';
 
-export type MoveListItemDownOptions = {
+export interface MoveListItemDownOptions {
   list: ElementEntry;
   listItem: ElementEntry;
-};
+}
 
 export const moveListItemDown = (
   editor: SlateEditor,

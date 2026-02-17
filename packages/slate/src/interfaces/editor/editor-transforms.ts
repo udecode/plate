@@ -42,10 +42,10 @@ import type {
 } from './editor-api';
 import type { Editor, Value } from './editor-type';
 
-export type AddMarksOptions = {
+export interface AddMarksOptions {
   /** Marks to remove before adding new ones */
   remove?: string[] | string;
-};
+}
 
 export type DeleteTextOptions = {
   distance?: number;
@@ -415,14 +415,14 @@ export type EditorTransforms<V extends Value = Value> = {
   ) => void;
 };
 
-export type FocusOptions = {
+export interface FocusOptions {
   /** Target location to select before focusing */
   at?: At;
   /** Focus at location or editor edge. Default location is at or selection. */
   edge?: 'end' | 'endEditor' | 'start' | 'startEditor';
   /** Number of times to retry focusing */
   retries?: number;
-};
+}
 
 export type InsertFragmentOptions = {
   batchDirty?: boolean;
@@ -508,7 +508,7 @@ export type ResetOptions = {
   children?: boolean;
 } & Omit<ReplaceNodesOptions, 'at' | 'children'>;
 
-export type SelectOptions = {
+export interface SelectOptions {
   /** Select edge of the block above location */
   edge?: 'end' | 'start';
   /** If true, focus the editor before selecting */
@@ -517,7 +517,7 @@ export type SelectOptions = {
   next?: boolean;
   /** Select end of previous sibling */
   previous?: boolean;
-};
+}
 
 export type SetNodesOptions<V extends Value = Value> = {
   compare?: PropsCompare;
@@ -551,10 +551,10 @@ export type ToggleBlockOptions = {
   wrap?: boolean;
 } & SetNodesOptions;
 
-export type ToggleMarkOptions = {
+export interface ToggleMarkOptions {
   /** Mark keys to remove when adding the mark. */
   remove?: string[] | string;
-};
+}
 
 export type UnsetNodesOptions<V extends Value = Value> = {
   hanging?: boolean;

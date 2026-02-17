@@ -104,8 +104,8 @@ export function TableCellElementStatic({
           ...(element.background
             ? { backgroundColor: element.background }
             : {}),
-          maxWidth: width || 240,
-          minWidth: width || 120,
+          maxWidth: width ? `${width}px` : '240px',
+          minWidth: width ? `${width}px` : '120px',
           ...cellBorderStyles(element),
         } as React.CSSProperties
       }

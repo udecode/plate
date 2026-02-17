@@ -24,9 +24,9 @@ const renderComponentToHtml = <P extends {}>(
     ReactDOMServer.renderToStaticMarkup(React.createElement(Component, props))
   );
 
-export type SerializeHtmlOptions<
+export interface SerializeHtmlOptions<
   T extends PlateStaticProps = PlateStaticProps,
-> = {
+> {
   /** The component used to render the editor content */
   editorComponent?: React.ComponentType<T>;
   /** List of className prefixes to preserve from being stripped out */
@@ -37,7 +37,7 @@ export type SerializeHtmlOptions<
   stripClassNames?: boolean;
   /** Enable stripping data attributes */
   stripDataAttributes?: boolean;
-};
+}
 
 /**
  * Serialize the editor content to HTML. By default, uses `PlateStatic` as the

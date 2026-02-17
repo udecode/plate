@@ -15,12 +15,12 @@ import type { MdRules, PlateType } from './types';
 import { deserializeInlineMd, deserializeMd } from './deserializer';
 import { serializeMd } from './serializer';
 
-export type AllowNodeConfig = {
+export interface AllowNodeConfig {
   /** Custom filter function for nodes during deserialization */
   deserialize?: (node: any) => boolean;
   /** Custom filter function for nodes during serialization */
   serialize?: (node: any) => boolean;
-};
+}
 
 export type MarkdownConfig = PluginConfig<
   'markdown',

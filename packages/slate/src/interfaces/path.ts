@@ -139,17 +139,17 @@ export const PathApi: {
   },
 } as const;
 
-export type PathAncestorsOptions = {
+export interface PathAncestorsOptions {
   /** If true, the paths are returned in reverse order. */
   reverse?: boolean;
-};
+}
 
-export type PathLevelsOptions = {
+export interface PathLevelsOptions {
   /** If true, the paths are returned in reverse order. */
   reverse?: boolean;
-};
+}
 
-export type PathTransformOptions = {
+export interface PathTransformOptions {
   /** The affinity of the transform. */
   affinity?: TextDirection | null;
-};
+}

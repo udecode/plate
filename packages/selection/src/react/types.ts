@@ -2,16 +2,16 @@ import type React from 'react';
 
 import type { TRange, UnknownObject } from 'platejs';
 
-export type CaretPosition = {
+export interface CaretPosition {
   height: number;
   left: number;
   top: number;
-};
+}
 
-export type CursorData = {
+export interface CursorData {
   selectionStyle?: React.CSSProperties;
   style?: React.CSSProperties;
-};
+}
 
 export interface CursorOverlayState<TCursorData extends Record<string, unknown>>
   extends CursorState<TCursorData> {
@@ -19,15 +19,17 @@ export interface CursorOverlayState<TCursorData extends Record<string, unknown>>
   selectionRects: SelectionRect[];
 }
 
-export type CursorState<TCursorData extends UnknownObject = UnknownObject> = {
+export interface CursorState<
+  TCursorData extends UnknownObject = UnknownObject,
+> {
   id: any;
   selection: TRange | null;
   data?: TCursorData;
-};
+}
 
-export type SelectionRect = {
+export interface SelectionRect {
   height: number;
   left: number;
   top: number;
   width: number;
-};
+}

@@ -2,11 +2,11 @@ import React from 'react';
 
 import { useTocObserver } from './useTocObserver';
 
-type UseTocController = {
+interface UseTocController {
   activeId: string;
   isObserve: boolean;
   tocRef: React.RefObject<HTMLElement | null>;
-};
+}
 
 export const useTocController = ({
   activeId,

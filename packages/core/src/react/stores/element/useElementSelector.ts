@@ -7,10 +7,10 @@ import { selectAtom } from 'jotai/utils';
 
 import { elementStore, useElementStore } from './useElementStore';
 
-type UseElementSelectorOptions<T> = {
+interface UseElementSelectorOptions<T> {
   key?: string;
   equalityFn?: (a: T, b: T) => boolean;
-};
+}
 
 export const useElementSelector = <T>(
   selector: <N extends TElement>(state: NodeEntry<N>, prev?: T) => T,

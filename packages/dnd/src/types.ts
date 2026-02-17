@@ -6,17 +6,17 @@ export type DropDirection = 'bottom' | 'left' | 'right' | 'top' | undefined;
 
 export type DropLineDirection = '' | 'bottom' | 'left' | 'right' | 'top';
 
-export type ElementDragItemNode = {
+export interface ElementDragItemNode {
   /** Required to identify the node(s). */
   id: string[] | string;
   [key: string]: unknown;
   editorId: string;
   element: TElement;
   editor?: SlateEditor;
-};
+}
 
-export type FileDragItemNode = {
+export interface FileDragItemNode {
   dataTransfer: DataTransfer[];
   files: FileList;
   items: DataTransferItemList;
-};
+}

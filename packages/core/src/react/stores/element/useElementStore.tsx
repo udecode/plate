@@ -16,11 +16,11 @@ import { usePath } from './usePath';
 
 export const SCOPE_ELEMENT = 'element';
 
-export type ElementStoreState = {
+export interface ElementStoreState {
   element: TElement;
   entry: ElementEntry;
   path: Path;
-};
+}
 
 const initialState: Nullable<ElementStoreState> = {
   element: null,

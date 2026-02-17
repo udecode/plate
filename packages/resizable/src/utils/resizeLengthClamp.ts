@@ -3,10 +3,10 @@ import type { ResizeLength, ResizeLengthStatic } from '../types';
 import { resizeLengthToRelative } from './resizeLengthToRelative';
 import { resizeLengthToStatic } from './resizeLengthToStatic';
 
-export type ResizeLengthClampOptions<T = ResizeLength> = {
+export interface ResizeLengthClampOptions<T = ResizeLength> {
   max?: T;
   min?: T;
-};
+}
 
 export const resizeLengthClampStatic = (
   length: ResizeLengthStatic,

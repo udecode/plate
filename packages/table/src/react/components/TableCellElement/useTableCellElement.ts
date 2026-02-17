@@ -13,7 +13,7 @@ import { useIsCellSelected } from './useIsCellSelected';
 import { useTableCellBorders } from './useTableCellBorders';
 import { useTableCellSize } from './useTableCellSize';
 
-export type TableCellElementState = {
+export interface TableCellElementState {
   borders: BorderStylesDefault;
   colIndex: number;
   colSpan: number;
@@ -22,7 +22,7 @@ export type TableCellElementState = {
   rowIndex: number;
   selected: boolean;
   width: number | string;
-};
+}
 
 export const useTableCellElement = (): TableCellElementState => {
   const { api, setOption } = useEditorPlugin(TablePlugin);

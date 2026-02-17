@@ -94,7 +94,7 @@ const createTestEditor = (value?: Value) =>
 
 const readDocxFixture = (filename: string): Buffer => {
   const docxTestDir = path.resolve(
-    __dirname,
+    import.meta.dirname,
     '../../../../docx/src/lib/__tests__'
   );
   const filepath = path.join(docxTestDir, `${filename}.docx`);

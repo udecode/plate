@@ -8,10 +8,10 @@ const isNameChar = (c: number) =>
   c === 58; // :
 
 export const splitIncompleteMdx = (data: string): string[] | string => {
-  type Frame = {
+  interface Frame {
     name: string;
     pos: number;
-  };
+  }
   const stack: Frame[] = [];
 
   const len = data.length;

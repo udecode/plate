@@ -1,7 +1,7 @@
-export type ILocalStorage<T> = {
+export interface ILocalStorage<T> {
   get: () => T;
   set: (value: T) => void;
-};
+}
 
 export class LocalStorage<T> implements ILocalStorage<T> {
   protected key: string;

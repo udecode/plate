@@ -1,7 +1,6 @@
 import React from 'react';
 
 declare global {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: Global augmentation must be an interface per TypeScript specification
   interface Global {
     __PLATE_INSTANCES__?: number;
   }

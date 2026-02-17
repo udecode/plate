@@ -20,24 +20,24 @@
 export type Path = number[];
 
 /** Point in the document */
-export type Point = {
+export interface Point {
   path: Path;
   offset: number;
-};
+}
 
 /** Range in the document */
-export type TRange = {
+export interface TRange {
   anchor: Point;
   focus: Point;
-};
+}
 
 /** Descendant node (element or text) */
-export type Descendant = {
+export interface Descendant {
   children?: Descendant[];
   text?: string;
   type?: string;
   [key: string]: unknown;
-};
+}
 
 /** Element node with children */
 export interface TElement extends Descendant {
@@ -56,7 +56,7 @@ export type NodeEntry<T = Descendant> = [T, Path];
 export type MatchFn = (node: Descendant, path: Path) => boolean;
 
 /** Editor interface for search operations */
-export type SearchEditor = {
+export interface SearchEditor {
   /** Get nodes matching criteria */
   api: {
     nodes: <T extends Descendant>(options: {
@@ -68,15 +68,15 @@ export type SearchEditor = {
   };
   /** Editor children (root nodes) */
   children: Descendant[];
-};
+}
 
 /** Options for search operations */
-export type SearchOptions = {
+export interface SearchOptions {
   /** Starting point for search */
   from?: Point;
   /** Match function to filter which nodes to search in */
   match?: MatchFn;
-};
+}
 
 // ============================================================================
 // Utility Functions

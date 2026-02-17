@@ -19,9 +19,9 @@ import { triggerFloatingLinkInsert } from '../../utils/triggerFloatingLinkInsert
 import { useFloatingLinkEscape } from './useFloatingLinkEscape';
 import { useVirtualFloatingLink } from './useVirtualFloatingLink';
 
-export type LinkFloatingToolbarState = {
+export interface LinkFloatingToolbarState {
   floatingOptions?: UseVirtualFloatingOptions;
-};
+}
 
 export const useFloatingLinkInsertState = ({
   floatingOptions,

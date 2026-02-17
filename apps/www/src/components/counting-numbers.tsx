@@ -54,7 +54,7 @@ export const useCounting = ({
   return number;
 };
 
-export type CountingNumbersProps = {
+export interface CountingNumbersProps {
   value: number;
   className?: string;
   duration?: number;
@@ -62,7 +62,7 @@ export type CountingNumbersProps = {
   noAnimation?: boolean;
   reverse?: boolean;
   start?: number;
-};
+}
 
 export function CountingNumbers({
   className,

@@ -15,7 +15,10 @@ import {
 } from '../queries/index';
 import { unwrapList } from './unwrapList';
 
-type ToggleListOptions = { type: string; checked?: boolean };
+interface ToggleListOptions {
+  type: string;
+  checked?: boolean;
+}
 
 const _toggleList = (
   editor: SlateEditor,

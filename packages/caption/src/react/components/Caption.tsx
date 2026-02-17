@@ -11,9 +11,9 @@ import {
 import { CaptionPlugin } from '../CaptionPlugin';
 import { useCaptionString } from '../hooks/useCaptionString';
 
-export type CaptionOptions = {
+export interface CaptionOptions {
   readOnly?: boolean;
-};
+}
 
 export interface CaptionProps
   extends React.ComponentPropsWithoutRef<'figcaption'> {

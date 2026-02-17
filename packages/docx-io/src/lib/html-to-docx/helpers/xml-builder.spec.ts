@@ -2,7 +2,7 @@ import { describe, expect, it, mock } from 'bun:test';
 import { buildRunsFromTextWithTokens } from './xml-builder';
 
 // Mock types
-type MockDocxDocumentInstance = {
+interface MockDocxDocumentInstance {
   _trackingState?: any;
   comments: any[];
   commentIdMap: Map<string, number>;
@@ -12,7 +12,7 @@ type MockDocxDocumentInstance = {
   ensureComment: (data: any, parentParaId?: string) => number;
   getCommentId: (id: string) => number;
   getRevisionId: (id?: string) => number;
-};
+}
 
 describe('buildRunsFromTextWithTokens', () => {
   it('should emit commentRangeEnd for reply with custom ID', () => {

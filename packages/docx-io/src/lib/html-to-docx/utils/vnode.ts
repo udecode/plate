@@ -1,7 +1,7 @@
-export type VNode = {
+export interface VNode {
   children?: VNode[];
   [key: string]: unknown;
-};
+}
 
 export const vNodeHasChildren = (vNode: VNode | null | undefined): boolean =>
   Boolean(

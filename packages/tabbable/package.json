@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "react-compiler-runtime": "^1.0.0",
-    "tabbable": "^6.2.0"
+    "tabbable": "^6.4.0"
   },
   "devDependencies": {
     "platejs": "workspace:^"

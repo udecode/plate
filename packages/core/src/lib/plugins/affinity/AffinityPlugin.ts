@@ -16,11 +16,11 @@ import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { isNodesAffinity } from './queries/isNodeAffinity';
 import { setAffinitySelection } from './transforms/setAffinitySelection';
 
-export type ElementAffinity = {
+export interface ElementAffinity {
   affinity: 'backward' | 'forward';
   at: Path;
   type: string;
-};
+}
 
 export type AffinityConfig = PluginConfig<'affinity'>;
 

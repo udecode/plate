@@ -265,7 +265,7 @@ export const Step = ({ className, ...props }: React.ComponentProps<'h3'>) => (
   <h3
     className={cn(
       'mt-8 scroll-m-20 font-heading font-semibold text-xl tracking-tight',
-      'before:-indent-px mt-8 mb-4 font-semibold text-base [counter-increment:step] before:absolute before:mt-[-4px] before:ml-[-50px] before:inline-flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:border-4 before:border-background before:bg-muted before:text-center before:font-medium before:font-mono before:text-base first-child:mt-0 before:[content:counter(step)]',
+      'mt-8 mb-4 font-semibold text-base [counter-increment:step] before:absolute before:mt-[-4px] before:ml-[-50px] before:inline-flex before:h-9 before:w-9 before:items-center before:justify-center before:rounded-full before:border-4 before:border-background before:bg-muted before:text-center before:-indent-px before:font-medium before:font-mono before:text-base first-child:mt-0 before:[content:counter(step)]',
       className
     )}
     {...props}

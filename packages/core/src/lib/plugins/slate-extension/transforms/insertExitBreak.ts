@@ -8,10 +8,10 @@ import type { SlateEditor } from '../../../editor';
 
 import { getPluginByType } from '../../../plugin/getSlatePlugin';
 
-export type InsertExitBreakOptions = {
+export interface InsertExitBreakOptions {
   match?: EditorAboveOptions['match'];
   reverse?: boolean;
-};
+}
 
 /**
  * Exits the current block structure by creating a new block next to the

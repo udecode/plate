@@ -36,35 +36,35 @@ export const OperationApi: {
   isTextOperation: (value: any) => value is TextOperation;
 } = SlateOperation as any;
 
-export type InsertNodeOperation<N extends Descendant = Descendant> = {
+export interface InsertNodeOperation<N extends Descendant = Descendant> {
   [key: string]: unknown;
   node: N;
   path: Path;
   type: 'insert_node';
-};
+}
 
-export type InsertTextOperation = {
+export interface InsertTextOperation {
   [key: string]: unknown;
   offset: number;
   path: Path;
   text: string;
   type: 'insert_text';
-};
+}
 
-export type MergeNodeOperation<N extends Descendant = Descendant> = {
+export interface MergeNodeOperation<N extends Descendant = Descendant> {
   [key: string]: unknown;
   path: Path;
   position: number;
   properties: Partial<NodeProps<N>>;
   type: 'merge_node';
-};
+}
 
-export type MoveNodeOperation = {
+export interface MoveNodeOperation {
   [key: string]: unknown;
   newPath: Path;
   path: Path;
   type: 'move_node';
-};
+}
 
 export type NodeOperation<N extends Descendant = Descendant> =
   | InsertNodeOperation<N>
@@ -74,33 +74,33 @@ export type NodeOperation<N extends Descendant = Descendant> =
   | SetNodeOperation<N>
   | SplitNodeOperation<N>;
 
-export type RemoveNodeOperation<N extends Descendant = Descendant> = {
+export interface RemoveNodeOperation<N extends Descendant = Descendant> {
   [key: string]: unknown;
   node: N;
   path: Path;
   type: 'remove_node';
-};
+}
 
-export type RemoveTextOperation = {
+export interface RemoveTextOperation {
   [key: string]: unknown;
   offset: number;
   path: Path;
   text: string;
   type: 'remove_text';
-};
+}
 
 export type SelectionOperation = SetSelectionOperation;
 
-export type SetNodeOperation<
+export interface SetNodeOperation<
   N1 extends Descendant = Descendant,
   N2 extends Descendant = Descendant,
-> = {
+> {
   [key: string]: unknown;
   newProperties: Partial<NodeProps<N1>>;
   path: Path;
   properties: Partial<NodeProps<N2>>;
   type: 'set_node';
-};
+}
 
 export type SetSelectionOperation =
   | {
@@ -122,12 +122,12 @@ export type SetSelectionOperation =
       type: 'set_selection';
     };
 
-export type SplitNodeOperation<N extends Descendant = Descendant> = {
+export interface SplitNodeOperation<N extends Descendant = Descendant> {
   [key: string]: unknown;
   path: Path;
   position: number;
   properties: Partial<NodeProps<N>>;
   type: 'split_node';
-};
+}
 
 export type TextOperation = InsertTextOperation | RemoveTextOperation;

@@ -225,7 +225,7 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   };
 };
 
-export type Parser<C extends AnyPluginConfig = PluginConfig> = {
+export interface Parser<C extends AnyPluginConfig = PluginConfig> {
   format?: string[] | string;
   mimeTypes?: string[];
   deserialize?: (
@@ -239,7 +239,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   transformFragment?: (
     options: ParserOptions & SlatePluginContext<C> & { fragment: Descendant[] }
   ) => Descendant[];
-};
+}
 
 export type PartialEditorPlugin<C extends AnyPluginConfig = PluginConfig> =
   Omit<Partial<EditorPlugin<C>>, 'node'> & {
@@ -442,7 +442,7 @@ export type SlatePluginConfig<
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
   BasePluginContext<C> & { editor: SlateEditor; plugin: EditorPlugin<C> };
 
-export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
+export interface SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> {
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
@@ -639,7 +639,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => SlatePlugin<C>;
   __resolved?: boolean;
-};
+}
 
 export type SlatePlugins = AnySlatePlugin[];
 
@@ -650,7 +650,7 @@ export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
   BaseTransformOptions & SlatePluginContext<C>;
 
-export type SlateShortcut = {
+export interface SlateShortcut {
   keys?: (({} & string)[][] | readonly string[] | string) | null;
   delimiter?: string;
   description?: string;
@@ -673,7 +673,7 @@ export type SlateShortcut = {
     eventDetails: any;
   }) => boolean | void;
   ignoreEventWhen?: (e: KeyboardEvent) => boolean;
-};
+}
 
 type Trigger =
   | ((keyboardEvent: KeyboardEvent, hotkeysEvent: any) => boolean)

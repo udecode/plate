@@ -1,7 +1,7 @@
 // use function to allow for mocking in tests:
 const getOriginalFetch = () => fetch;
 
-export type CallCompletionApiOptions = {
+export interface CallCompletionApiOptions {
   prompt: string;
   api?: string;
   body?: Record<string, any>;
@@ -15,7 +15,7 @@ export type CallCompletionApiOptions = {
   onError?: ((error: Error) => void) | undefined;
   onFinish?: ((prompt: string, completion: string) => void) | undefined;
   onResponse?: ((response: Response) => Promise<void> | void) | undefined;
-};
+}
 
 export type CompleteOptions = Omit<
   CallCompletionApiOptions,

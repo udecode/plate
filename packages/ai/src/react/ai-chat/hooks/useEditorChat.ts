@@ -9,14 +9,14 @@ import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
 
-export type UseEditorChatOptions = {
+export interface UseEditorChatOptions {
   // @deprecated not used
   chat?: any;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
   onOpenSelection?: () => void;
-};
+}
 
 export const useEditorChat = ({
   onOpenBlockSelection,

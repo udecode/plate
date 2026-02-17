@@ -1,10 +1,10 @@
 import type { UnknownObject } from 'platejs';
 
 // TODO
-export type SuggestionEditorProps = {
+export interface SuggestionEditorProps {
   activeSuggestionId?: string | null;
   isSuggesting?: boolean;
-};
+}
 
 export type SuggestionUser = UnknownObject & {
   id: string;
@@ -12,7 +12,7 @@ export type SuggestionUser = UnknownObject & {
   avatarUrl?: string;
 };
 
-export type TResolvedSuggestion = {
+export interface TResolvedSuggestion {
   createdAt: Date;
   keyId: string;
   suggestionId: string;
@@ -22,7 +22,7 @@ export type TResolvedSuggestion = {
   newText?: string;
   properties?: any;
   text?: string;
-};
+}
 
 export interface TSuggestion extends UnknownObject {
   id: string;

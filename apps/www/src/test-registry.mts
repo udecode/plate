@@ -57,11 +57,11 @@ const ConfigSchema = z.object({
 // Type inferred from Zod schema
 type Config = z.infer<typeof ConfigSchema>;
 
-type FileItem = {
+interface FileItem {
   path: string;
   type: string;
   target?: string;
-};
+}
 
 const defaultConfig: Config = {
   blocks: true, // Default to testing all blocks
@@ -184,7 +184,6 @@ const runCommand = async (
   }
 };
 
-// biome-ignore lint/nursery/useMaxParams: test function with multiple configuration parameters
 const testItemsGroup = async (
   itemNames: string[], // Items to install (e.g., ['image'] or ['table', 'resizable'])
   groupDirName: string, // Name for the directory under BASE_TEST_DIR (e.g., 'image' or 'table-resizable')

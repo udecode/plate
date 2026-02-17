@@ -9,13 +9,13 @@ import BoundHotkeysProxyProviderProvider from './BoundHotkeysProxyProvider';
 import deepEqual from './deepEqual';
 import type { Hotkey } from './types';
 
-export type HotkeysContextType = {
+export interface HotkeysContextType {
   activeScopes: string[];
   hotkeys: readonly Hotkey[];
   disableScope: (scope: string) => void;
   enableScope: (scope: string) => void;
   toggleScope: (scope: string) => void;
-};
+}
 
 // The context is only needed for special features like global scoping, so we use a graceful default fallback
 const HotkeysContext = createContext<HotkeysContextType>({
@@ -28,10 +28,10 @@ const HotkeysContext = createContext<HotkeysContextType>({
 
 export const useHotkeysContext = () => useContext(HotkeysContext);
 
-type Props = {
+interface Props {
   children: ReactNode;
   initiallyActiveScopes?: string[];
-};
+}
 
 export const HotkeysProvider = ({
   children,

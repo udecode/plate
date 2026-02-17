@@ -1,6 +1,6 @@
 import type { SetNodesOptions, SlateEditor } from 'platejs';
 
-type props = {
+interface props {
   type: string;
   url: string;
   id?: string;
@@ -10,7 +10,7 @@ type props = {
   name?: string;
   placeholderId?: string;
   width?: number;
-};
+}
 
 export const setMediaNode = (
   editor: SlateEditor,
