@@ -1,0 +1,135 @@
+---
+name: nextjs-server-side-error-debugging
+description: Use when debugging Next.js server-side errors - triggers when page shows generic error but browser console is empty, API routes return 500 with no details, or server-side code fails silently. Check terminal/server logs instead of browser.
+---
+
+# Next.js Server-Side Error Debugging
+
+## Overview
+
+**Server-side errors in Next.js don't appear in the browser console.** The actual error with full stack trace appears in the terminal where `npm run dev` is running. This is the first place to look when debugging server-side issues.
+
+## When to Use
+
+- Page displays "Internal Server Error" or custom error page
+- Browser console shows no errors, or only a generic fetch failure
+- Using `getServerSideProps`, `getStaticProps`, or API routes
+- Error only occurs on page refresh or direct navigation (not client-side transitions)
+- Network tab shows 500 but response body is empty or generic
+
+## Quick Reference
+
+| Symptom                      | Cause                  | Solution                              |
+| ---------------------------- | ---------------------- | ------------------------------------- |
+| Empty browser console        | Server-side error      | Check terminal                        |
+| Generic 500 error            | Server threw exception | Check terminal for stack trace        |
+| Works locally, fails in prod | Missing env vars       | Check server logs (Vercel/CloudWatch) |
+| Intermittent errors          | Timing/async issues    | Add try-catch with console.error      |
+
+## Solution
+
+### Step 1: Check the Terminal
+
+The actual error with full stack trace appears in the terminal where `npm run dev` is running.
+
+```bash
+# If you don't see the terminal, find the process
+ps aux | grep next
+# Or restart with visible output
+npm run dev
+```
+
+### Step 2: Add Explicit Error Handling
+
+For persistent debugging, wrap server-side code with try-catch:
+
+```typescript
+export async function getServerSideProps(context) {
+  try {
+    const data = await fetchSomething();
+    return { props: { data } };
+  } catch (error) {
+    console.error("getServerSideProps error:", error);
+    return { props: { error: error.message } };
+  }
+}
+```
+
+### Step 3: For Production Errors
+
+Check your hosting provider's logs:
+
+- **Vercel**: Dashboard → Project → Logs (Functions tab)
+- **AWS**: CloudWatch Logs
+- **Netlify**: Functions tab in dashboard
+- **Self-hosted**: Check your Node.js process logs
+
+## Common Mistakes
+
+### ❌ Mistake #1: Looking in browser DevTools
+
+```typescript
+// Error happens here but nothing in browser console
+export async function getServerSideProps() {
+  const data = await fetch("https://api.example.com/data");
+  return { props: { data: await data.json() } };
+}
+```
+
+**Rationalization:** "Errors should appear in the browser console like client-side errors"
+
+**Fix:** Check the terminal where `npm run dev` is running. Server-side code runs on the server, not in the browser.
+
+### ❌ Mistake #2: Missing environment variables in production
+
+```typescript
+// Works locally, fails in production
+const apiKey = process.env.API_KEY; // undefined in production
+```
+
+**Rationalization:** "It works on my machine, must be a code bug"
+
+**Fix:** Verify env vars are set in your hosting provider's dashboard. Local `.env` files don't deploy automatically.
+
+## Red Flags - STOP
+
+If you catch yourself thinking:
+
+- "The browser console is empty, so there's no error"
+- "This worked locally, so the code is fine"
+- "I'll add more console.log in the component"
+
+**STOP. Check the server terminal first.**
+
+## Example
+
+**Scenario**: User reports page shows "Internal Server Error" after clicking a link.
+
+**Before** (investigation):
+
+1. Open browser DevTools → Console: Empty
+2. Network tab shows: `GET /dashboard → 500`
+
+**After** (check terminal):
+
+```
+Error: Cannot read property 'id' of undefined
+    at getServerSideProps (/app/pages/dashboard.tsx:15:25)
+    at renderToHTML (/app/node_modules/next/dist/server/render.js:428:22)
+```
+
+**Cause found**: Database query returned `null` instead of user object.
+
+## Notes
+
+- In development, Next.js sometimes shows an error overlay, but it often has less detail than the terminal
+- `reactStrictMode: true` causes double-execution of server functions in development
+- Client-side errors (in useEffect, event handlers) DO appear in browser console
+- For API routes, errors appear in the same terminal as page errors
+
+## Verification Checklist
+
+- [ ] Checked terminal where `npm run dev` is running
+- [ ] Found actual error message with file/line number
+- [ ] Identified root cause from stack trace
+- [ ] Added try-catch for future debugging if needed

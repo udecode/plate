@@ -13,6 +13,12 @@ export type TDiscussion = {
   isResolved: boolean;
   userId: string;
   documentContent?: string;
+  /** Direct author name from DOCX import (bypasses user lookup) */
+  authorName?: string;
+  /** Author initials from DOCX import */
+  authorInitials?: string;
+  /** OOXML paraId for round-trip DOCX threading fidelity */
+  paraId?: string;
 };
 
 const discussionsData: TDiscussion[] = [

@@ -20,7 +20,7 @@
     "devt": "yarn workspace www devt",
     "docs:build": "cd docs && yarn && yarn build",
     "docs:start": "cd docs && yarn && yarn start",
-    "e2e": "yarn playwright test --config tooling/config/playwright.config.ts",
+    "e2e": "echo '@playwright/test removed to reduce install size (~200MB). Run: yarn add -D @playwright/test'",
     "g:Test:Watch": "turbo --filter \"./packages/**\" test:watch",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
@@ -82,7 +82,6 @@
     "@changesets/cli": "2.29.7",
     "@changesets/get-github-info": "0.6.0",
     "@happy-dom/global-registrator": "20.0.10",
-    "@playwright/test": "1.53.0",
     "@roarr/cli": "5.12.4",
     "@rollup/plugin-babel": "6.1.0",
     "@swc/core": "1.12.0",
@@ -112,10 +111,12 @@
     "dotenv": "16.5.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "7.0.1",
+    "is-hotkey": "^0.2.0",
     "openai": "5.3.0",
     "patch-package": "8.0.0",
     "prompts": "2.4.2",
     "react": "19.2.3",
+    "react-dnd": "^16.0.1",
     "react-dnd-test-backend": "16.0.1",
     "react-dom": "19.2.3",
     "rimraf": "6.0.1",
@@ -135,5 +136,8 @@
     "node": ">=18.12.0",
     "npm": "please-use-yarn",
     "yarn": ">=1.22.0"
+  },
+  "dependencies": {
+    "yarn": "^1.22.22"
   }
 }

@@ -27,7 +27,8 @@
       "!!tooling/config/global.d.ts",
       "!!templates",
       "!**/__registry__",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!**/mammoth.js"
     ]
   },
   "linter": {

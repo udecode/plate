@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { exportToDocx } from '@platejs/docx-io';
+import { exportToDocx, type DocxExportDiscussion } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowDownToLineIcon } from 'lucide-react';
 import type { SlatePlugin } from 'platejs';
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+import { discussionPlugin } from '@/registry/components/editor/plugins/discussion-kit';
 
 import { EditorStatic } from './editor-static';
 import { ToolbarButton } from './toolbar';
@@ -151,8 +152,43 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToWord = async () => {
+    // Get discussions and users from the discussion plugin for comment export
+    const discussions = editor.getOption(discussionPlugin, 'discussions') ?? [];
+    const users = editor.getOption(discussionPlugin, 'users') ?? {};
+
+    // Resolve display name: prefer authorName (from DOCX import), fall back to users lookup
+    const resolveUser = (
+      userId: string,
+      authorName?: string
+    ): { id: string; name: string } | undefined => {
+      const name = authorName ?? users[userId]?.name;
+      return name ? { id: userId, name } : undefined;
+    };
+
+    // Convert discussions to export format
+    const exportDiscussions: DocxExportDiscussion[] = discussions.map((d) => ({
+      id: d.id,
+      comments: d.comments?.map((c) => ({
+        contentRich: c.contentRich,
+        createdAt: c.createdAt,
+        id: c.id,
+        paraId: c.paraId,
+        parentParaId: c.parentParaId,
+        userId: c.userId,
+        user: resolveUser(c.userId, c.authorName),
+      })),
+      createdAt: d.createdAt,
+      documentContent: d.documentContent,
+      paraId: d.paraId,
+      userId: d.userId,
+      user: resolveUser(d.userId, d.authorName),
+    }));
+
     const blob = await exportToDocx(editor.children, {
       editorPlugins: [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[],
+      tracking: {
+        discussions: exportDiscussions,
+      },
     });
 
     const url = URL.createObjectURL(blob);
