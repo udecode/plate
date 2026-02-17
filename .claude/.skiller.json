@@ -637,7 +637,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "frontend-design@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "skill",
         "sourceRelPath": "skills/frontend-design",
         "destRelPath": "frontend-design-frontend-design-2"
@@ -677,7 +676,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/cancel-ralph.md",
         "destRelPath": "ralph-loop-cancel-ralph"
@@ -685,7 +683,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/help.md",
         "destRelPath": "ralph-loop-help"
@@ -693,7 +690,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/ralph-loop.md",
         "destRelPath": "ralph-loop-ralph-loop"
@@ -1415,7 +1411,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "frontend-design@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "skill",
         "sourceRelPath": "skills/frontend-design",
         "destRelPath": "frontend-design-frontend-design-2"
@@ -1455,7 +1450,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/cancel-ralph.md",
         "destRelPath": "ralph-loop-cancel-ralph"
@@ -1463,7 +1457,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/help.md",
         "destRelPath": "ralph-loop-help"
@@ -1471,7 +1464,6 @@
       {
         "sourceType": "plugin",
         "pluginId": "ralph-loop@claude-plugins-official",
-        "pluginVersion": "27d2b86d72da",
         "sourceKind": "command",
         "sourceRelPath": "commands/ralph-loop.md",
         "destRelPath": "ralph-loop-ralph-loop"
