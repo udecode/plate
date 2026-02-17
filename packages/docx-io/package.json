@@ -50,7 +50,6 @@
     "jszip": "^3.10.1",
     "juice": "^11.0.1",
     "lodash": "^4.17.21",
-    "mammoth": "^1.9.0",
     "mime-types": "^2.1.35",
     "nanoid": "^5.0.9",
     "react-compiler-runtime": "^1.0.0",
@@ -59,11 +58,20 @@
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
+    "@platejs/basic-nodes": "workspace:^",
+    "@platejs/basic-styles": "workspace:^",
+    "@platejs/comment": "workspace:^",
     "@platejs/docx": "workspace:^",
+    "@platejs/link": "workspace:^",
+    "@platejs/list": "workspace:^",
     "@platejs/markdown": "workspace:^",
+    "@platejs/suggestion": "workspace:^",
+    "@platejs/table": "workspace:^",
+    "@platejs/test-utils": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
+    "@platejs/comment": ">=52.0.0",
     "@platejs/docx": ">=52.0.0",
     "@platejs/markdown": ">=52.0.0",
     "platejs": ">=52.0.0",

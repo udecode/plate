@@ -1,4 +1,3 @@
-/** @jsx jsx */
 /** biome-ignore-all lint/suspicious/noEvolvingTypes: test file */
 /** biome-ignore-all lint/suspicious/noImplicitAnyLet: test file */
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: test file */
@@ -7,15 +6,46 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { getCommentKey } from '@platejs/comment';
+import {
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import { BaseCommentPlugin, getCommentKey } from '@platejs/comment';
 import { cleanDocx } from '@platejs/docx';
-import { jsx } from '@platejs/test-utils';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin } from '@platejs/list';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
 import JSZip from 'jszip';
 import type { SlatePlugin, TNode, Value } from 'platejs';
-import { createSlateEditor, KEYS, NodeApi, TextApi } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createSlateEditor,
+  KEYS,
+  NodeApi,
+  TextApi,
+} from 'platejs';
 import { serializeHtml } from 'platejs/static';
-import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
-import { DocxExportKit } from 'www/src/registry/components/editor/plugins/docx-export-kit';
+import { DocxExportPlugin } from '../docx-export-plugin';
 import { exportToDocx, htmlToDocxBlob } from '../docx-export-plugin';
 import type { DocxExportDiscussion } from '../exportTrackChanges';
 import {
@@ -25,9 +55,35 @@ import {
 import { mammoth, preprocessMammothHtml } from '../importDocx';
 import { searchRange } from '../searchRange';
 
-jsx;
-
-const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[];
+/** Minimal editor kit for roundtrip tests (no registry dependency). */
+const editorPlugins: SlatePlugin[] = [
+  BaseParagraphPlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseCodePlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseTablePlugin.configure({ render: { as: 'table' } }),
+  BaseTableRowPlugin.configure({ render: { as: 'tr' } }),
+  BaseTableCellPlugin.configure({ render: { as: 'td' } }),
+  BaseTableCellHeaderPlugin.configure({ render: { as: 'th' } }),
+  BaseLinkPlugin.configure({ render: { as: 'a' } }),
+  BaseListPlugin,
+  BaseTextAlignPlugin,
+  BaseCommentPlugin,
+  BaseSuggestionPlugin,
+  DocxExportPlugin,
+];
 
 const createTestEditor = (value?: Value) =>
   createSlateEditor({
@@ -46,7 +102,11 @@ const readDocxFixture = (filename: string): Buffer => {
 };
 
 const readMammothFixture = (filename: string): Buffer => {
-  const docxTestDir = path.resolve(__dirname, '../mammoth.js/test/test-data');
+  // Mammoth test fixtures live in the mammoth npm package
+  const docxTestDir = path.resolve(
+    require.resolve('mammoth/package.json'),
+    '../test/test-data'
+  );
   const filepath = path.join(docxTestDir, `${filename}.docx`);
 
   return fs.readFileSync(filepath);

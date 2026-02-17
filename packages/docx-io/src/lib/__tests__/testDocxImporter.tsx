@@ -3,33 +3,41 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { cleanDocx } from '@platejs/docx';
-import type { SlatePlugin, TNode } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import {
-  BasicBlocksPlugin,
-  BasicMarksPlugin,
-} from '@platejs/basic-nodes/react';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { IndentPlugin } from '@platejs/indent/react';
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
-import { LinkPlugin } from '@platejs/link/react';
-import { ListPlugin } from '@platejs/list/react';
-import { ImagePlugin } from '@platejs/media/react';
-import { TablePlugin } from '@platejs/table/react';
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import { cleanDocx } from '@platejs/docx';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin } from '@platejs/list';
+import {
+  BaseTableCellHeaderPlugin,
+  BaseTableCellPlugin,
+  BaseTablePlugin,
+  BaseTableRowPlugin,
+} from '@platejs/table';
 import { jsx } from '@platejs/test-utils';
+import type { SlatePlugin, TElement, TNode } from 'platejs';
+import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+
 import { mammoth, preprocessMammothHtml } from '../importDocx';
 
 // biome-ignore lint/nursery/noUnusedExpressions: test
 jsx;
-
-const injectConfig = {
-  inject: {
-    targetPlugins: ['p', 'h1', 'h2', 'h3'],
-  },
-};
 
 /** Read .docx file from docx package's __tests__ directory */
 export const readDocxFixture = (filename: string): Buffer => {
@@ -62,17 +70,29 @@ export const testDocxImporter = ({
       },
       plugins: [
         ...plugins,
-        ImagePlugin,
-        HorizontalRulePlugin,
-        CodeBlockPlugin,
-        LinkPlugin,
-        BasicBlocksPlugin,
-        BasicMarksPlugin,
-        ListPlugin,
-        TablePlugin,
-        LineHeightPlugin.extend(() => injectConfig),
-        TextAlignPlugin.extend(() => injectConfig),
-        IndentPlugin.extend(() => injectConfig),
+        BaseParagraphPlugin,
+        BaseH1Plugin,
+        BaseH2Plugin,
+        BaseH3Plugin,
+        BaseH4Plugin,
+        BaseH5Plugin,
+        BaseH6Plugin,
+        BaseBlockquotePlugin,
+        BaseHorizontalRulePlugin,
+        BaseBoldPlugin,
+        BaseItalicPlugin,
+        BaseUnderlinePlugin,
+        BaseCodePlugin,
+        BaseStrikethroughPlugin,
+        BaseSubscriptPlugin,
+        BaseSuperscriptPlugin,
+        BaseLinkPlugin,
+        BaseListPlugin,
+        BaseTablePlugin,
+        BaseTableRowPlugin,
+        BaseTableCellPlugin,
+        BaseTableCellHeaderPlugin,
+        BaseTextAlignPlugin,
       ],
     });
 

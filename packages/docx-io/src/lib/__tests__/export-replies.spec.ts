@@ -4,7 +4,7 @@
  * resolveCommentMeta is private, so we test through the public API:
  *   injectDocxTrackingTokens -> token text -> splitDocxTrackingTokens
  *
- * These tests should FAIL until Phase 3 implementation populates replies.
+ * resolveCommentMeta now populates replies from discussion.comments[1..n].
  */
 
 import { describe, expect, it } from 'bun:test';
@@ -95,21 +95,21 @@ describe('resolveCommentMeta with replies', () => {
 
     // Parent metadata
     expect(payload!.authorName).toBe('Alice Author');
-    expect(payload!.date).toBe('2025-01-15T10:00:00.000Z');
+    expect(payload!.date).toBe('2025-01-15T10:00:00Z');
 
-    // Replies - this WILL FAIL until resolveCommentMeta populates replies
+    // Replies
     expect(payload!.replies).toBeDefined();
     expect(payload!.replies).toHaveLength(2);
 
     // First reply
     expect(payload!.replies![0].authorName).toBe('Bob Reviewer');
     expect(payload!.replies![0].text).toBe('First reply text');
-    expect(payload!.replies![0].date).toBe('2025-01-15T11:00:00.000Z');
+    expect(payload!.replies![0].date).toBe('2025-01-15T11:00:00Z');
 
     // Second reply
     expect(payload!.replies![1].authorName).toBe('Carol Editor');
     expect(payload!.replies![1].text).toBe('Second reply text');
-    expect(payload!.replies![1].date).toBe('2025-01-15T12:00:00.000Z');
+    expect(payload!.replies![1].date).toBe('2025-01-15T12:00:00Z');
   });
 
   it('should return empty replies for single-comment discussion', () => {
