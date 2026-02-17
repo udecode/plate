@@ -1,0 +1,1 @@
+{ "$schema": "https://schema.railpack.com", "provider": "node", "steps": { "install": { "commands": ["yarn install"] }, "postinstall": { "commands": ["yarn postinstall"] }, "build": { "commands": ["yarn build"] } }, "deploy": { "startCommand": "yarn start" } }
