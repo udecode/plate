@@ -41,7 +41,7 @@
     "g:typecheck": "turbo --filter \"./packages/**\" typecheck",
     "g:typecheck:all": "turbo typecheck",
     "gen:package": "yarn plop --plopfile tooling/scripts/plop/plopfile.cjs package",
-    "postinstall": "bunx skiller@latest apply && patch-package --patch-dir tooling/patches",
+    "postinstall": "(bunx skiller@latest apply 2>/dev/null || true) && patch-package --patch-dir tooling/patches",
     "lint": "biome check . && eslint",
     "lint:fix": "biome check . --fix",
     "nuke:node_modules": "rimraf '**/node_modules'",

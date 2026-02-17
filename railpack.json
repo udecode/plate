@@ -2,13 +2,13 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "yarn build",
+    "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192' yarn build && NODE_OPTIONS='--max-old-space-size=8192' yarn build:apps && cp -r apps/www/public apps/www/.next/standalone/apps/www/public && mkdir -p apps/www/.next/standalone/apps/www/.next && cp -r apps/www/.next/static apps/www/.next/standalone/apps/www/.next/static",
     "buildEnvironment": "V3"
   },
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "NODE_OPTIONS='--max-old-space-size=8192' TURBO_CONCURRENCY=1 yarn exec turbo build --filter=./apps/www",
+    "startCommand": "HOSTNAME=0.0.0.0 node apps/www/.next/standalone/apps/www/server.js",
     "sleepApplication": false,
     "useLegacyStacker": false,
     "ipv6EgressEnabled": false,

@@ -4,6 +4,7 @@ import { globSync } from 'glob';
 
 const nextConfig = async (phase: string) => {
   const config: NextConfig = {
+    output: 'standalone',
     typescript: {
       ignoreBuildErrors: true,
     },
