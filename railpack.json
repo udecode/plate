@@ -8,7 +8,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "cd apps/www && yarn build && yarn start",
+    "startCommand": "NODE_OPTIONS='--max-old-space-size=8192' TURBO_CONCURRENCY=1 yarn exec turbo build --filter=./apps/www",
     "sleepApplication": false,
     "useLegacyStacker": false,
     "ipv6EgressEnabled": false,
