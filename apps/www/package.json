@@ -14,7 +14,7 @@
     "lint": "yarn p:lint",
     "lint:fix": "yarn p:lint:fix",
     "preview": "yarn build && next start",
-    "r": "concurrently \"yarn build:registry\" \"yarn build:tw\"",
+    "r": "yarn build:registry && yarn build:tw",
     "rc": "concurrently \"contentlayer2 dev\" \"next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "rd": "NODE_ENV=development tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
