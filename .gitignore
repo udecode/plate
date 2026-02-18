@@ -143,7 +143,6 @@ CLAUDE.local.md
 /.mcp.json
 /AGENTS.md
 /CLAUDE.md
-!.claude/skiller.toml
 # END Skiller Generated Files
 .claude/rules/
 .claude/skills/
