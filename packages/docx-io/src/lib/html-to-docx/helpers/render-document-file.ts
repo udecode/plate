@@ -4,13 +4,13 @@
 // @ts-expect-error - no types available
 import { default as HTMLToVDOM } from 'html-to-vdom';
 // @ts-expect-error - no types available
-import isVNode from 'virtual-dom/vnode/is-vnode';
+import isVNode from 'virtual-dom/vnode/is-vnode.js';
 // @ts-expect-error - no types available
-import isVText from 'virtual-dom/vnode/is-vtext';
+import isVText from 'virtual-dom/vnode/is-vtext.js';
 // @ts-expect-error - no types available
-import VNode from 'virtual-dom/vnode/vnode';
+import VNode from 'virtual-dom/vnode/vnode.js';
 // @ts-expect-error - no types available
-import VText from 'virtual-dom/vnode/vtext';
+import VText from 'virtual-dom/vnode/vtext.js';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { fragment } from 'xmlbuilder2';
 

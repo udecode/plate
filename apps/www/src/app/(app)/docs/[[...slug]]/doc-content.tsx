@@ -8,7 +8,7 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { ExternalLinkIcon } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link.js';
 
 import { DocsTableOfContents } from '@/components/docs-toc';
 import { LLMCopyButton } from '@/components/llm-copy-button';

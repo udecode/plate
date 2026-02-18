@@ -6,9 +6,9 @@ import { decode } from 'html-entities';
 // @ts-expect-error - no types available
 import { default as HTMLToVDOM } from 'html-to-vdom';
 // @ts-expect-error - no types available
-import VNode from 'virtual-dom/vnode/vnode';
+import VNode from 'virtual-dom/vnode/vnode.js';
 // @ts-expect-error - no types available
-import VText from 'virtual-dom/vnode/vtext';
+import VText from 'virtual-dom/vnode/vtext.js';
 import { create } from 'xmlbuilder2';
 
 import {

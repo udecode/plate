@@ -23,7 +23,6 @@
     "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -51,7 +50,6 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js",
   "dependencies": {
     "react-compiler-runtime": "^1.0.0"
   }

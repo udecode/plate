@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { SidebarNavItem } from '@/types/nav';
 
-import Link from 'next/link';
+import Link from 'next/link.js';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';

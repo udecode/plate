@@ -1,7 +1,7 @@
 'use client';
 
 import { StarIcon } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link.js';
 
 import { buttonVariants } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';

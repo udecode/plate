@@ -1,6 +1,7 @@
 import type { SetNodesOptions, SlateEditor } from 'platejs';
 
-interface props {
+interface MediaNodeProps {
+  [key: string]: unknown;
   type: string;
   url: string;
   id?: string;
@@ -14,6 +15,6 @@ interface props {
 
 export const setMediaNode = (
   editor: SlateEditor,
-  props: props,
+  props: MediaNodeProps,
   options?: SetNodesOptions
 ) => editor.tf.setNodes(props, options);

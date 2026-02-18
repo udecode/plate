@@ -26,7 +26,7 @@ import {
   Tablet,
   Terminal,
 } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link.js';
 
 import { CopyNpmCommandButton } from '@/components/copy-button';
 import { Button, buttonVariants } from '@/components/ui/button';

@@ -51,7 +51,8 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@types/prompts": "2.4.9"
+    "@types/prompts": "2.4.9",
+    "tsdown": "0.20.3"
   },
   "publishConfig": {
     "access": "public"

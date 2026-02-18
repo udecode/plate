@@ -5,7 +5,7 @@ import { useState } from 'react';
 import type { SidebarNavItem } from '@/types/nav';
 
 import { CircleDashedIcon } from 'lucide-react';
-import Link from 'next/link';
+import Link from 'next/link.js';
 
 import { DocBreadcrumb } from '@/app/(app)/docs/[[...slug]]/doc-breadcrumb';
 import { Icons } from '@/components/icons';

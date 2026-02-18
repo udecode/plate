@@ -2,6 +2,7 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
+    "./react": "./dist/react/index.js",
     "./package.json": "./package.json"
   }
 }

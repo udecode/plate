@@ -1,17 +1,14 @@
 import React from 'react';
 
-import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type {
-  AppState,
-  ExcalidrawImperativeAPI,
-  LibraryItems,
-} from '@excalidraw/excalidraw/types';
-
 import { cloneDeep, isEqual } from 'lodash';
 import { useEditorRef, useReadOnly } from 'platejs/react';
 
 import type { TExcalidrawElement } from '../../lib';
 import type { TExcalidrawProps } from '../types';
+
+type ExcalidrawAppState = Record<string, unknown>;
+type ExcalidrawElementLike = Record<string, unknown>;
+type ExcalidrawLibraryItems = readonly unknown[] | unknown[];
 
 export const useExcalidrawElement = ({
   element,
@@ -19,7 +16,7 @@ export const useExcalidrawElement = ({
   scrollToContent = true,
 }: {
   element: TExcalidrawElement;
-  libraryItems?: LibraryItems;
+  libraryItems?: ExcalidrawLibraryItems;
   scrollToContent?: boolean;
 }) => {
   const [Excalidraw, setExcalidraw] = React.useState<any>(null);
@@ -37,11 +34,11 @@ export const useExcalidrawElement = ({
     );
   });
 
-  const _excalidrawRef = React.useRef<ExcalidrawImperativeAPI>(null);
+  const _excalidrawRef = React.useRef<unknown>(null);
 
   // Create save function with deduplication only
   const handleChange = React.useCallback(
-    (elements: readonly OrderedExcalidrawElement[], state: AppState) => {
+    (elements: readonly ExcalidrawElementLike[], state: ExcalidrawAppState) => {
       if (readOnly) return;
 
       // Create deep copies to avoid read-only property errors

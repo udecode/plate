@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { TTagElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import Link from 'next/link';
+import Link from 'next/link.js';
 import {
   PlateElement,
   useFocused,

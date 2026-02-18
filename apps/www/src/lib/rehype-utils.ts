@@ -15,7 +15,6 @@ import {
 import { Project, ScriptKind } from 'ts-morph';
 
 import registryShadcnData from '../../registry-shadcn.json';
-import { Index } from '../__registry__';
 import { registry } from '../registry/registry';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
@@ -220,23 +219,28 @@ export function getAllDependencies(
 //     .filter(Boolean) as any;
 // }
 
-const memoizedIndex: typeof Index = Object.fromEntries(
-  Object.entries(Index).map(([style, items]) => [style, { ...items }])
-);
-
 export function getRegistryComponent(name: string) {
   if (name === 'slate-to-html') {
     return React.lazy(() => import('@/registry/blocks/slate-to-html/page'));
   }
 
-  return memoizedIndex[name]?.component;
+  return React.lazy(async () => {
+    const { Index } = await import('../__registry__');
+    const component = Index[name]?.component;
+
+    if (!component) {
+      throw new Error(`Component ${name} not found`);
+    }
+
+    return component();
+  });
 }
 
 export async function getRegistryItem(
   name: string,
   prefetch = false
 ): Promise<RegistryItem | null> {
-  const item = memoizedIndex[name];
+  const item = registry.items.find((entry) => entry.name === name);
 
   if (!item) {
     return null;
@@ -244,12 +248,15 @@ export async function getRegistryItem(
 
   // Convert all file paths to object.
   // TODO: remove when we migrate to new registry.
-  item.files = item.files.map((file: unknown) =>
+  const normalizedFiles = (item.files ?? []).map((file: unknown) =>
     typeof file === 'string' ? { path: file } : file
   );
 
   // Fail early before doing expensive file operations.
-  const result = registryItemSchema.safeParse(item);
+  const result = registryItemSchema.safeParse({
+    ...item,
+    files: normalizedFiles,
+  });
 
   if (!result.success) {
     return null;
@@ -265,7 +272,7 @@ export async function getRegistryItem(
     const relativePath = path.relative(process.cwd(), file.path);
 
     const content =
-      !prefetch || file.path === item.files[0].path
+      !prefetch || file.path === normalizedFiles[0]?.path
         ? await getFileContent(file as any)
         : undefined;
 
