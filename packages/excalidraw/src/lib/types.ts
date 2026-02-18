@@ -1,10 +1,7 @@
-type ExcalidrawElementLike = Record<string, unknown>;
-type ExcalidrawAppStateLike = Record<string, unknown>;
-type ExcalidrawFilesLike = Record<string, unknown>;
+import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 
-export interface ExcalidrawDataState {
-  appState?: ExcalidrawAppStateLike | null;
-  elements?: readonly Partial<ExcalidrawElementLike>[] | null;
-  files?: ExcalidrawFilesLike | null;
-  [key: string]: unknown;
+export interface ExcalidrawDataState
+  extends Omit<ImportedDataState, 'elements'> {
+  elements?: readonly Partial<ExcalidrawElement>[] | null;
 }

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { u } from 'unist-builder';
 import { visit } from 'unist-util-visit';
 
+import { Index } from '../__registry__';
 import { registryExamples } from '../registry/registry-examples';
 import { proExamples } from '../registry/registry-pro';
 import { highlightFiles } from './highlight-code';
@@ -93,7 +94,9 @@ export function rehypeComponent() {
                     });
                   }
 
-                  if ((item as any)?.meta?.preview) {
+                  const component = Index[name];
+
+                  if (component.meta?.preview) {
                     const example = registryExamples.find(
                       (ex) => ex.name === name
                     );
@@ -120,54 +123,51 @@ export function rehypeComponent() {
             );
           }
           if (node.name === 'ComponentSource') {
-            promises.push(
-              (async () => {
-                try {
-                  const item = await getRegistryItem(name);
-                  const file = item?.files?.[0]?.path;
+            try {
+              const component = Index[name];
 
-                  if (!file) {
-                    throw new Error(`Component ${name} not found`);
-                  }
+              if (!component) {
+                throw new Error(`Component ${name} not found`);
+              }
 
-                  let source = fs.readFileSync(file, 'utf8');
-                  source = fixImport(source);
+              const file = component.files[0]?.path;
 
-                  // Add code as children so that rehype can take over at build time.
-                  node.children?.push(
+              let source = fs.readFileSync(file, 'utf8');
+              source = fixImport(source);
+
+              // Add code as children so that rehype can take over at build time.
+              node.children?.push(
+                u('element', {
+                  attributes: [
+                    {
+                      name: 'title',
+                      type: 'mdxJsxAttribute',
+                      value: path.basename(file),
+                    },
+                  ],
+                  children: [
                     u('element', {
-                      attributes: [
+                      children: [
                         {
-                          name: 'title',
-                          type: 'mdxJsxAttribute',
-                          value: path.basename(file),
+                          type: 'text',
+                          value: source,
                         },
                       ],
-                      children: [
-                        u('element', {
-                          children: [
-                            {
-                              type: 'text',
-                              value: source,
-                            },
-                          ],
-                          properties: {
-                            className: ['language-tsx'],
-                          },
-                          tagName: 'code',
-                        }),
-                      ],
                       properties: {
-                        __src__: file,
+                        className: ['language-tsx'],
                       },
-                      tagName: 'pre',
-                    })
-                  );
-                } catch (error) {
-                  console.error(error);
-                }
-              })()
-            );
+                      tagName: 'code',
+                    }),
+                  ],
+                  properties: {
+                    __src__: file,
+                  },
+                  tagName: 'pre',
+                })
+              );
+            } catch (error) {
+              console.error(error);
+            }
           }
           if (node.name === 'ComponentPreview') {
             promises.push(

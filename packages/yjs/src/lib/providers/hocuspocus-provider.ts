@@ -86,6 +86,8 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
             return {};
           }
         })()),
+      // Disable broadcast channel here - we'll manually handle connections
+      broadcast: options.broadcast || false,
       onAwarenessChange: options.onAwarenessChange || (() => {}),
       onConnect: () => {
         this._isConnected = true;
@@ -117,21 +119,14 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
       },
     };
 
-    // Keep runtime compatibility for provider versions that support broadcast.
-    (providerOptions as { broadcast?: boolean }).broadcast =
-      (options as { broadcast?: boolean }).broadcast ?? false;
-
     try {
       this.provider = new HocuspocusProvider(providerOptions);
     } catch (error) {
       // Create a minimal provider that won't try to connect
-      const disconnectedProviderOptions = {
+      this.provider = new HocuspocusProvider({
         ...providerOptions,
-      } as HocuspocusProviderConfiguration;
-
-      (disconnectedProviderOptions as { connect?: boolean }).connect = false;
-
-      this.provider = new HocuspocusProvider(disconnectedProviderOptions);
+        connect: false,
+      });
       this.onError?.(error instanceof Error ? error : new Error(String(error)));
     }
   }

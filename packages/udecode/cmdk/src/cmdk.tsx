@@ -7,7 +7,7 @@ import { useId } from '@radix-ui/react-id';
 import { Primitive } from '@radix-ui/react-primitive';
 import type { JSX } from 'react';
 import * as React from 'react';
-import { useSyncExternalStore } from 'use-sync-external-store/shim';
+import { useSyncExternalStore } from 'use-sync-external-store/shim/index.js';
 
 import { commandScore } from './internal/command-score';
 

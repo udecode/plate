@@ -14,7 +14,7 @@ import {
   SuperscriptIcon,
   UnderlineIcon,
 } from 'lucide-react';
-import Link from 'next/link.js';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 

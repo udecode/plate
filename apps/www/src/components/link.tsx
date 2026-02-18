@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { ArrowUpRight } from 'lucide-react';
-import LinkPrimitive from 'next/link.js';
+import LinkPrimitive from 'next/link';
 
 import { Icons } from '@/components/icons';
 import { cn } from '@/lib/utils';

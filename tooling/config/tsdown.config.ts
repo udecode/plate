@@ -4,7 +4,7 @@ import pluginBabel from '@rollup/plugin-babel';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
-const PACKAGE_ROOT_PATH = process.env.INIT_CWD ?? process.cwd();
+const PACKAGE_ROOT_PATH = process.cwd();
 
 const INPUT_TS_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.ts');
 const INPUT_TSX_FILE_PATH = path.join(PACKAGE_ROOT_PATH, 'src/index.tsx');
@@ -52,7 +52,6 @@ const enableSourcemaps = !process.env.CI;
 export default defineConfig((opts) => [
   {
     ...opts,
-    cwd: PACKAGE_ROOT_PATH,
     entry,
     platform: 'neutral',
     tsconfig: 'tsconfig.build.json',
@@ -62,14 +61,7 @@ export default defineConfig((opts) => [
     plugins: [
       pluginBabel({
         babelHelpers: 'bundled',
-        include: ['src/**/*'],
-        exclude: [
-          '**/*.d.cts',
-          '**/*.d.mts',
-          '**/*.d.ts',
-          '**/node_modules/**',
-          '**/static/**',
-        ],
+        exclude: '**/static/**',
         parserOpts: {
           sourceType: 'module',
           plugins: ['jsx', 'typescript'],

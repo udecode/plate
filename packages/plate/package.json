@@ -30,6 +30,7 @@
     "./static": "./dist/static/index.js",
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -60,5 +61,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "module"
+  "type": "module",
+  "module": "./dist/index.js"
 }
