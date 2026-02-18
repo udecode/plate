@@ -3850,6 +3850,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@platejs/playwright@workspace:packages/playwright":
+  version: 0.0.0-use.local
+  resolution: "@platejs/playwright@workspace:packages/playwright"
+  dependencies:
+    platejs: "workspace:^"
+    react-compiler-runtime: "npm:^1.0.0"
+  peerDependencies:
+    "@playwright/test": ">=1.42.1"
+    platejs: ">=52.0.11"
+    react: ">=18.0.0"
+    react-dom: ">=18.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@platejs/resizable@npm:52.0.11, @platejs/resizable@workspace:^, @platejs/resizable@workspace:packages/resizable":
   version: 0.0.0-use.local
   resolution: "@platejs/resizable@workspace:packages/resizable"
@@ -4031,6 +4045,17 @@ __metadata:
     y-webrtc: 10.3.0
   languageName: unknown
   linkType: soft
+
+"@playwright/test@npm:1.53.0":
+  version: 1.53.0
+  resolution: "@playwright/test@npm:1.53.0"
+  dependencies:
+    playwright: "npm:1.53.0"
+  bin:
+    playwright: cli.js
+  checksum: 10c0/8335d56545a172b3b0d98c67094ce659899577746d95e991d7c47d94b533f715b2278d13795646cd3c5c2ed4559ce89b520aafd6f4ec4586fb51d047215173db
+  languageName: node
+  linkType: hard
 
 "@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
   version: 1.1.2
@@ -11182,12 +11207,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fsevents@npm:2.3.2":
+  version: 2.3.2
+  resolution: "fsevents@npm:2.3.2"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10c0/be78a3efa3e181cda3cf7a4637cb527bcebb0bd0ea0440105a3bb45b86f9245b307dc10a2507e8f4498a7d4ec349d1910f4d73e4d4495b16103106e07eee735b
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
 "fsevents@npm:~2.3.2, fsevents@npm:~2.3.3":
   version: 2.3.3
   resolution: "fsevents@npm:2.3.3"
   dependencies:
     node-gyp: "npm:latest"
   checksum: 10c0/a1f0c44595123ed717febbc478aa952e47adfc28e2092be66b8ab1635147254ca6cfe1df792a8997f22716d4cbafc73309899ff7bfac2ac3ad8cf2e4ecc3ec60
+  conditions: os=darwin
+  languageName: node
+  linkType: hard
+
+"fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>":
+  version: 2.3.2
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
+  dependencies:
+    node-gyp: "npm:latest"
   conditions: os=darwin
   languageName: node
   linkType: hard
@@ -16253,6 +16297,7 @@ __metadata:
     "@changesets/cli": "npm:2.29.7"
     "@changesets/get-github-info": "npm:0.6.0"
     "@happy-dom/global-registrator": "npm:20.0.10"
+    "@playwright/test": "npm:1.53.0"
     "@roarr/cli": "npm:5.12.4"
     "@rollup/plugin-babel": "npm:6.1.0"
     "@swc/core": "npm:1.12.0"
@@ -16282,12 +16327,10 @@ __metadata:
     dotenv: "npm:16.5.0"
     eslint: "npm:^9.39.1"
     eslint-plugin-react-hooks: "npm:7.0.1"
-    is-hotkey: "npm:^0.2.0"
     openai: "npm:5.3.0"
     patch-package: "npm:8.0.0"
     prompts: "npm:2.4.2"
     react: "npm:19.2.3"
-    react-dnd: "npm:^16.0.1"
     react-dnd-test-backend: "npm:16.0.1"
     react-dom: "npm:19.2.3"
     rimraf: "npm:6.0.1"
@@ -16300,7 +16343,6 @@ __metadata:
     typescript: "npm:5.8.3"
     typescript-eslint: "npm:^8.47.0"
     ultracite: "npm:6.3.4"
-    yarn: "npm:^1.22.22"
     zod: "npm:4.1.12"
   languageName: unknown
   linkType: soft
@@ -16321,6 +16363,30 @@ __metadata:
     react-dom: ">=18.0.0"
   languageName: unknown
   linkType: soft
+
+"playwright-core@npm:1.53.0":
+  version: 1.53.0
+  resolution: "playwright-core@npm:1.53.0"
+  bin:
+    playwright-core: cli.js
+  checksum: 10c0/fda0cf76115b15b1ca5cbc69e14185904e5c85e9e7cddb0a48121e69d681c638ac497e8a103985976cae260aa02e9c03ea27d6cd0b5f3d3ca914d4c7fd96f930
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.53.0":
+  version: 1.53.0
+  resolution: "playwright@npm:1.53.0"
+  dependencies:
+    fsevents: "npm:2.3.2"
+    playwright-core: "npm:1.53.0"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    playwright: cli.js
+  checksum: 10c0/8d995114808b92f2005bd12ff5e494cdc3fa2d484f4d85a3e54be1fb99e88ae3e34b24792d83bb987462c73e553a0fa37a2a70264afbf67894b51c1498cf5a11
+  languageName: node
+  linkType: hard
 
 "png-chunk-text@npm:1.0.0":
   version: 1.0.0
@@ -16793,7 +16859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dnd@npm:16.0.1, react-dnd@npm:^16.0.1":
+"react-dnd@npm:16.0.1":
   version: 16.0.1
   resolution: "react-dnd@npm:16.0.1"
   dependencies:
@@ -20815,16 +20881,6 @@ __metadata:
     y18n: "npm:^5.0.5"
     yargs-parser: "npm:^21.1.1"
   checksum: 10c0/ccd7e723e61ad5965fffbb791366db689572b80cca80e0f96aad968dfff4156cd7cd1ad18607afe1046d8241e6fb2d6c08bf7fa7bfb5eaec818735d8feac8f05
-  languageName: node
-  linkType: hard
-
-"yarn@npm:^1.22.22":
-  version: 1.22.22
-  resolution: "yarn@npm:1.22.22"
-  bin:
-    yarn: bin/yarn.js
-    yarnpkg: bin/yarn.js
-  checksum: 10c0/8c77198c93d7542e7f4e131c63b66de357b7076ecfbcfe709ec0d674115c2dd9edaa45196e5510e6e9366d368707a802579e3402071002e1c9d9a99d491478de
   languageName: node
   linkType: hard
 
