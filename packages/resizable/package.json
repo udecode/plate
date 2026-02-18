@@ -50,7 +50,5 @@
   "type": "module",
   "dependencies": {
     "react-compiler-runtime": "^1.0.0"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js"
+  }
 }

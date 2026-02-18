@@ -544,39 +544,39 @@ export type EditorEmptyOptions = {
   block?: boolean;
 } & Omit<EditorNodesOptions, 'at' | 'block'>;
 
-export type EditorEndOptions = {
+export interface EditorEndOptions {
   /** Get the end point of the previous node */
   previous?: boolean;
-};
+}
 
 export type EditorFindPathOptions = Omit<
   EditorNodesOptions<Value>,
   'at' | 'block' | 'match'
 >;
 
-export type EditorFragmentDeletionOptions = {
+export interface EditorFragmentDeletionOptions {
   direction?: TextDirection;
-};
+}
 
-export type EditorFragmentOptions = {
+export interface EditorFragmentOptions {
   /** Types of container nodes to unwrap */
   unwrap?: string[];
-};
+}
 
-export type EditorIsSelectedOptions = {
+export interface EditorIsSelectedOptions {
   /** Check if selection contains the entire path range */
   contains?: boolean;
-};
+}
 
-export type EditorLastOptions = {
+export interface EditorLastOptions {
   /** Get last node at this level (0-based). */
   level?: number;
-};
+}
 
-export type EditorLeafOptions = {
+export interface EditorLeafOptions {
   depth?: number;
   edge?: LeafEdge;
-};
+}
 
 export type EditorLevelsOptions<V extends Value = Value> = {
   reverse?: boolean;
@@ -603,10 +603,10 @@ export type EditorNextOptions<V extends Value = Value> = QueryOptions<V> &
     mode?: 'all' | 'highest' | 'lowest';
   };
 
-export type EditorNodeOptions = {
+export interface EditorNodeOptions {
   depth?: number;
   edge?: LeafEdge;
-};
+}
 
 export type EditorNodesOptions<V extends Value = Value> = {
   /** Where to start at. @default editor.selection */
@@ -618,32 +618,32 @@ export type EditorNodesOptions<V extends Value = Value> = {
   QueryMode &
   QueryVoids;
 
-export type EditorNormalizeOptions = {
+export interface EditorNormalizeOptions {
   force?: boolean;
   operation?: Operation;
-};
+}
 
-export type EditorParentOptions = {
+export interface EditorParentOptions {
   depth?: number;
   edge?: LeafEdge;
-};
+}
 
-export type EditorPathOptions = {
+export interface EditorPathOptions {
   depth?: number;
   edge?: LeafEdge;
-};
+}
 
-export type EditorPathRefOptions = {
+export interface EditorPathRefOptions {
   affinity?: TextDirection | null;
-};
+}
 
-export type EditorPointOptions = {
+export interface EditorPointOptions {
   edge?: LeafEdge;
-};
+}
 
-export type EditorPointRefOptions = {
+export interface EditorPointRefOptions {
   affinity?: TextDirection | null;
-};
+}
 
 export type EditorPositionsOptions = {
   ignoreNonSelectable?: boolean;
@@ -678,7 +678,7 @@ export type EditorPreviousOptions<V extends Value = Value> = QueryOptions<V> &
     sibling?: boolean;
   };
 
-export type EditorPropOptions<V extends Value = Value> = {
+export interface EditorPropOptions<V extends Value = Value> {
   /** Nodes to get the property value from. */
   nodes: TElement[];
   /** Property key to get. */
@@ -693,9 +693,9 @@ export type EditorPropOptions<V extends Value = Value> = {
   mode?: 'all' | 'block' | 'text';
   /** Function to get the property value from a node. */
   getProp?: (node: DescendantIn<V>) => any;
-};
+}
 
-export type EditorRangeOptions = {
+export interface EditorRangeOptions {
   /** Get range from before to the end point of `at` */
   before?: EditorBeforeOptions | boolean;
   /**
@@ -703,20 +703,20 @@ export type EditorRangeOptions = {
    * to the location
    */
   blockStart?: boolean;
-};
+}
 
-export type EditorRangeRefOptions = {
+export interface EditorRangeRefOptions {
   affinity?: RangeDirection | null;
-};
+}
 
-export type EditorStartOptions = {
+export interface EditorStartOptions {
   /** Get the start point of the next node */
   next?: boolean;
-};
+}
 
 export type EditorStringOptions = QueryVoids;
 
-export type EditorUnhangRangeOptions = {
+export interface EditorUnhangRangeOptions {
   /**
    * When true, unhang a range of length 1 so both edges are in the same text
    * node. This is useful for handling ranges created by character-level
@@ -727,16 +727,16 @@ export type EditorUnhangRangeOptions = {
   unhang?: boolean;
   /** Allow placing the end of the selection in a void node */
   voids?: boolean;
-};
+}
 
 export type EditorVoidOptions = QueryAt & QueryMode & QueryVoids;
 
-export type QueryAt = {
+export interface QueryAt {
   /** Where to start at. @default editor.selection */
   at?: At;
-};
+}
 
-export type QueryMode = {
+export interface QueryMode {
   /**
    * - `'all'` (default): Return all matching nodes
    * - `'highest'`: in a hierarchy of nodes, only return the highest level
@@ -745,7 +745,7 @@ export type QueryMode = {
    *   nodes
    */
   mode?: 'all' | 'highest' | 'lowest';
-};
+}
 
 export type QueryOptions<V extends Value = Value> = {
   /** Match the node by id. `true` will match all nodes with an id. */
@@ -760,7 +760,7 @@ export type QueryOptions<V extends Value = Value> = {
   text?: boolean;
 } & QueryAt;
 
-export type QueryTextUnit = {
+export interface QueryTextUnit {
   /**
    * - `offset`: Moves to the next offset `Point`. It will include the `Point` at
    *   the end of a `Text` object and then move onto the first `Point` (at the
@@ -782,9 +782,9 @@ export type QueryTextUnit = {
    *   then the end of the next block.
    */
   unit?: TextUnitAdjustment;
-};
+}
 
-export type QueryVoids = {
+export interface QueryVoids {
   /** When `true` include void Nodes. */
   voids?: boolean;
-};
+}

@@ -5,7 +5,7 @@ import type { TNode } from 'platejs';
 // ============================================================================
 
 /** Tracked change (insertion or deletion) from DOCX file */
-export type DocxTrackedChange = {
+export interface DocxTrackedChange {
   /** Unique ID for this change */
   id: string;
   /** Type of change: 'insert' for additions, 'remove' for deletions */
@@ -18,10 +18,10 @@ export type DocxTrackedChange = {
   startToken: string;
   /** The full end token string (for searching in editor) */
   endToken: string;
-};
+}
 
 /** Comment with full metadata from DOCX file */
-export type DocxTrackedComment = {
+export interface DocxTrackedComment {
   /** Unique ID for this comment */
   id: string;
   /** Author display name */
@@ -40,14 +40,14 @@ export type DocxTrackedComment = {
   hasStartToken: boolean;
   /** Whether the end token was found in HTML */
   hasEndToken: boolean;
-};
+}
 
 // ============================================================================
 // Import Result Types
 // ============================================================================
 
 /** Result of importing a DOCX file with tracking support */
-export type ImportDocxResult = {
+export interface ImportDocxResult {
   /** Deserialized editor nodes */
   nodes: TNode[];
   /** Tracked changes (insertions and deletions) */
@@ -62,10 +62,10 @@ export type ImportDocxResult = {
   hasTracking: boolean;
   /** Warnings from mammoth conversion */
   warnings: string[];
-};
+}
 
 /** Options for importing a DOCX file */
-export type ImportDocxOptions = {
+export interface ImportDocxOptions {
   /** RTF data for image extraction (optional) */
   rtf?: string;
-};
+}

@@ -1,19 +1,19 @@
 import type { Path, TElement } from 'platejs';
 
-export type TabbableEntry = {
+export interface TabbableEntry {
   domNode: HTMLElement;
   path: Path;
   slateNode: TElement;
-};
+}
 
 export type TabDestination = TabDestinationDOMNode | TabDestinationPath;
 
-export type TabDestinationDOMNode = {
+export interface TabDestinationDOMNode {
   domNode: HTMLElement;
   type: 'dom-node';
-};
+}
 
-export type TabDestinationPath = {
+export interface TabDestinationPath {
   path: Path;
   type: 'path';
-};
+}

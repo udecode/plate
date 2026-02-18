@@ -1,6 +1,6 @@
 import type { ExcalidrawDataState } from '../lib';
 
-export type TExcalidrawProps = {
+export interface TExcalidrawProps {
   initialData: ExcalidrawDataState | Promise<ExcalidrawDataState | null> | null;
   [key: string]: unknown;
-};
+}

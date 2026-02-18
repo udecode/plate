@@ -10,12 +10,12 @@ import type { Point, PointEntry } from './point';
  * document. They can define a span inside a single node or a can span across
  * multiple nodes.
  */
-export type TRange = {
+export interface TRange {
   /** The start point of the range. */
   anchor: Point;
   /** The end point of the range. */
   focus: Point;
-};
+}
 
 export const RangeApi: {
   /**
@@ -97,10 +97,10 @@ export const RangeApi: {
  */
 export type Range = TRange;
 
-export type RangeEdgesOptions = {
+export interface RangeEdgesOptions {
   reverse?: boolean;
-};
+}
 
-export type RangeTransformOptions = {
+export interface RangeTransformOptions {
   affinity?: RangeDirection | null;
-};
+}
