@@ -29,11 +29,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
@@ -50,11 +48,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor({ disableMarginLeft: false }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
@@ -70,11 +66,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor({ disableMarginLeft: true }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
@@ -90,11 +84,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
