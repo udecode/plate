@@ -29,11 +29,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
@@ -50,11 +48,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor({ disableMarginLeft: false }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
@@ -70,11 +66,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor({ disableMarginLeft: true }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
@@ -90,11 +84,9 @@ describe('TableElementStatic', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
       children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
+        <tr>
+          <td>Cell</td>
+        </tr>
       ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
@@ -203,7 +195,9 @@ describe('TableCellElementStatic', () => {
     const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
-    expect(td?.style.backgroundColor).toMatch(/^(#ff0000|rgb\(255,\s*0,\s*0\))$/);
+    expect(td?.style.backgroundColor).toMatch(
+      /^(#ff0000|rgb\(255,\s*0,\s*0\))$/
+    );
   });
 
   it('should apply border styles when borders are provided', () => {

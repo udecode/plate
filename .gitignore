@@ -148,3 +148,5 @@ CLAUDE.local.md
 .claude/rules/
 .claude/skills/
 .worktrees/
+.ralph/
+!.claude/skiller.toml
