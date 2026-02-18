@@ -2,6 +2,10 @@
 
 ## Patterns
 
+### mem-1771387149-a46a
+> Plate plugins: configure() stores overrides in __configuration({}), not plugin.override directly. Access via plugin.__configuration({}).override.components
+<!-- tags: testing, plate | created: 2026-02-18 -->
+
 ## Decisions
 
 ## Fixes

@@ -1,8 +1,8 @@
 # Loop Summary
 
 **Status:** Completed successfully
-**Iterations:** 1
-**Duration:** 5m 7s
+**Iterations:** 2
+**Duration:** 10m 50s
 
 ## Tasks
 
@@ -14,4 +14,4 @@ _No events recorded._
 
 ## Final Commit
 
-8b4a430df: dumb can t implement
+713cf9f1e: fix(tests): access configured components via __configuration

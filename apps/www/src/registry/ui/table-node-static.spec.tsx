@@ -203,7 +203,9 @@ describe('TableCellElementStatic', () => {
     const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
-    expect(td?.style.backgroundColor).toMatch(/^(#ff0000|rgb\(255,\s*0,\s*0\))$/);
+    expect(td?.style.backgroundColor).toMatch(
+      /^(#ff0000|rgb\(255,\s*0,\s*0\))$/
+    );
   });
 
   it('should apply border styles when borders are provided', () => {

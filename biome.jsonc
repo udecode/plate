@@ -29,7 +29,7 @@
       "!**/__registry__",
       "!**/next-env.d.ts",
       "!**/mammoth.js",
-      "!.claude/**"
+      "!.claude"
     ]
   },
   "linter": {
