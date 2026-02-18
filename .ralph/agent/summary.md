@@ -1,8 +1,8 @@
 # Loop Summary
 
 **Status:** Completed successfully
-**Iterations:** 2
-**Duration:** 10m 50s
+**Iterations:** 1
+**Duration:** 16m 27s
 
 ## Tasks
 
@@ -14,4 +14,4 @@ _No events recorded._
 
 ## Final Commit
 
-713cf9f1e: fix(tests): access configured components via __configuration
+5121c7c95: fixing test

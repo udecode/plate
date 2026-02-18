@@ -10,6 +10,10 @@
 
 ## Fixes
 
+### mem-1771388756-c403
+> bun:test toMatchObject with asymmetric matchers (expect.stringContaining etc) MUTATES the actual object being tested, causing test pollution. Use separate assertions with toContain/toBe instead.
+<!-- tags: testing, bun | created: 2026-02-18 -->
+
 ### mem-1771384936-e708
 > SuggestionLeafDocx tests: needed React import for Bun JSX. formatCommentDate tests: needed @platejs/comment build.
 <!-- tags: testing, bun, react | created: 2026-02-18 -->
