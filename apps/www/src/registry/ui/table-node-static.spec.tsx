@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
 import type { TTableCellElement, TTableElement } from 'platejs';
-import { BaseTablePlugin } from '@platejs/table';
 
 import {
   TableCellElementStatic,
@@ -28,7 +27,13 @@ describe('TableElementStatic', () => {
   it('should render table with correct structure', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: <tbody><tr><td>Cell</td></tr></tbody>,
+      children: (
+        <tbody>
+          <tr>
+            <td>Cell</td>
+          </tr>
+        </tbody>
+      ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
     };
@@ -43,7 +48,13 @@ describe('TableElementStatic', () => {
   it('should apply marginLeft when not disabled', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: <tbody><tr><td>Cell</td></tr></tbody>,
+      children: (
+        <tbody>
+          <tr>
+            <td>Cell</td>
+          </tr>
+        </tbody>
+      ),
       editor: createMockEditor({ disableMarginLeft: false }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
     };
@@ -57,7 +68,13 @@ describe('TableElementStatic', () => {
   it('should not apply marginLeft when disabled', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: <tbody><tr><td>Cell</td></tr></tbody>,
+      children: (
+        <tbody>
+          <tr>
+            <td>Cell</td>
+          </tr>
+        </tbody>
+      ),
       editor: createMockEditor({ disableMarginLeft: true }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
     };
@@ -71,7 +88,13 @@ describe('TableElementStatic', () => {
   it('should render with overflow-x-auto class', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: <tbody><tr><td>Cell</td></tr></tbody>,
+      children: (
+        <tbody>
+          <tr>
+            <td>Cell</td>
+          </tr>
+        </tbody>
+      ),
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
     };
@@ -291,7 +314,9 @@ describe('TableCellHeaderElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(<TableCellHeaderElementStatic {...mockProps} />);
+    const { container } = render(
+      <TableCellHeaderElementStatic {...mockProps} />
+    );
     const th = container.querySelector('th');
 
     expect(th).not.toBeNull();
@@ -309,7 +334,9 @@ describe('TableCellHeaderElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(<TableCellHeaderElementStatic {...mockProps} />);
+    const { container } = render(
+      <TableCellHeaderElementStatic {...mockProps} />
+    );
     const th = container.querySelector('th');
 
     expect(th?.className).toContain('text-left');

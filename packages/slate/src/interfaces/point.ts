@@ -6,12 +6,12 @@ import type { Operation } from './operation';
 import { type Path, PathApi } from './path';
 import { RangeApi } from './range';
 
-export interface Point {
+export type Point = {
   /** The index of the character in the text node. */
   offset: number;
   /** The path to the text node. */
   path: Path;
-}
+};
 
 /** Point retrieval, check and transform methods. */
 export const PointApi: {
@@ -67,6 +67,6 @@ export type PointEntry = [Point, 'anchor' | 'focus'];
  * belong to a range.
  */
 
-export interface PointTransformOptions {
+export type PointTransformOptions = {
   affinity?: TextDirection | null;
-}
+};

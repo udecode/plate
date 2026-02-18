@@ -1,11 +1,11 @@
 export type ResizeDirection = 'bottom' | 'left' | 'right' | 'top';
 
-export interface ResizeEvent {
+export type ResizeEvent = {
   delta: ResizeLengthStatic;
   direction: ResizeDirection;
   finished: boolean;
   initialSize: ResizeLengthStatic;
-}
+};
 
 export type ResizeLength = ResizeLengthRelative | ResizeLengthStatic;
 

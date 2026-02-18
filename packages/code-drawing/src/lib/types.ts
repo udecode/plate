@@ -1,7 +1,7 @@
 import type { CodeDrawingType, ViewMode } from './constants';
 
-export interface CodeDrawingData {
+export type CodeDrawingData = {
   drawingType?: CodeDrawingType;
   drawingMode?: ViewMode;
   code?: string;
-}
+};

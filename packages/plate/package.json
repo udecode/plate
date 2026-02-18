@@ -60,5 +60,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "module"
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

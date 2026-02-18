@@ -1,4 +1,4 @@
-export interface TMentionItemBase {
+export type TMentionItemBase = {
   text: string;
   key?: any;
-}
+};

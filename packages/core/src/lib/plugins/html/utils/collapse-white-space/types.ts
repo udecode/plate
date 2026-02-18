@@ -1,10 +1,10 @@
-export interface CollapseWhiteSpaceState {
+export type CollapseWhiteSpaceState = {
   inlineFormattingContext: {
     atStart: boolean;
     lastHasTrailingWhiteSpace: boolean;
   } | null;
   whiteSpaceRule: WhiteSpaceRule;
-}
+};
 
 export type TrimEndRule = 'collapse' | 'single-newline';
 

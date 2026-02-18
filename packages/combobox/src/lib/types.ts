@@ -9,14 +9,14 @@ export type CancelComboboxInputCause =
   | 'escape'
   | 'manual';
 
-export interface ComboboxInputCursorState {
+export type ComboboxInputCursorState = {
   atEnd: boolean;
   atStart: boolean;
-}
+};
 
-export interface TriggerComboboxPluginOptions {
+export type TriggerComboboxPluginOptions = {
   trigger?: RegExp | string[] | string;
   triggerPreviousCharPattern?: RegExp;
   createComboboxInput?: (trigger: string) => TElement;
   triggerQuery?: (editor: SlateEditor) => boolean;
-}
+};
