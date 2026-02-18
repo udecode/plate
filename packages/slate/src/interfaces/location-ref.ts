@@ -11,11 +11,11 @@ import type { TRange } from './range';
  * operations are applied to the editor. You can access their `current` property
  * at any time for the up-to-date path value.
  */
-export interface PathRef {
+export type PathRef = {
   affinity: 'backward' | 'forward' | null;
   current: Path | null;
   unref: () => Path | null;
-}
+};
 
 export const PathRefApi: {
   /** Transform the path ref's current value by an operation. */
@@ -42,11 +42,11 @@ export const PathRefApi: {
  * new operations are applied to the editor. You can access their `current`
  * property at any time for the up-to-date point value.
  */
-export interface PointRef {
+export type PointRef = {
   affinity: TextDirection | null;
   current: Point | null;
   unref: () => Point | null;
-}
+};
 
 export const PointRefApi: {
   /** Transform the point ref's current value by an operation. */
@@ -58,11 +58,11 @@ export const PointRefApi: {
  * new operations are applied to the editor. You can access their `current`
  * property at any time for the up-to-date range value.
  */
-export interface RangeRef {
+export type RangeRef = {
   affinity: 'backward' | 'forward' | 'inward' | 'outward' | null;
   current: TRange | null;
   unref: () => TRange | null;
-}
+};
 
 export const RangeRefApi: {
   /** Transform the range ref's current value by an operation. */

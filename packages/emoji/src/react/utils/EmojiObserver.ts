@@ -24,11 +24,11 @@ const getSectionInFocus = (
   }
 };
 
-export interface ObserverCategoriesType {
+export type ObserverCategoriesType = {
   ancestorRef: React.MutableRefObject<HTMLDivElement | null>;
   emojiLibrary: IEmojiFloatingLibrary;
   setFocusedAndVisibleSections: SetFocusedAndVisibleSectionsType;
-}
+};
 
 export type SetFocusedAndVisibleSectionsType = (
   visibleSections: MapEmojiCategoryList,

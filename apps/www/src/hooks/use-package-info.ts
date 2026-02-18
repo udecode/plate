@@ -1,11 +1,11 @@
 import { atom, useAtom } from 'jotai';
 
-export interface PackageInfoType {
+export type PackageInfoType = {
   gzip: string;
   name: string;
   npm: string;
   source: string;
-}
+};
 
 export const packageInfoAtom = atom<PackageInfoType>({
   gzip: '',

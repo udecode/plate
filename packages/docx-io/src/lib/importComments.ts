@@ -51,7 +51,7 @@ export type { TRange } from './searchRange';
 // ============================================================================
 
 /** Comment data structure matching the JSON payload */
-export interface DocxCommentData {
+export type DocxCommentData = {
   /** Unique ID for this comment */
   id: string;
   /** Author display name */
@@ -72,7 +72,7 @@ export interface DocxCommentData {
   isPoint?: boolean;
   /** Nested replies */
   replies?: DocxCommentData[];
-}
+};
 
 /** Comment parsed from HTML with token metadata */
 export type DocxImportCommentReply = Omit<DocxCommentData, 'replies'> & {
@@ -111,15 +111,15 @@ export type DocxImportComment = Omit<DocxCommentData, 'replies'> & {
 };
 
 /** Result of parsing comments from HTML */
-export interface ParseCommentsResult {
+export type ParseCommentsResult = {
   /** All comments found */
   comments: DocxImportComment[];
   /** Number of comments found */
   count: number;
-}
+};
 
 /** Discussion data created from DOCX comment (for local storage/import) */
-export interface DocxImportDiscussion {
+export type DocxImportDiscussion = {
   /** Unique discussion ID */
   id: string;
   /** Comments in this discussion */
@@ -149,7 +149,7 @@ export interface DocxImportDiscussion {
   userId?: string;
   /** Optional user object for direct author info */
   user?: { id: string; name: string };
-}
+};
 
 // ============================================================================
 // Comment Content Normalization
@@ -374,11 +374,11 @@ export function parseDocxComments(html: string): ParseCommentsResult {
 // Point Comment Range Expansion
 // ============================================================================
 
-interface PointCommentMarkRangeOptions {
+type PointCommentMarkRangeOptions = {
   preferBefore?: boolean;
   skipCurrentNode?: boolean;
   isText: (node: unknown) => boolean;
-}
+};
 
 /**
  * Get a non-empty range for a point comment.
@@ -605,16 +605,16 @@ export function resolveCommentTargetRanges(
 // ============================================================================
 
 /** Function to create a discussion with comment via API */
-export interface CreateDiscussionFn {
+export type CreateDiscussionFn = {
   mutateAsync: (input: {
     contentRich?: unknown;
     documentContent: string;
     documentId: string;
   }) => Promise<{ id: string }>;
-}
+};
 
 /** Options for applying tracked comments via API */
-export interface ApplyCommentsOptions {
+export type ApplyCommentsOptions = {
   editor: TrackingEditor;
   comments: DocxImportComment[];
   searchRange: SearchRangeFn;
@@ -626,17 +626,17 @@ export interface ApplyCommentsOptions {
   isText: (node: unknown) => boolean;
   commentPlugin?: unknown;
   onCommentsCreated?: () => void;
-}
+};
 
 /** Result of applying tracked comments via API */
-export interface ApplyCommentsResult {
+export type ApplyCommentsResult = {
   created: number;
   skipped: number;
   errors: string[];
-}
+};
 
 /** Options for applying tracked comments locally (without API) */
-export interface ApplyCommentsLocalOptions {
+export type ApplyCommentsLocalOptions = {
   editor: TrackingEditor;
   comments: DocxImportComment[];
   searchRange: SearchRangeFn;
@@ -645,14 +645,14 @@ export interface ApplyCommentsLocalOptions {
   isText: (node: unknown) => boolean;
   generateId: () => string;
   documentDate?: Date;
-}
+};
 
 /** Result of applying tracked comments locally */
-export interface ApplyCommentsLocalResult {
+export type ApplyCommentsLocalResult = {
   applied: number;
   errors: string[];
   discussions: DocxImportDiscussion[];
-}
+};
 
 // ============================================================================
 // Apply Tracked Comments (API Mode)
@@ -1152,14 +1152,14 @@ import {
 import type { DocxTrackedChange } from './types';
 
 /** Result of parsing all tracking information from HTML */
-export interface ParseDocxTrackingResult {
+export type ParseDocxTrackingResult = {
   /** Tracked changes (insertions and deletions) */
   trackedChanges: ParseTrackedChangesResult;
   /** Comments */
   comments: ParseCommentsResult;
   /** Whether any tracking tokens were found */
   hasTracking: boolean;
-}
+};
 
 /**
  * Parse all DOCX tracking tokens from HTML.
@@ -1202,17 +1202,17 @@ export function stripDocxTrackingTokens(html: string): string {
 // ============================================================================
 
 /** Result of importing DOCX with full tracking support */
-export interface ImportWithTrackingResult {
+export type ImportWithTrackingResult = {
   /** Suggestions result */
   suggestions: ApplySuggestionsResult;
   /** Comments result (may be null if not applied) */
   comments: ApplyCommentsResult | null;
   /** Total tracked items applied */
   totalApplied: number;
-}
+};
 
 /** Options for applying all tracking */
-export interface ApplyAllTrackingOptions {
+export type ApplyAllTrackingOptions = {
   /** The editor instance */
   editor: TrackingEditor;
   /** Tracked changes to apply */
@@ -1231,7 +1231,7 @@ export interface ApplyAllTrackingOptions {
     ApplyCommentsOptions,
     'editor' | 'comments' | 'searchRange'
   >;
-}
+};
 
 /**
  * Apply all tracked changes and comments from parsed DOCX.

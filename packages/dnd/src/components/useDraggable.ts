@@ -4,7 +4,7 @@ import { useEditorRef } from 'platejs/react';
 
 import { type UseDndNodeOptions, DRAG_ITEM_BLOCK, useDndNode } from '..';
 
-export interface DraggableState {
+export type DraggableState = {
   /**
    * True when the element is ready to be dragged (e.g., on mouse down but
    * before drag starts)
@@ -23,7 +23,7 @@ export interface DraggableState {
       | React.RefObject<any>
       | null
   ) => void;
-}
+};
 
 export const useDraggable = (props: UseDndNodeOptions): DraggableState => {
   const {

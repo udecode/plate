@@ -64,10 +64,10 @@ function RemoteSelection({
   );
 }
 
-interface CursorData {
+type CursorData = {
   color: string;
   name: string;
-}
+};
 
 const cursorOpacity = 0.7;
 const hoverOpacity = 1;

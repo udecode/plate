@@ -59,7 +59,7 @@ export interface AutoformatBlockRule extends AutoformatCommonRule {
   type?: string;
 }
 
-export interface AutoformatCommonRule {
+export type AutoformatCommonRule = {
   /**
    * The rule applies when the trigger and the text just before the cursor
    * matches. For `mode: 'block'`: lookup for the end match(es) before the
@@ -86,7 +86,7 @@ export interface AutoformatCommonRule {
    * @default the last character of `match` or `match.end`
    */
   trigger?: string[] | string;
-}
+};
 
 export interface AutoformatMarkRule extends AutoformatCommonRule {
   mode: 'mark';
@@ -125,7 +125,7 @@ export interface AutoformatTextRule extends AutoformatCommonRule {
   mode: 'text';
 }
 
-export interface MatchRange {
+export type MatchRange = {
   end: string;
   start: string;
-}
+};

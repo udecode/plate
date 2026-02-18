@@ -7,10 +7,10 @@ import {
   withTransient,
 } from './applyAISuggestions';
 
-export interface TableCellUpdate {
+export type TableCellUpdate = {
   content: string;
   id: string;
-}
+};
 
 /**
  * Apply AI-generated content to a table cell as diff suggestions. Finds the

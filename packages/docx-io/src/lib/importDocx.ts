@@ -23,13 +23,13 @@ import mammothModule from './mammoth.js/mammoth.browser.js';
 // ============================================================================
 
 /** Mammoth message type */
-export interface MammothMessage {
+export type MammothMessage = {
   type: 'warning' | 'error';
   message: string;
-}
+};
 
 /** Mammoth module type */
-interface MammothModule {
+type MammothModule = {
   convertToHtml: (
     input: { arrayBuffer: ArrayBuffer },
     options?: { styleMap?: string[] }
@@ -38,7 +38,7 @@ interface MammothModule {
     messages: MammothMessage[];
   }>;
   MammothMessage: unknown;
-}
+};
 
 /** Export mammoth for direct access if needed */
 export const mammoth = mammothModule as unknown as MammothModule;
@@ -55,14 +55,14 @@ const COMMENT_ID_REGEX = /^comment-/;
 const COMMENT_REF_ID_REGEX = /^comment-ref-/;
 const ARROW_SUFFIX_REGEX = /↑\s*$/;
 
-export interface PreprocessMammothHtmlResult {
+export type PreprocessMammothHtmlResult = {
   /** Processed HTML with comment tokens */
   html: string;
   /** Map of comment ID to comment text */
   commentById: Map<string, string>;
   /** Ordered list of comment IDs as they appear in document */
   commentIds: string[];
-}
+};
 
 // ============================================================================
 // Preprocess Functions
@@ -173,18 +173,18 @@ export function buildCommentToken(commentId: string): string {
 // ============================================================================
 
 /** Options for convertToHtmlWithTracking */
-export interface ConvertToHtmlWithTrackingOptions {
+export type ConvertToHtmlWithTrackingOptions = {
   /** Mammoth style map for custom styling */
   styleMap?: string[];
-}
+};
 
 /** Result from convertToHtmlWithTracking */
-export interface ConvertToHtmlWithTrackingResult {
+export type ConvertToHtmlWithTrackingResult = {
   /** The converted HTML with tracking tokens embedded */
   value: string;
   /** Messages from mammoth (warnings, etc.) */
   messages: MammothMessage[];
-}
+};
 
 // ============================================================================
 // Main Export Functions
@@ -235,13 +235,13 @@ export async function convertToHtmlWithTracking(
 // ============================================================================
 
 /** Editor interface for importDocx */
-interface ImportDocxEditor {
+type ImportDocxEditor = {
   api: {
     html: {
       deserialize: (options: { element: Element }) => unknown[];
     };
   };
-}
+};
 
 /**
  * Import a DOCX file and convert it to editor nodes.
@@ -382,7 +382,7 @@ export type ImportDocxWithTrackingOptions = ConvertToHtmlWithTrackingOptions & {
 };
 
 /** Result from importing DOCX with tracking */
-export interface ImportDocxWithTrackingResult {
+export type ImportDocxWithTrackingResult = {
   /** Number of insertions applied */
   insertions: number;
   /** Number of deletions applied */
@@ -399,7 +399,7 @@ export interface ImportDocxWithTrackingResult {
   messages: MammothMessage[];
   /** Whether any tracking was found and applied */
   hasTracking: boolean;
-}
+};
 
 /** Default function to check if a node is text */
 function defaultIsText(node: unknown): boolean {

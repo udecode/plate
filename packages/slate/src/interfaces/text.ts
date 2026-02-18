@@ -13,12 +13,12 @@ import type { Editor, Value } from './editor/editor-type';
 import type { TElement } from './element';
 import type { NodeProps, TNode } from './node';
 
-export interface LeafPosition {
+export type LeafPosition = {
   end: number;
   start: number;
   isFirst?: true;
   isLast?: true;
-}
+};
 
 /**
  * `TText` objects represent the nodes that contain the actual text content of a
@@ -59,8 +59,9 @@ export const TextApi: {
 export type DecoratedRange = SlateDecoratedRange;
 
 /** A utility type to get all the mark types from a root node type. */
-export type MarkKeysOf<N extends TNode> =
-  {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
+export type MarkKeysOf<N extends TNode> = {} extends MarksOf<N>
+  ? unknown
+  : keyof MarksOf<N>;
 
 export type MarksIn<V extends Value> = MarksOf<V[number]>;
 
@@ -70,13 +71,13 @@ export type MarksOf<N extends TNode> = Simplify<
 
 export type Text = TText;
 
-export interface TextEqualsOptions {
+export type TextEqualsOptions = {
   /**
    * If true, the text is not compared. This is used to check whether sibling
    * text nodes can be merged.
    */
   loose?: boolean;
-}
+};
 
 /** A utility type to get all the text node types from a root node type. */
 export type TextIn<V extends Value> = TextOf<V[number]>;

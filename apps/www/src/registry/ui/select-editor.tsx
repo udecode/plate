@@ -30,19 +30,19 @@ import { cn } from '@/lib/utils';
 import { Editor, EditorContainer } from './editor';
 import { TagElement } from './tag-node';
 
-export interface SelectItem {
+export type SelectItem = {
   value: string;
   isNew?: boolean;
-}
+};
 
-interface SelectEditorContextValue {
+type SelectEditorContextValue = {
   items: SelectItem[];
   open: boolean;
   setOpen: (open: boolean) => void;
   defaultValue?: SelectItem[];
   value?: SelectItem[];
   onValueChange?: (items: SelectItem[]) => void;
-}
+};
 
 const SelectEditorContext = React.createContext<
   SelectEditorContextValue | undefined

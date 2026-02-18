@@ -16,7 +16,7 @@ export type ListStyleType =
 
 export type VerticalAlign = 'bottom' | 'middle' | 'top';
 
-export interface Margins {
+export type Margins = {
   bottom: number;
   footer: number;
   gutter: number;
@@ -24,45 +24,45 @@ export interface Margins {
   left: number;
   right: number;
   top: number;
-}
+};
 
-export interface PageSize {
+export type PageSize = {
   height: number;
   width: number;
-}
+};
 
-export interface TableRowOptions {
+export type TableRowOptions = {
   cantSplit: boolean;
-}
+};
 
-export interface TableOptions {
+export type TableOptions = {
   row: TableRowOptions;
-}
+};
 
-export interface LineNumberOptions {
+export type LineNumberOptions = {
   countBy: number;
   restart: LineNumberRestart;
   start: number;
-}
+};
 
-export interface NumberingOptions {
+export type NumberingOptions = {
   defaultOrderedListStyleType: ListStyleType;
-}
+};
 
-export interface BorderSide {
+export type BorderSide = {
   color: string;
   size: number;
   spacing: number;
-}
+};
 
-export interface ParagraphBorders {
+export type ParagraphBorders = {
   bottom: BorderSide;
   left: BorderSide;
   right: BorderSide;
   top: BorderSide;
-}
+};
 
-export interface DocumentOptions {
+export type DocumentOptions = {
   complexScriptFontSize: number;
   createdAt: Date;
   creator: string;
@@ -90,7 +90,7 @@ export interface DocumentOptions {
   subject: string;
   table: TableOptions;
   title: string;
-}
+};
 
 const applicationName = 'html-to-docx';
 const defaultOrientation: Orientation = 'portrait';

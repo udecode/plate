@@ -2,10 +2,10 @@ import React, { type ReactNode, createContext, useContext } from 'react';
 
 import type { Hotkey } from './types';
 
-interface BoundHotkeysProxyProviderType {
+type BoundHotkeysProxyProviderType = {
   addHotkey: (hotkey: Hotkey) => void;
   removeHotkey: (hotkey: Hotkey) => void;
-}
+};
 
 const BoundHotkeysProxyProvider = createContext<
   BoundHotkeysProxyProviderType | undefined
@@ -13,11 +13,11 @@ const BoundHotkeysProxyProvider = createContext<
 
 export const useBoundHotkeysProxy = () => useContext(BoundHotkeysProxyProvider);
 
-interface Props {
+type Props = {
   children: ReactNode;
   addHotkey: (hotkey: Hotkey) => void;
   removeHotkey: (hotkey: Hotkey) => void;
-}
+};
 
 export default function BoundHotkeysProxyProviderProvider({
   addHotkey,

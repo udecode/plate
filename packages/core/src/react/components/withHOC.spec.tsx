@@ -7,12 +7,8 @@ import { render } from '@testing-library/react';
 import { withHOC } from './withHOC';
 
 describe('withHOC', () => {
-  interface DummyRef {
-    myRef: string;
-  }
-  interface DummyProps {
-    myProp: string;
-  }
+  type DummyRef = { myRef: string };
+  type DummyProps = { myProp: string };
 
   const HOC = React.forwardRef<
     DummyRef,

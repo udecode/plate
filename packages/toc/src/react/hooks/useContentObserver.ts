@@ -5,13 +5,13 @@ import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 
-interface UseContentObserver {
+type UseContentObserver = {
   editorContentRef: React.RefObject<HTMLElement | null>;
   isObserve: boolean;
   isScroll: boolean;
   rootMargin: string;
   status: number;
-}
+};
 
 export const useContentObserver = ({
   editorContentRef,

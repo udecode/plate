@@ -51,7 +51,7 @@ export type MdRules = Partial<{
 }> &
   Record<string, Nullable<AnyNodeParser>>;
 
-export interface MdNodeParser<K extends keyof PlateNodeMap> {
+export type MdNodeParser<K extends keyof PlateNodeMap> = {
   mark?: boolean;
   deserialize?: (
     mdastNode: MdNodeMap[K],
@@ -62,9 +62,9 @@ export interface MdNodeParser<K extends keyof PlateNodeMap> {
     slateNode: PlateNodeMap[K],
     options: SerializeMdOptions
   ) => MdNodeMap[K];
-}
+};
 
-interface AnyNodeParser {
+type AnyNodeParser = {
   mark?: boolean;
   deserialize?: (
     mdastNode: any,
@@ -72,7 +72,7 @@ interface AnyNodeParser {
     options: DeserializeMdOptions
   ) => any;
   serialize?: (slateNode: any, options: SerializeMdOptions) => any;
-}
+};
 
 type StrictMdType = MdGFM | MdRootContent['type'] | MdStyle;
 
@@ -189,7 +189,7 @@ type PlateNodeMap = Pick<
   html: any;
 };
 
-interface MdNodeMap {
+type MdNodeMap = {
   /** Common Elements */
   a: MdLink;
   blockquote: MdBlockquote;
@@ -239,7 +239,7 @@ interface MdNodeMap {
   file: any;
   video: any;
   audio: any;
-}
+};
 
 const PLATE_TO_MDAST = {
   a: 'link',

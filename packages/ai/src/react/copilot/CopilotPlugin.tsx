@@ -93,7 +93,7 @@ export type CopilotPluginConfig = PluginConfig<
   }
 >;
 
-interface CompletionState {
+type CompletionState = {
   abortController?: AbortController | null;
   // The current text completion.
   completion?: string | null;
@@ -101,7 +101,7 @@ interface CompletionState {
   error?: Error | null;
   // Boolean flag indicating whether a fetch operation is currently in progress.
   isLoading?: boolean;
-}
+};
 
 export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   key: KEYS.copilot,

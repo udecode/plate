@@ -114,52 +114,52 @@ export interface TTableCellElement extends TElement {
   size?: number;
 }
 
-export interface TTableCellBorder {
+export type TTableCellBorder = {
   color?: string;
   size?: number;
   style?: string;
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface TIdProps {
+export type TIdProps = {
   id: string;
-}
+};
 
 export type TIdElement = TElement & TIdProps;
 
-export interface TTextAlignProps {
+export type TTextAlignProps = {
   align?: React.CSSProperties['textAlign'];
-}
+};
 
-export interface TResizableProps {
+export type TResizableProps = {
   align?: 'center' | 'left' | 'right';
   width?: number;
-}
+};
 
 export type TResizableElement = TElement & TResizableProps;
 
-export interface TMediaProps {
+export type TMediaProps = {
   url: string;
   id?: string;
   isUpload?: boolean;
   name?: string;
   placeholderId?: string;
-}
+};
 
 export type TMediaElement = TElement & TMediaProps;
 
-export interface TCaptionProps {
+export type TCaptionProps = {
   caption?: Descendant[];
-}
+};
 
 export type TCaptionElement = TElement & TCaptionProps;
 
-export interface TIndentProps {
+export type TIndentProps = {
   indent: number;
-}
+};
 
 export type TIndentElement = TElement & TIndentProps;
 
@@ -172,48 +172,48 @@ export type TListProps = TIndentProps & {
 };
 export type TListElement = TElement & TListProps;
 
-export interface TSuggestionProps {
+export type TSuggestionProps = {
   suggestion: TSuggestionData;
-}
+};
 
 export type TSuggestionElement = TElement & TSuggestionProps;
 
-export interface TLineHeightProps {
+export type TLineHeightProps = {
   lineHeight?: React.CSSProperties['lineHeight'];
-}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Marks
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface TBasicMarks {
+export type TBasicMarks = {
   bold?: boolean;
   code?: boolean;
   italic?: boolean;
   strikethrough?: boolean;
   subscript?: boolean;
   underline?: boolean;
-}
+};
 
-export interface TFontMarks {
+export type TFontMarks = {
   backgroundColor?: React.CSSProperties['backgroundColor'];
   color?: React.CSSProperties['color'];
   fontFamily?: React.CSSProperties['fontFamily'];
   fontSize?: React.CSSProperties['fontSize'];
   fontWeight?: React.CSSProperties['fontWeight'];
-}
+};
 
 export interface TCommentText extends TText {
   comment?: boolean;
 }
 
-export interface TSuggestionData {
+export type TSuggestionData = {
   id: string;
   createdAt: number;
   type: 'insert' | 'remove';
   userId: string;
   isLineBreak?: boolean;
-}
+};
 
 export type TSuggestionText = TText & {
   [key: string]: TInlineSuggestionData | boolean | string;
@@ -226,38 +226,38 @@ export type TInlineSuggestionData =
   | TRemoveSuggestionData
   | TUpdateSuggestionData;
 
-export interface TInsertSuggestionData {
+export type TInsertSuggestionData = {
   id: string;
   createdAt: number;
   type: 'insert';
   userId: string;
-}
+};
 
-export interface TRemoveSuggestionData {
+export type TRemoveSuggestionData = {
   id: string;
   createdAt: number;
   type: 'remove';
   userId: string;
-}
+};
 
-export interface TUpdateSuggestionData {
+export type TUpdateSuggestionData = {
   id: string;
   createdAt: number;
   type: 'update';
   userId: string;
   newProperties?: any;
   properties?: any;
-}
+};
 
-export interface EmptyText {
+export type EmptyText = {
   text: '';
-}
+};
 
-export interface PlainText {
+export type PlainText = {
   text: string;
-}
+};
 
-export interface TNodeMap {
+export type TNodeMap = {
   a: TLinkElement;
   action_item: TListElement;
   ai: TText & { ai: true };
@@ -313,4 +313,4 @@ export interface TNodeMap {
   ul: TListElement;
   underline: TText & { underline: true };
   video: TVideoElement & TCaptionProps;
-}
+};

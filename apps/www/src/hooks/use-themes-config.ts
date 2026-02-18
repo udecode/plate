@@ -3,9 +3,9 @@ import { atomWithStorage } from 'jotai/utils';
 
 import { type Theme, THEMES } from '@/lib/themes';
 
-interface ThemesConfig {
+type ThemesConfig = {
   activeTheme: Theme;
-}
+};
 const configAtom = atomWithStorage<ThemesConfig>('themes:config4', {
   activeTheme: THEMES['default-shadcn'],
 });

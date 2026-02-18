@@ -4,12 +4,12 @@ import type { Emoji } from '@emoji-mart/data';
 
 import { type EmojiCategoryList, EmojiCategory } from '../../lib';
 
-export interface EmojiPickerStateDispatch {
+export type EmojiPickerStateDispatch = {
   type: string;
   payload?: Partial<EmojiPickerStateProps>;
-}
+};
 
-export interface EmojiPickerStateProps {
+export type EmojiPickerStateProps = {
   hasFound: boolean;
   isOpen: boolean;
   isSearching: boolean;
@@ -19,7 +19,7 @@ export interface EmojiPickerStateProps {
   emoji?: Emoji;
   focusedCategory?: EmojiCategoryList;
   frequentEmoji?: string;
-}
+};
 
 export type MapEmojiCategoryList = Map<EmojiCategoryList, boolean>;
 

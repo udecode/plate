@@ -44,7 +44,7 @@ export type { DocxTrackedChange } from './types';
 export type TPoint = Point;
 
 /** Editor interface for applying tracking changes */
-export interface TrackingEditor {
+export type TrackingEditor = {
   /** Get string content from a range */
   api: {
     string: (range: TRange) => string;
@@ -71,7 +71,7 @@ export interface TrackingEditor {
   setOption?: (plugin: unknown, key: string, value: unknown) => void;
   /** Get plugin option */
   getOption?: (plugin: unknown, key: string) => unknown;
-}
+};
 
 /** Function to search for a string in the editor and return its range */
 export type SearchRangeFn = (
@@ -80,17 +80,17 @@ export type SearchRangeFn = (
 ) => TRange | null;
 
 /** Result of parsing tracked changes from HTML */
-export interface ParseTrackedChangesResult {
+export type ParseTrackedChangesResult = {
   /** All tracked changes found (insertions and deletions) */
   changes: DocxTrackedChange[];
   /** Number of insertions found */
   insertionCount: number;
   /** Number of deletions found */
   deletionCount: number;
-}
+};
 
 /** Options for applying tracked change suggestions */
-export interface ApplySuggestionsOptions {
+export type ApplySuggestionsOptions = {
   /** The editor instance */
   editor: TrackingEditor;
   /** Tracked changes to apply */
@@ -103,18 +103,18 @@ export interface ApplySuggestionsOptions {
   getSuggestionKey: (id: string) => string;
   /** Function to check if node is text (e.g., TextApi.isText) */
   isText: (node: unknown) => boolean;
-}
+};
 
 /** Imported user info from tracked changes */
-export interface ImportedUser {
+export type ImportedUser = {
   /** User ID (derived from author name) */
   id: string;
   /** Display name (from w:author in DOCX) */
   name: string;
-}
+};
 
 /** Result of applying tracked change suggestions */
-export interface ApplySuggestionsResult {
+export type ApplySuggestionsResult = {
   /** Number of insertions applied */
   insertions: number;
   /** Number of deletions applied */
@@ -125,7 +125,7 @@ export interface ApplySuggestionsResult {
   errors: string[];
   /** Unique users found in imported suggestions */
   users: ImportedUser[];
-}
+};
 
 // ============================================================================
 // Utility Functions

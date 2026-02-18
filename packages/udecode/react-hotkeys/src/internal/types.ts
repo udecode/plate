@@ -23,21 +23,21 @@ export type HotkeyCallback = (
 
 export type HotkeysEvent = Hotkey;
 
-export interface KeyboardModifiers {
+export type KeyboardModifiers = {
   alt?: boolean;
   ctrl?: boolean;
   meta?: boolean;
   mod?: boolean;
   shift?: boolean;
   useKey?: boolean; // Custom modifier to listen to the produced key instead of the code
-}
+};
 
 export type Keys =
   | (({} & string) | keyof typeof Key)[][]
   | readonly string[]
   | string;
 
-export interface Options {
+export type Options = {
   // Character to separate different hotkeys. (Default: ,)
   delimiter?: string;
   // Use this option to describe what the hotkey does. (Default: undefined)
@@ -68,7 +68,7 @@ export interface Options {
   useKey?: boolean;
   // Ignore evenets based on a condition (Default: undefined)
   ignoreEventWhen?: (e: KeyboardEvent) => boolean;
-}
+};
 
 export type OptionsOrDependencyArray = DependencyList | Options;
 

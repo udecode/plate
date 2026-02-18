@@ -3,14 +3,15 @@ import type { Plugin } from 'unified';
 
 import { visit } from 'unist-util-visit';
 
-export interface MentionNode {
+export type MentionNode = {
   children: { type: 'text'; value: string }[];
   type: 'mention';
   username: string;
   displayText?: string;
-}
+};
 
 declare module 'mdast' {
+  // biome-ignore lint/style/useConsistentTypeDefinitions: module augmentation requires interface
   interface StaticPhrasingContentMap {
     mention: MentionNode;
   }

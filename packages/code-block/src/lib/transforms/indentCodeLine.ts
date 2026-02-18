@@ -2,11 +2,11 @@ import type { Editor, ElementEntry } from 'platejs';
 
 const nonWhitespaceRegex = /\S/;
 
-export interface IndentCodeLineOptions {
+export type IndentCodeLineOptions = {
   codeBlock: ElementEntry;
   codeLine: ElementEntry;
   indentDepth?: number;
-}
+};
 
 /**
  * Indent if:

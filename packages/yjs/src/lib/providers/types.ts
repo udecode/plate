@@ -35,7 +35,7 @@ export type ProviderConstructorProps<T = any> = {
   doc?: Y.Doc;
 } & ProviderEventHandlers;
 
-export interface ProviderEventHandlers {
+export type ProviderEventHandlers = {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
@@ -45,13 +45,13 @@ export interface ProviderEventHandlers {
    * @param isSynced Whether the provider is now synced
    */
   onSyncChange?: (isSynced: boolean) => void;
-}
+};
 
 // Provider registry type
 export type ProviderRegistry = Record<string, ProviderConstructor>;
 
 // Unified interface for all provider types
-export interface UnifiedProvider {
+export type UnifiedProvider = {
   awareness: Awareness;
   document: Y.Doc;
   type: string;
@@ -68,14 +68,14 @@ export interface UnifiedProvider {
    * provider-specific sync status
    */
   isSynced: boolean;
-}
+};
 
 export type WebRTCProviderConfig = BaseYjsProviderConfig & {
   options: WebRTCProviderOptions;
   type: 'webrtc';
 };
 
-export interface WebRTCProviderOptions {
+export type WebRTCProviderOptions = {
   /** Room name for the collaboration */
   roomName: string;
   awareness?: Awareness;
@@ -92,7 +92,7 @@ export interface WebRTCProviderOptions {
   peerOpts?: Record<string, unknown>;
   /** Optional signaling servers. Defaults to public servers if not specified */
   signaling?: string[];
-}
+};
 
 export type YjsConfig = PluginConfig<
   'yjs',

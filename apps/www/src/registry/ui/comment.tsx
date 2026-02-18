@@ -47,7 +47,7 @@ import {
 
 import { Editor, EditorContainer } from './editor';
 
-export interface TComment {
+export type TComment = {
   id: string;
   contentRich: Value;
   createdAt: Date;
@@ -62,7 +62,7 @@ export interface TComment {
   paraId?: string;
   /** OOXML parentParaId for round-trip DOCX reply threading */
   parentParaId?: string;
-}
+};
 
 export function Comment(props: {
   comment: TComment;
@@ -615,8 +615,8 @@ export function CommentCreateForm({
   );
 }
 
-export const formatCommentDate = (date: Date, baseDate: Date = new Date()) => {
-  const now = baseDate;
+export const formatCommentDate = (date: Date) => {
+  const now = new Date();
   const diffMinutes = differenceInMinutes(now, date);
   const diffHours = differenceInHours(now, date);
   const diffDays = differenceInDays(now, date);

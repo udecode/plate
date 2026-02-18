@@ -16,10 +16,10 @@ import { streamSerializeMd } from './streamSerializeMd';
 import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
-export interface SteamInsertChunkOptions {
+export type SteamInsertChunkOptions = {
   elementProps?: any;
   textProps?: any;
-}
+};
 
 const getNextPath = (path: Path, length: number) => {
   let result = path;

@@ -1,9 +1,9 @@
 import { type SlateEditor, type TElement, KEYS } from 'platejs';
 
-export interface GetPropsIfTaskListLiNodeOptions {
+export type GetPropsIfTaskListLiNodeOptions = {
   liNode: TElement;
   inherit?: boolean;
-}
+};
 
 export const getPropsIfTaskListLiNode = (
   editor: SlateEditor,

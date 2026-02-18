@@ -40,11 +40,11 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "katex": "0.16.28",
+    "katex": "0.16.22",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@types/katex": "0.16.8",
+    "@types/katex": "0.16.7",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

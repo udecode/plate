@@ -1,4 +1,4 @@
-export interface EmojiSettingsType {
+export type EmojiSettingsType = {
   buttonSize: {
     value: number;
   };
@@ -14,7 +14,7 @@ export interface EmojiSettingsType {
     limit?: number;
     prefix?: string;
   };
-}
+};
 
 type ReverseMap<T> = T[keyof T];
 
@@ -33,17 +33,17 @@ export const EmojiCategory = {
 
 export type EmojiCategoryList = ReverseMap<typeof EmojiCategory>;
 
-export interface EmojiIconList<T = string> {
+export type EmojiIconList<T = string> = {
   categories: Record<EmojiCategoryList, { outline: T; solid: T }>;
   search: {
     delete: T;
     loupe: T;
   };
-}
+};
 
 export type FrequentEmojis = Record<string, number>;
 
-export interface i18nProps {
+export type i18nProps = {
   categories: Record<EmojiCategoryList, string>;
   clear: string;
   pick: string;
@@ -52,4 +52,4 @@ export interface i18nProps {
   searchNoResultsTitle: string;
   searchResult: string;
   skins: Record<'1' | '2' | '3' | '4' | '5' | '6' | 'choose', string>;
-}
+};

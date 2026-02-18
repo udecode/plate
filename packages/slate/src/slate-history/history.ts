@@ -109,20 +109,20 @@ export const HistoryApi = {
   },
 };
 
-export interface History {
+export type History = {
   /** Redos of the editor. */
   redos: Batch[];
 
   /** Undos of the editor. */
   undos: Batch[];
-}
+};
 
 /**
  * `History` objects hold all of the operations that are applied to a value, so
  * they can be undone or redone as necessary.
  */
 
-interface Batch {
+type Batch = {
   operations: Operation[];
   selectionBefore: TRange | null;
-}
+};

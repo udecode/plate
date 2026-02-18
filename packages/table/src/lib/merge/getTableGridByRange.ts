@@ -17,7 +17,7 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 
 type FormatType = 'all' | 'cell' | 'table';
 
-interface GetTableGridByRangeOptions<T extends FormatType> {
+type GetTableGridByRangeOptions<T extends FormatType> = {
   at: TRange;
 
   /**
@@ -27,16 +27,16 @@ interface GetTableGridByRangeOptions<T extends FormatType> {
    * - Array of cells
    */
   format?: T;
-}
+};
 
 type GetTableGridReturnType<T> = T extends 'all'
   ? TableGridEntries
   : ElementEntry[];
 
-interface TableGridEntries {
+type TableGridEntries = {
   cellEntries: ElementEntry[];
   tableEntries: ElementEntry[];
-}
+};
 
 /**
  * Get sub table between 2 cell paths. Ensure that the selection is always a

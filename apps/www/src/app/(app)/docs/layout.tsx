@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils';
 
 // SYNC
 
-interface DocsLayoutProps {
+type DocsLayoutProps = {
   children: React.ReactNode;
-}
+};
 
 export default function DocsLayout({ children }: DocsLayoutProps) {
   return (

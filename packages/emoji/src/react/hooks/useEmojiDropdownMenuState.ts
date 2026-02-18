@@ -10,10 +10,10 @@ import { FrequentEmojiStorage } from '../storage';
 import { EmojiFloatingLibrary } from '../utils';
 import { useEmojiPicker } from './useEmojiPicker';
 
-export interface EmojiDropdownMenuOptions {
+export type EmojiDropdownMenuOptions = {
   closeOnSelect?: boolean;
   settings?: EmojiSettingsType;
-}
+};
 
 export function useEmojiDropdownMenuState({
   closeOnSelect = true,

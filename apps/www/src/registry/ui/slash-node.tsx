@@ -43,7 +43,7 @@ import {
   InlineComboboxItem,
 } from './inline-combobox';
 
-interface Group {
+type Group = {
   group: string;
   items: {
     icon: React.ReactNode;
@@ -54,7 +54,7 @@ interface Group {
     keywords?: string[];
     label?: string;
   }[];
-}
+};
 
 const groups: Group[] = [
   {

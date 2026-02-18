@@ -23,7 +23,7 @@ export { default as namespaces } from './namespaces';
 // Type definitions (matching index.d.ts namespace types)
 // ============================================================================
 
-export interface Margins {
+export type Margins = {
   bottom?: number;
   footer?: number;
   gutter?: number;
@@ -31,44 +31,44 @@ export interface Margins {
   left?: number;
   right?: number;
   top?: number;
-}
+};
 
-export interface PageSize {
+export type PageSize = {
   height?: number;
   width?: number;
-}
+};
 
-export interface Row {
+export type Row = {
   cantSplit?: boolean;
-}
+};
 
-export interface BorderOptions {
+export type BorderOptions = {
   color?: string;
   size?: number;
-}
+};
 
-export interface TableOptions {
+export type TableOptions = {
   borderOptions?: BorderOptions;
   row?: Row;
-}
+};
 
 export type TableBorderOptions = BorderOptions;
 
-export interface LineNumberOptions {
+export type LineNumberOptions = {
   countBy?: number;
   distance?: number;
   restart?: 'continuous' | 'newPage' | 'newSection';
   start?: number;
-}
+};
 
-export interface HeadingSpacing {
+export type HeadingSpacing = {
   after?: number;
   before?: number;
   line?: number;
   lineRule?: 'atLeast' | 'auto' | 'exact';
-}
+};
 
-export interface HeadingStyleOptions {
+export type HeadingStyleOptions = {
   bold?: boolean;
   color?: string;
   font?: string;
@@ -76,26 +76,26 @@ export interface HeadingStyleOptions {
   italic?: boolean;
   spacing?: HeadingSpacing;
   underline?: boolean;
-}
+};
 
-export interface HeadingOptions {
+export type HeadingOptions = {
   heading1?: HeadingStyleOptions;
   heading2?: HeadingStyleOptions;
   heading3?: HeadingStyleOptions;
   heading4?: HeadingStyleOptions;
   heading5?: HeadingStyleOptions;
   heading6?: HeadingStyleOptions;
-}
+};
 
-export interface ImageProcessing {
+export type ImageProcessing = {
   svgHandling?: 'convert' | 'native';
-}
+};
 
-export interface NumberingOptions {
+export type NumberingOptions = {
   defaultOrderedListStyleType?: string;
-}
+};
 
-export interface DocumentOptions {
+export type DocumentOptions = {
   complexScriptFontSize?: number | string;
   createdAt?: Date;
   creator?: string;
@@ -125,4 +125,4 @@ export interface DocumentOptions {
   subject?: string;
   table?: TableOptions;
   title?: string;
-}
+};

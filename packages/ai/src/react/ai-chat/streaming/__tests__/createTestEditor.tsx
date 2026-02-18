@@ -6,6 +6,7 @@ import { jsxt } from '@platejs/test-utils';
 import { ParagraphPlugin } from 'platejs/react';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 
+// biome-ignore lint/nursery/noUnusedExpressions: required to prevent removal by compiler
 jsxt;
 
 import { MarkdownKit } from '../../../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';

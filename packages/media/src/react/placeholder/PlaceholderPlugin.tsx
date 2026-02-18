@@ -14,15 +14,15 @@ import { type PlaceholderConfig, BasePlaceholderPlugin } from '../../lib';
 import { insertMedia } from './transforms/insertMedia';
 import { isHistoryMarking } from './utils/history';
 
-export interface PlaceholderApi {
+export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
   getUploadingFile: (id: string) => File | undefined;
   removeUploadingFile: (id: string) => void;
-}
+};
 
-export interface PlaceholderTransforms {
+export type PlaceholderTransforms = {
   insertMedia: (files: FileList, options?: InsertNodesOptions) => void;
-}
+};
 
 export type UploadConfig = Partial<Record<AllowedFileType, MediaItemConfig>>;
 

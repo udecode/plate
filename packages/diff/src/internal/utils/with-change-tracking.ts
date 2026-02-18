@@ -21,7 +21,7 @@ import {
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
-export interface ChangeTrackingEditor {
+export type ChangeTrackingEditor = {
   insertedTexts: {
     node: TText;
     rangeRef: RangeRef;
@@ -40,7 +40,7 @@ export interface ChangeTrackingEditor {
     pointRef: PointRef;
   }[];
   commitChangesToDiffs: () => void;
-}
+};
 
 export const withChangeTracking = <E extends Editor>(
   editor: E,

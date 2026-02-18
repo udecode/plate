@@ -16,7 +16,7 @@ import { getCursorOverlayState } from '../queries/getCursorOverlayState';
 import { getSelectionRects } from '../queries/getSelectionRects';
 import { useRefreshOnResize } from './useRefreshOnResize';
 
-export interface UseCursorOverlayOptions {
+export type UseCursorOverlayOptions = {
   /**
    * Minimum width of a selection rect.
    *
@@ -29,7 +29,7 @@ export interface UseCursorOverlayOptions {
    * @default true
    */
   refreshOnResize?: boolean;
-}
+};
 
 export const FROZEN_EMPTY_ARRAY = Object.freeze(
   []

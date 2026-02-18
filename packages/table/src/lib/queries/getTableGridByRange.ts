@@ -11,7 +11,7 @@ import {
 import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
 
-export interface GetTableGridByRangeOptions {
+export type GetTableGridByRangeOptions = {
   at: TRange;
 
   /**
@@ -21,7 +21,7 @@ export interface GetTableGridByRangeOptions {
    * - Array of cells
    */
   format?: 'cell' | 'table';
-}
+};
 
 /** Get sub table between 2 cell paths. */
 export const getTableGridByRange = (

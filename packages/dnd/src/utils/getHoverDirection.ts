@@ -7,7 +7,7 @@ import type {
   ElementDragItemNode,
 } from '../types';
 
-export interface GetHoverDirectionOptions {
+export type GetHoverDirectionOptions = {
   dragItem: DragItemNode;
 
   /** Hovering node. */
@@ -20,7 +20,7 @@ export interface GetHoverDirectionOptions {
 
   /** The orientation of the drag operation. */
   orientation?: 'horizontal' | 'vertical';
-}
+};
 
 /**
  * If dragging a node A over another node B: get the direction of node A

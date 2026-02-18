@@ -15,11 +15,11 @@ import {
   useVirtualFloating,
 } from '..';
 
-export interface FloatingToolbarState {
+export type FloatingToolbarState = {
   floatingOptions?: UseVirtualFloatingOptions;
   hideToolbar?: boolean;
   showWhenReadOnly?: boolean;
-}
+};
 
 export const useFloatingToolbarState = ({
   editorId,

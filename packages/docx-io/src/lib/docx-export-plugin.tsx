@@ -163,7 +163,7 @@ export type DocxExportOrientation = 'landscape' | 'portrait';
 /**
  * Options for tracked changes/comments export.
  */
-export interface DocxTrackingExportOptions {
+export type DocxTrackingExportOptions = {
   /**
    * Discussion threads for comment metadata.
    * Each discussion represents a comment thread with its comments.
@@ -187,12 +187,12 @@ export interface DocxTrackingExportOptions {
    * Used for extracting comment text from rich content.
    */
   nodeToString?: InjectDocxTrackingTokensOptions['nodeToString'];
-}
+};
 
 /**
  * Options for DOCX export operations.
  */
-export interface DocxExportOperationOptions {
+export type DocxExportOperationOptions = {
   /**
    * Additional CSS styles to include in the document.
    * These are appended after the default DOCX_EXPORT_STYLES.
@@ -243,13 +243,13 @@ export interface DocxExportOperationOptions {
    * and converted to Word tracked changes format.
    */
   tracking?: DocxTrackingExportOptions;
-}
+};
 
 /**
  * Plugin-level options for DocxExportPlugin.
  * These are stored in the plugin options store.
  */
-export interface DocxExportPluginOptions {
+export type DocxExportPluginOptions = {
   /**
    * The Plate.js editor plugins to use for HTML serialization.
    * If not provided, the editor's current plugins will be used.
@@ -263,7 +263,7 @@ export interface DocxExportPluginOptions {
    * If not provided, a default PlateStatic component will be used.
    */
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
-}
+};
 
 /**
  * Options for DOCX export (combines plugin options and operation options).
@@ -280,7 +280,7 @@ export interface DocxExportOptions
 /**
  * API methods for the docxExport namespace on editor.api
  */
-export interface DocxExportApiMethods {
+export type DocxExportApiMethods = {
   /**
    * Download the editor content as a DOCX file.
    *
@@ -296,12 +296,12 @@ export interface DocxExportApiMethods {
    * @returns A Promise that resolves to a Blob containing the DOCX file
    */
   exportToBlob: (options?: DocxExportOperationOptions) => Promise<Blob>;
-}
+};
 
 /**
  * Transform methods for the docxExport namespace on editor.tf
  */
-export interface DocxExportTransformMethods {
+export type DocxExportTransformMethods = {
   /**
    * Export and download the editor content as a DOCX file.
    *
@@ -312,7 +312,7 @@ export interface DocxExportTransformMethods {
     filename: string,
     options?: DocxExportOperationOptions
   ) => Promise<void>;
-}
+};
 
 // =============================================================================
 // Default Values
@@ -345,14 +345,14 @@ export const DEFAULT_DOCX_MARGINS: DocxExportMargins = {
 /**
  * Internal options for serializing to HTML.
  */
-interface SerializeToHtmlInternalOptions {
+type SerializeToHtmlInternalOptions = {
   EditorStaticComponent?: React.ComponentType<PlateStaticProps>;
   /** Component overrides by plugin key */
   components?: Record<string, React.ComponentType<any>>;
   fontFamily?: string;
   plugins?: SlatePlugin[];
   value: Value;
-}
+};
 
 /**
  * Serializes Plate.js editor value to HTML string.

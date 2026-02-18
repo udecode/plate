@@ -9,10 +9,10 @@ import type { TableConfig } from '../BaseTablePlugin';
 
 import { computeCellIndices } from './computeCellIndices';
 
-export interface CellIndices {
+export type CellIndices = {
   col: number;
   row: number;
-}
+};
 
 export const getCellIndices = (
   editor: SlateEditor,
