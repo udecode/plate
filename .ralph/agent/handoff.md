@@ -1,11 +1,11 @@
 # Session Handoff
 
-_Generated: 2026-02-18 03:49:42 UTC_
+_Generated: 2026-02-18 04:03:52 UTC_
 
 ## Git Context
 
 - **Branch:** `revert-to-ebf750c`
-- **HEAD:** 90414d369: chore: auto-commit before merge (loop primary)
+- **HEAD:** 19c402560: chore: auto-commit before merge (loop primary)
 
 ## Tasks
 
@@ -15,6 +15,7 @@ _Generated: 2026-02-18 03:49:42 UTC_
 - [x] Stabilize formatCommentDate spec with deterministic clock
 - [x] Run docx-io roundtrip smoke after spec change
 - [x] Fix SuggestionLeafDocx spec - add React import
+- [x] Fix DocxExportKit tests to use __configuration
 
 
 ## Key Files
@@ -24,13 +25,13 @@ Recently modified:
 - `.gitignore`
 - `.ralph/agent/handoff.md`
 - `.ralph/agent/memories.md`
-- `.ralph/agent/scratchpad.md`
 - `.ralph/agent/summary.md`
 - `.ralph/agent/tasks.jsonl`
 - `.ralph/current-events`
 - `.ralph/current-loop-id`
-- `.ralph/events-20260218-030618.jsonl`
-- `.ralph/events-20260218-031454.jsonl`
+- `.ralph/events-20260218-033100.jsonl`
+- `.ralph/events-20260218-034434.jsonl`
+- `.ralph/history.jsonl`
 
 ## Next Session
 
@@ -39,5 +40,6 @@ Session completed successfully. No pending work.
 **Original objective:**
 
 ```
-Double check if you didnt make a mistake! the leaf comment.tsx should match what the docx shows and the docx should match what the user sees in the ui. we must have only one time for the documents, obviously All `formatCommentDate` tests pass. The function at `apps/www/src/registry/ui/comment.tsx:618-635` is purely a UI display utility using `date-fns` - it has **no relation to docx-io import/export**. ENSURE IT PASSES ROUND TRIP
+51 tests failed:
+I will provide a series of tests that errored. But do NOT fix the code immediately. First check if fixing wont break either the import from docx to plate NOR the import from plate to docx. If you dont have confidence above 90, just delete the test or modify it. ENSURE that you understand how each item is rendered, how html-to-docx extract and implement and how our local vendores mammoth does it. Docx insertions and deletions are rendered as ins and del tags in HTML, but when con...
 ```
