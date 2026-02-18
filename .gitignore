@@ -146,3 +146,4 @@ CLAUDE.local.md
 # END Skiller Generated Files
 .claude/rules/
 .worktrees/
+.ralph/
