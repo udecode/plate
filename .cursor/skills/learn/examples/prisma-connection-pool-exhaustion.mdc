@@ -1,0 +1,196 @@
+---
+name: prisma-connection-pool-exhaustion
+description: Use when encountering "Timed out fetching a new connection from the connection pool" or "too many connections" errors in serverless environments - configures Prisma connection pooling for Vercel, AWS Lambda, and similar platforms
+---
+
+# Prisma Connection Pool Exhaustion in Serverless
+
+## Overview
+
+**Serverless functions create a new Prisma client on each cold start, quickly exhausting database connection limits.** Each instance opens multiple connections (default: 5), and with many concurrent requests, you hit the database limit (often 20-100 for managed databases).
+
+## When to Use
+
+- `P2024: Timed out fetching a new connection from the connection pool`
+- PostgreSQL: `FATAL: too many connections for role "username"`
+- MySQL: `Too many connections`
+- Works fine locally but fails in production
+- Errors appear during traffic spikes, then resolve
+
+Environment indicators:
+
+- Deploying to Vercel, AWS Lambda, Netlify Functions
+- Using Prisma with PostgreSQL, MySQL, or another connection-based database
+- Database is managed (PlanetScale, Supabase, Neon, RDS)
+
+## Quick Reference
+
+| Provider    | Solution                    | Connection String Change           |
+| ----------- | --------------------------- | ---------------------------------- |
+| Supabase    | Use pooler port 6543        | `?pgbouncer=true`                  |
+| Neon        | Built-in pooling            | `?sslmode=require`                 |
+| PlanetScale | No issue (serverless MySQL) | N/A                                |
+| Self-hosted | Add PgBouncer               | External pooler                    |
+| Any         | Prisma Accelerate           | `npx prisma generate --accelerate` |
+
+## Solution
+
+### Step 1: Use Connection Pooling Service
+
+**For Supabase:**
+
+```env
+# Use the pooled connection string (port 6543, not 5432)
+DATABASE_URL="postgresql://user:pass@db.xxx.supabase.co:6543/postgres?pgbouncer=true"
+```
+
+**For Neon:**
+
+```env
+DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require"
+```
+
+**For Prisma Accelerate:**
+
+```bash
+npx prisma generate --accelerate
+```
+
+### Step 2: Configure Connection Limits
+
+Add to your connection URL:
+
+```
+?connection_limit=1&pool_timeout=20&connect_timeout=10
+```
+
+- `connection_limit=1`: One connection per serverless instance
+- `pool_timeout=20`: Wait up to 20s for available connection
+- `connect_timeout=10`: Fail fast if can't connect in 10s
+
+### Step 3: Singleton Pattern (Development)
+
+Prevent hot-reload from creating new clients:
+
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+## Common Mistakes
+
+### ❌ Mistake #1: Using direct database URL in serverless
+
+```env
+# ❌ Direct connection - creates new pool per function
+DATABASE_URL="postgresql://user:pass@db.xxx.supabase.co:5432/postgres"
+```
+
+**Rationalization:** "The connection string from the dashboard should work"
+
+**Fix:** Use pooled connection (port 6543 for Supabase):
+
+```env
+# ✅ Pooled connection
+DATABASE_URL="postgresql://user:pass@db.xxx.supabase.co:6543/postgres?pgbouncer=true"
+```
+
+### ❌ Mistake #2: No connection limit in serverless
+
+```typescript
+// ❌ Default pool size (5 connections per instance)
+const prisma = new PrismaClient();
+```
+
+**Rationalization:** "Default settings should be fine"
+
+**Fix:** Limit to 1 connection per instance:
+
+```typescript
+// ✅ Limited connections
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL + "?connection_limit=1",
+    },
+  },
+});
+```
+
+### ❌ Mistake #3: Creating new client per request
+
+```typescript
+// ❌ New client every request
+export async function handler() {
+  const prisma = new PrismaClient();
+  const data = await prisma.user.findMany();
+  // Connection never closed!
+}
+```
+
+**Rationalization:** "Fresh client for each request is cleaner"
+
+**Fix:** Use singleton pattern:
+
+```typescript
+// ✅ Reuse client
+import { prisma } from "@/lib/prisma";
+
+export async function handler() {
+  const data = await prisma.user.findMany();
+}
+```
+
+## Red Flags - STOP
+
+If you catch yourself thinking:
+
+- "Works locally, must be a Vercel bug"
+- "I'll just increase the database connection limit"
+- "Fresh client per request is safer"
+
+**STOP. Configure connection pooling for serverless.**
+
+## Example
+
+**Before** (error under load):
+
+```
+[ERROR] PrismaClientKnownRequestError:
+Invalid `prisma.user.findMany()` invocation:
+Timed out fetching a new connection from the connection pool.
+```
+
+**After** (with connection pooling):
+
+```env
+# Using Supabase pooler URL
+DATABASE_URL="postgresql://...@db.xxx.supabase.co:6543/postgres?pgbouncer=true&connection_limit=1"
+```
+
+Database connections stable at 10-15 even under heavy load.
+
+## Notes
+
+- Different managed databases have different pooling solutions—check provider docs
+- PlanetScale (MySQL) uses serverless architecture and doesn't have this issue
+- `connection_limit=1` is aggressive; start there and increase if you see latency
+- The singleton pattern only helps in development; in production serverless, each instance is isolated
+- Consider Prisma Accelerate for built-in caching + pooling
+
+## Verification Checklist
+
+- [ ] Using pooled connection URL (not direct database connection)
+- [ ] `connection_limit=1` added to URL
+- [ ] Singleton pattern in `lib/prisma.ts`
+- [ ] Load test: `npx autocannon -c 100 -d 30 https://your-app.com/api/test`
+- [ ] Database dashboard shows connections within limits
+- [ ] No P2024 errors in logs
