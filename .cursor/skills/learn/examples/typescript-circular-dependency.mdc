@@ -1,0 +1,189 @@
+---
+name: typescript-circular-dependency
+description: Use when encountering "Cannot access before initialization", undefined imports at runtime, or tests failing inconsistently - detects and resolves circular dependencies in TypeScript modules using madge and restructuring patterns
+---
+
+# TypeScript Circular Dependency Detection and Resolution
+
+## Overview
+
+**Circular dependencies occur when module A imports from module B, which imports from module A.** TypeScript compiles successfully, but at runtime one import evaluates to `undefined` because the module hasn't finished initializing.
+
+## When to Use
+
+- `ReferenceError: Cannot access 'X' before initialization`
+- `TypeError: Cannot read properties of undefined (reading 'create')`
+- `TypeError: (0 , _service.doSomething) is not a function`
+- Import is `undefined` even though the export exists
+- Tests fail but the app works (or vice versa)
+- Adding `console.log` at the top of a file changes behavior
+
+## Quick Reference
+
+| Pattern            | Cause                                 | Solution                 |
+| ------------------ | ------------------------------------- | ------------------------ |
+| Service-to-Service | A imports B, B imports A              | Extract shared interface |
+| Type imports       | types/user → types/order → types/user | Use `import type`        |
+| Barrel files       | index.ts re-exports cause cycles      | Direct imports           |
+| Shared utilities   | utils → service → utils               | Dependency injection     |
+
+## Solution
+
+### Step 1: Detect the Cycle
+
+```bash
+# Install madge
+npm install -g madge
+
+# Find circular dependencies
+madge --circular --extensions ts,tsx src/
+
+# Generate visual graph
+madge --circular --image graph.svg src/
+```
+
+### Step 2: Resolution Strategies
+
+**Strategy 1: Extract Shared Dependencies**
+
+```typescript
+// ❌ BEFORE: Circular
+// userService.ts
+import { OrderService } from './orderService';
+export class UserService { ... }
+
+// orderService.ts
+import { UserService } from './userService';
+export class OrderService { ... }
+```
+
+```typescript
+// ✅ AFTER: Extract interface
+// types/interfaces.ts (no imports from services)
+export interface IUserService { ... }
+export interface IOrderService { ... }
+
+// userService.ts
+import { IOrderService } from '../types/interfaces';
+export class UserService implements IUserService { ... }
+```
+
+**Strategy 2: Use Type-Only Imports**
+
+```typescript
+// This doesn't create a runtime dependency
+import type { User } from "./userService";
+```
+
+**Strategy 3: Fix Barrel Files**
+
+```typescript
+// ❌ BEFORE: Modal imports Button from index
+// components/Modal.tsx
+import { Button } from "./index"; // Creates cycle
+
+// ✅ AFTER: Direct import
+import { Button } from "./Button";
+```
+
+### Step 3: Prevent Future Cycles
+
+```json
+// package.json
+{
+  "scripts": {
+    "check:circular": "madge --circular --extensions ts,tsx src/"
+  }
+}
+```
+
+## Common Mistakes
+
+### ❌ Mistake #1: Importing from barrel files within the same folder
+
+```typescript
+// components/Modal.tsx
+import { Button } from "./index"; // index.ts exports Modal AND Button
+```
+
+**Rationalization:** "Barrel files are cleaner for imports"
+
+**Fix:** Use direct imports within the same folder:
+
+```typescript
+import { Button } from "./Button";
+```
+
+### ❌ Mistake #2: Runtime imports when only types needed
+
+```typescript
+// ❌ Creates runtime dependency
+import { User } from './userService';
+
+function processUser(user: User) { ... }
+```
+
+**Rationalization:** "Need the User type"
+
+**Fix:** Use type-only import:
+
+```typescript
+// ✅ No runtime dependency
+import type { User } from "./userService";
+```
+
+## Red Flags - STOP
+
+If you catch yourself thinking:
+
+- "The import works in one file but not another"
+- "It only breaks when I import this specific module"
+- "Moving the import statement changes behavior"
+
+**STOP. You have a circular dependency. Run `madge --circular`.**
+
+## Example
+
+**Scenario**: `OrderService` is undefined when imported in `UserService`
+
+**Detection**:
+
+```bash
+$ madge --circular src/
+Circular dependencies found!
+  src/services/userService.ts → src/services/orderService.ts → src/services/userService.ts
+```
+
+**Fix**: Extract shared interface
+
+```typescript
+// NEW: src/types/services.ts
+export interface IOrderService {
+  createOrder(userId: string): Promise<Order>;
+}
+
+// MODIFIED: src/services/userService.ts
+import type { IOrderService } from '../types/services';
+
+export class UserService {
+  constructor(private orderService: IOrderService) {}
+}
+
+// MODIFIED: src/services/orderService.ts
+// No longer imports UserService
+export class OrderService implements IOrderService { ... }
+```
+
+## Notes
+
+- TypeScript `import type` is erased at runtime and can't cause cycles
+- Barrel files (`index.ts`) are a common source of accidental cycles
+- Jest/Vitest may handle module resolution differently than your bundler
+- The order of exports in a file can matter when there's a cycle
+
+## Verification Checklist
+
+- [ ] Run `madge --circular src/` - should report no cycles
+- [ ] Run test suite - previously undefined imports work
+- [ ] Delete `node_modules` and reinstall - app still works
+- [ ] Build for production - no runtime errors

@@ -27,6 +27,7 @@
     ".": "./dist/index.js",
     "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
@@ -81,6 +82,5 @@
     "access": "public"
   },
   "type": "module",
-  "main": "./dist/index.js",
   "module": "./dist/index.js"
 }

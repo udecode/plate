@@ -223,14 +223,6 @@
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
-        "sourceRelPath": "skills/document-review",
-        "destRelPath": "compound-engineering-document-review"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
-        "sourceKind": "skill",
         "sourceRelPath": "skills/dspy-ruby",
         "destRelPath": "compound-engineering-dspy-ruby"
       },
@@ -392,7 +384,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/orchestrating-swarms",
-        "destRelPath": "compound-engineering-orchestrating-swarms-2"
+        "destRelPath": "compound-engineering-orchestrating-swarms"
       },
       {
         "sourceType": "plugin",
@@ -470,22 +462,6 @@
         "sourceType": "plugin",
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.35.0",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/resolve-pr-parallel",
-        "destRelPath": "compound-engineering-resolve-pr-parallel"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
-        "sourceKind": "agent",
-        "sourceRelPath": "agents/review/schema-drift-detector.md",
-        "destRelPath": "compound-engineering-schema-drift-detector"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
         "sourceKind": "agent",
         "sourceRelPath": "agents/review/security-sentinel.md",
         "destRelPath": "compound-engineering-security-sentinel"
@@ -495,24 +471,8 @@
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
-        "sourceRelPath": "skills/setup",
-        "destRelPath": "compound-engineering-setup"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
-        "sourceKind": "skill",
         "sourceRelPath": "skills/skill-creator",
         "destRelPath": "compound-engineering-skill-creator"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
-        "sourceKind": "command",
-        "sourceRelPath": "commands/slfg.md",
-        "destRelPath": "compound-engineering-slfg"
       },
       {
         "sourceType": "plugin",
@@ -529,14 +489,6 @@
         "sourceKind": "command",
         "sourceRelPath": "commands/test-browser.md",
         "destRelPath": "compound-engineering-test-browser"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.35.0",
-        "sourceKind": "command",
-        "sourceRelPath": "commands/test-xcode.md",
-        "destRelPath": "compound-engineering-test-xcode"
       },
       {
         "sourceType": "plugin",
@@ -591,14 +543,6 @@
         "pluginId": "debug@dotai",
         "pluginVersion": "0.1.0",
         "sourceKind": "skill",
-        "sourceRelPath": "skills/trace",
-        "destRelPath": "debug-trace"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "debug@dotai",
-        "pluginVersion": "0.1.0",
-        "sourceKind": "skill",
         "sourceRelPath": "skills/debug",
         "destRelPath": "debug"
       },
@@ -609,6 +553,14 @@
         "sourceKind": "skill",
         "sourceRelPath": "skills/dig",
         "destRelPath": "dig-dig"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/document-review",
+        "destRelPath": "document-review"
       },
       {
         "sourceType": "plugin",
@@ -660,19 +612,19 @@
       },
       {
         "sourceType": "plugin",
-        "pluginId": "git@dotai",
-        "pluginVersion": "0.1.0",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/pr",
-        "destRelPath": "git-pr"
-      },
-      {
-        "sourceType": "plugin",
         "pluginId": "learn@dotai",
         "pluginVersion": "3.0.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/learn",
         "destRelPath": "learn-learn"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/pr",
+        "destRelPath": "pr"
       },
       {
         "sourceType": "plugin",
@@ -700,11 +652,59 @@
       },
       {
         "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/resolve-pr-parallel",
+        "destRelPath": "resolve-pr-parallel"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/schema-drift-detector.md",
+        "destRelPath": "schema-drift-detector"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/setup",
+        "destRelPath": "setup"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/slfg.md",
+        "destRelPath": "slfg"
+      },
+      {
+        "sourceType": "plugin",
         "pluginId": "test@dotai",
         "pluginVersion": "0.1.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/tdd",
         "destRelPath": "tdd"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.35.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/test-xcode.md",
+        "destRelPath": "test-xcode"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "debug@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/trace",
+        "destRelPath": "trace"
       }
     ],
     ".cursor/skills": [
@@ -930,7 +930,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/document-review",
-        "destRelPath": "compound-engineering-document-review-2"
+        "destRelPath": "compound-engineering-document-review"
       },
       {
         "sourceType": "plugin",
@@ -1098,7 +1098,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/orchestrating-swarms",
-        "destRelPath": "compound-engineering-orchestrating-swarms-2"
+        "destRelPath": "compound-engineering-orchestrating-swarms"
       },
       {
         "sourceType": "plugin",
@@ -1178,7 +1178,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/resolve-pr-parallel",
-        "destRelPath": "compound-engineering-resolve-pr-parallel-2"
+        "destRelPath": "compound-engineering-resolve-pr-parallel"
       },
       {
         "sourceType": "plugin",
@@ -1186,7 +1186,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "agent",
         "sourceRelPath": "agents/review/schema-drift-detector.md",
-        "destRelPath": "compound-engineering-schema-drift-detector-2"
+        "destRelPath": "compound-engineering-schema-drift-detector"
       },
       {
         "sourceType": "plugin",
@@ -1202,7 +1202,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/setup",
-        "destRelPath": "compound-engineering-setup-2"
+        "destRelPath": "compound-engineering-setup"
       },
       {
         "sourceType": "plugin",
@@ -1218,7 +1218,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "command",
         "sourceRelPath": "commands/slfg.md",
-        "destRelPath": "compound-engineering-slfg-2"
+        "destRelPath": "compound-engineering-slfg"
       },
       {
         "sourceType": "plugin",
@@ -1242,7 +1242,7 @@
         "pluginVersion": "2.35.0",
         "sourceKind": "command",
         "sourceRelPath": "commands/test-xcode.md",
-        "destRelPath": "compound-engineering-test-xcode-2"
+        "destRelPath": "compound-engineering-test-xcode"
       },
       {
         "sourceType": "plugin",
@@ -1306,7 +1306,7 @@
         "pluginVersion": "0.1.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/trace",
-        "destRelPath": "debug-trace-2"
+        "destRelPath": "debug-trace"
       },
       {
         "sourceType": "plugin",
@@ -1370,7 +1370,7 @@
         "pluginVersion": "0.1.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/pr",
-        "destRelPath": "git-pr-2"
+        "destRelPath": "git-pr"
       },
       {
         "sourceType": "plugin",

@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
 import type { TSuggestionText } from 'platejs';

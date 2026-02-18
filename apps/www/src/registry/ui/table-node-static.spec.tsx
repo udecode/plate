@@ -1,3 +1,4 @@
+import React from 'react';
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
 import type { TTableCellElement, TTableElement } from 'platejs';
@@ -202,7 +203,7 @@ describe('TableCellElementStatic', () => {
     const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
-    expect(td?.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    expect(td?.style.backgroundColor).toMatch(/^(#ff0000|rgb\(255,\s*0,\s*0\))$/);
   });
 
   it('should apply border styles when borders are provided', () => {

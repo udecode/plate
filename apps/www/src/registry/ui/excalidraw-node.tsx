@@ -8,6 +8,8 @@ import type { PlateElementProps } from 'platejs/react';
 import { useExcalidrawElement } from '@platejs/excalidraw/react';
 import { PlateElement, useReadOnly } from 'platejs/react';
 
+import '@excalidraw/excalidraw/index.css';
+
 export function ExcalidrawElement(
   props: PlateElementProps<TExcalidrawElement>
 ) {

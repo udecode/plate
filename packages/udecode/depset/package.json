@@ -51,11 +51,12 @@
     "zod": "3.25.61"
   },
   "devDependencies": {
-    "@types/prompts": "2.4.9",
-    "tsdown": "0.20.3"
+    "@types/prompts": "2.4.9"
   },
   "publishConfig": {
     "access": "public"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts"
 }

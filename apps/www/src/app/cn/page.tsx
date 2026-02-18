@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import type { Metadata } from 'next';
 
-import Link from 'next/link.js';
+import Link from 'next/link';
 
 import CustomizerDrawer from '@/components/customizer-drawer';
 import {

@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+---
+
+## Project Status
+
+**Current Stage**: Framework Development (Fast-moving library with monthly breaking changes)
+
+### DO Care About (Framework Excellence)
+
+- **API Design**: Clean, intuitive, and powerful APIs that enable developers
+- **Developer Experience**: Smooth onboarding, clear patterns, excellent TypeScript support
+- **Plugin Architecture**: Extensible, composable, and maintainable plugin system
+- **Documentation**: Comprehensive guides, API references, and examples
+- **Performance**: Editor performance and bundle size optimization
+- **Innovation**: Pushing boundaries with AI integration and modern editing features
+
+### DO NOT Care About (Skip for Velocity)
+
+- **Breaking Changes**: Monthly releases with breaking changes are acceptable
+- **100% Backward Compatibility**: Move fast, deprecate quickly
+- **Legacy Support**: Focus on modern React and browser environments
+- **Perfect Stability**: Iterate rapidly based on community feedback
+
+### Development Approach
+
+- **Focus**: Innovation and developer experience over stability
+- **Philosophy**: "Move fast and improve things" - rapid iteration with community
+- **Release Cycle**: Monthly releases with clear migration guides
+- **Community-Driven**: Responsive to user needs and feature requests

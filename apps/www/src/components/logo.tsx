@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link.js';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { siteConfig } from '@/config/site';

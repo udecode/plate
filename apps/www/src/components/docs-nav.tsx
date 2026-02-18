@@ -7,7 +7,7 @@ import type { SidebarNavItem } from '@/types/nav';
 
 import { castArray } from 'lodash';
 import { ChevronDown, X } from 'lucide-react';
-import Link from 'next/link.js';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import {

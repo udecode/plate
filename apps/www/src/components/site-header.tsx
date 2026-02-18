@@ -1,4 +1,4 @@
-import Link from 'next/link.js';
+import Link from 'next/link';
 
 import { ModeSwitcher } from '@/components/mode-switcher';
 import { Button } from '@/components/ui/button';

@@ -1,6 +1,8 @@
+import type { ExcalidrawProps } from '@excalidraw/excalidraw/types';
+
 import type { ExcalidrawDataState } from '../lib';
 
-export type TExcalidrawProps = {
+// ExcalidrawProps with improved types
+export interface TExcalidrawProps extends Omit<ExcalidrawProps, 'initialData'> {
   initialData: ExcalidrawDataState | Promise<ExcalidrawDataState | null> | null;
-  [key: string]: unknown;
-};
+}
