@@ -37,8 +37,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "diff-match-patch-ts": "^0.6.0",
-    "lodash": "^4.17.21",
+    "diff-match-patch-ts": "^0.8.0",
+    "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

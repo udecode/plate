@@ -23,28 +23,28 @@ import { withAIBatch } from '@platejs/ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';
 
-export type TComment = {
+export interface TComment {
   comment: {
     blockId: string;
     comment: string;
     content: string;
   } | null;
   status: 'finished' | 'streaming';
-};
+}
 
-export type TTableCellUpdate = {
+export interface TTableCellUpdate {
   cellUpdate: {
     content: string;
     id: string;
   } | null;
   status: 'finished' | 'streaming';
-};
+}
 
-export type MessageDataPart = {
+export interface MessageDataPart {
   toolName: ToolName;
   comment?: TComment;
   table?: TTableCellUpdate;
-};
+}
 
 export type Chat = UseChatHelpers<ChatMessage>;
 

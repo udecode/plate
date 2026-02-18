@@ -12,10 +12,10 @@ import { hasListChild } from '../queries/hasListChild';
 import { moveListItemsToList } from './moveListItemsToList';
 import { unwrapList } from './unwrapList';
 
-export type MoveListItemUpOptions = {
+export interface MoveListItemUpOptions {
   list: ElementEntry;
   listItem: ElementEntry;
-};
+}
 
 /** Move a list item up. */
 export const moveListItemUp = (

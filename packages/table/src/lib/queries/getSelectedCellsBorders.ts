@@ -9,22 +9,22 @@ import { getRowSpan } from './getRowSpan';
 import { getSelectedCellsBoundingBox } from './getSelectedCellsBoundingBox';
 import { getTopTableCell } from './getTopTableCell';
 
-export type GetSelectedCellsBordersOptions = {
+export interface GetSelectedCellsBordersOptions {
   select?: {
     none?: boolean;
     outer?: boolean;
     side?: boolean;
   };
-};
+}
 
-export type TableBorderStates = {
+export interface TableBorderStates {
   bottom: boolean;
   left: boolean;
   none: boolean;
   outer: boolean;
   right: boolean;
   top: boolean;
-};
+}
 
 /**
  * Get all border states for the selected cells at once. Returns an object with

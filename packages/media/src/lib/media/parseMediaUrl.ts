@@ -1,8 +1,8 @@
-export type EmbedUrlData = {
+export interface EmbedUrlData {
   id?: string;
   provider?: string;
   url?: string;
-};
+}
 
 export type EmbedUrlParser = (url: string) => EmbedUrlData | undefined;
 

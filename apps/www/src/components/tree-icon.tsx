@@ -1,10 +1,10 @@
 import { cn } from '@/lib/utils';
 
-type TreeIconProps = {
+interface TreeIconProps {
   isFirst: boolean;
   isLast: boolean;
   className?: string;
-};
+}
 
 export function TreeIcon({ className, isFirst, isLast }: TreeIconProps) {
   return (

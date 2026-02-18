@@ -1,6 +1,6 @@
 import { createAtomStore } from 'platejs/react';
 
-type PlaceholderStore = {
+interface PlaceholderStore {
   isUploading: boolean;
   progresses: Progresses;
   size: {
@@ -8,7 +8,7 @@ type PlaceholderStore = {
     width: number;
   } | null;
   updatedFiles: File[];
-};
+}
 type Progresses = Record<string, number>;
 
 export const {

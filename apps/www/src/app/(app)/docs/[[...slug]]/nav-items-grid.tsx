@@ -166,7 +166,7 @@ export function NavItemsGrid({
                     onClick={(e) => e.stopPropagation()}
                     href={`#${group.title.toLowerCase().replace(/ /g, '-')}`}
                   >
-                    <div className="-left-5 -translate-y-1/2 absolute top-1/2 pr-1 leading-none">
+                    <div className="absolute top-1/2 -left-5 -translate-y-1/2 pr-1 leading-none">
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>

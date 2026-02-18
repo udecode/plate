@@ -9,6 +9,7 @@ export interface TComment {
 }
 
 export interface MessageDataPart {
+  [key: string]: unknown;
   toolName: ToolName;
   comment?: TComment;
 }

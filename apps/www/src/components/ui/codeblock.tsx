@@ -16,10 +16,10 @@ const SyntaxHighlighter =
 
 type languageMap = Record<string, string | undefined>;
 
-type Props = {
+interface Props {
   language: string;
   value: string;
-};
+}
 
 export const programmingLanguages: languageMap = {
   c: '.c',

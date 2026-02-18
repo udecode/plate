@@ -7,42 +7,42 @@ describe('formatCommentDate', () => {
 
   it('should format recent minutes as "Nm"', () => {
     const date = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('5m');
   });
 
   it('should format 0 minutes as "0m"', () => {
     const date = new Date(now.getTime() - 0); // just now
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('0m');
   });
 
   it('should format 59 minutes as "59m"', () => {
     const date = new Date(now.getTime() - 59 * 60 * 1000); // 59 minutes ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('59m');
   });
 
   it('should format hours as "Nh" when less than 24 hours', () => {
     const date = new Date(now.getTime() - 3 * 60 * 60 * 1000); // 3 hours ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('3h');
   });
 
   it('should format 23 hours as "23h"', () => {
     const date = new Date(now.getTime() - 23 * 60 * 60 * 1000); // 23 hours ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('23h');
   });
 
   it('should format 1 day as "1d"', () => {
     const date = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 1 day ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('1d');
   });
@@ -71,7 +71,7 @@ describe('formatCommentDate', () => {
 
   it('should handle edge case at exactly 60 minutes', () => {
     const date = new Date(now.getTime() - 60 * 60 * 1000); // exactly 60 minutes ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     // Should show as "1h" not "60m"
     expect(result).toBe('1h');
@@ -79,7 +79,7 @@ describe('formatCommentDate', () => {
 
   it('should handle edge case at exactly 24 hours', () => {
     const date = new Date(now.getTime() - 24 * 60 * 60 * 1000); // exactly 24 hours ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     // Should show as "1d" not "24h"
     expect(result).toBe('1d');
@@ -87,7 +87,7 @@ describe('formatCommentDate', () => {
 
   it('should handle edge case at exactly 48 hours (2 days)', () => {
     const date = new Date(now.getTime() - 48 * 60 * 60 * 1000); // exactly 48 hours ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     // Should show full date format, not "2d"
     expect(result).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
@@ -95,7 +95,7 @@ describe('formatCommentDate', () => {
 
   it('should handle dates in the future (edge case)', () => {
     const futureDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour in future
-    const result = formatCommentDate(futureDate);
+    const result = formatCommentDate(futureDate, now);
 
     // Should handle negative difference (though this shouldn't happen in practice)
     // Will likely show as negative or 0
@@ -104,7 +104,7 @@ describe('formatCommentDate', () => {
 
   it('should handle very recent dates (same second)', () => {
     const date = new Date(now.getTime() - 100); // 100ms ago
-    const result = formatCommentDate(date);
+    const result = formatCommentDate(date, now);
 
     expect(result).toBe('0m');
   });

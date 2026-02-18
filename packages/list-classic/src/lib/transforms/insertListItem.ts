@@ -1,9 +1,9 @@
 import { type SlateEditor, type TElement, KEYS, PathApi } from 'platejs';
 
-export type InsertListItemOptions = {
+export interface InsertListItemOptions {
   inheritCheckStateOnLineEndBreak?: boolean;
   inheritCheckStateOnLineStartBreak?: boolean;
-};
+}
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (

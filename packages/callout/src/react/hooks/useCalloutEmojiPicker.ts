@@ -4,10 +4,10 @@ import { useEditorReadOnly, useEditorRef, useElement } from 'platejs/react';
 
 import { CALLOUT_STORAGE_KEY } from '../../lib';
 
-export type UseCalloutEmojiPickerOptions = {
+export interface UseCalloutEmojiPickerOptions {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-};
+}
 
 export const useCalloutEmojiPicker = ({
   isOpen,

@@ -1,6 +1,6 @@
 import { type Token, marked } from 'marked';
 
-export type ParseMarkdownBlocksOptions = {
+export interface ParseMarkdownBlocksOptions {
   /**
    * Token types to exclude from the output.
    *
@@ -13,7 +13,7 @@ export type ParseMarkdownBlocksOptions = {
    * @default true
    */
   trim?: boolean;
-};
+}
 
 export const parseMarkdownBlocks = (
   content: string,

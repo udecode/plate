@@ -3,7 +3,7 @@ import type * as Y from 'yjs';
 
 import { type YjsEditor, withYjs } from '@slate-yjs/core';
 
-export type WithYjsOptions = {
+export interface WithYjsOptions {
   /**
    * Whether to automatically connect to providers.
    *
@@ -14,7 +14,7 @@ export type WithYjsOptions = {
   localOrigin?: unknown;
   /** Origin used when storing positions. */
   positionStorageOrigin?: unknown;
-};
+}
 
 export type YjsEditorProps = {
   storeLocalChange: (op: Operation) => void;

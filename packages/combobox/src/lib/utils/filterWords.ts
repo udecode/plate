@@ -1,8 +1,8 @@
-export type FilterWordsOptions = {
+export interface FilterWordsOptions {
   prefixMode?: 'all-words' | 'last-word' | 'none';
   wordBoundary?: RegExp;
   wordQuantifier?: 'match-all' | 'match-any';
-};
+}
 
 const DEFAULT_WORD_BOUNDARY = /\s+/;
 

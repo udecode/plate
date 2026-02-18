@@ -44,18 +44,18 @@ import {
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
-type Group = {
+interface Group {
   group: string;
   items: Item[];
-};
+}
 
-type Item = {
+interface Item {
   icon: React.ReactNode;
   value: string;
   onSelect: (editor: PlateEditor, value: string) => void;
   focusEditor?: boolean;
   label?: string;
-};
+}
 
 const groups: Group[] = [
   {

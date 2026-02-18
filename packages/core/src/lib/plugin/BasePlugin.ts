@@ -10,13 +10,13 @@ import type { TStateApi } from 'zustand-x';
 
 import type { CorePluginApi, CorePluginTransforms } from '../plugins';
 
-export type AnyPluginConfig = {
+export interface AnyPluginConfig {
   key: any;
   api: any;
   options: any;
   selectors: any;
   transforms: any;
-};
+}
 
 export type BaseDeserializer = AnyObject & {
   /**
@@ -60,7 +60,7 @@ export type BaseHtmlDeserializer = BaseDeserializer & {
   withoutChildren?: boolean;
 };
 
-export type BaseInjectProps = {
+export interface BaseInjectProps {
   /**
    * Object whose keys are node values and values are classNames which will be
    * extended.
@@ -81,9 +81,9 @@ export type BaseInjectProps = {
   styleKey?: keyof CSSStyleDeclaration;
   /** List of supported node values. */
   validNodeValues?: any[];
-};
+}
 
-export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
+export interface BasePlugin<C extends AnyPluginConfig = PluginConfig> {
   /** Unique identifier for this plugin. */
   key: C['key'];
   /** API methods provided by this plugin. */
@@ -230,9 +230,9 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    * should be used.
    */
   enabled?: boolean;
-};
+}
 
-export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
+export interface BasePluginContext<C extends AnyPluginConfig = PluginConfig> {
   api: C['api'] & EditorApi & CorePluginApi;
   setOptions: (
     options:
@@ -260,9 +260,9 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> = {
     optionKey: K,
     value: InferOptions<C>[K]
   ) => void;
-};
+}
 
-export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
+export interface BasePluginNode<C extends AnyPluginConfig = PluginConfig> {
   /**
    * Specifies the type identifier for this plugin's nodes.
    *
@@ -376,7 +376,7 @@ export type BasePluginNode<C extends AnyPluginConfig = PluginConfig> = {
   toDataAttributes?: (
     options: BasePluginContext<C> & { node: TElement }
   ) => AnyObject | undefined;
-};
+}
 
 export type BaseSerializer = AnyObject;
 
@@ -387,7 +387,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 // -----------------------------------------------------------------------------
 
-export type BreakRules = {
+export interface BreakRules {
   /** Action when Enter is pressed in an empty block. */
   empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
   /**
@@ -408,19 +408,19 @@ export type BreakRules = {
   default?: 'default' | 'deleteExit' | 'exit' | 'lineBreak';
   /** If true, the new block after splitting will be reset to the default type. */
   splitReset?: boolean;
-};
+}
 
-export type MergeRules = {
+export interface MergeRules {
   /** Whether to remove the node when it's empty. */
   removeEmpty?: boolean;
-};
+}
 
-export type NormalizeRules = {
+export interface NormalizeRules {
   /** Whether to remove nodes with empty text. */
   removeEmpty?: boolean;
-};
+}
 
-export type DeleteRules = {
+export interface DeleteRules {
   /**
    * Action when Backspace is pressed at the start of the block. This applies
    * whether the block is empty or not.
@@ -436,9 +436,9 @@ export type DeleteRules = {
   start?: 'default' | 'reset';
   /** Action when Backspace is pressed and the block is empty. */
   empty?: 'default' | 'reset';
-};
+}
 
-export type SelectionRules = {
+export interface SelectionRules {
   /**
    * Defines the selection behavior at the boundaries of nodes.
    *
@@ -451,7 +451,7 @@ export type SelectionRules = {
    * - `default`: Uses Slate's default behavior.
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
-};
+}
 
 export type MatchRules =
   | 'break.default'
@@ -464,7 +464,7 @@ export type MatchRules =
   | 'normalize.removeEmpty'
   | 'selection.affinity';
 
-export type EditOnlyConfig = {
+export interface EditOnlyConfig {
   /**
    * If true, `handlers` are only active when the editor is not read-only.
    *
@@ -492,23 +492,23 @@ export type EditOnlyConfig = {
    * @default true (when `editOnly` is an object or `true` boolean)
    */
   render?: boolean;
-};
+}
 
-export type ExtendConfig<
+export interface ExtendConfig<
   C extends PluginConfig,
   EO = {},
   EA = {},
   ET = {},
   ES = {},
-> = {
+> {
   key: C['key'];
   api: C['api'] & EA;
   options: C['options'] & EO;
   selectors: C['selectors'] & ES;
   transforms: C['transforms'] & ET;
-};
+}
 
-export type GetInjectNodePropsOptions = {
+export interface GetInjectNodePropsOptions {
   /** Existing className. */
   className?: string;
 
@@ -520,7 +520,7 @@ export type GetInjectNodePropsOptions = {
 
   /** Style value or className key. */
   text?: TText;
-};
+}
 
 export type GetInjectNodePropsReturnType = AnyObject & {
   className?: string;
@@ -550,19 +550,25 @@ export type NodeComponent<T = any> = React.FC<T>;
 
 export type NodeComponents = Record<string, NodeComponent>;
 
-export type ParserOptions = {
+export interface ParserOptions {
   data: string;
   dataTransfer: DataTransfer;
   mimeType: string;
-};
+}
 
-export type PluginConfig<
+export interface PluginConfig<
   K extends string = any,
   O = {},
   A = {},
   T = {},
   S = {},
-> = { key: K; api: A; options: O; selectors: S; transforms: T };
+> {
+  key: K;
+  api: A;
+  options: O;
+  selectors: S;
+  transforms: T;
+}
 
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> = PluginConfig<
   any,

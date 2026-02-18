@@ -38,8 +38,8 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "@floating-ui/core": "^1.7.1",
-    "@floating-ui/react": "^0.27.12",
+    "@floating-ui/core": "^1.7.4",
+    "@floating-ui/react": "^0.27.18",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

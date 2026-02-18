@@ -228,10 +228,10 @@ function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   );
 }
 
-type DiffProps = {
+interface DiffProps {
   current: Value;
   previous: Value;
-};
+}
 
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {

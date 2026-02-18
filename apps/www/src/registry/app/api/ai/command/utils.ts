@@ -45,7 +45,7 @@ export const list = (items: string[] | undefined) =>
         .join('\n')
     : '';
 
-export type StructuredPromptSections = {
+export interface StructuredPromptSections {
   context?: string;
   examples?: string[] | string;
   history?: string;
@@ -57,7 +57,7 @@ export type StructuredPromptSections = {
   taskContext?: string;
   thinking?: string;
   tone?: string;
-};
+}
 
 /**
  * Build a structured prompt following best practices for AI interactions.

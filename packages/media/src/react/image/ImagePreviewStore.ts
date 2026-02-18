@@ -1,9 +1,9 @@
 import { createZustandStore } from 'platejs/react';
 
-export type PreviewItem = {
+export interface PreviewItem {
   url: string;
   id?: string;
-};
+}
 
 export const ImagePreviewStore = createZustandStore(
   {

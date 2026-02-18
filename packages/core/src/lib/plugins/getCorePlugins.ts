@@ -20,7 +20,7 @@ import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
 
 export type CorePlugin = ReturnType<typeof getCorePlugins>[number];
 
-export type GetCorePluginsOptions = {
+export interface GetCorePluginsOptions {
   /** Enable mark/element affinity. */
   affinity?: boolean;
   /** Configure Slate's chunking optimization. */
@@ -31,7 +31,7 @@ export type GetCorePluginsOptions = {
   nodeId?: NodeIdConfig['options'] | boolean;
   /** Override the core plugins using the same key. */
   plugins?: AnyPluginConfig[];
-};
+}
 
 export const getCorePlugins = ({
   affinity,

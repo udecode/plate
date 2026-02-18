@@ -28,15 +28,15 @@ export type MutableRefs = React.MutableRefObject<{
   contentRoot: React.RefObject<HTMLDivElement | null> | undefined;
 }>;
 
-export type UseEmojiPickerProps = {
+export interface UseEmojiPickerProps {
   closeOnSelect: boolean;
   emojiLibrary: IEmojiFloatingLibrary;
   indexSearch: AIndexSearch;
-};
+}
 
-export type UseEmojiPickerType<
+export interface UseEmojiPickerType<
   T extends React.ReactElement<any> = React.ReactElement<any>,
-> = {
+> {
   emojiLibrary: IEmojiFloatingLibrary;
   hasFound: boolean;
   i18n: i18nProps;
@@ -57,7 +57,7 @@ export type UseEmojiPickerType<
   focusedCategory?: EmojiCategoryList;
   settings?: EmojiSettingsType;
   styles?: any;
-};
+}
 
 export const useEmojiPicker = ({
   closeOnSelect,

@@ -159,10 +159,10 @@ export function transformDiffTexts(
   return diffTexts.flatMap((t) => inlineNodeCharMap.textToNode(t));
 }
 
-type LineBreakCharsOptions = {
+interface LineBreakCharsOptions {
   deletedLineBreakChar?: string;
   insertedLineBreakChar?: string;
-};
+}
 
 // Function to compute the text operations needed to transform string `a` into string `b`
 function slateTextDiff(
@@ -339,8 +339,8 @@ function getKeysLength(obj: object | null | undefined): number {
   return Object.keys(obj).length;
 }
 
-type Op = {
+interface Op {
   offset: number;
   text: string;
   type: 'insert_text' | 'remove_text';
-};
+}

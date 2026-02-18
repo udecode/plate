@@ -20,14 +20,14 @@ describe('createTSlatePlugin', () => {
   });
 
   it('should create a plugin with explicit types and cover various scenarios', () => {
-    type TestOptions = {
+    interface TestOptions {
       optionA?: string;
       optionB?: number;
-    };
+    }
 
-    type TestApi = {
+    interface TestApi {
       testMethod: () => void;
-    };
+    }
 
     const basePlugin = createTPlatePlugin<
       PluginConfig<'testPlugin', TestOptions, TestApi>

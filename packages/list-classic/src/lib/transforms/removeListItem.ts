@@ -11,11 +11,11 @@ import { getPropsIfTaskListLiNode, hasListChild } from '../queries';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
-export type RemoveListItemOptions = {
+export interface RemoveListItemOptions {
   list: ElementEntry;
   listItem: ElementEntry;
   reverse?: boolean;
-};
+}
 
 /** Remove list item and move its sublist to list if any. */
 export const removeListItem = (

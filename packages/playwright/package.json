@@ -1,0 +1,56 @@
+{
+  "name": "@platejs/playwright",
+  "version": "52.0.11",
+  "description": "Interact with a Plate editor from inside a Playwright test",
+  "keywords": [
+    "plate",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/playwright"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "yarn p:brl",
+    "build": "yarn p:build",
+    "build:watch": "yarn p:build:watch",
+    "clean": "yarn p:clean",
+    "lint": "yarn p:lint",
+    "lint:fix": "yarn p:lint:fix",
+    "test": "yarn p:test",
+    "test:watch": "yarn p:test:watch",
+    "typecheck": "yarn p:typecheck"
+  },
+  "dependencies": {
+    "react-compiler-runtime": "^1.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": ">=1.58.2",
+    "platejs": "workspace:^"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.42.1",
+    "platejs": ">=52.0.11",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

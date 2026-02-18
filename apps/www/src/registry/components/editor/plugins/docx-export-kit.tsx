@@ -46,7 +46,7 @@ import { KEYS } from 'platejs';
  * Tables use base version with juice CSS inlining.
  */
 export const DocxExportKit = [
-  DocxExportPlugin.configure({
+  DocxExportPlugin.extend({
     override: {
       components: {
         [KEYS.codeBlock]: CodeBlockElementDocx,

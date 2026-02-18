@@ -1,4 +1,4 @@
-/* biome-ignore-all lint/nursery/useMaxParams: legacy code */
+/* biome-ignore-all lint/complexity/useMaxParams: legacy code */
 /** biome-ignore-all lint/style/useAtIndex: legacy code */
 /* biome-ignore-all lint/performance/useTopLevelRegex: legacy code */
 /* biome-ignore-all lint/style/noParameterAssign: legacy code */
@@ -76,7 +76,7 @@ import { vNodeHasChildren } from '../utils/vnode';
 import { buildImage, buildList } from './render-document-file';
 
 // Types for Virtual DOM
-type VNodeProperties = {
+interface VNodeProperties {
   alt?: string;
   attributes?: Record<string, string>;
   colSpan?: number;
@@ -85,26 +85,26 @@ type VNodeProperties = {
   rowSpan?: number;
   src?: string;
   style?: Record<string, string>;
-};
+}
 
-type VNodeType = {
+interface VNodeType {
   children?: (VNodeType | VTextType)[];
   properties?: VNodeProperties;
   tagName?: string;
   [key: string]: unknown;
-};
+}
 
-type VTextType = {
+interface VTextType {
   text: string;
   [key: string]: unknown;
-};
+}
 
 // Types for DocxDocumentInstance
-type MediaFileResponse = {
+interface MediaFileResponse {
   fileContent: string;
   fileNameWithExtension: string;
   id: number;
-};
+}
 
 type DocxDocumentInstance = Partial<TrackingDocumentInstance> & {
   availableDocumentSpace: number;
@@ -139,31 +139,31 @@ type DocxDocumentInstance = Partial<TrackingDocumentInstance> & {
 };
 
 // Types for attributes and options
-type Indentation = {
+interface Indentation {
   left?: number;
   right?: number;
-};
+}
 
-type NumberingInfo = {
+interface NumberingInfo {
   levelId: number;
   numberingId: number;
-};
+}
 
-type TableCellBorder = {
+interface TableCellBorder {
   bottom?: number;
   color?: string;
   left?: number;
   right?: number;
   stroke?: string;
   top?: number;
-};
+}
 
 interface TableBorder extends TableCellBorder {
   insideH?: number;
   insideV?: number;
 }
 
-type RunAttributes = {
+interface RunAttributes {
   backgroundColor?: string;
   code?: boolean;
   color?: string;
@@ -183,7 +183,7 @@ type RunAttributes = {
   u?: boolean;
   verticalAlign?: string;
   width?: number | string;
-};
+}
 
 interface ParagraphAttributes extends RunAttributes {
   afterSpacing?: number;
@@ -212,7 +212,7 @@ interface ParagraphAttributes extends RunAttributes {
   width?: number | string;
 }
 
-type TableAttributes = {
+interface TableAttributes {
   maximumWidth?: number;
   rowCantSplit?: boolean;
   tableBorder?: TableBorder;
@@ -220,18 +220,18 @@ type TableAttributes = {
   tableCellSpacing?: number;
   tableRowHeight?: number;
   width?: number;
-};
+}
 
-type ColumnWidthInfo = {
+interface ColumnWidthInfo {
   type: string;
   value: number;
-};
+}
 
-type FormattingOptions = {
+interface FormattingOptions {
   color?: string;
   font?: string;
   fontSize?: number;
-};
+}
 
 const fixupColorCode = (colorCodeString: string): string => {
   if (Object.hasOwn(colorNames, colorCodeString.toLowerCase())) {
@@ -766,9 +766,9 @@ const fixupMargin = (marginString: string): number | undefined => {
   return;
 };
 
-type ModifiedAttributesBuilderOptions = {
+interface ModifiedAttributesBuilderOptions {
   isParagraph?: boolean;
-};
+}
 
 const modifiedStyleAttributesBuilder = (
   docxDocumentInstance: DocxDocumentInstance | undefined,
@@ -1534,13 +1534,13 @@ const buildParagraphProperties = (
   return paragraphPropertiesFragment;
 };
 
-type ImageDimensionAttributes = {
+interface ImageDimensionAttributes {
   height?: number;
   maximumWidth?: number;
   originalHeight?: number;
   originalWidth?: number;
   width?: number | string;
-};
+}
 
 const computeImageDimensions = (
   vNode: VNodeType,
@@ -2198,14 +2198,14 @@ const fixupTableCellBorder = (
   }
 };
 
-type RowSpanInfo = {
+interface RowSpanInfo {
   colSpan: number;
   rowSpan: number;
-};
+}
 
-type ColumnIndex = {
+interface ColumnIndex {
   index: number;
-};
+}
 
 const buildTableCell = async (
   vNode: VNodeType | VTextType,
@@ -3036,10 +3036,10 @@ const buildPresetGeometry = (): XMLBuilderType =>
     .att('prst', 'rect')
     .up();
 
-type ExtentsAttributes = {
+interface ExtentsAttributes {
   height?: number;
   width?: number;
-};
+}
 
 const buildExtents = ({ width, height }: ExtentsAttributes): XMLBuilderType => {
   // Default to 100x100 pixels in EMU if dimensions are missing
@@ -3204,14 +3204,14 @@ const buildNonVisualPictureProperties = (
   return nonVisualPicturePropertiesFragment;
 };
 
-type PictureAttributes = {
+interface PictureAttributes {
   description?: string;
   fileNameWithExtension?: string;
   height?: number;
   id?: number;
   relationshipId?: number;
   width?: number;
-};
+}
 
 const buildPicture = ({
   id,

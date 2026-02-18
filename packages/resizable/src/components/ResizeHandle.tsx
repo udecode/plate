@@ -12,9 +12,9 @@ import type { ResizeDirection, ResizeEvent } from '../types';
 
 import { isTouchEvent } from '../utils';
 
-export type ResizeHandleStoreState = {
+export interface ResizeHandleStoreState {
   onResize: (event: ResizeEvent) => void;
-};
+}
 
 const initialState: Nullable<ResizeHandleStoreState> = {
   onResize: null,
@@ -30,7 +30,7 @@ export const {
   suppressWarnings: true,
 });
 
-export type ResizeHandleOptions = {
+export interface ResizeHandleOptions {
   direction?: ResizeDirection;
   initialSize?: number;
   onHover?: () => void;
@@ -38,7 +38,7 @@ export type ResizeHandleOptions = {
   onMouseDown?: React.MouseEventHandler;
   onResize?: (event: ResizeEvent) => void;
   onTouchStart?: React.TouchEventHandler;
-};
+}
 
 export const useResizeHandleState = ({
   direction = 'left',

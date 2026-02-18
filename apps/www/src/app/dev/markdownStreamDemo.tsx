@@ -503,13 +503,13 @@ export const MarkdownStreamDemo = () => {
   );
 };
 
-type TChunks = {
+interface TChunks {
   chunks: {
     index: number;
     text: string;
   }[];
   linebreaks: number;
-};
+}
 
 function splitChunksByLinebreak(chunks: string[]) {
   const result: TChunks[] = [];
@@ -540,7 +540,10 @@ function splitChunksByLinebreak(chunks: string[]) {
   return result;
 }
 
-type TChunk = { chunk: string; delayInMs: number };
+interface TChunk {
+  chunk: string;
+  delayInMs: number;
+}
 const transformedChunks = (chunks: string[]): TChunk[] => {
   const result: TChunk[] = [];
   const joiner = new MarkdownJoiner();

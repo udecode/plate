@@ -141,21 +141,20 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
     ) => boolean;
   };
 
-export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
+export interface HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> {
   parse?: React.FC<PlateElementProps<TElement, C> & PlateLeafProps<TText, C>>;
   query?: (options: PlateElementProps) => boolean;
-};
+}
 
 // -----------------------------------------------------------------------------
 
-export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
+export interface HtmlSerializer<C extends AnyPluginConfig = PluginConfig> {
   parse?: (options: PlatePluginContext<C> & { node: Descendant }) => string;
   query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
-};
+}
 
 export type InferConfig<P> = P extends
   | PlatePlugin<infer C>
-  // biome-ignore lint/suspicious/noRedeclare: Intentional use of same type variable in union to extract config from either type
   | SlatePlugin<infer C>
   ? C
   : never;
@@ -306,7 +305,7 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
  * Used by parser plugins like html to deserialize inserted data to a slate
  * fragment. The fragment will be inserted to the editor if not empty.
  */
-export type Parser<C extends AnyPluginConfig = PluginConfig> = {
+export interface Parser<C extends AnyPluginConfig = PluginConfig> {
   /** Format to get data. Example data types are text/plain and text/uri-list. */
   format?: string[] | string;
   mimeTypes?: string[];
@@ -333,7 +332,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
   transformFragment?: (
     options: ParserOptions & PlatePluginContext<C> & { fragment: Descendant[] }
   ) => Descendant[];
-};
+}
 
 // -----------------------------------------------------------------------------
 
@@ -550,7 +549,7 @@ export type PlatePluginContext<
   plugin: EditorPlatePlugin<C>;
 };
 
-export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
+export interface PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> {
   __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
@@ -827,7 +826,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => PlatePlugin<C>;
   __resolved?: boolean;
-};
+}
 
 export type PlatePlugins = AnyPlatePlugin[];
 

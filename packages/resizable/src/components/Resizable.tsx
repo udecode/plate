@@ -10,7 +10,7 @@ import { resizeLengthClamp } from '../utils';
 import { ResizeHandleProvider } from './ResizeHandle';
 import { useResizableSet, useResizableValue } from './useResizableStore';
 
-export type ResizableOptions = {
+export interface ResizableOptions {
   /** Node alignment. */
   align?: 'center' | 'left' | 'right';
 
@@ -18,7 +18,7 @@ export type ResizableOptions = {
 
   minWidth?: ResizeLength;
   readOnly?: boolean;
-};
+}
 
 export const useResizableState = ({
   align = 'center',

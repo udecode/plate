@@ -12,7 +12,7 @@ import { useSyncExternalStore } from 'use-sync-external-store/shim';
 import { commandScore } from './internal/command-score';
 
 // FORK
-type Actions = {
+interface Actions {
   // Select current item. Can be used outside of the menu (e.g. Enter from another input).
   selectCurrentItem: () => void;
   // Select first item in the list
@@ -31,8 +31,10 @@ type Actions = {
   selectPrevItem: (e: React.KeyboardEvent) => void;
   // Set search so Input is not required and we can use another one.
   setSearch: (search: string) => void;
-};
-type Children = { children?: React.ReactNode };
+}
+interface Children {
+  children?: React.ReactNode;
+}
 
 type CommandProps = Children &
   DivProps & {
@@ -67,7 +69,7 @@ type CommandProps = Children &
     /** Event handler called when the selected item of the menu changes. */
     onValueChange?: (value: string) => void;
   };
-type Context = {
+interface Context {
   inputId: string;
   label: string;
   labelId: string;
@@ -80,7 +82,7 @@ type Context = {
   group: (id: string) => () => void;
   item: (id: string, groupId: string) => () => void;
   value: (id: string, value: string, keywords?: string[]) => void;
-};
+}
 type DialogProps = RadixDialog.DialogProps &
   CommandProps & {
     /** Provide a custom element the Dialog should portal into. */
@@ -92,10 +94,10 @@ type DialogProps = RadixDialog.DialogProps &
   };
 type DivProps = React.ComponentPropsWithoutRef<typeof Primitive.div>;
 type EmptyProps = Children & DivProps & {};
-type Group = {
+interface Group {
   id: string;
   forceMount?: boolean;
-};
+}
 type GroupProps = Children &
   Omit<DivProps, 'heading' | 'value'> & {
     /** Whether this group is forcibly rendered regardless of filtering. */
@@ -158,12 +160,12 @@ type SeparatorProps = DivProps & {
    */
   alwaysRender?: boolean;
 };
-type State = {
+interface State {
   filtered: { count: number; groups: Set<string>; items: Map<string, number> };
   search: string;
   value: string;
-};
-type Store = {
+}
+interface Store {
   emit: () => void;
   setState: <K extends keyof State>(
     key: K,
@@ -172,7 +174,7 @@ type Store = {
   ) => void;
   snapshot: () => State;
   subscribe: (callback: () => void) => () => void;
-};
+}
 
 const GROUP_SELECTOR = `[cmdk-group=""]`;
 const GROUP_ITEMS_SELECTOR = `[cmdk-group-items=""]`;

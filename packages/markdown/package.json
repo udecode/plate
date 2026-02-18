@@ -41,14 +41,14 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "marked": "^15.0.12",
+    "marked": "^17.0.3",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
     "react-compiler-runtime": "^1.0.0",
-    "remark-mdx": "^3.1.0",
+    "remark-mdx": "^3.1.1",
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
-    "ts-essentials": "10.1.0",
+    "ts-essentials": "10.1.1",
     "unified": "^11.0.5"
   },
   "devDependencies": {

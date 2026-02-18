@@ -1,13 +1,13 @@
 import { createZustandStore } from 'zustand-x';
 
-export type EventEditorState = {
+export interface EventEditorState {
   /** Last editor id that has been blurred. */
   blur: string | null;
   /** Editor id that is currently being focused. */
   focus: string | null;
   /** Last editor id. */
   last: string | null;
-};
+}
 
 /** Store where the keys are event names and the values are editor ids. */
 export const EventEditorStore = createZustandStore(

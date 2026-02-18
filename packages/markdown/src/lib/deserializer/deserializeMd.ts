@@ -23,7 +23,7 @@ import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
 
 // TODO: fixes tests
 
-export type DeserializeMdOptions = {
+export interface DeserializeMdOptions {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
@@ -36,7 +36,7 @@ export type DeserializeMdOptions = {
   splitLineBreaks?: boolean;
   withoutMdx?: boolean;
   onError?: (error: Error) => void;
-};
+}
 
 export const markdownToAstProcessor = (
   editor: SlateEditor,
@@ -122,7 +122,6 @@ export const deserializeMd = (
 };
 
 declare module 'unified' {
-  // biome-ignore lint/style/useConsistentTypeDefinitions: module
   interface CompileResultMap {
     remarkToSlateNode: Descendant[];
   }

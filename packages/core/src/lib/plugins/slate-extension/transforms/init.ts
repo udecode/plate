@@ -4,7 +4,7 @@ import type { SlateEditor } from '../../../editor';
 
 import { pipeNormalizeInitialValue } from '../../../../internal/plugin/pipeNormalizeInitialValue';
 
-export type InitOptions = {
+export interface InitOptions {
   autoSelect?: boolean | 'end' | 'start';
   selection?: TSelection;
   shouldNormalizeEditor?: boolean;
@@ -14,7 +14,7 @@ export type InitOptions = {
     isAsync: boolean;
     value: Value;
   }) => void;
-};
+}
 
 export const init = (
   editor: SlateEditor,

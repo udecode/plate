@@ -1,6 +1,6 @@
-export type UnusedCharGeneratorOptions = {
+export interface UnusedCharGeneratorOptions {
   skipChars?: string;
-};
+}
 
 export function* unusedCharGenerator({
   skipChars = '',

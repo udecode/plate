@@ -11,7 +11,7 @@ const getCoords = (e: any) => {
   return { x: e.clientX, y: e.clientY };
 };
 
-export type ScrollAreaProps = {
+export interface ScrollAreaProps {
   placement: 'bottom' | 'top';
   containerRef?: React.RefObject<any>;
   enabled?: boolean;
@@ -20,7 +20,7 @@ export type ScrollAreaProps = {
   scrollAreaProps?: React.HTMLAttributes<HTMLDivElement>;
   strengthMultiplier?: number;
   zIndex?: number;
-};
+}
 
 export function ScrollArea({
   containerRef,

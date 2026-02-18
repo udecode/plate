@@ -45,7 +45,7 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.16",
+    "@types/papaparse": "^5.5.2",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

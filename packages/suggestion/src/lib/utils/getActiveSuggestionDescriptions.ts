@@ -4,10 +4,10 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
-export type TSuggestionCommonDescription = {
+export interface TSuggestionCommonDescription {
   suggestionId: string;
   userId: string;
-};
+}
 
 export type TSuggestionDeletionDescription = {
   deletedText: string;

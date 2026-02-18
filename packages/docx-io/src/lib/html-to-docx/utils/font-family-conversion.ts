@@ -1,9 +1,9 @@
 export const removeSimpleOrDoubleQuotes = /(["'])(.*?)\1/;
 
-export type FontTableObject = {
+export interface FontTableObject {
   fontName: string;
   genericFontName: string;
-};
+}
 
 export const fontFamilyToTableObject = (
   fontFamilyString: string | null | undefined,

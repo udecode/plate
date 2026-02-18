@@ -11,11 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getPlateCopyMarkdown } from '@/lib/llm-context';
 
-type ViewOptionsProps = {
+interface ViewOptionsProps {
   content: string;
   docUrl: string;
   title: string;
-};
+}
 
 export function ViewOptions({ content, docUrl, title }: ViewOptionsProps) {
   const q = getPlateCopyMarkdown({ content, docUrl, title });

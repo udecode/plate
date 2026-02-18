@@ -2,7 +2,7 @@ import type { LeafPosition, TText } from '@platejs/slate';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 
-export type RenderLeafProps<N extends TText = TText> = {
+export interface RenderLeafProps<N extends TText = TText> {
   attributes: {
     className?: string;
     'data-slate-leaf'?: true;
@@ -16,4 +16,4 @@ export type RenderLeafProps<N extends TText = TText> = {
    * node is split by decorations.
    */
   leafPosition?: LeafPosition;
-};
+}

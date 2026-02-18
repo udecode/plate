@@ -61,7 +61,7 @@ import { cn } from '@/lib/utils';
 
 // SYNC
 
-type BlockViewerContext = {
+interface BlockViewerContext {
   activeFile: string | null;
   dependencies: string[];
   highlightedFiles:
@@ -82,7 +82,7 @@ type BlockViewerContext = {
   view: 'code' | 'preview';
   setActiveFile: (file: string) => void;
   setView: (view: 'code' | 'preview') => void;
-};
+}
 
 const BlockViewerContext = React.createContext<BlockViewerContext | null>(null);
 
@@ -306,7 +306,7 @@ function BlockViewerToolbar({ block }: { block: boolean }) {
           >
             <span
               className={cn(
-                '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
+                'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
                 'bg-white opacity-10',
                 'transition-all duration-1000 ease-out'
               )}
@@ -437,7 +437,7 @@ function BlockViewerView({
               />
             )}
           </ResizablePanel>
-          <ResizableHandle className="after:-translate-x-px after:-translate-y-1/2 relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
+          <ResizableHandle className="relative hidden w-3 bg-transparent p-0 after:absolute after:top-1/2 after:right-0 after:h-8 after:w-[6px] after:-translate-x-px after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 sm:block" />
           <ResizablePanel defaultSize={0} minSize={0} />
         </ResizablePanelGroup>
       </div>
@@ -495,7 +495,7 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
         </div>
         <div
           key={file?.path}
-          className="[&_.line:before]:-translate-y-px relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
+          className="relative flex-1 overflow-hidden after:absolute after:inset-y-0 after:left-0 after:w-10 after:bg-zinc-950 [&_.line:before]:sticky [&_.line:before]:left-2 [&_.line:before]:z-10 [&_.line:before]:-translate-y-px [&_.line:before]:pr-1 [&_pre]:h-(--height) [&_pre]:overflow-auto [&_pre]:bg-transparent! [&_pre]:pt-4 [&_pre]:pb-20 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:leading-relaxed"
           data-rehype-pretty-code-fragment
           dangerouslySetInnerHTML={{ __html: file?.highlightedContent ?? '' }}
         />

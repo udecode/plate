@@ -2,10 +2,10 @@ import { type InsertNodesOptions, type SlateEditor, KEYS } from 'platejs';
 
 import { insertCodeBlock } from './insertCodeBlock';
 
-export type CodeBlockInsertOptions = {
+export interface CodeBlockInsertOptions {
   defaultType?: string;
   insertNodesOptions?: Omit<InsertNodesOptions, 'match'>;
-};
+}
 
 /**
  * Called by toolbars to make sure a code-block gets inserted below a paragraph

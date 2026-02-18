@@ -33,7 +33,7 @@ type FilterFn = (
   search: string
 ) => boolean;
 
-type InlineComboboxContextValue = {
+interface InlineComboboxContextValue {
   filter: FilterFn | false;
   inputProps: UseComboboxInputResult['props'];
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -41,7 +41,7 @@ type InlineComboboxContextValue = {
   showTrigger: boolean;
   trigger: string;
   setHasEmpty: (hasEmpty: boolean) => void;
-};
+}
 
 const InlineComboboxContext = React.createContext<InlineComboboxContextValue>(
   null as unknown as InlineComboboxContextValue
@@ -60,7 +60,7 @@ const defaultFilter: FilterFn = (
   );
 };
 
-type InlineComboboxProps = {
+interface InlineComboboxProps {
   children: React.ReactNode;
   element: TElement;
   trigger: string;
@@ -69,7 +69,7 @@ type InlineComboboxProps = {
   showTrigger?: boolean;
   value?: string;
   setValue?: (value: string) => void;
-};
+}
 
 const InlineCombobox = ({
   children,
