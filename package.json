@@ -1,4 +1,4 @@
-{
+
   "name": "plate",
   "private": true,
   "license": "MIT",
@@ -20,7 +20,7 @@
     "devt": "yarn workspace www devt",
     "docs:build": "cd docs && yarn && yarn build",
     "docs:start": "cd docs && yarn && yarn start",
-    "e2e": "echo '@playwright/test removed to reduce install size (~200MB). Run: yarn add -D @playwright/test'",
+    "e2e": "yarn playwright test --config tooling/config/playwright.config.ts",
     "g:Test:Watch": "turbo --filter \"./packages/**\" test:watch",
     "g:brl": "turbo --filter \"./packages/**\" brl",
     "g:build": "turbo --filter \"./packages/**\" build",
