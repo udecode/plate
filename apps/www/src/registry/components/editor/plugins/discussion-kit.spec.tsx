@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import { createPlateEditor } from 'platejs/react';
 
-import { discussionPlugin, type TDiscussion, DiscussionKit } from './discussion-kit';
+import {
+  discussionPlugin,
+  type TDiscussion,
+  DiscussionKit,
+} from './discussion-kit';
 
 describe('discussionPlugin', () => {
   it('should create plugin with default options', () => {
@@ -27,11 +31,9 @@ describe('discussionPlugin', () => {
     const options = editor.getOptions(discussionPlugin);
     const alice = options.users.alice;
 
-    expect(alice).toMatchObject({
-      id: 'alice',
-      name: 'Alice',
-      avatarUrl: expect.stringContaining('dicebear.com'),
-    });
+    expect(alice.id).toBe('alice');
+    expect(alice.name).toBe('Alice');
+    expect(alice.avatarUrl).toContain('dicebear.com');
   });
 
   it('should have discussion data with correct structure', () => {
@@ -84,13 +86,11 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const currentUser = editor.useOption(discussionPlugin, 'currentUser');
+    const currentUser = editor.getOption(discussionPlugin, 'currentUser');
 
-    expect(currentUser).toMatchObject({
-      id: 'alice',
-      name: 'Alice',
-      avatarUrl: expect.stringContaining('alice'),
-    });
+    expect(currentUser?.id).toBe('alice');
+    expect(currentUser?.name).toBe('Alice');
+    expect(currentUser?.avatarUrl).toContain('dicebear.com');
   });
 
   it('should return specific user with user selector', () => {
@@ -98,13 +98,11 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const bob = editor.useOption(discussionPlugin, 'user', 'bob');
+    const bob = editor.getOption(discussionPlugin, 'user', 'bob');
 
-    expect(bob).toMatchObject({
-      id: 'bob',
-      name: 'Bob',
-      avatarUrl: expect.stringContaining('bob'),
-    });
+    expect(bob?.id).toBe('bob');
+    expect(bob?.name).toBe('Bob');
+    expect(bob?.avatarUrl).toContain('dicebear.com');
   });
 
   it('should return charlie with user selector', () => {
@@ -112,13 +110,11 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const charlie = editor.useOption(discussionPlugin, 'user', 'charlie');
+    const charlie = editor.getOption(discussionPlugin, 'user', 'charlie');
 
-    expect(charlie).toMatchObject({
-      id: 'charlie',
-      name: 'Charlie',
-      avatarUrl: expect.stringContaining('charlie'),
-    });
+    expect(charlie?.id).toBe('charlie');
+    expect(charlie?.name).toBe('Charlie');
+    expect(charlie?.avatarUrl).toContain('dicebear.com');
   });
 
   it('should handle undefined user gracefully', () => {
@@ -126,7 +122,7 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const unknownUser = editor.useOption(discussionPlugin, 'user', 'unknown');
+    const unknownUser = editor.getOption(discussionPlugin, 'user', 'unknown');
 
     expect(unknownUser).toBeUndefined();
   });

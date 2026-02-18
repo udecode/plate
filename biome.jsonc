@@ -28,7 +28,8 @@
       "!!templates",
       "!**/__registry__",
       "!**/next-env.d.ts",
-      "!**/mammoth.js"
+      "!**/mammoth.js",
+      "!.claude"
     ]
   },
   "linter": {

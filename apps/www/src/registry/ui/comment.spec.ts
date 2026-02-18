@@ -1,9 +1,24 @@
-import { describe, expect, it } from 'bun:test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  setSystemTime,
+} from 'bun:test';
 
 import { formatCommentDate } from './comment';
 
 describe('formatCommentDate', () => {
-  const now = new Date('2024-01-15T12:00:00Z');
+  const now = new Date('2026-01-15T12:00:00Z');
+
+  beforeEach(() => {
+    setSystemTime(now);
+  });
+
+  afterEach(() => {
+    setSystemTime();
+  });
 
   it('should format recent minutes as "Nm"', () => {
     const date = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago

@@ -31,7 +31,7 @@ import {
   BaseTableRowPlugin,
 } from '@platejs/table';
 import { jsx } from '@platejs/test-utils';
-import type { SlatePlugin, TElement, TNode } from 'platejs';
+import type { SlatePlugin, TNode } from 'platejs';
 import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
 import { mammoth, preprocessMammothHtml } from '../importDocx';
