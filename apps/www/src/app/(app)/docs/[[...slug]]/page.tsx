@@ -28,11 +28,11 @@ import { registryExamples } from '@/registry/registry-examples';
 import { proExamples } from '@/registry/registry-pro';
 import { registryUI } from '@/registry/registry-ui';
 
-interface DocPageProps {
+type DocPageProps = {
   params: Promise<{
     slug: string[];
   }>;
-}
+};
 
 export const dynamic = 'force-static';
 

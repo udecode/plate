@@ -5,9 +5,9 @@ import * as React from 'react';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
-interface Project {
+type Project = {
   blocks: string[];
-}
+};
 
 const projectAtom = atomWithStorage<Project>('project', {
   blocks: [],

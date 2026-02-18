@@ -19,14 +19,14 @@ export type NormalizeTypesConfig = PluginConfig<
   }
 >;
 
-interface Rule {
+type Rule = {
   /** Path where the rule applies */
   path: Path;
   /** Force the type of the node at the given path */
   strictType?: string;
   /** Type of the inserted node at the given path if `strictType` is not provided */
   type?: string;
-}
+};
 
 /** @see {@link withNormalizeTypes} */
 export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({

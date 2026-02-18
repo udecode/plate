@@ -74,7 +74,6 @@ export interface SelectionEvent {
 }
 
 export interface SelectionEvents {
-  [key: string]: (e: SelectionEvent) => boolean | void;
   beforedrag: (e: SelectionEvent) => boolean | void;
   beforestart: (e: SelectionEvent) => boolean | void;
   move: (e: SelectionEvent) => void;

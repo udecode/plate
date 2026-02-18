@@ -189,6 +189,7 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* biome-ignore lint/a11y/useGenericFontNames: shadcn */
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {
     [data-wrapper] {
       @apply min-[1800px]:border-t;
@@ -367,6 +368,7 @@
     color: var(--shiki-light);
 
     @variant dark {
+      /* biome-ignore lint/suspicious/noDuplicateProperties: shiki */
       color: var(--shiki-dark) !important;
     }
   }

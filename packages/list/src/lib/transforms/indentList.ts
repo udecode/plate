@@ -5,12 +5,12 @@ import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 
-export interface ListOptions {
+export type ListOptions = {
   at?: TLocation;
   listRestart?: number;
   listRestartPolite?: number;
   listStyleType?: ListStyleType | string;
-}
+};
 
 /** Increase the indentation of the selected blocks. */
 export const indentList = (

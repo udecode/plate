@@ -5,7 +5,7 @@ function castArray<T>(value: T | T[]): T[] {
 }
 
 /** Filter nodes. */
-export interface QueryNodeOptions {
+export type QueryNodeOptions = {
   /** List of types that are valid. If empty or undefined - allow all. */
   allow?: string[] | string | null;
 
@@ -20,7 +20,7 @@ export interface QueryNodeOptions {
 
   /** Paths above that value are invalid. */
   maxLevel?: number | null;
-}
+};
 
 /** Query the node entry. */
 export const queryNode = <N extends TNode>(

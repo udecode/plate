@@ -359,9 +359,9 @@ describe('PlatePlugin usePluginOption', () => {
 
     it('should throw when setting an option that was undefined', () => {
       // Create a plugin with no initial options, but with a defined type
-      interface PluginOptions {
+      type PluginOptions = {
         existingOption: string;
-      }
+      };
       const p1 = createSlatePlugin<any, PluginOptions>({ key: 'plugin1' });
       const editor = createPlateEditor({ plugins: [p1] });
 

@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
 import type { TSuggestionText } from 'platejs';
@@ -22,9 +20,7 @@ describe('SuggestionLeafDocx', () => {
       } as TSuggestionText,
     };
 
-    const { container } = render(
-      <SuggestionLeafDocx {...(mockProps as any)} />
-    );
+    const { container } = render(<SuggestionLeafDocx {...mockProps} />);
     const span = container.querySelector('span');
 
     expect(span).not.toBeNull();
@@ -48,9 +44,7 @@ describe('SuggestionLeafDocx', () => {
       } as TSuggestionText,
     };
 
-    const { container } = render(
-      <SuggestionLeafDocx {...(mockProps as any)} />
-    );
+    const { container } = render(<SuggestionLeafDocx {...mockProps} />);
 
     // Should NOT use <ins> or <del> tags
     expect(container.querySelector('ins')).toBeNull();
@@ -73,9 +67,7 @@ describe('SuggestionLeafDocx', () => {
       } as TSuggestionText,
     };
 
-    const { container } = render(
-      <SuggestionLeafDocx {...(mockProps as any)} />
-    );
+    const { container } = render(<SuggestionLeafDocx {...mockProps} />);
 
     expect(container.textContent).toBe('preserved content');
   });
@@ -93,9 +85,7 @@ describe('SuggestionLeafDocx', () => {
       } as TSuggestionText,
     };
 
-    const { container } = render(
-      <SuggestionLeafDocx {...(mockProps as any)} />
-    );
+    const { container } = render(<SuggestionLeafDocx {...mockProps} />);
     const span = container.querySelector('span');
 
     expect(span).not.toBeNull();
@@ -118,9 +108,7 @@ describe('SuggestionLeafDocx', () => {
       } as TSuggestionText,
     };
 
-    const { container } = render(
-      <SuggestionLeafDocx {...(mockProps as any)} />
-    );
+    const { container } = render(<SuggestionLeafDocx {...mockProps} />);
     const span = container.querySelector('span');
 
     expect(span?.getAttribute('data-slate-leaf')).toBe('true');

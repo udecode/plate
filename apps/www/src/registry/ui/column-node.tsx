@@ -68,7 +68,7 @@ export const ColumnElement = withHOC(
           <div
             ref={handleRef}
             className={cn(
-              'absolute top-2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
+              '-translate-x-1/2 -translate-y-1/2 absolute top-2 left-1/2 z-50',
               'pointer-events-auto flex items-center',
               'opacity-0 transition-opacity group-hover/column:opacity-100'
             )}
@@ -132,9 +132,9 @@ function DropLine() {
         'slate-dropLine',
         'absolute bg-brand/50',
         dropLine === 'left' &&
-          'inset-y-0 left-[-10.5px] w-1 group-first/column:-left-1',
+          'group-first/column:-left-1 inset-y-0 left-[-10.5px] w-1',
         dropLine === 'right' &&
-          'inset-y-0 right-[-11px] w-1 group-last/column:-right-1'
+          'group-last/column:-right-1 inset-y-0 right-[-11px] w-1'
       )}
     />
   );

@@ -8,11 +8,11 @@ import type { AutoScrollOperationsMap, ScrollMode } from './DOMPlugin';
 
 import { AUTO_SCROLL, DOMPlugin } from './DOMPlugin';
 
-export interface WithAutoScrollOptions {
+export type WithAutoScrollOptions = {
   mode?: ScrollMode;
   operations?: AutoScrollOperationsMap;
   scrollOptions?: ScrollIntoViewOptions;
-}
+};
 
 export const withScrolling = (
   editor: SlateEditor,

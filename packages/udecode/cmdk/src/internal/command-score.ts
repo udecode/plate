@@ -51,6 +51,7 @@ const COUNT_GAPS_REGEXP = /["#&(+./@[\\_{]/g,
   IS_GAP_REGEXP = /["#&(+./@[\\_{]/,
   IS_SPACE_REGEXP = /[\s-]/;
 
+// biome-ignore lint/nursery/useMaxParams: Performance-critical internal scoring function
 function commandScoreInner(
   string: any,
   abbreviation: any,

@@ -11,11 +11,11 @@ import { insertTableRow } from './insertTableRow';
 
 jsxt;
 
-interface MakeTableWithColsOptions {
+type MakeTableWithColsOptions = {
   rowCols: string[][];
   colSizes?: number[];
   cursorPath?: [number, number];
-}
+};
 
 const makeTableWithCols = ({
   colSizes,

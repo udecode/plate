@@ -26,7 +26,7 @@ export function StarOnGithub({ count }: { count: number }) {
       >
         <span
           className={cn(
-            'absolute right-0 -mt-12 h-32 w-8 translate-x-12 rotate-12',
+            '-mt-12 absolute right-0 h-32 w-8 translate-x-12 rotate-12',
             'bg-white opacity-10',
             'transition-all duration-1000 ease-out',
             cn(

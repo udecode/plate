@@ -182,7 +182,7 @@ export function DocsNav({ config }: { config: DocsConfig }) {
           />
           {filter && (
             <button
-              className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="-translate-y-1/2 absolute top-1/2 right-2 text-muted-foreground hover:text-foreground"
               onClick={() => setFilter('')}
               type="button"
             >

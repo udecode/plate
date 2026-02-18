@@ -9,7 +9,6 @@ export interface CaretPosition {
 }
 
 export interface CursorData {
-  [key: string]: unknown;
   selectionStyle?: React.CSSProperties;
   style?: React.CSSProperties;
 }

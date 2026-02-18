@@ -449,11 +449,11 @@ function fixFilePaths(files: z.infer<typeof registryItemSchema>['files']) {
   }));
 }
 
-export interface FileTree {
+export type FileTree = {
   name: string;
   children?: FileTree[];
   path?: string;
-}
+};
 
 export function createFileTreeForRegistryItemFiles(
   files?: { path: string; target?: string }[]

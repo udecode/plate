@@ -1,6 +1,6 @@
 /* biome-ignore-all lint/complexity/useOptionalChain: legacy code */
 /* biome-ignore-all lint/style/useForOf: legacy code */
-/* biome-ignore-all lint/complexity/useMaxParams: legacy code */
+/* biome-ignore-all lint/nursery/useMaxParams: legacy code */
 // @ts-expect-error - no types available
 import { default as HTMLToVDOM } from 'html-to-vdom';
 // @ts-expect-error - no types available
@@ -29,7 +29,7 @@ import { vNodeHasChildren } from '../utils/vnode';
 import * as xmlBuilder from './xml-builder';
 
 // Types for Virtual DOM
-interface VNodeProperties {
+type VNodeProperties = {
   alt?: string;
   attributes?: Record<string, string>;
   colSpan?: number;
@@ -38,30 +38,30 @@ interface VNodeProperties {
   rowSpan?: number;
   src?: string;
   style?: Record<string, string>;
-}
+};
 
-interface VNodeType {
+type VNodeType = {
   children?: (VNodeType | VTextType)[];
   properties?: VNodeProperties;
   tagName?: string;
   [key: string]: unknown;
-}
+};
 
-interface VTextType {
+type VTextType = {
   text: string;
   [key: string]: unknown;
-}
+};
 
 type VTree = VNodeType | VTextType | (VNodeType | VTextType)[];
 
 // Types for DocxDocumentInstance
-interface MediaFileResponse {
+type MediaFileResponse = {
   fileContent: string;
   fileNameWithExtension: string;
   id: number;
-}
+};
 
-interface DocxDocumentInstance {
+type DocxDocumentInstance = {
   availableDocumentSpace: number;
   createDocumentRelationships: (
     filename: string,
@@ -91,7 +91,7 @@ interface DocxDocumentInstance {
       };
     };
   };
-}
+};
 
 // Regex for parsing numeric values from margin-left
 const MARGIN_NUMBER_REGEX = /(\d+)/;
@@ -283,12 +283,12 @@ export const buildImage = async (
   return null;
 };
 
-interface VNodeObject {
+type VNodeObject = {
   level: number;
   node: VNodeType | VTextType;
   numberingId: number;
   type: string;
-}
+};
 
 export const buildList = async (
   vNode: VNodeType,
@@ -405,11 +405,11 @@ export const buildList = async (
   return listElements;
 };
 
-interface ContentGroup {
+type ContentGroup = {
   children?: (VNodeType | VTextType)[];
   node?: VNodeType | VTextType;
   type: 'block' | 'inline';
-}
+};
 
 async function findXMLEquivalent(
   docxDocumentInstance: DocxDocumentInstance,

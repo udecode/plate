@@ -10,12 +10,12 @@ import type { BorderDirection } from '../types';
 
 import { type CellIndices, getCellIndices } from '../utils/getCellIndices';
 
-export interface BorderStylesDefault {
+export type BorderStylesDefault = {
   bottom: TTableCellBorder;
   right: TTableCellBorder;
   left?: TTableCellBorder;
   top?: TTableCellBorder;
-}
+};
 
 export const getTableCellBorders = (
   editor: SlateEditor,

@@ -1,8 +1,7 @@
-import * as React from 'react';
-
 import { describe, expect, it } from 'bun:test';
 import { render } from '@testing-library/react';
 import type { TTableCellElement, TTableElement } from 'platejs';
+import { BaseTablePlugin } from '@platejs/table';
 
 import {
   TableCellElementStatic,
@@ -29,20 +28,12 @@ describe('TableElementStatic', () => {
   it('should render table with correct structure', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
-      ),
+      children: <tbody><tr><td>Cell</td></tr></tbody>,
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
     };
 
-    const { container } = render(
-      <TableElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableElementStatic {...mockProps} />);
     const table = container.querySelector('table');
 
     expect(table).not.toBeNull();
@@ -52,20 +43,12 @@ describe('TableElementStatic', () => {
   it('should apply marginLeft when not disabled', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
-      ),
+      children: <tbody><tr><td>Cell</td></tr></tbody>,
       editor: createMockEditor({ disableMarginLeft: false }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
     };
 
-    const { container } = render(
-      <TableElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableElementStatic {...mockProps} />);
     const wrapper = container.querySelector('[data-slate-node="element"]');
 
     expect(wrapper?.getAttribute('style')).toContain('padding-left: 20');
@@ -74,20 +57,12 @@ describe('TableElementStatic', () => {
   it('should not apply marginLeft when disabled', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
-      ),
+      children: <tbody><tr><td>Cell</td></tr></tbody>,
       editor: createMockEditor({ disableMarginLeft: true }) as any,
       element: { type: 'table', children: [], marginLeft: 20 } as TTableElement,
     };
 
-    const { container } = render(
-      <TableElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableElementStatic {...mockProps} />);
     const wrapper = container.querySelector('[data-slate-node="element"]');
 
     expect(wrapper?.getAttribute('style')).toContain('padding-left: 0');
@@ -96,20 +71,12 @@ describe('TableElementStatic', () => {
   it('should render with overflow-x-auto class', () => {
     const mockProps = {
       attributes: { 'data-slate-node': 'element' },
-      children: (
-        <tbody>
-          <tr>
-            <td>Cell</td>
-          </tr>
-        </tbody>
-      ),
+      children: <tbody><tr><td>Cell</td></tr></tbody>,
       editor: createMockEditor() as any,
       element: { type: 'table', children: [], marginLeft: 0 } as TTableElement,
     };
 
-    const { container } = render(
-      <TableElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableElementStatic {...mockProps} />);
     const wrapper = container.querySelector('[data-slate-node="element"]');
 
     expect(wrapper?.className).toContain('overflow-x-auto');
@@ -125,9 +92,7 @@ describe('TableRowElementStatic', () => {
       element: { type: 'tr', children: [] },
     };
 
-    const { container } = render(
-      <TableRowElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableRowElementStatic {...mockProps} />);
     const tr = container.querySelector('tr');
 
     expect(tr).not.toBeNull();
@@ -141,9 +106,7 @@ describe('TableRowElementStatic', () => {
       element: { type: 'tr', children: [] },
     };
 
-    const { container } = render(
-      <TableRowElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableRowElementStatic {...mockProps} />);
     const tr = container.querySelector('tr');
 
     expect(tr?.className).toContain('h-full');
@@ -162,9 +125,7 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
     expect(td).not.toBeNull();
@@ -196,9 +157,7 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
     expect(td?.style.maxWidth).toBe('200px');
@@ -217,12 +176,10 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
-    expect(td?.style.backgroundColor).toBe('#ff0000');
+    expect(td?.style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 
   it('should apply border styles when borders are provided', () => {
@@ -261,9 +218,7 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
     expect(td?.style.borderTop).toContain('1px solid');
@@ -297,13 +252,11 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
-    expect(td?.getAttribute('colspan')).toBe('2');
-    expect(td?.getAttribute('rowspan')).toBe('3');
+    expect(td?.getAttribute('colSpan')).toBe('2');
+    expect(td?.getAttribute('rowSpan')).toBe('3');
   });
 
   it('should render inner div with padding', () => {
@@ -317,9 +270,7 @@ describe('TableCellElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const innerDiv = container.querySelector('td > div');
 
     expect(innerDiv).not.toBeNull();
@@ -340,9 +291,7 @@ describe('TableCellHeaderElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellHeaderElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellHeaderElementStatic {...mockProps} />);
     const th = container.querySelector('th');
 
     expect(th).not.toBeNull();
@@ -360,9 +309,7 @@ describe('TableCellHeaderElementStatic', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellHeaderElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellHeaderElementStatic {...mockProps} />);
     const th = container.querySelector('th');
 
     expect(th?.className).toContain('text-left');
@@ -382,9 +329,7 @@ describe('cellBorderStyles edge cases', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
     // Should render without errors even with no borders
@@ -422,9 +367,7 @@ describe('cellBorderStyles edge cases', () => {
       } as TTableCellElement,
     };
 
-    const { container } = render(
-      <TableCellElementStatic {...(mockProps as any)} />
-    );
+    const { container } = render(<TableCellElementStatic {...mockProps} />);
     const td = container.querySelector('td');
 
     expect(td?.style.borderTop).toContain('1px solid');

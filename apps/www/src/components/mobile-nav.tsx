@@ -32,7 +32,7 @@ export function MobileNav({
           variant="ghost"
           className={cn(
             'extend-touch-target !p-0 h-8 touch-manipulation items-center justify-start gap-2.5 hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent dark:hover:bg-transparent',
-            'mr-2 -ml-2 size-8 px-0 text-base md:hidden',
+            '-ml-2 mr-2 size-8 px-0 text-base md:hidden',
             className
           )}
         >
@@ -41,7 +41,7 @@ export function MobileNav({
               <span
                 className={cn(
                   'absolute left-0 block h-0.5 w-4 bg-foreground transition-all duration-100',
-                  open ? 'top-[0.4rem] -rotate-45' : 'top-1'
+                  open ? '-rotate-45 top-[0.4rem]' : 'top-1'
                 )}
               />
               <span

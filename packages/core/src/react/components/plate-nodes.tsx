@@ -37,7 +37,7 @@ export type PlateElementProps<
     path: Path;
   } & DeprecatedNodeProps;
 
-interface DeprecatedNodeProps {
+type DeprecatedNodeProps = {
   /**
    * @deprecated Optional class to be merged with `attributes.className`.
    * @default undefined
@@ -48,7 +48,7 @@ interface DeprecatedNodeProps {
    * @default undefined
    */
   style?: React.CSSProperties;
-}
+};
 
 export type PlateNodeProps<C extends AnyPluginConfig = PluginConfig> =
   PlatePluginContext<C> & {

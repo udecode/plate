@@ -4,11 +4,11 @@ export type RenderChunkFn = (
   props: RenderChunkProps
 ) => React.ReactElement<any>;
 
-export interface RenderChunkProps {
+export type RenderChunkProps = {
   attributes: {
     'data-slate-chunk': true;
   };
   children: any;
   highest: boolean;
   lowest: boolean;
-}
+};

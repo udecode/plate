@@ -14,7 +14,7 @@ import {
 } from './ui/accordion';
 import { Card, CardContent } from './ui/card';
 
-interface Item {
+type Item = {
   children: ReactNode;
   name: string;
   type: string;
@@ -23,7 +23,7 @@ interface Item {
   optional?: boolean;
   required?: boolean;
   value?: string;
-}
+};
 
 const APIContext = createContext<{ listType?: string; name?: string }>({});
 
@@ -92,7 +92,7 @@ export function APIItem({
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="absolute top-2 -left-5 pr-1 leading-none">
+                <div className="-left-5 absolute top-2 pr-1 leading-none">
                   <Icons.pragma className="size-4 text-muted-foreground" />
                 </div>
               </a>
@@ -189,12 +189,12 @@ export function APIMethods({ children, ...props }: APIListProps) {
   );
 }
 
-interface APIListProps {
+type APIListProps = {
   children: ReactNode;
   collapsed?: boolean;
   listType?: string;
   type?: string;
-}
+};
 
 export function APIList({
   children,
@@ -237,7 +237,7 @@ export function APIList({
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="absolute top-0 -left-5 pr-1 leading-none">
+                    <div className="-left-5 absolute top-0 pr-1 leading-none">
                       <Icons.pragma className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -354,7 +354,7 @@ export function APISubListItem({
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="absolute top-2 -left-5 pr-1 leading-none">
+            <div className="-left-5 absolute top-2 pr-1 leading-none">
               <Icons.pragma className="size-4 text-muted-foreground" />
             </div>
           </a>

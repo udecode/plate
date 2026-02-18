@@ -573,11 +573,11 @@ export const THEME_LIST = [
   THEMES['one-dark-pro'],
 ];
 
-export interface Theme {
+export type Theme = {
   id: ThemeId;
   dark: Record<string, string>;
   light: Record<string, string>;
   name: string;
-}
+};
 
 export type ThemeId = keyof typeof _THEMES;

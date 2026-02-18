@@ -88,13 +88,13 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const options = editor.getOptions(discussionPlugin);
-    const currentUser = options.users[options.currentUserId];
+    const currentUser = editor.useOption(discussionPlugin, 'currentUser');
 
-    expect(currentUser).toBeDefined();
-    expect(currentUser.id).toBe('alice');
-    expect(currentUser.name).toBe('Alice');
-    expect(currentUser.avatarUrl).toBeDefined();
+    expect(currentUser).toMatchObject({
+      id: 'alice',
+      name: 'Alice',
+      avatarUrl: expect.stringContaining('alice'),
+    });
   });
 
   it('should return specific user with user selector', () => {
@@ -102,13 +102,12 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const options = editor.getOptions(discussionPlugin);
-    const bob = options.users.bob;
+    const bob = editor.useOption(discussionPlugin, 'user', 'bob');
 
     expect(bob).toMatchObject({
       id: 'bob',
       name: 'Bob',
-      avatarUrl: expect.stringContaining('dicebear.com'),
+      avatarUrl: expect.stringContaining('bob'),
     });
   });
 
@@ -117,13 +116,12 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const options = editor.getOptions(discussionPlugin);
-    const charlie = options.users.charlie;
+    const charlie = editor.useOption(discussionPlugin, 'user', 'charlie');
 
     expect(charlie).toMatchObject({
       id: 'charlie',
       name: 'Charlie',
-      avatarUrl: expect.stringContaining('dicebear.com'),
+      avatarUrl: expect.stringContaining('charlie'),
     });
   });
 
@@ -132,8 +130,7 @@ describe('discussionPlugin selectors', () => {
       plugins: [discussionPlugin],
     });
 
-    const options = editor.getOptions(discussionPlugin);
-    const unknownUser = options.users.unknown;
+    const unknownUser = editor.useOption(discussionPlugin, 'user', 'unknown');
 
     expect(unknownUser).toBeUndefined();
   });

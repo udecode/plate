@@ -12,6 +12,7 @@
   },
   "files": {
     "includes": [
+      "**",
       "!!node_modules/@opentelemetry",
       "!!node_modules/@effect-ts",
       "!!node_modules/pdf-lib",
@@ -101,7 +102,7 @@
       "includes": ["packages/**"],
       "linter": {
         "rules": {
-          "suspicious": {
+          "nursery": {
             "noReactForwardRef": "off" // react 18
           },
 
@@ -115,12 +116,8 @@
       "includes": ["**/*.spec.*", "**/*.test.*", "**/*-value.tsx"],
       "linter": {
         "rules": {
-          "suspicious": {
-            "noUnusedExpressions": "off",
-            "noThenProperty": "off",
-            "noSkippedTests": "off",
-            "noNonNullAssertedOptionalChain": "off",
-            "noCommentText": "off"
+          "nursery": {
+            "noUnusedExpressions": "off"
           },
           "correctness": {
             "useJsxKeyInIterable": "off"
@@ -128,6 +125,12 @@
           "style": {
             "useImportType": "off",
             "noUnusedTemplateLiteral": "off"
+          },
+          "suspicious": {
+            "noThenProperty": "off",
+            "noSkippedTests": "off",
+            "noNonNullAssertedOptionalChain": "off",
+            "noCommentText": "off"
           },
           "a11y": "off",
           "performance": "off"

@@ -36,12 +36,13 @@ import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
 import { mammoth, preprocessMammothHtml } from '../importDocx';
 
+// biome-ignore lint/nursery/noUnusedExpressions: test
 jsx;
 
 /** Read .docx file from docx package's __tests__ directory */
 export const readDocxFixture = (filename: string): Buffer => {
   const docxTestDir = path.resolve(
-    import.meta.dirname,
+    __dirname,
     '../../../../docx/src/lib/__tests__'
   );
   const filepath = path.join(docxTestDir, `${filename}.docx`);

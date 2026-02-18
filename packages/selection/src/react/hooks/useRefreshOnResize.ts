@@ -6,11 +6,11 @@ import type { SelectionRect } from '../types';
 
 import { useRequestReRender } from './useRequestReRender';
 
-export interface UseRefreshOnResizeOptions {
+export type UseRefreshOnResizeOptions = {
   selectionRectCache: React.MutableRefObject<WeakMap<TRange, SelectionRect[]>>;
   containerRef?: React.RefObject<HTMLElement | null>;
   refreshOnResize?: boolean;
-}
+};
 
 export const useRefreshOnResize = ({
   containerRef,

@@ -37,13 +37,13 @@ const ZERO_WIDTH_SPACE_REGEX = /\u200B/g;
 // ============================================================================
 
 /** User information for resolving author names */
-export interface DocxExportUser {
+export type DocxExportUser = {
   id?: string | null;
   name?: string | null;
-}
+};
 
 /** Comment data from discussion thread */
-export interface DocxExportComment {
+export type DocxExportComment = {
   contentRich?: unknown | null;
   createdAt?: Date | number | string | null;
   id?: string | null;
@@ -53,10 +53,10 @@ export interface DocxExportComment {
   parentParaId?: string | null;
   user?: DocxExportUser | null;
   userId?: string | null;
-}
+};
 
 /** Discussion thread containing comments */
-export interface DocxExportDiscussion {
+export type DocxExportDiscussion = {
   comments?: DocxExportComment[] | null;
   createdAt?: Date | number | string | null;
   documentContent?: string | null;
@@ -65,18 +65,18 @@ export interface DocxExportDiscussion {
   paraId?: string | null;
   user?: DocxExportUser | null;
   userId?: string | null;
-}
+};
 
 /** Suggestion metadata stored on nodes */
-export interface DocxExportSuggestionMeta {
+export type DocxExportSuggestionMeta = {
   createdAt?: Date | number | string | null;
   id: string;
   type?: 'insert' | 'remove' | string | null;
   userId?: string | null;
-}
+};
 
 /** Options for token injection */
-export interface InjectDocxTrackingTokensOptions {
+export type InjectDocxTrackingTokensOptions = {
   /** Default author name for transient comments (default: 'Draft') */
   defaultTransientAuthor?: string;
   /** Discussion threads for comment metadata */
@@ -93,14 +93,14 @@ export interface InjectDocxTrackingTokensOptions {
   transientCommentKey?: string;
   /** Pre-built user name map (userId -> name) */
   userNameMap?: Map<string, string>;
-}
+};
 
 /** Internal leaf entry for tracking */
-interface LeafEntry {
+type LeafEntry = {
   commentIds: string[];
   node: TText;
   suggestions: Map<string, DocxExportSuggestionMeta>;
-}
+};
 
 // ============================================================================
 // Utility Functions
@@ -638,10 +638,10 @@ const DEFAULT_TRANSIENT_AUTHOR = 'Draft';
 /**
  * Internal type for tracking transient text nodes during preprocessing.
  */
-interface TransientTextEntry {
+type TransientTextEntry = {
   node: TText;
   path: number[];
-}
+};
 
 /**
  * Recursively collect all text nodes with transient comment marks.

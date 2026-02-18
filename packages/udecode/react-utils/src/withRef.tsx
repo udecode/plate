@@ -12,25 +12,24 @@ type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<P> & React.RefAttributes<T>
 >;
 
-type InferElementRef<T> =
-  T extends ElementType<any>
-    ? T extends keyof JSX.IntrinsicElements
-      ? JSX.IntrinsicElements[T] extends React.DetailedHTMLProps<
-          React.HTMLAttributes<infer R>,
-          any
-        >
-        ? R
-        : never
-      : T extends React.ComponentType<any>
-        ? T extends React.ComponentClass<any>
-          ? InstanceType<T>
-          : T extends React.ForwardRefExoticComponent<any>
-            ? React.ComponentPropsWithRef<T>['ref'] extends React.Ref<infer R>
-              ? R
-              : never
+type InferElementRef<T> = T extends ElementType<any>
+  ? T extends keyof JSX.IntrinsicElements
+    ? JSX.IntrinsicElements[T] extends React.DetailedHTMLProps<
+        React.HTMLAttributes<infer R>,
+        any
+      >
+      ? R
+      : never
+    : T extends React.ComponentType<any>
+      ? T extends React.ComponentClass<any>
+        ? InstanceType<T>
+        : T extends React.ForwardRefExoticComponent<any>
+          ? React.ComponentPropsWithRef<T>['ref'] extends React.Ref<infer R>
+            ? R
             : never
-        : never
-    : never;
+          : never
+      : never
+  : never;
 
 /**
  * Shorter alternative to `React.forwardRef`.

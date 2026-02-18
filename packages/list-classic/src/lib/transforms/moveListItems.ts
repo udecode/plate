@@ -12,11 +12,11 @@ import { moveListItemDown } from './moveListItemDown';
 import { moveListItemUp } from './moveListItemUp';
 import { removeFirstListItem } from './removeFirstListItem';
 
-export interface MoveListItemsOptions {
+export type MoveListItemsOptions = {
   at?: EditorNodesOptions['at'];
   enableResetOnShiftTab?: boolean;
   increase?: boolean;
-}
+};
 
 export const moveListItems = (
   editor: SlateEditor,

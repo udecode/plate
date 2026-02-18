@@ -7,10 +7,10 @@ import type { PlateEditor } from '../../editor';
 
 import { plateStore, usePlateStore } from './createPlateStore';
 
-export interface UseEditorSelectorOptions<T> {
+export type UseEditorSelectorOptions<T> = {
   id?: string;
   equalityFn?: (a: T, b: T) => boolean;
-}
+};
 
 export const useEditorSelector = <T, E extends PlateEditor = PlateEditor>(
   selector: (editor: E, prev?: T) => T,

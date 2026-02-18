@@ -18,7 +18,7 @@ import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
 
-export interface BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> {
+export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
   /**
    * Unique identifier for the editor instance.
    *
@@ -138,7 +138,7 @@ export interface BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> {
    * @default false
    */
   skipInitialization?: boolean;
-}
+};
 
 export type WithSlateOptions<
   V extends Value = Value,

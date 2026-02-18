@@ -8,7 +8,7 @@ import { type VariantProps, cva } from 'class-variance-authority';
 import { cn } from 'fumadocs-ui/utils/cn';
 import { ChevronDownIcon, PlusIcon } from 'lucide-react';
 
-interface Item {
+type Item = {
   children: ReactNode;
   name: string;
   type: string;
@@ -17,7 +17,7 @@ interface Item {
   optional?: boolean;
   required?: boolean;
   value?: string;
-}
+};
 
 const APIContext = createContext<{ listType?: string; name?: string }>({});
 
@@ -81,7 +81,7 @@ export function APIItem({ children, name, optional, required, type }: Item) {
                 onClick={(e) => e.stopPropagation()}
                 href={`#${id}`}
               >
-                <div className="absolute top-2 -left-5 pr-1 leading-none">
+                <div className="-left-5 absolute top-2 pr-1 leading-none">
                   <LinkIcon className="size-4 text-muted-foreground" />
                 </div>
               </a>
@@ -178,12 +178,12 @@ export function APIMethods({ children, ...props }: APIListProps) {
   );
 }
 
-interface APIListProps {
+type APIListProps = {
   children: ReactNode;
   collapsed?: boolean;
   listType?: string;
   type?: string;
-}
+};
 
 export function APIList({
   children,
@@ -215,7 +215,7 @@ export function APIList({
                     onClick={(e) => e.stopPropagation()}
                     href={`#${id}`}
                   >
-                    <div className="absolute top-0 -left-5 pr-1 leading-none">
+                    <div className="-left-5 absolute top-0 pr-1 leading-none">
                       <LinkIcon className="size-4 text-muted-foreground" />
                     </div>
                   </a>
@@ -305,7 +305,7 @@ export function APISubListItem({
             onClick={(e) => e.stopPropagation()}
             href={`#${id}`}
           >
-            <div className="absolute top-2 -left-5 pr-1 leading-none">
+            <div className="-left-5 absolute top-2 pr-1 leading-none">
               <LinkIcon className="size-4 text-muted-foreground" />
             </div>
           </a>

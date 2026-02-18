@@ -5,11 +5,11 @@ import type {
 } from '../../../lib';
 import type { EmojiFloatingGridType } from './EmojiFloatingGrid';
 
-export interface FrequentEmojiStorageProps {
+export type FrequentEmojiStorageProps = {
   key?: string;
   limit?: number;
   prefix?: string;
-}
+};
 
 export interface IEmojiFloatingLibrary extends IEmojiLibrary {
   getGrid: () => EmojiFloatingGridType;
@@ -17,9 +17,9 @@ export interface IEmojiFloatingLibrary extends IEmojiLibrary {
   updateFrequentCategory: (emojiId: string) => void;
 }
 
-export interface IFrequentEmojiStorage {
+export type IFrequentEmojiStorage = {
   get: () => FrequentEmojis;
   getList: () => string[];
   set: (value: any) => void;
   update: (emojiId: string) => any;
-}
+};

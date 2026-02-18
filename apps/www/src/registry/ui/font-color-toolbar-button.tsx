@@ -305,11 +305,11 @@ function ColorInput({
   );
 }
 
-interface TColor {
+type TColor = {
   isBrightColor: boolean;
   name: string;
   value: string;
-}
+};
 
 function ColorDropdownMenuItem({
   className,

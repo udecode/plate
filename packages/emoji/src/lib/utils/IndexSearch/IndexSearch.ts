@@ -4,11 +4,11 @@ import type { IEmojiLibrary } from '../EmojiLibrary';
 
 import { EMOJI_MAX_SEARCH_RESULT } from '../../constants';
 
-interface IIndexSearch {
+type IIndexSearch = {
   get: () => Emoji[];
   hasFound: () => boolean;
   search: (input: string) => void;
-}
+};
 
 export abstract class AIndexSearch implements IIndexSearch {
   protected input: string | undefined;

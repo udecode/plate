@@ -15,22 +15,22 @@ function flattenNode(node: any) {
   return p.join('');
 }
 
-interface Item {
+type Item = {
   title: string;
   url: string;
   items?: Item[];
-}
+};
 
-interface Items {
+type Items = {
   items?: Item[];
-}
+};
 
 // New flat structure compatible with docs-toc.tsx
-export interface FlatTocItem {
+export type FlatTocItem = {
   depth: number;
   title: string;
   url: string;
-}
+};
 
 // Helper function to flatten nested items into flat structure with depth
 function flattenItems(items: Item[], depth = 2): FlatTocItem[] {
@@ -95,11 +95,11 @@ const getToc = () => (node: any, file: any) => {
   file.data = items;
 };
 
-export interface TocItem {
+export type TocItem = {
   depth: number;
   url: string;
   title?: React.ReactNode;
-}
+};
 
 export async function getTableOfContents(content: string): Promise<TocItem[]> {
   const result = await remark().use(getToc).process(content);

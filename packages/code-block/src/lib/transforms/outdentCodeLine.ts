@@ -2,10 +2,10 @@ import type { Editor, ElementEntry } from 'platejs';
 
 import { deleteStartSpace } from './deleteStartSpace';
 
-export interface OutdentCodeLineOptions {
+export type OutdentCodeLineOptions = {
   codeBlock: ElementEntry;
   codeLine: ElementEntry;
-}
+};
 
 /** Outdent the code line. Remove 2 whitespace characters if any. */
 export const outdentCodeLine = (

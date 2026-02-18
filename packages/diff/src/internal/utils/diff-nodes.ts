@@ -70,14 +70,14 @@ export function diffNodes(
   return result;
 }
 
-export interface NodeRelatedItem {
+export type NodeRelatedItem = {
   originNode: Descendant;
   childrenUpdated?: boolean;
   delete?: boolean;
   insert?: boolean;
   nodeUpdated?: boolean;
   relatedNode?: Descendant;
-}
+};
 
 export function isEqualNode(
   value: Descendant,
