@@ -6357,9 +6357,9 @@ function _updateOwnerDocument(node, newOwnerDocument) {
 	if (node.ownerDocument === newOwnerDocument) {
 		return;
 	}
-	
+
 	node.ownerDocument = newOwnerDocument;
-	
+
 	// Update attributes if this is an element
 	if (node.nodeType === ELEMENT_NODE && node.attributes) {
 		for (var i = 0; i < node.attributes.length; i++) {
@@ -6369,7 +6369,7 @@ function _updateOwnerDocument(node, newOwnerDocument) {
 			}
 		}
 	}
-	
+
 	// Recursively update child nodes
 	var child = node.firstChild;
 	while (child) {
@@ -6403,11 +6403,11 @@ function _appendSingleChild (parentNode, newChild) {
 	}
 	parentNode.lastChild = newChild;
 	_onUpdateChild(parentNode.ownerDocument, parentNode, newChild);
-	
+
 	// Update ownerDocument for the new child and all its descendants
 	var targetDoc = parentNode.ownerDocument || parentNode;
 	_updateOwnerDocument(newChild, targetDoc);
-	
+
 	return newChild;
 }
 
@@ -13664,28 +13664,28 @@ require('./some.js')(Promise, PromiseArray, apiRejection);
 require('./filter.js')(Promise, INTERNAL);
 require('./each.js')(Promise, INTERNAL);
 require('./any.js')(Promise);
-                                                         
-    util.toFastProperties(Promise);                                          
-    util.toFastProperties(Promise.prototype);                                
-    function fillTypes(value) {                                              
-        var p = new Promise(INTERNAL);                                       
-        p._fulfillmentHandler0 = value;                                      
-        p._rejectionHandler0 = value;                                        
-        p._promise0 = value;                                                 
-        p._receiver0 = value;                                                
-    }                                                                        
-    // Complete slack tracking, opt out of field-type tracking and           
-    // stabilize map                                                         
-    fillTypes({a: 1});                                                       
-    fillTypes({b: 2});                                                       
-    fillTypes({c: 3});                                                       
-    fillTypes(1);                                                            
-    fillTypes(function(){});                                                 
-    fillTypes(undefined);                                                    
-    fillTypes(false);                                                        
-    fillTypes(new Promise(INTERNAL));                                        
-    debug.setBounds(Async.firstLineError, util.lastLineError);               
-    return Promise;                                                          
+
+    util.toFastProperties(Promise);
+    util.toFastProperties(Promise.prototype);
+    function fillTypes(value) {
+        var p = new Promise(INTERNAL);
+        p._fulfillmentHandler0 = value;
+        p._rejectionHandler0 = value;
+        p._promise0 = value;
+        p._receiver0 = value;
+    }
+    // Complete slack tracking, opt out of field-type tracking and
+    // stabilize map
+    fillTypes({a: 1});
+    fillTypes({b: 2});
+    fillTypes({c: 3});
+    fillTypes(1);
+    fillTypes(function(){});
+    fillTypes(undefined);
+    fillTypes(false);
+    fillTypes(new Promise(INTERNAL));
+    debug.setBounds(Async.firstLineError, util.lastLineError);
+    return Promise;
 
 };
 
@@ -14473,8 +14473,8 @@ function ReductionPromiseArray(promises, fn, initialValue, _each) {
 util.inherits(ReductionPromiseArray, PromiseArray);
 
 ReductionPromiseArray.prototype._gotAccum = function(accum) {
-    if (this._eachValues !== undefined && 
-        this._eachValues !== null && 
+    if (this._eachValues !== undefined &&
+        this._eachValues !== null &&
         accum !== INTERNAL) {
         this._eachValues.push(accum);
     }
@@ -18912,33 +18912,33 @@ exports.parser = function(name, prefixRules, infixRuleBuilders) {
         leftAssociative: leftAssociative,
         rightAssociative: rightAssociative
     };
-    
+
     var infixRules = new InfixRules(infixRuleBuilders.map(createInfixRule));
     var prefixRule = rules.firstOf(name, prefixRules);
-    
+
     function createInfixRule(infixRuleBuilder) {
         return {
             name: infixRuleBuilder.name,
             rule: lazyRule(infixRuleBuilder.ruleBuilder.bind(null, self))
         };
     }
-    
+
     function rule() {
         return createRule(infixRules);
     }
-    
+
     function leftAssociative(name) {
         return createRule(infixRules.untilExclusive(name));
     }
-    
+
     function rightAssociative(name) {
         return createRule(infixRules.untilInclusive(name));
     }
-    
+
     function createRule(infixRules) {
         return apply.bind(null, infixRules);
     }
-    
+
     function apply(infixRules, tokens) {
         var leftResult = prefixRule(tokens);
         if (leftResult.isSuccess()) {
@@ -18947,7 +18947,7 @@ exports.parser = function(name, prefixRules, infixRuleBuilders) {
             return leftResult;
         }
     }
-    
+
     return self;
 };
 
@@ -18955,17 +18955,17 @@ function InfixRules(infixRules) {
     function untilExclusive(name) {
         return new InfixRules(infixRules.slice(0, ruleNames().indexOf(name)));
     }
-    
+
     function untilInclusive(name) {
         return new InfixRules(infixRules.slice(0, ruleNames().indexOf(name) + 1));
     }
-    
+
     function ruleNames() {
         return infixRules.map(function(rule) {
             return rule.name;
         });
     }
-    
+
     function apply(leftResult) {
         var currentResult;
         var source;
@@ -18985,13 +18985,13 @@ function InfixRules(infixRules) {
             }
         }
     }
-    
+
     function applyToTokens(tokens) {
         return rules.firstOf("infix", infixRules.map(function(infix) {
             return infix.rule;
         }))(tokens);
     }
-    
+
     return {
         apply: apply,
         untilExclusive: untilExclusive,
@@ -19013,7 +19013,7 @@ exports.infix = function(name, ruleBuilder) {
             };
         });
     }
-    
+
     return {
         name: name,
         ruleBuilder: ruleBuilder,
@@ -19092,7 +19092,7 @@ LazyIterator.prototype.map = function(func) {
 
 LazyIterator.prototype.filter = function(condition) {
     var iterator = this._iterator;
-    
+
     var moved = false;
     var hasNext = false;
     var next;
@@ -19107,7 +19107,7 @@ LazyIterator.prototype.filter = function(condition) {
             hasNext = condition(next);
         }
     };
-    
+
     return new LazyIterator({
         hasNext: function() {
             moveIfNecessary();
@@ -19146,7 +19146,7 @@ exports.Parser = function(options) {
     var parseTokens = function(parser, tokens) {
         return parser(new TokenIterator(tokens));
     };
-    
+
     return {
         parseTokens: parseTokens
     };
@@ -19270,18 +19270,18 @@ function RegexTokeniser(rules) {
             regex: new RegExp(rule.regex.source, "g")
         };
     });
-    
+
     function tokenise(input, description) {
         var source = new StringSource(input, description);
         var index = 0;
         var tokens = [];
-    
+
         while (index < input.length) {
             var result = readNextToken(input, index, source);
             index = result.endIndex;
             tokens.push(result.token);
         }
-        
+
         tokens.push(endToken(input, source));
         return tokens;
     }
@@ -19291,7 +19291,7 @@ function RegexTokeniser(rules) {
             var regex = rules[i].regex;
             regex.lastIndex = startIndex;
             var result = regex.exec(string);
-            
+
             if (result) {
                 var endIndex = startIndex + result[0].length;
                 if (result.index === startIndex && endIndex > startIndex) {
@@ -19313,7 +19313,7 @@ function RegexTokeniser(rules) {
         );
         return {token: token, endIndex: endIndex};
     }
-    
+
     function endToken(input, source) {
         return new Token(
             "end",
@@ -19321,7 +19321,7 @@ function RegexTokeniser(rules) {
             source.range(input.length, input.length)
         );
     }
-    
+
     return {
         tokenise: tokenise
     }
@@ -19431,11 +19431,11 @@ exports.sequence = function() {
             }
         );
     };
-    
+
     function isCapturedRule(subRule) {
         return subRule.isCaptured;
     }
-    
+
     return rule;
 };
 
@@ -19582,7 +19582,7 @@ exports.leftAssociative = function(leftRule, rightRule, func) {
         });
     });
     var repeatedRule = exports.firstOf.apply(null, ["rules"].concat(rights));
-    
+
     return function(input) {
         var start = input;
         var leftResult = leftRule(input);
