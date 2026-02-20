@@ -15779,7 +15779,6 @@ module.exports = ret;
  * @author   Feross Aboukhadijeh <http://feross.org>
  * @license  MIT
  */
-/* eslint-disable no-proto */
 
 'use strict'
 
@@ -16097,7 +16096,7 @@ function checked (length) {
 }
 
 function SlowBuffer (length) {
-  if (+length != length) { // eslint-disable-line eqeqeq
+  if (+length != length) {
     length = 0
   }
   return Buffer.alloc(+length)
@@ -17560,7 +17559,7 @@ function blitBuffer (src, dst, offset, length) {
 }
 
 function isnan (val) {
-  return val !== val // eslint-disable-line no-self-compare
+  return val !== val
 }
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
