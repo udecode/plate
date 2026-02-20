@@ -2,15 +2,23 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192' yarn build && NODE_OPTIONS='--max-old-space-size=8192' yarn build:apps && cp -r apps/www/public apps/www/.next/standalone/apps/www/public && mkdir -p apps/www/.next/standalone/apps/www/.next && cp -r apps/www/.next/static apps/www/.next/standalone/apps/www/.next/static",
-    "buildEnvironment": "V3"
+    "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192' turbo --filter \"./packages/**\" build && cd apps/www && contentlayer2 build && NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts && yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify && NODE_OPTIONS='--max-old-space-size=8192' next build && cd ../.. && cp -r apps/www/public apps/www/.next/standalone/apps/www/public && mkdir -p apps/www/.next/standalone/apps/www/.next && cp -r apps/www/.next/static apps/www/.next/standalone/apps/www/.next/static"
+  },
+  "environments": {
+    "production": {
+      "build": {
+        "buildEnvironment": "V3"
+      },
+      "deploy": {
+        "useLegacyStacker": false
+      }
+    }
   },
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
     "startCommand": "HOSTNAME=0.0.0.0 node apps/www/.next/standalone/apps/www/server.js",
     "sleepApplication": false,
-    "useLegacyStacker": false,
     "ipv6EgressEnabled": false,
     "multiRegionConfig": {
       "us-east4-eqdc4a": {
