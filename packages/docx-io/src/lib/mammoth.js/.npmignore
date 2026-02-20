@@ -1,0 +1,8 @@
+_build
+.git
+.gitignore
+browser-demo
+node_modules
+makefile
+static
+npm-shrinkwrap.json

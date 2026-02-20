@@ -1,0 +1,72 @@
+{
+  "name": "docx-to-html-mathml",
+  "version": "0.0.4",
+  "author": "David Vu",
+  "description": "Convert DOCX to HTML with MathML (OMML + MathType support)",
+  "keywords": [
+    "docx",
+    "html",
+    "office",
+    "word",
+    "markdown",
+    "md",
+    "convert",
+    "mammoth"
+  ],
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/index.d.ts",
+    "lib/",
+    "OMML2MML.XSL",
+    "bin/"
+  ],
+  "types": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vuhonglinh"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.6",
+    "adm-zip": "^0.5.16",
+    "argparse": "~1.0.3",
+    "base64-js": "^1.5.1",
+    "bluebird": "~3.4.0",
+    "cheerio": "^1.1.2",
+    "dingbat-to-unicode": "^1.0.1",
+    "jszip": "^3.7.1",
+    "lop": "^0.4.2",
+    "path-is-absolute": "^1.0.0",
+    "underscore": "^1.13.1",
+    "xmlbuilder": "^10.0.0",
+    "xslt-processor": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "browserify": "~13.0.1",
+    "browserify-prepend-licenses": "~1.0.0",
+    "duck": "^0.1.12",
+    "eslint": "2.13.1",
+    "hamjest": "^4.0.1",
+    "mocha": "~2.2.5",
+    "temp": "^0.9.4",
+    "typescript": "^5.0.4",
+    "uglify-js": "~2.4.8"
+  },
+  "browser": {
+    "./lib/unzip.js": "./browser/unzip.js",
+    "./lib/docx/files.js": "./browser/docx/files.js"
+  },
+  "bin": {
+    "mammoth-convert": "bin/mammoth"
+  },
+  "scripts": {
+    "pretest": "eslint lib test",
+    "test": "mocha 'test/**/*.tests.js'",
+    "prepare": ""
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}

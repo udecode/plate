@@ -1,0 +1,55 @@
+html {
+    overflow-y: scroll;
+    font-family: helvetica, arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    overflow: auto;
+    max-width: 940px;
+    margin: 0 auto;
+}
+
+.banner {
+    overflow: auto;
+    margin-bottom: 20px;
+    background-color: #555;
+    color: #fff;
+}
+
+.banner a {
+    color: #fff;
+}
+
+.banner h1 {
+    font-size: 20px;
+    line-height: 2;
+    margin: 0.5em 0;
+}
+
+.span8, .span4 {
+    float: left;
+}
+
+.span8 {
+    width: 620px;
+}
+
+.span4 {
+    margin: 0 0 0 20px;
+}
+
+.well {
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    padding: 1em;
+    min-height: 200px;
+}
+
+.messages .warning {
+    color: #cc6600;
+}
