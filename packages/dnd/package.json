@@ -39,7 +39,7 @@
     "typecheck": "yarn p:typecheck"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "raf": "^3.4.1",
     "react-compiler-runtime": "^1.0.0"
   },
