@@ -67,6 +67,18 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/code-drawing'],
+    files: [
+      {
+        path: 'components/editor/plugins/code-drawing-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-drawing-base-kit',
+    registryDependencies: ['code-drawing-node'],
+    type: 'registry:component',
+  },
+  {
     dependencies: ['@platejs/layout'],
     files: [
       {
@@ -278,6 +290,7 @@ export const registryBaseKits: Registry['items'] = [
       'basic-marks-base-kit',
       'callout-base-kit',
       'code-block-base-kit',
+      'code-drawing-base-kit',
       'column-base-kit',
       'comment-base-kit',
       'date-base-kit',
@@ -470,6 +483,18 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/code-drawing'],
+    files: [
+      {
+        path: 'components/editor/plugins/code-drawing-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'code-drawing-kit',
+    registryDependencies: ['code-drawing-base-kit', 'code-drawing-node'],
+    type: 'registry:component',
+  },
+  {
     dependencies: ['@platejs/layout'],
     files: [
       {
@@ -610,6 +635,7 @@ export const registryKits: Registry['items'] = [
       'block-placeholder-kit',
       'callout-kit',
       'code-block-kit',
+      'code-drawing-kit',
       'column-kit',
       'comment-kit',
       'cursor-overlay-kit',
