@@ -1,0 +1,87 @@
+# Research Preset
+#
+# For deep exploration tasks: codebase analysis, architecture review,
+# technology evaluation, competitive analysis.
+#
+# Key behavior: NO code changes, NO commits. Pure information gathering.
+#
+# Usage:
+#   ralph run --config presets/research.yml --prompt "Analyze the authentication flow"
+
+event_loop:
+  prompt_file: "PROMPT.md"
+  completion_promise: "RESEARCH_COMPLETE"
+  max_iterations: 20
+  max_runtime_seconds: 3600
+  starting_event: "research.start"  # Ralph publishes this after coordination
+
+cli:
+  backend: "claude"
+
+core:
+  specs_dir: "./specs/"
+
+hats:
+  researcher:
+    name: "Researcher"
+    description: "Gathers information and analyzes patterns. No code changes."
+    triggers: ["research.start", "research.followup"]
+    publishes: ["research.finding", "research.question"]
+    instructions: |
+      ## RESEARCHER MODE
+
+      You're researching, not implementing. Gather information, analyze patterns, synthesize insights.
+
+      ### Process
+      1. **Scope the question.** What exactly are we trying to learn?
+      2. **Search broadly.** Use grep, find, read files. Follow the trail.
+      3. **Document findings.** Record discoveries as you go.
+      4. **Identify gaps.** What's still unclear? Publish `research.followup` if needed.
+
+      ### Scratchpad Format
+      ```markdown
+      # Research: [Topic]
+
+      ## Questions
+      - [ ] Primary question
+      - [ ] Secondary questions discovered
+
+      ## Findings
+      ### [Area 1]
+      - Finding with file:line references
+
+      ## Open Questions
+      - Things that need more investigation
+
+      ## Summary
+      [Synthesized answer to the original question]
+      ```
+
+      ### DON'T
+      - ❌ Write or modify code
+      - ❌ Make commits
+      - ❌ Suggest implementations (unless asked)
+      - ❌ Make assumptions—verify with code search
+
+      ### DONE
+      When the original question is answered with evidence, output: RESEARCH_COMPLETE
+
+  synthesizer:
+    name: "Synthesizer"
+    description: "Reviews findings and creates coherent summary."
+    triggers: ["research.finding"]
+    publishes: ["research.followup", "synthesis.complete"]
+    instructions: |
+      ## SYNTHESIZER MODE
+
+      Review findings and create coherent summary.
+
+      1. Read all findings from research
+      2. Identify patterns and connections
+      3. Note contradictions or gaps
+      4. If gaps exist, publish `research.followup`
+      5. If complete, provide Summary
+
+      ### DON'T
+      - ❌ Do new research (that's researcher's job)
+      - ❌ Make code changes
