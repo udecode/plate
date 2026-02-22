@@ -6,7 +6,7 @@
 # Key behavior: NO code changes, NO commits. Pure information gathering.
 #
 # Usage:
-#   ralph run --config presets/research.yml --prompt "Analyze the authentication flow"
+#   ralph run --config packages/docx-io/ralph.yml --prompt "Analyze the authentication flow"
 
 event_loop:
   prompt_file: "PROMPT.md"

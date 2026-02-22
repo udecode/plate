@@ -2,7 +2,12 @@
 cmds = ['yarn install --mode=skip-build']
 
 [phases.build]
-cmds = ['turbo build', 'turbo deploy']
+cmds = [
+  'NODE_OPTIONS="--max-old-space-size=8192" yarn build',
+  'mkdir -p apps/www/.next/standalone/apps/www/.next',
+  'cp -r apps/www/public apps/www/.next/standalone/apps/www/public',
+  'cp -r apps/www/.next/static apps/www/.next/standalone/apps/www/.next/static'
+]
 
 [start]
-cmd = 'node apps/www/.next/standalone/server.js'
+cmd = 'node apps/www/.next/standalone/apps/www/server.js'

@@ -2,7 +2,11 @@
 import { applicationName } from '../constants';
 import namespaces from '../namespaces';
 
-/** Format a Date as local time with Z suffix (matching Word convention) */
+/**
+ * Format a Date as local time with Z suffix.
+ * Word uses local time with a trailing 'Z' in dcterms:created/modified
+ * (non-standard but expected by the OOXML ecosystem).
+ */
 function toLocalWithZ(d: Date): string {
   const Y = d.getFullYear();
   const M = String(d.getMonth() + 1).padStart(2, '0');

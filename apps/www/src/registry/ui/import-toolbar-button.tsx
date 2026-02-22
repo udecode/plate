@@ -118,10 +118,9 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
         editor.setOption(discussionPlugin, 'users', updatedUsers);
       }
 
-      // Add imported discussions to the discussion plugin
-      if (result.discussions.length > 0) {
-        // Convert imported discussions to TDiscussion format
-        const newDiscussions: TDiscussion[] = result.discussions.map((d) => ({
+      // Convert imported discussions to TDiscussion format (empty array if none)
+      const newDiscussions: TDiscussion[] = (result.discussions ?? []).map(
+        (d) => ({
           id: d.id,
           comments: (d.comments ?? []).map((c, index) => ({
             id: c.id || `comment${index + 1}`,
@@ -155,13 +154,13 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
                 .join('')
             : undefined,
           paraId: d.paraId,
-        }));
+        })
+      );
 
-        // Replace all discussions (not append) because importDocxWithTracking
-        // replaces the entire editor content, making old discussions stale
-        editor.setOption(discussionPlugin, 'discussions', newDiscussions);
-        editor.setOption(commentPlugin, 'uniquePathMap', new Map());
-      }
+      // Replace all discussions (not append) because importDocxWithTracking
+      // replaces the entire editor content, making old discussions stale
+      editor.setOption(discussionPlugin, 'discussions', newDiscussions);
+      editor.setOption(commentPlugin, 'uniquePathMap', new Map());
 
       // Log import results in dev only
       if (

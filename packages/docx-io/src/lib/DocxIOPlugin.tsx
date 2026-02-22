@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * DOCX Import/Export Plugin Kit for Plate.js
  *
@@ -28,8 +30,6 @@
  *
  * @packageDocumentation
  */
-
-'use client';
 
 import { DocxExportPlugin } from './docx-export-plugin';
 

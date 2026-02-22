@@ -1187,10 +1187,8 @@ class DocxDocument {
         commentElement.att(w, 'date', comment.date);
       }
 
-      // Split multi-line comment text into paragraphs
-      const paragraphs = String(comment.text || '')
-        .split(/\r?\n/)
-        .filter((line, index, arr) => line.length > 0 || arr.length === 1);
+      // Split multi-line comment text into paragraphs, preserving empty lines
+      const paragraphs = String(comment.text || '').split(/\r?\n/);
 
       paragraphs.forEach((line, pIdx) => {
         const pElement = commentElement.ele(w, 'p');
@@ -1304,10 +1302,10 @@ class DocxDocument {
         // comment.date is local time with fake Z (Word convention).
         // Reverse the fake Z to recover real UTC:
         //   fakeMs = epoch interpreting local time as UTC
-        //   tzMs   = browser offset (positive = west of UTC)
+        //   tzMs   = comment date's offset (DST-safe)
         //   real   = fakeMs + tzMs
         const fakeMs = new Date(comment.date).getTime();
-        const tzMs = new Date().getTimezoneOffset() * 60_000;
+        const tzMs = new Date(comment.date).getTimezoneOffset() * 60_000;
         const realUtc = new Date(fakeMs + tzMs);
         el.att(
           namespaces.w16cex,

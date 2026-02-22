@@ -337,7 +337,7 @@ describe('applyDocxTracking', () => {
         api: {
           string: mock(() => 'sample text'),
           rangeRef: () => {
-            throw new Error('string error');
+            throw 'string error'; // Non-Error exception
           },
         },
         tf: {
@@ -933,7 +933,7 @@ describe('applyDocxTracking', () => {
         api: {
           string: mock(() => 'sample text'),
           rangeRef: () => {
-            throw new Error('string comment error');
+            throw 'string comment error'; // Non-Error exception
           },
         },
         tf: {
