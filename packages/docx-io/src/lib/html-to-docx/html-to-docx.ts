@@ -2,13 +2,9 @@
 import type JSZip from 'jszip';
 
 import { decode } from 'html-entities';
-// eslint-disable-next-line import/no-named-default
-// @ts-expect-error - no types available
-import { default as HTMLToVDOM } from 'html-to-vdom';
-// @ts-expect-error - no types available
-import VNode from 'virtual-dom/vnode/vnode';
-// @ts-expect-error - no types available
-import VText from 'virtual-dom/vnode/vtext';
+import { VNode, VText } from './vdom/index';
+
+import createHTMLtoVDOM from './helpers/html-parser';
 import { create } from 'xmlbuilder2';
 
 import {
@@ -109,10 +105,7 @@ interface NormalizedPageSize {
   width?: number;
 }
 
-const convertHTML = HTMLToVDOM({
-  VNode,
-  VText,
-});
+const convertHTML = createHTMLtoVDOM();
 
 const mergeOptions = <T extends object>(options: T, patch: Partial<T>): T => ({
   ...options,

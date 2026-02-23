@@ -5,10 +5,7 @@
 import { cloneDeep } from 'lodash';
 // @ts-expect-error - no types available
 import mimeTypes from 'mime-types';
-// @ts-expect-error - no types available
-import isVNode from 'virtual-dom/vnode/is-vnode';
-// @ts-expect-error - no types available
-import isVText from 'virtual-dom/vnode/is-vtext';
+import { VNode, VText, isVNode, isVText } from '../vdom/index';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { fragment } from 'xmlbuilder2';
 
@@ -74,17 +71,9 @@ type VNodeProperties = {
   style?: Record<string, string>;
 };
 
-type VNodeType = {
-  children?: (VNodeType | VTextType)[];
-  properties?: VNodeProperties;
-  tagName?: string;
-  [key: string]: unknown;
-};
+type VNodeType = VNode;
 
-type VTextType = {
-  text: string;
-  [key: string]: unknown;
-};
+type VTextType = VText;
 
 // Types for DocxDocumentInstance
 type MediaFileResponse = {

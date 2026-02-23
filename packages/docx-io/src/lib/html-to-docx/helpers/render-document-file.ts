@@ -1,16 +1,9 @@
 /* biome-ignore-all lint/complexity/useOptionalChain: legacy code */
 /* biome-ignore-all lint/style/useForOf: legacy code */
 /* biome-ignore-all lint/nursery/useMaxParams: legacy code */
-// @ts-expect-error - no types available
-import { default as HTMLToVDOM } from 'html-to-vdom';
-// @ts-expect-error - no types available
-import isVNode from 'virtual-dom/vnode/is-vnode';
-// @ts-expect-error - no types available
-import isVText from 'virtual-dom/vnode/is-vtext';
-// @ts-expect-error - no types available
-import VNode from 'virtual-dom/vnode/vnode';
-// @ts-expect-error - no types available
-import VText from 'virtual-dom/vnode/vtext';
+import { VNode, VText, isVNode, isVText } from '../vdom/index';
+
+import createHTMLtoVDOM from './html-parser';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import { fragment } from 'xmlbuilder2';
 
@@ -40,17 +33,9 @@ type VNodeProperties = {
   style?: Record<string, string>;
 };
 
-type VNodeType = {
-  children?: (VNodeType | VTextType)[];
-  properties?: VNodeProperties;
-  tagName?: string;
-  [key: string]: unknown;
-};
+type VNodeType = VNode;
 
-type VTextType = {
-  text: string;
-  [key: string]: unknown;
-};
+type VTextType = VText;
 
 type VTree = VNodeType | VTextType | (VNodeType | VTextType)[];
 
@@ -155,10 +140,7 @@ const containsSpecialElements = (node: VNodeType | VTextType): boolean => {
   return false;
 };
 
-const convertHTML = HTMLToVDOM({
-  VNode,
-  VText,
-});
+const convertHTML = createHTMLtoVDOM();
 
 export const buildImage = async (
   docxDocumentInstance: DocxDocumentInstance,
