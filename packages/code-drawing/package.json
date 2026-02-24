@@ -34,15 +34,15 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "6.2.4",
@@ -56,6 +56,7 @@
     "viz.js": "^2.1.2"
   },
   "devDependencies": {
+    "@plate/scripts": "workspace:^",
     "@types/lodash": "^4.17.13",
     "@types/plantuml-encoder": "^1.4.2",
     "@types/viz.js": "^2.1.5",

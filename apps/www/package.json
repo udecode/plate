@@ -5,16 +5,17 @@
   "description": "Plate documentation website",
   "type": "module",
   "scripts": {
-    "prebuild": "yarn build:contentlayer",
-    "build": "yarn prebuild && yarn r && NODE_OPTIONS='--max-old-space-size=8192' next build",
+    "prebuild": "pnpm build:contentlayer",
+    "build": "pnpm prebuild && pnpm build:registry && next build",
     "build:contentlayer": "contentlayer2 build",
-    "build:registry": "NODE_ENV=production tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
-    "build:tw": "yarn tailwindcss -i ./src/app/globals.css -o ./public/tailwind.css --minify",
-    "dev": "concurrently \"contentlayer2 dev\" \"next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
+    "build:registry": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
+    "build:tw": "pnpm tailwindcss -i ./src/styles/globals.css -o ./public/tailwind.css --minify",
+    "dev": "concurrently \"contentlayer2 dev\" \"next dev\"",
+    "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine pnpm lint:fix",
+    "lint:fix": "pnpm lint --fix",
     "preview": "next build && next start",
-    "r": "concurrently \"yarn build:registry\" \"yarn build:tw\"",
+    "r": "concurrently \"pnpm build:registry\" \"pnpm build:tw\"",
     "rc": "concurrently \"contentlayer2 dev\" \"next dev\" \"PORT=4444 node ../../node_modules/y-webrtc/bin/server.js\"",
     "rd": "NODE_ENV=development tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/build-registry.mts",
     "registry:capture": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/capture-registry.mts",
@@ -23,9 +24,8 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
-    "test:r": "tsx --tsconfig ./scripts/tsconfig.scripts.json ./scripts/test-registry.mts",
-    "typecheck": "yarn prebuild && tsc --noEmit",
-    "typecheck:watch": "yarn typecheck --watch"
+    "typecheck": "pnpm prebuild && tsc --noEmit",
+    "typecheck:watch": "pnpm typecheck --watch"
   },
   "browserslist": {
     "production": [
@@ -38,6 +38,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.0",
@@ -92,6 +96,7 @@
     "@platejs/test-utils": "workspace:^",
     "@platejs/toc": "workspace:^",
     "@platejs/toggle": "workspace:^",
+    "@platejs/yjs": "workspace:^",
     "@radix-ui/react-accordion": "1.2.11",
     "@radix-ui/react-alert-dialog": "1.1.14",
     "@radix-ui/react-aspect-ratio": "1.1.7",
@@ -147,6 +152,7 @@
     "platejs": "workspace:^",
     "prismjs": "1.30.0",
     "react": "19.2.3",
+    "react-compiler-runtime": "^1.0.0",
     "react-day-picker": "8.10.1",
     "react-dnd": "16.0.1",
     "react-dnd-html5-backend": "16.0.1",

@@ -29,21 +29,22 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
     "@platejs/combobox": "52.0.15",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
+    "@plate/scripts": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {
