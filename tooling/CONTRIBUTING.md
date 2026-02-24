@@ -158,6 +158,12 @@ For those wanting a release, follow this sequence:
 - Review the final changesets.
 - Merge the PR release, and the bot will release the updated packages on npm.
 
+## Internationalization (i18n)
+
+We only support **English** and **Chinese** translations.
+
+Maintaining translations requires ongoing effort as documentation changes, and we cannot commit to languages we cannot verify.
+
 ## Requests for new features
 
 If you have a request for a new feature, please open a discussion on GitHub. We'll be happy to help you out.

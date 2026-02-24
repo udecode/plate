@@ -32,35 +32,13 @@ type DocPageProps = {
   params: Promise<{
     slug: string[];
   }>;
-  searchParams: Promise<{
-    locale: string;
-  }>;
 };
 
-async function getDocFromParams({ params, searchParams }: DocPageProps) {
-  const locale = (await searchParams).locale;
+export const dynamic = 'force-static';
+
+async function getDocFromParams({ params }: DocPageProps) {
   const slugParam = (await params).slug;
-
-  let slug = slugParam?.join('/') || '';
-
-  // For Chinese docs, look for .cn.mdx files
-  if (locale === 'cn') {
-    // First try to find the Chinese version with .cn.mdx
-    const cnDoc = allDocs.find(
-      (doc) =>
-        doc.slugAsParams === `docs/${slug || 'index'}.cn` &&
-        doc._raw.sourceFileName?.endsWith('.cn.mdx')
-    );
-
-    if (cnDoc) {
-      const path = slugParam?.join('/') || '';
-      cnDoc.slug = `/docs${path ? `/${path}` : ''}?locale=cn`;
-      return cnDoc;
-    }
-  }
-
-  // Default behavior for non-Chinese or fallback
-  slug = `docs${slug ? `/${slug}` : ''}`;
+  const slug = `docs${slugParam?.join('/') ? `/${slugParam.join('/')}` : ''}`;
   const doc = allDocs.find((doc) => doc.slugAsParams === slug);
 
   if (!doc) {
@@ -70,19 +48,13 @@ async function getDocFromParams({ params, searchParams }: DocPageProps) {
   const path = slugParam?.join('/') || '';
   doc.slug = `/docs${path ? `/${path}` : ''}`;
 
-  // Only add locale param for Chinese
-  if (locale === 'cn') {
-    doc.slug += '?locale=cn';
-  }
-
   return doc;
 }
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: DocPageProps): Promise<Metadata> {
-  const doc = await getDocFromParams({ params, searchParams });
+  const doc = await getDocFromParams({ params });
   let title: string;
   let description: string | undefined;
   let slug: string;
@@ -148,19 +120,11 @@ export async function generateMetadata({
 const registryNames = new Set(registry.items.map((item) => item.name));
 
 export function generateStaticParams() {
-  const docs = allDocs
-    .filter((doc) => {
-      // Include all non-Chinese docs and Chinese docs ending with .cn.mdx
-      return (
-        !doc._raw.sourceFileName?.endsWith('.cn.mdx') ||
-        doc.slugAsParams.startsWith('docs/')
-      );
-    })
+  return allDocs
+    .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
     .map((doc) => ({
-      slug: doc.slugAsParams.split('/'),
+      slug: doc.slugAsParams.split('/').slice(1),
     }));
-
-  return docs;
 }
 
 export default async function DocPage(props: DocPageProps) {
