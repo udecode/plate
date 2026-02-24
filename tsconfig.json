@@ -9,18 +9,10 @@
         "./packages/*/src/index.tsx",
         "./packages/*/src"
       ],
-      "@platejs/*/react": [
-        "./packages/*/src/react/index.tsx",
-        "./packages/*/src/react/index.ts"
-      ],
       "@udecode/*": [
         "./packages/udecode/*/src/index.ts",
         "./packages/udecode/*/src/index.tsx",
         "./packages/udecode/*/src"
-      ],
-      "@udecode/*/react": [
-        "./packages/udecode/*/src/react/index.tsx",
-        "./packages/udecode/*/src/react/index.ts"
       ]
     },
     "rootDir": ".",

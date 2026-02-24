@@ -1578,6 +1578,9 @@ importers:
       react-dom:
         specifier: '>=18.0.0'
         version: 19.2.3(react@19.2.3)
+      slate-dom:
+        specifier: 0.119.0
+        version: 0.119.0(slate@0.120.0)
     devDependencies:
       '@plate/scripts':
         specifier: workspace:^
@@ -1791,6 +1794,9 @@ importers:
       slate:
         specifier: 0.120.0
         version: 0.120.0
+      slate-dom:
+        specifier: 0.119.0
+        version: 0.119.0(slate@0.120.0)
       slate-hyperscript:
         specifier: 0.100.0
         version: 0.100.0(slate@0.120.0)
