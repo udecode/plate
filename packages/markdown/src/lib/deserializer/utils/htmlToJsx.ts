@@ -32,8 +32,8 @@ const BOOL_ATTR_REGEXES = Array.from(BOOL_ATTRS.entries()).map(
 );
 
 const ATTR_RENAMES: [RegExp, string][] = [
-  [/\bclass=/g, 'className='],
-  [/\bfor=/g, 'htmlFor='],
+  [/(\s)class=/g, '$1className='],
+  [/(\s)for=/g, '$1htmlFor='],
 ];
 
 export const htmlToJsx = (html: string): string => {

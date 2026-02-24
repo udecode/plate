@@ -84,4 +84,42 @@ describe('htmlToJsx', () => {
     expect(result).not.toContain('<!--');
     expect(result).not.toMatch(/\sclass=/);
   });
+
+  it('should convert for attribute in label but not in other words', () => {
+    const input = '<label for="email">Email</label>';
+    const result = htmlToJsx(input);
+    expect(result).toContain('htmlFor="email"');
+    expect(result).not.toContain('htmlFor="email" for=');
+  });
+
+  it('should not convert for in transform attribute', () => {
+    const input = '<div transform="rotate" for="partial">Test</div>';
+    const result = htmlToJsx(input);
+    expect(result).toContain('htmlFor="partial"');
+    expect(result).toContain('transform="rotate"');
+    expect(result).not.toContain('transform-htmlFor');
+  });
+
+  it('should not convert for in class in quoted values', () => {
+    const input =
+      '<input placeholder="Email for account registration." title="tools for developers">';
+    const result = htmlToJsx(input);
+    expect(result).toContain('placeholder="Email for account registration."');
+    expect(result).toContain('title="tools for developers"');
+    expect(result).not.toContain('htmlFor=');
+  });
+
+  it('should not convert class in x-class or other prefixed attributes', () => {
+    const input = '<div x-class="active">Content</div>';
+    const result = htmlToJsx(input);
+    expect(result).not.toContain('className=');
+    expect(result).toContain('x-class="active"');
+  });
+
+  it('should convert class after other attributes', () => {
+    const input = '<div id="main" class="container">Content</div>';
+    const result = htmlToJsx(input);
+    expect(result).toContain('className="container"');
+    expect(result).toContain('id="main"');
+  });
 });
