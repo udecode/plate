@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "targets": {
+    ".codex/skills": [
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/changeset.md",
+        "destRelPath": "changeset"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/docs-plugin.md",
+        "destRelPath": "docs-plugin"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/sync-testing-skill.md",
+        "destRelPath": "sync-testing-skill"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/translate.md",
+        "destRelPath": "translate"
+      }
+    ],
+    ".cursor/skills": [
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/changeset.md",
+        "destRelPath": "changeset"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/docs-plugin.md",
+        "destRelPath": "docs-plugin"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/sync-testing-skill.md",
+        "destRelPath": "sync-testing-skill"
+      },
+      {
+        "sourceType": "claude",
+        "sourceKind": "command",
+        "sourceRelPath": ".claude/commands/translate.md",
+        "destRelPath": "translate"
+      }
+    ]
+  }
+}
