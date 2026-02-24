@@ -17,7 +17,11 @@ import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
 import { mdastToSlate } from './mdastToSlate';
-import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
+import {
+  type ParseMarkdownBlocksOptions,
+  htmlToJsx,
+  parseMarkdownBlocks,
+} from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
 import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
 
@@ -56,10 +60,7 @@ export const markdownToSlateNodes = (
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
-  // if using remarkMdx, we need to replace <br> with <br /> since <br /> is not supported in mdx.
-  const processedData = options?.withoutMdx
-    ? data
-    : data.replaceAll('<br>', '<br />');
+  const processedData = options?.withoutMdx ? data : htmlToJsx(data);
 
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 

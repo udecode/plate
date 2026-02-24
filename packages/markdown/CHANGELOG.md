@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.3.1
+
+### Patch Changes
+
+- [#4839](https://github.com/udecode/plate/pull/4839) by [@OmarSalouss](https://github.com/OmarSalouss) – fix(markdown): convert void HTML tags to self-closing JSX and preserve image attributes
+
 ## 52.1.0
 
 ### Patch Changes
