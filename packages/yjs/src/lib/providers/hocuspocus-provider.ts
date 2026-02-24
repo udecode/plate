@@ -139,7 +139,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
     }
   }
 
-  get awareness() {
+  get awareness(): any {
     return this.provider.awareness!;
   }
 

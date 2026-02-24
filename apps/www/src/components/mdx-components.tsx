@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+
+import { MDX_SCOPE_FOR_HOOK } from '@/lib/mdx-scope';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cva } from 'class-variance-authority';
@@ -210,6 +212,8 @@ const components = {
   ),
 };
 
+// Type names that may appear as MDX expressions in API docs - provide as scope to avoid "X is not defined"
+
 export function Mdx({
   code,
   packageInfo,
@@ -219,7 +223,7 @@ export function Mdx({
     gzip: string | null;
   };
 }) {
-  const Component = useMDXComponent(code);
+  const Component = useMDXComponent(code, MDX_SCOPE_FOR_HOOK);
 
   return (
     <div className="typography">

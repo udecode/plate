@@ -13,6 +13,7 @@ import { fontMono, fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
 
 import '@/app/globals.css';
+import '@/lib/mdx-scope';
 
 export const metadata: Metadata = {
   authors: [

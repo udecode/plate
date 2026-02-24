@@ -13,4 +13,4 @@ export const {
     width: 0 as React.CSSProperties['width'],
   },
   { name: 'resizable' }
-);
+) as any;
