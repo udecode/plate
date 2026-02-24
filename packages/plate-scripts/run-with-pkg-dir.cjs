@@ -1,12 +1,13 @@
 #!/usr/bin/env node
+'use strict';
 /**
  * Cross-platform script to run package scripts with INIT_CWD and PROJECT_CWD set.
  * Runs commands directly to avoid shell variable expansion issues on Windows (${VAR:-default} is bash-only).
  */
-const { spawnSync } = require('child_process');
-const path = require('path');
+const { spawnSync } = require('node:child_process');
+const path = require('node:path');
 
-const [command, ...args] = process.argv.slice(2);
+const [command, ..._args] = process.argv.slice(2);
 if (!command) {
   console.error('Usage: plate-pkg <command> [args...]');
   process.exit(1);
@@ -26,7 +27,10 @@ function run(cmd, cmdArgs = [], options = {}) {
     ...options,
   };
   // On Windows, .cmd files must be run through cmd.exe
-  if (process.platform === 'win32' && (cmd.endsWith('.cmd') || cmd.endsWith('.CMD'))) {
+  if (
+    process.platform === 'win32' &&
+    (cmd.endsWith('.cmd') || cmd.endsWith('.CMD'))
+  ) {
     return spawnSync('cmd', ['/c', cmd, ...cmdArgs], spawnOptions);
   }
   return spawnSync(cmd, cmdArgs, spawnOptions);
@@ -38,7 +42,12 @@ function runPnpm(script, scriptArgs = []) {
 }
 
 const runTsdown = (watch = false) => {
-  const tsdownBin = path.join(PROJECT_CWD, 'node_modules', '.bin', process.platform === 'win32' ? 'tsdown.cmd' : 'tsdown');
+  const tsdownBin = path.join(
+    PROJECT_CWD,
+    'node_modules',
+    '.bin',
+    process.platform === 'win32' ? 'tsdown.cmd' : 'tsdown'
+  );
   const args = ['--config', tsdownConfig, '--log-level', 'warn'];
   if (watch) args.push('--watch');
   return run(tsdownBin, args);
@@ -70,7 +79,7 @@ switch (command) {
     break;
   case 'p:test': {
     const jestArgs = ['--maxWorkers=1', '--passWithNoTests', '.'];
-    if (require('fs').existsSync(jestConfig)) {
+    if (require('node:fs').existsSync(jestConfig)) {
       jestArgs.unshift('--config', jestConfig);
     }
     result = runPnpm('jest', jestArgs);
@@ -78,7 +87,7 @@ switch (command) {
   }
   case 'p:test:watch': {
     const jestArgs = ['--watch', '--maxWorkers=1', '--passWithNoTests', '.'];
-    if (require('fs').existsSync(jestConfig)) {
+    if (require('node:fs').existsSync(jestConfig)) {
       jestArgs.unshift('--config', jestConfig);
     }
     result = runPnpm('jest', jestArgs);
