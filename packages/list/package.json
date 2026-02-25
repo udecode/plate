@@ -40,13 +40,22 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/indent": "52.0.11",
+    "@platejs/indent": "^52.0.11",
     "clsx": "^2.1.1",
+    "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/basic-styles": "^52.0.11",
+    "@platejs/docx": "^52.0.11",
+    "@platejs/juice": "^52.0.11",
+    "@platejs/link": "^52.0.11",
+    "@platejs/media": "^52.0.11",
+    "@platejs/table": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10",
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

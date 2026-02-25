@@ -79,6 +79,16 @@
   "type": "module",
   "module": "./dist/index.js",
   "devDependencies": {
-    "@plate/scripts": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/basic-styles": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/link": "^52.0.11",
+    "@platejs/list-classic": "^52.0.11",
+    "@platejs/media": "^52.0.11",
+    "@platejs/table": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10",
+    "mutative": "^1.1.0",
+    "platejs": "^52.0.17"
   }
 }

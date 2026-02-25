@@ -44,9 +44,9 @@
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
+    "@plate/scripts": "workspace:*",
     "@types/katex": "0.16.7",
-    "platejs": "workspace:^"
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

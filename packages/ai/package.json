@@ -40,18 +40,25 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/markdown": "52.1.0",
-    "@platejs/selection": "52.0.16",
-    "@platejs/suggestion": "52.0.11",
-    "@platejs/table": "workspace:^",
+    "@platejs/markdown": "^52.1.0",
+    "@platejs/selection": "^52.0.16",
+    "@platejs/suggestion": "^52.0.11",
+    "@platejs/table": "^52.0.11",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@ai-sdk/react": "^3.0.0",
-    "@plate/scripts": "workspace:^",
-    "@platejs/combobox": "52.0.15",
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/combobox": "^52.0.15",
+    "@platejs/indent": "^52.0.11",
+    "@platejs/list": "^52.0.11",
+    "@platejs/math": "^52.0.11",
+    "@platejs/mention": "^52.0.15",
+    "@platejs/test-utils": "^52.0.10",
     "ai": "^6.0.0"
   },
   "peerDependencies": {

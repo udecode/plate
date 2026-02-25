@@ -41,12 +41,13 @@
   },
   "dependencies": {
     "@platejs/indent": "52.0.11",
+    "jotai": "^2.18.0",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

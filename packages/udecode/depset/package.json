@@ -51,7 +51,7 @@
     "zod": "3.25.61"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
+    "@plate/scripts": "workspace:*",
     "@types/prompts": "2.4.9"
   },
   "publishConfig": {

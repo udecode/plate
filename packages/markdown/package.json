@@ -42,6 +42,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "lodash": "^4.17.23",
     "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
@@ -50,13 +51,25 @@
     "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "ts-essentials": "10.1.0",
-    "unified": "^11.0.5"
+    "unified": "^11.0.5",
+    "unist-util-visit": "5.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/link": "^52.0.11",
+    "@platejs/list": "^52.0.11",
+    "@platejs/list-classic": "^52.0.11",
+    "@platejs/mention": "^52.0.15",
+    "@platejs/suggestion": "^52.0.11",
+    "@platejs/table": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
-    "platejs": "workspace:^"
+    "platejs": "^52.0.17",
+    "remark-gfm": "4.0.1",
+    "remark-math": "6.0.0"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

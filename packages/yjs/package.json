@@ -43,11 +43,12 @@
   "dependencies": {
     "@slate-yjs/core": "^1.0.2",
     "react-compiler-runtime": "^1.0.0",
-    "yjs": "^13.6.27"
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.29"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "@hocuspocus/provider": "^3.4.0",

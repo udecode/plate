@@ -37,9 +37,10 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@udecode/utils": "52.0.1",
+    "@udecode/utils": "^52.0.1",
     "is-plain-object": "^5.0.0",
     "lodash": "^4.17.21",
+    "scroll-into-view-if-needed": "^3.1.0",
     "slate": "0.120.0",
     "slate-dom": "0.119.0"
   },
@@ -49,6 +50,10 @@
   "type": "module",
   "module": "./dist/index.js",
   "devDependencies": {
-    "@plate/scripts": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/core": "^52.0.17",
+    "@platejs/link": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10"
   }
 }

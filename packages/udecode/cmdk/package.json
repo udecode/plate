@@ -42,7 +42,7 @@
     "use-sync-external-store": "^1.5.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
+    "@plate/scripts": "workspace:*",
     "@types/use-sync-external-store": "0.0.6"
   },
   "peerDependencies": {

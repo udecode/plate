@@ -50,6 +50,6 @@
   },
   "module": "./dist/index.js",
   "devDependencies": {
-    "@plate/scripts": "workspace:^"
+    "@plate/scripts": "workspace:*"
   }
 }

@@ -59,10 +59,19 @@
     "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:^",
-    "@platejs/docx": "workspace:^",
-    "@platejs/markdown": "workspace:^",
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/basic-styles": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/docx": "^52.0.11",
+    "@platejs/indent": "^52.0.11",
+    "@platejs/link": "^52.0.11",
+    "@platejs/list": "^52.0.11",
+    "@platejs/markdown": "^52.1.0",
+    "@platejs/media": "^52.0.11",
+    "@platejs/table": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10",
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "@platejs/docx": ">=52.0.0",

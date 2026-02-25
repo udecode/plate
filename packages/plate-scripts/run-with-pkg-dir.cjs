@@ -17,7 +17,6 @@ const PROJECT_CWD = path.resolve(__dirname, '..', '..');
 const INIT_CWD = process.cwd();
 
 const tsdownConfig = path.join(PROJECT_CWD, 'tooling/config/tsdown.config.ts');
-const jestConfig = path.join(PROJECT_CWD, 'jest.config.cjs');
 
 function run(cmd, cmdArgs = [], options = {}) {
   const spawnOptions = {
@@ -62,15 +61,9 @@ switch (command) {
   case 'p:build:watch':
     result = runTsdown(true);
     break;
-  case 'p:clean': {
-    const rimraf = runPnpm('rimraf', ['dist']);
-    if (rimraf.status !== 0) {
-      result = rimraf;
-      break;
-    }
-    result = runPnpm('jest', ['--clear-cache']);
+  case 'p:clean':
+    result = runPnpm('rimraf', ['dist']);
     break;
-  }
   case 'p:lint':
     result = runPnpm('biome', ['check', INIT_CWD]);
     break;
@@ -78,19 +71,22 @@ switch (command) {
     result = runPnpm('biome', ['check', INIT_CWD, '--fix']);
     break;
   case 'p:test': {
-    const jestArgs = ['--maxWorkers=1', '--passWithNoTests', '.'];
-    if (require('node:fs').existsSync(jestConfig)) {
-      jestArgs.unshift('--config', jestConfig);
-    }
-    result = runPnpm('jest', jestArgs);
+    const bunTestArgs = [
+      'test',
+      '--preload',
+      path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
+    ];
+    result = runPnpm('bun', bunTestArgs);
     break;
   }
   case 'p:test:watch': {
-    const jestArgs = ['--watch', '--maxWorkers=1', '--passWithNoTests', '.'];
-    if (require('node:fs').existsSync(jestConfig)) {
-      jestArgs.unshift('--config', jestConfig);
-    }
-    result = runPnpm('jest', jestArgs);
+    const bunTestArgs = [
+      'test',
+      '--watch',
+      '--preload',
+      path.join(PROJECT_CWD, 'tooling/config/bunTestSetup.ts'),
+    ];
+    result = runPnpm('bun', bunTestArgs);
     break;
   }
   case 'p:typecheck':
