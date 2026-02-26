@@ -2,7 +2,7 @@ import React from 'react';
 import { serializeHtml } from '../serializeHtml';
 import { createStaticEditor } from './create-static-editor';
 import { createTSlatePlugin, createSlateEditor } from '../../lib';
-import { BaseEditorKit } from '../../../../../apps/www/src/registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 
 describe('serializePlateStatic nodes', () => {
   it('should serialize render below nodes', async () => {

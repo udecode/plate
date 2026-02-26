@@ -1,8 +1,7 @@
 import type { InsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
 
-import { KEYS } from 'platejs';
-
 import type { TCodeDrawingElement } from '../BaseCodeDrawingPlugin';
+import { CODE_DRAWING_KEY } from '../BaseCodeDrawingPlugin';
 
 export const insertCodeDrawing = (
   editor: SlateEditor,
@@ -12,7 +11,7 @@ export const insertCodeDrawing = (
   editor.tf.insertNodes<TCodeDrawingElement>(
     {
       children: [{ text: '' }],
-      type: editor.getType(KEYS.codeDrawing),
+      type: editor.getType(CODE_DRAWING_KEY),
       data: {
         drawingType: 'Mermaid',
         drawingMode: 'Both',

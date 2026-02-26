@@ -12,10 +12,10 @@ export const codeDrawingInitialData: NodeProps<TCodeDrawingElement> = {
     drawingType: 'Mermaid',
     drawingMode: 'Both',
     code: `graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Action 1]
-    B -->|No| D[Action 2]
-    C --> E[End]
+    A["Start"] --> B{"Decision"}
+    B -->|Yes| C["Action 1"]
+    B -->|No| D["Action 2"]
+    C --> E["End"]
     D --> E`,
   },
 };

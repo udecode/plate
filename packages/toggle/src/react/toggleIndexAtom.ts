@@ -46,10 +46,10 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   return result;
 };
 
-export const editorAtom: Atom<{
+export const editorAtom = plateStore.atom.trackedEditor as Atom<{
   editor: { children: TIndentElement[] };
   version: number;
-}> = plateStore.atom.trackedEditor;
+}>;
 
 // Due to a limitation of jotai-x, it's not possible to derive a state from both `toggleControllerStore` and plateStore`.
 // In order minimize re-renders, we subscribe to both separately, but only re-render unnecessarily when opening or closing a toggle,

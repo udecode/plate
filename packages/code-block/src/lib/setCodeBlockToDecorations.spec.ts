@@ -35,7 +35,7 @@ describe('codeBlockToDecorations', () => {
     } as any;
 
     // Add getOptions method
-    editor.getOptions = mock().mockImplementation((plugin) => {
+    editor.getOptions = mock().mockImplementation((plugin: any) => {
       if (plugin === BaseCodeBlockPlugin) {
         return {
           defaultLanguage: 'javascript',
@@ -43,7 +43,7 @@ describe('codeBlockToDecorations', () => {
         };
       }
       return {};
-    });
+    }) as any;
   });
 
   it('should return empty decorations for plaintext language', () => {

@@ -69,7 +69,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
     this.onError = onError;
 
     // If an existing Y.Doc is provided, ensure it's passed to the HocuspocusProvider
-    const providerOptions: HocuspocusProviderConfiguration = {
+    const providerOptions = {
       ...options,
       ...(doc && { document: doc }),
       ...(awareness && { awareness }),
@@ -87,7 +87,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
           }
         })()),
       // Disable broadcast channel here - we'll manually handle connections
-      broadcast: options.broadcast || false,
+      // broadcast: options.broadcast || false,
       onAwarenessChange: options.onAwarenessChange || (() => {}),
       onConnect: () => {
         this._isConnected = true;
@@ -120,13 +120,13 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
     };
 
     try {
-      this.provider = new HocuspocusProvider(providerOptions);
+      this.provider = new HocuspocusProvider(providerOptions as any);
     } catch (error) {
       // Create a minimal provider that won't try to connect
       this.provider = new HocuspocusProvider({
         ...providerOptions,
         connect: false,
-      });
+      } as any);
       this.onError?.(error instanceof Error ? error : new Error(String(error)));
     }
   }

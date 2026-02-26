@@ -56,7 +56,7 @@ export const BaseYjsPlugin = createTSlatePlugin<YjsConfig>({
       ydoc = new Y.Doc();
     }
     if (!awareness) {
-      awareness = new Awareness(ydoc);
+      awareness = new Awareness(ydoc as any);
     }
 
     return {

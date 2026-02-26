@@ -1,8 +1,6 @@
 'use client';
 
 import * as React from 'react';
-
-import { MDX_SCOPE_FOR_HOOK } from '@/lib/mdx-scope';
 import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cva } from 'class-variance-authority';
@@ -223,7 +221,7 @@ export function Mdx({
     gzip: string | null;
   };
 }) {
-  const Component = useMDXComponent(code, MDX_SCOPE_FOR_HOOK);
+  const Component = useMDXComponent(code);
 
   return (
     <div className="typography">

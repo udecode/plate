@@ -3,11 +3,10 @@ import { basicBlocksValue } from 'www/src/registry/examples/values/basic-blocks-
 import { basicMarksValue } from 'www/src/registry/examples/values/basic-marks-value';
 import { dateValue } from 'www/src/registry/examples/values/date-value';
 import { fontValue } from 'www/src/registry/examples/values/font-value';
-// import { equationValue } from 'www/src/registry/examples/values/equation-value';
-import { listValue } from 'www/src/registry/examples/values/list-value';
 import { indentValue } from 'www/src/registry/examples/values/indent-value';
 import { lineHeightValue } from 'www/src/registry/examples/values/line-height-value';
 import { linkValue } from 'www/src/registry/examples/values/link-value';
+import { listValue } from 'www/src/registry/examples/values/list-value';
 import { mentionValue } from 'www/src/registry/examples/values/mention-value';
 import { tocPlaygroundValue } from 'www/src/registry/examples/values/toc-value';
 

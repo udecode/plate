@@ -54,21 +54,21 @@ describe('setSelectedCellsBorder', () => {
     setBorderSizeSpy = spyOn(
       setBorderSizeModule,
       'setBorderSize'
-    ).mockImplementation(setBorderSizeMock);
+    ).mockImplementation(setBorderSizeMock as any);
     getCellIndicesSpy = spyOn(utilsModule, 'getCellIndices').mockImplementation(
-      getCellIndicesMock
+      getCellIndicesMock as any
     );
     getCellTypesSpy = spyOn(utilsModule, 'getCellTypes').mockImplementation(
-      getCellTypesMock
+      getCellTypesMock as any
     );
     getTopTableCellSpy = spyOn(
       getTopTableCellModule,
       'getTopTableCell'
-    ).mockImplementation(getTopTableCellMock);
+    ).mockImplementation(getTopTableCellMock as any);
     getLeftTableCellSpy = spyOn(
       getLeftTableCellModule,
       'getLeftTableCell'
-    ).mockImplementation(getLeftTableCellMock);
+    ).mockImplementation(getLeftTableCellMock as any);
 
     editor = createPlateEditor({ nodeId: true });
     const findPathMock = mock(() => [0]);

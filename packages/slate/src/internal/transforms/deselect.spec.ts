@@ -11,11 +11,15 @@ describe('deselect', () => {
     const slate = await import('slate');
     const slateDom = await import('slate-dom');
 
-    slateDeselectSpy = spyOn(slate, 'deselect').mockImplementation(mock());
+    slateDeselectSpy = spyOn(slate, 'deselect').mockImplementation(
+      mock() as unknown as (editor: import('slate').BaseEditor) => void
+    );
     domEditorDeselectSpy = spyOn(
       slateDom.DOMEditor,
       'deselect'
-    ).mockImplementation(mock());
+    ).mockImplementation(
+      mock() as unknown as (editor: import('slate-dom').DOMEditor) => void
+    );
   });
 
   afterEach(() => {
