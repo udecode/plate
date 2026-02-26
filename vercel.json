@@ -1,4 +1,5 @@
 {
+  "installCommand": "pnpm install --no-frozen-lockfile --link-workspace-packages=true",
   "functions": {
     "app/**/*": {
       "maxDuration": 1
