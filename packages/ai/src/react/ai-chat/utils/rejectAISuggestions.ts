@@ -12,7 +12,7 @@ export const rejectAISuggestions = (editor: PlateEditor) => {
     transient: true,
   });
 
-  suggestions.forEach(([suggestionNode]) => {
+  suggestions.forEach(([suggestionNode]: [any, any]) => {
     const suggestionData = editor
       .getApi(SuggestionPlugin)
       .suggestion.suggestionData(suggestionNode);

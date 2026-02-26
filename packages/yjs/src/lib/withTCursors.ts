@@ -24,6 +24,6 @@ export const withTCursors = <TCursorData extends Record<string, unknown>>(
   awareness: Awareness,
   options?: WithCursorsOptions<TCursorData>
 ) =>
-  withCursors(editor as any, awareness, options) as PlateYjsEditorProps &
+  withCursors(editor as any, awareness as any, options) as PlateYjsEditorProps &
     SlateEditor &
     YjsEditorProps;

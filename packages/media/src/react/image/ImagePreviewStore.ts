@@ -34,4 +34,4 @@ export const ImagePreviewStore = createZustandStore(
     isOpen: (editorId: string) => get('openEditorId') === editorId,
   }));
 
-export const { useValue: useImagePreviewValue } = ImagePreviewStore;
+export const { useValue: useImagePreviewValue } = ImagePreviewStore as any;

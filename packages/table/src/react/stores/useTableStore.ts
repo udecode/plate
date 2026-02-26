@@ -18,7 +18,7 @@ export const {
     rowSizeOverrides: atom(new Map() as TableStoreSizeOverrides),
   },
   { name: 'table' as const }
-);
+) as any;
 
 const useOverrideSizeFactory = (
   setOverrides: (

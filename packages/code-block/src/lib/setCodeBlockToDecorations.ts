@@ -11,10 +11,8 @@ import {
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 // Cache for storing decorations per code line element
-export const CODE_LINE_TO_DECORATIONS = new WeakMap<
-  TElement,
-  DecoratedRange[]
->();
+export const CODE_LINE_TO_DECORATIONS: WeakMap<TElement, DecoratedRange[]> =
+  new WeakMap();
 
 // Helper function to get highlight nodes from Lowlight result
 function getHighlightNodes(result: any) {
@@ -68,7 +66,7 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
 export function codeBlockToDecorations(
   editor: SlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
-) {
+): Map<TElement, DecoratedRange[]> {
   const { defaultLanguage, ...options } =
     editor.getOptions(BaseCodeBlockPlugin);
   const lowlight = options.lowlight!;

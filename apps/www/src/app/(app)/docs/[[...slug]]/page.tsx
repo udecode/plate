@@ -3,7 +3,7 @@ import type { RegistryItem } from 'shadcn/registry';
 
 import type { Metadata } from 'next';
 
-import { allDocs } from 'contentlayer/generated';
+import { allDocs } from '@/.contentlayer/generated';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';

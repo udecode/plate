@@ -80,7 +80,7 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
     this.doc = doc || new Y.Doc();
     try {
       this.provider = new YWebrtcProvider(options.roomName, this.doc, {
-        awareness,
+        awareness: awareness as any,
         filterBcConns: options.filterBcConns,
         maxConns: options.maxConns,
         password: options.password,
@@ -123,7 +123,7 @@ export class WebRTCProviderWrapper implements UnifiedProvider {
   }
 
   get awareness(): Awareness {
-    return this.provider!.awareness;
+    return this.provider!.awareness as unknown as Awareness;
   }
 
   get document() {

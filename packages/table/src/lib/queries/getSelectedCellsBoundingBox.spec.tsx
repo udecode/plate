@@ -90,13 +90,13 @@ describe('getSelectedCellsBoundingBox', () => {
     getRowSpanMock = mock().mockReturnValue(1);
 
     getCellIndicesSpy = spyOn(utilsModule, 'getCellIndices').mockImplementation(
-      getCellIndicesMock
+      getCellIndicesMock as any
     );
     getColSpanSpy = spyOn(getColSpanModule, 'getColSpan').mockImplementation(
-      getColSpanMock
+      getColSpanMock as any
     );
     getRowSpanSpy = spyOn(getRowSpanModule, 'getRowSpan').mockImplementation(
-      getRowSpanMock
+      getRowSpanMock as any
     );
 
     editor = createPlateEditor({ nodeId: true, value: mockEditor.children });

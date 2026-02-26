@@ -1,10 +1,16 @@
 {
   "extends": "../../tooling/config/tsconfig.base.json",
-  "include": ["src", "../../tooling/config/global.d.ts"],
-  "exclude": [],
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["../../apps/www/src/*"]
+      "www/*": ["../../apps/www/*"],
+      "@platejs/*": [
+        "../../packages/*/src/index.ts",
+        "../../packages/*/src/index.tsx",
+        "../../packages/*/src"
+      ]
     }
-  }
+  },
+  "include": ["src", "../../tooling/config/global.d.ts"],
+  "exclude": ["**/*.spec.*", "**/*.test.*", "**/__tests__/**"]
 }

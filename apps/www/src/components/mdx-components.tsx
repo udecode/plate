@@ -210,6 +210,8 @@ const components = {
   ),
 };
 
+// Type names that may appear as MDX expressions in API docs - provide as scope to avoid "X is not defined"
+
 export function Mdx({
   code,
   packageInfo,
