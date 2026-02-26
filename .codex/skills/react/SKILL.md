@@ -1,0 +1,12 @@
+---
+name: react
+description: 'Skill: react'
+---
+
+---
+name: react
+description: React patterns with destructured props, compiler optimization, Effects, and Tailwind v4 syntax. ALWAYS use when using React. Applies to files matching: *.tsx, **/globals.css.
+---
+
+@.claude/rules/react.mdc
+

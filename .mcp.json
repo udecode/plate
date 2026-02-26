@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "plate": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ],
+      "env": {
+        "REGISTRY_URL": "http://localhost:3000/rd/registry.json"
+      },
+      "type": "stdio"
+    }
+  }
+}

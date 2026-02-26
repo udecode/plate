@@ -15,7 +15,6 @@ export function CodeBlockCommand({
   __bunCommand__,
   __npmCommand__,
   __pnpmCommand__,
-  __yarnCommand__,
 }: React.ComponentProps<'pre'> & NpmCommands) {
   const [config, setConfig] = useConfig();
   const [hasCopied, setHasCopied] = React.useState(false);
@@ -31,9 +30,8 @@ export function CodeBlockCommand({
       bun: __bunCommand__,
       npm: __npmCommand__,
       pnpm: __pnpmCommand__,
-      yarn: __yarnCommand__,
     }),
-    [__npmCommand__, __pnpmCommand__, __yarnCommand__, __bunCommand__]
+    [__npmCommand__, __pnpmCommand__, __bunCommand__]
   );
   const copyCommand = React.useCallback(() => {
     const command = tabs[packageManager];
@@ -56,7 +54,7 @@ export function CodeBlockCommand({
         onValueChange={(value) => {
           setConfig({
             ...config,
-            packageManager: value as 'bun' | 'npm' | 'pnpm' | 'yarn',
+            packageManager: value as 'bun' | 'npm' | 'pnpm',
           });
         }}
       >

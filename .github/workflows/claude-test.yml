@@ -48,8 +48,8 @@ jobs:
 
             Please analyze the changes in this PR/issue and create or update the relevant tests accordingly.
             **Important Development Sequence:**
-            - Before running type checking, you must first run `yarn install` and build affected packages
-            - Use `yarn turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
-            - Use `yarn turbo typecheck --filter=./packages/modified-package` for type checking modified packages
-            - Use `yarn lint:fix` for linting modified packages.
-            - Avoid full project commands (`yarn build`, `yarn typecheck`, `yarn lint:fix`), these are very slow
+            - Before running type checking, you must first run `pnpm install` and build affected packages
+            - Use `pnpm turbo build --filter=./packages/modified-package` to build only modified packages and their dependencies
+            - Use `pnpm turbo typecheck --filter=./packages/modified-package` for type checking modified packages
+            - Use `pnpm lint:fix` for linting modified packages.
+            - Avoid full project commands (`pnpm build`, `pnpm typecheck`, `pnpm lint:fix`), these are very slow

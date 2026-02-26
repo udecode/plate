@@ -89,11 +89,11 @@ jobs:
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
-      #     yarn playwright install-deps
-      #     yarn playwright install
+      #     pnpm exec playwright install-deps
+      #     pnpm exec playwright install
 
       # - name: 🎭 Run Playwright tests
-      #   run: yarn e2e
+      #   run: pnpm e2e
 
   # notify-failure:
   #   name: Discord Notification

@@ -44,12 +44,13 @@
     "p:brl": "sh tooling/scripts/brl.sh",
     "p:build": "cd ${INIT_CWD:-.} && pnpm p:tsdown",
     "p:build:watch": "cd ${INIT_CWD:-.} && pnpm exec tsdown --config=${PROJECT_CWD:-.}/tooling/config/tsdown.config.ts --log-level warn --watch",
-    "p:tsdown": "cd ${INIT_CWD:-.} && pnpm exec tsdown --config=${PROJECT_CWD:-.}/tooling/config/tsdown.config.ts --log-level warn",
     "p:clean": "cd ${INIT_CWD:-.} && rimraf dist",
     "p:lint": "biome check ${INIT_CWD:-.}",
     "p:lint:fix": "biome check ${INIT_CWD:-.} --fix",
     "p:test": "cd ${INIT_CWD:-.} && bun test",
+    "p:tsdown": "cd ${INIT_CWD:-.} && pnpm exec tsdown --config=${PROJECT_CWD:-.}/tooling/config/tsdown.config.ts --log-level warn",
     "p:typecheck": "tsc -p ./tsconfig.json",
+    "prepare": "pnpm dlx skiller@latest apply",
     "r": "pnpm --filter www r",
     "rc": "turbo --filter=www rc",
     "rd": "pnpm --filter www rd",
@@ -125,14 +126,14 @@
     "zod": "4.1.12"
   },
   "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=18.12.0",
+    "pnpm": ">=9.0.0"
+  },
   "pnpm": {
     "patchedDependencies": {
       "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
       "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
     }
-  },
-  "engines": {
-    "node": ">=18.12.0",
-    "pnpm": ">=9.0.0"
   }
 }

@@ -41,7 +41,6 @@
     ]
   },
   "enabledPlugins": {
-    "codex@dotai": true,
     "debug@dotai": true,
     "dig@dotai": true,
     "dotai@dotai": true,
@@ -50,7 +49,6 @@
     "notification@dotai": true,
     "test@dotai": true,
     "frontend-design@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
     "compound-engineering@every-marketplace": true
   },
   "extraKnownMarketplaces": {
