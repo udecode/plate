@@ -38,7 +38,6 @@
     "g:typecheck": "turbo --filter \"./packages/**\" typecheck",
     "g:typecheck:all": "turbo typecheck",
     "gen:package": "pnpm exec plop --plopfile tooling/scripts/plop/plopfile.cjs package",
-    "postinstall": "patch-package --patch-dir tooling/patches",
     "lint": "biome check . && eslint",
     "lint:fix": "biome check . --fix",
     "nuke:node_modules": "rimraf '**/node_modules'",
@@ -109,7 +108,6 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "7.0.1",
     "openai": "5.3.0",
-    "patch-package": "8.0.0",
     "prompts": "2.4.2",
     "react": "19.2.3",
     "react-dnd-test-backend": "16.0.1",
@@ -127,6 +125,12 @@
     "zod": "4.1.12"
   },
   "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "patchedDependencies": {
+      "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
+      "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
+    }
+  },
   "engines": {
     "node": ">=18.12.0",
     "pnpm": ">=9.0.0"

@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-dnd/dist/core/DndProvider.js b/node_modules/react-dnd/dist/core/DndProvider.js
-index 749c9fe..e8fffb6 100644
---- a/node_modules/react-dnd/dist/core/DndProvider.js
-+++ b/node_modules/react-dnd/dist/core/DndProvider.js
+diff --git a/dist/core/DndProvider.js b/dist/core/DndProvider.js
+index 749c9fee13b86212c87c51e90aeef7fd264728f7..e8fffb6f5945e2f90883fa740e7a78ccddcc96af 100644
+--- a/dist/core/DndProvider.js
++++ b/dist/core/DndProvider.js
 @@ -88,7 +88,7 @@ function createSingletonDndContext(backend, context = getGlobalContext(), option
      return ctx[INSTANCE_SYM];
  }
@@ -12,10 +12,10 @@ index 749c9fe..e8fffb6 100644
  
  //# sourceMappingURL=DndProvider.js.map
 \ No newline at end of file
-diff --git a/node_modules/react-dnd/src/core/DndProvider.tsx b/node_modules/react-dnd/src/core/DndProvider.tsx
-index 3b60cd8..de3e0de 100644
---- a/node_modules/react-dnd/src/core/DndProvider.tsx
-+++ b/node_modules/react-dnd/src/core/DndProvider.tsx
+diff --git a/src/core/DndProvider.tsx b/src/core/DndProvider.tsx
+index 3b60cd8d48b1087a87571cdbccec032edb7122e6..de3e0de012bfa1841db1c10ef5fa27df17144364 100644
+--- a/src/core/DndProvider.tsx
++++ b/src/core/DndProvider.tsx
 @@ -89,5 +89,5 @@ function createSingletonDndContext<BackendContext, BackendOptions>(
  
  declare const global: any
