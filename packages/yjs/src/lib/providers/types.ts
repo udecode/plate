@@ -94,6 +94,16 @@ export type WebRTCProviderOptions = {
   signaling?: string[];
 };
 
+export type IndexeddbProviderConfiguration = {
+  docName: string;
+  ydoc?: Y.Doc;
+};
+
+export type IndexeddbProviderConfig = BaseYjsProviderConfig & {
+  options: IndexeddbProviderConfiguration;
+  type: 'indexeddb';
+};
+
 export type YjsConfig = PluginConfig<
   'yjs',
   {
@@ -160,7 +170,10 @@ export type YjsConfig = PluginConfig<
 >;
 
 // Union type for all known provider configurations
-export type YjsProviderConfig = HocuspocusProviderConfig | WebRTCProviderConfig; // Add custom config types here if needed
+export type YjsProviderConfig =
+  | HocuspocusProviderConfig
+  | IndexeddbProviderConfig
+  | WebRTCProviderConfig; // Add custom config types here if needed
 
 // Extensible provider type that can include custom types
 export type YjsProviderType = DefaultYjsProviderType | string;
