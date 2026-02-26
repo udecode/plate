@@ -3,7 +3,7 @@
 import React from 'react';
 
 import type { TocItem } from '@/lib/toc';
-import type { Doc } from 'contentlayer/generated';
+import type { Doc } from '@/.contentlayer/generated';
 import type { RegistryItem } from 'shadcn/registry';
 
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';

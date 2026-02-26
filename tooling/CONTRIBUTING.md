@@ -8,7 +8,7 @@ This document will provide guidance to help streamline the process and make effi
 
 This repository is a monorepo.
 
-- We use [yarn](https://yarnpkg.com/en/docs/install) and [`workspaces`](https://yarnpkg.com/features/workspaces) for development.
+- We use [pnpm](https://pnpm.io/installation) and [`workspaces`](https://pnpm.io/workspaces) for development.
 - We use [tsdown](https://tsdown.dev/) as our build system.
 - We use [changesets](https://github.com/changesets/changesets) for managing releases.
 
@@ -49,13 +49,13 @@ git clone git@github.com:udecode/plate.git
 ### Install
 
 ```bash
-yarn install
+pnpm install
 ```
 
 ### Build
 
 ```bash
-yarn build
+pnpm build
 ```
 
 ### Run a workspace
@@ -78,10 +78,10 @@ turbo --filter=@platejs/core build
 
 ## Documentation
 
-The documentation for this project is located in the `www` workspace. After running `yarn build`, you can run the documentation locally by running the following command:
+The documentation for this project is located in the `www` workspace. After running `pnpm build`, you can run the documentation locally by running the following command:
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 Documentation is written using [MDX](https://mdxjs.com). You can find the documentation files in the `docs` directory.
@@ -90,7 +90,7 @@ Documentation is written using [MDX](https://mdxjs.com). You can find the docume
 
 ```bash
 turbo --filter=[PACKAGE] build
-yarn dev
+pnpm dev
 ```
 
 ## Components
@@ -111,9 +111,9 @@ When adding or modifying components, please ensure that you update the documenta
 We use [Biome](https://biomejs.dev/) as our code linter. To run the linter, use the following command:
 
 ```bash
-yarn lint
+pnpm lint
 # autofix with:
-yarn lint:fix
+pnpm lint:fix
 ```
 
 ## Testing
@@ -123,10 +123,10 @@ yarn lint:fix
 Tests are written using [Jest](https://jestjs.io/). You can run all the tests from the root of the repository.
 
 ```bash
-yarn test
+pnpm test
 ```
 
-There are various modes available for running tests, including **`--watch`**, **`--coverage`**, and **`--runInBand`**. These can be selected from the command line interface or passed to **`yarn test`** as specific parameters.
+There are various modes available for running tests, including **`--watch`**, **`--coverage`**, and **`--runInBand`**. These can be selected from the command line interface or passed to **`pnpm test`** as specific parameters.
 
 Please ensure that the tests are passing when submitting a pull request. If you're adding new features, please include tests.
 
@@ -137,13 +137,13 @@ We use Playwright for our end-to-end (e2e) tests in headless browsers.
 To install Playwright's browsers and dependencies, use:
 
 ```bash
-yarn playwright install # first time
+pnpm exec playwright install # first time
 ```
 
 To run all tests:
 
 ```bash
-yarn e2e
+pnpm e2e
 ```
 
 ## Release Guide
@@ -151,7 +151,7 @@ yarn e2e
 For those wanting a release, follow this sequence:
 
 - Commit your changes:
-  - Run **`yarn brl`** to synchronize the exports and automatically update the index files.
+  - Run **`pnpm brl`** to synchronize the exports and automatically update the index files.
   - Make sure lint, test, and build pass.
 - Open a PR against **`main`** and **[add a changeset](https://github.com/atlassian/changesets/blob/main/docs/adding-a-changeset.md)**.
 - Merge the PR, which will trigger the bot to create a PR release.
@@ -221,12 +221,12 @@ You miss time/knowledge but still want to contribute? Just open a PR or a gist o
 
 - Create your component in `apps/www/src/registry/ui`
 - Add your component to `apps/www/src/registry/registry.ts`
-- Run `yarn build:registry`
+- Run `pnpm build:registry`
 
 To try installing your component locally:
 
 - `cd templates/plate-playground`
-- `yarn g:plate-ui add <component-name>`
+- `pnpm g:plate-ui add <component-name>`
 
 ### **How to: Docs**
 
@@ -251,14 +251,14 @@ Creating a new document?
 Use the command below and follow the prompts to create a new package:
 
 ```bash
-yarn gen:package
+pnpm gen:package
 ```
 
 After creating your package, install and build it:
 
 ```bash
-yarn install
-yarn build
+pnpm install
+pnpm build
 ```
 
 ### How to: Server bundle
@@ -275,4 +275,4 @@ export * from "./server/index"; // If needed
 ```
 
 - (Optional) If needed, create server-side versions in `/src/server/`. For example, `withReact` in `/src/server/withReact` is a server-side version of `/src/client/withReact`
-- Run `yarn brl` to synchronize the exports
+- Run `pnpm brl` to synchronize the exports

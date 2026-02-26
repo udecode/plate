@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { isHotkey } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 
+import type { PreviewItem } from './ImagePreviewStore';
 import { ImagePreviewStore, useImagePreviewValue } from './ImagePreviewStore';
 import { useZoom } from './useZoom';
 
@@ -68,7 +69,8 @@ export const useImagePreview = ({ scrollSpeed }: { scrollSpeed: number }) => {
     if (!currentPreview) return null;
 
     return previewList.findIndex(
-      (item) => item.url === currentPreview.url && item.id === currentPreview.id
+      (item: PreviewItem) =>
+        item.url === currentPreview.url && item.id === currentPreview.id
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPreview]);

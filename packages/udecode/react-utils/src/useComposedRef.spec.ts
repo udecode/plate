@@ -73,7 +73,10 @@ describe('useComposedRef', () => {
       // Callback ref without cleanup
     });
 
-    const composedRef = composeRefs(ref, callbackRef);
+    const composedRef = composeRefs(
+      ref,
+      callbackRef as unknown as React.Ref<HTMLDivElement>
+    );
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -100,7 +103,11 @@ describe('useComposedRef', () => {
 
     const normalRef = React.createRef<HTMLDivElement>();
 
-    const composedRef = composeRefs(normalRef, callbackRef1, callbackRef2);
+    const composedRef = composeRefs(
+      normalRef,
+      callbackRef1 as unknown as React.Ref<HTMLDivElement>,
+      callbackRef2 as unknown as React.Ref<HTMLDivElement>
+    );
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -132,8 +139,8 @@ describe('useComposedRef', () => {
 
     const composedRef = composeRefs(
       normalRef,
-      callbackRefWithCleanup,
-      callbackRefWithoutCleanup
+      callbackRefWithCleanup as unknown as React.Ref<HTMLDivElement>,
+      callbackRefWithoutCleanup as unknown as React.Ref<HTMLDivElement>
     );
     const element = document.createElement('div');
 

@@ -35,7 +35,7 @@ describe('onDropNode', () => {
 
     getHoverDirectionMock = mock();
     getHoverDirectionSpy = spyOn(utils, 'getHoverDirection').mockImplementation(
-      getHoverDirectionMock
+      getHoverDirectionMock as unknown as typeof utils.getHoverDirection
     );
   });
 
@@ -245,8 +245,8 @@ describe('onDropNode', () => {
       getHoverDirectionMock.mockReturnValue('bottom');
 
       const sourceEditor = createPlateEditor();
-      sourceEditor.tf.removeNodes = mock();
-      sourceEditor.api.node = mock().mockReturnValue([dragElement, [0]]);
+      sourceEditor.tf.removeNodes = mock() as any;
+      sourceEditor.api.node = mock().mockReturnValue([dragElement, [0]]) as any;
 
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([1])

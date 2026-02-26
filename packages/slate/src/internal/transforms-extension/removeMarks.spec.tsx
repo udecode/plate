@@ -101,7 +101,7 @@ describe('removeMarks', () => {
       );
 
       const onChange = mock();
-      editor.api.onChange = onChange;
+      editor.api.onChange = onChange as any;
       editor.marks = { bold: true };
 
       editor.tf.removeMarks('bold');
@@ -123,7 +123,7 @@ describe('removeMarks', () => {
       );
 
       const onChange = mock();
-      editor.api.onChange = onChange;
+      editor.api.onChange = onChange as any;
       editor.marks = { bold: true };
 
       editor.tf.removeMarks('bold', { shouldChange: false });

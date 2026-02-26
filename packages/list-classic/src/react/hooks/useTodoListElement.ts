@@ -6,7 +6,7 @@ export const useTodoListElementState = ({
   element,
 }: {
   element: TTodoListItemElement;
-}) => {
+}): any => {
   const editor = useEditorRef();
   const { checked } = element;
   const readOnly = useReadOnly();

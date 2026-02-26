@@ -215,7 +215,6 @@ export const Pre = ({
   __rawString__,
   __src__,
   __withMeta__,
-  __yarnCommand__,
   className,
   ...props
 }: {
@@ -225,15 +224,13 @@ export const Pre = ({
   __withMeta__?: boolean;
 } & NpmCommands &
   React.HTMLAttributes<HTMLPreElement>) => {
-  const isNpmCommand =
-    __npmCommand__ && __yarnCommand__ && __pnpmCommand__ && __bunCommand__;
+  const isNpmCommand = __npmCommand__ && __pnpmCommand__ && __bunCommand__;
   if (isNpmCommand) {
     return (
       <CodeBlockCommand
         __bunCommand__={__bunCommand__}
         __npmCommand__={__npmCommand__}
         __pnpmCommand__={__pnpmCommand__}
-        __yarnCommand__={__yarnCommand__}
       />
     );
   }

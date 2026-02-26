@@ -1,0 +1,12 @@
+---
+name: testing
+description: 'Skill: testing'
+---
+
+---
+name: testing
+description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun testing patterns with JSX pragma, proper matchers, and spy cleanup Applies to files matching: **/*.spec.*, **/*.test.*.
+---
+
+@.claude/rules/testing.mdc
+

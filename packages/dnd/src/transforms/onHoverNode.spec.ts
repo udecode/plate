@@ -25,9 +25,9 @@ describe('onHoverNode', () => {
 
   beforeEach(() => {
     editor = createPlateEditor();
-    editor.getOptions = mock();
+    editor.getOptions = mock() as any;
     editor.selection = null;
-    editor.setOption = mock();
+    editor.setOption = mock() as any;
     editor.tf.collapse = mock();
     editor.tf.focus = mock();
 
@@ -37,19 +37,19 @@ describe('onHoverNode', () => {
       element: dragElement,
     };
 
-    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
+    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
 
     isExpandedMock = mock();
     isExpandedSpy = spyOn(RangeApi, 'isExpanded').mockImplementation(
-      isExpandedMock
+      isExpandedMock as unknown as typeof RangeApi.isExpanded
     );
 
     getDropPathMock = mock();
     getDropPathSpy = spyOn(onDropNodeModule, 'getDropPath').mockImplementation(
-      getDropPathMock
+      getDropPathMock as unknown as typeof onDropNodeModule.getDropPath
     );
   });
 
@@ -131,7 +131,7 @@ describe('onHoverNode', () => {
   it('should clear dropTarget when no direction is returned', () => {
     getDropPathMock.mockReturnValueOnce(undefined);
 
-    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
+    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
       dropTarget: { id: 'hover', line: 'bottom' },
     });
 

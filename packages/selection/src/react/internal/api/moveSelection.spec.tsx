@@ -25,7 +25,9 @@ describe('moveSelection', () => {
     querySelectorSelectableSpy = spyOn(
       domUtils,
       'querySelectorSelectable'
-    ).mockImplementation(querySelectorSelectableMock);
+    ).mockImplementation(
+      querySelectorSelectableMock as unknown as (id: string) => Element | null
+    );
 
     editor = createPlateEditor({
       plugins: [BlockSelectionPlugin],

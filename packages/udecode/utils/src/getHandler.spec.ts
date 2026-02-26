@@ -1,7 +1,7 @@
 import { getHandler } from './getHandler';
 
 it('should be', () => {
-  const cb = mock();
+  const cb = mock() as unknown as (...args: any[]) => any;
 
   getHandler(cb)();
 

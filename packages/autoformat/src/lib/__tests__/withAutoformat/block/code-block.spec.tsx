@@ -1,10 +1,11 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import type { SlateEditor } from 'platejs';
+import { createSlateEditor, KEYS } from 'platejs';
 import { BaseCodeBlockPlugin, insertEmptyCodeBlock } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';
+import type { AutoformatQueryOptions } from '../../../types';
 import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
-import { KEYS } from 'platejs';
 
 jsxt;
 
@@ -68,7 +69,7 @@ describe('when ``` at block start, but customising with query we get the most re
           options: {
             rules: [
               {
-                format: (editor) => {
+                format: (editor: SlateEditor) => {
                   insertEmptyCodeBlock(editor, {
                     defaultType: editor.getType(KEYS.p),
                     insertNodesOptions: { select: true },
@@ -77,7 +78,10 @@ describe('when ``` at block start, but customising with query we get the most re
                 match: '```',
                 mode: 'block',
                 // preFormat: preFormat as any,
-                query: (editor, rule): boolean => {
+                query: (
+                  editor: SlateEditor,
+                  rule: AutoformatQueryOptions
+                ): boolean => {
                   if (!editor.selection) {
                     return false;
                   }

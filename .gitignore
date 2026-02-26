@@ -7,12 +7,7 @@ apps/www/public/rd
 templates/my-app
 .cursor/local
 
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+.pnpm-store/*
 .repo_ignore
 
 **/traceDir
@@ -76,8 +71,8 @@ tracing.json
 logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+pnpm-debug.log*
+pnpm-error.log*
 *.cache
 
 
@@ -93,9 +88,6 @@ yarn-error.log*
 
 # Output of 'npm pack'
 *.tgz
-
-# Yarn Integrity file
-.yarn-integrity
 
 # dotenv environment variables file
 .env
@@ -131,17 +123,4 @@ packages/plate/docs/
 .turbo
 .vercel
 
-CLAUDE.local.md
-.codex
-
-# START Skiller Generated Files
-/.codex/config.toml
-/.codex/skills
-/.cursor/mcp.json
-/.cursor/rules
-/.cursor/skills
-/.mcp.json
-/AGENTS.md
-/CLAUDE.md
-# END Skiller Generated Files
-.claude/rules/
+*.local*
