@@ -1,0 +1,106 @@
+---
+description: Use when [specific triggering conditions] - [what problem this solves, written in third person]
+---
+
+# Skill Name
+
+## Overview
+
+**Core principle in 1-2 bold sentences.** Additional context about what this skill addresses and why it matters.
+
+## When to Use
+
+- Exact error message or symptom 1
+- Exact error message or symptom 2
+- Observable behavior or scenario
+- Environmental condition (framework, tool, platform)
+
+## Quick Reference
+
+| Pattern   | Use Case    | Example        |
+| --------- | ----------- | -------------- |
+| Pattern 1 | When to use | `code example` |
+| Pattern 2 | When to use | `code example` |
+
+## Solution
+
+### Step 1: [First Action]
+
+[Detailed instructions with code examples]
+
+```language
+// Example code
+```
+
+### Step 2: [Second Action]
+
+[Continue with clear, actionable steps]
+
+## Common Mistakes
+
+### ❌ Mistake #1: [Name]
+
+```language
+// Wrong approach
+```
+
+**Rationalization:** "Why someone might do this wrong"
+
+**Fix:**
+
+```language
+// Correct approach
+```
+
+### ❌ Mistake #2: [Name]
+
+```language
+// Wrong approach
+```
+
+**Rationalization:** "Why someone might do this wrong"
+
+**Fix:**
+
+```language
+// Correct approach
+```
+
+## Red Flags - STOP
+
+If you catch yourself thinking:
+
+- "Rationalization 1"
+- "Rationalization 2"
+- "Rationalization 3"
+
+**STOP. You're about to [consequence].**
+
+## Example
+
+**Scenario**: [Concrete example of when this skill applies]
+
+**Before**:
+
+```
+[Error message or problematic code]
+```
+
+**After**:
+
+```
+[Fixed code or successful output]
+```
+
+## Notes
+
+- Caveat 1
+- Related skill or documentation link
+- Known limitation
+- When NOT to use this skill
+
+## Verification Checklist
+
+- [ ] Step 1 verified
+- [ ] Step 2 verified
+- [ ] Expected outcome achieved
