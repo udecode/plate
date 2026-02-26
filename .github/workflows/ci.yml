@@ -9,8 +9,8 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'bunfig.toml'
@@ -28,8 +28,8 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'bunfig.toml'
@@ -65,10 +65,10 @@ jobs:
           bun-version: latest
 
       - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+        uses: ./.github/actions/pnpm-install
 
       - name: 🔬 Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -76,16 +76,16 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🏗 Build
-        run: yarn build
+        run: pnpm build
 
       - name: 🕵️ Typecheck
-        run: yarn typecheck
+        run: pnpm typecheck
 
       - name: 🧪 Test
-        run: yarn test
+        run: pnpm test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
