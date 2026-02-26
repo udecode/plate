@@ -1,6 +1,6 @@
 {
   "name": "@platejs/ai",
-  "version": "52.1.0",
+  "version": "52.3.1",
   "description": "Text AI plugin for Plate",
   "keywords": [
     "plate",
@@ -40,7 +40,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/markdown": "^52.1.0",
+    "@platejs/markdown": "^52.3.1",
     "@platejs/selection": "^52.0.16",
     "@platejs/suggestion": "^52.0.11",
     "@platejs/table": "^52.0.11",
