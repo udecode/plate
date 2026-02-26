@@ -617,6 +617,9 @@ importers:
       glob:
         specifier: 11.0.2
         version: 11.0.2
+      gray-matter:
+        specifier: ^4.0.3
+        version: 4.0.3
       kleur:
         specifier: 4.1.5
         version: 4.1.5
@@ -6237,6 +6240,7 @@ packages:
 
   bun@1.2.13:
     resolution: {integrity: sha512-EhP1MhFbicqtaRSFCbEZdkcFco8Ov47cNJcB9QmKS8U4cojKHfLU+dQR14lCvLYmtBvGgwv/Lp+9SSver2OPzQ==}
+    cpu: [arm64, x64, aarch64]
     os: [darwin, linux, win32]
     hasBin: true
 
