@@ -45,7 +45,7 @@
     "@platejs/suggestion": "^52.0.11",
     "@platejs/table": "^52.0.11",
     "fastest-levenshtein": "1.0.16",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
@@ -59,7 +59,7 @@
     "@platejs/math": "^52.0.11",
     "@platejs/mention": "^52.0.15",
     "@platejs/test-utils": "^52.0.10",
-    "ai": "^6.0.0"
+    "ai": "^6.0.101"
   },
   "peerDependencies": {
     "platejs": ">=52.0.15",

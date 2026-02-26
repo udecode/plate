@@ -42,7 +42,7 @@
   "dependencies": {
     "@platejs/indent": "52.0.11",
     "jotai": "^2.18.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
