@@ -1,5 +1,11 @@
 # @platejs/test-utils
 
+## 52.3.2
+
+### Patch Changes
+
+- [`2f71954`](https://github.com/udecode/plate/commit/2f719540d5201472ceef318f48eee5a44ea4e11e) by [@zbeyens](https://github.com/zbeyens) – Support code drawing keys.
+
 ## 52.0.10
 
 ### Patch Changes
