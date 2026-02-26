@@ -1,5 +1,4 @@
 {
-  "installCommand": "pnpm install --no-frozen-lockfile",
   "functions": {
     "app/**/*": {
       "maxDuration": 1
