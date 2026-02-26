@@ -9,6 +9,11 @@ const nextConfig = async (phase: string) => {
     },
 
     experimental: {
+      cpus: 12,
+      memoryBasedWorkersCount: false,
+      staticGenerationMaxConcurrency: 12,
+      staticGenerationMinPagesPerWorker: 25,
+      staticGenerationRetryCount: 1,
       turbopackFileSystemCacheForDev: true,
     },
     productionBrowserSourceMaps: false,
