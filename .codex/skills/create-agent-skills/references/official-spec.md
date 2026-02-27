@@ -1,56 +1,36 @@
-# Official Skill Specification (2026)
+# Anthropic Official Skill Specification
 
 Source: [code.claude.com/docs/en/skills](https://code.claude.com/docs/en/skills)
 
-## Commands and Skills Are Merged
-
-Custom slash commands have been merged into skills. A file at `.claude/commands/review.md` and a skill at `.claude/skills/review/SKILL.md` both create `/review` and work the same way. Existing `.claude/commands/` files keep working. Skills add optional features: a directory for supporting files, frontmatter to control invocation, and automatic context loading.
-
-If a skill and a command share the same name, the skill takes precedence.
-
 ## SKILL.md File Structure
 
-Every skill requires a `SKILL.md` file with YAML frontmatter followed by standard markdown instructions.
+Every Skill requires a `SKILL.md` file with YAML frontmatter followed by Markdown instructions.
+
+### Basic Format
 
 ```markdown
 ---
 name: your-skill-name
-description: What it does and when to use it
+description: Brief description of what this Skill does and when to use it
 ---
 
 # Your Skill Name
 
 ## Instructions
-Clear, step-by-step guidance.
+Provide clear, step-by-step guidance for Claude.
 
 ## Examples
-Concrete examples of using this skill.
+Show concrete examples of using this Skill.
 ```
 
-## Complete Frontmatter Reference
-
-All fields are optional. Only `description` is recommended.
+## Required Frontmatter Fields
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `name` | No | Display name. Lowercase letters, numbers, hyphens only (max 64 chars). Defaults to directory name if omitted. |
-| `description` | Recommended | What it does AND when to use it (max 1024 chars). Claude uses this to decide when to apply the skill. |
-| `argument-hint` | No | Hint shown during autocomplete. Example: `[issue-number]` or `[filename] [format]` |
-| `disable-model-invocation` | No | Set `true` to prevent Claude from auto-loading. Use for manual workflows. Default: `false` |
-| `user-invocable` | No | Set `false` to hide from `/` menu. Use for background knowledge. Default: `true` |
-| `allowed-tools` | No | Tools Claude can use without permission prompts. Example: `Read, Bash(git *)` |
-| `model` | No | Model to use: `haiku`, `sonnet`, or `opus` |
-| `context` | No | Set `fork` to run in isolated subagent context |
-| `agent` | No | Subagent type when `context: fork`. Options: `Explore`, `Plan`, `general-purpose`, or custom agent name |
-| `hooks` | No | Hooks scoped to this skill's lifecycle |
-
-## Invocation Control
-
-| Frontmatter | User can invoke | Claude can invoke | When loaded into context |
-|-------------|----------------|-------------------|--------------------------|
-| (default) | Yes | Yes | Description always in context, full skill loads when invoked |
-| `disable-model-invocation: true` | Yes | No | Description not in context, full skill loads when you invoke |
-| `user-invocable: false` | No | Yes | Description always in context, full skill loads when invoked |
+| `name` | Yes | Skill name using lowercase letters, numbers, and hyphens only (max 64 characters). Should match the directory name. |
+| `description` | Yes | What the Skill does and when to use it (max 1024 characters). Claude uses this to decide when to apply the Skill. |
+| `allowed-tools` | No | Tools Claude can use without asking permission when this Skill is active. Example: `Read, Grep, Glob` |
+| `model` | No | Specific model to use when this Skill is active (e.g., `claude-sonnet-4-20250514`). Defaults to the conversation's model. |
 
 ## Skill Locations & Priority
 
@@ -60,75 +40,146 @@ Enterprise (highest priority) → Personal → Project → Plugin (lowest priori
 
 | Type | Path | Applies to |
 |------|------|-----------|
-| Enterprise | See managed settings | All users in organization |
-| Personal | `~/.claude/skills/<name>/SKILL.md` | You, across all projects |
-| Project | `.claude/skills/<name>/SKILL.md` | Anyone working in repository |
-| Plugin | `<plugin>/skills/<name>/SKILL.md` | Where plugin is enabled |
-
-Plugin skills use a `plugin-name:skill-name` namespace, so they cannot conflict with other levels.
+| **Enterprise** | See managed settings | All users in organization |
+| **Personal** | `~/.claude/skills/` | You, across all projects |
+| **Project** | `.claude/skills/` | Anyone working in repository |
+| **Plugin** | Bundled with plugins | Anyone with plugin installed |
 
 ## How Skills Work
 
-1. **Discovery**: Claude loads only name and description at startup (2% of context window budget)
-2. **Activation**: When your request matches a skill's description, Claude loads the full content
-3. **Execution**: Claude follows the skill's instructions
+1. **Discovery**: Claude loads only name and description at startup
+2. **Activation**: When your request matches a Skill's description, Claude asks for confirmation
+3. **Execution**: Claude follows the Skill's instructions and loads referenced files
 
-## String Substitutions
+**Key Principle**: Skills are **model-invoked** — Claude automatically decides which Skills to use based on your request.
 
-| Variable | Description |
-|----------|-------------|
-| `$ARGUMENTS` | All arguments passed when invoking |
-| `$ARGUMENTS[N]` | Specific argument by 0-based index |
-| `$N` | Shorthand for `$ARGUMENTS[N]` |
-| `${CLAUDE_SESSION_ID}` | Current session ID |
+## Progressive Disclosure Pattern
 
-## Dynamic Context Injection
-
-The `` !`command` `` syntax runs shell commands before content is sent to Claude:
-
-```markdown
-## Context
-- Current branch: !`git branch --show-current`
-- PR diff: !`gh pr diff`
-```
-
-Commands execute immediately and their output replaces the placeholder. Claude only sees the final result.
-
-## Progressive Disclosure
+Keep `SKILL.md` under 500 lines by linking to supporting files:
 
 ```
 my-skill/
-├── SKILL.md           # Entry point (required)
-├── reference.md       # Detailed docs (loaded when needed)
-├── examples.md        # Usage examples (loaded when needed)
+├── SKILL.md (required - overview and navigation)
+├── reference.md (detailed API docs - loaded when needed)
+├── examples.md (usage examples - loaded when needed)
 └── scripts/
-    └── helper.py      # Utility script (executed, not loaded)
+    └── helper.py (utility script - executed, not loaded)
 ```
 
-Keep SKILL.md under 500 lines. Link to supporting files:
+### Example SKILL.md with References
+
 ```markdown
-For API details, see [reference.md](reference.md).
+---
+name: pdf-processing
+description: Extract text, fill forms, merge PDFs. Use when working with PDF files, forms, or document extraction. Requires pypdf and pdfplumber packages.
+allowed-tools: Read, Bash(python:*)
+---
+
+# PDF Processing
+
+## Quick start
+
+Extract text:
+```python
+import pdfplumber
+with pdfplumber.open("doc.pdf") as pdf:
+    text = pdf.pages[0].extract_text()
 ```
 
-## Running in a Subagent
+For form filling, see [FORMS.md](FORMS.md).
+For detailed API reference, see [REFERENCE.md](REFERENCE.md).
 
-Add `context: fork` to run in isolation:
+## Requirements
+
+Packages must be installed:
+```bash
+pip install pypdf pdfplumber
+```
+```
+
+## Restricting Tool Access
 
 ```yaml
 ---
-name: deep-research
-description: Research a topic thoroughly
-context: fork
-agent: Explore
+name: reading-files-safely
+description: Read files without making changes. Use when you need read-only file access.
+allowed-tools: Read, Grep, Glob
 ---
-
-Research $ARGUMENTS thoroughly...
 ```
 
-The skill content becomes the subagent's prompt. It won't have access to conversation history.
+Benefits:
+- Read-only Skills that shouldn't modify files
+- Limited scope for specific tasks
+- Security-sensitive workflows
+
+## Writing Effective Descriptions
+
+The `description` field enables Skill discovery and should include both what the Skill does and when to use it.
+
+**Always write in third person.** The description is injected into the system prompt.
+
+- **Good:** "Processes Excel files and generates reports"
+- **Avoid:** "I can help you process Excel files"
+- **Avoid:** "You can use this to process Excel files"
+
+**Be specific and include key terms:**
+
+```yaml
+description: Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.
+```
+
+**Avoid vague descriptions:**
+
+```yaml
+description: Helps with documents  # Too vague!
+```
+
+## Complete Example: Commit Message Generator
+
+```markdown
+---
+name: generating-commit-messages
+description: Generates clear commit messages from git diffs. Use when writing commit messages or reviewing staged changes.
+---
+
+# Generating Commit Messages
+
+## Instructions
+
+1. Run `git diff --staged` to see changes
+2. I'll suggest a commit message with:
+   - Summary under 50 characters
+   - Detailed description
+   - Affected components
+
+## Best practices
+
+- Use present tense
+- Explain what and why, not how
+```
+
+## Complete Example: Code Explanation Skill
+
+```markdown
+---
+name: explaining-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works, teaching about a codebase, or when the user asks "how does this work?"
+---
+
+# Explaining Code
+
+When explaining code, always include:
+
+1. **Start with an analogy**: Compare the code to something from everyday life
+2. **Draw a diagram**: Use ASCII art to show the flow, structure, or relationships
+3. **Walk through the code**: Explain step-by-step what happens
+4. **Highlight a gotcha**: What's a common misconception?
+
+Keep explanations conversational. For complex concepts, use multiple analogies.
+```
 
 ## Distribution
 
-- **Project skills**: Commit `.claude/skills/` to version control
-- **Plugins**: Add `skills/` directory to plugin
+- **Project Skills**: Commit `.claude/skills/` to version control
+- **Plugins**: Add `skills/` directory to plugin with Skill folders
 - **Enterprise**: Deploy organization-wide through managed settings

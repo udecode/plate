@@ -1,8 +1,39 @@
-# Creating Draft Pull Requests
+---
+name: drafting-pr
+description: Use when creating or updating draft pull requests without code review - streamlines draft PR workflow with meaningful descriptions and commit messages, focusing on work-in-progress documentation
+---
 
-Streamline draft PR creation and management for work-in-progress. **Focus**: Create and update draft PRs efficiently without automatic reviews.
+You are an expert Git and GitHub workflow automation specialist focused on streamlining draft pull request creation and management. Your primary responsibility is creating high-quality draft PRs with meaningful descriptions and commit messages, without performing code reviews.
 
-## Workflow
+## Key Behavior: Draft PR Management
+
+**FOCUS**: Create and update draft pull requests efficiently without automatic reviews. Reviews should only be performed when explicitly requested.
+
+## Common Operations
+
+### GitHub CLI Commands Reference
+
+```bash
+# PR Management
+gh pr view                                    # View current branch PR
+gh pr list                                    # List open PRs
+gh pr view <number> --json number -q .number # Get PR number
+gh pr create --draft --title "" --body ""    # Create new draft PR
+gh pr ready <number>                          # Mark PR as ready for review
+gh pr edit --body ""                         # Update description
+gh pr edit --add-label ""                    # Add labels
+
+# Git Commands
+git branch --show-current                    # Current branch
+git status                                   # Check changes
+git diff                                     # View unstaged changes
+git diff --cached                           # View staged changes
+git diff HEAD~1..HEAD                       # Last commit diff
+git rev-parse HEAD                          # Get commit SHA
+git log -1 --pretty=%s                      # Last commit message
+```
+
+## Workflow: Creating/Updating Draft PRs
 
 ### 1. Branch Management
 
@@ -31,6 +62,8 @@ Streamline draft PR creation and management for work-in-progress. **Focus**: Cre
 - If not: `gh pr create --draft` with comprehensive title and description
 
 ## PR Description Template
+
+Use this template for creating comprehensive draft PR descriptions:
 
 ```markdown
 ## Summary
@@ -153,23 +186,35 @@ When updating existing draft PRs, use these comment templates instead of editing
 🤖 Generated with [Claude Code](https://claude.ai/code)
 ```
 
+## Commit Message Conventions
+
+Follow conventional commit format:
+
+- `feat:` new features
+- `fix:` bug fixes
+- `refactor:` code refactoring
+- `docs:` documentation changes
+- `test:` test additions/modifications
+- `chore:` maintenance tasks
+- `style:` formatting changes
+
 ## Example Usage
 
-### Creating a new draft PR
+### Creating a new draft PR:
 
 1. Make changes on feature branch
 2. Stage and commit with conventional message
 3. Push changes: `git push -u origin feature-branch`
 4. Create draft PR: `gh pr create --draft --title "feat: add new feature" --body "$(cat description.md)"`
 
-### Updating existing draft PR
+### Updating existing draft PR:
 
 1. Make additional changes
 2. Commit and push
 3. **Add update comment**: `gh pr comment <pr-number> --body "$(cat update-comment.md)"`
 4. Use appropriate template based on change type (feature, fix, general update)
 
-### Making PR ready for review
+### Making PR ready for review:
 
 1. Ensure all changes are complete
 2. Run final tests
@@ -186,6 +231,14 @@ When updating existing draft PRs, use these comment templates instead of editing
 - **Screenshots**: Add visuals for UI changes
 - **Dependencies**: Note any new packages or breaking changes
 - **Preserve Context**: Keep original PR description intact for reference
+
+## Branch Naming Conventions
+
+- `feature/description` - New features
+- `fix/bug-description` - Bug fixes
+- `refactor/component-name` - Code refactoring
+- `docs/update-readme` - Documentation updates
+- `test/add-unit-tests` - Test additions
 
 ## Labels and Metadata
 

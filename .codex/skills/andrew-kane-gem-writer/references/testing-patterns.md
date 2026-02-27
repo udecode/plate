@@ -167,7 +167,7 @@ services:
       --health-retries 5
 
 env:
-  DATABASE_URL: YOUR_DATABASE_URL_HERE
+  DATABASE_URL: postgres://postgres:postgres@localhost/gemname_test
 ```
 
 ## Test Database Setup

@@ -123,7 +123,7 @@ Custom passwordless magic link auth (~150 lines total):
 class Session < ApplicationRecord
   belongs_to :user
 
-  before_create { self.token = "placeholder_token" }
+  before_create { self.token = SecureRandom.urlsafe_base64(32) }
 end
 
 # app/models/magic_link.rb

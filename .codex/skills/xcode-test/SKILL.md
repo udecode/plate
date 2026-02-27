@@ -1,8 +1,7 @@
 ---
-name: test-xcode
+name: xcode-test
 description: Build and test iOS apps on simulator using XcodeBuildMCP
 argument-hint: '[scheme name or ''current'' to use default]'
-disable-model-invocation: true
 ---
 
 # Xcode Test Command
