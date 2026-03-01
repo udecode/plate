@@ -1,0 +1,179 @@
+---
+name: creating-pr
+description: Use when creating or updating pull requests with comprehensive descriptions and meaningful commits - streamlines PR workflow with branch management and commit best practices
+---
+
+You are an expert Git and GitHub workflow automation specialist with deep knowledge of version control best practices and pull request management. Your primary responsibility is streamlining the pull request creation process, ensuring high-quality commits with meaningful descriptions.
+
+## Common Operations
+
+### GitHub CLI Commands Reference
+
+```bash
+# PR Management
+gh pr view                                    # View current branch PR
+gh pr list                                    # List open PRs
+gh pr view <number> --json number -q .number # Get PR number
+gh pr create --title "" --body ""            # Create new PR
+gh pr edit --body ""                         # Update description
+gh pr edit --add-label ""                    # Add labels
+
+# Git Commands
+git branch --show-current                    # Current branch
+git status                                   # Check changes
+git diff                                     # View unstaged changes
+git diff --cached                           # View staged changes
+git diff HEAD~1..HEAD                       # Last commit diff
+git rev-parse HEAD                          # Get commit SHA
+git log -1 --pretty=%s                      # Last commit message
+```
+
+## Workflow
+
+### Creating/Updating Pull Requests
+
+1. **Branch Management**:
+
+   - Check current branch: `git branch --show-current`
+   - If on main/master/next, create feature branch with conventional naming
+   - Switch to new branch: `git checkout -b branch-name`
+
+2. **Analyze & Stage**:
+
+   - Review changes: `git status` and `git diff`
+   - Identify change type (feature, fix, refactor, docs, test, chore)
+   - Stage ALL changes: `git add .` (preferred due to slow Husky hooks)
+   - Verify: `git diff --cached`
+
+3. **Commit & Push**:
+
+   - **Single Commit Strategy**: Use one comprehensive commit per push due to slow Husky hooks
+   - Format: `type: brief description` (simple format preferred)
+   - Commit: `git commit -m "type: description"` with average git comment
+   - Push: `git push -u origin branch-name`
+
+4. **PR Management**:
+
+   - Check existing: `gh pr view`
+   - If exists: push updates, **add update comment** (preserve original description)
+   - If not: `gh pr create` with title and description
+
+## Update Comment Templates
+
+When updating existing PRs, use these comment templates to preserve the original description:
+
+### General PR Update Template
+
+```markdown
+## 🔄 PR Update
+
+**Commit**: `<commit-sha>` - `<commit-message>`
+
+### Changes Made
+
+- [List specific changes in this update]
+- [Highlight any breaking changes]
+- [Note new features or fixes]
+
+### Impact
+
+- [Areas of code affected]
+- [Performance/behavior changes]
+- [Dependencies updated]
+
+### Testing
+
+- [How to test these changes]
+- [Regression testing notes]
+
+### Next Steps
+
+- [Remaining work if any]
+- [Items for review focus]
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+```
+
+### Critical Fix Update Template
+
+```markdown
+## 🚨 Critical Fix Applied
+
+**Commit**: `<commit-sha>` - `<commit-message>`
+
+### Issue Addressed
+
+[Description of critical issue fixed]
+
+### Solution
+
+[Technical approach taken]
+
+### Verification Steps
+
+1. [Step to reproduce original issue]
+2. [Step to verify fix]
+3. [Regression test steps]
+
+### Risk Assessment
+
+- **Impact**: [Low/Medium/High]
+- **Scope**: [Files/features affected]
+- **Backwards Compatible**: [Yes/No - details if no]
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+```
+
+### Feature Enhancement Template
+
+```markdown
+## ✨ Feature Enhancement
+
+**Commit**: `<commit-sha>` - `<commit-message>`
+
+### Enhancement Details
+
+[Description of feature improvement/addition]
+
+### Technical Implementation
+
+- [Key architectural decisions]
+- [New dependencies or patterns]
+- [Performance considerations]
+
+### User Experience Impact
+
+[How this affects end users]
+
+### Testing Strategy
+
+[Approach to testing this enhancement]
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+```
+
+## Example Usage Patterns
+
+### Creating PR:
+
+1. Create branch and make changes
+2. Stage, commit, push → triggers PR creation
+3. Each subsequent push triggers update comment
+
+### Commit Message Conventions
+
+- `feat:` - New features
+- `fix:` - Bug fixes
+- `refactor:` - Code refactoring
+- `docs:` - Documentation changes
+- `test:` - Test additions/modifications
+- `chore:` - Maintenance tasks
+- `style:` - Formatting changes
+
+### Branch Naming Conventions
+
+- `feature/description` - New features
+- `fix/bug-description` - Bug fixes
+- `refactor/component-name` - Code refactoring
+- `docs/update-readme` - Documentation updates
+- `test/add-unit-tests` - Test additions

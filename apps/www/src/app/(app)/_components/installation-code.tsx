@@ -43,7 +43,6 @@ export function InstallationCode({
               __bunCommand__: code.replaceAll('npm install', 'bun add'),
               __npmCommand__: code,
               __pnpmCommand__: code.replaceAll('npm install', 'pnpm add'),
-              __yarnCommand__: code.replaceAll('npm install', 'yarn add'),
             }}
           />
         ) : (

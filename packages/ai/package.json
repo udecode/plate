@@ -29,27 +29,36 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/markdown": "52.3.1",
-    "@platejs/selection": "52.0.16",
-    "@platejs/suggestion": "52.0.11",
+    "@platejs/markdown": "^52.3.1",
+    "@platejs/selection": "^52.0.16",
+    "@platejs/suggestion": "^52.0.11",
+    "@platejs/table": "^52.0.11",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@ai-sdk/react": "^3.0.0",
-    "@platejs/combobox": "52.0.15",
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/combobox": "^52.0.15",
+    "@platejs/indent": "^52.0.11",
+    "@platejs/list": "^52.0.11",
+    "@platejs/math": "^52.0.11",
+    "@platejs/mention": "^52.0.15",
+    "@platejs/test-utils": "^52.0.10",
     "ai": "^6.0.0"
   },
   "peerDependencies": {

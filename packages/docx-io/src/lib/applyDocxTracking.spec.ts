@@ -1,5 +1,8 @@
 import { describe, expect, it, mock } from 'bun:test';
 
+const mockFn = <T extends (...args: any[]) => any>(fn: T): T =>
+  mock(fn) as unknown as T;
+
 import {
   applyAllTracking,
   applyTrackedComments,
@@ -17,18 +20,20 @@ import type { DocxTrackedChange } from './types';
 function createMockEditor(): TrackingEditor {
   return {
     api: {
-      string: mock(() => 'sample text'),
+      string: mockFn(() => 'sample text'),
       rangeRef: (range: TRange) => ({
         current: range,
-        unref: mock(() => range),
+        unref: mockFn(() => range),
       }),
     },
     tf: {
-      setNodes: mock(() => {}),
-      delete: mock(() => {}),
-      withMerging: mock((fn: () => void) => fn()),
+      setNodes: mockFn(() => {}),
+      delete: mockFn(() => {}),
+      withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
     },
-    setOption: mock(() => {}),
+    setOption: mockFn(() => {}),
   };
 }
 
@@ -257,16 +262,18 @@ describe('applyDocxTracking', () => {
     it('handles invalid rangeRef (null current)', () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => ({
             current: null,
-            unref: mock(() => null),
+            unref: mockFn(() => null),
           }),
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -296,15 +303,17 @@ describe('applyDocxTracking', () => {
     it('handles exceptions during processing', () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => {
             throw new Error('Test error');
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -335,15 +344,17 @@ describe('applyDocxTracking', () => {
     it('handles non-Error exceptions', () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => {
             throw new Error('string error');
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -426,7 +437,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -440,7 +451,7 @@ describe('applyDocxTracking', () => {
 
     it('creates comment for valid tokens', async () => {
       const editor = createMockEditor();
-      const createDiscussion = mock(async () => ({ id: 'disc-new' }));
+      const createDiscussion = mockFn(async () => ({ id: 'disc-new' }));
 
       const comments: DocxImportComment[] = [
         {
@@ -480,24 +491,24 @@ describe('applyDocxTracking', () => {
       }> = [];
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: (range: TRange) => {
-            const ref = { current: range, unref: mock(() => range) };
+            const ref = { current: range, unref: mockFn(() => range) };
             refs.push(ref);
             return ref;
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => {
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
             fn();
             refs.forEach((ref) => {
               ref.current = null;
             });
           }),
         },
-        setOption: mock(() => {}),
+        setOption: mockFn(() => {}),
       };
 
       const comments: DocxImportComment[] = [
@@ -517,7 +528,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -553,7 +564,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -584,7 +595,7 @@ describe('applyDocxTracking', () => {
         },
       ];
 
-      const createDiscussion = mock(async () => ({ id: 'disc-point' }));
+      const createDiscussion = mockFn(async () => ({ id: 'disc-point' }));
 
       const result = await applyTrackedComments({
         editor,
@@ -619,7 +630,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -637,7 +648,7 @@ describe('applyDocxTracking', () => {
 
     it('calls onCommentsCreated callback when comments are created', async () => {
       const editor = createMockEditor();
-      const onCommentsCreated = mock(() => {});
+      const onCommentsCreated = mockFn(() => {});
 
       const comments: DocxImportComment[] = [
         {
@@ -656,7 +667,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -669,7 +680,7 @@ describe('applyDocxTracking', () => {
 
     it('does not call onCommentsCreated when no comments created', async () => {
       const editor = createMockEditor();
-      const onCommentsCreated = mock(() => {});
+      const onCommentsCreated = mockFn(() => {});
 
       const tokenMap = new Map<string, TRange | null>();
       tokenMap.set('[[CMT_START:1]]', null);
@@ -692,7 +703,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -706,16 +717,18 @@ describe('applyDocxTracking', () => {
     it('handles invalid rangeRef (null current) for comments', async () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => ({
             current: null,
-            unref: mock(() => null),
+            unref: mockFn(() => null),
           }),
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -736,7 +749,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -750,20 +763,22 @@ describe('applyDocxTracking', () => {
     it('handles empty document content (uses default)', async () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => ''), // Returns empty string
+          string: mockFn(() => ''), // Returns empty string
           rangeRef: (range: TRange) => ({
             current: range,
-            unref: mock(() => range),
+            unref: mockFn(() => range),
           }),
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
-      const createDiscussion = mock(async () => ({ id: 'disc-1' }));
+      const createDiscussion = mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' }));
 
       const comments: DocxImportComment[] = [
         {
@@ -815,7 +830,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -833,15 +848,17 @@ describe('applyDocxTracking', () => {
     it('handles exceptions during comment processing', async () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => {
             throw new Error('Comment error');
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -862,7 +879,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -875,13 +892,13 @@ describe('applyDocxTracking', () => {
     });
 
     it('unrefs rangeRefs when create discussion fails', async () => {
-      const startUnref = mock(() => null);
-      const endUnref = mock(() => null);
+      const startUnref = mockFn(() => null);
+      const endUnref = mockFn(() => null);
       let rangeRefCalls = 0;
 
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: (range: TRange) => {
             rangeRefCalls += 1;
             return {
@@ -891,9 +908,11 @@ describe('applyDocxTracking', () => {
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -914,7 +933,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => {
+          mutateAsync: mockFn(async () => {
             throw new Error('API fail');
           }),
         },
@@ -931,15 +950,17 @@ describe('applyDocxTracking', () => {
     it('handles non-Error exceptions in comments', async () => {
       const editor: TrackingEditor = {
         api: {
-          string: mock(() => 'sample text'),
+          string: mockFn(() => 'sample text'),
           rangeRef: () => {
             throw new Error('string comment error');
           },
         },
         tf: {
-          setNodes: mock(() => {}),
-          delete: mock(() => {}),
-          withMerging: mock((fn: () => void) => fn()),
+          setNodes: mockFn(() => {}),
+          delete: mockFn(() => {}),
+          withMerging: mockFn((fn: () => void) => {
+            fn();
+          }),
         },
       };
 
@@ -960,7 +981,7 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mock(async () => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -972,7 +993,7 @@ describe('applyDocxTracking', () => {
 
     it('handles comment without text (undefined)', async () => {
       const editor = createMockEditor();
-      const createDiscussion = mock(async () => ({ id: 'disc-1' }));
+      const createDiscussion = mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' }));
 
       const comments: DocxImportComment[] = [
         {
@@ -1076,7 +1097,7 @@ describe('applyDocxTracking', () => {
         commentConfig: {
           documentId: 'doc-1',
           createDiscussionWithComment: {
-            mutateAsync: mock(async () => ({ id: 'disc-1' })),
+            mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
           },
           commentKey: 'comment',
           getCommentKey: (id) => `comment_${id}`,
@@ -1133,7 +1154,7 @@ describe('applyDocxTracking', () => {
         commentConfig: {
           documentId: 'doc-1',
           createDiscussionWithComment: {
-            mutateAsync: mock(async () => ({ id: 'disc-1' })),
+            mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
           },
           commentKey: 'comment',
           getCommentKey: (id) => `comment_${id}`,

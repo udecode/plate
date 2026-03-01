@@ -27,7 +27,7 @@ jobs:
           node-version: 22
 
       - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+        uses: ./.github/actions/pnpm-install
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -35,10 +35,10 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🏗 Build Registry
-        run: yarn r && yarn build:tw
+        run: pnpm build:registry && pnpm build:tw
 
       - name: ◻️ Create Pull Request
         uses: peter-evans/create-pull-request@v4

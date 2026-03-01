@@ -4,7 +4,8 @@
     "declaration": true,
     "declarationMap": false,
     "emitDeclarationOnly": true,
-    "noEmit": false
+    "noEmit": false,
+    "paths": {}
   },
   "exclude": [
     "../../node_modules",

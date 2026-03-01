@@ -67,7 +67,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('ArrowUp');
 
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: true });
-      expect(moveLineMock).toHaveReturnedWith(true);
+      expect(moveLineMock.mock.results.at(-1)?.value).toBe(true);
     });
 
     it('should use default behavior when moveLine returns false', async () => {
@@ -88,7 +88,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('ArrowDown');
 
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: false });
-      expect(moveLineMock).toHaveReturnedWith(false);
+      expect(moveLineMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
@@ -151,7 +151,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Tab');
 
       expect(tabMock).toHaveBeenCalledWith({ reverse: false });
-      expect(tabMock).toHaveReturnedWith(true);
+      expect(tabMock.mock.results.at(-1)?.value).toBe(true);
     });
 
     it('should use default behavior when tab returns false', async () => {
@@ -172,7 +172,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Shift+Tab');
 
       expect(tabMock).toHaveBeenCalledWith({ reverse: true });
-      expect(tabMock).toHaveReturnedWith(false);
+      expect(tabMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
@@ -215,7 +215,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('mod+a');
 
       expect(selectAllMock).toHaveBeenCalledWith();
-      expect(selectAllMock).toHaveReturnedWith(true);
+      expect(selectAllMock.mock.results.at(-1)?.value).toBe(true);
     });
 
     it('should use default behavior when selectAll returns false', async () => {
@@ -236,7 +236,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('mod+a');
 
       expect(selectAllMock).toHaveBeenCalledWith();
-      expect(selectAllMock).toHaveReturnedWith(false);
+      expect(selectAllMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
@@ -279,7 +279,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Escape');
 
       expect(escapeMock).toHaveBeenCalledWith();
-      expect(escapeMock).toHaveReturnedWith(true);
+      expect(escapeMock.mock.results.at(-1)?.value).toBe(true);
     });
 
     it('should use default behavior when escape returns false', async () => {
@@ -300,7 +300,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Escape');
 
       expect(escapeMock).toHaveBeenCalledWith();
-      expect(escapeMock).toHaveReturnedWith(false);
+      expect(escapeMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 

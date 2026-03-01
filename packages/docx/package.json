@@ -30,21 +30,33 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "react-compiler-runtime": "^1.0.0"
+    "react-compiler-runtime": "^1.0.0",
+    "validator": "^13.15.15"
   },
   "devDependencies": {
-    "platejs": "workspace:^"
+    "@plate/scripts": "workspace:*",
+    "@platejs/basic-nodes": "^52.0.11",
+    "@platejs/basic-styles": "^52.0.11",
+    "@platejs/code-block": "^52.0.11",
+    "@platejs/indent": "^52.0.11",
+    "@platejs/juice": "^52.0.11",
+    "@platejs/link": "^52.0.11",
+    "@platejs/list": "^52.0.11",
+    "@platejs/media": "^52.0.11",
+    "@platejs/table": "^52.0.11",
+    "@platejs/test-utils": "^52.0.10",
+    "platejs": "^52.0.17"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

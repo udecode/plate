@@ -424,10 +424,7 @@ describe('docx roundtrip', () => {
     ];
 
     for (const filePath of expectedFiles) {
-      expect(
-        zip.file(filePath),
-        `Expected ZIP to contain ${filePath}`
-      ).not.toBeNull();
+      expect(zip.file(filePath)).not.toBeNull();
     }
   });
 

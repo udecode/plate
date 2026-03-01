@@ -19,7 +19,12 @@ describe('copySelectedBlocks', () => {
     copyToClipboardSpy = spyOn(
       copyToClipboardModule,
       'default'
-    ).mockImplementation(copyToClipboardMock);
+    ).mockImplementation(
+      copyToClipboardMock as unknown as (
+        text: string,
+        options?: { debug?: boolean; message?: string }
+      ) => boolean
+    );
   });
 
   afterEach(() => {

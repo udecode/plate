@@ -161,13 +161,15 @@ describe('when +space', () => {
     //   so here we need to remove the `preformat` property of the autoformat rule that uses this overload.
 
     const autoformatPluginRulesWitoutTogglePreformat =
-      autoformatPlugin.options.rules!.map((rule) => {
-        const { preFormat, ...rest } = rule as AutoformatBlockRule;
+      autoformatPlugin.options.rules!.map(
+        (rule: import('../../../types').AutoformatRule) => {
+          const { preFormat, ...rest } = rule as AutoformatBlockRule;
 
-        if (rule.match === '+ ') return rest;
+          if (rule.match === '+ ') return rest;
 
-        return rule;
-      });
+          return rule;
+        }
+      );
 
     const autoformatPluginWitoutTogglePreformat: AutoformatConfig['options'] = {
       ...autoformatPlugin.options,

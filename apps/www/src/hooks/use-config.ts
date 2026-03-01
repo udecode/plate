@@ -3,7 +3,7 @@ import { atomWithStorage } from 'jotai/utils';
 
 type Config = {
   installationType: 'cli' | 'manual';
-  packageManager: 'bun' | 'npm' | 'pnpm' | 'yarn';
+  packageManager: 'bun' | 'npm' | 'pnpm';
   radius: number;
 };
 

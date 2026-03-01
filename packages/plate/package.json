@@ -1,6 +1,6 @@
 {
   "name": "platejs",
-  "version": "52.0.17",
+  "version": "52.3.2",
   "description": "Plate – a framework for building rich text editors on the web",
   "keywords": [
     "contentEditable",
@@ -36,19 +36,19 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
     "@platejs/core": "52.0.17",
     "@platejs/slate": "52.0.10",
-    "@platejs/utils": "52.0.17",
+    "@platejs/utils": "52.3.2",
     "@udecode/react-hotkeys": "52.0.11",
     "@udecode/react-utils": "52.0.11",
     "@udecode/utils": "52.0.1",
@@ -62,5 +62,8 @@
     "access": "public"
   },
   "type": "module",
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "devDependencies": {
+    "@plate/scripts": "workspace:*"
+  }
 }

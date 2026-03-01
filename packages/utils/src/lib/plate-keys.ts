@@ -8,6 +8,7 @@ export const NODES = {
   callout: 'callout',
   code: 'code',
   codeBlock: 'code_block',
+  codeDrawing: 'code_drawing',
   codeLine: 'code_line',
   codeSyntax: 'code_syntax',
   column: 'column',
@@ -113,7 +114,6 @@ export const KEYS = {
   trailingBlock: 'trailingBlock',
   ul: 'disc',
   yjs: 'yjs',
-  codeDrawing: 'code_drawing',
 } as const;
 
 export type NodeKey = (typeof NODES)[keyof typeof NODES];

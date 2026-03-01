@@ -25,6 +25,734 @@
         "sourceKind": "command",
         "sourceRelPath": ".claude/commands/translate.md",
         "destRelPath": "translate"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/agent-browser",
+        "destRelPath": "agent-browser"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/agent-native-architecture",
+        "destRelPath": "agent-native-architecture"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/agent-native-audit.md",
+        "destRelPath": "agent-native-audit"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/agent-native-reviewer.md",
+        "destRelPath": "agent-native-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/andrew-kane-gem-writer",
+        "destRelPath": "andrew-kane-gem-writer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/docs/ankane-readme-writer.md",
+        "destRelPath": "ankane-readme-writer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/architecture-strategist.md",
+        "destRelPath": "architecture-strategist"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/research/best-practices-researcher.md",
+        "destRelPath": "best-practices-researcher"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/brainstorming",
+        "destRelPath": "brainstorming"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/workflow/bug-reproduction-validator.md",
+        "destRelPath": "bug-reproduction-validator"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/changelog.md",
+        "destRelPath": "changelog"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/code-simplicity-reviewer.md",
+        "destRelPath": "code-simplicity-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/compound-docs",
+        "destRelPath": "compound-docs"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/every-style-editor",
+        "destRelPath": "compound-engineering-every-style-editor"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/create-agent-skill.md",
+        "destRelPath": "create-agent-skill"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/create-agent-skills",
+        "destRelPath": "create-agent-skills"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/create-app-design.md",
+        "destRelPath": "create-app-design"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/create-pr.md",
+        "destRelPath": "create-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/create-snippet.md",
+        "destRelPath": "create-snippet"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/create-tech-stack.md",
+        "destRelPath": "create-tech-stack"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/creating-pr",
+        "destRelPath": "creating-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/data-integrity-guardian.md",
+        "destRelPath": "data-integrity-guardian"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/data-migration-expert.md",
+        "destRelPath": "data-migration-expert"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "debug@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/debug.md",
+        "destRelPath": "debug"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/deepen-plan.md",
+        "destRelPath": "deepen-plan"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/deploy-docs.md",
+        "destRelPath": "deploy-docs"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/deployment-verification-agent.md",
+        "destRelPath": "deployment-verification-agent"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/design/design-implementation-reviewer.md",
+        "destRelPath": "design-implementation-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/design/design-iterator.md",
+        "destRelPath": "design-iterator"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/dhh-rails-reviewer.md",
+        "destRelPath": "dhh-rails-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/dhh-rails-style",
+        "destRelPath": "dhh-rails-style"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dig@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/dig",
+        "destRelPath": "dig"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/draft-pr.md",
+        "destRelPath": "draft-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/drafting-pr",
+        "destRelPath": "drafting-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/dspy-ruby",
+        "destRelPath": "dspy-ruby"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/workflow/every-style-editor.md",
+        "destRelPath": "every-style-editor"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/feature-video.md",
+        "destRelPath": "feature-video"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/design/figma-design-sync.md",
+        "destRelPath": "figma-design-sync"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/file-todos",
+        "destRelPath": "file-todos"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/fix.md",
+        "destRelPath": "fix"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/research/framework-docs-researcher.md",
+        "destRelPath": "framework-docs-researcher"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "frontend-design@claude-plugins-official",
+        "pluginVersion": "8deab8460a9d",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/frontend-design",
+        "destRelPath": "frontend-design-frontend-design"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/frontend-design",
+        "destRelPath": "frontend-design"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/gemini-imagegen",
+        "destRelPath": "gemini-imagegen"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/generate_command.md",
+        "destRelPath": "generate_command"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/research/git-history-analyzer.md",
+        "destRelPath": "git-history-analyzer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/git-worktree",
+        "destRelPath": "git-worktree"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/heal-skill.md",
+        "destRelPath": "heal-skill"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/install-all.md",
+        "destRelPath": "install-all"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/install.md",
+        "destRelPath": "install"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/julik-frontend-races-reviewer.md",
+        "destRelPath": "julik-frontend-races-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/kieran-python-reviewer.md",
+        "destRelPath": "kieran-python-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/kieran-rails-reviewer.md",
+        "destRelPath": "kieran-rails-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/kieran-typescript-reviewer.md",
+        "destRelPath": "kieran-typescript-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "learn@dotai",
+        "pluginVersion": "3.0.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/learn",
+        "destRelPath": "learn"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/research/learnings-researcher.md",
+        "destRelPath": "learnings-researcher"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/lfg.md",
+        "destRelPath": "lfg"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/workflow/lint.md",
+        "destRelPath": "lint"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/opus.md",
+        "destRelPath": "opus"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/pattern-recognition-specialist.md",
+        "destRelPath": "pattern-recognition-specialist"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/performance-oracle.md",
+        "destRelPath": "performance-oracle"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/plan_review.md",
+        "destRelPath": "plan_review"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/workflow/pr-comment-resolver.md",
+        "destRelPath": "pr-comment-resolver"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/rclone",
+        "destRelPath": "rclone"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/release-docs.md",
+        "destRelPath": "release-docs"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/research/repo-research-analyst.md",
+        "destRelPath": "repo-research-analyst"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/report-bug.md",
+        "destRelPath": "report-bug"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/reproduce-bug.md",
+        "destRelPath": "reproduce-bug"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/resolve_parallel.md",
+        "destRelPath": "resolve_parallel"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/resolve_pr_parallel.md",
+        "destRelPath": "resolve_pr_parallel"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/resolve_todo_parallel.md",
+        "destRelPath": "resolve_todo_parallel"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/review-pr.md",
+        "destRelPath": "review-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "git@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/reviewing-pr",
+        "destRelPath": "reviewing-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "debug@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/root-cause-tracing",
+        "destRelPath": "root-cause-tracing"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/security-sentinel.md",
+        "destRelPath": "security-sentinel"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/skill-creator",
+        "destRelPath": "skill-creator"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/workflow/spec-flow-analyzer.md",
+        "destRelPath": "spec-flow-analyzer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "debug@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/systematic-debugging",
+        "destRelPath": "systematic-debugging"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "test@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/tdd.md",
+        "destRelPath": "tdd"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/test-browser.md",
+        "destRelPath": "test-browser"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "test@dotai",
+        "pluginVersion": "0.1.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/test-driven-development",
+        "destRelPath": "test-driven-development"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/triage.md",
+        "destRelPath": "triage"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/update-app-design.md",
+        "destRelPath": "update-app-design"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/update-project-structure.md",
+        "destRelPath": "update-project-structure"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "dotai@dotai",
+        "pluginVersion": "1.0.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/update-tech-stack.md",
+        "destRelPath": "update-tech-stack"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/workflows/brainstorm.md",
+        "destRelPath": "workflows-brainstorm"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/workflows/compound.md",
+        "destRelPath": "workflows-compound"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/workflows/plan.md",
+        "destRelPath": "workflows-plan"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/workflows/review.md",
+        "destRelPath": "workflows-review"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/workflows/work.md",
+        "destRelPath": "workflows-work"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.28.0",
+        "sourceKind": "command",
+        "sourceRelPath": "commands/xcode-test.md",
+        "destRelPath": "xcode-test"
       }
     ],
     ".cursor/skills": [
