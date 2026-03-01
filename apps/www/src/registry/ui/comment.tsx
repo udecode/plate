@@ -61,6 +61,14 @@ export type TComment = {
   discussionId: string;
   isEdited: boolean;
   userId: string;
+  /** Direct author name from DOCX import (bypasses user lookup) */
+  authorName?: string;
+  /** Author initials from DOCX import */
+  authorInitials?: string;
+  /** OOXML paraId for round-trip DOCX threading fidelity */
+  paraId?: string;
+  /** OOXML parentParaId for round-trip DOCX reply threading */
+  parentParaId?: string;
 };
 
 export function Comment(props: {
@@ -187,12 +195,19 @@ export function Comment(props: {
     >
       <div className="relative flex items-center">
         <Avatar className="size-5">
-          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
+          <AvatarImage
+            alt={comment.authorName ?? userInfo?.name}
+            src={userInfo?.avatarUrl}
+          />
+          <AvatarFallback>
+            {comment.authorInitials ??
+              comment.authorName?.[0] ??
+              userInfo?.name?.[0]}
+          </AvatarFallback>
         </Avatar>
         <h4 className="mx-2 font-semibold text-sm leading-none">
-          {/* Replace to your own backend or refer to potion */}
-          {userInfo?.name}
+          {/* Use direct author name from DOCX or fall back to user lookup */}
+          {comment.authorName ?? userInfo?.name}
         </h4>
 
         <div className="text-muted-foreground/80 text-xs leading-none">

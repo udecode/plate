@@ -5,8 +5,32 @@ import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+import type { CommentPayload, StoredComment, TrackingState } from './tracking';
+import {
+  COMMENTS_EXTENDED_TEMPLATE,
+  COMMENTS_EXTENSIBLE_TEMPLATE,
+  COMMENTS_IDS_TEMPLATE,
+  COMMENTS_TEMPLATE,
+  PEOPLE_TEMPLATE,
+} from './comment-templates';
+import {
+  allocatedIds,
+  findDocxTrackingTokens,
+  generateHexId,
+} from './tracking';
+
 import {
   applicationName,
+  commentsExtendedContentType,
+  commentsExtendedRelationshipType,
+  commentsExtendedType,
+  commentsExtensibleContentType,
+  commentsExtensibleRelationshipType,
+  commentsExtensibleType,
+  commentsIdsContentType,
+  commentsIdsRelationshipType,
+  commentsIdsType,
+  commentsType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
@@ -20,6 +44,9 @@ import {
   landscapeHeight,
   landscapeMargins,
   landscapeWidth,
+  peopleContentType,
+  peopleRelationshipType,
+  peopleType,
   portraitMargins,
   themeType as themeFileType,
 } from './constants';
@@ -378,6 +405,14 @@ class DocxDocument {
   width: number;
   zip: JSZip;
 
+  // Tracking support for comments and suggestions
+  _trackingState?: TrackingState;
+  comments: StoredComment[];
+  commentIdMap: Map<string, number>;
+  lastCommentId: number;
+  revisionIdMap: Map<string, number>;
+  lastRevisionId: number;
+
   constructor(properties: DocxDocumentProperties) {
     this.zip = properties.zip;
     this.htmlString = properties.htmlString;
@@ -448,6 +483,13 @@ class DocxDocument {
     this.footerObjects = [];
     this.documentXML = null;
 
+    // Initialize tracking support
+    this.comments = [];
+    this.commentIdMap = new Map();
+    this.lastCommentId = 0;
+    this.revisionIdMap = new Map();
+    this.lastRevisionId = 0;
+
     this.generateContentTypesXML = this.generateContentTypesXML.bind(this);
     this.generateDocumentXML = this.generateDocumentXML.bind(this);
     this.generateCoreXML = this.generateCoreXML.bind(this);
@@ -464,6 +506,10 @@ class DocxDocument {
     this.generateHeaderXML = this.generateHeaderXML.bind(this);
     this.generateFooterXML = this.generateFooterXML.bind(this);
     this.generateSectionXML = generateSectionXML.bind(this);
+    this.generateCommentsXML = this.generateCommentsXML.bind(this);
+    this.ensureComment = this.ensureComment.bind(this);
+    this.getCommentId = this.getCommentId.bind(this);
+    this.getRevisionId = this.getRevisionId.bind(this);
 
     this.ListStyleBuilder = new ListStyleBuilder(properties.numbering);
   }
@@ -489,6 +535,44 @@ class DocxDocument {
       'footer',
       this.footerObjects
     );
+
+    // Add comment-related content types if there are comments
+    if (this.comments.length > 0) {
+      const overrides: Array<{ contentType: string; partName: string }> = [
+        {
+          contentType:
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml',
+          partName: '/word/comments.xml',
+        },
+        {
+          contentType: commentsExtendedContentType,
+          partName: '/word/commentsExtended.xml',
+        },
+        {
+          contentType: commentsIdsContentType,
+          partName: '/word/commentsIds.xml',
+        },
+        {
+          contentType: commentsExtensibleContentType,
+          partName: '/word/commentsExtensible.xml',
+        },
+        {
+          contentType: peopleContentType,
+          partName: '/word/people.xml',
+        },
+      ];
+
+      overrides.forEach(({ contentType, partName }) => {
+        const frag = fragment({
+          defaultNamespace: { ele: namespaces.contentTypes },
+        })
+          .ele('Override')
+          .att('PartName', partName)
+          .att('ContentType', contentType)
+          .up();
+        contentTypesXML.root().import(frag);
+      });
+    }
 
     return contentTypesXML.toString({ prettyPrint: true });
   }
@@ -619,6 +703,17 @@ class DocxDocument {
       );
     });
 
+    const deadTokens = findDocxTrackingTokens(xmlString);
+    if (deadTokens.length > 0) {
+      const uniqueTokens = Array.from(new Set(deadTokens));
+      const sample = uniqueTokens.slice(0, 3).join(', ');
+      const suffix =
+        uniqueTokens.length > 3 ? ` (+${uniqueTokens.length - 3} more)` : '';
+      console.warn(
+        `[docx] dead tracking tokens in document.xml: ${sample}${suffix}`
+      );
+    }
+
     return xmlString;
   }
 
@@ -730,7 +825,7 @@ class DocxDocument {
         .ele('@w', 'abstractNum')
         .att('@w', 'abstractNumId', String(numberingId));
 
-      [...new Array(8).keys()].forEach((level) => {
+      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
         const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
           .ele('@w', 'lvl')
           .att('@w', 'ilvl', String(level))
@@ -929,6 +1024,21 @@ class DocxDocument {
       case imageType:
         relationshipType = namespaces.images;
         break;
+      case commentsType:
+        relationshipType = namespaces.comments;
+        break;
+      case commentsExtendedType:
+        relationshipType = commentsExtendedRelationshipType;
+        break;
+      case commentsIdsType:
+        relationshipType = commentsIdsRelationshipType;
+        break;
+      case commentsExtensibleType:
+        relationshipType = commentsExtensibleRelationshipType;
+        break;
+      case peopleType:
+        relationshipType = peopleRelationshipType;
+        break;
       case headerFileType:
         relationshipType = namespaces.headers;
         break;
@@ -956,6 +1066,287 @@ class DocxDocument {
 
   generateFooterXML(vTree: VTree): Promise<FooterResult> {
     return this.generateSectionXML(vTree, 'footer') as Promise<FooterResult>;
+  }
+
+  // ============================================================================
+  // Tracking Support Methods (Comments and Suggestions)
+  // ============================================================================
+
+  /**
+   * Get a revision ID for a suggestion. Creates a new one if needed.
+   * Ensures consistent IDs for the same suggestion across multiple occurrences.
+   */
+  getRevisionId(id?: string): number {
+    if (!id) {
+      this.lastRevisionId += 1;
+      return this.lastRevisionId;
+    }
+
+    const existing = this.revisionIdMap.get(id);
+    if (existing !== undefined) {
+      return existing;
+    }
+
+    this.lastRevisionId += 1;
+    this.revisionIdMap.set(id, this.lastRevisionId);
+    return this.lastRevisionId;
+  }
+
+  /**
+   * Ensure a comment exists in the document and return its numeric ID.
+   * Updates metadata if the comment already exists but had missing fields.
+   */
+  ensureComment(data: Partial<CommentPayload>, parentParaId?: string): number {
+    const { id, authorName, authorInitials, date, text } = data;
+    const commentId =
+      id !== undefined ? id : `comment-${this.lastCommentId + 1}`;
+    let numericId = this.commentIdMap.get(commentId);
+
+    if (numericId === undefined) {
+      this.lastCommentId += 1;
+      numericId = this.lastCommentId;
+      this.commentIdMap.set(commentId, numericId);
+    }
+
+    const existing = this.comments.find((item) => item.id === numericId);
+    if (existing) {
+      // Update missing fields
+      if (!existing.authorName && authorName) {
+        existing.authorName = authorName;
+      }
+      if (!existing.authorInitials && authorInitials) {
+        existing.authorInitials = authorInitials;
+      }
+      if (!existing.date && date) {
+        existing.date = date;
+      }
+      if (!existing.text && text) {
+        existing.text = text;
+      }
+      if (!existing.parentParaId && parentParaId) {
+        existing.parentParaId = parentParaId;
+      }
+      return numericId;
+    }
+
+    // Preserve imported paraId when provided; otherwise generate fresh.
+    // Register in allocatedIds to prevent collisions with generated IDs.
+    let paraId: string;
+    if (data.paraId) {
+      paraId = data.paraId;
+      allocatedIds.add(paraId);
+    } else {
+      paraId = generateHexId();
+    }
+
+    const entry = {
+      id: numericId,
+      authorName: authorName || 'unknown',
+      authorInitials: authorInitials || '',
+      date,
+      durableId: generateHexId(),
+      paraId,
+      parentParaId,
+      text: text || 'Imported comment',
+    };
+    this.comments.push(entry);
+
+    return numericId;
+  }
+
+  /**
+   * Get the numeric ID for a comment, creating it if necessary.
+   */
+  getCommentId(id: string): number {
+    if (id === undefined || id === null) {
+      return this.ensureComment({ id: undefined });
+    }
+    return this.ensureComment({ id });
+  }
+
+  /**
+   * Generate the comments.xml file content.
+   * Matches reference library structure: w14:paraId on paragraphs,
+   * CommentReference style on first run, text runs with formatting.
+   */
+  generateCommentsXML(): string {
+    const w = namespaces.w;
+    const commentsXML = create(COMMENTS_TEMPLATE);
+    const root = commentsXML.root();
+
+    this.comments.forEach((comment) => {
+      const commentElement = root
+        .ele(w, 'comment')
+        .att(w, 'id', String(comment.id))
+        .att(w, 'author', comment.authorName || 'unknown');
+
+      if (comment.authorInitials) {
+        commentElement.att(w, 'initials', comment.authorInitials);
+      }
+      if (comment.date) {
+        commentElement.att(w, 'date', comment.date);
+      }
+
+      // Split multi-line comment text into paragraphs, preserving empty lines
+      const paragraphs = String(comment.text || '').split(/\r?\n/);
+
+      paragraphs.forEach((line, pIdx) => {
+        const pElement = commentElement.ele(w, 'p');
+
+        // Add w14:paraId and w14:textId per OOXML spec
+        pElement.att(namespaces.w14, 'paraId', comment.paraId);
+        pElement.att(namespaces.w14, 'textId', '77777777');
+
+        // Paragraph properties
+        pElement
+          .ele(w, 'pPr')
+          .ele(w, 'pStyle')
+          .att(w, 'val', 'CommentText')
+          .up()
+          .up();
+
+        // First paragraph gets CommentReference run
+        if (pIdx === 0) {
+          const refRun = pElement.ele(w, 'r');
+          refRun
+            .ele(w, 'rPr')
+            .ele(w, 'rStyle')
+            .att(w, 'val', 'CommentReference')
+            .up()
+            .up();
+          refRun.ele(w, 'annotationRef').up();
+          refRun.up();
+        }
+
+        // Text run
+        const textRun = pElement.ele(w, 'r');
+        textRun
+          .ele(w, 'rPr')
+          .ele(w, 'color')
+          .att(w, 'val', '000000')
+          .up()
+          .ele(w, 'sz')
+          .att(w, 'val', '20')
+          .up()
+          .ele(w, 'szCs')
+          .att(w, 'val', '20')
+          .up()
+          .up();
+        textRun
+          .ele(w, 't')
+          .att('http://www.w3.org/XML/1998/namespace', 'space', 'preserve')
+          .txt(line)
+          .up();
+        textRun.up();
+
+        pElement.up();
+      });
+
+      commentElement.up();
+    });
+
+    return commentsXML.end({ prettyPrint: true });
+  }
+
+  /**
+   * Generate word/commentsExtended.xml.
+   * Links comments via paraId and establishes parent-child threading via paraIdParent.
+   */
+  generateCommentsExtendedXML(): string {
+    const doc = create(COMMENTS_EXTENDED_TEMPLATE);
+    const root = doc.root();
+
+    this.comments.forEach((comment) => {
+      const el = root.ele(namespaces.w15, 'commentEx');
+      el.att(namespaces.w15, 'paraId', comment.paraId);
+      el.att(namespaces.w15, 'done', '0');
+      if (comment.parentParaId) {
+        el.att(namespaces.w15, 'paraIdParent', comment.parentParaId);
+      }
+      el.up();
+    });
+
+    return doc.end({ prettyPrint: true });
+  }
+
+  /**
+   * Generate word/commentsIds.xml.
+   * Maps paraId to durableId for each comment.
+   */
+  generateCommentsIdsXML(): string {
+    const doc = create(COMMENTS_IDS_TEMPLATE);
+    const root = doc.root();
+
+    this.comments.forEach((comment) => {
+      const el = root.ele(namespaces.w16cid, 'commentId');
+      el.att(namespaces.w16cid, 'paraId', comment.paraId);
+      el.att(namespaces.w16cid, 'durableId', comment.durableId);
+      el.up();
+    });
+
+    return doc.end({ prettyPrint: true });
+  }
+
+  /**
+   * Generate word/commentsExtensible.xml.
+   * Links durableId to dateUtc for each comment.
+   */
+  generateCommentsExtensibleXML(): string {
+    const doc = create(COMMENTS_EXTENSIBLE_TEMPLATE);
+    const root = doc.root();
+
+    this.comments.forEach((comment) => {
+      const el = root.ele(namespaces.w16cex, 'commentExtensible');
+      el.att(namespaces.w16cex, 'durableId', comment.durableId);
+      if (comment.date) {
+        // comment.date is local time with fake Z (Word convention).
+        // Reverse the fake Z to recover real UTC:
+        //   fakeMs = epoch interpreting local time as UTC
+        //   tzMs   = comment date's offset (DST-safe)
+        //   real   = fakeMs + tzMs
+        const fakeMs = new Date(comment.date).getTime();
+        const tzMs = new Date(comment.date).getTimezoneOffset() * 60_000;
+        const realUtc = new Date(fakeMs + tzMs);
+        el.att(
+          namespaces.w16cex,
+          'dateUtc',
+          Number.isNaN(realUtc.getTime()) ? comment.date : realUtc.toISOString()
+        );
+      }
+      el.up();
+    });
+
+    return doc.end({ prettyPrint: true });
+  }
+
+  /**
+   * Generate word/people.xml.
+   * Contains unique author entries with presence info.
+   */
+  generatePeopleXML(): string {
+    const doc = create(PEOPLE_TEMPLATE);
+    const root = doc.root();
+
+    // Collect unique authors
+    const uniqueAuthors = new Set<string>();
+    this.comments.forEach((comment) => {
+      if (comment.authorName) {
+        uniqueAuthors.add(comment.authorName);
+      }
+    });
+
+    uniqueAuthors.forEach((author) => {
+      const personEl = root.ele(namespaces.w15, 'person');
+      personEl.att(namespaces.w15, 'author', author);
+      personEl
+        .ele(namespaces.w15, 'presenceInfo')
+        .att(namespaces.w15, 'providerId', 'None')
+        .att(namespaces.w15, 'userId', author)
+        .up();
+      personEl.up();
+    });
+
+    return doc.end({ prettyPrint: true });
   }
 }
 
