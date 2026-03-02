@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+import type { CommentPayload, StoredComment, TrackingState } from './tracking';
 import {
   COMMENTS_EXTENDED_TEMPLATE,
   COMMENTS_EXTENSIBLE_TEMPLATE,

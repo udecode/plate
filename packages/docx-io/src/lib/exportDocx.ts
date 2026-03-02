@@ -15,7 +15,7 @@
 
 import JSZip from 'jszip';
 
-import addFilesToContainer from './html-to-docx';
+import addFilesToContainer from './html-to-docx/index';
 
 // Re-export types from the library
 export type {
@@ -29,13 +29,28 @@ export type {
   PageSize,
   TableBorderOptions,
   TableOptions,
-} from './html-to-docx';
+} from './html-to-docx/index';
 
-import type { DocumentOptions, Margins } from './html-to-docx';
+import type { DocumentOptions, Margins } from './html-to-docx/index';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
 export type HtmlToDocxOptions = DocumentOptions;
+
+const DOCX_MIME_TYPE =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+async function createDocxZip(html: string, options: DocumentOptions) {
+  // Handle empty HTML - the underlying library crashes on empty string
+  const safeHtml = html.trim() === '' ? '<p></p>' : html;
+
+  // Create a new JSZip instance
+  const zip = new JSZip();
+
+  // Add files to the zip container
+  // Parameters: (zip, htmlString, options, headerHTML, footerHTML)
+  return addFilesToContainer(zip, safeHtml, options);
+}
 
 /**
  * Convert HTML content to a DOCX blob.

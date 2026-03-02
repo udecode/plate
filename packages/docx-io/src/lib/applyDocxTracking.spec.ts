@@ -30,8 +30,8 @@ function createMockEditor(): TrackingEditor {
       setNodes: mockFn(() => {}),
       delete: mockFn(() => {}),
       withMerging: mockFn((fn: () => void) => {
-            fn();
-          }),
+        fn();
+      }),
     },
     setOption: mockFn(() => {}),
   };
@@ -437,7 +437,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -528,7 +534,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -564,7 +576,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -630,7 +648,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -667,7 +691,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -703,7 +733,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(tokenMap),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -749,7 +785,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -778,7 +820,13 @@ describe('applyDocxTracking', () => {
         },
       };
 
-      const createDiscussion = mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' }));
+      const createDiscussion = mockFn(
+        async (_input: {
+          contentRich?: unknown;
+          documentContent: string;
+          documentId: string;
+        }) => ({ id: 'disc-1' })
+      );
 
       const comments: DocxImportComment[] = [
         {
@@ -830,7 +878,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -879,7 +933,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -981,7 +1041,13 @@ describe('applyDocxTracking', () => {
         searchRange: createMockSearchRange(),
         documentId: 'doc-1',
         createDiscussionWithComment: {
-          mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+          mutateAsync: mockFn(
+            async (_input: {
+              contentRich?: unknown;
+              documentContent: string;
+              documentId: string;
+            }) => ({ id: 'disc-1' })
+          ),
         },
         commentKey: 'comment',
         getCommentKey: (id) => `comment_${id}`,
@@ -993,7 +1059,13 @@ describe('applyDocxTracking', () => {
 
     it('handles comment without text (undefined)', async () => {
       const editor = createMockEditor();
-      const createDiscussion = mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' }));
+      const createDiscussion = mockFn(
+        async (_input: {
+          contentRich?: unknown;
+          documentContent: string;
+          documentId: string;
+        }) => ({ id: 'disc-1' })
+      );
 
       const comments: DocxImportComment[] = [
         {
@@ -1097,7 +1169,13 @@ describe('applyDocxTracking', () => {
         commentConfig: {
           documentId: 'doc-1',
           createDiscussionWithComment: {
-            mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+            mutateAsync: mockFn(
+              async (_input: {
+                contentRich?: unknown;
+                documentContent: string;
+                documentId: string;
+              }) => ({ id: 'disc-1' })
+            ),
           },
           commentKey: 'comment',
           getCommentKey: (id) => `comment_${id}`,
@@ -1154,7 +1232,13 @@ describe('applyDocxTracking', () => {
         commentConfig: {
           documentId: 'doc-1',
           createDiscussionWithComment: {
-            mutateAsync: mockFn(async (_input: { contentRich?: unknown; documentContent: string; documentId: string }) => ({ id: 'disc-1' })),
+            mutateAsync: mockFn(
+              async (_input: {
+                contentRich?: unknown;
+                documentContent: string;
+                documentId: string;
+              }) => ({ id: 'disc-1' })
+            ),
           },
           commentKey: 'comment',
           getCommentKey: (id) => `comment_${id}`,
