@@ -123,4 +123,22 @@ packages/plate/docs/
 .turbo
 .vercel
 
+CLAUDE.local.md
+.codex
+
+# START Skiller Generated Files
+/.codex/config.toml
+/.codex/skills
+/.cursor/mcp.json
+/.cursor/rules
+/.cursor/skills
+/.mcp.json
+/AGENTS.md
+/CLAUDE.md
+# END Skiller Generated Files
+.claude/rules/
+.claude/skills/
+.worktrees/
+.ralph/
+!.claude/skiller.toml
 *.local*

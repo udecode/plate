@@ -12,6 +12,13 @@ import VText from 'virtual-dom/vnode/vtext';
 import { create } from 'xmlbuilder2';
 
 import {
+  commentsExtendedRelationshipType,
+  commentsExtendedType,
+  commentsExtensibleRelationshipType,
+  commentsExtensibleType,
+  commentsIdsRelationshipType,
+  commentsIdsType,
+  commentsType,
   defaultDocumentOptions,
   defaultHTMLString,
   documentFileName,
@@ -20,6 +27,8 @@ import {
   headerFileName,
   headerType,
   internalRelationship,
+  peopleRelationshipType,
+  peopleType,
   relsFolderName,
   themeFileName,
   themeFolder,
@@ -63,7 +72,7 @@ interface NormalizedDocumentOptions {
   headerType?: 'default' | 'even' | 'first';
   keywords?: string[];
   lastModifiedBy?: string;
-  lineNumber?: boolean;
+  lineNumber?: boolean | LineNumberOptions;
   lineNumberOptions?: LineNumberOptions;
   margins?: NormalizedMargins | null;
   modifiedAt?: Date;
@@ -325,6 +334,16 @@ async function addFilesToContainer(
   // @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations
   docxDocument.documentXML = await renderDocumentFile(docxDocument);
 
+  // Create comments relationship if there are comments (populated by renderDocumentFile)
+  if (docxDocument.comments.length > 0) {
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsType,
+      'comments.xml',
+      internalRelationship
+    );
+  }
+
   zip.folder(relsFolderName)!.file(
     '.rels',
     create({ encoding: 'UTF-8', standalone: true }, relsXML).toString({
@@ -426,6 +445,61 @@ async function addFilesToContainer(
     .file('webSettings.xml', docxDocument.generateWebSettingsXML(), {
       createFolders: false,
     });
+
+  // Add comment-related XML files if there are comments
+  if (docxDocument.comments.length > 0) {
+    zip
+      .folder(wordFolder)!
+      .file('comments.xml', docxDocument.generateCommentsXML(), {
+        createFolders: false,
+      })
+      .file(
+        'commentsExtended.xml',
+        docxDocument.generateCommentsExtendedXML(),
+        {
+          createFolders: false,
+        }
+      )
+      .file('commentsIds.xml', docxDocument.generateCommentsIdsXML(), {
+        createFolders: false,
+      })
+      .file(
+        'commentsExtensible.xml',
+        docxDocument.generateCommentsExtensibleXML(),
+        {
+          createFolders: false,
+        }
+      )
+      .file('people.xml', docxDocument.generatePeopleXML(), {
+        createFolders: false,
+      });
+
+    // Add relationships for the 4 new comment-related files
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtendedType,
+      'commentsExtended.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsIdsType,
+      'commentsIds.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      commentsExtensibleType,
+      'commentsExtensible.xml',
+      internalRelationship
+    );
+    docxDocument.createDocumentRelationships(
+      documentFileName,
+      peopleType,
+      'people.xml',
+      internalRelationship
+    );
+  }
 
   const relationshipXMLs = docxDocument.generateRelsXML();
 

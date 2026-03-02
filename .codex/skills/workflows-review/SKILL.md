@@ -48,36 +48,25 @@ Ensure that the code is ready for analysis (either in worktree or on current bra
 
 </task_list>
 
-#### Protected Artifacts
-
-<protected_artifacts>
-The following paths are compound-engineering pipeline artifacts and must never be flagged for deletion, removal, or gitignore by any review agent:
-
-- `docs/plans/*.md` — Plan files created by `/workflows:plan`. These are living documents that track implementation progress (checkboxes are checked off by `/workflows:work`).
-- `docs/solutions/*.md` — Solution documents created during the pipeline.
-
-If a review agent flags any file in these directories for cleanup or removal, discard that finding during synthesis. Do not create a todo for it.
-</protected_artifacts>
-
-#### Load Review Agents
-
-Read `compound-engineering.local.md` in the project root. If found, use `review_agents` from YAML frontmatter. If the markdown body contains review context, pass it to each agent as additional instructions.
-
-If no settings file exists, invoke the `setup` skill to create one. Then read the newly created file and continue.
-
 #### Parallel Agents to review the PR:
 
 <parallel_tasks>
 
-Run all configured review agents in parallel using Task tool. For each agent in the `review_agents` list:
+Run ALL or most of these agents at the same time:
 
-```
-Task {agent-name}(PR content + review context from settings body)
-```
-
-Additionally, always run these regardless of settings:
-- Task agent-native-reviewer(PR content) - Verify new features are agent-accessible
-- Task learnings-researcher(PR content) - Search docs/solutions/ for past issues related to this PR's modules and patterns
+1. Task kieran-rails-reviewer(PR content)
+2. Task dhh-rails-reviewer(PR title)
+3. If turbo is used: Task rails-turbo-expert(PR content)
+4. Task git-history-analyzer(PR content)
+5. Task dependency-detective(PR content)
+6. Task pattern-recognition-specialist(PR content)
+7. Task architecture-strategist(PR content)
+8. Task code-philosopher(PR content)
+9. Task security-sentinel(PR content)
+10. Task performance-oracle(PR content)
+11. Task devops-harmony-analyst(PR content)
+12. Task data-integrity-guardian(PR content)
+13. Task agent-native-reviewer(PR content) - Verify new features are agent-accessible
 
 </parallel_tasks>
 
@@ -87,20 +76,19 @@ Additionally, always run these regardless of settings:
 
 These agents are run ONLY when the PR matches specific criteria. Check the PR files list to determine if they apply:
 
-**MIGRATIONS: If PR contains database migrations, schema.rb, or data backfills:**
+**If PR contains database migrations (db/migrate/*.rb files) or data backfills:**
 
-- Task schema-drift-detector(PR content) - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
-- Task data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
-- Task deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
+14. Task data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
+15. Task deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
 
-**When to run:**
-- PR includes files matching `db/migrate/*.rb` or `db/schema.rb`
+**When to run migration agents:**
+- PR includes files matching `db/migrate/*.rb`
 - PR modifies columns that store IDs, enums, or mappings
 - PR includes data backfill scripts or rake tasks
+- PR changes how data is read/written (e.g., changing from FK to string column)
 - PR title/body mentions: migration, backfill, data transformation, ID mapping
 
 **What these agents check:**
-- `schema-drift-detector`: Cross-references schema.rb changes against PR migrations to catch unrelated columns/indexes from local database state
 - `data-migration-expert`: Verifies hard-coded mappings match production reality (prevents swapped IDs), checks for orphaned associations, validates dual-write patterns
 - `deployment-verification-agent`: Produces executable pre/post-deploy checklists with SQL queries, rollback procedures, and monitoring plans
 
@@ -219,8 +207,6 @@ Remove duplicates, prioritize by severity and impact.
 <synthesis_tasks>
 
 - [ ] Collect findings from all parallel agents
-- [ ] Surface learnings-researcher results: if past solutions are relevant, flag them as "Known Pattern" with links to docs/solutions/ files
-- [ ] Discard any findings that recommend deleting or gitignoring files in `docs/plans/` or `docs/solutions/` (see Protected Artifacts above)
 - [ ] Categorize by type: security, performance, architecture, quality, etc.
 - [ ] Assign severity levels: 🔴 CRITICAL (P1), 🟡 IMPORTANT (P2), 🔵 NICE-TO-HAVE (P3)
 - [ ] Remove duplicate or overlapping findings

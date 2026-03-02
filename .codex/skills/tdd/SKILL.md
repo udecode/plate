@@ -1,6 +1,6 @@
 ---
+description: Test-driven development workflow with red-green-refactor cycle
 name: tdd
-description: Use when implementing complex logic that needs test coverage - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first; NOT for UI components, simple CRUD, or straightforward code
 ---
 
 # Test-Driven Development (TDD)

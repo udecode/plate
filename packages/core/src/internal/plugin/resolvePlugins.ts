@@ -105,7 +105,9 @@ export const resolvePlugins = (
 
     if (
       plugin.node?.isLeaf &&
-      (plugin.node?.isDecoration === true || plugin.render.leaf)
+      (plugin.node?.isDecoration === true ||
+        plugin.render.leaf ||
+        (plugin.render.node && plugin.node?.isDecoration !== false))
     ) {
       editor.meta.pluginCache.node.isLeaf.push(plugin.key);
     }

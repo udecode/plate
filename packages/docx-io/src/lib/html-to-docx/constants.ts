@@ -168,6 +168,32 @@ const documentFileName = 'document';
 const headerType = 'header';
 const footerType = 'footer';
 const themeType = 'theme';
+const commentsType = 'comments';
+const commentsExtendedType = 'commentsExtended';
+const commentsIdsType = 'commentsIds';
+const commentsExtensibleType = 'commentsExtensible';
+const peopleType = 'people';
+
+// Content types for comment-related XML parts
+const commentsExtendedContentType =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml';
+const commentsIdsContentType =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsIds+xml';
+const commentsExtensibleContentType =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtensible+xml';
+const peopleContentType =
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.people+xml';
+
+// Relationship types for comment-related XML parts
+const commentsExtendedRelationshipType =
+  'http://schemas.microsoft.com/office/2011/relationships/commentsExtended';
+const commentsIdsRelationshipType =
+  'http://schemas.microsoft.com/office/2016/09/relationships/commentsIds';
+const commentsExtensibleRelationshipType =
+  'http://schemas.microsoft.com/office/2018/08/relationships/commentsExtensible';
+const peopleRelationshipType =
+  'http://schemas.microsoft.com/office/2011/relationships/people';
+
 const hyperlinkType = 'hyperlink';
 const imageType = 'image';
 const internalRelationship = 'Internal';
@@ -201,6 +227,16 @@ const verticalAlignValues: VerticalAlign[] = ['top', 'middle', 'bottom'];
 export {
   applicationName,
   colorlessColors,
+  commentsExtendedContentType,
+  commentsExtendedRelationshipType,
+  commentsExtendedType,
+  commentsExtensibleContentType,
+  commentsExtensibleRelationshipType,
+  commentsExtensibleType,
+  commentsIdsContentType,
+  commentsIdsRelationshipType,
+  commentsIdsType,
+  commentsType,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
@@ -219,6 +255,9 @@ export {
   landscapeMargins,
   landscapeWidth,
   paragraphBordersObject,
+  peopleContentType,
+  peopleRelationshipType,
+  peopleType,
   portraitMargins,
   relsFolderName,
   themeFileName,

@@ -87,7 +87,7 @@ export class HocuspocusProviderWrapper implements UnifiedProvider {
           }
         })()),
       // Disable broadcast channel here - we'll manually handle connections
-      // broadcast: options.broadcast || false,
+      broadcast: false,
       onAwarenessChange: options.onAwarenessChange || (() => {}),
       onConnect: () => {
         this._isConnected = true;

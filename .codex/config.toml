@@ -2,5 +2,5 @@
 command = "npx"
 args = [ "shadcn@latest", "mcp" ]
 
-[mcp_servers.plate.env]
-REGISTRY_URL = "http://localhost:3000/rd/registry.json"
+  [mcp_servers.plate.env]
+  REGISTRY_URL = "http://localhost:3000/rd/registry.json"

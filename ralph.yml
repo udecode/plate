@@ -1,0 +1,133 @@
+# Debug Preset
+#
+# For bug investigation and root cause analysis.
+# Follows scientific method: hypothesize, test, narrow down.
+#
+# Usage:
+#   ralph run --config presets/debug.yml --prompt "Tests fail intermittently in CI"
+
+event_loop:
+  prompt_file: "PROMPT.md"
+  completion_promise: "DEBUG_COMPLETE"
+  max_iterations: 30
+  max_runtime_seconds: 7200
+  starting_event: "debug.start"  # Ralph publishes this after coordination
+
+cli:
+  backend: "claude"
+
+core:
+  specs_dir: "./specs/"
+
+hats:
+  investigator:
+    name: "Investigator"
+    description: "Finds root cause through systematic investigation."
+    triggers: ["debug.start", "hypothesis.rejected", "hypothesis.confirmed", "fix.verified"]
+    publishes: ["hypothesis.test", "fix.propose"]
+    instructions: |
+      ## INVESTIGATOR MODE
+
+      Find the root cause through systematic investigation.
+
+      ### Scientific Method
+      1. **Observe** — What exactly is the symptom? Reproduce it.
+      2. **Hypothesize** — What could cause this?
+      3. **Predict** — If hypothesis X is true, then Y should happen.
+      4. **Test** — Run experiment to test prediction.
+      5. **Narrow** — Eliminate hypotheses, focus on survivors.
+
+      ### Dispatch
+      - Publish `hypothesis.test` to test a hypothesis
+      - Publish `fix.propose` when root cause is confirmed
+
+      ### DON'T
+      - ❌ Guess without evidence
+      - ❌ Fix symptoms without understanding cause
+      - ❌ Change code during investigation phase
+
+      ### DONE
+      When bug is fixed and verified, output: DEBUG_COMPLETE
+
+  tester:
+    name: "Hypothesis Tester"
+    description: "Designs and runs experiments to test hypotheses."
+    triggers: ["hypothesis.test"]
+    publishes: ["hypothesis.confirmed", "hypothesis.rejected"]
+    instructions: |
+      ## HYPOTHESIS TESTER MODE
+
+      Design and run an experiment to test a hypothesis.
+
+      ### Process
+      1. Read the hypothesis from the event
+      2. Design minimal test that would confirm OR reject it
+      3. Run the test
+      4. Record results with evidence
+      5. Publish result
+
+      ### Good Tests
+      - Isolate the variable
+      - Have clear pass/fail criteria
+      - Are reproducible
+
+      ### DON'T
+      - ❌ Change production code
+      - ❌ Run tests that can't distinguish hypotheses
+      - ❌ Skip recording evidence
+
+  fixer:
+    name: "Bug Fixer"
+    description: "Implements fix for confirmed root cause with regression test."
+    triggers: ["fix.propose", "fix.failed"]
+    publishes: ["fix.applied", "fix.blocked"]
+    instructions: |
+      ## BUG FIXER MODE
+
+      Implement the fix for a confirmed root cause.
+
+      ### Process
+      1. Review the proposed fix for the confirmed root cause
+      2. Implement minimal change to fix root cause
+      3. Add regression test that would have caught this
+      4. Run full test suite
+      5. Commit with detailed message
+
+      ### Commit Format
+      ```
+      fix(scope): [what was broken]
+
+      Root cause: [explanation]
+      Fix: [what this change does]
+      Regression test: [test name]
+      ```
+
+      ### DON'T
+      - ❌ Fix more than the reported bug
+      - ❌ Skip regression test
+      - ❌ Commit without full test pass
+
+  verifier:
+    name: "Fix Verifier"
+    description: "Verifies the fix solves the original problem."
+    triggers: ["fix.applied"]
+    publishes: ["fix.verified", "fix.failed"]
+    instructions: |
+      ## FIX VERIFIER MODE
+
+      Verify the fix actually solves the original problem.
+
+      ### Checks
+      1. Original reproduction steps no longer trigger bug
+      2. All tests pass
+      3. New regression test exists and is meaningful
+      4. No new issues introduced
+
+      ### If Verified
+      Publish `fix.verified`
+
+      ### If Failed
+      Publish `fix.failed` with:
+      - Which check failed
+      - Observed behavior
+      - Expected behavior

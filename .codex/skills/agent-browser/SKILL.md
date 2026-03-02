@@ -5,7 +5,7 @@ description: Browser automation using Vercel's agent-browser CLI. Use when you n
 
 # agent-browser: CLI Browser Automation
 
-Vercel's headless browser automation CLI designed for AI agents. Uses ref-based selection (@e1, @e2) from accessibility snapshots.
+Vercel's browser automation CLI designed for AI agents. Use `--headed` by default unless headless is explicitly requested. Uses ref-based selection (@e1, @e2) from accessibility snapshots.
 
 ## Setup Check
 
@@ -50,11 +50,11 @@ agent-browser snapshot -i
 ### Navigation
 
 ```bash
-agent-browser open <url>       # Navigate to URL
+agent-browser --headed open <url>  # Navigate to URL (recommended default)
 agent-browser back             # Go back
 agent-browser forward          # Go forward
 agent-browser reload           # Reload page
-agent-browser close            # Close browser
+# Never run `agent-browser close`; keep browser session active
 ```
 
 ### Snapshots (Essential for AI)

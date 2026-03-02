@@ -26,6 +26,7 @@ import {
   EquationElementDocx,
   InlineEquationElementDocx,
 } from '@/registry/ui/equation-node-static';
+import { SuggestionLeafDocx } from '@/registry/ui/suggestion-node-docx';
 import { TocElementDocx } from '@/registry/ui/toc-node-static';
 import { DocxExportPlugin } from '@platejs/docx-io';
 import { KEYS } from 'platejs';
@@ -40,6 +41,7 @@ import { KEYS } from 'platejs';
  * - Equations (inline font instead of KaTeX)
  * - Callouts (table layout for icon placement)
  * - TOC (anchor links with paragraph breaks)
+ * - Suggestions (<span> instead of <ins>/<del> to avoid unwanted formatting)
  *
  * Tables use base version with juice CSS inlining.
  */
@@ -56,6 +58,7 @@ export const DocxExportKit = [
         [KEYS.inlineEquation]: InlineEquationElementDocx,
         [KEYS.callout]: CalloutElementDocx,
         [KEYS.toc]: TocElementDocx,
+        [KEYS.suggestion]: SuggestionLeafDocx,
       },
     },
   }),

@@ -92,26 +92,11 @@ This command takes a work document (plan, specification, or todo file) and execu
      - Look for similar patterns in codebase
      - Implement following existing conventions
      - Write tests for new functionality
-     - Run System-Wide Test Check (see below)
      - Run tests after changes
      - Mark task as completed in TodoWrite
      - Mark off the corresponding checkbox in the plan file ([ ] → [x])
      - Evaluate for incremental commit (see below)
    ```
-
-   **System-Wide Test Check** — Before marking a task done, pause and ask:
-
-   | Question | What to do |
-   |----------|------------|
-   | **What fires when this runs?** Callbacks, middleware, observers, event handlers — trace two levels out from your change. | Read the actual code (not docs) for callbacks on models you touch, middleware in the request chain, `after_*` hooks. |
-   | **Do my tests exercise the real chain?** If every dependency is mocked, the test proves your logic works *in isolation* — it says nothing about the interaction. | Write at least one integration test that uses real objects through the full callback/middleware chain. No mocks for the layers that interact. |
-   | **Can failure leave orphaned state?** If your code persists state (DB row, cache, file) before calling an external service, what happens when the service fails? Does retry create duplicates? | Trace the failure path with real objects. If state is created before the risky call, test that failure cleans up or that retry is idempotent. |
-   | **What other interfaces expose this?** Mixins, DSLs, alternative entry points (Agent vs Chat vs ChatMethods). | Grep for the method/behavior in related classes. If parity is needed, add it now — not as a follow-up. |
-   | **Do error strategies align across layers?** Retry middleware + application fallback + framework error handling — do they conflict or create double execution? | List the specific error classes at each layer. Verify your rescue list matches what the lower layer actually raises. |
-
-   **When to skip:** Leaf-node changes with no callbacks, no state persistence, no parallel interfaces. If the change is purely additive (new helper method, new view partial), the check takes 10 seconds and the answer is "nothing fires, skip."
-
-   **When this matters most:** Any change that touches models with callbacks, error handling with fallback/retry, or functionality exposed through multiple interfaces.
 
    **IMPORTANT**: Always update the original plan document by checking off completed items. Use the Edit tool to change `- [ ]` to `- [x]` for each task you finish. This keeps the plan as a living document showing progress and ensures no checkboxes are left unchecked.
 
@@ -158,7 +143,6 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Don't wait until the end to test
    - Fix failures immediately
    - Add new tests for new functionality
-   - **Unit tests with mocks prove logic in isolation. Integration tests with real objects prove the layers work together.** If your change touches callbacks, middleware, or error handling — you need both.
 
 5. **Figma Design Sync** (if applicable)
 
@@ -191,9 +175,22 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 2. **Consider Reviewer Agents** (Optional)
 
-   Use for complex, risky, or large changes. Read agents from `compound-engineering.local.md` frontmatter (`review_agents`). If no settings file, invoke the `setup` skill to create one.
+   Use for complex, risky, or large changes:
 
-   Run configured agents in parallel with Task tool. Present findings and address critical issues.
+   - **code-simplicity-reviewer**: Check for unnecessary complexity
+   - **kieran-rails-reviewer**: Verify Rails conventions (Rails projects)
+   - **performance-oracle**: Check for performance issues
+   - **security-sentinel**: Scan for security vulnerabilities
+   - **cora-test-reviewer**: Review test quality (CORA projects)
+
+   Run reviewers in parallel with Task tool:
+
+   ```
+   Task(code-simplicity-reviewer): "Review changes for simplicity"
+   Task(kieran-rails-reviewer): "Check Rails conventions"
+   ```
+
+   Present findings to user and address critical issues.
 
 3. **Final Validation**
    - All TodoWrite tasks marked completed
@@ -202,16 +199,6 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Code follows existing patterns
    - Figma designs match (if applicable)
    - No console errors or warnings
-
-4. **Prepare Operational Validation Plan** (REQUIRED)
-   - Add a `## Post-Deploy Monitoring & Validation` section to the PR description for every change.
-   - Include concrete:
-     - Log queries/search terms
-     - Metrics or dashboards to watch
-     - Expected healthy signals
-     - Failure signals and rollback/mitigation trigger
-     - Validation window and owner
-   - If there is truly no production/runtime impact, still include the section with: `No additional operational monitoring required` and a one-line reason.
 
 ### Phase 4: Ship It
 
@@ -282,22 +269,6 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Tests added/modified
    - Manual testing performed
 
-   ## Post-Deploy Monitoring & Validation
-   - **What to monitor/search**
-     - Logs:
-     - Metrics/Dashboards:
-   - **Validation checks (queries/commands)**
-     - `command or query here`
-   - **Expected healthy behavior**
-     - Expected signal(s)
-   - **Failure signal(s) / rollback trigger**
-     - Trigger + immediate action
-   - **Validation window & owner**
-     - Window:
-     - Owner:
-   - **If no operational impact**
-     - `No additional operational monitoring required: <reason>`
-
    ## Before / After Screenshots
    | Before | After |
    |--------|-------|
@@ -313,88 +284,11 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-4. **Update Plan Status**
-
-   If the input document has YAML frontmatter with a `status` field, update it to `completed`:
-   ```
-   status: active  →  status: completed
-   ```
-
-5. **Notify User**
+4. **Notify User**
    - Summarize what was completed
    - Link to PR
    - Note any follow-up work needed
    - Suggest next steps if applicable
-
----
-
-## Swarm Mode (Optional)
-
-For complex plans with multiple independent workstreams, enable swarm mode for parallel execution with coordinated agents.
-
-### When to Use Swarm Mode
-
-| Use Swarm Mode when... | Use Standard Mode when... |
-|------------------------|---------------------------|
-| Plan has 5+ independent tasks | Plan is linear/sequential |
-| Multiple specialists needed (review + test + implement) | Single-focus work |
-| Want maximum parallelism | Simpler mental model preferred |
-| Large feature with clear phases | Small feature or bug fix |
-
-### Enabling Swarm Mode
-
-To trigger swarm execution, say:
-
-> "Make a Task list and launch an army of agent swarm subagents to build the plan"
-
-Or explicitly request: "Use swarm mode for this work"
-
-### Swarm Workflow
-
-When swarm mode is enabled, the workflow changes:
-
-1. **Create Team**
-   ```
-   Teammate({ operation: "spawnTeam", team_name: "work-{timestamp}" })
-   ```
-
-2. **Create Task List with Dependencies**
-   - Parse plan into TaskCreate items
-   - Set up blockedBy relationships for sequential dependencies
-   - Independent tasks have no blockers (can run in parallel)
-
-3. **Spawn Specialized Teammates**
-   ```
-   Task({
-     team_name: "work-{timestamp}",
-     name: "implementer",
-     subagent_type: "general-purpose",
-     prompt: "Claim implementation tasks, execute, mark complete",
-     run_in_background: true
-   })
-
-   Task({
-     team_name: "work-{timestamp}",
-     name: "tester",
-     subagent_type: "general-purpose",
-     prompt: "Claim testing tasks, run tests, mark complete",
-     run_in_background: true
-   })
-   ```
-
-4. **Coordinate and Monitor**
-   - Team lead monitors task completion
-   - Spawn additional workers as phases unblock
-   - Handle plan approval if required
-
-5. **Cleanup**
-   ```
-   Teammate({ operation: "requestShutdown", target_agent_id: "implementer" })
-   Teammate({ operation: "requestShutdown", target_agent_id: "tester" })
-   Teammate({ operation: "cleanup" })
-   ```
-
-See the `orchestrating-swarms` skill for detailed swarm patterns and best practices.
 
 ---
 
@@ -443,7 +337,6 @@ Before creating PR, verify:
 - [ ] Figma designs match implementation (if applicable)
 - [ ] Before/after screenshots captured and uploaded (for UI changes)
 - [ ] Commit messages follow conventional format
-- [ ] PR description includes Post-Deploy Monitoring & Validation section (or explicit no-impact rationale)
 - [ ] PR description includes summary, testing notes, and screenshots
 - [ ] PR description includes Compound Engineered badge
 

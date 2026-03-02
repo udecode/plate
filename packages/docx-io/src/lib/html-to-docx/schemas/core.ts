@@ -2,6 +2,21 @@
 import { applicationName } from '../constants';
 import namespaces from '../namespaces';
 
+/**
+ * Format a Date as local time with Z suffix.
+ * Word uses local time with a trailing 'Z' in dcterms:created/modified
+ * (non-standard but expected by the OOXML ecosystem).
+ */
+function toLocalWithZ(d: Date): string {
+  const Y = d.getFullYear();
+  const M = String(d.getMonth() + 1).padStart(2, '0');
+  const D = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  return `${Y}-${M}-${D}T${h}:${m}:${s}Z`;
+}
+
 const generateCoreXML = (
   title: string = '',
   subject: string = '',
@@ -35,13 +50,13 @@ const generateCoreXML = (
             <cp:revision>${revision}</cp:revision>
             <dcterms:created xsi:type="dcterms:W3CDTF">${
               createdAt instanceof Date
-                ? createdAt.toISOString()
-                : new Date().toISOString()
+                ? toLocalWithZ(createdAt)
+                : toLocalWithZ(new Date())
             }</dcterms:created>
             <dcterms:modified xsi:type="dcterms:W3CDTF">${
               modifiedAt instanceof Date
-                ? modifiedAt.toISOString()
-                : new Date().toISOString()
+                ? toLocalWithZ(modifiedAt)
+                : toLocalWithZ(new Date())
             }</dcterms:modified>
         </cp:coreProperties>
     `;
