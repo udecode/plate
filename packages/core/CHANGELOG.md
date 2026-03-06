@@ -1,12 +1,5 @@
 # @platejs/core
 
-## 52.3.3
-
-### Patch Changes
-
-- [#4849](https://github.com/udecode/plate/pull/4849) by [@zbeyens](https://github.com/zbeyens) –
-  - Update Slate dependencies to `0.123.0`
-
 ## 52.0.17
 
 ### Patch Changes
