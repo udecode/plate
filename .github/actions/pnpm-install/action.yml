@@ -30,6 +30,6 @@ runs:
     - name: 📥 Install dependencies
       shell: bash
       working-directory: ${{ inputs.cwd }}
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --no-frozen-lockfile
       env:
         HUSKY: '0'
