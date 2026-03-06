@@ -149,8 +149,7 @@ Before creating the skill, search the web for current information when:
 ### Step 3: Structure the Skill
 
 Save the skill to the appropriate location:
-
-- If `.claude/skiller.toml` exists: `.claude/skills/[skill-name].mdc`
+- If `.claude/skiller.toml` exists: `.claude/rules/[skill-name].mdc`
 - Otherwise: `.claude/skills/[skill-name]/SKILL.md`
 
 Use MDC frontmatter:

@@ -1,6 +1,6 @@
 ---
 name: sync-testing-skill
-description: "Command: sync-testing-skill"
+description: 'Command: sync-testing-skill'
 ---
 
 Scan package tests, update @.claude/skills/testing/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.
@@ -22,3 +22,4 @@ Scan package tests, update @.claude/skills/testing/testing.mdc with new patterns
 - ONLY import `mock` and `spyOn` when used
 
 **Package:** Specify path (e.g., `packages/media`)
+
