@@ -1,0 +1,52 @@
+---
+name: vercel-root-directory-cli
+description: 'Skill: vercel-root-directory-cli'
+---
+
+# Vercel Root Directory vs CLI Deploy
+
+## Problem
+
+`vercel build` can pass while `vercel deploy` fails in a monorepo because the Vercel project is configured
+with a subdirectory Root Directory, but `vercel.json` sits at the repo root.
+
+## Context / Trigger Conditions
+
+Use this rule when all of these smell true:
+
+- The Vercel project Root Directory is set to something like `apps/www`
+- `vercel.json` is at the repo root instead of inside that Root Directory
+- `vercel deploy` or `vercel deploy --prebuilt` fails with `The vercel.json file should be inside of the provided root directory`
+- The dashboard can still build because "Include files outside the root directory" is enabled
+
+## Solution
+
+1. Check the Vercel project Root Directory with `vercel project inspect`.
+2. Check where `vercel.json` actually lives.
+3. If Root Directory is a subdirectory, either:
+   - move `vercel.json` into that Root Directory, or
+   - change the Vercel project Root Directory back to repo root.
+4. Do not treat this as an app source failure unless `vercel build` reproduces it.
+
+## Verification
+
+- `vercel build` succeeds locally from the expected project root
+- `vercel project inspect` reports a Root Directory that matches where `vercel.json` lives
+- `vercel deploy` no longer fails with the root-directory error
+
+## Example
+
+- Repo root contains `vercel.json`
+- Vercel project Root Directory is `apps/www`
+- Dashboard builds may still work with files outside the root included
+- CLI deploy fails because it expects `vercel.json` inside `apps/www`
+
+## Notes
+
+- "Include files outside the root directory" helps the build step see workspace files. It does not make CLI config validation ignore the Root Directory boundary.
+- If the latest app error only appeared in remote logs, reproduce first with `vercel build` before changing source files.
+
+## References
+
+- https://vercel.com/docs/monorepos
+- https://vercel.com/docs/deployments/configure-a-build#root-directory
