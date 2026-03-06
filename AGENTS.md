@@ -3,6 +3,17 @@
 
 <!-- Source: .claude/AGENTS.md -->
 
+## Packages
+
+- DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
+- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow .claude/docs/solutions/style.md for writing tone/structure.
+- Always use @.claude/commands/changeset.md when updating packages to write a changeset before completing
+- Use tdd skill for package updates that add or change live behavior.
+- Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
+- Prefer inline when used once; extract constants only when reused.
+
+## General
+
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - ALWAYS read and understand relevant files before proposing edits. Do not speculate about code you have not inspected.
 - Never browse GitHub, use `gh` instead. Use `dig` skill when the user asks a question about a library, needs to understand a library's API, or when you need information about a library that you don't know about.
@@ -11,9 +22,13 @@
 
 ## Browser Testing
 
+## Browser Testing
+
 - Never close agent-browser
-- Use `--headed` unless asked for headless
+- Use `--headed` only you failed to test and need manual input from human.
 - Port 3000 for main app
+- Use `agent-browser` instead of Do NOT use next-devtools `browser_eval` (overlaps with agent-browser)
+- Use `bun convex:logs` to watch the Convex logs
 
 ## Compound Engineering Overrides
 

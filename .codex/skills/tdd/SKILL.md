@@ -1,446 +1,325 @@
 ---
 name: tdd
-description: Use when implementing complex logic that needs test coverage - write the test first, watch it fail, write minimal code to pass; ensures tests actually verify behavior by requiring failure first; NOT for UI components, simple CRUD, or straightforward code
+description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development.
 ---
 
-# Test-Driven Development (TDD)
+# Test-Driven Development
 
-## Overview
+## Philosophy
 
-Write the test first. Watch it fail. Write minimal code to pass.
+**Core principle**: Tests should verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
 
-**Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
+**Good tests** are integration-style: they exercise real code paths through public APIs. They describe _what_ the system does, not _how_ it does it. A good test reads like a specification - "user can checkout with valid cart" tells you exactly what capability exists. These tests survive refactors because they don't care about internal structure.
 
-**When to use:** Only for complex logic where bugs are likely, or when user explicitly requests tests.
-
-## When to Use
-
-**Use TDD when:**
-
-1. **User explicitly requests tests**
-2. **Complex logic where bugs are likely:**
-   - Complex algorithms
-   - Business logic with edge cases
-   - Data transformations
-   - Critical paths that could break silently
-
-**Skip TDD for:**
-
-- ❌ UI components (React components, hooks)
-- ❌ Simple CRUD operations
-- ❌ Straightforward mappings
-- ❌ Anything you're 100% certain is correct
-- ❌ Throwaway prototypes
-- ❌ Configuration files
-
-**Verification alternatives when skipping:**
-
-- Typecheck with `npm run typecheck`
-- Lint with `npm run lint`
-- Manual testing for UI changes
-- Code review confidence
-
-## The Rule (When Using TDD)
-
-```
-WHEN WRITING TESTS: NO CODE WITHOUT A FAILING TEST FIRST
-```
-
-**When you've decided to use TDD** (complex logic, user request):
-
-Write code before the test? Delete it. Start over.
-
-**No exceptions when using TDD:**
-
-- Don't keep it as "reference"
-- Don't "adapt" it while writing tests
-- Don't look at it
-- Delete means delete
-
-Implement fresh from tests. Period.
-
-**When NOT using TDD** (UI, simple code):
-
-- Write code directly
-- Verify with typecheck/lint
-- Skip the test
-
-## Red-Green-Refactor
-
-```dot
-digraph tdd_cycle {
-    rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
-
-    red -> verify_red;
-    verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
-    green -> verify_green;
-    verify_green -> refactor [label="yes"];
-    verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
-}
-```
-
-### RED - Write Failing Test
-
-Write one minimal test showing what should happen.
-
-<Good>
 ```typescript
-test('retries failed operations 3 times', async () => {
-  let attempts = 0;
-  const operation = () => {
-    attempts++;
-    if (attempts < 3) throw new Error('fail');
-    return 'success';
-  };
-
-const result = await retryOperation(operation);
-
-expect(result).toBe('success');
-expect(attempts).toBe(3);
+// GOOD: Tests observable behavior
+test("user can checkout with valid cart", async () => {
+  const cart = createCart();
+  cart.add(product);
+  const result = await checkout(cart, paymentMethod);
+  expect(result.status).toBe("confirmed");
 });
 
-````
-Clear name, tests real behavior, one thing
-</Good>
-
-<Bad>
-```typescript
-test('retry works', async () => {
-  const mock = jest.fn()
-    .mockRejectedValueOnce(new Error())
-    .mockRejectedValueOnce(new Error())
-    .mockResolvedValueOnce('success');
-  await retryOperation(mock);
-  expect(mock).toHaveBeenCalledTimes(3);
-});
-````
-
-Vague name, tests mock not code
-</Bad>
-
-**Requirements:**
-
-- One behavior
-- Clear name
-- Real code (no mocks unless unavoidable)
-
-### Verify RED - Watch It Fail
-
-**MANDATORY. Never skip.**
-
-```bash
-npm test path/to/test.test.ts
-```
-
-Confirm:
-
-- Test fails (not errors)
-- Failure message is expected
-- Fails because feature missing (not typos)
-
-**Test passes?** You're testing existing behavior. Fix test.
-
-**Test errors?** Fix error, re-run until it fails correctly.
-
-### GREEN - Minimal Code
-
-Write simplest code to pass the test.
-
-<Good>
-```typescript
-async function retryOperation<T>(fn: () => Promise<T>): Promise<T> {
-  for (let i = 0; i < 3; i++) {
-    try {
-      return await fn();
-    } catch (e) {
-      if (i === 2) throw e;
-    }
-  }
-  throw new Error('unreachable');
-}
-```
-Just enough to pass
-</Good>
-
-<Bad>
-```typescript
-async function retryOperation<T>(
-  fn: () => Promise<T>,
-  options?: {
-    maxRetries?: number;
-    backoff?: 'linear' | 'exponential';
-    onRetry?: (attempt: number) => void;
-  }
-): Promise<T> {
-  // YAGNI
-}
-```
-Over-engineered
-</Bad>
-
-Don't add features, refactor other code, or "improve" beyond the test.
-
-### Verify GREEN - Watch It Pass
-
-**MANDATORY.**
-
-```bash
-npm test path/to/test.test.ts
-```
-
-Confirm:
-
-- Test passes
-- Other tests still pass
-- Output pristine (no errors, warnings)
-
-**Test fails?** Fix code, not test.
-
-**Other tests fail?** Fix now.
-
-### REFACTOR - Clean Up
-
-After green only:
-
-- Remove duplication
-- Improve names
-- Extract helpers
-
-Keep tests green. Don't add behavior.
-
-### Repeat
-
-Next failing test for next feature.
-
-## Good Tests
-
-| Quality          | Good                                | Bad                                                 |
-| ---------------- | ----------------------------------- | --------------------------------------------------- |
-| **Minimal**      | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
-| **Clear**        | Name describes behavior             | `test('test1')`                                     |
-| **Shows intent** | Demonstrates desired API            | Obscures what code should do                        |
-
-## Why Order Matters
-
-**"I'll write tests after to verify it works"**
-
-Tests written after code pass immediately. Passing immediately proves nothing:
-
-- Might test wrong thing
-- Might test implementation, not behavior
-- Might miss edge cases you forgot
-- You never saw it catch the bug
-
-Test-first forces you to see the test fail, proving it actually tests something.
-
-**"I already manually tested all the edge cases"**
-
-Manual testing is ad-hoc. You think you tested everything but:
-
-- No record of what you tested
-- Can't re-run when code changes
-- Easy to forget cases under pressure
-- "It worked when I tried it" ≠ comprehensive
-
-Automated tests are systematic. They run the same way every time.
-
-**"Deleting X hours of work is wasteful"**
-
-Sunk cost fallacy. The time is already gone. Your choice now:
-
-- Delete and rewrite with TDD (X more hours, high confidence)
-- Keep it and add tests after (30 min, low confidence, likely bugs)
-
-The "waste" is keeping code you can't trust. Working code without real tests is technical debt.
-
-**"TDD is dogmatic, being pragmatic means adapting"**
-
-TDD IS pragmatic:
-
-- Finds bugs before commit (faster than debugging after)
-- Prevents regressions (tests catch breaks immediately)
-- Documents behavior (tests show how to use code)
-- Enables refactoring (change freely, tests catch breaks)
-
-"Pragmatic" shortcuts = debugging in production = slower.
-
-**"Tests after achieve the same goals - it's spirit not ritual"**
-
-No. Tests-after answer "What does this do?" Tests-first answer "What should this do?"
-
-Tests-after are biased by your implementation. You test what you built, not what's required. You verify remembered edge cases, not discovered ones.
-
-Tests-first force edge case discovery before implementing. Tests-after verify you remembered everything (you didn't).
-
-30 minutes of tests after ≠ TDD. You get coverage, lose proof tests work.
-
-## Common Rationalizations (When TDD Applies)
-
-**Valid reasons to skip TDD:**
-| Reason | Reality |
-| ----------------------------- | ------------------------------------------------------------- |
-| "This is a UI component" | ✅ Correct! Verify with typecheck/manual testing, skip tests. |
-| "Simple CRUD, 100% confident" | ✅ Correct! Verify with typecheck/lint, skip tests. |
-| "Straightforward mapping" | ✅ Correct! If truly simple, skip tests. |
-
-**Invalid rationalizations (for complex logic):**
-| Excuse | Reality |
-| -------------------------------------- | ----------------------------------------------------------------------- |
-| "Too simple to test" | If it's complex logic, test it. If truly simple, skip is fine. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
-| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
-| "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
-| "TDD will slow me down" | TDD faster than debugging. Pragmatic = test-first. |
-| "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
-
-## Red Flags - When Using TDD
-
-**These only apply when you've decided to use TDD** (complex logic, user request):
-
-- Code before test
-- Test after implementation
-- Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "This is different because..."
-
-**All of these mean: Delete code. Start over with TDD.**
-
-**Valid decision to skip TDD:**
-
-- ✅ "This is a UI component" - Skip TDD, verify with typecheck
-- ✅ "Simple CRUD, 100% confident" - Skip TDD, verify with lint
-- ✅ "Straightforward code" - Skip TDD if truly simple
-
-## Example: Bug Fix
-
-**Bug:** Empty email accepted
-
-**RED**
-
-```typescript
-test("rejects empty email", async () => {
-  const result = await submitForm({ email: "" });
-  expect(result.error).toBe("Email required");
+// GOOD: Verifies through interface
+test("createUser makes user retrievable", async () => {
+  const user = await createUser({ name: "Alice" });
+  const retrieved = await getUser(user.id);
+  expect(retrieved.name).toBe("Alice");
 });
 ```
 
-**Verify RED**
+Characteristics of good tests:
 
-```bash
-$ npm test
-FAIL: expected 'Email required', got undefined
-```
+- Tests behavior users/callers care about
+- Uses public API only
+- Survives internal refactors
+- Describes WHAT, not HOW
+- One logical assertion per test
 
-**GREEN**
+**Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). The warning sign: your test breaks when you refactor, but behavior hasn't changed.
 
 ```typescript
-function submitForm(data: FormData) {
-  if (!data.email?.trim()) {
-    return { error: "Email required" };
-  }
-  // ...
+// BAD: Tests implementation details
+test("checkout calls paymentService.process", async () => {
+  const mockPayment = jest.mock(paymentService);
+  await checkout(cart, payment);
+  expect(mockPayment.process).toHaveBeenCalledWith(cart.total);
+});
+
+// BAD: Bypasses interface to verify
+test("createUser saves to database", async () => {
+  await createUser({ name: "Alice" });
+  const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
+  expect(row).toBeDefined();
+});
+```
+
+Red flags:
+
+- Mocking internal collaborators
+- Testing private methods
+- Asserting on call counts/order
+- Test breaks when refactoring without behavior change
+- Test name describes HOW not WHAT
+
+Prefer writing tests before implementation. If you've already written code, consider starting fresh from tests rather than retrofitting — tests written after tend to verify what you built, not what's required.
+
+## Mocking
+
+Mock at **system boundaries** only:
+
+- External APIs (payment, email, etc.)
+- Databases (sometimes - prefer test DB)
+- Time/randomness
+- File system (sometimes)
+
+Don't mock:
+
+- Your own classes/modules
+- Internal collaborators
+- Anything you control
+
+**Use dependency injection** — pass external dependencies in rather than creating them internally:
+
+```typescript
+// Easy to mock
+function processPayment(order, paymentClient) {
+  return paymentClient.charge(order.total);
+}
+
+// Hard to mock
+function processPayment(order) {
+  const client = new StripeClient(process.env.STRIPE_KEY);
+  return client.charge(order.total);
 }
 ```
 
-**Verify GREEN**
+**Prefer SDK-style interfaces** — specific functions for each external operation:
 
-```bash
-$ npm test
-PASS
+```typescript
+// GOOD: Each function is independently mockable
+const api = {
+  getUser: (id) => fetch(`/users/${id}`),
+  getOrders: (userId) => fetch(`/users/${userId}/orders`),
+  createOrder: (data) => fetch("/orders", { method: "POST", body: data }),
+};
+
+// BAD: Mocking requires conditional logic inside the mock
+const api = {
+  fetch: (endpoint, options) => fetch(endpoint, options),
+};
 ```
 
-**REFACTOR**
-Extract validation for multiple fields if needed.
+## Interface Design for Testability
 
-## Verification Checklist
+1. **Accept dependencies, don't create them**
 
-**If using TDD** (complex logic, user request):
+   ```typescript
+   // Testable
+   function processOrder(order, paymentGateway) {}
 
-- [ ] Every new complex function has a test
-- [ ] Watched each test fail before implementing
-- [ ] Each test failed for expected reason (feature missing, not typo)
-- [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
-- [ ] Output pristine (no errors, warnings)
-- [ ] Tests use real code (mocks only if unavoidable)
-- [ ] Edge cases and errors covered
+   // Hard to test
+   function processOrder(order) {
+     const gateway = new StripeGateway();
+   }
+   ```
 
-Can't check all boxes? You skipped TDD. Start over.
+2. **Return results, don't produce side effects**
 
-**If NOT using TDD** (UI, simple code):
+   ```typescript
+   // Testable
+   function calculateDiscount(cart): Discount {}
 
-- [ ] Code is straightforward and you're 100% confident
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
-- [ ] Manual testing confirms UI works as expected
-- [ ] No complex business logic that needs test coverage
+   // Hard to test
+   function applyDiscount(cart): void {
+     cart.total -= discount;
+   }
+   ```
 
-## When Stuck
+3. **Small surface area** — fewer methods = fewer tests needed, fewer params = simpler test setup
 
-| Problem                | Solution                                                             |
-| ---------------------- | -------------------------------------------------------------------- |
-| Don't know how to test | Write wished-for API. Write assertion first. Ask your human partner. |
-| Test too complicated   | Design too complicated. Simplify interface.                          |
-| Must mock everything   | Code too coupled. Use dependency injection.                          |
-| Test setup huge        | Extract helpers. Still complex? Simplify design.                     |
+**Deep modules** (from "A Philosophy of Software Design"): small interface + lots of implementation. When designing, ask: Can I reduce methods? Simplify params? Hide more complexity inside?
 
-## Debugging Integration
+## Anti-Pattern: Horizontal Slices
 
-**Bug in complex logic?**
-Write failing test reproducing it. Follow TDD cycle. Test proves fix and prevents regression.
+**DO NOT write all tests first, then all implementation.** This is "horizontal slicing" - treating RED as "write all tests" and GREEN as "write all code."
 
-**Bug in UI component or simple code?**
-Fix directly. Verify with typecheck/lint/manual testing.
+This produces **crap tests**:
 
-**Decision criteria:**
+- Tests written in bulk test _imagined_ behavior, not _actual_ behavior
+- You end up testing the _shape_ of things (data structures, function signatures) rather than user-facing behavior
+- Tests become insensitive to real changes - they pass when behavior breaks, fail when behavior is fine
+- You outrun your headlights, committing to test structure before understanding the implementation
 
-- Complex algorithm/business logic → Write test
-- UI component/straightforward fix → Skip test
-
-## Final Rules
-
-**When to use TDD:**
-
-1. **User explicitly requests tests**
-2. **Complex logic where bugs are likely** (algorithms, business logic, data transformations)
-
-**When to skip TDD:**
-
-- UI components (React components, hooks)
-- Simple CRUD operations
-- Straightforward mappings
-- Anything you're 100% certain is correct
-
-**If using TDD:**
+**Correct approach**: Vertical slices via tracer bullets. One test → one implementation → repeat. Each test responds to what you learned from the previous cycle.
 
 ```
-Production code → test exists and failed first
-Otherwise → not TDD
+WRONG (horizontal):
+  RED:   test1, test2, test3, test4, test5
+  GREEN: impl1, impl2, impl3, impl4, impl5
+
+RIGHT (vertical):
+  RED→GREEN: test1→impl1
+  RED→GREEN: test2→impl2
+  RED→GREEN: test3→impl3
+  ...
 ```
 
-**If skipping TDD:**
+## Workflow
+
+### 1. Planning
+
+Before writing any code:
+
+- [ ] Confirm with user what interface changes are needed
+- [ ] Confirm with user which behaviors to test (prioritize)
+- [ ] Identify opportunities for deep modules (small interface, deep implementation)
+- [ ] Design interfaces for testability
+- [ ] List the behaviors to test (not implementation steps)
+- [ ] Get user approval on the plan
+
+Ask: "What should the public interface look like? Which behaviors are most important to test?"
+
+**You can't test everything.** Confirm with the user exactly which behaviors matter most. Focus testing effort on critical paths and complex logic, not every possible edge case.
+
+### 2. Tracer Bullet
+
+Write ONE test that confirms ONE thing about the system:
 
 ```
-Production code → typecheck + lint pass
-Manual verification for UI changes
-Code review confidence
+RED:   Write test → run test → confirm it FAILS correctly
+GREEN: Write minimal code → run test → confirm it PASSES
 ```
 
-**Only deterministic unit tests** - no integration tests, no complex mocking, no async complexity.
+- Test passes immediately? You're testing existing behavior. Fix the test.
+- Test errors (not assertion failure)? Fix the error first — erroring is not the same as failing.
+
+This is your tracer bullet - proves the path works end-to-end.
+
+### 3. Incremental Loop
+
+For each remaining behavior:
+
+```
+RED:   Write next test → run test → confirm it FAILS correctly
+GREEN: Write minimal code → run test → confirm it PASSES
+```
+
+Rules:
+
+- One test at a time
+- Only enough code to pass current test
+- Don't anticipate future tests
+- Keep tests focused on observable behavior
+
+### 4. Refactor
+
+After all tests pass, look for refactor candidates:
+
+- [ ] Extract duplication
+- [ ] Deepen modules (move complexity behind simple interfaces)
+- [ ] Apply SOLID principles where natural
+- [ ] Consider what new code reveals about existing code
+- [ ] Run tests after each refactor step
+
+Refactor candidates: duplication → extract function/class, long methods → break into private helpers, shallow modules → combine or deepen, feature envy → move logic to where data lives, primitive obsession → introduce value objects.
+
+**Never refactor while RED.** Get to GREEN first.
+
+## Checklist Per Cycle
+
+```
+[ ] Test describes behavior, not implementation
+[ ] Test uses public interface only
+[ ] Test would survive internal refactor
+[ ] Code is minimal for this test
+[ ] No speculative features added
+[ ] Watched test fail before writing code
+[ ] Failure was for expected reason (missing feature, not typo)
+[ ] All other tests still pass
+```
+
+## Bug Fix Example
+
+TDD applies to bug fixes — write a test that reproduces the bug first.
+
+```
+# Bug: empty email passes validation
+
+RED:   test("rejects empty email", () => {
+         const result = validateEmail("");
+         expect(result.valid).toBe(false);
+       });
+       → Run test → FAILS (empty string passes validation) ✓
+
+GREEN: Add check: if (!email || !email.includes("@")) return { valid: false }
+       → Run test → PASSES ✓
+
+       Verify all other validation tests still pass.
+```
+
+## Type Testing
+
+Compile-time type assertions. No runtime — just `bun typecheck`. Catches regressions in generics, conditional types, and type constraints that runtime tests can't see.
+
+**When:** generic APIs, utility types, complex inference, mapped/conditional types, ensuring invalid usage errors. **Not:** trivial stuff like `string` prop accepts `string`.
+
+### Utilities
+
+Search for a file exporting `Expect` and `Equal`. If none exists, create one:
+
+```typescript
+export function Expect<T extends true>() {}
+export type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <
+  T
+>() => T extends Y ? 1 : 2
+  ? true
+  : false;
+export type Not<T extends boolean> = T extends true ? false : true;
+export type IsAny<T> = 0 extends 1 & T ? true : false;
+export type IsNever<T> = [T] extends [never] ? true : false;
+```
+
+- `Expect<T extends true>` — compile error = test failure
+- `Equal<X, Y>` — exact type equality (defeats `any` widening)
+- `Not`, `IsAny`, `IsNever` — edge case guards (`any`/`never` break naive comparisons)
+
+### Positive Assertions
+
+```typescript
+import { Expect, Equal, Not, IsAny } from "./utils";
+
+// Block scope each test to avoid name collisions
+{
+  type Result = ReturnType<typeof myGenericFn<SomeInput>>;
+  Expect<Equal<Result, { id: string; name: string }>>;
+  Expect<Not<IsAny<Result>>>;
+}
+```
+
+### Negative Tests
+
+`@ts-expect-error` **must** be on the line immediately before the error. Always include a reason. Unused directive = failing test (constraint is missing).
+
+```typescript
+// ✅ directive on line immediately before error
+doSomething({
+  // @ts-expect-error - name must be string
+  name: 123,
+});
+
+// ❌ directive too far from error
+doSomething({
+  // @ts-expect-error - name must be string
+  ...defaults,
+  name: 123,
+});
+```
+
+### Tips
+
+- **`declare const`** for mock values without runtime: `declare const ctx: SomeCtx;`
+- **`type _name = Expect<...>`** when you need a type-level-only assertion (no runtime `Expect()` call needed)
+- **`/* biome-ignore-all lint */`** at file top for type-only files — suppresses unused variable warnings
+
+Run with `bun typecheck`. If it compiles, it passes.
