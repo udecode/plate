@@ -1,6 +1,37 @@
 ---
 name: testing
-description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun testing patterns with JSX pragma, proper matchers, and spy cleanup Applies to files matching: **/*.spec.*, **/*.test.*.
+description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun testing patterns with JSX pragma, proper matchers, seam selection, and helper placement. Applies to files matching: **/*.spec.*, **/*.test.*.
 ---
 
-@.claude/rules/testing.mdc
+# Test Taxonomy
+
+- Prefer the narrowest seam that proves the behavior.
+- Use pure unit tests for deterministic helpers, serializer utilities, and option-merging logic.
+- Use editor/plugin contract tests only for behavior that exists because Plate or Slate wiring exists.
+- Use golden input/output tests for parser and serializer contracts.
+
+# Hard Rules
+
+- No `it.skip`, `test.skip`, placeholder TODO specs, or no-op assertions.
+- No test names like `should be`, `should work`, or `should do nothing`.
+- Do not spin an editor for pure logic.
+- Do not assert the full tree unless the full tree shape is the contract.
+- Prefer `it.each` for matrices and protocol tables.
+- Never import shared helpers from another `*.spec.*` or `*.test.*` file. Bun executes imported spec files.
+- Put shared helpers in `__tests__/` modules or dedicated local test-utils, not in spec files.
+
+# Plate Patterns
+
+- `@platejs/test-utils` plus JSX hyperscript is for editor contracts only.
+- Use `createSlateEditor` over `createPlateEditor` when React wiring is irrelevant.
+- For mark and transform tests, assert changed nodes or marks, not unrelated siblings.
+- For parser tests, keep one helper and explicit input/output pairs.
+- `describe`, `it`, `expect`, and friends are global. Import only `mock` or `spyOn` from `bun:test` when needed.
+
+# Review Checklist
+
+- Does this test describe caller-visible behavior?
+- Would it survive an internal refactor?
+- Could the same confidence come from a smaller seam?
+- Is there already another spec proving the same contract?
+- Will `bun test path/to/spec.tsx` execute only that spec's tests?

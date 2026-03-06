@@ -13,12 +13,14 @@ deepened: 2026-01-23
 **Sources:** Vercel React Best Practices, 3 reviewer agents (DHH, Kieran, Simplicity)
 
 ### Key Improvements
+
 1. Expanded scope to include ALL locale-dependent files (18 files, not 3)
 2. Added Vercel-specific caching guidance (LRU vs React.cache)
 3. Fixed `generateStaticParams` issues for CN route
 4. Added client-side utility migrations
 
 ### Critical Findings from Reviewers
+
 - Home page ALSO uses `searchParams` - must fix
 - `useLocale.ts` uses `useSearchParams()` - needs migration to `usePathname()`
 - Dual encoding (`/cn/...?locale=cn`) is redundant - remove query params entirely
@@ -32,6 +34,7 @@ Docs pages have **0% cache hit rate** causing $50+ Vercel overage. Every request
 ## Problem Statement
 
 **Symptoms from Vercel dashboard:**
+
 - 0% cache hit rate on `/docs/[[...slug]]`
 - $22.84 Fluid Active CPU (178 hours)
 - $20.43 Fast Origin Transfer (338 GB)
@@ -39,10 +42,11 @@ Docs pages have **0% cache hit rate** causing $50+ Vercel overage. Every request
 - Spike started ~Jan 7
 
 **Root Cause:**
+
 ```tsx
 // apps/www/src/app/(app)/docs/[[...slug]]/page.tsx:35-37
 type DocPageProps = {
-  searchParams: Promise<{ locale: string }>;  // <-- THIS FORCES DYNAMIC RENDERING
+  searchParams: Promise<{ locale: string }>; // <-- THIS FORCES DYNAMIC RENDERING
 };
 ```
 
@@ -55,6 +59,7 @@ From Vercel's React Best Practices guide (Section 3.3 - Cross-Request LRU Cachin
 > "React.cache() only works within one request. For data shared across sequential requests, use an LRU cache."
 
 However, for **static documentation sites**, the better approach is:
+
 1. **Static Generation** via `generateStaticParams()` - already exists but bypassed
 2. **Remove dynamic triggers** - `searchParams` forces dynamic mode
 3. **Vercel Edge CDN** will cache static pages automatically
@@ -66,6 +71,7 @@ The current `React.cache()` calls in [registry-cache.ts](apps/www/src/lib/regist
 Move locale from query param (`?locale=cn`) to path segment (`/cn/docs/...`).
 
 **Why this approach:**
+
 - Enables full static generation + CDN caching
 - Better SEO (separate URLs for each locale)
 - Follows Next.js i18n best practices
@@ -75,16 +81,16 @@ Move locale from query param (`?locale=cn`) to path segment (`/cn/docs/...`).
 
 ### Files to Modify (Complete List)
 
-| File | Change |
-|------|--------|
-| `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx` | Remove `searchParams`, add locale prop |
-| `apps/www/src/app/(app)/page.tsx` | Remove `searchParams` (home page!) |
-| `apps/www/src/app/cn/docs/[[...slug]]/page.tsx` | NEW - CN docs route |
-| `apps/www/src/app/cn/page.tsx` | NEW - CN home page |
-| `apps/www/src/hooks/useLocale.ts` | Use `usePathname()` not `useSearchParams()` |
-| `apps/www/src/lib/withLocale.ts` | Remove `?locale=cn` suffix |
-| `apps/www/src/components/languages-dropdown-menu.tsx` | Remove query param setting |
-| `apps/www/next.config.ts` | Replace rewrites with redirects |
+| File                                                  | Change                                      |
+| ----------------------------------------------------- | ------------------------------------------- |
+| `apps/www/src/app/(app)/docs/[[...slug]]/page.tsx`    | Remove `searchParams`, add locale prop      |
+| `apps/www/src/app/(app)/page.tsx`                     | Remove `searchParams` (home page!)          |
+| `apps/www/src/app/cn/docs/[[...slug]]/page.tsx`       | NEW - CN docs route                         |
+| `apps/www/src/app/cn/page.tsx`                        | NEW - CN home page                          |
+| `apps/www/src/hooks/useLocale.ts`                     | Use `usePathname()` not `useSearchParams()` |
+| `apps/www/src/lib/withLocale.ts`                      | Remove `?locale=cn` suffix                  |
+| `apps/www/src/components/languages-dropdown-menu.tsx` | Remove query param setting                  |
+| `apps/www/next.config.ts`                             | Replace rewrites with redirects             |
 
 ### Step 1: Fix English Docs Page
 
@@ -96,22 +102,22 @@ Remove `searchParams` from page props:
 // BEFORE
 type DocPageProps = {
   params: Promise<{ slug: string[] }>;
-  searchParams: Promise<{ locale: string }>;  // DELETE THIS
+  searchParams: Promise<{ locale: string }>; // DELETE THIS
 };
 
 // AFTER
 type DocPageProps = {
   params: Promise<{ slug: string[] }>;
-  locale?: 'en' | 'cn';  // Optional prop, defaults to 'en'
+  locale?: "en" | "cn"; // Optional prop, defaults to 'en'
 };
 
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 // Update getDocFromParams
-async function getDocFromParams({ params, locale = 'en' }: DocPageProps) {
+async function getDocFromParams({ params, locale = "en" }: DocPageProps) {
   const slugParam = (await params).slug;
   // Use locale prop instead of searchParams
-  if (locale === 'cn') {
+  if (locale === "cn") {
     // Chinese logic...
   }
   // ...
@@ -122,22 +128,26 @@ async function getDocFromParams({ params, locale = 'en' }: DocPageProps) {
 
 ```tsx
 // apps/www/src/app/cn/docs/[[...slug]]/page.tsx
-import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
-import { allDocs } from 'contentlayer/generated';
+import { DocContent } from "@/app/(app)/docs/[[...slug]]/doc-content";
+import { allDocs } from "contentlayer/generated";
 // ... other imports from main page
 
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 // IMPORTANT: Generate params for CN docs specifically
 export function generateStaticParams() {
   return allDocs
-    .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
+    .filter((doc) => doc._raw.sourceFileName?.endsWith(".cn.mdx"))
     .map((doc) => ({
-      slug: doc.slugAsParams.replace(/\.cn$/, '').split('/').slice(1),
+      slug: doc.slugAsParams.replace(/\.cn$/, "").split("/").slice(1),
     }));
 }
 
-export default async function CNDocPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export default async function CNDocPage({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
+}) {
   // Render with locale='cn'
   // ... (copy rendering logic with locale hardcoded to 'cn')
 }
@@ -149,20 +159,20 @@ export default async function CNDocPage({ params }: { params: Promise<{ slug: st
 // apps/www/src/hooks/useLocale.ts
 
 // BEFORE - forces client-side hydration issues
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from "next/navigation";
 
 export const useLocale = () => {
   const searchParams = useSearchParams();
-  const locale = searchParams?.get('locale') || 'en';
+  const locale = searchParams?.get("locale") || "en";
   return locale;
 };
 
 // AFTER - derive from pathname
-import { usePathname } from 'next/navigation';
+import { usePathname } from "next/navigation";
 
 export const useLocale = () => {
   const pathname = usePathname();
-  return pathname?.startsWith('/cn') ? 'cn' : 'en';
+  return pathname?.startsWith("/cn") ? "cn" : "en";
 };
 ```
 
@@ -173,15 +183,15 @@ export const useLocale = () => {
 
 // BEFORE - adds redundant query param
 export const hrefWithLocale = (href: string, locale: string) => {
-  if (locale === 'cn') {
-    return `/cn${href}?locale=${locale}`;  // Redundant!
+  if (locale === "cn") {
+    return `/cn${href}?locale=${locale}`; // Redundant!
   }
   return href;
 };
 
 // AFTER - path only
 export const hrefWithLocale = (href: string, locale: string) => {
-  if (locale === 'cn') {
+  if (locale === "cn") {
     return `/cn${href}`;
   }
   return href;
@@ -234,15 +244,15 @@ export default async function IndexPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const locale = ((await searchParams).locale || 'en') as keyof typeof i18n;
+  const locale = ((await searchParams).locale || "en") as keyof typeof i18n;
   // ...
 }
 
 // AFTER - remove searchParams, default to 'en'
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default async function IndexPage() {
-  const locale = 'en';  // English home page
+  const locale = "en"; // English home page
   // ...
 }
 
@@ -273,12 +283,12 @@ export default async function IndexPage() {
 
 ## Alternative Approaches Considered
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| Path segments (chosen) | Full caching, SEO-friendly | Route restructuring needed |
-| Cookies for locale | No URL changes | Still dynamic, no caching |
-| ISR with short TTL | Quick fix | Still hits origin frequently |
-| Remove CN support | Simplest | Loses Chinese users |
+| Approach               | Pros                       | Cons                         |
+| ---------------------- | -------------------------- | ---------------------------- |
+| Path segments (chosen) | Full caching, SEO-friendly | Route restructuring needed   |
+| Cookies for locale     | No URL changes             | Still dynamic, no caching    |
+| ISR with short TTL     | Quick fix                  | Still hits origin frequently |
+| Remove CN support      | Simplest                   | Loses Chinese users          |
 
 ## Risk Analysis
 
@@ -289,13 +299,15 @@ export default async function IndexPage() {
 ## References
 
 ### Internal Files
-- [apps/www/src/app/(app)/docs/[[...slug]]/page.tsx](apps/www/src/app/(app)/docs/[[...slug]]/page.tsx) - Docs page
-- [apps/www/src/app/(app)/page.tsx](apps/www/src/app/(app)/page.tsx) - Home page
+
+- [apps/www/src/app/(app)/docs/[[...slug]]/page.tsx](<apps/www/src/app/(app)/docs/[[...slug]]/page.tsx>) - Docs page
+- [apps/www/src/app/(app)/page.tsx](<apps/www/src/app/(app)/page.tsx>) - Home page
 - [apps/www/src/hooks/useLocale.ts](apps/www/src/hooks/useLocale.ts) - Client locale hook
 - [apps/www/src/lib/withLocale.ts](apps/www/src/lib/withLocale.ts) - Locale link helper
 - [apps/www/next.config.ts](apps/www/next.config.ts) - Next.js config
 
 ### External Documentation
+
 - [Next.js i18n Routing](https://nextjs.org/docs/app/building-your-application/routing/internationalization)
-- [Vercel React Best Practices - Server Caching](/.claude/rules/vercel-react-best-practices/AGENTS.md#33-cross-request-lru-caching)
+- [Vercel React Best Practices - Server Caching](/.claude/skills/vercel-react-best-practices/AGENTS.md#33-cross-request-lru-caching)
 - [Next.js Static Generation](https://nextjs.org/docs/app/building-your-application/rendering/server-components#static-rendering-default)
