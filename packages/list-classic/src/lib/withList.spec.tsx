@@ -56,7 +56,7 @@ const testDeleteForward = (input: any, expected: any) => {
 describe('withList', () => {
   describe('normalizeList', () => {
     describe('when there is no lic in li', () => {
-      it('should insert lic', () => {
+      it('insert lic', () => {
         const input = (
           <editor>
             <hul>
@@ -87,7 +87,7 @@ describe('withList', () => {
     });
 
     describe('when li > p > children', () => {
-      it('should be li > lic > children', () => {
+      it('normalizes li > p children to li > lic > children', () => {
         const input = (
           <editor>
             <hul>
@@ -116,7 +116,7 @@ describe('withList', () => {
     });
 
     describe('when li > lic > p > children', () => {
-      it('should be li > lic > children', () => {
+      it('normalizes li > lic > p children to li > lic > children', () => {
         const input = (
           <editor>
             <hul>
@@ -147,7 +147,7 @@ describe('withList', () => {
     });
 
     describe('when li > lic > block > block > children', () => {
-      it('should be li > lic > children', () => {
+      it('unwraps nested blocks into li > lic > children', () => {
         const input = (
           <editor>
             <hul>
@@ -180,7 +180,7 @@ describe('withList', () => {
     });
 
     describe('when li > lic > many block > block > children', () => {
-      it('should be li > lic > children merged', () => {
+      it('merges multiple blocks into li > lic > children', () => {
         const input = (
           <editor>
             <hul>
@@ -216,7 +216,7 @@ describe('withList', () => {
     });
 
     describe('when li > block, with block in validLiChildrenTypes', () => {
-      it('should keep the block untouched', () => {
+      it('keep the block untouched', () => {
         const input = (
           <editor>
             <hul>
@@ -261,7 +261,7 @@ describe('withList', () => {
 
   describe('when deleteBackward at block start', () => {
     describe('when at first li', () => {
-      it('should be unindent li children and unwrap the list', () => {
+      it('unindents li children and unwraps the list', () => {
         const input = (
           <editor>
             <hp>test</hp>
@@ -298,7 +298,7 @@ describe('withList', () => {
     });
 
     describe('when at nested li without li children', () => {
-      it('should delete the li and merge the text nodes to the previous li', () => {
+      it('delete the li and merge the text nodes to the previous li', () => {
         const input = (
           <editor>
             <hp>test</hp>
@@ -334,7 +334,7 @@ describe('withList', () => {
     });
 
     describe('when the list is not nested and li is not the first child', () => {
-      it('should move li up', () => {
+      it('move li up', () => {
         const input = (
           <editor>
             <hp>test</hp>
@@ -370,87 +370,8 @@ describe('withList', () => {
   });
 
   describe('when the list is nested and its children list is not wrapped in li', () => {
-    // it('should move a nested list into previous sibling li', () => {
-    //   const input = ((
-    //     <editor>
-    //       <hul>
-    //         <hli>
-    //           <hlic>level 1.1</hlic>
-    //         </hli>
-    //         <hul>
-    //           <hli>
-    //             <hlic>
-    //               level 2 <cursor />
-    //             </hlic>
-    //           </hli>
-    //         </hul>
-    //         <hli>
-    //           <hlic>level 1.2</hlic>
-    //         </hli>
-    //       </hul>
-    //     </editor>
-    //   ) as any) as SlateEditor;
-    //
-    //   const expected = ((
-    //     <editor>
-    //       <hul>
-    //         <hli>
-    //           <hlic>level 1.1</hlic>
-    //         </hli>
-    //         <hul>
-    //           <hli>
-    //             <hlic>level 2</hlic>
-    //           </hli>
-    //         </hul>
-    //         <hli>
-    //           <hlic>level 1.2</hlic>
-    //         </hli>
-    //       </hul>
-    //     </editor>
-    //   ) as any) as SlateEditor;
-    //
-    //   testDeleteBackward(input, expected);
-    // });
-
-    //   it('should skip a nested list if there is no previous sibling li', () => {
-    //     const input = ((
-    //       <editor>
-    //         <hul>
-    //           <hul>
-    //             <hli>
-    //               <hlic>
-    //                 level 2 <cursor />
-    //               </hlic>
-    //             </hli>
-    //           </hul>
-    //           <hli>
-    //             <hlic>level 1.2</hlic>
-    //           </hli>
-    //         </hul>
-    //       </editor>
-    //     ) as any) as SlateEditor;
-    //
-    //     const expected = ((
-    //       <editor>
-    //         <hul>
-    //           <hul>
-    //             <hli>
-    //               <hlic>level 2</hlic>
-    //             </hli>
-    //           </hul>
-    //           <hli>
-    //             <hlic>level 1.2</hlic>
-    //           </hli>
-    //         </hul>
-    //       </editor>
-    //     ) as any) as SlateEditor;
-    //
-    //     testDeleteBackward(input, expected);
-    //   });
-    // });
-
     describe('when deleteForward at block end', () => {
-      it('should merge the next element when last child', () => {
+      it('merge the next element when last child', () => {
         const input = (
           <editor>
             <hul>
@@ -481,7 +402,7 @@ describe('withList', () => {
         testDeleteForward(input, expected);
       });
 
-      it('should merge next sibling li', () => {
+      it('merge next sibling li', () => {
         const input = (
           <editor>
             <hul>
@@ -514,7 +435,7 @@ describe('withList', () => {
         testDeleteForward(input, expected);
       });
 
-      it('should merge next li and shift one level up', () => {
+      it('merge next li and shift one level up', () => {
         const input = (
           <editor>
             <hul>
@@ -561,7 +482,7 @@ describe('withList', () => {
         testDeleteForward(input, expected);
       });
 
-      it('should shift all nested lists one level up', () => {
+      it('shift all nested lists one level up', () => {
         const input = (
           <editor>
             <hul>

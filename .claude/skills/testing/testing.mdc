@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun testing patterns with JSX pragma, proper matchers, seam selection, and helper placement. Applies to files matching: **/*.spec.*, **/*.test.*.
+description: Use when writing tests for Plate editor, Slate transforms, or React hooks - Bun testing patterns with JSX pragma, proper matchers, seam selection, and helper placement. Applies to files matching: **/*.spec.* and legacy **/*.test.* that should be migrated.
 ---
 
 # Test Taxonomy
@@ -13,22 +13,61 @@ description: Use when writing tests for Plate editor, Slate transforms, or React
 # Hard Rules
 
 - No `it.skip`, `test.skip`, placeholder TODO specs, or no-op assertions.
+- Delete aspirational skipped tests unless the same change is actively implementing that behavior.
+- Do not leave commented-out `it(...)`, `test(...)`, or `describe(...)` blocks in spec files. Delete them or turn them into real tests in the same pass.
+- No `should ...` test titles. Name tests with a direct behavior verb such as `returns`, `inserts`, `keeps`, `throws`, or `does not ...`.
 - No test names like `should be`, `should work`, or `should do nothing`.
+- Title cleanup has to scan hidden forms too: `it.each(...)('...')`, `test.each(...)('...')`, and `it(String.raw\`...\`)`.
+- Do not mirror ugly option names directly in titles when a semantic phrase reads better. Prefer `when normalization is disabled` over `when shouldNormalizeEditor false`.
+- Use `*.spec.ts` or `*.spec.tsx` for test files. Do not add `*.test.*`.
+- Put file-scoped specs beside the implementation they exercise.
+- Reserve `__tests__/` for shared helpers, fixture-heavy suites, and intentionally split multi-file or integration suites.
+- If a `__tests__/` directory holds a lone spec or a file-scoped spec with no helper or fixture reason, move it out.
+- If one helper is covered by a pile of tiny split specs that only vary by input shape, collapse them into one adjacent `*.spec.ts` file with `it.each`.
 - Do not spin an editor for pure logic.
 - Do not assert the full tree unless the full tree shape is the contract.
 - Prefer `it.each` for matrices and protocol tables.
+- Tiny boolean matrix specs should usually collapse to one `it.each` table instead of four near-duplicate examples.
+- Avoid snapshots unless serialized text or AST output is the contract.
 - Never import shared helpers from another `*.spec.*` or `*.test.*` file. Bun executes imported spec files.
 - Put shared helpers in `__tests__/` modules or dedicated local test-utils, not in spec files.
+- Package tests must not import app registries from `apps/` or `www/` just to inherit a bundle of rules or plugins.
+- Do not import React plugin packages just to read `.key`. Use `KEYS` or base plugins instead.
 
 # Plate Patterns
 
 - `@platejs/test-utils` plus JSX hyperscript is for editor contracts only.
 - Prefer plain object fixtures for option/state tests. Use JSX hyperscript only when tree shape or selection shape is the contract.
+- For recursive tree utilities, prefer plain object fixtures. Use a real editor object only when `NodeApi` or `ElementApi` behavior depends on editor semantics.
 - Use `createSlateEditor` over `createPlateEditor` when React wiring is irrelevant.
+- For plugin option stores, selector extension, and other non-React plugin composition tests, use `createSlateEditor`. Reserve `createPlateEditor` for React hooks, providers, and other Plate-only wiring.
+- Pure plugin API and transform composition tests should also use `createSlateEditor`.
 - For mark and transform tests, assert changed nodes or marks, not unrelated siblings.
+- For autoformat tests, use `createSlateEditor` unless plugin React wiring is the contract.
+- For autoformat tests, prefer package-local rule arrays or a tiny local rule list over importing an app-level `AutoformatKit`.
+- If multiple autoformat specs share the same focused editor setup, extract one helper under that suite's `__tests__/` directory.
+- For block autoformat tests, add only the plugins the rule actually needs, such as list or code-block base plugins. Do not pull an app kit in to get them indirectly.
+- If several one-case mark or block specs differ only by delimiter and expected mark, collapse them into one matrix file.
 - For parser tests, keep one helper and explicit input/output pairs.
+- Parser, deserializer, HTML `insertData`, and DnD contract tests should default to `createSlateEditor`. If React rendering is not part of the assertion, Plate is just noise.
+- For streaming markdown tests, keep one helper that applies chunks. Use `deserializeMd(editor, chunks.join(''))` only when final parser parity is the contract. Use explicit tree assertions for chunk-boundary behavior and streamed metadata.
+- Markdown package tests must configure `MarkdownPlugin` locally inside the package helper. Do not import `MarkdownKit` or any app registry from `apps/www`.
 - For `normalizeNode` plugin specs, share one package-local helper that creates the editor and normalizes the root.
+- For rule-override suites like break, delete, and merge rules, use one local editor helper and `it.each` when the same contract is exercised across multiple node types or rule variants.
+- Action helpers may create the editor and perform the transform, but keep `expect(...)` calls in the `it()` body so Biome does not flag misplaced assertions.
+- After the repo-wide seam cleanup, remaining `createPlateEditor` usage should be rare and intentional: React/provider/render/store suites, Plate plugin conversion, or known Plate-only APIs like `moveSelection` and `shiftSelection`.
 - `describe`, `it`, `expect`, and friends are global. Import only `mock` or `spyOn` from `bun:test` when needed.
+
+# Cleanup Workflow
+
+- For large cleanup waves, scan candidate files in a matrix first: file path, line count, skip count, editor factory count, hyperscript usage, and whether the spec is unit, contract, or golden I/O.
+- Scan `__tests__/` directories too: spec count, helper count, fixture count, and whether each spec is file-scoped or truly a split suite.
+- If the cleanup is about title debt, scan file by file for plain string titles, `it.each` format strings, and snapshot keys generated from those titles.
+- If the cleanup is about dead test debt, scan file by file for commented-out `it`, `test`, and `describe` blocks too.
+- When renaming many snapshot-backed tests, delete the snapshot file and regenerate it. `bun test -u` updates and adds keys, but it does not reliably prune dead ones.
+- For plugin composition hotspots, extract helpers like `getSortedKeys(...)` or `createStoreEditor(...)` before adding more inline editor setup.
+- Kill hidden cross-spec helper imports too. `../foo.spec` without the extension is still the same bug.
+- Prefer one small helper module in `__tests__/` over repeating the same editor setup in five specs.
 
 # Review Checklist
 

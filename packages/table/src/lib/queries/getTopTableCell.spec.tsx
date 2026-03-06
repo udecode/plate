@@ -3,7 +3,7 @@
 import { jsxt } from '@platejs/test-utils';
 import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTopTableCell } from './getTopTableCell';
 
 jsxt;
@@ -43,7 +43,7 @@ describe('getTopTableCell', () => {
     </editor>
   ) as any as SlateEditor;
 
-  it('should return the cell above the current cell', () => {
+  it('returns the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
     expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toBe(
@@ -51,7 +51,7 @@ describe('getTopTableCell', () => {
     );
   });
 
-  it('should return undefined if the current cell is in the first row', () => {
+  it('returns undefined if the current cell is in the first row', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
       anchor: { offset: 0, path: [0, 0, 0] },
@@ -63,7 +63,7 @@ describe('getTopTableCell', () => {
     expect(cellAbove).toBeUndefined();
   });
 
-  it('should return undefined if no matching cell is found', () => {
+  it('returns undefined if no matching cell is found', () => {
     const emptyEditor = createEditorInstance({ children: [] });
     const cellAbove = getTopTableCell(emptyEditor);
     expect(cellAbove).toBeUndefined();

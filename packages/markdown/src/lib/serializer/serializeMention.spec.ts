@@ -4,7 +4,7 @@ import { createTestEditor } from '../__tests__/createTestEditor';
 import { serializeMd } from './serializeMd';
 
 describe('serializeMd - mention', () => {
-  it('should serialize mentions to link format', () => {
+  it('serialize mentions to link format', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
     editor.children = [
       {
@@ -26,7 +26,7 @@ describe('serializeMd - mention', () => {
     expect(markdown).toBe('Hello [alice](mention:alice) how are you?\n');
   });
 
-  it('should serialize multiple mentions', () => {
+  it('serialize multiple mentions', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
     editor.children = [
       {
@@ -56,7 +56,7 @@ describe('serializeMd - mention', () => {
     );
   });
 
-  it('should serialize mentions with spaces using link format', () => {
+  it('serialize mentions with spaces using link format', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
     editor.children = [
       {
@@ -78,7 +78,7 @@ describe('serializeMd - mention', () => {
     expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
-  it('should use key for URL when both key and value are present', () => {
+  it('use key for URL when both key and value are present', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
     editor.children = [
       {
@@ -100,7 +100,7 @@ describe('serializeMd - mention', () => {
     expect(markdown).toBe('Hey [John Doe](mention:john_doe) check this out\n');
   });
 
-  it('should round-trip mentions correctly', () => {
+  it('round-trip mentions correctly', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
@@ -113,7 +113,7 @@ describe('serializeMd - mention', () => {
     );
   });
 
-  it('should serialize complex mentions with special characters', () => {
+  it('serialize complex mentions with special characters', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
     editor.children = [
       {

@@ -1,8 +1,12 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type ElementEntry, type SlateEditor, createEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  type ElementEntry,
+  type SlateEditor,
+  createEditor,
+  createSlateEditor,
+} from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { indentCodeLine } from './indentCodeLine';
@@ -11,7 +15,7 @@ jsxt;
 
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {
-    it('should indent', () => {
+    it('indent', () => {
       const input = createEditor(
         (
           <editor>
@@ -38,7 +42,7 @@ describe('indent code line', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -55,7 +59,7 @@ describe('indent code line', () => {
 
   describe('when the selection is collapsed', () => {
     describe('when there are only whitespace characters left of the cursor', () => {
-      it('should indent', () => {
+      it('indent', () => {
         const input = (
           <editor>
             <hcodeblock>
@@ -80,7 +84,7 @@ describe('indent code line', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           plugins: [CodeBlockPlugin],
           selection: input.selection,
           value: input.children,
@@ -96,7 +100,7 @@ describe('indent code line', () => {
     });
 
     describe('when there are non-whitespace characters left of the cursor', () => {
-      it('should insert 2 spaces at the cursor', () => {
+      it('insert 2 spaces at the cursor', () => {
         const input = (
           <editor>
             <hcodeblock>
@@ -121,7 +125,7 @@ describe('indent code line', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           plugins: [CodeBlockPlugin],
           selection: input.selection,
           value: input.children,

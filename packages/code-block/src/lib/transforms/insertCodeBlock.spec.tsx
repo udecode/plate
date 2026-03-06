@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor, createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -11,7 +10,7 @@ jsxt;
 
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
-    it('should turn line to code block', () => {
+    it('turn line to code block', () => {
       const input = createEditor(
         (
           <editor>
@@ -38,7 +37,7 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -51,7 +50,7 @@ describe('insert code block', () => {
   });
 
   describe('when selection is not at start of block', () => {
-    it('should split line at selection and turn latter line to code block', () => {
+    it('split line at selection and turn latter line to code block', () => {
       const input = createEditor(
         (
           <editor>
@@ -79,7 +78,7 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -92,7 +91,7 @@ describe('insert code block', () => {
   });
 
   describe('when selection is expanded', () => {
-    it('should do nothing', () => {
+    it('keeps the editor unchanged for expanded selections', () => {
       const input = createEditor(
         (
           <editor>
@@ -121,7 +120,7 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

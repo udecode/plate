@@ -1,9 +1,8 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
 import { BaseTablePlugin, type TableConfig } from './BaseTablePlugin';
 
@@ -19,7 +18,7 @@ const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
 ];
 
 const createTableEditor = (input: SlateEditor) =>
-  createPlateEditor({
+  createSlateEditor({
     plugins: getTestTablePlugins(),
     selection: input.selection,
     value: input.children,

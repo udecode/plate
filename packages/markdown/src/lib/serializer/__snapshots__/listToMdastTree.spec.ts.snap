@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`listToMdastTree should handle todo lists correctly 1`] = `
+exports[`listToMdastTree handle todo lists correctly 1`] = `
 {
   "children": [
     {

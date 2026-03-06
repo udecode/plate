@@ -28,7 +28,7 @@ describe('deselect', () => {
   });
 
   describe('deselect()', () => {
-    it('should call slate deselect with editor', () => {
+    it('call slate deselect with editor', () => {
       deselect(editor);
 
       expect(slateDeselectSpy).toHaveBeenCalledTimes(1);
@@ -36,7 +36,7 @@ describe('deselect', () => {
   });
 
   describe('deselectDOM()', () => {
-    it('should call DOMEditor.deselect with editor', () => {
+    it('call DOMEditor.deselect with editor', () => {
       deselectDOM(editor);
 
       expect(domEditorDeselectSpy).toHaveBeenCalledTimes(1);

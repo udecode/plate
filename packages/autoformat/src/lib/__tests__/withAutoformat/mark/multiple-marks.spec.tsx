@@ -1,18 +1,14 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
-import {
-  BoldPlugin,
-  ItalicPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+
+import { createAutoformatEditor } from '../createAutoformatEditor';
 
 jsxt;
 
-describe('when inserting ***', () => {
-  it('should autoformat to italic bold', () => {
+describe('AutoformatPlugin multi-mark rules', () => {
+  it('formats triple asterisks into bold italic text', () => {
     const input = (
       <fragment>
         <hp>
@@ -32,8 +28,14 @@ describe('when inserting ***', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
+    const editor = createAutoformatEditor({
+      rules: [
+        {
+          match: '***',
+          mode: 'mark',
+          type: [KEYS.bold, KEYS.italic],
+        },
+      ],
       value: input,
     });
 
@@ -43,10 +45,8 @@ describe('when inserting ***', () => {
 
     expect(input.children).toEqual(output.children);
   });
-});
 
-describe('when inserting ***___', () => {
-  it('should autoformat to italic bold', () => {
+  it('formats a custom nested mark rule when the closing trigger arrives', () => {
     const input = (
       <fragment>
         <hp>
@@ -66,20 +66,14 @@ describe('when inserting ***___', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
-      plugins: [
-        AutoformatKit[0].configure({
-          options: {
-            rules: [
-              {
-                match: { end: '***__', start: '___***' },
-                mode: 'mark',
-                trigger: '_',
-                type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-              },
-            ],
-          },
-        }),
+    const editor = createAutoformatEditor({
+      rules: [
+        {
+          match: { end: '***__', start: '___***' },
+          mode: 'mark',
+          trigger: '_',
+          type: [KEYS.underline, KEYS.bold, KEYS.italic],
+        },
       ],
       value: input,
     });

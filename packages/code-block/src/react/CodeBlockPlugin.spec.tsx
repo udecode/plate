@@ -3,9 +3,11 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlatePlugin } from 'platejs';
-import { BaseParagraphPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  BaseParagraphPlugin,
+  createSlateEditor,
+  createSlatePlugin,
+} from 'platejs';
 
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
@@ -13,7 +15,7 @@ jsxt;
 
 describe('code block deserialization', () => {
   describe('when selection in code line', () => {
-    it('should disable all deserializers except the ast serializer', () => {
+    it('disable all deserializers except the ast serializer', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -33,7 +35,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
@@ -60,7 +62,7 @@ describe('code block deserialization', () => {
   });
 
   describe('when selection outside of code line', () => {
-    it('should not affect deserialization', () => {
+    it('does not affect deserialization', () => {
       const input = (
         <editor>
           <hp>
@@ -77,7 +79,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -93,7 +95,7 @@ describe('code block deserialization', () => {
   });
 
   describe('deleting lines after the codeblock', () => {
-    it('it should normalized inserted nodes into code lines', () => {
+    it('normalizes inserted nodes into code lines', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -118,7 +120,7 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

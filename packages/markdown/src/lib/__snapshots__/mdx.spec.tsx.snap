@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`roundTrip should serialize callout correctly 1`] = `
+exports[`roundTrip serialize callout correctly 1`] = `
 "<callout>
   Callout
 </callout>

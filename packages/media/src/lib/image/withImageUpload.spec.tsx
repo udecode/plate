@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
 
@@ -21,8 +21,8 @@ describe('withImageUpload', () => {
       </editor>
     ) as any;
 
-    it('should insert image from the file(s)', () => {
-      const editor = createPlateEditor({
+    it('ignores image files without changing the editor', () => {
+      const editor = createSlateEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -55,12 +55,12 @@ describe('withImageUpload', () => {
       </editor>
     ) as any;
 
-    it('should run default insertData', () => {
+    it('falls back to the default insertData behavior', () => {
       const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
         <fragment>image.png</fragment>
       );
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -90,8 +90,8 @@ describe('withImageUpload', () => {
       </editor>
     ) as any;
 
-    it('should insert image from the file(s)', () => {
-      const editor = createPlateEditor({
+    it('ignores non-image files without changing the editor', () => {
+      const editor = createSlateEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
         value: input.children,
@@ -106,27 +106,4 @@ describe('withImageUpload', () => {
       expect(editor.children).toEqual(output.children);
     });
   });
-
-  // it('should call uploadImage when provided', async () => {
-  //   const uploadSpy = mock();
-  //   const editor = pipe(
-  //     input,
-  //     withReact,
-  //     withImageUpload({ uploadImage: uploadSpy })
-  //   );
-  //
-  //   const data = {
-  //     getData: () => 'test',
-  //     files: [
-  //       new File(['test'], 'test.png', {
-  //         type: 'image/png',
-  //       }),
-  //     ],
-  //   };
-  //   editor.tf.insertData(data as any);
-  //
-  //   await new Promise((resolve) => setTimeout(resolve, 10));
-  //
-  //   expect(uploadSpy).toHaveBeenCalled();
-  // });
 });

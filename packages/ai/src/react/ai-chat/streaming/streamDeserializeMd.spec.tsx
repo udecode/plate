@@ -9,8 +9,8 @@ const { editor } = createTestEditor() as any;
 
 jsxt;
 
-describe('streamSerializeMd', () => {
-  it('should without tailing line break', async () => {
+describe('streamDeserializeMd', () => {
+  it('round-trips a paragraph chunk with a trailing blank line', async () => {
     const chunk = 'chunk1\n\n';
 
     const result = streamDeserializeMd(editor, chunk);
@@ -29,7 +29,7 @@ describe('streamSerializeMd', () => {
     expect(streamSerializeMd(editor, { value: result }, chunk)).toEqual(chunk);
   });
 
-  it('should correctly handle line breaks in code block', async () => {
+  it('keeps trailing line breaks inside code blocks', async () => {
     const chunk = '```typescript\nconst a = 1\n\n';
 
     const result = streamDeserializeMd(editor, chunk);
@@ -48,7 +48,7 @@ describe('streamSerializeMd', () => {
     expect(result).toEqual(output);
   });
 
-  it('should correctly handle inline math', async () => {
+  it('round-trips inline math without altering the chunk', async () => {
     const chunk = '$$a^2 ';
 
     const result = streamDeserializeMd(editor, chunk);
@@ -58,17 +58,7 @@ describe('streamSerializeMd', () => {
     expect(serialized).toEqual(chunk);
   });
 
-  it.skip('should not deserialize link with markdown syntax', async () => {
-    const chunk = 'https://example.com';
-
-    const result = streamDeserializeMd(editor, chunk);
-
-    const serialized = streamSerializeMd(editor, { value: result }, chunk);
-
-    expect(serialized).toEqual(chunk);
-  });
-
-  it('should not deserialize incomplete html', async () => {
+  it('round-trips incomplete html without forcing markdown parsing', async () => {
     const chunk = '<!DOCTYPE ';
 
     const result = streamDeserializeMd(editor, chunk);

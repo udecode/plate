@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { setCellBackground } from './setCellBackground';
 
 jsxt;
@@ -16,7 +15,7 @@ jsxt;
 // and then checks if the output matches the expected output.
 describe('setCellBackground', () => {
   const createEditorInstance = (input: any) =>
-    createPlateEditor({
+    createSlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -24,7 +23,7 @@ describe('setCellBackground', () => {
     });
 
   describe('when background color is not set', () => {
-    it('should set background color for current cell', () => {
+    it('set background color for current cell', () => {
       const input = (
         <editor>
           <htable>
@@ -61,7 +60,7 @@ describe('setCellBackground', () => {
       expect(editorInstance.children).toMatchObject(output.children);
     });
 
-    it('should set background color for selected cells', () => {
+    it('set background color for selected cells', () => {
       const input = (
         <editor>
           <htable>
@@ -109,7 +108,7 @@ describe('setCellBackground', () => {
   });
 
   describe('when background color is set', () => {
-    it('should remove the background color for current cell', () => {
+    it('remove the background color for current cell', () => {
       const input = (
         <editor>
           <htable>
@@ -149,7 +148,7 @@ describe('setCellBackground', () => {
       expect(editorInstance.children).toMatchObject(output.children);
     });
 
-    it('should reset the background color to transparent for selected cells', () => {
+    it('reset the background color to transparent for selected cells', () => {
       const input = (
         <editor>
           <htable>

@@ -1,16 +1,16 @@
 import type { Path } from 'platejs';
 
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { setColumns } from './setColumns';
 
 describe('setColumns', () => {
-  let editor: ReturnType<typeof createPlateEditor>;
+  let editor: ReturnType<typeof createSlateEditor>;
   let columnGroupPath: Path;
 
   beforeEach(() => {
-    editor = createPlateEditor({
+    editor = createSlateEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       // Initial value: a column_group with 2 columns
       value: [
@@ -34,7 +34,7 @@ describe('setColumns', () => {
     columnGroupPath = [0];
   });
 
-  it('should update widths if same number of columns', () => {
+  it('update widths if same number of columns', () => {
     // Currently 2 columns, set new widths for these 2 columns
     setColumns(editor, {
       at: columnGroupPath,
@@ -50,7 +50,7 @@ describe('setColumns', () => {
     expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
   });
 
-  it('should insert new columns if targetCount > currentCount', () => {
+  it('insert new columns if targetCount > currentCount', () => {
     // Currently 2 columns, want 3 columns
     setColumns(editor, {
       at: columnGroupPath,
@@ -74,7 +74,7 @@ describe('setColumns', () => {
     expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
   });
 
-  it('should merge columns and remove extras if targetCount < currentCount', () => {
+  it('merge columns and remove extras if targetCount < currentCount', () => {
     // Setup initial state with 3 columns
     editor.children = [
       {
@@ -125,7 +125,7 @@ describe('setColumns', () => {
     // Column 3 should now be removed
   });
 
-  it('should do nothing if no path is provided', () => {
+  it('keeps columns unchanged if no path is provided', () => {
     // Call without at
     setColumns(editor, { widths: ['100%'] });
 
@@ -136,7 +136,7 @@ describe('setColumns', () => {
     expect(node.children[1].width).toBe('50%');
   });
 
-  it('should do nothing if node is not found at the given path', () => {
+  it('keeps columns unchanged if the target node is missing', () => {
     setColumns(editor, { at: [999], widths: ['100%'] });
 
     const node = editor.children[0] as any;
@@ -146,7 +146,7 @@ describe('setColumns', () => {
     expect(node.children[1].width).toBe('50%');
   });
 
-  it('should do nothing if widths array is empty', () => {
+  it('keeps columns unchanged if widths are empty', () => {
     setColumns(editor, { at: columnGroupPath, widths: [] });
 
     const node = editor.children[0] as any;
@@ -158,7 +158,7 @@ describe('setColumns', () => {
     expect(node.children[1].children[0].children[0].text).toBe('Column 2 text');
   });
 
-  it('should handle decimal widths', () => {
+  it('handle decimal widths', () => {
     setColumns(editor, { at: columnGroupPath, widths: ['33.3%', '66.7%'] });
 
     const node = editor.children[0] as any;
@@ -167,7 +167,7 @@ describe('setColumns', () => {
     expect(node.children[1].width).toBe('66.7%');
   });
 
-  it('should handle widths that do not sum to 100%', () => {
+  it('handle widths that do not sum to 100%', () => {
     setColumns(editor, { at: columnGroupPath, widths: ['40%', '40%'] });
 
     const node = editor.children[0] as any;
@@ -176,7 +176,7 @@ describe('setColumns', () => {
     expect(node.children[1].width).toBe('50%');
   });
 
-  it('should handle multiple toggles without losing content', () => {
+  it('handle multiple toggles without losing content', () => {
     // Start: 2 columns
     // Toggle to 3 columns
     setColumns(editor, { at: columnGroupPath, widths: ['33%', '33%', '34%'] });
@@ -217,7 +217,7 @@ describe('setColumns', () => {
     expect(node.children[2].children[0].children[0].text).toBe('');
   });
 
-  it('should gracefully handle toggling to zero columns (though not practical)', () => {
+  it('gracefully handle toggling to zero columns (though not practical)', () => {
     // Set columns to an empty widths array (no columns)
     setColumns(editor, { at: columnGroupPath, widths: [] });
 
@@ -226,7 +226,7 @@ describe('setColumns', () => {
     expect(node.children).toHaveLength(2);
   });
 
-  it('should append content to the end when merging columns', () => {
+  it('append content to the end when merging columns', () => {
     // Setup initial state with 3 columns
     editor.children = [
       {
@@ -281,7 +281,7 @@ describe('setColumns', () => {
     expect(col2Children[6].children[0].text).toBe('Col 3 second');
   });
 
-  it('should correctly merge multiple columns when reducing from 4 to 2', () => {
+  it('correctly merge multiple columns when reducing from 4 to 2', () => {
     // Setup initial state with 4 columns
     editor.children = [
       {

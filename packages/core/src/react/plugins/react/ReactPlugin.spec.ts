@@ -18,7 +18,7 @@ describe('ReactPlugin', () => {
     (editor.tf.focus as ReturnType<typeof mock>).mockReset();
   });
 
-  it('both legacy and new api should be overriddable', () => {
+  it('allows overriding both legacy and new APIs', () => {
     const fn = mock();
     const fn2 = mock();
     editor = createPlateEditor({
@@ -60,7 +60,7 @@ describe('ReactPlugin', () => {
     expect(fn2).toHaveBeenCalledTimes(2);
   });
 
-  it('should override reset method', () => {
+  it('override reset method', () => {
     (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(true);
 
     editor.tf.reset();
@@ -68,7 +68,7 @@ describe('ReactPlugin', () => {
     expect(editor.tf.focus).toHaveBeenCalledWith({ edge: 'startEditor' });
   });
 
-  it('should not focus editor if it was not focused before reset', () => {
+  it('does not focus editor if it was not focused before reset', () => {
     (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(false);
 
     editor.tf.reset();

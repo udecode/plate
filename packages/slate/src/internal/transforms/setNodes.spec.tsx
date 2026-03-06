@@ -8,7 +8,7 @@ jsx;
 
 describe('setNodes', () => {
   describe('when setting marks', () => {
-    it('should set marks with marks option', () => {
+    it('set marks with marks option', () => {
       const editor = createEditor(
         (
           <editor>

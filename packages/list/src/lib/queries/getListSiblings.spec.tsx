@@ -14,7 +14,7 @@ jsxt;
 
 describe('getListSiblings', () => {
   describe('listStyleType is not defined', () => {
-    it('should be empty', async () => {
+    it('returns an empty array', async () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -42,7 +42,7 @@ describe('getListSiblings', () => {
   });
 
   describe('listStyleType is defined', () => {
-    it('should get nodes', async () => {
+    it('get nodes', async () => {
       const input = (
         <fragment>
           <hp indent={2} listStyleType="disc">

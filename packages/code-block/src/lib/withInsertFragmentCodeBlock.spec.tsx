@@ -3,15 +3,14 @@
 import type { Descendant } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { BaseParagraphPlugin, createEditor, createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
 jsxt;
 
 const editorTest = (input: any, fragment: any, expected: any) => {
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [BaseParagraphPlugin, CodeBlockPlugin],
     selection: input.selection,
     value: input.children,
@@ -25,7 +24,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 
 describe('pasting a code block', () => {
   describe('when selection outside of code block', () => {
-    it('should paste the code block', () => {
+    it('paste the code block', () => {
       const input = createEditor(
         (
           <editor>
@@ -71,7 +70,7 @@ describe('pasting a code block', () => {
   });
 
   describe('when selection inside of code block', () => {
-    it('should insert code lines as a fragment', () => {
+    it('insert code lines as a fragment', () => {
       const input = createEditor(
         (
           <editor>
@@ -115,7 +114,7 @@ describe('pasting a code block', () => {
 });
 
 describe('pasting non-code block elements', () => {
-  it('should extract text and insert as code lines', () => {
+  it('extract text and insert as code lines', () => {
     const input = createEditor(
       (
         <editor>

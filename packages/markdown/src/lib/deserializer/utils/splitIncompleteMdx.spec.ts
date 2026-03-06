@@ -1,13 +1,13 @@
 import { splitIncompleteMdx } from './splitIncompleteMdx';
 
 describe('splitIncomplete', () => {
-  it('should split HTML with an incomplete tag at the end', () => {
+  it('split HTML with an incomplete tag at the end', () => {
     const data = '<u>underline</u>text<u>';
     const result = splitIncompleteMdx(data);
     expect(result).toEqual(['<u>underline</u>text', '<u>']);
   });
 
-  it('should split HTML with an incomplete closing tag at the end', () => {
+  it('split HTML with an incomplete closing tag at the end', () => {
     const data = '<u>underline</u>text<u>underline</';
     const result = splitIncompleteMdx(data);
     expect(result).toEqual(['<u>underline</u>text', '<u>underline</']);

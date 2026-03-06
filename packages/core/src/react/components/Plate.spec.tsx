@@ -4,8 +4,7 @@ import React from 'react';
 
 import type { Value } from '@platejs/slate';
 
-import { render } from '@testing-library/react';
-import { renderHook } from '@testing-library/react';
+import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
 import isEqual from 'lodash/isEqual';
 import memoize from 'lodash/memoize';
@@ -28,7 +27,7 @@ import { PlateContent } from './PlateContent';
 describe('Plate', () => {
   describe('useEditorRef()', () => {
     describe('when editor is defined', () => {
-      it('should be initialValue', async () => {
+      it('returns the provided editor', async () => {
         const editor = createPlateEditor();
 
         const wrapper = ({ children }: any) => (
@@ -41,7 +40,7 @@ describe('Plate', () => {
     });
 
     describe('when editor is not defined', () => {
-      it('should be default', async () => {
+      it('returns the closest editor from context', async () => {
         const editor1 = createPlateEditor({ id: 'test1' });
         const editor2 = createPlateEditor({ id: 'test2' });
 
@@ -58,7 +57,7 @@ describe('Plate', () => {
     });
 
     describe('when id is defined', () => {
-      it('should be id', async () => {
+      it('selects the editor by id', async () => {
         const editor1 = createPlateEditor({ id: 'test1' });
         const editor2 = createPlateEditor({ id: 'test2' });
 
@@ -83,7 +82,7 @@ describe('Plate', () => {
 
   describe('useEditorValue()', () => {
     describe('when initialValue is defined', () => {
-      it('should be initialValue', async () => {
+      it('returns the initial value reference', async () => {
         const initialValue: Value = [
           { children: [{ text: 'test' }], type: 'p' },
         ];
@@ -99,7 +98,7 @@ describe('Plate', () => {
     });
 
     describe('when editor with children is defined', () => {
-      it('should be editor.children', async () => {
+      it('returns the editor children', async () => {
         const editor = createPlateEditor();
         editor.children = [{ children: [{ text: 'value' }], type: 'p' }];
 
@@ -113,7 +112,7 @@ describe('Plate', () => {
     });
 
     describe('when editor without children is defined', () => {
-      it('should be default', async () => {
+      it('falls back to the default editor value', async () => {
         const editor = createPlateEditor();
 
         const wrapper = ({ children }: any) => (
@@ -127,31 +126,7 @@ describe('Plate', () => {
   });
 
   describe('useEditorRef().plugins', () => {
-    describe('when plugins is updated', () => {
-      it.skip('should be updated', () => {
-        const editor = createPlateEditor({
-          plugins: [createSlatePlugin({ key: 'test' })],
-        });
-
-        const wrapper = ({ children, editor }: any) => (
-          <Plate editor={editor}>{children}</Plate>
-        );
-        const { rerender, result } = renderHook(
-          () => useEditorRef().meta.pluginList,
-          { initialProps: { editor }, wrapper }
-        );
-
-        expect(result.current.at(-1)!.key).toBe('test');
-
-        editor.meta.pluginList = [createPlatePlugin({ key: 'test2' }) as any];
-
-        rerender({ editor });
-
-        expect(result.current.at(-1)!.key).toBe('test2');
-      });
-    });
-
-    it('should use plugins from editor', () => {
+    it('uses the plugins already attached to the editor', () => {
       const _plugins = [createSlatePlugin({ key: 'test' })];
       const editor = createPlateEditor({ plugins: _plugins });
 
@@ -167,32 +142,9 @@ describe('Plate', () => {
     });
   });
 
-  describe('when id updates', () => {
-    it.skip('should remount Plate', () => {
-      const _plugins1 = [createSlatePlugin({ key: 'test1' })];
-      const _plugins2 = [createSlatePlugin({ key: 'test2' })];
-      const editor1 = createPlateEditor({ id: '1', plugins: _plugins1 });
-      const editor2 = createPlateEditor({ id: '2', plugins: _plugins2 });
-
-      const wrapper = ({ children, editor }: any) => (
-        <Plate editor={editor}>{children}</Plate>
-      );
-      const { rerender, result } = renderHook(
-        ({ editor }) => useEditorRef(editor.id).meta.pluginList,
-        { initialProps: { editor: editor1 }, wrapper }
-      );
-
-      expect(result.current.at(-1)!.key).toBe('test1');
-
-      rerender({ editor: editor2 } as any);
-
-      expect(result.current.at(-1)!.key).toBe('test2');
-    });
-  });
-
   describe('useEditorRef().id', () => {
     describe('when Plate has an id', () => {
-      it('should be editor id', async () => {
+      it('returns the editor id', async () => {
         const editor = createPlateEditor({ id: 'test' });
 
         const wrapper = ({ children }: any) => (
@@ -205,7 +157,7 @@ describe('Plate', () => {
     });
 
     describe('when Plate without id > Plate with id', () => {
-      it('should be the closest one', () => {
+      it('returns the closest editor with an id', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={createPlateEditor()}>
             <Plate editor={createPlateEditor({ id: 'test' })}>{children}</Plate>
@@ -218,7 +170,7 @@ describe('Plate', () => {
     });
 
     describe('when Plate with id > Plate without id > select id', () => {
-      it('should be that id', () => {
+      it('returns the requested editor id from context', () => {
         const wrapper = ({ children }: any) => (
           <Plate editor={createPlateEditor({ id: 'test' })}>
             <Plate editor={createPlateEditor()}>{children}</Plate>
@@ -227,19 +179,6 @@ describe('Plate', () => {
         const { result } = renderHook(() => useEditorRef('test').id, {
           wrapper,
         });
-
-        expect(result.current).toBe('test');
-      });
-    });
-
-    describe('when Plate has an editor', () => {
-      it('should be editor id', async () => {
-        const editor = createPlateEditor({ id: 'test' });
-
-        const wrapper = ({ children }: any) => (
-          <Plate editor={editor}>{children}</Plate>
-        );
-        const { result } = renderHook(() => useEditorRef().id, { wrapper });
 
         expect(result.current).toBe('test');
       });
@@ -261,19 +200,6 @@ describe('Plate', () => {
 
     describe('when Plate exists', () => {
       describe('when editor is defined', () => {
-        it('returns the store', async () => {
-          const editor = createPlateEditor({ id: 'test' });
-
-          const wrapper = ({ children }: any) => (
-            <Plate editor={editor}>{children}</Plate>
-          );
-          expect(getStore(wrapper)).toBeDefined();
-          expect(getId(wrapper)).toBe('test');
-          expect(getIsFallback(wrapper)).toBe(false);
-        });
-      });
-
-      describe('when editor is not defined', () => {
         it('returns the store', async () => {
           const editor = createPlateEditor({ id: 'test' });
 
@@ -329,8 +255,8 @@ describe('Plate', () => {
     });
   });
 
-  describe('when shouldNormalizeEditor false', () => {
-    it('should not trigger normalize if shouldNormalizeEditor is not set to true', () => {
+  describe('when editor normalization is disabled', () => {
+    it('does not normalize on mount', () => {
       const fn = mock((e, [node, path]) => {
         if (e.api.isBlock(node) && path?.length && !isEqual(node.path, path)) {
           e.tf.setNodes({ path }, { at: path });
@@ -370,7 +296,7 @@ describe('Plate', () => {
   });
 
   describe('when render aboveSlate renders null', () => {
-    it('should not normalize editor children', () => {
+    it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
         createPlatePlugin({
           key: 'a',
@@ -393,7 +319,7 @@ describe('Plate', () => {
   });
 
   describe('Plate remounting', () => {
-    it('should remount when editor is recreated', () => {
+    it('remounts when usePlateEditor recreates the editor', () => {
       let mountCount = 0;
 
       const MountCounter = () => {
@@ -541,7 +467,7 @@ describe('Plate', () => {
   });
 
   describe('when rendering unknown element type', () => {
-    it('should not crash when encountering an element with an unknown type', () => {
+    it('does not crash when encountering an element with an unknown type', () => {
       const initialValueWithUnknownType: Value = [
         {
           id: '1',
@@ -571,7 +497,7 @@ describe('Plate', () => {
   });
 
   describe('async value', () => {
-    it('should handle async value loading and prevent rendering until ready', async () => {
+    it('waits for an async value before rendering and calls onReady', async () => {
       const asyncValue: Value = [
         {
           children: [{ text: 'Async loaded content' }],
@@ -606,8 +532,10 @@ describe('Plate', () => {
       expect(onReadyMock).not.toHaveBeenCalled();
 
       // Wait for async value to resolve and trigger a rerender
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      rerender(<AsyncEditor />);
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        rerender(<AsyncEditor />);
+      });
 
       // Now PlateContent should be rendered and onReady should have been called
       (expect(getByTestId('plate-content')) as any).toBeInTheDocument();
@@ -618,7 +546,7 @@ describe('Plate', () => {
       });
     });
 
-    it('should handle synchronous functions in value option', () => {
+    it('treats synchronous value functions as ready immediately', () => {
       const syncValue: Value = [
         {
           children: [{ text: 'Sync content' }],
@@ -652,7 +580,7 @@ describe('Plate', () => {
       });
     });
 
-    it('should handle static values with onReady callback', () => {
+    it('calls onReady for static values immediately', () => {
       const staticValue: Value = [
         {
           children: [{ text: 'Static content' }],

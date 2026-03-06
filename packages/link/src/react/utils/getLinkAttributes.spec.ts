@@ -1,9 +1,9 @@
 import type { TLinkElement } from 'platejs';
 
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
-import { getLinkAttributes } from '../../lib';
-import { type LinkConfig, LinkPlugin } from '../LinkPlugin';
+import { BaseLinkPlugin, getLinkAttributes } from '../../lib';
+import type { LinkConfig } from '../LinkPlugin';
 
 const baseLink = {
   children: [{ text: 'Link text' }],
@@ -17,9 +17,9 @@ const defaultOptions: Partial<LinkConfig['options']> = {
 };
 
 const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
-  createPlateEditor({
+  createSlateEditor({
     plugins: [
-      LinkPlugin.configure({
+      BaseLinkPlugin.configure({
         options: {
           ...defaultOptions,
           ...options,
@@ -38,7 +38,7 @@ describe('getLinkAttributes', () => {
       url: 'https://example.com/',
     };
 
-    it('should include href, target and default attributes', () => {
+    it('include href, target and default attributes', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: 'https://example.com/',
         rel: 'noopener noreferrer',
@@ -55,7 +55,7 @@ describe('getLinkAttributes', () => {
       url: 'javascript://example.com/',
     };
 
-    it('href should be undefined', () => {
+    it('omits href for invalid URLs', () => {
       expect(getLinkAttributes(editor, link)).toEqual({
         href: undefined,
         rel: 'noopener noreferrer',
@@ -75,7 +75,7 @@ describe('getLinkAttributes', () => {
       url: 'pageKey',
     };
 
-    it('href should be defined', () => {
+    it('keeps href when sanitization is skipped', () => {
       expect(getLinkAttributes(editorWithSkipSanitization, link)).toEqual({
         href: 'pageKey',
         rel: 'noopener noreferrer',
@@ -90,7 +90,7 @@ describe('getLinkAttributes', () => {
       url: 'https://example.com/',
     };
 
-    it('target should not be included', () => {
+    it('omits target when it is not set', () => {
       const linkAttributes = getLinkAttributes(editor, link);
       expect(linkAttributes).toEqual({
         href: 'https://example.com/',

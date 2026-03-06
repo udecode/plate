@@ -4,17 +4,6 @@ import { cleanDocx } from './cleanDocx';
 describe('cleanDocx', () => {
   const MOCK_RTF = 'Whatever, RTF is only needed to process images';
 
-  // it('Rebuilds nested lists', () => {
-  //   const html = readTestFile(
-  //     '../docx-cleaner/__tests__/input/nested-lists.html'
-  //   );
-  //   const expected = readTestFile(
-  //     '../docx-cleaner/__tests__/output/nested-lists.html'
-  //   );
-  //   const result = cleanDocx(html, MOCK_RTF);
-  //   expect(result.trim()).toBe(expected.trim());
-  // });
-
   it('Treats in-text line-feed as a space', () => {
     const html = readTestFile(
       '../docx-cleaner/__tests__/input/whitespaces-1.html'
@@ -65,16 +54,4 @@ describe('cleanDocx', () => {
     const result = cleanDocx(html, MOCK_RTF);
     expect(result.trim()).toBe(expected.trim());
   });
-
-  // it('Stylesheet', () => {
-  //   const html = readTestFile(
-  //     '../docx-cleaner/__tests__/input/custom-styles.html'
-  //   );
-  //   const expected = readTestFile(
-  //     '../docx-cleaner/__tests__/output/custom-styles.html'
-  //   );
-  //   const result = cleanDocx(html, MOCK_RTF);
-  //   expect(1).toBe(1);
-  //   // expect(result.trim()).toBe(expected.trim());
-  // });
 });

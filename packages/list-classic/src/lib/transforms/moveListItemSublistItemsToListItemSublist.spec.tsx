@@ -64,7 +64,7 @@ describe('when there is toListItem sublist', () => {
     </editor>
   ) as any as SlateEditor;
 
-  it('should', () => {
+  it('moves sublist items into the existing destination sublist', () => {
     const editor = createSlateEditor({
       selection: input.selection,
       value: input.children,
@@ -127,7 +127,7 @@ describe('when there is no list in toListItem', () => {
     </editor>
   ) as any as SlateEditor;
 
-  it('should', () => {
+  it('creates a destination sublist before moving the items', () => {
     const editor = createSlateEditor({
       selection: input.selection,
       value: input.children,

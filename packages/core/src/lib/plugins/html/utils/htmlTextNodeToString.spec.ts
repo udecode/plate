@@ -2,7 +2,7 @@ import { htmlTextNodeToString } from './htmlTextNodeToString';
 
 describe('htmlTextNodeToString', () => {
   describe('when empty div element', () => {
-    it('should be undefined', () => {
+    it('returns undefined', () => {
       const input = document.createElement('div');
       const output = undefined;
 
@@ -11,7 +11,7 @@ describe('htmlTextNodeToString', () => {
   });
 
   describe('when text node with text', () => {
-    it('should be text', () => {
+    it('returns the text content', () => {
       const input = document.createTextNode('test');
       const output = 'test';
 

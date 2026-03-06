@@ -67,7 +67,7 @@ jsxt;
 describe('withTriggerCombobox', () => {
   ['@', '#', ':'].forEach((trigger) => {
     describe(`when typing "${trigger}"`, () => {
-      it('should insert a combobox input when the trigger is inserted between words', () => {
+      it('insert a combobox input when the trigger is inserted between words', () => {
         const editor = createEditorWithCombobox(
           <hp>
             hello <cursor /> world
@@ -88,7 +88,7 @@ describe('withTriggerCombobox', () => {
         ]);
       });
 
-      it('should insert a combobox input when the trigger is inserted at line beginning followed by a whitespace', () => {
+      it('insert a combobox input when the trigger is inserted at line beginning followed by a whitespace', () => {
         const editor = createEditorWithCombobox(
           <hp>
             <cursor /> hello world
@@ -109,7 +109,7 @@ describe('withTriggerCombobox', () => {
         ]);
       });
 
-      it('should insert a combobox input when the trigger is inserted at line end preceded by a whitespace', () => {
+      it('insert a combobox input when the trigger is inserted at line end preceded by a whitespace', () => {
         const editor = createEditorWithCombobox(
           <hp>
             hello world <cursor />
@@ -130,7 +130,7 @@ describe('withTriggerCombobox', () => {
         ]);
       });
 
-      it('should insert the trigger as text when the trigger is appended to a word', () => {
+      it('insert the trigger as text when the trigger is appended to a word', () => {
         const editor = createEditorWithCombobox(
           <hp>
             hello
@@ -148,7 +148,7 @@ describe('withTriggerCombobox', () => {
         ]);
       });
 
-      it('should insert a combobox input when the trigger is prepended to a word', () => {
+      it('insert a combobox input when the trigger is prepended to a word', () => {
         const editor = createEditorWithCombobox(
           <hp>
             <cursor />
@@ -170,7 +170,7 @@ describe('withTriggerCombobox', () => {
         ]);
       });
 
-      it('should insert the trigger as text when the trigger is inserted into a word', () => {
+      it('insert the trigger as text when the trigger is inserted into a word', () => {
         const editor = createEditorWithCombobox(
           <hp>
             hel
@@ -192,7 +192,7 @@ describe('withTriggerCombobox', () => {
     });
   });
 
-  it('should insert text when not trigger', () => {
+  it('insert text when not trigger', () => {
     const editor = createEditorWithCombobox(
       <hp>
         <cursor />
@@ -204,7 +204,7 @@ describe('withTriggerCombobox', () => {
     expect(editor.children).toEqual([<hp>a</hp>]);
   });
 
-  it('should insert a combobox input when the trigger is inserted after the specified pattern', () => {
+  it('insert a combobox input when the trigger is inserted after the specified pattern', () => {
     const editor = createEditorWithCombobox(
       <hp>
         hello "<cursor />"

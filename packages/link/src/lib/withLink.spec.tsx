@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
@@ -15,7 +15,7 @@ const createClipboardData = (text: string) =>
   }) as any;
 
 const createLinkEditor = (input: SlateEditor, options?: Record<string, any>) =>
-  createPlateEditor({
+  createSlateEditor({
     plugins: [
       options
         ? BaseLinkPlugin.configure({

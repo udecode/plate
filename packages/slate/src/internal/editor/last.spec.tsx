@@ -17,7 +17,7 @@ describe('last', () => {
       ) as any
     );
 
-    it('should get last node', () => {
+    it('get last node', () => {
       const res = input.api.last([]);
 
       expect(res).toEqual([{ text: '2' }, [1, 0]]);
@@ -38,7 +38,7 @@ describe('last', () => {
       ) as any
     );
 
-    it('should get last node at level 0', () => {
+    it('get last node at level 0', () => {
       const res = input.api.last([], { level: 0 });
 
       expect(res).toEqual([
@@ -50,7 +50,7 @@ describe('last', () => {
       ]);
     });
 
-    it('should get last node at level 1', () => {
+    it('get last node at level 1', () => {
       const res = input.api.last([], { level: 1 });
 
       expect(res).toEqual([
@@ -59,7 +59,7 @@ describe('last', () => {
       ]);
     });
 
-    it('should get last node at level 2', () => {
+    it('get last node at level 2', () => {
       const res = input.api.last([], { level: 2 });
 
       expect(res).toEqual([{ text: 'test2' }, [1, 0, 0]]);
@@ -83,7 +83,7 @@ describe('last', () => {
       ) as any
     );
 
-    it('should get last node at path', () => {
+    it('get last node at path', () => {
       const res = input.api.last([0], { level: 1 });
 
       expect(res).toEqual([
@@ -102,7 +102,7 @@ describe('last', () => {
       ) as any
     );
 
-    it('should return undefined for non-existent path', () => {
+    it('returns undefined for non-existent path', () => {
       const res = input.api.last([1]);
 
       expect(res).toBeUndefined();
@@ -112,7 +112,7 @@ describe('last', () => {
   describe('when editor has no children', () => {
     const input = createEditor((<editor />) as any);
 
-    it('should return undefined when level is 0', () => {
+    it('returns undefined when level is 0', () => {
       const res = input.api.last([], { level: 0 });
 
       expect(res).toBeUndefined();
@@ -128,7 +128,7 @@ describe('last', () => {
       ) as any
     );
 
-    it('should return undefined when getting last node in empty element', () => {
+    it('returns undefined when getting last node in empty element', () => {
       const res = input.api.last([1]);
 
       expect(res).toBeUndefined();

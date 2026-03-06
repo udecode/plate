@@ -26,13 +26,13 @@ describe('SkipSuggestionDeletes', () => {
   });
 
   describe('text nodes', () => {
-    it('should return full text for node without suggestion', () => {
+    it('returns full text for node without suggestion', () => {
       const node = { text: 'hello world' };
       const result = SkipSuggestionDeletes(editor, node);
       expect(result).toBe('hello world');
     });
 
-    it('should return empty string for text node with remove suggestion', () => {
+    it('returns empty string for text node with remove suggestion', () => {
       const node: TSuggestionText = {
         [KEYS.suggestion]: true,
         suggestion_1: {
@@ -47,7 +47,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('');
     });
 
-    it('should return full text for text node with insert suggestion', () => {
+    it('returns full text for text node with insert suggestion', () => {
       const node: TSuggestionText = {
         [KEYS.suggestion]: true,
         suggestion_1: {
@@ -62,7 +62,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('inserted text');
     });
 
-    it('should return full text for text node with update suggestion', () => {
+    it('returns full text for text node with update suggestion', () => {
       const node: TSuggestionText = {
         [KEYS.suggestion]: true,
         suggestion_1: {
@@ -79,7 +79,7 @@ describe('SkipSuggestionDeletes', () => {
   });
 
   describe('element nodes', () => {
-    it('should concatenate text from all children', () => {
+    it('concatenate text from all children', () => {
       const node = {
         children: [{ text: 'first ' }, { text: 'second ' }, { text: 'third' }],
         type: 'paragraph',
@@ -88,7 +88,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('first second third');
     });
 
-    it('should skip deleted text nodes in children', () => {
+    it('skip deleted text nodes in children', () => {
       const node = {
         children: [
           { text: 'keep this ' },
@@ -110,7 +110,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('keep this keep this too');
     });
 
-    it('should handle nested elements', () => {
+    it('handle nested elements', () => {
       const node = {
         children: [
           {
@@ -128,7 +128,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('nested textanother paragraph');
     });
 
-    it('should handle deeply nested elements with mixed suggestions', () => {
+    it('handle deeply nested elements with mixed suggestions', () => {
       const node = {
         children: [
           {
@@ -169,7 +169,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('item 1 contentitem 2');
     });
 
-    it('should handle empty children array', () => {
+    it('handle empty children array', () => {
       const node = {
         children: [],
         type: 'paragraph',
@@ -178,7 +178,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('');
     });
 
-    it('should handle children with only deleted text', () => {
+    it('handle children with only deleted text', () => {
       const node = {
         children: [
           {
@@ -200,13 +200,13 @@ describe('SkipSuggestionDeletes', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty text node', () => {
+    it('handle empty text node', () => {
       const node = { text: '' };
       const result = SkipSuggestionDeletes(editor, node);
       expect(result).toBe('');
     });
 
-    it('should handle text node with suggestion but no suggestion data', () => {
+    it('handle text node with suggestion but no suggestion data', () => {
       const node = {
         [KEYS.suggestion]: true,
         text: 'text with suggestion flag',
@@ -215,7 +215,7 @@ describe('SkipSuggestionDeletes', () => {
       expect(result).toBe('text with suggestion flag');
     });
 
-    it('should handle multiple suggestion keys on same node', () => {
+    it('handle multiple suggestion keys on same node', () => {
       const node: TSuggestionText = {
         [KEYS.suggestion]: true,
         suggestion_1: {

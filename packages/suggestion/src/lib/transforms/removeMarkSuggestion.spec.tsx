@@ -17,7 +17,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 });
 
 describe('removeMarkSuggestion', () => {
-  it('should remove mark with suggestion data', () => {
+  it('remove mark with suggestion data', () => {
     const input = (
       <editor>
         <hp>
@@ -53,7 +53,7 @@ describe('removeMarkSuggestion', () => {
     expect(typeof data?.id).toBe('string');
   });
 
-  it('should add new suggestion mark while preserving existing suggestion mark', () => {
+  it('add new suggestion mark while preserving existing suggestion mark', () => {
     const existingData = {
       id: '1',
       createdAt: Date.now(),

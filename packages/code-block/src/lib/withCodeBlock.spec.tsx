@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
@@ -11,7 +11,7 @@ jsxt;
 
 describe('insert break', () => {
   describe('when cursor is inside code line', () => {
-    it('should insert a new code line with same indentation', () => {
+    it('insert a new code line with same indentation', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -37,7 +37,7 @@ describe('insert break', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

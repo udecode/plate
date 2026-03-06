@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from './withNormalizeTable.spec';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
 
@@ -75,7 +74,7 @@ describe('withDeleteTable', () => {
           </editor>
         ) as any as SlateEditor;
 
-        editor = createPlateEditor({
+        editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({ disableMerge }),
           selection: input.selection,
@@ -85,11 +84,11 @@ describe('withDeleteTable', () => {
         editor.tf.deleteFragment();
       });
 
-      it('should remove the cells content', () => {
+      it('remove the cells content', () => {
         expect(editor.children).toMatchObject(output.children);
       });
 
-      it('should set the selection to the last cell', () => {
+      it('set the selection to the last cell', () => {
         expect(editor.selection).toEqual(output.selection);
       });
     });

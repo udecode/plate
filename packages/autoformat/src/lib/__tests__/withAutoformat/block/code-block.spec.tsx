@@ -1,49 +1,93 @@
 /** @jsx jsxt */
 
 import type { SlateEditor } from 'platejs';
-import { createSlateEditor, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 import { BaseCodeBlockPlugin, insertEmptyCodeBlock } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';
+
 import type { AutoformatQueryOptions } from '../../../types';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+
+import { createAutoformatEditor } from '../createAutoformatEditor';
 
 jsxt;
 
-describe('when ``` at block start', () => {
-  it('should insert a code block below', () => {
-    const input = (
-      <fragment>
-        <hp>
-          ``
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
+const createCodeBlockAutoformatEditor = ({
+  rules,
+  value,
+}: {
+  rules?: any[];
+  value: any;
+}) =>
+  createAutoformatEditor({
+    plugins: [BaseCodeBlockPlugin],
+    rules: rules ?? [
+      {
+        format: (editor: SlateEditor) => {
+          insertEmptyCodeBlock(editor, {
+            defaultType: KEYS.p,
+            insertNodesOptions: { select: true },
+          });
+        },
+        match: '```',
+        mode: 'block',
+        type: KEYS.codeBlock,
+      },
+    ],
+    value,
+  });
 
-    const output = (
-      <fragment>
-        <hp>hello</hp>
-        <hcodeblock>
-          <hcodeline>new</hcodeline>
-        </hcodeblock>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
+describe('AutoformatPlugin code block rules', () => {
+  it.each([
+    {
+      expected: (
+        <fragment>
+          <hp>hello</hp>
+          <hcodeblock>
+            <hcodeline>new</hcodeline>
+          </hcodeblock>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            ``
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      title: 'inserts a code block from the start of a block',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>helloworld</hp>
+          <hcodeblock>
+            <hcodeline>new</hcodeline>
+          </hcodeblock>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            hello``
+            <cursor />
+            world
+          </hp>
+        </fragment>
+      ) as any,
+      title: 'inserts a code block when the trigger appears mid-paragraph',
+    },
+  ])('$title', ({ expected, input }) => {
+    const editor = createCodeBlockAutoformatEditor({ value: input });
 
     editor.tf.insertText('`');
     editor.tf.insertText('new');
 
-    expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(expected.children);
   });
-});
 
-describe('when ``` at block start, but customising with query we get the most recent character typed', () => {
-  it('should insert a code block below', () => {
+  it('uses the current insert text inside a custom query', () => {
     const input = (
       <fragment>
         <hp>
@@ -63,84 +107,41 @@ describe('when ``` at block start, but customising with query we get the most re
       </fragment>
     ) as any;
 
-    const codeEditor = createSlateEditor({
-      plugins: [
-        AutoformatKit[0].configure({
-          options: {
-            rules: [
-              {
-                format: (editor: SlateEditor) => {
-                  insertEmptyCodeBlock(editor, {
-                    defaultType: editor.getType(KEYS.p),
-                    insertNodesOptions: { select: true },
-                  });
-                },
-                match: '```',
-                mode: 'block',
-                // preFormat: preFormat as any,
-                query: (
-                  editor: SlateEditor,
-                  rule: AutoformatQueryOptions
-                ): boolean => {
-                  if (!editor.selection) {
-                    return false;
-                  }
-
-                  const matchRange = editor.api.range(
-                    'start',
-                    editor.selection
-                  );
-                  const textFromBlockStart = editor.api.string(matchRange);
-                  const currentNodeText =
-                    (textFromBlockStart || '') + rule.text;
-
-                  return rule.match === currentNodeText;
-                },
-                triggerAtBlockStart: false,
-                type: BaseCodeBlockPlugin.key,
-              },
-            ],
+    const editor = createCodeBlockAutoformatEditor({
+      rules: [
+        {
+          format: (codeEditor: SlateEditor) => {
+            insertEmptyCodeBlock(codeEditor, {
+              defaultType: KEYS.p,
+              insertNodesOptions: { select: true },
+            });
           },
-        }),
+          match: '```',
+          mode: 'block',
+          query: (
+            codeEditor: SlateEditor,
+            rule: AutoformatQueryOptions
+          ): boolean => {
+            if (!codeEditor.selection) return false;
+
+            const matchRange = codeEditor.api.range(
+              'start',
+              codeEditor.selection
+            );
+            const textFromBlockStart = codeEditor.api.string(matchRange);
+            const currentNodeText = (textFromBlockStart || '') + rule.text;
+
+            return rule.match === currentNodeText;
+          },
+          triggerAtBlockStart: false,
+          type: KEYS.codeBlock,
+        },
       ],
       value: input,
     });
 
-    codeEditor.tf.insertText('`');
-    codeEditor.tf.insertText('inside code-block');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when ```', () => {
-  it('should insert a code block below', () => {
-    const input = (
-      <fragment>
-        <hp>
-          hello``
-          <cursor />
-          world
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>helloworld</hp>
-        <hcodeblock>
-          <hcodeline>new</hcodeline>
-        </hcodeblock>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
     editor.tf.insertText('`');
-    editor.tf.insertText('new');
+    editor.tf.insertText('inside code-block');
 
     expect(input.children).toEqual(output.children);
   });

@@ -7,9 +7,58 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
 
+const createElementPlugin = ({
+  key,
+  match,
+  normalizeRules,
+  type = key,
+}: {
+  key: string;
+  match?: ({ node }: any) => boolean;
+  normalizeRules?: Record<string, unknown>;
+  type?: string;
+}) =>
+  createSlatePlugin({
+    key,
+    node: {
+      isElement: true,
+      type,
+    },
+    ...(normalizeRules || match
+      ? {
+          rules: {
+            ...(normalizeRules ? { normalize: normalizeRules } : {}),
+            ...(match ? { match } : {}),
+          },
+        }
+      : {}),
+  });
+
+const getNormalizedEditor = ({
+  input,
+  plugins,
+  times = 1,
+}: {
+  input: any;
+  plugins: any[];
+  times?: number;
+}) => {
+  const editor = createSlateEditor({
+    plugins,
+    selection: input.selection,
+    value: input.children,
+  });
+
+  for (let i = 0; i < times; i++) {
+    editor.tf.normalize({ force: true });
+  }
+
+  return editor;
+};
+
 describe('withNormalizeRules', () => {
-  describe('rules: { normalize: { removeEmpty: true }', () => {
-    it('should remove empty element on normalize', () => {
+  describe('remove-empty normalization', () => {
+    it('removes an empty inline element during normalization', () => {
       const input = (
         <editor>
           <hp>
@@ -29,28 +78,20 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'link',
-            node: {
-              isElement: true,
-            },
-            rules: {
-              normalize: { removeEmpty: true },
-            },
+            normalizeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
 
-    it('should NOT remove element with content on normalize', () => {
+    it('keeps an inline element with content during normalization', () => {
       const input = (
         <editor>
           <hp>
@@ -73,31 +114,61 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'link',
-            node: {
-              isElement: true,
-              type: 'link',
-            },
-            rules: {
-              normalize: { removeEmpty: true },
-            },
+            normalizeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
-  describe('rules: { normalize: undefined (default)', () => {
-    it('should NOT remove empty element when rules.normalize is undefined', () => {
+  describe('default normalization behavior', () => {
+    it.each([
+      ['without normalize rules', undefined],
+      ['with removeEmpty disabled', { removeEmpty: false }],
+    ])('%s keeps an empty inline element intact', (_label, normalizeRules) => {
+      const input = (
+        <editor>
+          <hp>
+            <element type="link" url="http://google.com">
+              <cursor />
+            </element>
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <element type="link" url="http://google.com">
+              <cursor />
+            </element>
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getNormalizedEditor({
+        input,
+        plugins: [
+          createElementPlugin({
+            key: 'link',
+            normalizeRules: normalizeRules as
+              | Record<string, unknown>
+              | undefined,
+          }),
+        ],
+      });
+
+      expect(editor.children).toEqual(output.children);
+    });
+
+    it('keeps an empty inline element when the node only contains htext', () => {
       const input = (
         <editor>
           <hp>
@@ -120,68 +191,17 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'link',
-            node: {
-              isElement: true,
-              type: 'link',
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
+      const editor = getNormalizedEditor({
+        input,
+        plugins: [createElementPlugin({ key: 'link' })],
       });
-
-      editor.tf.normalize({ force: true });
-
-      expect(editor.children).toEqual(output.children);
-    });
-
-    it('should NOT remove empty element when removeEmpty is false', () => {
-      const input = (
-        <editor>
-          <hp>
-            <element type="link" url="http://google.com">
-              <cursor />
-            </element>
-          </hp>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>
-            <element type="link" url="http://google.com">
-              <cursor />
-            </element>
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'link',
-            node: {
-              isElement: true,
-              type: 'link',
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
-  describe('matchRules override behavior', () => {
-    it('should use matchRules override instead of default plugin rules.normalize', () => {
+  describe('match overrides', () => {
+    it('uses the matching override instead of the base normalize behavior', () => {
       const input = (
         <editor>
           <hp>
@@ -201,39 +221,25 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          // Base paragraph plugin with no normalize mode
-          createSlatePlugin({
+          createElementPlugin({
             key: 'paragraph',
-            node: {
-              isElement: true,
-              type: 'paragraph',
-              // rules.normalize is undefined
-            },
           }),
-          // Override plugin that matches nodes with customProperty
-          createSlatePlugin({
+          createElementPlugin({
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              normalize: { removeEmpty: true }, // Override behavior
-              match: ({ node }) => Boolean(node.customProperty) as any,
-            },
+            match: ({ node }) => Boolean(node.customProperty) as any,
+            normalizeRules: { removeEmpty: true },
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
 
-    it('should use default behavior when matchRules does not match', () => {
+    it('falls back to the base normalize behavior when the override does not match', () => {
       const input = (
         <editor>
           <hp>
@@ -254,41 +260,27 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          // Base paragraph plugin with no normalize mode
-          createSlatePlugin({
+          createElementPlugin({
             key: 'paragraph',
-            node: {
-              isElement: true,
-              type: 'paragraph',
-              // rules.normalize is undefined
-            },
           }),
-          // Override plugin that only matches nodes with customProperty
-          createSlatePlugin({
+          createElementPlugin({
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              normalize: { removeEmpty: true }, // Override behavior
-              match: ({ node }) => Boolean(node.customProperty) as any, // Won't match
-            },
+            match: ({ node }) => Boolean(node.customProperty) as any,
+            normalizeRules: { removeEmpty: true },
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
   describe('multiple empty elements', () => {
-    it('should remove multiple empty elements with same type', () => {
+    it('removes multiple empty elements of the same type', () => {
       const input = (
         <editor>
           <hp>
@@ -311,35 +303,23 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'link',
-            node: {
-              isElement: true,
-              type: 'link',
-            },
-            rules: {
-              normalize: { removeEmpty: true },
-            },
+            normalizeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
+        times: 2,
       });
-
-      // Normalize first link
-      editor.tf.normalize({ force: true });
-
-      // Normalize second link (now at index 0 after first removal)
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
   describe('nested empty elements', () => {
-    it('should remove empty nested elements', () => {
+    it('removes an empty nested paragraph without removing its parent blockquote', () => {
       const input = (
         <editor>
           <hp>
@@ -362,32 +342,18 @@ describe('withNormalizeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getNormalizedEditor({
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'blockquote',
-            node: {
-              isElement: true,
-              type: 'blockquote',
-            },
           }),
-          createSlatePlugin({
+          createElementPlugin({
             key: 'paragraph',
-            node: {
-              isElement: true,
-              type: 'paragraph',
-            },
-            rules: {
-              normalize: { removeEmpty: true },
-            },
+            normalizeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      // Normalize the nested paragraph
-      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });

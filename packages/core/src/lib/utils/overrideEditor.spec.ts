@@ -1,8 +1,9 @@
-import { createPlateEditor, createPlatePlugin } from '../../react';
+import { createPlatePlugin } from '../../react';
+import { createSlateEditor } from '../editor';
 import { createSlatePlugin } from '../plugin';
 
 describe('overrideEditor method', () => {
-  it('should override both api and transforms', () => {
+  it('override both api and transforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -21,7 +22,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -29,7 +30,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.transform1()).toBe('override-transform');
   });
 
-  it('should allow overriding only api or transforms', () => {
+  it('allow overriding only api or transforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -50,7 +51,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -58,7 +59,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.transform1()).toBe('override-transform');
   });
 
-  it('should maintain type safety for both api and transforms', () => {
+  it('maintain type safety for both api and transforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -77,7 +78,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -85,7 +86,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.transformMethod(5)).toBe(15);
   });
 
-  it('should allow access to original methods in override', () => {
+  it('allow access to original methods in override', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -106,7 +107,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -114,7 +115,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.transform2()).toBe('override-base-transform');
   });
 
-  it('should handle nested methods correctly', () => {
+  it('handle nested methods correctly', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -143,7 +144,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -153,7 +154,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.nested.transform2()).toBe('original-transform2');
   });
 
-  it('should preserve non-overridden methods', () => {
+  it('preserve non-overridden methods', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -184,7 +185,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 
@@ -196,7 +197,7 @@ describe('overrideEditor method', () => {
     expect(editor.tf.transform3()).toBe('original-transform3');
   });
 
-  it('should handle both api and transforms in a single override call', () => {
+  it('handle both api and transforms in a single override call', () => {
     const basePlugin = createPlatePlugin({
       key: 'testPlugin',
     })
@@ -217,7 +218,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [basePlugin],
     });
 

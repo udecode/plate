@@ -5,7 +5,6 @@ import {
   resolveCreatePluginTest,
   resolvePluginTest,
 } from '../../internal/plugin/resolveCreatePluginTest';
-import { createPlateEditor } from '../../react';
 import {
   type PluginConfig,
   createSlateEditor,
@@ -126,7 +125,7 @@ describe('createSlatePlugin', () => {
         },
       }));
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [extendedPlugin],
       });
 
@@ -138,7 +137,7 @@ describe('createSlatePlugin', () => {
     });
 
     it('can add missing nested plugins and update them later', () => {
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [
           createSlatePlugin({
             key: 'a',
@@ -270,7 +269,7 @@ describe('createSlatePlugin', () => {
           },
         }));
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [configuredPlugin],
       });
 
@@ -280,7 +279,7 @@ describe('createSlatePlugin', () => {
     });
 
     it('can override shipped plugin parsers at the root', () => {
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [
           LinkPlugin.extend(() => ({
             parsers: {

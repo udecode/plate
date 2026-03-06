@@ -86,7 +86,7 @@ describe('docx roundtrip', () => {
   const roundtripFixtures = ['headers', 'block_quotes', 'tables'];
 
   roundtripFixtures.forEach((name) => {
-    it(`should preserve data for ${name}`, async () => {
+    it(`preserves data for ${name}`, async () => {
       const editor = createTestEditor();
 
       // 1. Import original .docx
@@ -105,7 +105,7 @@ describe('docx roundtrip', () => {
   });
 
   // Test links - passes but with minor URL normalization (trailing slash added)
-  it('should preserve data for links (with URL normalization)', async () => {
+  it('preserve data for links (with URL normalization)', async () => {
     const editor = createTestEditor();
 
     const buffer = readDocxFixture('links');
@@ -126,7 +126,7 @@ describe('docx roundtrip', () => {
   });
 
   // Test that inline_formatting can be exported and reimported (with known data loss)
-  it('should export and reimport inline_formatting (with known loss)', async () => {
+  it('export and reimport inline_formatting (with known loss)', async () => {
     const editor = createTestEditor();
 
     // 1. Import original .docx

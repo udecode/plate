@@ -2,7 +2,7 @@
 
 import { jsx } from '@platejs/test-utils';
 import * as copyToClipboardModule from 'copy-to-clipboard';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { copySelectedBlocks } from './copySelectedBlocks';
@@ -33,7 +33,7 @@ describe('copySelectedBlocks', () => {
 
   describe('when copying blocks with empty content', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
+      editor = createSlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [
           {
@@ -67,7 +67,7 @@ describe('copySelectedBlocks', () => {
       );
     });
 
-    it('should copy empty blocks but not call setFragmentData for them', () => {
+    it('copy empty blocks but not call setFragmentData for them', () => {
       const mockDataTransfer = {
         getData: mock((type: string) => {
           if (type === 'text/plain') return 'mock plain text';
@@ -142,7 +142,7 @@ describe('copySelectedBlocks', () => {
 
   describe('when copying blocks with content', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
+      editor = createSlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [
           {
@@ -165,7 +165,7 @@ describe('copySelectedBlocks', () => {
       );
     });
 
-    it('should copy all selected blocks with content', () => {
+    it('copy all selected blocks with content', () => {
       const mockDataTransfer = {
         getData: mock((type: string) => {
           if (type === 'text/plain') return 'mock plain text';

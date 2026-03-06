@@ -30,7 +30,7 @@ describe('getSelectedDomNode', () => {
   });
 
   describe('when selection exists', () => {
-    it('should return a div containing the cloned contents', () => {
+    it('returns a div containing the cloned contents', () => {
       const mockFragment = document.createDocumentFragment();
       const paragraph = document.createElement('p');
       paragraph.textContent = 'Selected text';
@@ -48,7 +48,7 @@ describe('getSelectedDomNode', () => {
       expect(mockRange.cloneContents).toHaveBeenCalled();
     });
 
-    it('should handle multiple elements in selection', () => {
+    it('handle multiple elements in selection', () => {
       const mockFragment = document.createDocumentFragment();
       const p1 = document.createElement('p');
       p1.textContent = 'First paragraph';
@@ -67,7 +67,7 @@ describe('getSelectedDomNode', () => {
       );
     });
 
-    it('should handle text nodes in selection', () => {
+    it('handle text nodes in selection', () => {
       const mockFragment = document.createDocumentFragment();
       const textNode = document.createTextNode('Plain text');
       mockFragment.append(textNode);
@@ -80,7 +80,7 @@ describe('getSelectedDomNode', () => {
       expect(result?.innerHTML).toBe('Plain text');
     });
 
-    it('should handle empty selection', () => {
+    it('handle empty selection', () => {
       const mockFragment = document.createDocumentFragment();
       mockRange.cloneContents = mock(() => mockFragment);
 
@@ -92,7 +92,7 @@ describe('getSelectedDomNode', () => {
   });
 
   describe('when selection does not exist', () => {
-    it('should return undefined when getSelection returns null', () => {
+    it('returns undefined when getSelection returns null', () => {
       window.getSelection = mock(() => null);
 
       const result = getSelectedDomNode();
@@ -100,7 +100,7 @@ describe('getSelectedDomNode', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should return undefined when rangeCount is 0', () => {
+    it('returns undefined when rangeCount is 0', () => {
       (mockSelection as any).rangeCount = 0;
 
       const result = getSelectedDomNode();
@@ -109,7 +109,7 @@ describe('getSelectedDomNode', () => {
       expect(mockSelection.getRangeAt).not.toHaveBeenCalled();
     });
 
-    it('should handle negative rangeCount', () => {
+    it('handle negative rangeCount', () => {
       (mockSelection as any).rangeCount = -1;
       // Setup mock to return an empty fragment
       const emptyFragment = document.createDocumentFragment();
@@ -126,7 +126,7 @@ describe('getSelectedDomNode', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle getRangeAt throwing an error', () => {
+    it('handle getRangeAt throwing an error', () => {
       mockSelection.getRangeAt = mock(() => {
         throw new Error('Index out of bounds');
       });
@@ -135,7 +135,7 @@ describe('getSelectedDomNode', () => {
       expect(() => getSelectedDomNode()).toThrow('Index out of bounds');
     });
 
-    it('should handle cloneContents throwing an error', () => {
+    it('handle cloneContents throwing an error', () => {
       mockRange.cloneContents = mock(() => {
         throw new Error('Failed to clone');
       });
@@ -144,7 +144,7 @@ describe('getSelectedDomNode', () => {
       expect(() => getSelectedDomNode()).toThrow('Failed to clone');
     });
 
-    it('should handle complex HTML structures', () => {
+    it('handle complex HTML structures', () => {
       const mockFragment = document.createDocumentFragment();
       const div = document.createElement('div');
       div.innerHTML =
@@ -164,7 +164,7 @@ describe('getSelectedDomNode', () => {
       );
     });
 
-    it('should handle selection with attributes', () => {
+    it('handle selection with attributes', () => {
       const mockFragment = document.createDocumentFragment();
       const div = document.createElement('div');
       div.dataset.custom = 'value';
@@ -182,7 +182,7 @@ describe('getSelectedDomNode', () => {
       );
     });
 
-    it('should create a new div each time', () => {
+    it('create a new div each time', () => {
       // Need to return a new fragment each time since appendChild moves nodes
       mockRange.cloneContents = mock(() => {
         const mockFragment = document.createDocumentFragment();

@@ -1,9 +1,8 @@
 /** @jsx jsx */
 
-import type { TElement } from 'platejs';
+import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
 import { jsx } from '@platejs/test-utils';
-import { type PlateEditor, createPlateEditor } from 'platejs/react';
 
 import * as utilsModule from '../utils';
 import * as getColSpanModule from './getColSpan';
@@ -58,10 +57,10 @@ const mockEditor = (
       </htr>
     </htable>
   </editor>
-) as any as PlateEditor;
+) as any as SlateEditor;
 
 describe('getSelectedCellsBorders', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
   let getCellIndicesSpy: ReturnType<typeof spyOn>;
   let getCellTypesSpy: ReturnType<typeof spyOn>;
   let getColSpanSpy: ReturnType<typeof spyOn>;
@@ -123,7 +122,7 @@ describe('getSelectedCellsBorders', () => {
       'getLeftTableCell'
     ).mockImplementation(getLeftTableCellMock as any);
 
-    editor = createPlateEditor({ nodeId: true, value: mockEditor.children });
+    editor = createSlateEditor({ nodeId: true, value: mockEditor.children });
   });
 
   afterEach(() => {
@@ -136,7 +135,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('when no cells are selected', () => {
-    it('should return default values when no current cell found', () => {
+    it('returns default values when no current cell found', () => {
       editor.api.block = mock().mockReturnValue(null) as any;
 
       const result = getSelectedCellsBorders(editor);
@@ -151,7 +150,7 @@ describe('getSelectedCellsBorders', () => {
       });
     });
 
-    it('should use current cell if available', () => {
+    it('use current cell if available', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -195,7 +194,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('select.none option', () => {
-    it('should detect when no borders are set', () => {
+    it('detect when no borders are set', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -218,7 +217,7 @@ describe('getSelectedCellsBorders', () => {
       expect(noneResult).toBe(true);
     });
 
-    it('should detect when any border is set', () => {
+    it('detect when any border is set', () => {
       const cell = {
         id: 'c22',
         borders: { bottom: { size: 0 }, top: { size: 1 } },
@@ -236,7 +235,7 @@ describe('getSelectedCellsBorders', () => {
       expect(noneResult).toBe(false);
     });
 
-    it('should check adjacent cells borders', () => {
+    it('check adjacent cells borders', () => {
       const cell = {
         id: 'c22',
         borders: { bottom: { size: 0 }, top: { size: 0 } },
@@ -256,7 +255,7 @@ describe('getSelectedCellsBorders', () => {
       expect(noneResult).toBe(false);
     });
 
-    it('should skip none check when select.none is false', () => {
+    it('skip none check when select.none is false', () => {
       const cell = {
         id: 'c22',
         borders: { bottom: { size: 1 }, top: { size: 1 } },
@@ -272,7 +271,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('select.outer option', () => {
-    it('should detect when all outer borders are set', () => {
+    it('detect when all outer borders are set', () => {
       const cell = {
         id: 'c11',
         borders: {
@@ -295,7 +294,7 @@ describe('getSelectedCellsBorders', () => {
       expect(outerResult).toBe(true);
     });
 
-    it('should detect when any outer border is missing', () => {
+    it('detect when any outer border is missing', () => {
       const cell = {
         id: 'c11',
         borders: {
@@ -318,7 +317,7 @@ describe('getSelectedCellsBorders', () => {
       expect(outerResult).toBe(false);
     });
 
-    it('should check adjacent cells for outer borders', () => {
+    it('check adjacent cells for outer borders', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -346,7 +345,7 @@ describe('getSelectedCellsBorders', () => {
       expect(outerResult).toBe(true);
     });
 
-    it('should skip outer check when select.outer is false', () => {
+    it('skip outer check when select.outer is false', () => {
       const cell = {
         id: 'c11',
         borders: {
@@ -367,7 +366,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('select.side option', () => {
-    it('should detect individual border states correctly', () => {
+    it('detect individual border states correctly', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -409,7 +408,7 @@ describe('getSelectedCellsBorders', () => {
       expect(rightResult).toBe(true);
     });
 
-    it('should handle first row/column borders', () => {
+    it('handle first row/column borders', () => {
       const cell = {
         id: 'c11', // First row, first column
         borders: {
@@ -435,7 +434,7 @@ describe('getSelectedCellsBorders', () => {
       expect(leftResult).toBe(true);
     });
 
-    it('should check adjacent cells for side borders', () => {
+    it('check adjacent cells for side borders', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -470,7 +469,7 @@ describe('getSelectedCellsBorders', () => {
       expect(leftResult).toBe(false);
     });
 
-    it('should return all true when select.side is false', () => {
+    it('returns all true when select.side is false', () => {
       const cell = {
         id: 'c22',
         borders: {
@@ -498,7 +497,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('combined selections', () => {
-    it('should handle multiple cells in same row', () => {
+    it('handle multiple cells in same row', () => {
       const cell1 = {
         id: 'c11',
         borders: { right: { size: 1 }, top: { size: 1 } },
@@ -517,7 +516,7 @@ describe('getSelectedCellsBorders', () => {
       expect(result.top).toBe(true);
     });
 
-    it('should handle multiple cells in same column', () => {
+    it('handle multiple cells in same column', () => {
       const cell1 = {
         id: 'c11',
         borders: { bottom: { size: 1 }, right: { size: 1 } },
@@ -537,7 +536,7 @@ describe('getSelectedCellsBorders', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty cell array', () => {
+    it('handle empty cell array', () => {
       const result = getSelectedCellsBorders(editor, []);
 
       expect(result).toEqual({
@@ -550,7 +549,7 @@ describe('getSelectedCellsBorders', () => {
       });
     });
 
-    it('should handle missing border properties', () => {
+    it('handle missing border properties', () => {
       const cell = {
         id: 'c11',
         // No borders property at all

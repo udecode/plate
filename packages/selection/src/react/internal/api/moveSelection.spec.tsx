@@ -56,7 +56,7 @@ describe('moveSelection', () => {
   });
 
   describe('when pressing arrow down without shift', () => {
-    it('should set anchor to block below the bottom-most and select it alone', () => {
+    it('set anchor to block below the bottom-most and select it alone', () => {
       // Suppose block1, block2 selected
       editor.setOption(
         BlockSelectionPlugin,
@@ -79,7 +79,7 @@ describe('moveSelection', () => {
   });
 
   describe('when pressing arrow up without shift', () => {
-    it('should set anchor to block above the top-most and select it alone', () => {
+    it('set anchor to block above the top-most and select it alone', () => {
       // Suppose block2, block3 selected, anchor is block3
       editor.setOption(
         BlockSelectionPlugin,
@@ -100,7 +100,7 @@ describe('moveSelection', () => {
   });
 
   describe('when only one block is selected', () => {
-    it('should maintain current selection if there is no block above/below', () => {
+    it('maintain current selection if there is no block above/below', () => {
       // Only block1 selected, anchor = block1
       editor.setOption(
         BlockSelectionPlugin,
@@ -134,7 +134,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('block3');
     });
 
-    it('should maintain current selection when multiple blocks are selected and no prev/next block exists', () => {
+    it('maintain current selection when multiple blocks are selected and no prev/next block exists', () => {
       // block1 and block2 selected at the top
       editor.setOption(
         BlockSelectionPlugin,
@@ -170,7 +170,7 @@ describe('moveSelection', () => {
   });
 
   describe('when pressing arrow up with nested blocks', () => {
-    it('should select parent block if no previous sibling exists', () => {
+    it('select parent block if no previous sibling exists', () => {
       editor = createPlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [
@@ -211,7 +211,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('parent1');
     });
 
-    it('should do nothing if at root level with no previous sibling', () => {
+    it('keeps the selection unchanged at the root without a previous sibling', () => {
       // Using the original test value
       editor.setOption(
         BlockSelectionPlugin,
@@ -307,7 +307,7 @@ describe('moveSelection', () => {
       });
     });
 
-    it('should move from first tr to second tr in table', () => {
+    it('move from first tr to second tr in table', () => {
       // Select tr1
       editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr1');
@@ -322,7 +322,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('tr2');
     });
 
-    it('should do nothing when at last tr', () => {
+    it('keeps the selection unchanged at the last row', () => {
       // Select tr2
       editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr2']));
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr2');
@@ -337,7 +337,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('tr2');
     });
 
-    it('should skip non-selectable td cells', () => {
+    it('skip non-selectable td cells', () => {
       // Select td11
       editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['td11']));
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'td11');
@@ -418,7 +418,7 @@ describe('moveSelection', () => {
       );
     });
 
-    it('should move to previous sibling when not first child', () => {
+    it('move to previous sibling when not first child', () => {
       // Select child2
       editor.setOption(
         BlockSelectionPlugin,
@@ -437,7 +437,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('child1');
     });
 
-    it('should move to parents previous block if first child and skipping columns', () => {
+    it('move to parents previous block if first child and skipping columns', () => {
       // Select grandchild2
       editor.setOption(
         BlockSelectionPlugin,
@@ -456,7 +456,7 @@ describe('moveSelection', () => {
       expect(anchorId).toBe('grandchild1');
     });
 
-    it('should handle deeper nesting with non-selectable parents', () => {
+    it('handle deeper nesting with non-selectable parents', () => {
       // Make column_group1 not selectable as well
       editor.setOption(
         BlockSelectionPlugin,

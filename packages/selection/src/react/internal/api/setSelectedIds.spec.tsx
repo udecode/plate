@@ -1,13 +1,11 @@
-import type { PlateEditor } from 'platejs/react';
-
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor, type SlateEditor } from 'platejs';
 
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
 const createTestEditor = () =>
-  createPlateEditor({
+  createSlateEditor({
     plugins: [BlockSelectionPlugin],
     value: [
       {
@@ -33,13 +31,13 @@ const createSelectableElement = (id?: string) =>
     dataset: id ? { blockId: id } : {},
   }) as unknown as Element;
 
-const getSelectedIds = (editor: PlateEditor) =>
+const getSelectedIds = (editor: SlateEditor) =>
   Array.from(
     editor.getOption(BlockSelectionPlugin, 'selectedIds') ?? []
   ).sort();
 
 describe('setSelectedIds', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
 
   beforeEach(() => {
     editor = createTestEditor();
@@ -76,7 +74,7 @@ describe('setSelectedIds', () => {
 });
 
 describe('addSelectedRow', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
   let querySelectorSelectableSpy: ReturnType<typeof spyOn> | undefined;
   let setTimeoutSpy: ReturnType<typeof spyOn> | undefined;
 
@@ -123,7 +121,7 @@ describe('addSelectedRow', () => {
     expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
   });
 
-  it('does nothing when the selectable row cannot be found', () => {
+  it('keeps selection state unchanged when the row cannot be found', () => {
     querySelectorSelectableSpy = spyOn(
       domUtils,
       'querySelectorSelectable'

@@ -30,7 +30,7 @@ describe('when wrap=false', () => {
       ) as any
     );
 
-    it('should toggle block type', () => {
+    it('toggle block type', () => {
       editor.tf.toggleBlock('blockquote', { defaultType: 'p' });
 
       expect(editor.children).toEqual(output.children);
@@ -60,7 +60,7 @@ describe('when wrap=false', () => {
       ) as any
     );
 
-    it('should toggle block type', () => {
+    it('toggle block type', () => {
       editor.tf.toggleBlock('blockquote');
 
       expect(editor.children).toEqual(output.children);
@@ -94,7 +94,7 @@ describe('when wrap=true', () => {
       ) as any
     );
 
-    it('should unwrap block', () => {
+    it('unwrap block', () => {
       editor.tf.toggleBlock('code_block', { wrap: true });
 
       expect(editor.children).toEqual(output.children);
@@ -126,7 +126,7 @@ describe('when wrap=true', () => {
       ) as any
     );
 
-    it('should wrap block', () => {
+    it('wrap block', () => {
       editor.tf.toggleBlock('code_block', { wrap: true });
 
       expect(editor.children).toEqual(output.children);

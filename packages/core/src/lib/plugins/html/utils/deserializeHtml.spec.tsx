@@ -20,14 +20,12 @@ import { ImagePlugin, MediaEmbedPlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtml } from './deserializeHtml';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
 
 jsxt;
-
-describe('type', () => {});
 
 describe('when collapseWhitespace is false', () => {
   const html = '<blockquote>test \n code</blockquote>';
@@ -35,8 +33,8 @@ describe('when collapseWhitespace is false', () => {
 
   const expectedOutput = [{ text: 'test \n code' }];
 
-  it('should have the break line', () => {
-    const convertedDocumentFragment = deserializeHtml(createPlateEditor(), {
+  it('preserves line breaks', () => {
+    const convertedDocumentFragment = deserializeHtml(createSlateEditor(), {
       collapseWhiteSpace: false,
       element,
     });
@@ -55,9 +53,9 @@ describe('when element is a div', () => {
     </fragment>
   ) as any;
 
-  it('should be a fragment of text', () => {
+  it('returns a text fragment', () => {
     expect(
-      deserializeHtml(createPlateEditor(), {
+      deserializeHtml(createSlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -72,10 +70,10 @@ describe('when element is 2 p', () => {
     </fragment>
   ) as any;
 
-  it('should be a fragment of 2 paragraph nodes', () => {
+  it('returns two paragraph nodes', () => {
     expect(
       deserializeHtml(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [BaseParagraphPlugin],
         }),
         {
@@ -96,9 +94,9 @@ describe('when html is a text without tags', () => {
     </fragment>
   ) as any;
 
-  it('should be a fragment of text', () => {
+  it('returns a text fragment', () => {
     expect(
-      deserializeHtml(createPlateEditor(), {
+      deserializeHtml(createSlateEditor(), {
         element,
       })
     ).toEqual(output);
@@ -192,10 +190,10 @@ describe('when deserializing all plugins', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
+  it('deserializes all configured plugin outputs', () => {
     expect(
       deserializeHtmlElement(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [
             BlockquotePlugin,
             HeadingPlugin.configure({ options: { levels: 1 } }),

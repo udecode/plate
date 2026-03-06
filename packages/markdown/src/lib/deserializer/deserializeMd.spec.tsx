@@ -1,13 +1,8 @@
 /** @jsx jsxt */
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import {
-  BulletedListPlugin,
-  ListItemPlugin,
-  ListPlugin,
-  NumberedListPlugin,
-} from '@platejs/list-classic/react';
+import { BaseListPlugin } from '@platejs/list-classic';
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
@@ -15,14 +10,8 @@ import { deserializeMd } from './deserializeMd';
 jsxt;
 
 const editor = createTestEditor();
-const listEditor = createPlateEditor({
-  plugins: [
-    ListPlugin,
-    BulletedListPlugin,
-    NumberedListPlugin,
-    ListItemPlugin,
-    MarkdownPlugin,
-  ],
+const listEditor = createSlateEditor({
+  plugins: [BaseListPlugin, MarkdownPlugin],
 });
 
 const parseMarkdown = (

@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { setBorderSize } from './setBorderSize';
 
 jsxt;
@@ -16,7 +15,7 @@ jsxt;
 // and then checks if the output matches the expected output.
 describe('setBorderSize', () => {
   const createEditorInstance = (input: any) =>
-    createPlateEditor({
+    createSlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -24,7 +23,7 @@ describe('setBorderSize', () => {
     });
 
   describe('when in cell 11', () => {
-    it('should set border top', () => {
+    it('set border top', () => {
       const input = (
         <editor>
           <htable>
@@ -83,7 +82,7 @@ describe('setBorderSize', () => {
       expect(editor.children).toMatchObject(output.children);
     });
 
-    it('should set border left', () => {
+    it('set border left', () => {
       const input = (
         <editor>
           <htable>
@@ -143,7 +142,7 @@ describe('setBorderSize', () => {
     });
 
     describe('when in cell 21', () => {
-      it('should set border left', () => {
+      it('set border left', () => {
         const input = (
           <editor>
             <htable>
@@ -205,7 +204,7 @@ describe('setBorderSize', () => {
       describe('set border top', () => {
         // ... other tests in this describe block
 
-        it('should set border bottom on cell 11', () => {
+        it('set border bottom on cell 11', () => {
           const input = (
             <editor>
               <htable>
@@ -266,7 +265,7 @@ describe('setBorderSize', () => {
       });
 
       describe('when in cell 12', () => {
-        it('should set border right', () => {
+        it('set border right', () => {
           const input = (
             <editor>
               <htable>
@@ -326,7 +325,7 @@ describe('setBorderSize', () => {
         });
 
         describe('set border left', () => {
-          it('should set border right on cell 11', () => {
+          it('set border right on cell 11', () => {
             const input = (
               <editor>
                 <htable>
@@ -388,7 +387,7 @@ describe('setBorderSize', () => {
       });
 
       describe('when in cell 22', () => {
-        it('should set border bottom', () => {
+        it('set border bottom', () => {
           const input = (
             <editor>
               <htable>

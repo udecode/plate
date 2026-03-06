@@ -37,7 +37,7 @@ describe('shiftSelection', () => {
     });
 
     describe('when anchor is top-most and SHIFT+DOWN', () => {
-      it('should expand selection downward', () => {
+      it('expand selection downward', () => {
         editor.setOption(
           BlockSelectionPlugin,
           'selectedIds',
@@ -58,7 +58,7 @@ describe('shiftSelection', () => {
     });
 
     describe('when anchor is top-most and SHIFT+DOWN again', () => {
-      it('should expand further to block3', () => {
+      it('expand further to block3', () => {
         editor.setOption(
           BlockSelectionPlugin,
           'selectedIds',
@@ -79,7 +79,7 @@ describe('shiftSelection', () => {
     });
 
     describe('when anchor is NOT top-most and SHIFT+DOWN', () => {
-      it('should shrink from the top-most block', () => {
+      it('shrink from the top-most block', () => {
         editor.setOption(
           BlockSelectionPlugin,
           'selectedIds',
@@ -98,7 +98,7 @@ describe('shiftSelection', () => {
     });
 
     describe('when anchor is bottom-most and SHIFT+UP', () => {
-      it('should expand selection upward', () => {
+      it('expand selection upward', () => {
         editor.setOption(
           BlockSelectionPlugin,
           'selectedIds',
@@ -119,7 +119,7 @@ describe('shiftSelection', () => {
     });
 
     describe('when anchor is NOT bottom-most and SHIFT+UP', () => {
-      it('should shrink from bottom-most block', () => {
+      it('shrink from bottom-most block', () => {
         editor.setOption(
           BlockSelectionPlugin,
           'selectedIds',
@@ -181,7 +181,7 @@ describe('shiftSelection', () => {
       });
     });
 
-    it('should expand down from parent1 to block3 if anchor is parent1 (top-most)', () => {
+    it('expand down from parent1 to block3 if anchor is parent1 (top-most)', () => {
       // parent1 selected, anchor=parent1, SHIFT+DOWN => expand to block3
       editor.setOption(
         BlockSelectionPlugin,
@@ -196,7 +196,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!)).toEqual(['parent1', 'block3']);
     });
 
-    it('should shrink from parent1 if anchor is block3 (not top-most) SHIFT+DOWN', () => {
+    it('shrink from parent1 if anchor is block3 (not top-most) SHIFT+DOWN', () => {
       // parent1, block3 selected; anchor=block3 => top-most=parent1 => remove parent1
       editor.setOption(
         BlockSelectionPlugin,
@@ -211,7 +211,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!)).toEqual(['block3']);
     });
 
-    it('should expand up from block4 to block3 if anchor is block4 (bottom-most)', () => {
+    it('expand up from block4 to block3 if anchor is block4 (bottom-most)', () => {
       // block3, block4 selected; anchor=block4 => SHIFT+UP => expand to parent1
       // Actually, let's do block3, block4 => anchor=block4 => SHIFT+UP => add parent1
       editor.setOption(
@@ -229,7 +229,7 @@ describe('shiftSelection', () => {
       );
     });
 
-    it('should shrink from block4 if anchor is parent1 SHIFT+UP', () => {
+    it('shrink from block4 if anchor is parent1 SHIFT+UP', () => {
       // parent1, block3, block4 => anchor=parent1 => SHIFT+UP => remove block4
       editor.setOption(
         BlockSelectionPlugin,
@@ -247,7 +247,7 @@ describe('shiftSelection', () => {
       );
     });
 
-    it('should skip non-selectable child2 when expanding down from parent1 to block3', () => {
+    it('skip non-selectable child2 when expanding down from parent1 to block3', () => {
       // We already set child2 as not selectable
       editor.setOption(
         BlockSelectionPlugin,
@@ -349,7 +349,7 @@ describe('shiftSelection', () => {
       );
     });
 
-    it('should NOT expand down from table1 => add tr1 if anchor=table1', () => {
+    it('does not expand down from table1 => add tr1 if anchor=table1', () => {
       editor.setOption(
         BlockSelectionPlugin,
         'selectedIds',
@@ -364,7 +364,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!).sort()).toEqual(['table1'].sort());
     });
 
-    it('should shrink from table1 if anchor=tr1 SHIFT+DOWN', () => {
+    it('shrink from table1 if anchor=tr1 SHIFT+DOWN', () => {
       // table1, tr1 => anchor=tr1 => top-most=table1 => remove table1
       editor.setOption(
         BlockSelectionPlugin,
@@ -379,7 +379,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!)).toEqual(['tr1']);
     });
 
-    it('should expand up from tr1 => add table1 if anchor=tr1 is bottom-most - remove', () => {
+    it('expand up from tr1 => add table1 if anchor=tr1 is bottom-most - remove', () => {
       // Suppose table1, tr1 are selected => anchor=tr1 => SHIFT+UP => expand up => add ???
       // But let's do an easier test: if only tr1 is selected => anchor=tr1 => SHIFT+UP =>
       // see if there's an above block to add? Actually, tr1 is the bottom-most if there's only 1 selected.
@@ -394,7 +394,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!).sort()).toEqual(['table1'].sort());
     });
 
-    it('should expand down from tr1 => add tr2 if anchor=tr1 is top-most', () => {
+    it('expand down from tr1 => add tr2 if anchor=tr1 is top-most', () => {
       // anchor=tr1 => SHIFT+DOWN => add tr2
       editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr1');
@@ -405,7 +405,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!).sort()).toEqual(['tr1', 'tr2'].sort());
     });
 
-    it('should shrink from tr1 if anchor=tr2 SHIFT+DOWN', () => {
+    it('shrink from tr1 if anchor=tr2 SHIFT+DOWN', () => {
       // anchor=tr2 => top-most=tr1 => remove tr1
       editor.setOption(
         BlockSelectionPlugin,
@@ -420,7 +420,7 @@ describe('shiftSelection', () => {
       expect(Array.from(selectedIds!)).toEqual(['tr2']);
     });
 
-    it('should skip td / p nodes that are not selectable', () => {
+    it('skip td / p nodes that are not selectable', () => {
       // anchor=tr2 => SHIFT+DOWN => next would be blockZ skipping over child tds
       editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr2']));
       editor.setOption(BlockSelectionPlugin, 'anchorId', 'tr2');
@@ -456,7 +456,7 @@ describe('shiftSelection', () => {
   });
 
   describe('Anchor defaults to top-most/bottom-most if not set', () => {
-    it('should set anchor to top-most for SHIFT+DOWN', () => {
+    it('set anchor to top-most for SHIFT+DOWN', () => {
       // We have block1, block2.
       // Let's select block2 only, no anchor set => SHIFT+DOWN => anchor=top-most => block2 => expand => block3.
       editor = createPlateEditor({
@@ -487,7 +487,7 @@ describe('shiftSelection', () => {
       expect(anchorId).toBe('block2');
     });
 
-    it('should set anchor to bottom-most for SHIFT+UP', () => {
+    it('set anchor to bottom-most for SHIFT+UP', () => {
       // block1, block2 => no anchor => SHIFT+UP => anchor=bottom-most => block2 => expand up => block3 if existed
       editor.setOption(
         BlockSelectionPlugin,

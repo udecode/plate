@@ -32,7 +32,7 @@ describe('active', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
+  it('removes the active mark', () => {
     input.tf.toggleMark(BoldPlugin.key);
     expect(input.children).toEqual(output.children);
   });
@@ -64,7 +64,7 @@ describe('clear', () => {
     ) as any
   );
 
-  it('should be', () => {
+  it('replaces the removed mark with the new mark', () => {
     input.tf.toggleMark(ItalicPlugin.key, { remove: BoldPlugin.key });
     expect(input.children).toEqual(output.children);
   });
@@ -95,7 +95,7 @@ describe('inactive', () => {
     ) as any
   );
 
-  it('should be', () => {
+  it('adds the inactive mark', () => {
     input.tf.toggleMark(BoldPlugin.key);
     expect(input.children).toEqual(output.children);
   });

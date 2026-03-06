@@ -14,7 +14,7 @@ jsxt;
 
 describe('getListChildren', () => {
   describe('when node is not a list item', () => {
-    it('should return empty array when node has no listType', () => {
+    it('returns empty array when node has no listType', () => {
       const input = (
         <fragment>
           <hp indent={1}>
@@ -37,7 +37,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([]);
     });
 
-    it('should return empty array when node has no indent', () => {
+    it('returns empty array when node has no indent', () => {
       const input = (
         <fragment>
           <hp listStyleType="disc">
@@ -62,7 +62,7 @@ describe('getListChildren', () => {
   });
 
   describe('when node is a list item', () => {
-    it('should get all direct children with bigger indent', () => {
+    it('get all direct children with bigger indent', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -105,7 +105,7 @@ describe('getListChildren', () => {
       ] as any);
     });
 
-    it('should get nested children with multiple indent levels', () => {
+    it('get nested children with multiple indent levels', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -155,7 +155,7 @@ describe('getListChildren', () => {
       ] as any);
     });
 
-    it('should stop at item with equal indent', () => {
+    it('stop at item with equal indent', () => {
       const input = (
         <fragment>
           <hp indent={2} listStyleType="disc">
@@ -201,7 +201,7 @@ describe('getListChildren', () => {
       ] as any);
     });
 
-    it('should stop at item with lower indent', () => {
+    it('stop at item with lower indent', () => {
       const input = (
         <fragment>
           <hp indent={3} listStyleType="disc">
@@ -247,7 +247,7 @@ describe('getListChildren', () => {
       ] as any);
     });
 
-    it('should stop at non-list item', () => {
+    it('stop at non-list item', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -282,7 +282,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([[output[0], [1]]] as any);
     });
 
-    it('should return empty array when no children exist', () => {
+    it('returns empty array when no children exist', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -305,7 +305,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([]);
     });
 
-    it('should return empty array when at last position', () => {
+    it('returns empty array when at last position', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -328,7 +328,7 @@ describe('getListChildren', () => {
       expect(children).toEqual([]);
     });
 
-    it('should work with mixed list types', () => {
+    it('work with mixed list types', () => {
       const input = (
         <fragment>
           <hp indent={1} listStyleType="disc">
@@ -378,7 +378,7 @@ describe('getListChildren', () => {
       ] as any);
     });
 
-    it('should work with todo lists', () => {
+    it('work with todo lists', () => {
       const input = (
         <fragment>
           <hp indent={1} listChecked={false} listStyleType="disc">

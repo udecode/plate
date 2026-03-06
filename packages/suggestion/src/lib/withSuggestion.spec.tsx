@@ -26,7 +26,7 @@ const testSuggestionData = {
 describe('withSuggestion', () => {
   describe('insertText', () => {
     describe('when editor.getOptions(SuggestionPlugin).isSuggesting is not defined', () => {
-      it('should not add marks', () => {
+      it('does not add marks', () => {
         const input = (
           <editor>
             <hp>
@@ -60,7 +60,7 @@ describe('withSuggestion', () => {
 
     describe('when editor.getOptions(SuggestionPlugin).isSuggesting is defined', () => {
       describe('when cursor is not in suggestion mark', () => {
-        it('should add marks and suggestion data', () => {
+        it('add marks and suggestion data', () => {
           const input = (
             <editor>
               <hp>
@@ -96,7 +96,7 @@ describe('withSuggestion', () => {
       });
 
       describe('when cursor is in block suggestion', () => {
-        it('should not add suggestion leaf', () => {
+        it('does not add suggestion leaf', () => {
           const blockSuggestionData = {
             id: '1',
             createdAt: Date.now(),
@@ -136,7 +136,7 @@ describe('withSuggestion', () => {
     });
 
     describe('when cursor is in suggestion mark', () => {
-      it('should not add a new suggestion id', () => {
+      it('does not add a new suggestion id', () => {
         const input = (
           <editor>
             <hp>
@@ -183,7 +183,7 @@ describe('withSuggestion', () => {
 describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
   describe('delete backward', () => {
     describe('when there is no point before', () => {
-      it('should not add a new suggestion id', () => {
+      it('does not add a new suggestion id', () => {
         const input = (
           <editor>
             <hp>
@@ -263,7 +263,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
 });
 
 describe('when point before is not marked', () => {
-  it('should add a new suggestion id when remove backward', () => {
+  it('add a new suggestion id when remove backward', () => {
     const input = (
       <editor>
         <hp>
@@ -295,7 +295,7 @@ describe('when point before is not marked', () => {
 });
 
 describe('when point before is marked', () => {
-  it('should not add a new suggestion id when different type', () => {
+  it('does not add a new suggestion id when different type', () => {
     const input = (
       <editor>
         <hp>
@@ -330,7 +330,7 @@ describe('when point before is marked', () => {
 });
 
 describe('when delete line', () => {
-  it('should add a new suggestion id', () => {
+  it('add a new suggestion id', () => {
     const input = (
       <editor>
         <hp>
@@ -362,7 +362,7 @@ describe('when delete line', () => {
 
 describe('normalizeNode', () => {
   describe('when there is a suggestion mark without data', () => {
-    it('should remove mark', () => {
+    it('remove mark', () => {
       const input = (
         <editor>
           <hp>
@@ -399,7 +399,7 @@ describe('normalizeNode', () => {
 });
 
 describe('insert text when cursor is expanded', () => {
-  it('it should use same suggestion id', () => {
+  it('reuses the same suggestion id', () => {
     const input = (
       <editor>
         <hp>

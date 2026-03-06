@@ -8,7 +8,7 @@ jsxt;
 
 describe('getParentNode', () => {
   describe('when not root path', () => {
-    it('should return parent with empty path', () => {
+    it('returns parent with empty path', () => {
       const editor = createEditor(
         (
           <editor>
@@ -25,7 +25,7 @@ describe('getParentNode', () => {
   });
 
   describe('when root path', () => {
-    it('should return undefined', () => {
+    it('returns undefined', () => {
       const editor = createEditor(
         (
           <editor>

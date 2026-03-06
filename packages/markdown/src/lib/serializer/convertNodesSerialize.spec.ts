@@ -72,7 +72,7 @@ describe('convertNodesSerialize', () => {
   };
 
   describe('allowedNodes option', () => {
-    it('should only include nodes specified in allowedNodes', () => {
+    it('only include nodes specified in allowedNodes', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         allowedNodes: ['h1', 'text'],
@@ -84,7 +84,7 @@ describe('convertNodesSerialize', () => {
       expect(result).toEqual([mockHeadingNodeMd]);
     });
 
-    it('should include all nodes when allowedNodes is null or undefined', () => {
+    it('include all nodes when allowedNodes is null or undefined', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         allowedNodes: null,
@@ -95,7 +95,7 @@ describe('convertNodesSerialize', () => {
       expect(result).toEqual(mockNodesMd);
     });
 
-    it('should include no nodes when allowedNodes is empty', () => {
+    it('include no nodes when allowedNodes is empty', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         allowedNodes: [],
@@ -107,7 +107,7 @@ describe('convertNodesSerialize', () => {
   });
 
   describe('disallowedNodes option', () => {
-    it('should exclude nodes specified in disallowedNodes', () => {
+    it('exclude nodes specified in disallowedNodes', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         disallowedNodes: ['h1'],
@@ -122,7 +122,7 @@ describe('convertNodesSerialize', () => {
       ]);
     });
 
-    it('should exclude text marks specified in disallowedNodes', () => {
+    it('exclude text marks specified in disallowedNodes', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         disallowedNodes: ['bold'],
@@ -143,7 +143,7 @@ describe('convertNodesSerialize', () => {
   });
 
   describe('plainMarks option', () => {
-    it('should treat marks specified in plainMarks as plain text', () => {
+    it('treat marks specified in plainMarks as plain text', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         plainMarks: ['bold'],
@@ -162,7 +162,7 @@ describe('convertNodesSerialize', () => {
       ]);
     });
 
-    it('should treat multiple marks as plain text', () => {
+    it('treat multiple marks as plain text', () => {
       const mockItalicBoldNodeSlate: Descendant = {
         children: [
           { bold: true, italic: true, text: 'BoldItalic' },
@@ -186,7 +186,7 @@ describe('convertNodesSerialize', () => {
       ] as any);
     });
 
-    it('should only treat specified marks as plain text', () => {
+    it('only treat specified marks as plain text', () => {
       const mockItalicBoldNodeSlate: Descendant = {
         children: [
           { bold: true, italic: true, text: 'BoldItalic' },
@@ -218,7 +218,7 @@ describe('convertNodesSerialize', () => {
   });
 
   describe('allowNode option', () => {
-    it('should exclude nodes specified in allowNode', () => {
+    it('exclude nodes specified in allowNode', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         allowNode: {
@@ -238,7 +238,7 @@ describe('convertNodesSerialize', () => {
       ]);
     });
 
-    it('should exclude text marks specified in allowNode', () => {
+    it('exclude text marks specified in allowNode', () => {
       const options: SerializeMdOptions = {
         ...baseOptions,
         allowNode: {
@@ -264,7 +264,7 @@ describe('convertNodesSerialize', () => {
   });
 
   describe('listStyleType handling', () => {
-    it('should split list blocks when listStyleType changes', () => {
+    it('split list blocks when listStyleType changes', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'unordered' }],
@@ -350,7 +350,7 @@ describe('convertNodesSerialize', () => {
       ] as any);
     });
 
-    it('should split nested sibling lists when style changes at same indent', () => {
+    it('split nested sibling lists when style changes at same indent', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'parent bullet' }],
@@ -435,7 +435,7 @@ describe('convertNodesSerialize', () => {
       ] as any);
     });
 
-    it('should split when listStyleType changes across indentation', () => {
+    it('split when listStyleType changes across indentation', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'parent bullet' }],

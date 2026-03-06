@@ -7,7 +7,7 @@ describe('groupFilesByType', () => {
   const createFile = (name: string, type: string): File =>
     new File([], name, { type });
 
-  it('should group files by their types', () => {
+  it('group files by their types', () => {
     const files = [
       createFile('image.jpg', 'image/jpeg'),
       createFile('video.mp4', 'video/mp4'),
@@ -40,7 +40,7 @@ describe('groupFilesByType', () => {
     expect(result.text).toHaveLength(0);
   });
 
-  it('should throw InvalidFileTypeError for unsupported file types', () => {
+  it('throw InvalidFileTypeError for unsupported file types', () => {
     const files = [createFile('text.txt', 'text/plain')];
     const fileList = {
       length: files.length,
@@ -65,7 +65,7 @@ describe('groupFilesByType', () => {
     });
   });
 
-  it('should accept blob type as fallback', () => {
+  it('accept blob type as fallback', () => {
     const files = [createFile('unknown.xyz', 'application/octet-stream')];
     const fileList = {
       length: files.length,

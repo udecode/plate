@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
-import { createPlateEditor } from '@platejs/core/react';
-import { LinkPlugin } from '@platejs/link/react';
+import { createSlateEditor } from '@platejs/core';
+import { BaseLinkPlugin } from '@platejs/link';
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../create-editor';
@@ -11,7 +11,7 @@ jsx;
 
 describe('NodeApi.children', () => {
   describe('when using from option', () => {
-    it('should get children starting from index', () => {
+    it('get children starting from index', () => {
       const editor = createEditor(
         (
           <editor>
@@ -36,7 +36,7 @@ describe('NodeApi.children', () => {
       ]);
     });
 
-    it('should get children in reverse from index', () => {
+    it('get children in reverse from index', () => {
       const editor = createEditor(
         (
           <editor>
@@ -63,7 +63,7 @@ describe('NodeApi.children', () => {
   });
 
   describe('when using to option', () => {
-    it('should get children up to index', () => {
+    it('get children up to index', () => {
       const editor = createEditor(
         (
           <editor>
@@ -86,7 +86,7 @@ describe('NodeApi.children', () => {
   });
 
   describe('when using both from and to options', () => {
-    it('should get children within range', () => {
+    it('get children within range', () => {
       const editor = createEditor(
         (
           <editor>
@@ -110,7 +110,7 @@ describe('NodeApi.children', () => {
 
   describe('when getting next siblings', () => {
     describe('when no siblings', () => {
-      it('should return empty array', () => {
+      it('returns empty array', () => {
         const input = createEditor(
           (
             <editor>
@@ -141,7 +141,7 @@ describe('NodeApi.children', () => {
     });
 
     describe('when has siblings', () => {
-      it('should return sibling nodes', () => {
+      it('returns sibling nodes', () => {
         const input = createEditor(
           (
             <editor>
@@ -160,8 +160,8 @@ describe('NodeApi.children', () => {
 
         const output = [{ text: '' }, { text: 'last' }];
 
-        const editor = createPlateEditor({
-          plugins: [LinkPlugin],
+        const editor = createSlateEditor({
+          plugins: [BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
         });
