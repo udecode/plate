@@ -23,9 +23,11 @@ description: Use when writing tests for Plate editor, Slate transforms, or React
 # Plate Patterns
 
 - `@platejs/test-utils` plus JSX hyperscript is for editor contracts only.
+- Prefer plain object fixtures for option/state tests. Use JSX hyperscript only when tree shape or selection shape is the contract.
 - Use `createSlateEditor` over `createPlateEditor` when React wiring is irrelevant.
 - For mark and transform tests, assert changed nodes or marks, not unrelated siblings.
 - For parser tests, keep one helper and explicit input/output pairs.
+- For `normalizeNode` plugin specs, share one package-local helper that creates the editor and normalizes the root.
 - `describe`, `it`, `expect`, and friends are global. Import only `mock` or `spyOn` from `bun:test` when needed.
 
 # Review Checklist
