@@ -25,6 +25,8 @@ jobs:
 
       - name: 📦 Monorepo install
         uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
 
       # @link https://github.com/changesets/action
       - name: 🦋 Create Release Pull Request or Publish

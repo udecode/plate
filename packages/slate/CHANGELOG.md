@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- [#4849](https://github.com/udecode/plate/pull/4849) by [@zbeyens](https://github.com/zbeyens) –
+- [#4853](https://github.com/udecode/plate/pull/4853) by [@zbeyens](https://github.com/zbeyens) –
   - Update Slate dependencies to `0.123.0`
 
 ## 52.0.10

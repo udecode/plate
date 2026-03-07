@@ -20,24 +20,30 @@
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Proactively use Skill(tdd) when it adds value; skip TDD for high-friction tests (hard setup or slow React/UI flows).
 
-## Browser Testing
+## Skill Overrides
 
-## Browser Testing
+When using the following skills, override the default behavior.
+
+`planning-with-files`:
+
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
+
+`agent-browser`:
 
 - Never close agent-browser
 - Use `--headed` only you failed to test and need manual input from human.
 - Port 3000 for main app
 - Use `agent-browser` instead of Do NOT use next-devtools `browser_eval` (overlaps with agent-browser)
-- Use `bun convex:logs` to watch the Convex logs
+- If `agent-browser` gets blocked or loops on the same step, stop and ask the user to unblock. After the unblock works:
+  - [Add browser learning]
 
-## Compound Engineering Overrides
+`workflows:*`:
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run `bun check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `bun check` unless the user explicitly says to.
 - **plan:** Include test-browser in acceptance criteria for browser features
 - **deepen-plan:** Context7 only when not covered by skills
 - **work:** UI tasks require test-browser BEFORE marking complete. Never guess.
-- **review:** Skip kieran-rails, dhh-rails, rails-turbo. Trust user input (internal). Keep simple.
 
 ## Commands
 

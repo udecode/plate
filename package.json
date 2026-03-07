@@ -89,7 +89,7 @@
     "@types/is-hotkey": "0.1.10",
     "@types/jest": "29.5.14",
     "@types/lodash": "4.17.17",
-    "@types/node": "24.0.0",
+    "@types/node": "24.12.0",
     "@types/prismjs": "1.26.5",
     "@types/prompts": "2.4.9",
     "@types/raf": "3.4.3",
@@ -129,9 +129,13 @@
   "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=18.12.0",
-    "pnpm": ">=9.0.0"
+    "pnpm": ">=9.15.0"
   },
   "pnpm": {
+    "overrides": {
+      "@platejs/core": "52.0.17",
+      "@platejs/slate": "52.0.10"
+    },
     "patchedDependencies": {
       "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
       "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
