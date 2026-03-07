@@ -1,8 +1,9 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+
+import { createAutoformatEditor } from '../createAutoformatEditor';
 
 jsxt;
 
@@ -22,9 +23,9 @@ const output = (
   </fragment>
 ) as any;
 
-it('should autoformat', () => {
-  const editor = createSlateEditor({
-    plugins: AutoformatKit,
+it('formats > into a blockquote', () => {
+  const editor = createAutoformatEditor({
+    rules: [{ match: '> ', mode: 'block', type: KEYS.blockquote }],
     value: input,
   });
 

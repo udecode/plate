@@ -4,7 +4,7 @@ import { createTestEditor } from './__tests__/createTestEditor';
 import { aiCommentToRange } from './aiCommentToRange';
 
 describe('applyAIReview', () => {
-  it('should apply the AI review to the editor', () => {
+  it('apply the AI review to the editor', () => {
     const editor = createTestEditor([
       {
         id: 'gYBjGfssdm',

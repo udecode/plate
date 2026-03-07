@@ -1,11 +1,11 @@
-import { createPlateEditor } from '../../../react';
+import { createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
-  it('should create an editor with combined plugin APIs', () => {
+  it('create an editor with combined plugin APIs', () => {
     const mockLogger = mock();
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -36,11 +36,11 @@ describe('DebugPlugin', () => {
     expect(mockLogger).toHaveBeenCalledWith('Test message', 'TEST', undefined);
   });
 
-  it('should respect log levels', () => {
+  it('respect log levels', () => {
     const warnLogger = mock();
     const logLogger = mock();
     const infoLogger = mock();
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -64,8 +64,8 @@ describe('DebugPlugin', () => {
     expect(logLogger).toHaveBeenCalledTimes(0);
   });
 
-  it('should throw errors when throwErrors is true', () => {
-    const editor = createPlateEditor({
+  it('throw errors when throwErrors is true', () => {
+    const editor = createSlateEditor({
       plugins: [DebugPlugin],
     });
 
@@ -82,8 +82,8 @@ describe('DebugPlugin', () => {
     }
   });
 
-  it('should not throw errors when throwErrors is false', () => {
-    const editor = createPlateEditor({
+  it('does not throw errors when throwErrors is false', () => {
+    const editor = createSlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -98,9 +98,9 @@ describe('DebugPlugin', () => {
     }).not.toThrow();
   });
 
-  it('should not log in production mode', () => {
+  it('does not log in production mode', () => {
     const mockLogger = mock();
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {

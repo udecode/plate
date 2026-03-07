@@ -2,8 +2,8 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { ParagraphPlugin } from '../../../../react';
-import { createPlateEditor } from '../../../../react/editor/withPlate';
+import { createSlateEditor } from '../../../editor';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlElementToElement } from './htmlElementToElement';
 import { parseHtmlElement } from './parseHtmlElement';
 
@@ -16,11 +16,11 @@ const output = (
 );
 
 describe('when deserializing p > test', () => {
-  it('should be', () => {
+  it('returns a paragraph element', () => {
     expect(
       htmlElementToElement(
-        createPlateEditor({
-          plugins: [ParagraphPlugin],
+        createSlateEditor({
+          plugins: [BaseParagraphPlugin],
         }),
         parseHtmlElement('<p>test</p>')
       )

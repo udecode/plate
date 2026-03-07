@@ -12,7 +12,7 @@ const editor = createTestEditor();
 
 describe('wrapWithBlockId', () => {
   describe('unit tests', () => {
-    it('should wrap a node with block element and ID attribute', () => {
+    it('wrap a node with block element and ID attribute', () => {
       const mdastNode = {
         children: [{ type: 'text', value: 'Hello world' }],
         type: 'paragraph',
@@ -37,7 +37,7 @@ describe('wrapWithBlockId', () => {
       } as any);
     });
 
-    it('should convert numeric IDs to strings', () => {
+    it('convert numeric IDs to strings', () => {
       const mdastNode = {
         children: [{ type: 'text', value: 'Test' }],
         type: 'paragraph',
@@ -50,7 +50,7 @@ describe('wrapWithBlockId', () => {
   });
 
   describe('integration with serializeMd', () => {
-    it('should wrap nodes with IDs in block elements when withBlockId is true', () => {
+    it('wrap nodes with IDs in block elements when withBlockId is true', () => {
       const slateNodes = [
         {
           id: '123',
@@ -67,7 +67,7 @@ describe('wrapWithBlockId', () => {
       expect(result).toMatchSnapshot();
     });
 
-    it('should not wrap nodes without IDs', () => {
+    it('does not wrap nodes without IDs', () => {
       const slateNodes = [
         {
           children: [{ text: 'No ID here' }],
@@ -83,7 +83,7 @@ describe('wrapWithBlockId', () => {
       expect(result).toMatchSnapshot();
     });
 
-    it('should handle complex nested structures', () => {
+    it('handle complex nested structures', () => {
       const slateNodes = [
         {
           id: 'para-with-marks',
@@ -106,7 +106,7 @@ describe('wrapWithBlockId', () => {
       expect(result).toMatchSnapshot();
     });
 
-    it('should not wrap nested block elements in tables', () => {
+    it('does not wrap nested block elements in tables', () => {
       const slateNodes = (
         <htable id="wX11A61CZN">
           <htr id="Q1LgIIFN3Q">
@@ -142,7 +142,7 @@ describe('wrapWithBlockId', () => {
       );
     });
 
-    it('should wrap indent lists with IDs in block elements when withBlockId is true', () => {
+    it('wrap indent lists with IDs in block elements when withBlockId is true', () => {
       const slateNodes = [
         {
           id: 'list-item-1',
@@ -175,7 +175,7 @@ describe('wrapWithBlockId', () => {
       expect(result).toMatchSnapshot();
     });
 
-    it('should wrap ordered indent lists with IDs when withBlockId is true', () => {
+    it('wrap ordered indent lists with IDs when withBlockId is true', () => {
       const slateNodes = [
         {
           id: 'ordered-1',

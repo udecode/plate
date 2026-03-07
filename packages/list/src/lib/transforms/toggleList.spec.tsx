@@ -1,10 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
-import { IndentPlugin } from '@platejs/indent/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
@@ -12,10 +11,30 @@ import { toggleList } from './toggleList';
 
 jsxt;
 
+const getToggledEditor = ({
+  input,
+  options,
+  plugins = [BaseListPlugin, BaseIndentPlugin],
+}: {
+  input: SlateEditor;
+  options: Parameters<typeof toggleList>[1];
+  plugins?: any[];
+}) => {
+  const editor = createSlateEditor({
+    plugins,
+    selection: input.selection,
+    value: input.children,
+  });
+
+  toggleList(editor, options);
+
+  return editor;
+};
+
 describe('toggleList', () => {
   describe('when selection is collapsed', () => {
     describe('when listStyleType is not defined', () => {
-      it('should set listStyleType', async () => {
+      it('set listStyleType', async () => {
         const input = (
           <editor>
             <hp indent={3}>
@@ -32,19 +51,16 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'disc' },
         });
-
-        toggleList(editor, { listStyleType: 'disc' });
 
         expect(editor.children).toEqual(output.children);
       });
 
       describe('when indent is not set', () => {
-        it('should set indent 1', async () => {
+        it('set indent 1', async () => {
           const input = (
             <editor>
               <hp>
@@ -61,13 +77,10 @@ describe('toggleList', () => {
             </editor>
           ) as any as SlateEditor;
 
-          const editor = createPlateEditor({
-            plugins: [BaseListPlugin, IndentPlugin],
-            selection: input.selection,
-            value: input.children,
+          const editor = getToggledEditor({
+            input,
+            options: { listStyleType: 'disc' },
           });
-
-          toggleList(editor, { listStyleType: 'disc' });
 
           expect(editor.children).toEqual(output.children);
         });
@@ -75,7 +88,7 @@ describe('toggleList', () => {
     });
 
     describe('when listStyleType is defined', () => {
-      it('should unset listStyleType', async () => {
+      it('unset listStyleType', async () => {
         const input = (
           <editor>
             <hp indent={1} listStyleType="disc">
@@ -92,20 +105,17 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'disc' },
         });
-
-        toggleList(editor, { listStyleType: 'disc' });
 
         expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('when there is sibling items', () => {
-      it('should set listStyleType on', async () => {
+      it('set listStyleType on', async () => {
         const input = (
           <editor>
             <hp indent={2} listStyleType="disc">
@@ -172,13 +182,10 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'decimal' },
         });
-
-        toggleList(editor, { listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
@@ -219,13 +226,10 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listRestart: 5, listStyleType: 'decimal' },
         });
-
-        toggleList(editor, { listRestart: 5, listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
@@ -255,15 +259,12 @@ describe('toggleList', () => {
             </editor>
           ) as any as SlateEditor;
 
-          const editor = createPlateEditor({
-            plugins: [BaseListPlugin, IndentPlugin],
-            selection: input.selection,
-            value: input.children,
-          });
-
-          toggleList(editor, {
-            listRestartPolite: 5,
-            listStyleType: 'decimal',
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
           });
 
           expect(editor.children).toEqual(output.children);
@@ -300,15 +301,12 @@ describe('toggleList', () => {
             </editor>
           ) as any as SlateEditor;
 
-          const editor = createPlateEditor({
-            plugins: [BaseListPlugin, IndentPlugin],
-            selection: input.selection,
-            value: input.children,
-          });
-
-          toggleList(editor, {
-            listRestartPolite: 5,
-            listStyleType: 'decimal',
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
           });
 
           expect(editor.children).toEqual(output.children);
@@ -319,7 +317,7 @@ describe('toggleList', () => {
 
   describe('when selection is expanded', () => {
     describe('when blocks have no listStyleType', () => {
-      it('should set listStyleType', async () => {
+      it('set listStyleType', async () => {
         const input = (
           <editor>
             <hp>
@@ -350,20 +348,17 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'disc' },
         });
-
-        toggleList(editor, { listStyleType: 'disc' });
 
         expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('when blocks have (different) listStyleType except one block without', () => {
-      it('should set listStyleType', async () => {
+      it('set listStyleType', async () => {
         const input = (
           <editor>
             <hp indent={1} listStyleType="disc">
@@ -394,20 +389,17 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'decimal' },
         });
-
-        toggleList(editor, { listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('when blocks have eq listStyleType', () => {
-      it('should outdent', async () => {
+      it('outdent', async () => {
         const input = (
           <editor>
             <hp indent={1} listStyleType="disc">
@@ -438,20 +430,17 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'disc' },
         });
-
-        toggleList(editor, { listStyleType: 'disc' });
 
         expect(editor.children).toEqual(output.children);
       });
     });
 
     describe('when across pages', () => {
-      it('should toggle', async () => {
+      it('toggle', async () => {
         const input = (
           <editor>
             <element>
@@ -484,13 +473,11 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [listPluginPage, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listStyleType: 'decimal' },
+          plugins: [listPluginPage, BaseIndentPlugin],
         });
-
-        toggleList(editor, { listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
@@ -541,13 +528,10 @@ describe('toggleList', () => {
           </editor>
         ) as any as SlateEditor;
 
-        const editor = createPlateEditor({
-          plugins: [BaseListPlugin, IndentPlugin],
-          selection: input.selection,
-          value: input.children,
+        const editor = getToggledEditor({
+          input,
+          options: { listRestart: 5, listStyleType: 'decimal' },
         });
-
-        toggleList(editor, { listRestart: 5, listStyleType: 'decimal' });
 
         expect(editor.children).toEqual(output.children);
       });
@@ -587,15 +571,12 @@ describe('toggleList', () => {
             </editor>
           ) as any as SlateEditor;
 
-          const editor = createPlateEditor({
-            plugins: [BaseListPlugin, IndentPlugin],
-            selection: input.selection,
-            value: input.children,
-          });
-
-          toggleList(editor, {
-            listRestartPolite: 5,
-            listStyleType: 'decimal',
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
           });
 
           expect(editor.children).toEqual(output.children);
@@ -642,15 +623,12 @@ describe('toggleList', () => {
             </editor>
           ) as any as SlateEditor;
 
-          const editor = createPlateEditor({
-            plugins: [BaseListPlugin, IndentPlugin],
-            selection: input.selection,
-            value: input.children,
-          });
-
-          toggleList(editor, {
-            listRestartPolite: 5,
-            listStyleType: 'decimal',
+          const editor = getToggledEditor({
+            input,
+            options: {
+              listRestartPolite: 5,
+              listStyleType: 'decimal',
+            },
           });
 
           expect(editor.children).toEqual(output.children);

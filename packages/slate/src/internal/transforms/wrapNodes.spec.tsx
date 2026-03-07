@@ -2,7 +2,7 @@ import { createEditor } from '../../create-editor';
 
 describe('wrapNodes', () => {
   describe('when children is true', () => {
-    it('should wrap the children into a p', () => {
+    it('wrap the children into a p', () => {
       const initialValue = [
         {
           children: [
@@ -85,7 +85,7 @@ describe('wrapNodes', () => {
   });
 
   describe('when children is false or undefined', () => {
-    it('should wrap the node normally', () => {
+    it('wrap the node normally', () => {
       const initialValue = [
         {
           children: [{ text: 'test' }],

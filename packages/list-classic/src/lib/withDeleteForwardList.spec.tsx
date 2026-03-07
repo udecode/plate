@@ -10,7 +10,7 @@ import { BaseListPlugin } from './BaseListPlugin';
 jsxt;
 
 describe('p (empty) + list when selection not in list', () => {
-  it('should remove the p', () => {
+  it('remove the p', () => {
     const input = (
       <editor>
         <hp>
@@ -47,7 +47,7 @@ describe('p (empty) + list when selection not in list', () => {
 });
 
 describe('p /w text + list when selection not in list', () => {
-  it('should merge the texts', () => {
+  it('merge the texts', () => {
     const input = (
       <editor>
         <hp>
@@ -79,7 +79,7 @@ describe('p /w text + list when selection not in list', () => {
     expect(editor.children).toEqual(expected.children);
   });
 
-  it('should merge the texts but keep the rest of the list', () => {
+  it('merge the texts but keep the rest of the list', () => {
     const input = (
       <editor>
         <hp>
@@ -119,7 +119,7 @@ describe('p /w text + list when selection not in list', () => {
     expect(editor.children).toEqual(expected.children);
   });
 
-  it('should merge the texts and move up its first child', () => {
+  it('merge the texts and move up its first child', () => {
     const input = (
       <editor>
         <hp>
@@ -177,7 +177,7 @@ describe('p /w text + list when selection not in list', () => {
 });
 
 describe('list + list when selection is at the end of the first list', () => {
-  it('should merge the two list together', () => {
+  it('merge the two list together', () => {
     const input = (
       <editor>
         <hul>
@@ -234,7 +234,7 @@ describe('list + list when selection is at the end of the first list', () => {
 });
 
 describe('list where second item has multiple children', () => {
-  it('should merge all text into first list item', () => {
+  it('merge all text into first list item', () => {
     const input = (
       <editor>
         <hul>
@@ -283,7 +283,7 @@ describe('list where second item has multiple children', () => {
 });
 
 describe('list + sublist where second item has multiple children', () => {
-  it('should merge all text into first sublist item', () => {
+  it('merge all text into first sublist item', () => {
     const input = (
       <editor>
         <hul>

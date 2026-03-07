@@ -29,12 +29,12 @@ describe('next', () => {
       ) as any
     );
 
-    it('should traverse from point after when from="after"', () => {
+    it('traverse from point after when from="after"', () => {
       const next = editor.api.next({ at: [0] });
       expect(next![0].id).toBe('2');
     });
 
-    it('should traverse from first child when from="child"', () => {
+    it('traverse from first child when from="child"', () => {
       const next = editor.api.next({
         at: [1],
         from: 'child',
@@ -59,7 +59,7 @@ describe('next', () => {
       ) as any
     );
 
-    it('should find next node matching criteria', () => {
+    it('find next node matching criteria', () => {
       const next = editor.api.next({
         at: [0],
         match: (n) => 'type' in n && n.type === 'p',
@@ -97,7 +97,7 @@ describe('next', () => {
       ) as any
     );
 
-    it('should traverse from table to first cell when from="child"', () => {
+    it('traverse from table to first cell when from="child"', () => {
       const next = editor.api.next({
         at: [1], // table path
         from: 'child',
@@ -105,7 +105,7 @@ describe('next', () => {
       expect(next![0].id).toBe('row1');
     });
 
-    it('should traverse from table to next block when from="after"', () => {
+    it('traverse from table to next block when from="after"', () => {
       const next = editor.api.next({
         at: [1], // table path
         from: 'after',

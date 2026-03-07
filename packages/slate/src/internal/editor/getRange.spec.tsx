@@ -7,8 +7,8 @@ import { createEditor } from '../../create-editor';
 jsxt;
 
 describe('range', () => {
-  describe('when getting range between two locations', () => {
-    const input = createEditor(
+  it('returns a range between two explicit locations', () => {
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -23,25 +23,16 @@ describe('range', () => {
       ) as any
     );
 
-    const output = {
+    expect(
+      editor.api.range({ offset: 6, path: [0, 0] }, { offset: 7, path: [1, 0] })
+    ).toEqual({
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 7, path: [1, 0] },
-    };
-
-    it('should return range between locations', () => {
-      expect(
-        input.api.range(
-          { offset: 6, path: [0, 0] },
-          { offset: 7, path: [1, 0] }
-        )
-      ).toEqual(output);
     });
   });
-});
 
-describe('before', () => {
-  describe('default', () => {
-    const input = createEditor(
+  it('returns the point before the current selection', () => {
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -52,24 +43,14 @@ describe('before', () => {
       ) as any
     );
 
-    const output = {
-      anchor: {
-        offset: 3,
-        path: [0, 0],
-      },
-      focus: {
-        offset: 4,
-        path: [0, 0],
-      },
-    };
-
-    it('should be', () => {
-      expect(input.api.range('before', input.selection!)).toEqual(output);
+    expect(editor.api.range('before', editor.selection!)).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
     });
   });
 
-  describe('when at start', () => {
-    const input = createEditor(
+  it('keeps the range collapsed when asking for before at block start', () => {
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -80,20 +61,14 @@ describe('before', () => {
       ) as any
     );
 
-    const output = {
+    expect(editor.api.range('before', editor.selection!)).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
-    };
-
-    it('should return range at start', () => {
-      expect(input.api.range('before', input.selection!)).toEqual(output);
     });
   });
-});
 
-describe('from block start', () => {
-  describe('when no block', () => {
-    const input = createEditor(
+  it('returns undefined when start is requested outside a block', () => {
+    const editor = createEditor(
       (
         <editor>
           te
@@ -103,13 +78,11 @@ describe('from block start', () => {
       ) as any
     );
 
-    it('should be undefined', () => {
-      expect(input.api.range('start', input.selection!)).toEqual(undefined);
-    });
+    expect(editor.api.range('start', editor.selection!)).toBeUndefined();
   });
 
-  describe('when no selection', () => {
-    const input = createEditor(
+  it('returns undefined when start is requested without a selection', () => {
+    const editor = createEditor(
       (
         <editor>
           <hp>test</hp>
@@ -117,13 +90,11 @@ describe('from block start', () => {
       ) as any
     );
 
-    it('should be undefined', () => {
-      expect(input.api.range('start', input.selection!)).toEqual(undefined);
-    });
+    expect(editor.api.range('start', editor.selection!)).toBeUndefined();
   });
 
-  describe('when selection', () => {
-    const input = createEditor(
+  it('returns the range from the start of the current block', () => {
+    const editor = createEditor(
       (
         <editor>
           <hp>
@@ -135,13 +106,9 @@ describe('from block start', () => {
       ) as any
     );
 
-    const output = {
+    expect(editor.api.range('start', editor.selection!)).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
-    };
-
-    it('should return range from block start', () => {
-      expect(input.api.range('start', input.selection!)).toEqual(output);
     });
   });
 });

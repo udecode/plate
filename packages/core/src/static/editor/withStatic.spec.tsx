@@ -10,7 +10,7 @@ jsxt;
 
 describe('withStatic', () => {
   describe('createStaticEditor', () => {
-    it('should create an editor with static plugins', () => {
+    it('create an editor with static plugins', () => {
       const editor = createStaticEditor({ id: '1' });
 
       expect(editor.id).toBe('1');
@@ -18,14 +18,14 @@ describe('withStatic', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('should include ViewPlugin in the plugin list', () => {
+    it('include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
       const pluginKeys = editor.meta.pluginList.map((plugin) => plugin.key);
       expect(pluginKeys).toContain(DOMPlugin.key);
     });
 
-    it('should have ViewPlugin override transforms', () => {
+    it('have ViewPlugin override transforms', () => {
       const editor = createStaticEditor();
 
       // ViewPlugin overrides DOMPlugin, so we check the DOMPlugin has the override
@@ -38,7 +38,7 @@ describe('withStatic', () => {
   });
 
   describe('when plugins are provided', () => {
-    it('should add custom plugins after static plugins', () => {
+    it('add custom plugins after static plugins', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
@@ -54,7 +54,7 @@ describe('withStatic', () => {
       expect(customIndex).toBeGreaterThan(domIndex);
     });
 
-    it('should allow multiple custom plugins', () => {
+    it('allow multiple custom plugins', () => {
       const plugin1 = createSlatePlugin({ key: 'plugin1' });
       const plugin2 = createSlatePlugin({ key: 'plugin2' });
 
@@ -68,7 +68,7 @@ describe('withStatic', () => {
   });
 
   describe('when value is provided', () => {
-    it('should initialize editor with the provided value', () => {
+    it('initialize editor with the provided value', () => {
       const value = (
         <editor>
           <hp>
@@ -84,7 +84,7 @@ describe('withStatic', () => {
       expect(editor.children).toEqual(value.children);
     });
 
-    it('should handle HTML string values', () => {
+    it('handle HTML string values', () => {
       const htmlString = '<p>Hello world</p>';
 
       const editor = createStaticEditor({
@@ -101,7 +101,7 @@ describe('withStatic', () => {
   });
 
   describe('when selection is provided', () => {
-    it('should initialize editor with the provided selection', () => {
+    it('initialize editor with the provided selection', () => {
       const value = (
         <editor>
           <hp>
@@ -125,7 +125,7 @@ describe('withStatic', () => {
   });
 
   describe('when autoSelect is provided', () => {
-    it('should auto-select start of document', () => {
+    it('auto-select start of document', () => {
       const value = (
         <editor>
           <hp>
@@ -146,7 +146,7 @@ describe('withStatic', () => {
       expect(editor.selection as any).toEqual(expectedSelection);
     });
 
-    it('should auto-select end of document', () => {
+    it('auto-select end of document', () => {
       const value = (
         <editor>
           <hp>
@@ -169,7 +169,7 @@ describe('withStatic', () => {
   });
 
   describe('when using an existing editor', () => {
-    it('should enhance existing editor with static plugins', () => {
+    it('enhance existing editor with static plugins', () => {
       const existingEditor = createEditor();
       existingEditor.id = 'existing';
 
@@ -181,7 +181,7 @@ describe('withStatic', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('should override existing editor id when new id is provided', () => {
+    it('override existing editor id when new id is provided', () => {
       const existingEditor = createEditor();
       existingEditor.id = 'old';
 
@@ -195,7 +195,7 @@ describe('withStatic', () => {
   });
 
   describe('integration with withSlate', () => {
-    it('should properly integrate static plugins with core plugins', () => {
+    it('properly integrate static plugins with core plugins', () => {
       const editor = createStaticEditor();
 
       // Should have both core plugins from withSlate and static plugins
@@ -204,7 +204,7 @@ describe('withStatic', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined(); // static plugin
     });
 
-    it('should maintain plugin order with static plugins first', () => {
+    it('maintain plugin order with static plugins first', () => {
       const customPlugin = createSlatePlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
@@ -225,7 +225,7 @@ describe('withStatic', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty plugins array', () => {
+    it('handle empty plugins array', () => {
       const editor = createStaticEditor({
         plugins: [],
       });
@@ -233,14 +233,14 @@ describe('withStatic', () => {
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('should handle undefined options', () => {
+    it('handle undefined options', () => {
       const editor = createStaticEditor();
 
       expect(editor).toBeDefined();
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
     });
 
-    it('should create unique ids for different editors', () => {
+    it('create unique ids for different editors', () => {
       const editor1 = createStaticEditor();
       const editor2 = createStaticEditor();
 
@@ -251,14 +251,14 @@ describe('withStatic', () => {
   });
 
   describe('plugin functionality', () => {
-    it('should have setFragmentData transform from ViewPlugin', () => {
+    it('have setFragmentData transform from ViewPlugin', () => {
       const editor = createStaticEditor();
 
       expect(editor.tf.setFragmentData).toBeDefined();
       expect(typeof editor.tf.setFragmentData).toBe('function');
     });
 
-    it('should preserve other withSlate options', () => {
+    it('preserve other withSlate options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
         value: [],

@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`applyAIReview should apply the AI review to the editor 1`] = `
+exports[`applyAIReview apply the AI review to the editor 1`] = `
 [
   {
     "anchor": {

@@ -8,7 +8,7 @@ import { deserializeMd } from './deserializeMd';
 jsx;
 
 describe('deserializeMd - mention link format', () => {
-  it('should deserialize [display text](mention:id) format', () => {
+  it('deserialize [display text](mention:id) format', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown = 'Hello [John Doe](mention:john_doe), how are you?';
@@ -25,7 +25,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should deserialize mentions with spaces in ID', () => {
+  it('deserialize mentions with spaces in ID', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown = 'CC: [Jane Smith](mention:jane%20smith)';
@@ -41,7 +41,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should deserialize mixed mention formats', () => {
+  it('deserialize mixed mention formats', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
@@ -65,7 +65,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should handle multiple link mentions in one paragraph', () => {
+  it('handle multiple link mentions in one paragraph', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
@@ -85,7 +85,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should handle special characters in mention IDs', () => {
+  it('handle special characters in mention IDs', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =
@@ -105,7 +105,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should not convert regular links to mentions even with @ in text', () => {
+  it('does not convert regular links to mentions even with @ in text', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown = '[@mention](/docs/mention)';
@@ -120,7 +120,7 @@ describe('deserializeMd - mention link format', () => {
     ]);
   });
 
-  it('should handle mixed links and mentions correctly', () => {
+  it('handle mixed links and mentions correctly', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const markdown =

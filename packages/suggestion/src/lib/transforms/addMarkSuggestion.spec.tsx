@@ -17,7 +17,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 });
 
 describe('addMarkSuggestion', () => {
-  it('should add mark with suggestion data', () => {
+  it('add mark with suggestion data', () => {
     const input = (
       <editor>
         <hp>
@@ -51,7 +51,7 @@ describe('addMarkSuggestion', () => {
     expect(typeof data?.id).toBe('string');
   });
 
-  it('should add new suggestion mark while preserving existing suggestion mark', () => {
+  it('add new suggestion mark while preserving existing suggestion mark', () => {
     const existingData = {
       id: '1',
       createdAt: Date.now(),

@@ -9,7 +9,7 @@ jsxt;
 
 describe('PointApi.get', () => {
   describe('when path', () => {
-    it('should return point with offset 0', () => {
+    it('returns point with offset 0', () => {
       createEditor(
         (
           <editor>
@@ -29,7 +29,7 @@ describe('PointApi.get', () => {
   });
 
   describe('when point', () => {
-    it('should return the same point', () => {
+    it('returns the same point', () => {
       createEditor(
         (
           <editor>
@@ -51,7 +51,7 @@ describe('PointApi.get', () => {
   });
 
   describe('when range', () => {
-    it('should return anchor point by default', () => {
+    it('returns anchor point by default', () => {
       const editor = createEditor(
         (
           <editor>
@@ -70,7 +70,7 @@ describe('PointApi.get', () => {
     });
 
     describe('when focus=true', () => {
-      it('should return focus point', () => {
+      it('returns focus point', () => {
         const editor = createEditor(
           (
             <editor>

@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { insertTable } from './insertTable';
 
 jsxt;
@@ -15,7 +14,7 @@ describe('insertTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a table at current selection (disableMerge: $disableMerge)', ({
+    ])('inserts a table at the current selection (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -59,7 +58,7 @@ describe('insertTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -75,7 +74,7 @@ describe('insertTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a table at specified path (disableMerge: $disableMerge)', ({
+    ])('inserts a table at the specified path (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -121,7 +120,7 @@ describe('insertTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -141,7 +140,7 @@ describe('insertTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a table after current table when no path specified (disableMerge: $disableMerge)', ({
+    ])('inserts a table after the current table when no path is specified (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -197,7 +196,7 @@ describe('insertTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -213,7 +212,7 @@ describe('insertTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should respect specified path even when inside a table (disableMerge: $disableMerge)', ({
+    ])('respects the specified path even when inside a table (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -273,7 +272,7 @@ describe('insertTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -293,7 +292,7 @@ describe('insertTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a table after current table when inside a table (disableMerge: $disableMerge)', ({
+    ])('inserts a table after the current table when inside a table (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -349,7 +348,7 @@ describe('insertTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

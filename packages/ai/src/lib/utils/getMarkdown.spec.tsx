@@ -34,7 +34,7 @@ const createTestEditor = (input: SlateEditor) =>
 
 describe('getMarkdown', () => {
   describe('tableCellWithId', () => {
-    it('should use CellRef placeholder in table and Cell blocks after', () => {
+    it('use CellRef placeholder in table and Cell blocks after', () => {
       const input = (
         <editor>
           <htable id="t1">
@@ -109,7 +109,7 @@ describe('getMarkdown', () => {
       expect(result).toContain('| 工程师 |');
     });
 
-    it('should handle single cell selection', () => {
+    it('handle single cell selection', () => {
       const input = (
         <editor>
           <htable id="t1">
@@ -145,7 +145,7 @@ describe('getMarkdown', () => {
       expect(result).not.toContain('<CellRef id="t1_r1_c2"');
     });
 
-    it('should handle cells with multiple paragraphs (multi-block support)', () => {
+    it('handle cells with multiple paragraphs (multi-block support)', () => {
       const input = (
         <editor>
           <htable id="t1">

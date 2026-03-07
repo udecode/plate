@@ -11,7 +11,7 @@ import { unwrapList } from './unwrapList';
 jsxt;
 
 describe('li list unwrapping', () => {
-  it('should unwrap a nested list ul > single li', () => {
+  it('unwrap a nested list ul > single li', () => {
     const input = (
       <editor>
         <hul>
@@ -52,7 +52,7 @@ describe('li list unwrapping', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should unwrap a nested list ul > single li, collapsed selection', () => {
+  it('unwrap a nested list ul > single li, collapsed selection', () => {
     const input = (
       <editor>
         <hul>
@@ -92,7 +92,7 @@ describe('li list unwrapping', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should unwrap a nested list ul > multiple li', () => {
+  it('unwrap a nested list ul > multiple li', () => {
     const input = (
       <editor>
         <hul>
@@ -135,7 +135,7 @@ describe('li list unwrapping', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should unwrap a nested list ul > multiple li, collapsed selection', () => {
+  it('unwrap a nested list ul > multiple li, collapsed selection', () => {
     const input = (
       <editor>
         <hul>

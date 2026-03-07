@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
@@ -11,7 +11,7 @@ import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
 jsxt;
 
 describe('insert empty code block', () => {
-  it('should insert empty code block on selected empty line', () => {
+  it('insert empty code block on selected empty line', () => {
     const input = (
       <editor>
         <hp>
@@ -30,7 +30,7 @@ describe('insert empty code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -43,7 +43,7 @@ describe('insert empty code block', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should insert empty code block below selected non-empty line', () => {
+  it('insert empty code block below selected non-empty line', () => {
     const input = (
       <editor>
         <hp>
@@ -64,7 +64,7 @@ describe('insert empty code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -77,7 +77,7 @@ describe('insert empty code block', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should insert empty code block below expanded selection', () => {
+  it('insert empty code block below expanded selection', () => {
     const input = (
       <editor>
         <hp>line 1</hp>
@@ -107,7 +107,7 @@ describe('insert empty code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

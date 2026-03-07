@@ -57,7 +57,7 @@ export const testDocxImporter = ({
   overridePlugins?: SlatePlugin['override']['plugins'];
   plugins?: any[];
 }) => {
-  it('should import', async () => {
+  it('import', async () => {
     const editor = createSlateEditor({
       override: {
         plugins: overridePlugins,

@@ -6,7 +6,7 @@ import { jsxt } from '@platejs/test-utils';
 jsxt;
 
 describe('select void on backspace behavior', () => {
-  it('should select void block and remove empty current block when at start', () => {
+  it('select void block and remove empty current block when at start', () => {
     const input = (
       <editor>
         <element type="img">
@@ -47,7 +47,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should select void block without removing non-empty current block when at start', () => {
+  it('select void block without removing non-empty current block when at start', () => {
     const input = (
       <editor>
         <element type="img">
@@ -90,7 +90,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should NOT select when previous block is not void', () => {
+  it('does not select when previous block is not void', () => {
     const input = (
       <editor>
         <hp>previous content</hp>
@@ -122,7 +122,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should NOT select when not at start of block', () => {
+  it('does not select when not at start of block', () => {
     const input = (
       <editor>
         <element type="img">
@@ -170,7 +170,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should work with horizontal rule void block', () => {
+  it('work with horizontal rule void block', () => {
     const input = (
       <editor>
         <element type="hr">
@@ -211,7 +211,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should work with horizontal rule void block (reverse)', () => {
+  it('work with horizontal rule void block (reverse)', () => {
     const input = (
       <editor>
         <hp>
@@ -252,7 +252,7 @@ describe('select void on backspace behavior', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
-  it('should work with text + horizontal rule void block (reverse)', () => {
+  it('work with text + horizontal rule void block (reverse)', () => {
     const input = (
       <editor>
         <hp>

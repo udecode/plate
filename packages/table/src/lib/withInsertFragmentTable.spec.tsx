@@ -3,7 +3,7 @@
 import { jsxt } from '@platejs/test-utils';
 import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
-import { getTestTablePlugins } from './withNormalizeTable.spec';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
 
@@ -13,7 +13,7 @@ describe('withInsertFragmentTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('first table column should be replaced by the inserted table column (disableMerge: $disableMerge)', ({
+    ])('replaces the first table column with the inserted column (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -100,7 +100,7 @@ describe('withInsertFragmentTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('first table row should be replaced by the inserted table row (disableMerge: $disableMerge)', ({
+    ])('replaces the first table row with the inserted row (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -273,7 +273,7 @@ describe('withInsertFragmentTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/20
   describe('when inserting table 2x1 into cell 12', () => {
-    it('second table column should be replaced by the inserted table column', () => {
+    it('replaces the second table column with the inserted column', () => {
       const input = (
         <editor>
           <htable>
@@ -505,7 +505,7 @@ describe('withInsertFragmentTable', () => {
   });
 
   describe('when insert table 2x2 into cell 22 with disableExpandOnInsert', () => {
-    it('should not expand the table', () => {
+    it('does not expand the table', () => {
       const input = (
         <editor>
           <htable>
@@ -601,7 +601,7 @@ describe('withInsertFragmentTable', () => {
 
   // https://github.com/udecode/editor-protocol/issues/63
   describe('when inserting table cells with multiple p', () => {
-    it('should paste', () => {
+    it('paste', () => {
       const input = (
         <editor>
           <htable>
@@ -671,7 +671,7 @@ describe('withInsertFragmentTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert the blocks without removing the cells (disableMerge: $disableMerge)', ({
+    ])('inserts the blocks without removing the cells (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (

@@ -9,7 +9,7 @@ jsx;
 
 describe('NodeApi', () => {
   describe('.firstChild', () => {
-    it('should get first child', () => {
+    it('get first child', () => {
       const editor = createEditor(
         (
           <editor>
@@ -27,7 +27,7 @@ describe('NodeApi', () => {
   });
 
   describe('.firstText', () => {
-    it('should get first text node', () => {
+    it('get first text node', () => {
       const editor = createEditor(
         (
           <editor>
@@ -47,7 +47,7 @@ describe('NodeApi', () => {
   });
 
   describe('.isLastChild', () => {
-    it('should return true if node is last child', () => {
+    it('returns true if node is last child', () => {
       const editor = createEditor(
         (
           <editor>
@@ -63,7 +63,7 @@ describe('NodeApi', () => {
       expect(NodeApi.isLastChild(editor, [0, 0])).toBe(false);
     });
 
-    it('should return false for root node', () => {
+    it('returns false for root node', () => {
       const editor = createEditor(
         (
           <editor>
@@ -79,7 +79,7 @@ describe('NodeApi', () => {
   });
 
   describe('.lastChild', () => {
-    it('should get last child', () => {
+    it('get last child', () => {
       const editor = createEditor(
         (
           <editor>

@@ -2,14 +2,15 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor, ParagraphPlugin } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
+import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlBodyToFragment } from './htmlBodyToFragment';
 import { parseHtmlElement } from './parseHtmlElement';
 
 jsxt;
 
 describe('when element is a body', () => {
-  it('should be a fragment with the children', () => {
+  it('returns a fragment with the body children', () => {
     const output = (
       <fragment>
         <hp>
@@ -23,7 +24,7 @@ describe('when element is a body', () => {
 
     expect(
       htmlBodyToFragment(
-        createPlateEditor({ plugins: [ParagraphPlugin] }),
+        createSlateEditor({ plugins: [BaseParagraphPlugin] }),
         body
       )
     ).toEqual(output);
@@ -33,10 +34,10 @@ describe('when element is a body', () => {
 describe('when element is not a body', () => {
   const output = undefined;
 
-  it('should be undefined', () => {
+  it('returns undefined', () => {
     expect(
       htmlBodyToFragment(
-        createPlateEditor(),
+        createSlateEditor(),
         parseHtmlElement('<div>test</div>')
       )
     ).toEqual(output);

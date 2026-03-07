@@ -1,10 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
-import { IndentPlugin } from '@platejs/indent/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -12,7 +11,7 @@ jsxt;
 
 describe('normalizeList', () => {
   describe('when listStyleType without indent', () => {
-    it('should remove listStyleType and listStart props', async () => {
+    it('remove listStyleType and listStart props', async () => {
       const input = (
         <editor>
           <hp indent={1} listStyleType="decimal">
@@ -41,8 +40,8 @@ describe('normalizeList', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
-        plugins: [BaseListPlugin, IndentPlugin],
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
         value: input.children,
@@ -55,7 +54,7 @@ describe('normalizeList', () => {
   });
 
   describe('when deleting backward on empty paragraph between two lists', () => {
-    it('should merge and renumber the lists', () => {
+    it('merge and renumber the lists', () => {
       const input = (
         <editor>
           <hp indent={1} listStyleType="decimal">
@@ -94,8 +93,8 @@ describe('normalizeList', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
-        plugins: [BaseListPlugin, IndentPlugin],
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
         value: input.children,
@@ -108,7 +107,7 @@ describe('normalizeList', () => {
   });
 
   describe('when deleting forward on empty paragraph between two lists', () => {
-    it('should merge and renumber the lists', () => {
+    it('merge and renumber the lists', () => {
       const input = (
         <editor>
           <hp indent={1} listStyleType="decimal">
@@ -147,8 +146,8 @@ describe('normalizeList', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
-        plugins: [BaseListPlugin, IndentPlugin],
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         shouldNormalizeEditor: true,
         value: input.children,
@@ -163,7 +162,7 @@ describe('normalizeList', () => {
 
 describe('keyboard handling', () => {
   describe('when Enter on indented list and empty', () => {
-    it('should outdent', () => {
+    it('outdent', () => {
       const input = (
         <editor>
           <hp indent={2} listStyleType="disc">
@@ -180,8 +179,8 @@ describe('keyboard handling', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateEditor({
-        plugins: [BaseListPlugin, IndentPlugin],
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         value: input.children,
       });
@@ -193,7 +192,7 @@ describe('keyboard handling', () => {
   });
 
   describe('when Enter on indented and empty but not list', () => {
-    it('should not outdent', () => {
+    it('does not outdent', () => {
       const input = (
         <editor>
           <hp indent={2}>
@@ -213,8 +212,8 @@ describe('keyboard handling', () => {
         </editor>
       ) as any;
 
-      const editor = createPlateEditor({
-        plugins: [BaseListPlugin, IndentPlugin],
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
         value: input.children,
       });

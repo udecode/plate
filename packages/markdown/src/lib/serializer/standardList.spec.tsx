@@ -23,7 +23,7 @@ const editor = createTestEditor([
 ]);
 
 describe('serializeMd list', () => {
-  it('should serialize unordered lists', () => {
+  it('serialize unordered lists', () => {
     const input = (
       <fragment>
         <hul>
@@ -42,7 +42,7 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
-  it('should serialize ordered lists', () => {
+  it('serialize ordered lists', () => {
     const input = (
       <fragment>
         <hol>
@@ -61,7 +61,7 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
-  it('should serialize mixed nested lists', () => {
+  it('serialize mixed nested lists', () => {
     const input = (
       <fragment>
         <hul>
@@ -82,7 +82,7 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
-  it('should serialize lists with formatted text', () => {
+  it('serialize lists with formatted text', () => {
     const input = (
       <fragment>
         <hul>
@@ -106,7 +106,7 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
-  it('should serialize lists with links', () => {
+  it('serialize lists with links', () => {
     const input = (
       <fragment>
         <hul>

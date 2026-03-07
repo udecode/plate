@@ -1,8 +1,8 @@
-import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor } from './create-static-editor';
+import { serializeHtml } from './serializeHtml';
+import { createStaticEditor } from './__tests__/create-static-editor';
 
-describe('serializePlateStatic with attributes', () => {
-  it('should serialize elements with right slate attributes', async () => {
+describe('serializeHtml slate attributes', () => {
+  it('applies element, text, and leaf props to the output', async () => {
     const editor = createStaticEditor(
       [
         {

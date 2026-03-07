@@ -1,8 +1,8 @@
-import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor } from './create-static-editor';
+import { serializeHtml } from './serializeHtml';
+import { createStaticEditor } from './__tests__/create-static-editor';
 
-describe('serializePlateStatic marks', () => {
-  it('should serialize bold to html', async () => {
+describe('serializeHtml mark rendering', () => {
+  it('renders bold text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -24,7 +24,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize italic to html', async () => {
+  it('renders italic text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -45,7 +45,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize underline to html', async () => {
+  it('renders underlined text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -66,7 +66,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize strikethrough to html', async () => {
+  it('renders strikethrough text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -87,7 +87,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize code to html', async () => {
+  it('renders code text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -108,7 +108,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize subscript to html', async () => {
+  it('renders subscript text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -129,7 +129,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize superscript to html', async () => {
+  it('renders superscript text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -150,7 +150,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize kbd to html', async () => {
+  it('renders keyboard text', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -171,7 +171,7 @@ describe('serializePlateStatic marks', () => {
     );
   });
 
-  it('should serialize multiple marks together to html', async () => {
+  it('renders multiple marks on the same leaf', async () => {
     const editor = createStaticEditor([
       {
         children: [

@@ -31,7 +31,7 @@ const testLineBreakDataRemove = {
 };
 
 describe('insertBreakSuggestion when isSuggesting is true', () => {
-  it('should add insertBreakData and split node', () => {
+  it('add insertBreakData and split node', () => {
     const input = (
       <editor>
         <hp>
@@ -64,7 +64,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     expect(data.userId).toBe('testId');
   });
 
-  it('should not add new suggestion id if the previous node is a line break', () => {
+  it('does not add new suggestion id if the previous node is a line break', () => {
     const input = (
       <editor>
         <hp suggestion={testLineBreakDataInsert}>test1</hp>
@@ -94,7 +94,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     expect(data?.userId === testLineBreakDataInsert.userId).toBeTruthy();
   });
 
-  it('should remove the lineBreak when type is insert', () => {
+  it('remove the lineBreak when type is insert', () => {
     const input = (
       <editor>
         <hp suggestion={testLineBreakDataInsert}>test1</hp>
@@ -128,7 +128,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should not remove the lineBreak when type is remove', () => {
+  it('does not remove the lineBreak when type is remove', () => {
     const input = (
       <editor>
         <hp suggestion={testLineBreakDataRemove}>test1</hp>
@@ -162,7 +162,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should same id when remove cross blocks', () => {
+  it('reuses the same suggestion id when removing across blocks', () => {
     const input = (
       <editor>
         <hp>test1</hp>
@@ -202,7 +202,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 });
 
 describe('insertBreakSuggestion when isSuggesting is false', () => {
-  it('should remove the lineBreak when type is insert', () => {
+  it('remove the lineBreak when type is insert', () => {
     const input = (
       <editor>
         <hp suggestion={testLineBreakDataInsert}>test1</hp>
@@ -236,7 +236,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should remove the lineBreak when type is remove', () => {
+  it('remove the lineBreak when type is remove', () => {
     const input = (
       <editor>
         <hp suggestion={testLineBreakDataRemove}>test1</hp>

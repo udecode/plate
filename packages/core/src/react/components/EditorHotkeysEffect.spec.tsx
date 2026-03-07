@@ -54,11 +54,11 @@ describe('EditorHotkeysEffect', () => {
     useHotkeysSpy?.mockRestore();
   });
 
-  it('should render without crashing', () => {
+  it('render without crashing', () => {
     render(<SimpleComponent />);
   });
 
-  it('should set up shortcuts for each configured hotkey', () => {
+  it('set up shortcuts for each configured hotkey', () => {
     render(<SimpleComponent />);
 
     expect(useHotkeysSpy).toHaveBeenCalledWith(
@@ -75,7 +75,7 @@ describe('EditorHotkeysEffect', () => {
     );
   });
 
-  it('should call the hotkey callback when triggered', async () => {
+  it('call the hotkey callback when triggered', async () => {
     render(<SimpleComponent />);
 
     // Simulate setting up the hotkey
@@ -91,7 +91,7 @@ describe('EditorHotkeysEffect', () => {
     expect(hotkeyCallback).toHaveBeenCalledTimes(1);
   });
 
-  it('should set the hotkey ref to the editable element', () => {
+  it('set the hotkey ref to the editable element', () => {
     const { container } = render(<SimpleComponent />);
 
     const editableDiv = container.firstChild as HTMLDivElement;
@@ -110,7 +110,7 @@ describe('EditorHotkeysEffect', () => {
       useHotkeysSpy.mockClear();
     });
 
-    it('should NOT call preventDefault when handler returns false', async () => {
+    it('does not call preventDefault when handler returns false', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
       editor.meta.shortcuts = {
         'mod+x': {
@@ -131,7 +131,7 @@ describe('EditorHotkeysEffect', () => {
       expect(mockEvent.preventDefault).not.toHaveBeenCalled();
     });
 
-    it('should call preventDefault when handler returns undefined (default behavior)', async () => {
+    it('call preventDefault when handler returns undefined (default behavior)', async () => {
       const handlerReturningUndefined = mock().mockReturnValue(undefined);
       editor.meta.shortcuts = {
         'mod+y': {
@@ -152,7 +152,7 @@ describe('EditorHotkeysEffect', () => {
       expect(mockEvent.preventDefault).toHaveBeenCalled();
     });
 
-    it('should call preventDefault when handler returns true', async () => {
+    it('call preventDefault when handler returns true', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
       editor.meta.shortcuts = {
         'mod+z': {
@@ -173,7 +173,7 @@ describe('EditorHotkeysEffect', () => {
       expect(mockEvent.preventDefault).toHaveBeenCalled();
     });
 
-    it('should NOT call preventDefault when preventDefault option is explicitly set to false', async () => {
+    it('does not call preventDefault when preventDefault option is explicitly set to false', async () => {
       const handlerReturningTrue = mock().mockReturnValue(true);
       editor.meta.shortcuts = {
         'mod+a': {
@@ -195,7 +195,7 @@ describe('EditorHotkeysEffect', () => {
       expect(mockEvent.preventDefault).not.toHaveBeenCalled();
     });
 
-    it('should NOT call preventDefault when preventDefault option is explicitly set (regardless of handler return)', async () => {
+    it('does not call preventDefault when preventDefault option is explicitly set (regardless of handler return)', async () => {
       const handlerReturningFalse = mock().mockReturnValue(false);
       editor.meta.shortcuts = {
         'mod+s': {

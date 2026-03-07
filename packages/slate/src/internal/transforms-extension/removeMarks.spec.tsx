@@ -8,7 +8,7 @@ jsx;
 
 describe('removeMarks', () => {
   describe('when expanded selection', () => {
-    it('should remove specified marks', () => {
+    it('removes specified marks', () => {
       const editor = createEditor(
         (
           <editor>
@@ -39,7 +39,7 @@ describe('removeMarks', () => {
       ]);
     });
 
-    it('should remove multiple marks', () => {
+    it('removes multiple marks', () => {
       const editor = createEditor(
         (
           <editor>
@@ -68,7 +68,7 @@ describe('removeMarks', () => {
   });
 
   describe('when collapsed selection', () => {
-    it('should remove all marks', () => {
+    it('removes all marks', () => {
       const editor = createEditor(
         (
           <editor>
@@ -87,7 +87,7 @@ describe('removeMarks', () => {
       expect(editor.marks).toEqual({});
     });
 
-    it('should trigger onChange by default', () => {
+    it('triggers onChange by default', () => {
       const editor = createEditor(
         (
           <editor>
@@ -109,7 +109,7 @@ describe('removeMarks', () => {
       expect(onChange).toHaveBeenCalled();
     });
 
-    it('should not trigger onChange when shouldChange=false', () => {
+    it('does not trigger onChange when change notifications are disabled', () => {
       const editor = createEditor(
         (
           <editor>
@@ -131,7 +131,7 @@ describe('removeMarks', () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
-    it('should remove marks when selection is collapsed', () => {
+    it('clears editor.marks when the selection is collapsed', () => {
       const editor = createEditor(
         (
           <editor>
@@ -161,11 +161,10 @@ describe('removeMarks', () => {
         },
       ]);
 
-      // Should update editor.marks
       expect(editor.marks).toEqual({});
     });
 
-    it('should remove specific mark when selection is collapsed', () => {
+    it('removes one mark from editor.marks when the selection is collapsed', () => {
       const editor = createEditor(
         (
           <editor>
@@ -195,13 +194,12 @@ describe('removeMarks', () => {
         },
       ]);
 
-      // Should only remove bold from editor.marks
       expect(editor.marks).toEqual({ italic: true });
     });
   });
 
   describe('when at specific range', () => {
-    it('should remove marks at range without affecting editor.marks', () => {
+    it('remove marks at range without affecting editor.marks', () => {
       const editor = createEditor(
         (
           <editor>

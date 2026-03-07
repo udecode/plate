@@ -4,7 +4,7 @@ import { listToMdastTree } from './listToMdastTree';
 const editor = createTestEditor();
 
 describe('listToMdastTree', () => {
-  it('should convert a flat list correctly', () => {
+  it('convert a flat list correctly', () => {
     const nodes = [
       {
         children: [{ text: 'list1' }],
@@ -56,7 +56,7 @@ describe('listToMdastTree', () => {
     });
   });
 
-  it('should convert a nested list correctly', () => {
+  it('convert a nested list correctly', () => {
     const nodes = [
       {
         children: [{ text: 'list1' }],
@@ -133,7 +133,7 @@ describe('listToMdastTree', () => {
     });
   });
 
-  it('should handle ordered lists correctly', () => {
+  it('handle ordered lists correctly', () => {
     const nodes = [
       {
         children: [{ text: 'list1' }],
@@ -185,7 +185,7 @@ describe('listToMdastTree', () => {
     });
   });
 
-  it('should handle complex nested lists with different indentation levels', () => {
+  it('handle complex nested lists with different indentation levels', () => {
     const nodes = [
       {
         children: [{ text: 'level1-1' }],
@@ -234,13 +234,13 @@ describe('listToMdastTree', () => {
     expect(result.children[0].children[1].children).toHaveLength(2); // Nested list has two items
   });
 
-  it('should throw error for empty nodes', () => {
+  it('throw error for empty nodes', () => {
     expect(() => listToMdastTree([], { editor })).toThrow(
       'Cannot create a list from empty nodes'
     );
   });
 
-  it('should handle mixed ordered and unordered nested lists', () => {
+  it('handle mixed ordered and unordered nested lists', () => {
     const nodes = [
       {
         children: [{ text: 'unordered 1' }],
@@ -283,7 +283,7 @@ describe('listToMdastTree', () => {
     );
   });
 
-  it('should split sibling nested lists when style changes at same indent', () => {
+  it('split sibling nested lists when style changes at same indent', () => {
     const nodes = [
       {
         children: [{ text: 'parent bullet' }],
@@ -317,7 +317,7 @@ describe('listToMdastTree', () => {
     expect(result.children[0].children[2].ordered).toBe(false);
   });
 
-  it('should handle ordered lists with different start numbers', () => {
+  it('handle ordered lists with different start numbers', () => {
     const nodes = [
       {
         children: [{ text: 'start from 3' }],
@@ -344,7 +344,7 @@ describe('listToMdastTree', () => {
     expect(result.children[0].children[1].start).toBe(5);
   });
 
-  it('should handle deep nesting followed by shallow items', () => {
+  it('handle deep nesting followed by shallow items', () => {
     const nodes = [
       {
         children: [{ text: 'level 1' }],
@@ -397,7 +397,7 @@ describe('listToMdastTree', () => {
     );
   });
 
-  it('should handle list items with rich text content', () => {
+  it('handle list items with rich text content', () => {
     const nodes = [
       {
         children: [
@@ -443,7 +443,7 @@ describe('listToMdastTree', () => {
     expect(JSON.stringify(nestedItem[0])).toContain('https://example.com');
   });
 
-  it('should handle todo lists correctly', () => {
+  it('handle todo lists correctly', () => {
     const nodes = [
       {
         checked: true,
@@ -470,7 +470,7 @@ describe('listToMdastTree', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it('should handle spread option correctly', () => {
+  it('handle spread option correctly', () => {
     const nodes = [
       {
         children: [{ text: 'list1' }],

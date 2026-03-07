@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`deserializeMdList - comprehensive coverage should deserialize a empty list 1`] = `
+exports[`deserializeMdList - comprehensive coverage deserializes an empty list 1`] = `
 [
   {
     "children": [
@@ -55,7 +55,7 @@ exports[`deserializeMdList - comprehensive coverage should deserialize a empty l
 ]
 `;
 
-exports[`deserializeMdList - comprehensive coverage should deserialize a todo list 1`] = `
+exports[`deserializeMdList - comprehensive coverage deserializes a todo list 1`] = `
 [
   {
     "checked": false,

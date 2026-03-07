@@ -1,6 +1,6 @@
 import type { SlateEditor, TCodeBlockElement } from 'platejs';
 
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { codeBlockToDecorations } from './setCodeBlockToDecorations';
@@ -22,7 +22,7 @@ describe('codeBlockToDecorations', () => {
     mockHighlightAuto.mockReset();
 
     // Create a basic editor
-    editor = createPlateEditor({
+    editor = createSlateEditor({
       plugins: [BaseCodeBlockPlugin],
     });
 
@@ -46,7 +46,7 @@ describe('codeBlockToDecorations', () => {
     }) as any;
   });
 
-  it('should return empty decorations for plaintext language', () => {
+  it('returns empty decorations for plaintext language', () => {
     // Create a code block with plaintext
     const codeBlock: TCodeBlockElement = {
       children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
@@ -69,7 +69,7 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
-  it('should return decorations for specified language', () => {
+  it('returns decorations for specified language', () => {
     // Mock highlight result
     mockHighlight.mockReturnValue({
       value: [
@@ -140,7 +140,7 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
-  it('should use auto detection when language is "auto"', () => {
+  it('use auto detection when language is "auto"', () => {
     // Mock highlight auto result
     mockHighlightAuto.mockReturnValue({
       value: [{ value: 'const x = 1;' }],
@@ -161,7 +161,7 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlight).not.toHaveBeenCalled();
   });
 
-  it('should use default language when no language is specified', () => {
+  it('use default language when no language is specified', () => {
     // Mock highlight result
     mockHighlight.mockReturnValue({
       value: [{ value: 'const x = 1;' }],
@@ -181,7 +181,7 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
-  it('should handle multiline code blocks', () => {
+  it('handle multiline code blocks', () => {
     // Mock highlight result for multiline code
     mockHighlight.mockReturnValue({
       value: [

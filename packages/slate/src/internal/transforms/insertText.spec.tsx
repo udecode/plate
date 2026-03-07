@@ -8,7 +8,7 @@ jsxt;
 
 describe('insertText', () => {
   describe('when marks is false', () => {
-    it('should insert text without marks', () => {
+    it('insert text without marks', () => {
       const input = createEditor(
         (
           <editor>
@@ -39,7 +39,7 @@ describe('insertText', () => {
   });
 
   describe('when marks are present', () => {
-    it('should insert text with marks', () => {
+    it('insert text with marks', () => {
       const input = createEditor(
         (
           <editor>
@@ -71,7 +71,7 @@ describe('insertText', () => {
   });
 
   describe('when no marks are present', () => {
-    it('should insert plain text', () => {
+    it('insert plain text', () => {
       const input = createEditor(
         (
           <editor>
@@ -102,7 +102,7 @@ describe('insertText', () => {
   });
 
   describe('when selection is null', () => {
-    it('should not insert text', () => {
+    it('does not insert text', () => {
       const input = createEditor(
         (
           <editor>
@@ -130,7 +130,7 @@ describe('insertText', () => {
   });
 
   describe('when inserting at specific path', () => {
-    it('should insert text at given path without marks', () => {
+    it('insert text at given path without marks', () => {
       const input = createEditor(
         (
           <editor>

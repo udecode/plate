@@ -17,7 +17,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 });
 
 describe('rejectSuggestion', () => {
-  it('should reject insert suggestion', () => {
+  it('reject insert suggestion', () => {
     const insertData = {
       id: '1',
       createdAt: Date.now(),
@@ -56,7 +56,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject remove suggestion', () => {
+  it('reject remove suggestion', () => {
     const removeData = {
       id: '1',
       createdAt: Date.now(),
@@ -95,7 +95,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject update suggestion', () => {
+  it('reject update suggestion', () => {
     const updateData = {
       id: '1',
       createdAt: Date.now(),
@@ -137,7 +137,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject line break suggestion', () => {
+  it('reject line break suggestion', () => {
     const lineBreakData = {
       id: '1',
       createdAt: Date.now(),
@@ -172,7 +172,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should merge nodes when rejecting line break insert suggestion', () => {
+  it('merge nodes when rejecting line break insert suggestion', () => {
     const lineBreakData = {
       id: '1',
       createdAt: Date.now(),
@@ -207,7 +207,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject node with both remove and insert suggestions', () => {
+  it('reject node with both remove and insert suggestions', () => {
     const time = Date.now();
 
     const removeData = {
@@ -259,7 +259,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject remove nodes', () => {
+  it('reject remove nodes', () => {
     const removeData = {
       id: '1',
       createdAt: Date.now(),
@@ -294,7 +294,7 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should reject insert nodes', () => {
+  it('reject insert nodes', () => {
     const insertData = {
       id: '1',
       createdAt: Date.now(),

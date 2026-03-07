@@ -1,4 +1,4 @@
-import { createPlateEditor } from '../../react';
+import { createSlateEditor } from '../editor';
 import {
   type PluginConfig,
   createSlatePlugin,
@@ -6,36 +6,38 @@ import {
   getSlatePlugin,
 } from '../plugin';
 
+const createPluginEditor = (
+  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
+) => createSlateEditor({ plugins });
+
 describe('extendEditorApi method', () => {
-  it('should maintain editor and plugin API reference while extending', () => {
+  it('maintain editor and plugin API reference while extending', () => {
     let api1: any;
     let pluginApi1: any;
 
-    const editor = createPlateEditor({
-      plugins: [
-        createSlatePlugin({
-          key: 'testPlugin',
+    const editor = createPluginEditor([
+      createSlatePlugin({
+        key: 'testPlugin',
+      })
+        .extendEditorApi(({ editor, plugin }) => {
+          api1 = editor.getApi({} as any);
+          pluginApi1 = plugin.api;
+
+          return { method1: () => 1 };
         })
-          .extendEditorApi(({ editor, plugin }) => {
-            api1 = editor.getApi({} as any);
-            pluginApi1 = plugin.api;
+        .extendEditorApi(({ editor, plugin: { api } }) => {
+          expect(api1).toBe(editor.getApi({} as any));
+          expect(pluginApi1).toBe(api);
 
-            return { method1: () => 1 };
-          })
-          .extendEditorApi(({ editor, plugin: { api } }) => {
-            expect(api1).toBe(editor.getApi({} as any)); // The reference should be the same
-            expect(pluginApi1).toBe(api); // The reference should be the same
+          return { method2: () => 2 };
+        }),
+    ]);
 
-            return { method2: () => 2 };
-          }),
-      ],
-    });
-
-    expect(editor.api.method2).toBeDefined(); // The new method should be available
+    expect(editor.api.method2).toBeDefined();
     expect(editor.api.method2()).toBe(2);
   });
 
-  it('should correctly handle extendEditorApi with function parameters', () => {
+  it('correctly handle extendEditorApi with function parameters', () => {
     type CustomConfig = PluginConfig<
       'customPlugin',
       { baseValue: number },
@@ -62,9 +64,7 @@ describe('extendEditorApi method', () => {
       })
     );
 
-    const editor = createPlateEditor({
-      plugins: [furtherExtendedPlugin],
-    });
+    const editor = createPluginEditor([furtherExtendedPlugin]);
 
     expect(editor.plugins.customPlugin.options.baseValue).toBe(5);
     expect(editor.api.multiply(3)).toBe(15);
@@ -75,7 +75,7 @@ describe('extendEditorApi method', () => {
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
 
-  it('should correctly handle api extensions through extend, extendEditorApi, and configure', () => {
+  it('correctly handle api extensions through extend, extendEditorApi, and configure', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -101,16 +101,14 @@ describe('extendEditorApi method', () => {
         anotherMethod: () => api.sampleMethod(1) + options.baseValue,
       }));
 
-    const editor = createPlateEditor({
-      plugins: [extendedPlugin],
-    });
+    const editor = createPluginEditor([extendedPlugin]);
 
     expect(editor.getOptions(extendedPlugin).baseValue).toBe(20);
     expect(editor.api.sampleMethod(1)).toBe(21);
     expect(editor.api.anotherMethod()).toBe(41);
   });
 
-  it('should allow multiple extendEditorApi calls', () => {
+  it('allow multiple extendEditorApi calls', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -129,16 +127,14 @@ describe('extendEditorApi method', () => {
         method3: () => (api as any).method1() + (api as any).method2(),
       }));
 
-    const editor = createPlateEditor({
-      plugins: [extendedPlugin],
-    });
+    const editor = createPluginEditor([extendedPlugin]);
 
     expect(editor.api.method1()).toBe(1);
     expect(editor.api.method2()).toBe(2);
     expect(editor.api.method3()).toBe(3);
   });
 
-  it('should allow plugin api', () => {
+  it('allow plugin api', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -155,25 +151,23 @@ describe('extendEditorApi method', () => {
         method3: () => api.method1() + api.method2(),
       }));
 
-    const editor = createPlateEditor({
-      plugins: [
-        testPlugin,
-        createSlatePlugin({
-          key: 'another',
-        }).extendEditorApi(({ editor }) => ({
-          method4: () => {
-            const api = editor.getApi(testPlugin);
+    const editor = createPluginEditor([
+      testPlugin,
+      createSlatePlugin({
+        key: 'another',
+      }).extendEditorApi(({ editor }) => ({
+        method4: () => {
+          const api = editor.getApi(testPlugin);
 
-            return api.method3();
-          },
-        })),
-      ],
-    });
+          return api.method3();
+        },
+      })),
+    ]);
 
     expect(editor.api.method4()).toBe(3);
   });
 
-  it('should allow stable plugin api', () => {
+  it('allow stable plugin api', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: { baseValue: 10 },
@@ -184,23 +178,21 @@ describe('extendEditorApi method', () => {
         method3: () => api.method1() + api.method2(),
       }));
 
-    const editor = createPlateEditor({
-      plugins: [
-        testPlugin,
-        createSlatePlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
-          const api = editor.getApi(testPlugin);
+    const editor = createPluginEditor([
+      testPlugin,
+      createSlatePlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
+        const api = editor.getApi(testPlugin);
 
-          return {
-            method4: () => api.method3(),
-          };
-        }),
-      ],
-    });
+        return {
+          method4: () => api.method3(),
+        };
+      }),
+    ]);
 
     expect(editor.api.method4()).toBe(3);
   });
 
-  it('should allow overriding plugin APIs', () => {
+  it('allow overriding plugin APIs', () => {
     const basePlugin = createSlatePlugin({
       key: 'basePlugin',
     }).extendEditorApi(() => ({
@@ -217,14 +209,12 @@ describe('extendEditorApi method', () => {
       };
     });
 
-    const editor = createPlateEditor({
-      plugins: [basePlugin, overridePlugin],
-    });
+    const editor = createPluginEditor([basePlugin, overridePlugin]);
 
     expect(editor.api.method()).toBe('override base' as any);
   });
 
-  it('should merge nested API properties', () => {
+  it('merge nested API properties', () => {
     const basePlugin = createSlatePlugin({ key: 'nestedPlugin' })
       .extendEditorApi(() => ({
         cloud: {
@@ -237,15 +227,13 @@ describe('extendEditorApi method', () => {
         },
       }));
 
-    const editor = createPlateEditor({
-      plugins: [basePlugin],
-    });
+    const editor = createPluginEditor([basePlugin]);
 
     expect(editor.api.cloud.a()).toBe('a');
     expect(editor.api.cloud.b()).toBe('b');
   });
 
-  it('should distinguish between editor.api and plugin.api', () => {
+  it('distinguish between editor.api and plugin.api', () => {
     const plugin1 = createSlatePlugin({
       key: 'plugin1',
     })
@@ -275,16 +263,14 @@ describe('extendEditorApi method', () => {
       method: () => 'plugin3',
     }));
 
-    const editor = createPlateEditor({
-      plugins: [plugin1, plugin3],
-    });
+    const editor = createPluginEditor([plugin1, plugin3]);
 
     expect(editor.api.method()).toBe('plugin3'); // Overridden by plugin2
     expect(getSlatePlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
     expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
 
-  it('should comprehensively handle all aspects of extendEditorApi and extendEditorTransforms', () => {
+  it('comprehensively handle all aspects of extendEditorApi and extendEditorTransforms', () => {
     const basePlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -324,39 +310,29 @@ describe('extendEditorApi method', () => {
       };
     });
 
-    const editor = createPlateEditor({
-      plugins: [basePlugin, overridePlugin],
-    });
+    const editor = createPluginEditor([basePlugin, overridePlugin]);
 
-    // Test nested API methods
     expect(editor.api.level1.method1()).toBe(10);
     expect(editor.api.level1.method2(3)).toBe(30);
-    expect(editor.api.level1.method3()).toBe(30); // 10 + (10 * 2)
+    expect(editor.api.level1.method3()).toBe(30);
 
-    // Test standalone method
     expect(editor.api.standalone()).toBe('base');
 
-    // Test transforms
     expect(editor.transforms.transform1(5)).toBe(15);
-    expect(editor.transforms.transform2()).toBe(30); // (10 + 5) * 2
+    expect(editor.transforms.transform2()).toBe(30);
 
-    // Test combined API and transform method
-    expect(editor.api.combined()).toBe(60); // 40 + 20
+    expect(editor.api.combined()).toBe(60);
 
-    // Test method overriding
     expect(editor.api.override()).toBe('overridden: base' as any);
 
-    // Test that transforms and API methods are also available in the plugin
     const plugin = getSlatePlugin(editor, basePlugin);
     expect(plugin.api.level1.method1()).toBe(10);
     expect(plugin.transforms.transform1(5)).toBe(15);
 
-    // Test that editor.api and plugin.api are distinct
     plugin.api.level1.method1 = () => 100;
     expect(plugin.api.level1.method1()).toBe(100);
-    expect(editor.api.level1.method1()).toBe(10); // Unchanged
+    expect(editor.api.level1.method1()).toBe(10);
 
-    // Test that options are correctly bound
     editor.plugins.testPlugin.options.baseValue = 20;
     expect(editor.api.level1.method1()).toBe(20);
     expect(editor.transforms.transform1(5)).toBe(25);
@@ -364,7 +340,7 @@ describe('extendEditorApi method', () => {
 });
 
 describe('extendApi method', () => {
-  it('should extend plugin-specific API without affecting global API', () => {
+  it('extend plugin-specific API without affecting global API', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -375,9 +351,7 @@ describe('extendApi method', () => {
         pluginMethod: () => 'plugin',
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.api.testPlugin.pluginMethod()).toBe('plugin');
@@ -386,7 +360,7 @@ describe('extendApi method', () => {
     expect(editor.api.pluginMethod).toBeUndefined();
   });
 
-  it('should allow multiple extendApi calls', () => {
+  it('allow multiple extendApi calls', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -400,16 +374,14 @@ describe('extendApi method', () => {
         method3: () => api.testPlugin.method1() + api.testPlugin.method2(),
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.api.testPlugin.method1()).toBe(1);
     expect(editor.api.testPlugin.method2()).toBe(2);
     expect(editor.api.testPlugin.method3()).toBe(3);
   });
 
-  it('should allow access to plugin options in extendApi', () => {
+  it('allow access to plugin options in extendApi', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -419,14 +391,12 @@ describe('extendApi method', () => {
       getValue: () => getOptions().baseValue,
     }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.api.testPlugin.getValue()).toBe(10);
   });
 
-  it('should allow interaction between global and plugin-specific APIs', () => {
+  it('allow interaction between global and plugin-specific APIs', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -437,14 +407,12 @@ describe('extendApi method', () => {
         pluginMethod: () => api.globalMethod() * 2,
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.api.testPlugin.pluginMethod()).toBe(10);
   });
 
-  it('should maintain separate contexts for different plugins', () => {
+  it('maintain separate contexts for different plugins', () => {
     const plugin1 = createSlatePlugin({
       key: 'plugin1',
     }).extendApi(() => ({
@@ -457,15 +425,13 @@ describe('extendApi method', () => {
       method: () => 'plugin2',
     }));
 
-    const editor = createPlateEditor({
-      plugins: [plugin1, plugin2],
-    });
+    const editor = createPluginEditor([plugin1, plugin2]);
 
     expect(editor.api.plugin1.method()).toBe('plugin1');
     expect(editor.api.plugin2.method()).toBe('plugin2');
   });
 
-  it('should allow overriding plugin-specific APIs', () => {
+  it('allow overriding plugin-specific APIs', () => {
     const basePlugin = createSlatePlugin({
       key: 'basePlugin',
     }).extendApi(() => ({
@@ -482,15 +448,13 @@ describe('extendApi method', () => {
       };
     });
 
-    const editor = createPlateEditor({
-      plugins: [basePlugin, overridePlugin],
-    });
+    const editor = createPluginEditor([basePlugin, overridePlugin]);
 
     expect(editor.api.basePlugin.method()).toBe('base');
     expect(editor.api.overridePlugin.method()).toBe('override base');
   });
 
-  it('should handle complex scenarios with both extendEditorApi and extendApi', () => {
+  it('handle complex scenarios with both extendEditorApi and extendApi', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
       options: {
@@ -508,9 +472,7 @@ describe('extendApi method', () => {
           `${api.globalMethod()}-${api.testPlugin.pluginMethod()}`,
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.api.globalMethod()).toBe('global');
     expect(editor.api.testPlugin.pluginMethod()).toBe(5);
@@ -519,7 +481,7 @@ describe('extendApi method', () => {
 });
 
 describe('extendTransforms method', () => {
-  it('should extend plugin-specific transforms without affecting global transforms', () => {
+  it('extend plugin-specific transforms without affecting global transforms', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -530,9 +492,7 @@ describe('extendTransforms method', () => {
         pluginTransform: () => 'plugin',
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.transforms.globalTransform()).toBe('global');
     expect(editor.transforms.testPlugin.pluginTransform()).toBe('plugin');
@@ -541,7 +501,7 @@ describe('extendTransforms method', () => {
     expect(editor.transforms.pluginTransform).toBeUndefined();
   });
 
-  it('should allow multiple extendTransforms calls', () => {
+  it('allow multiple extendTransforms calls', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -556,9 +516,7 @@ describe('extendTransforms method', () => {
           tf.testPlugin.transform1() + tf.testPlugin.transform2(),
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.transforms.testPlugin.transform1()).toBe(1);
     expect(editor.transforms.testPlugin.transform2()).toBe(2);
@@ -568,7 +526,7 @@ describe('extendTransforms method', () => {
     expect(editor.tf.testPlugin.transform3()).toBe(3);
   });
 
-  it('should allow interaction between global and plugin-specific transforms', () => {
+  it('allow interaction between global and plugin-specific transforms', () => {
     const testPlugin = createSlatePlugin({
       key: 'testPlugin',
     })
@@ -579,9 +537,7 @@ describe('extendTransforms method', () => {
         pluginTransform: () => tf.globalTransform() * 2,
       }));
 
-    const editor = createPlateEditor({
-      plugins: [testPlugin],
-    });
+    const editor = createPluginEditor([testPlugin]);
 
     expect(editor.transforms.testPlugin.pluginTransform()).toBe(10);
   });

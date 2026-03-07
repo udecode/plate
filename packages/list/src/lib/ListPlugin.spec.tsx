@@ -12,7 +12,7 @@ import { LinkPlugin } from '@platejs/link/react';
 import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -30,7 +30,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   }) as any;
 
 describe('when insertData disc and decimal from gdocs', () => {
-  it('should handle Google Docs nested lists', () => {
+  it('handle Google Docs nested lists', () => {
     const e = (
       <editor>
         <hp>
@@ -38,7 +38,7 @@ describe('when insertData disc and decimal from gdocs', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         ImagePlugin,
         HorizontalRulePlugin,
@@ -120,7 +120,7 @@ describe('when insertData disc and decimal from gdocs', () => {
 });
 
 describe('when insertData with nested ul inside li', () => {
-  it('should handle li with nested ul correctly', () => {
+  it('handle li with nested ul correctly', () => {
     const e = (
       <editor>
         <hp>
@@ -128,7 +128,7 @@ describe('when insertData with nested ul inside li', () => {
         </hp>
       </editor>
     ) as any;
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         ImagePlugin,
         HorizontalRulePlugin,

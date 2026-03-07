@@ -1,9 +1,7 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from 'platejs/react';
-
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor, type SlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../../react';
 import { selectBlocks } from './selectBlocks';
@@ -11,10 +9,10 @@ import { selectBlocks } from './selectBlocks';
 jsxt;
 
 describe('selectBlocks', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
 
   beforeEach(() => {
-    editor = createPlateEditor({
+    editor = createSlateEditor({
       plugins: [BlockSelectionPlugin],
       selection: {
         anchor: { offset: 0, path: [0] },
@@ -45,7 +43,7 @@ describe('selectBlocks', () => {
   });
 
   describe('when no blocks are selected', () => {
-    it('should select the specified block', () => {
+    it('select the specified block', () => {
       selectBlocks(editor, [1]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
@@ -62,14 +60,14 @@ describe('selectBlocks', () => {
       );
     });
 
-    it('should keep existing selection if selecting an already selected block', () => {
+    it('keep existing selection if selecting an already selected block', () => {
       selectBlocks(editor, [0]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1', 'block2']);
     });
 
-    it('should select only the new block if selecting an unselected block', () => {
+    it('select only the new block if selecting an unselected block', () => {
       selectBlocks(editor, [2]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
@@ -79,7 +77,7 @@ describe('selectBlocks', () => {
 
   describe('with nested blocks', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
+      editor = createSlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0] },
@@ -106,14 +104,14 @@ describe('selectBlocks', () => {
       });
     });
 
-    it('should select nested block', () => {
+    it('select nested block', () => {
       selectBlocks(editor, [0, 0]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['child1']);
     });
 
-    it('should select parent block', () => {
+    it('select parent block', () => {
       selectBlocks(editor, [0]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
@@ -123,7 +121,7 @@ describe('selectBlocks', () => {
 
   describe('with non-selectable blocks', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
+      editor = createSlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },
@@ -151,7 +149,7 @@ describe('selectBlocks', () => {
       });
     });
 
-    it('should select block at path', () => {
+    it('select block at path', () => {
       selectBlocks(editor, [0, 0]);
 
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
@@ -161,7 +159,7 @@ describe('selectBlocks', () => {
 
   describe('with multi-level selection', () => {
     beforeEach(() => {
-      editor = createPlateEditor({
+      editor = createSlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },
@@ -223,7 +221,7 @@ describe('selectBlocks', () => {
       });
     });
 
-    it('should select only blocks at same level', () => {
+    it('select only blocks at same level', () => {
       // Set selection from div1 to div3
       editor.selection = {
         anchor: { offset: 0, path: [0, 0, 0] },
@@ -236,7 +234,7 @@ describe('selectBlocks', () => {
       expect(Array.from(selectedIds!)).toEqual(['div1', 'div2', 'div3']);
     });
 
-    it('should select only sections when selecting across sections', () => {
+    it('select only sections when selecting across sections', () => {
       // Set selection from section1 to section2
       editor.selection = {
         anchor: { offset: 0, path: [0, 0] },
@@ -249,7 +247,7 @@ describe('selectBlocks', () => {
       expect(Array.from(selectedIds!)).toEqual(['section1', 'section2']);
     });
 
-    it('should select only paragraphs when selecting across nested paragraphs', () => {
+    it('select only paragraphs when selecting across nested paragraphs', () => {
       // Set selection from p1 to p3
       editor.selection = {
         anchor: { offset: 0, path: [0, 0, 0, 0] },

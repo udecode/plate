@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from '@platejs/core/react';
-import { LinkPlugin } from '@platejs/link/react';
+import { createSlateEditor } from '@platejs/core';
+import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 import { createEditor } from '../../create-editor';
 import type { Editor, LegacyEditorMethods } from '../../interfaces';
@@ -10,7 +10,7 @@ jsxt;
 
 describe('isEmpty', () => {
   describe('when no target (editor)', () => {
-    it('should be true when editor has one empty element', () => {
+    it('returns true when the editor has one empty element', () => {
       const editor = createEditor(
         (
           <editor>
@@ -22,7 +22,7 @@ describe('isEmpty', () => {
       expect(editor.api.isEmpty()).toBe(true);
     });
 
-    it('should be false when editor has multiple elements', () => {
+    it('returns false when the editor has multiple elements', () => {
       const editor = createEditor(
         (
           <editor>
@@ -37,7 +37,7 @@ describe('isEmpty', () => {
   });
 
   describe('when target is editor', () => {
-    it('should be true when editor has one empty element', () => {
+    it('returns true when the editor has one empty element', () => {
       const editor = createEditor(
         (
           <editor>
@@ -51,7 +51,7 @@ describe('isEmpty', () => {
   });
 
   describe('when target is path', () => {
-    it('should get block above and check if empty', () => {
+    it('get block above and check if empty', () => {
       const editor = createEditor(
         (
           <editor>
@@ -68,7 +68,7 @@ describe('isEmpty', () => {
 
   describe('when after=true', () => {
     describe('when no selection', () => {
-      it('should be false', () => {
+      it('returns true', () => {
         const editor = createEditor(
           (
             <editor>
@@ -89,7 +89,7 @@ describe('isEmpty', () => {
     });
 
     describe('when cursor not at end', () => {
-      it('should be false', () => {
+      it('returns false', () => {
         const editor = createEditor(
           (
             <editor>
@@ -112,7 +112,7 @@ describe('isEmpty', () => {
     });
 
     describe('when empty text after', () => {
-      it('should be true', () => {
+      it('returns true', () => {
         const editor = createEditor(
           (
             <editor>
@@ -137,7 +137,7 @@ describe('isEmpty', () => {
     });
 
     describe('when no text after', () => {
-      it('should be true', () => {
+      it('returns true', () => {
         const input = createEditor(
           (
             <editor>
@@ -152,9 +152,9 @@ describe('isEmpty', () => {
           ) as any
         ) as Editor & LegacyEditorMethods;
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           editor: input as any,
-          plugins: [LinkPlugin],
+          plugins: [BaseLinkPlugin],
         });
 
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
@@ -164,7 +164,7 @@ describe('isEmpty', () => {
     });
 
     describe('when text after', () => {
-      it('should be false', () => {
+      it('returns false', () => {
         const input = createEditor(
           (
             <editor>
@@ -180,9 +180,9 @@ describe('isEmpty', () => {
           ) as any
         ) as Editor & LegacyEditorMethods;
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           editor: input as any,
-          plugins: [LinkPlugin],
+          plugins: [BaseLinkPlugin],
         });
 
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
@@ -192,7 +192,7 @@ describe('isEmpty', () => {
     });
 
     describe('when multiple siblings after cursor', () => {
-      it('should be false when any sibling has text', () => {
+      it('returns false when any sibling has text', () => {
         const editor = createEditor(
           (
             <editor>
@@ -216,7 +216,7 @@ describe('isEmpty', () => {
         );
       });
 
-      it('should be true when all siblings are empty', () => {
+      it('returns true when all siblings are empty', () => {
         const editor = createEditor(
           (
             <editor>
@@ -242,7 +242,7 @@ describe('isEmpty', () => {
     });
 
     describe('when cursor is at different positions', () => {
-      it('should handle cursor at start of node', () => {
+      it('handle cursor at start of node', () => {
         const editor = createEditor(
           (
             <editor>
@@ -263,7 +263,7 @@ describe('isEmpty', () => {
         );
       });
 
-      it('should handle cursor at middle of node', () => {
+      it('handle cursor at middle of node', () => {
         const editor = createEditor(
           (
             <editor>
@@ -288,7 +288,7 @@ describe('isEmpty', () => {
   });
 
   describe('when block=true', () => {
-    it('should check if block above is empty', () => {
+    it('check if block above is empty', () => {
       const editor = createEditor(
         (
           <editor>

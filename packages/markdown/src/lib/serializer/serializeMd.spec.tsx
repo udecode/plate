@@ -10,7 +10,7 @@ const editor = createTestEditor();
 jsxt;
 
 describe('serializeMd', () => {
-  it('should serialize a simple paragraph', () => {
+  it('serializes a simple paragraph', () => {
     const result = serializeMd(editor as any, {
       spread: true,
       value: testValue,
@@ -18,9 +18,9 @@ describe('serializeMd', () => {
     expect(result).toMatchSnapshot();
   });
 
-  describe('fixures', () => {
+  describe('fixtures', () => {
     // https://github.com/inokawa/remark-slate-transformer/issues/44
-    it('should serialize marks with trailing whitespace', () => {
+    it('serializes marks with trailing whitespace', () => {
       const slateNodes = [
         {
           children: [
@@ -66,7 +66,7 @@ describe('serializeMd', () => {
     });
 
     // https://github.com/inokawa/remark-slate-transformer/issues/90
-    it('Combination of bold and italic at the start of a block losing formatting', () => {
+    it('keeps bold and italic formatting at the start of a block', () => {
       const slateNodes = [
         {
           children: [
@@ -107,7 +107,7 @@ describe('serializeMd', () => {
     });
 
     // https://github.com/inokawa/remark-slate-transformer/issues/145
-    it('should serialize a value with inline code', () => {
+    it('serializes inline code', () => {
       const slateNodes = [
         {
           children: [
@@ -126,7 +126,7 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
-    it('should serialize a value within a block qoute as a single line', () => {
+    it('serializes a block quote as a single line', () => {
       const slateNodes = [
         {
           children: [
@@ -143,7 +143,7 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
-    it('should serialize a codeblock', () => {
+    it('serializes a code block', () => {
       const slateNodes = [
         {
           children: [
@@ -161,7 +161,7 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
-    it(String.raw`should serialize a \n within a block qoute as new line`, () => {
+    it(String.raw`serializes a \n within a block quote as a new line`, () => {
       const slateNodes = [
         {
           children: [
@@ -178,7 +178,7 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
-    it(String.raw`should serialize two \n within a block qoute as two new lines`, () => {
+    it(String.raw`serializes two \n within a block quote as two new lines`, () => {
       const slateNodes = [
         {
           children: [
@@ -196,7 +196,7 @@ describe('serializeMd', () => {
       ).toMatchSnapshot();
     });
 
-    it(String.raw`should serialize two leading \n at the end of a block qoute as a new line`, () => {
+    it(String.raw`serializes two trailing \n in a block quote as a forced line break and <br />`, () => {
       const slateNodes = [
         {
           children: [{ text: 'Block quote' }, { text: '\n' }, { text: '\n' }],
@@ -204,12 +204,12 @@ describe('serializeMd', () => {
         },
       ];
 
-      expect(
-        serializeMd(editor as any, { value: slateNodes })
-      ).toMatchSnapshot();
+      expect(serializeMd(editor as any, { value: slateNodes })).toBe(
+        '> Block quote\\ \n> <br />\n'
+      );
     });
 
-    it(String.raw`should serialize three leading \n at the end of a paragraph qoute as a new line`, () => {
+    it(String.raw`serializes three trailing \n in a paragraph as a forced line break and <br />`, () => {
       const slateNodes = [
         {
           children: [
@@ -222,13 +222,13 @@ describe('serializeMd', () => {
         },
       ];
 
-      expect(
-        serializeMd(editor as any, { value: slateNodes })
-      ).toMatchSnapshot();
+      expect(serializeMd(editor as any, { value: slateNodes })).toBe(
+        'Paragaph with two new Lines\\\n\\ \n<br />\n'
+      );
     });
   });
 
-  it('should serialize the leading break at the end of a block qoute as a <br />', () => {
+  it('serializes a trailing break in a paragraph as <br />', () => {
     const slateNodes = [
       {
         children: [{ text: 'Paragaph with a new Line' }, { text: '\n' }],
@@ -239,7 +239,7 @@ describe('serializeMd', () => {
     expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
   });
 
-  it('should serialize paragraphs with only a new line to a <br />', () => {
+  it('serializes paragraphs containing only a new line as <br />', () => {
     const slateNodes = [
       {
         children: [{ text: '\n' }],
@@ -254,7 +254,7 @@ describe('serializeMd', () => {
     expect(serializeMd(editor as any, { value: slateNodes })).toMatchSnapshot();
   });
 
-  it('should serialize lists with spread option correctly', () => {
+  it('serializes lists with spread correctly', () => {
     const listFragment = [
       {
         children: [{ text: '1' }],
@@ -271,11 +271,9 @@ describe('serializeMd', () => {
       },
     ];
 
-    // Test with default (spread: false)
     const resultDefault = serializeMd(editor as any, { value: listFragment });
     expect(resultDefault).toBe('1. 1\n2. 2\n');
 
-    // Test with spread: true
     const resultWithSpread = serializeMd(editor as any, {
       spread: true,
       value: listFragment,
@@ -283,7 +281,7 @@ describe('serializeMd', () => {
     expect(resultWithSpread).toBe('1. 1\n\n2. 2\n');
   });
 
-  it('should serialize lists with custom remark-stringify options', () => {
+  it('serializes lists with custom remark-stringify options', () => {
     const slateNodes = [
       {
         children: [
@@ -312,7 +310,7 @@ describe('serializeMd', () => {
     expect(result).toBe('Make text *bold*\n');
   });
 
-  it('should serialize table cells with multiple blocks using <br/> separator', () => {
+  it('serializes table cells with multiple blocks using <br/> separators', () => {
     const slateNodes = [
       {
         children: [
@@ -350,8 +348,6 @@ describe('serializeMd', () => {
 
     const result = serializeMd(editor as any, { value: slateNodes });
 
-    // Table cells with multiple blocks should use <br/> separator, not \n\n
-    // Because markdown tables don't support multiple blocks natively
     expect(result).toBe(
       '| First paragraph<br/>Second paragraph | Single paragraph |\n| ------------------------------------ | ---------------- |\n'
     );

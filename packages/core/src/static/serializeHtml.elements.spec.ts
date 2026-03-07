@@ -1,10 +1,10 @@
 import { decode } from 'html-entities';
 
-import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor } from './create-static-editor';
+import { serializeHtml } from './serializeHtml';
+import { createStaticEditor } from './__tests__/create-static-editor';
 
-describe('serializePlateStatic', () => {
-  it('should serialize paragraph to html', async () => {
+describe('serializeHtml element rendering', () => {
+  it('renders paragraph text', async () => {
     const editor = createStaticEditor([
       {
         children: [{ text: 'Some random paragraph here...' }],
@@ -16,7 +16,7 @@ describe('serializePlateStatic', () => {
     expect(html).toContain('Some random paragraph here...');
   });
 
-  it('should serialize headings to html', async () => {
+  it('renders heading nodes', async () => {
     const editor = createStaticEditor([
       {
         children: [{ text: 'Heading 1' }],
@@ -38,7 +38,7 @@ describe('serializePlateStatic', () => {
     expect(html).toContain('Heading 3');
   });
 
-  it('should serialize blockquote to html', async () => {
+  it('renders blockquote text', async () => {
     const editor = createStaticEditor([
       {
         children: [{ text: 'Blockquoted text here...' }],
@@ -50,7 +50,7 @@ describe('serializePlateStatic', () => {
     expect(html).toContain('Blockquoted text here...');
   });
 
-  it('should serialize link to html', async () => {
+  it('renders link hrefs', async () => {
     const editor = createStaticEditor([
       { children: [{ text: 'Some paragraph of text with ' }], type: 'p' },
       {
@@ -66,7 +66,7 @@ describe('serializePlateStatic', () => {
     expect(html).toContain('slate-a');
   });
 
-  it('should serialize image to html', async () => {
+  it('renders image src attributes', async () => {
     const editor = createStaticEditor([
       {
         children: [{ text: '' }],
@@ -79,7 +79,7 @@ describe('serializePlateStatic', () => {
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
 
-  it('should serialize table to html', async () => {
+  it('renders table cell content', async () => {
     const editor = createStaticEditor([
       {
         children: [

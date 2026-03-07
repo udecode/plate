@@ -1,16 +1,20 @@
 /** @jsx jsxt */
 
-import { IndentPlugin } from '@platejs/indent/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  type SlateEditor,
+  BaseParagraphPlugin,
+  KEYS,
+  createSlateEditor,
+} from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
 jsxt;
 
 describe('withInsertBreakList', () => {
-  it('should insert a new todo list line with the same formatting', () => {
+  it('insert a new todo list line with the same formatting', () => {
     const input = (
       <editor>
         <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
@@ -36,8 +40,8 @@ describe('withInsertBreakList', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [BaseParagraphPlugin, IndentPlugin, BaseListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -47,7 +51,7 @@ describe('withInsertBreakList', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should behave like a normal break if not a todo line', () => {
+  it('behave like a normal break if not a todo line', () => {
     const input = (
       <editor>
         <hp indent={1} listStyleType="disc">
@@ -68,8 +72,8 @@ describe('withInsertBreakList', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [BaseParagraphPlugin, IndentPlugin, BaseListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });
@@ -79,7 +83,7 @@ describe('withInsertBreakList', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should behave like a normal break if selection is expanded', () => {
+  it('behave like a normal break if selection is expanded', () => {
     const input = (
       <editor>
         <hp checked={false} indent={1} listStyleType={KEYS.listTodo}>
@@ -106,8 +110,8 @@ describe('withInsertBreakList', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
-      plugins: [BaseParagraphPlugin, IndentPlugin, BaseListPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
       selection: input.selection,
       value: input.children,
     });

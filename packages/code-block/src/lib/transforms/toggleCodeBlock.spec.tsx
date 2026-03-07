@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { toggleCodeBlock } from './toggleCodeBlock';
@@ -11,7 +11,7 @@ import { toggleCodeBlock } from './toggleCodeBlock';
 jsxt;
 
 describe('toggle on', () => {
-  it('should turn a p to a code block', () => {
+  it('turn a p to a code block', () => {
     const input = (
       <editor>
         <hp>
@@ -34,7 +34,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -45,7 +45,7 @@ describe('toggle on', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should turn a p with a selection to code block', () => {
+  it('turn a p with a selection to code block', () => {
     const input = (
       <editor>
         <hp>
@@ -68,7 +68,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -79,7 +79,7 @@ describe('toggle on', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should turn multiple p to a code block', () => {
+  it('turn multiple p to a code block', () => {
     const input = (
       <editor>
         <hp>
@@ -108,7 +108,7 @@ describe('toggle on', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

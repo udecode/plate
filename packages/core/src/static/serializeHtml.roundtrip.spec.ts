@@ -10,11 +10,11 @@ import { listValue } from 'www/src/registry/examples/values/list-value';
 import { mentionValue } from 'www/src/registry/examples/values/mention-value';
 import { tocPlaygroundValue } from 'www/src/registry/examples/values/toc-value';
 
-import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor } from './create-static-editor';
+import { serializeHtml } from './serializeHtml';
+import { createStaticEditor } from './__tests__/create-static-editor';
 
-describe('deserializePlateStatic', () => {
-  it('should deserialize nodes', async () => {
+describe('serializeHtml roundtrip', () => {
+  it('roundtrips editor values through html deserialization', async () => {
     const editor = createStaticEditor([
       ...basicBlocksValue,
       ...basicMarksValue,

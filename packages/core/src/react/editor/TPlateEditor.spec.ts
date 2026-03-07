@@ -46,7 +46,7 @@ describe('TPlateEditor', () => {
   });
 
   describe('Core Plugins', () => {
-    it('should have DebugPlugin methods with default generics', () => {
+    it('exposes DebugPlugin methods on withPlate', () => {
       const editor = withPlate(createEditor());
 
       expect(editor.api.debug).toBeDefined();
@@ -59,7 +59,7 @@ describe('TPlateEditor', () => {
       editor.api.debug.nonExistentMethod;
     });
 
-    it('should work with a mix of core and custom plugins', () => {
+    it('combines core and custom plugin APIs with withPlate', () => {
       const editor = withPlate(createEditor(), {
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],
       });
@@ -74,7 +74,7 @@ describe('TPlateEditor', () => {
   });
 
   describe('Custom Plugins', () => {
-    it('should infer single and multiple plugin types correctly', () => {
+    it('infers plugin APIs across custom plugin sets', () => {
       const singlePluginEditor = withPlate(createEditor(), {
         plugins: [MyCustomPlugin],
       });
@@ -91,7 +91,7 @@ describe('TPlateEditor', () => {
       multiPluginEditor.api.nonExistentMethod;
     });
 
-    it('should work with createPlateEditor', () => {
+    it('exposes custom plugin APIs on createPlateEditor', () => {
       const editor = createPlateEditor({
         plugins: [MyCustomPlugin, ListPlugin, ImagePlugin],
       });
@@ -104,7 +104,7 @@ describe('TPlateEditor', () => {
       editor.api.insertTable;
     });
 
-    it('should allow extending editor with new plugins', () => {
+    it('extends a plate editor with additional plugins', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
       const editor1 = withPlate(createEditor(), {
         plugins,
@@ -125,7 +125,7 @@ describe('TPlateEditor', () => {
       editor.api.insertImage;
     });
 
-    it('should handle plugins with overlapping api names', () => {
+    it('merges overlapping api names on withPlate', () => {
       const OverlappingPlugin = createSlatePlugin({
         key: 'overlapping',
         api: {
@@ -169,7 +169,7 @@ describe('TPlateEditor', () => {
       },
     });
 
-    it('should work with specific plugin types', () => {
+    it('supports specific plugin generics on createPlateEditor', () => {
       const editor = createPlateEditor<Value, typeof BoldPlugin>({
         plugins: [BoldPlugin],
       });

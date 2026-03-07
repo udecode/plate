@@ -1,7 +1,7 @@
 import { createEditor } from '../../create-editor';
 
 describe('reset', () => {
-  it('should reset editor state', () => {
+  it('reset editor state', () => {
     const editor = createEditor();
 
     // Set up initial state
@@ -26,7 +26,7 @@ describe('reset', () => {
     expect(editor.history.redos).toEqual([]);
   });
 
-  it('should only reset children when children option is true', () => {
+  it('only reset children when children option is true', () => {
     const editor = createEditor();
 
     // Set up initial state

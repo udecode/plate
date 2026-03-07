@@ -1,15 +1,18 @@
 import { getHandler } from './getHandler';
 
-it('should be', () => {
-  const cb = mock() as unknown as (...args: any[]) => any;
+describe('getHandler', () => {
+  it('calls the callback with the captured arguments', () => {
+    const callback = mock<(value: string, count: number) => void>();
 
-  getHandler(cb)();
+    const handler = getHandler(callback as any, 'alpha', 2);
+    handler();
 
-  expect(cb).toHaveBeenCalled();
-});
+    expect(callback).toHaveBeenCalledWith('alpha', 2);
+  });
 
-it('should be', () => {
-  getHandler()();
+  it('returns a no-op handler when no callback is provided', () => {
+    const handler = getHandler(undefined);
 
-  expect(1).toBe(1);
+    expect(() => handler()).not.toThrow();
+  });
 });

@@ -2,14 +2,14 @@
 
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
 import { deserializeHtml } from './deserializeHtml';
 
 jsxt;
 
 describe('deserializeHtml - Google Docs', () => {
-  it('should create single empty paragraphs from BR tags between paragraphs', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('create single empty paragraphs from BR tags between paragraphs', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     // HTML structure from Google Docs with BR tags between paragraphs
     const html = `
@@ -47,8 +47,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect(result).toEqual(output.children);
   });
 
-  it('should preserve BR tags within paragraphs', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('preserve BR tags within paragraphs', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = '<p>Line 1<br />Line 2</p>';
     const element = getHtmlDocument(html).body;
@@ -64,8 +64,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect(result).toEqual(output.children);
   });
 
-  it('should handle complex Google Docs HTML', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle complex Google Docs HTML', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     // Actual HTML structure from the issue
     const html = `
@@ -108,8 +108,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect((result[5] as any).children[0].text).toBe('');
   });
 
-  it('should preserve BR tags within paragraphs as separate text nodes', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('preserve BR tags within paragraphs as separate text nodes', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = '<p><span>Hello</span><br /><span>World</span></p>';
     const element = getHtmlDocument(html).body;
@@ -126,8 +126,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect((result[0] as any).children[2].text).toBe('World');
   });
 
-  it('should handle two consecutive BR tags between paragraphs', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle two consecutive BR tags between paragraphs', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = `
       <p>First paragraph</p>
@@ -156,8 +156,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect(result).toEqual(output.children);
   });
 
-  it('should handle three consecutive BR tags between paragraphs', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle three consecutive BR tags between paragraphs', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = `
       <p>First paragraph</p>
@@ -190,8 +190,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect(result).toEqual(output.children);
   });
 
-  it('should handle multiple consecutive BR tags in complex Google Docs HTML', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle multiple consecutive BR tags in complex Google Docs HTML', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = `
       <b style="font-weight:normal;">
@@ -225,8 +225,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect((result[6] as any).children[0].text).toBe('');
   });
 
-  it('should handle three consecutive BR tags not between blocks', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle three consecutive BR tags not between blocks', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     // 3 BR tags at the start, not between blocks
     const html = `
@@ -256,8 +256,8 @@ describe('deserializeHtml - Google Docs', () => {
     expect(result).toEqual(output.children);
   });
 
-  it('should handle BR tags in various contexts within a div', () => {
-    const editor = createPlateEditor({ plugins: [] });
+  it('handle BR tags in various contexts within a div', () => {
+    const editor = createSlateEditor({ plugins: [] });
 
     const html = `
       <div>

@@ -1,8 +1,8 @@
 /** @jsx jsxt */
-import { LinkPlugin } from '@platejs/link/react';
+import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor, createPlatePlugin } from '../../react';
+import { createSlateEditor, createSlatePlugin } from '../../lib';
 import { normalizeDescendantsToDocumentFragment } from './index';
 
 jsxt;
@@ -31,11 +31,11 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])('should add a blank leaf to blocks without children', ({
+  ])('adds a blank leaf to blocks without children', ({
     input,
     output,
   }: any) => {
-    const editor = createPlateEditor();
+    const editor = createSlateEditor();
 
     const result = normalizeDescendantsToDocumentFragment(editor, {
       descendants: input,
@@ -99,12 +99,12 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])('should wrap inline blocks and text nodes in case they have a sibling block', ({
+  ])('wraps inline blocks and text nodes when they have a sibling block', ({
     input,
     output,
   }: any) => {
-    const editor = createPlateEditor({
-      plugins: [LinkPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseLinkPlugin],
     });
 
     const result = normalizeDescendantsToDocumentFragment(editor, {
@@ -173,17 +173,17 @@ describe('normalizeDescendantsToDocumentFragment()', () => {
         </hp>,
       ],
     },
-  ])('should wrap inline blocks and text nodes in case they have a sibling block', ({
+  ])('wraps inline blocks and text nodes with the default element when they have a sibling block', ({
     input,
     output,
   }: any) => {
-    const BaseBlockquotePlugin = createPlatePlugin({
+    const BaseBlockquotePlugin = createSlatePlugin({
       key: 'blockquote',
       node: { isElement: true },
     });
 
-    const editor = createPlateEditor({
-      plugins: [LinkPlugin],
+    const editor = createSlateEditor({
+      plugins: [BaseLinkPlugin],
     });
 
     const result = normalizeDescendantsToDocumentFragment(editor, {

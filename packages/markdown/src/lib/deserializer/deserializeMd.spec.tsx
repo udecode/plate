@@ -1,511 +1,346 @@
 /** @jsx jsxt */
-
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import {
-  BulletedListPlugin,
-  ListItemPlugin,
-  ListPlugin,
-  NumberedListPlugin,
-} from '@platejs/list-classic/react';
+import { BaseListPlugin } from '@platejs/list-classic';
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
 import { deserializeMd } from './deserializeMd';
-
 jsxt;
+
 const editor = createTestEditor();
+const listEditor = createSlateEditor({
+  plugins: [BaseListPlugin, MarkdownPlugin],
+});
+
+const parseMarkdown = (
+  input: string,
+  currentEditor = editor,
+  options?: Parameters<typeof deserializeMd>[2]
+) => deserializeMd(currentEditor, input, options);
 
 describe('deserializeMd', () => {
-  it('should deserialize strikethrough', () => {
-    const input = '<!DOCTYPE';
-
-    const output = (
-      <fragment>
-        <hp>
-          <htext>{'<!DOCTYPE'}</htext>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
+  describe('inline content', () => {
+    it.each([
+      {
+        input: '<!DOCTYPE',
+        name: 'keeps literal doctype text',
+        output: (
+          <fragment>
+            <hp>
+              <htext>{'<!DOCTYPE'}</htext>
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'This is ~~strikethrough~~.',
+        name: 'deserializes strikethrough marks',
+        output: (
+          <fragment>
+            <hp>
+              This is <htext strikethrough>strikethrough</htext>.
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'This is **bold**.',
+        name: 'deserializes bold marks',
+        output: (
+          <fragment>
+            <hp>
+              This is <htext bold>bold</htext>.
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'This is *italic*.',
+        name: 'deserializes italic marks',
+        output: (
+          <fragment>
+            <hp>
+              This is <htext italic>italic</htext>.
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'This is **bold *italic***.',
+        name: 'deserializes nested marks',
+        output: (
+          <fragment>
+            <hp>
+              This is <htext bold>bold </htext>
+              <htext bold italic>
+                italic
+              </htext>
+              .
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'This is `not **bold**`.',
+        name: 'does not parse marks inside inline code',
+        output: (
+          <fragment>
+            <hp>
+              This is <htext code>not **bold**</htext>.
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: '<kbd>Ctrl</kbd> + <kbd>K</kbd>',
+        name: 'deserializes kbd html tags',
+        output: (
+          <fragment>
+            <hp>
+              <htext kbd>Ctrl</htext>
+              <htext> + </htext>
+              <htext kbd>K</htext>
+            </hp>
+          </fragment>
+        ),
+      },
+    ])('$name', ({ input, output }) => {
+      expect(parseMarkdown(input)).toEqual(output);
+    });
   });
 
-  it('should deserialize strikethrough', () => {
-    const input = 'This is ~~strikethrough~~.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext strikethrough>strikethrough</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  // Not sure if this is correct
-  it('should deserialize >>> to blockquote', () => {
-    const input = '>>>a';
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext>a</htext>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize empty blockquotes', () => {
-    const input = '>';
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext />
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize "> " as blockquotes', () => {
-    const input = '> Blockquote content';
-
-    const output = (
-      <fragment>
-        <hblockquote>Blockquote content</hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize paragraphts in blockquotes as two breaks', () => {
-    const input = `> Blockquote paragraph1 
+  describe('blockquotes', () => {
+    it.each([
+      {
+        input: '>',
+        name: 'deserializes an empty blockquote',
+        output: (
+          <fragment>
+            <hblockquote>
+              <htext />
+            </hblockquote>
+          </fragment>
+        ),
+      },
+      {
+        input: '> Blockquote content',
+        name: 'deserializes a single blockquote line',
+        output: (
+          <fragment>
+            <hblockquote>Blockquote content</hblockquote>
+          </fragment>
+        ),
+      },
+      {
+        input: `> Blockquote paragraph1
 >
-> Blockquote paragraph2`;
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext>Blockquote paragraph1</htext>
-          <htext>{'\n'}</htext>
-          <htext>{'\n'}</htext>
-          <htext>Blockquote paragraph2</htext>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it(String.raw`should deserialize two spaces followed by a \n in blockquotes`, () => {
-    const input = `
-> Blockquote line1  
-> Blockquote line2`;
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext>Blockquote line1</htext>
-          <htext>{'\n'}</htext>
-          <htext>Blockquote line2</htext>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it(String.raw`should deserialize a break followed by a \n to one line break - collapsing break`, () => {
-    const input = `
+> Blockquote paragraph2`,
+        name: 'preserves paragraph breaks inside blockquotes',
+        output: (
+          <fragment>
+            <hblockquote>
+              <htext>Blockquote paragraph1</htext>
+              <htext>{'\n'}</htext>
+              <htext>{'\n'}</htext>
+              <htext>Blockquote paragraph2</htext>
+            </hblockquote>
+          </fragment>
+        ),
+      },
+      {
+        input: `
 > Blockquote line1<br>
-> Blockquote line2`;
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext>Blockquote line1</htext>
-          <htext>{'\n'}</htext>
-          <htext>Blockquote line2</htext>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
+> Blockquote line2`,
+        name: 'collapses html breaks inside blockquotes to a single line break',
+        output: (
+          <fragment>
+            <hblockquote>
+              <htext>Blockquote line1</htext>
+              <htext>{'\n'}</htext>
+              <htext>Blockquote line2</htext>
+            </hblockquote>
+          </fragment>
+        ),
+      },
+      {
+        input: '> [Example link](https://example.com)',
+        name: 'deserializes links inside blockquotes',
+        output: (
+          <fragment>
+            <hblockquote>
+              <ha url="https://example.com">Example link</ha>
+            </hblockquote>
+          </fragment>
+        ),
+      },
+    ])('$name', ({ input, output }) => {
+      expect(parseMarkdown(input)).toEqual(output);
+    });
   });
 
-  it('should convert in blockqoute line breaks into two breaks', () => {
-    const input = `
-> Blockquote with multiple paragraphs:\\
-> \\
-> This is the second paragraph in the blockquote.`;
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <htext>Blockquote with multiple paragraphs:</htext>
-          <htext>{'\n'}</htext>
-          <htext>{'\n'}</htext>
-          <htext>This is the second paragraph in the blockquote.</htext>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize paragraphs', () => {
-    const input = `
+  describe('blocks and rich nodes', () => {
+    it.each([
+      {
+        input: `
 Paragraph 1 line 1
 Paragraph 1 line 2
 
-Paragraph 2 line 1`;
-
-    const output = (
-      <fragment>
-        <hp>
-          Paragraph 1 line 1{'\n'}
-          Paragraph 1 line 2
-        </hp>
-        <hp>Paragraph 2 line 1</hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
+Paragraph 2 line 1`,
+        name: 'deserializes paragraph breaks',
+        output: (
+          <fragment>
+            <hp>
+              Paragraph 1 line 1{'\n'}
+              Paragraph 1 line 2
+            </hp>
+            <hp>Paragraph 2 line 1</hp>
+          </fragment>
+        ),
+      },
+      {
+        input: 'No ![inline](https://example.com/example.png) images',
+        name: 'deserializes inline images into block image nodes',
+        output: (
+          <fragment>
+            <hp>No </hp>
+            <himg
+              caption={
+                <fragment>
+                  <htext>inline</htext>
+                </fragment>
+              }
+              url="https://example.com/example.png"
+            >
+              <htext />
+            </himg>
+            <hp> images</hp>
+          </fragment>
+        ),
+      },
+      {
+        input:
+          '```\nCode block 1 line 1\nCode block 1 line 2\n```\n\n```\nCode block 2 line 1\n```',
+        name: 'deserializes fenced code blocks',
+        output: (
+          <fragment>
+            <hcodeblock>
+              <hcodeline>Code block 1 line 1</hcodeline>
+              <hcodeline>Code block 1 line 2</hcodeline>
+            </hcodeblock>
+            <hcodeblock>
+              <hcodeline>Code block 2 line 1</hcodeline>
+            </hcodeblock>
+          </fragment>
+        ),
+      },
+      {
+        input: 'Line 1\n\n---\n\nLine 2',
+        name: 'deserializes horizontal rules',
+        output: (
+          <fragment>
+            <hp>Line 1</hp>
+            <element type={HorizontalRulePlugin.key}>
+              <htext />
+            </element>
+            <hp>Line 2</hp>
+          </fragment>
+        ),
+      },
+      {
+        input: Array.from(
+          { length: 6 },
+          (_, index) => `${'#'.repeat(index + 1)} Heading ${index + 1}`
+        ).join('\n\n'),
+        name: 'deserializes heading levels',
+        output: (
+          <fragment>
+            <hh1>Heading 1</hh1>
+            <hh2>Heading 2</hh2>
+            <hh3>Heading 3</hh3>
+            <hh4>Heading 4</hh4>
+            <hh5>Heading 5</hh5>
+            <hh6>Heading 6</hh6>
+          </fragment>
+        ),
+      },
+      {
+        input: 'Line 1<br />Line 2',
+        name: 'deserializes line break tags',
+        output: (
+          <fragment>
+            <hp>
+              <htext>Line 1</htext>
+              <htext>{'\n'}</htext>
+              <htext>Line 2</htext>
+            </hp>
+          </fragment>
+        ),
+      },
+    ])('$name', ({ input, output }) => {
+      expect(parseMarkdown(input)).toEqual(output);
+    });
   });
 
-  it('should deserialize blockquotes', () => {
-    const input = `
-> Blockquote 1 line 1
-> Blockquote 1 line 2
- 
-> Blockquote 2 line 1`;
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          Blockquote 1 line 1{'\n'}
-          Blockquote 1 line 2
-        </hblockquote>
-        <hblockquote>Blockquote 2 line 1</hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize blockquote with links', () => {
-    const input = '> [Example link](https://example.com)';
-
-    const output = (
-      <fragment>
-        <hblockquote>
-          <ha url="https://example.com">Example link</ha>
-        </hblockquote>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize links', () => {
-    const input = '[Example link](https://example.com)';
-
-    const output = (
-      <fragment>
-        <hp>
-          <ha url="https://example.com">Example link</ha>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize inline code', () => {
-    const input = 'This is `inline code`.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext code>inline code</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize italic', () => {
-    const input = 'This is *italic*.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext italic>italic</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize bold', () => {
-    const input = 'This is **bold**.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext bold>bold</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize strikethrough', () => {
-    const input =
-      'This is ~~strikethrough~~ text and **~~strike~~ inside bold**.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext strikethrough>strikethrough</htext> text and{' '}
-          <htext bold strikethrough>
-            strike
-          </htext>
-          <htext bold> inside bold</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize nested marks', () => {
-    const input = 'This is **bold *italic***.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext bold>bold </htext>
-          <htext bold italic>
-            italic
-          </htext>
-          .
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should not parse marks inside inline code', () => {
-    const input = 'This is `not **bold**`.';
-
-    const output = (
-      <fragment>
-        <hp>
-          This is <htext code>not **bold**</htext>.
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize images', () => {
-    const input = 'No ![inline](https://example.com/example.png) images';
-
-    const output = (
-      <fragment>
-        <hp>No </hp>
-        <himg
-          caption={
-            <fragment>
-              <htext>inline</htext>
-            </fragment>
-          }
-          url="https://example.com/example.png"
-        >
-          <htext />
-        </himg>
-        <hp> images</hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize code blocks', () => {
-    const input =
-      '```\nCode block 1 line 1\nCode block 1 line 2\n```\n\n```\nCode block 2 line 1\n```';
-
-    const output = (
-      <fragment>
-        <hcodeblock>
-          <hcodeline>Code block 1 line 1</hcodeline>
-          <hcodeline>Code block 1 line 2</hcodeline>
-        </hcodeblock>
-        <hcodeblock>
-          <hcodeline>Code block 2 line 1</hcodeline>
-        </hcodeblock>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should not parse marks inside code blocks', () => {
-    const input = '```\nThis is not **bold**.\n```';
-
-    const output = (
-      <fragment>
-        <hcodeblock>
-          <hcodeline>This is not **bold**.</hcodeline>
-        </hcodeblock>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize hr', () => {
-    const input = 'Line 1\n\n---\n\nLine 2';
-
-    const output = (
-      <fragment>
-        <hp>Line 1</hp>
-        <element type={HorizontalRulePlugin.key}>
-          <htext />
-        </element>
-        <hp>Line 2</hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize headings', () => {
-    const input = Array.from(
-      { length: 6 },
-      (_, i) => `${'#'.repeat(i + 1)} Heading ${i + 1}`
-    ).join('\n\n');
-
-    const output = (
-      <fragment>
-        <hh1>Heading 1</hh1>
-        <hh2>Heading 2</hh2>
-        <hh3>Heading 3</hh3>
-        <hh4>Heading 4</hh4>
-        <hh5>Heading 5</hh5>
-        <hh6>Heading 6</hh6>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize line break tags', () => {
-    const input = 'Line 1<br />Line 2';
-
-    const output = (
-      <fragment>
-        <hp>
-          <htext>Line 1</htext>
-          <htext>{'\n'}</htext>
-          <htext>Line 2</htext>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-});
-
-describe('deserializeMd list', () => {
-  const editor = createPlateEditor({
-    plugins: [
-      ListPlugin,
-      BulletedListPlugin,
-      NumberedListPlugin,
-      ListItemPlugin,
-      MarkdownPlugin,
-    ],
-  });
-
-  it('should deserialize unordered lists', () => {
-    const input = '- List item 1\n- List item 2';
-
-    const output = (
-      <fragment>
-        <hul>
-          <hli>
-            <hlic>List item 1</hlic>
-          </hli>
-          <hli>
-            <hlic>List item 2</hlic>
-          </hli>
-        </hul>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize ordered lists', () => {
-    const input = '1. List item 1\n2. List item 2';
-
-    const output = (
-      <fragment>
-        <hol>
-          <hli>
-            <hlic>List item 1</hlic>
-          </hli>
-          <hli>
-            <hlic>List item 2</hlic>
-          </hli>
-        </hol>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize mixed nested lists', () => {
-    const input = '- List item 1\n  1. List item 1.1';
-
-    const output = (
-      <fragment>
-        <hul>
-          <hli>
-            <hlic>List item 1</hlic>
+  describe('lists and tables', () => {
+    it.each([
+      {
+        input: '- List item 1\n- List item 2',
+        name: 'deserializes unordered lists',
+        output: (
+          <fragment>
+            <hul>
+              <hli>
+                <hlic>List item 1</hlic>
+              </hli>
+              <hli>
+                <hlic>List item 2</hlic>
+              </hli>
+            </hul>
+          </fragment>
+        ),
+      },
+      {
+        input: '1. List item 1\n2. List item 2',
+        name: 'deserializes ordered lists',
+        output: (
+          <fragment>
             <hol>
               <hli>
-                <hlic>List item 1.1</hlic>
+                <hlic>List item 1</hlic>
+              </hli>
+              <hli>
+                <hlic>List item 2</hlic>
               </hli>
             </hol>
-          </hli>
-        </hul>
-      </fragment>
-    );
+          </fragment>
+        ),
+      },
+      {
+        input: '- List item 1\n  1. List item 1.1',
+        name: 'deserializes nested mixed lists',
+        output: (
+          <fragment>
+            <hul>
+              <hli>
+                <hlic>List item 1</hlic>
+                <hol>
+                  <hli>
+                    <hlic>List item 1.1</hlic>
+                  </hli>
+                </hol>
+              </hli>
+            </hul>
+          </fragment>
+        ),
+      },
+    ])('$name', ({ input, output }) => {
+      expect(parseMarkdown(input, listEditor)).toEqual(output);
+    });
 
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-});
-
-describe('deserializeMd table', () => {
-  it('should deserialize a table', () => {
-    const input = `
+    it('deserializes markdown tables', () => {
+      const input = `
 | Left columns  | Right columns |
 | ------------- |:-------------:|
 | left foo      | right foo     |
@@ -513,90 +348,86 @@ describe('deserializeMd table', () => {
 | left baz      | right baz     |
 `;
 
-    const output = (
-      <fragment>
-        <htable>
-          <htr>
-            <hth>
-              <hp>Left columns</hp>
-            </hth>
-            <hth>
-              <hp>Right columns</hp>
-            </hth>
-          </htr>
-          <htr>
-            <htd>
-              <hp>left foo</hp>
-            </htd>
-            <htd>
-              <hp>right foo</hp>
-            </htd>
-          </htr>
-          <htr>
-            <htd>
-              <hp>left bar</hp>
-            </htd>
-            <htd>
-              <hp>right bar</hp>
-            </htd>
-          </htr>
-          <htr>
-            <htd>
-              <hp>left baz</hp>
-            </htd>
-            <htd>
-              <hp>right baz</hp>
-            </htd>
-          </htr>
-        </htable>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-});
-
-describe('deserializeMd mentions', () => {
-  it('should deserialize mentions within a paragraph', () => {
-    const input = '1 @User';
-
-    const output = (
-      <fragment>
-        <hp>
-          <htext>1 </htext>
-          <hmention value="User">
-            <htext />
-          </hmention>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
+      expect(parseMarkdown(input)).toEqual(
+        <fragment>
+          <htable>
+            <htr>
+              <hth>
+                <hp>Left columns</hp>
+              </hth>
+              <hth>
+                <hp>Right columns</hp>
+              </hth>
+            </htr>
+            <htr>
+              <htd>
+                <hp>left foo</hp>
+              </htd>
+              <htd>
+                <hp>right foo</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>left bar</hp>
+              </htd>
+              <htd>
+                <hp>right bar</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>left baz</hp>
+              </htd>
+              <htd>
+                <hp>right baz</hp>
+              </htd>
+            </htr>
+          </htable>
+        </fragment>
+      );
+    });
   });
 
-  it('should deserialize mentions without other text', () => {
-    const input = '@User';
+  describe('mentions and options', () => {
+    it.each([
+      {
+        input: '1 @User',
+        name: 'deserializes mentions inside a paragraph',
+        output: (
+          <fragment>
+            <hp>
+              <htext>1 </htext>
+              <hmention value="User">
+                <htext />
+              </hmention>
+            </hp>
+          </fragment>
+        ),
+      },
+      {
+        input: '@User',
+        name: 'deserializes standalone mentions',
+        output: (
+          <fragment>
+            <hp>
+              <hmention value="User">
+                <htext />
+              </hmention>
+            </hp>
+          </fragment>
+        ),
+      },
+    ])('$name', ({ input, output }) => {
+      expect(parseMarkdown(input)).toEqual(output);
+    });
 
-    const output = (
-      <fragment>
-        <hp>
-          <hmention value="User">
-            <htext />
-          </hmention>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-});
-
-describe('deserializeMd options', () => {
-  describe('when memoize is true', () => {
-    it('should add _memo property to elements', () => {
-      const input = '# Heading\n> Quote\n```\nCode\n```';
-
-      const output = [
+    it('adds memoized source strings when memoize is enabled', () => {
+      expect(
+        parseMarkdown('# Heading\n> Quote\n```\nCode\n```', editor, {
+          memoize: true,
+        })
+      ).toEqual([
         {
           _memo: '# Heading',
           children: [{ text: 'Heading' }],
@@ -617,40 +448,36 @@ describe('deserializeMd options', () => {
           ],
           type: 'code_block',
         },
-      ];
-
-      expect(deserializeMd(editor, input, { memoize: true })).toEqual(output);
+      ]);
     });
   });
-});
 
-describe('fixures', () => {
-  // https://github.com/inokawa/remark-slate-transformer/issues/129
-  it('when deserializing a empty value', () => {
-    const input = '';
+  describe('fixtures', () => {
+    it('returns an empty array for an empty markdown string', () => {
+      expect(parseMarkdown('')).toEqual([]);
+    });
 
-    expect(deserializeMd(editor, input)).toMatchSnapshot();
-  });
-
-  it('should deserialize kdb html tags', () => {
-    const input = '<kbd>Ctrl</kbd> + <kbd>K</kbd>';
-
-    const output = (
-      <fragment>
-        <hp>
-          <htext kbd>Ctrl</htext>
-          <htext> + </htext>
-          <htext kbd>K</htext>
-        </hp>
-      </fragment>
-    );
-
-    expect(deserializeMd(editor, input)).toEqual(output);
-  });
-
-  it('should deserialize image within list', () => {
-    const input = '- ![alt text](https://example.com/image.png)';
-
-    expect(deserializeMd(editor, input)).toMatchSnapshot();
+    it('deserializes an image nested inside a list item', () => {
+      expect(
+        parseMarkdown('- ![alt text](https://example.com/image.png)')
+      ).toEqual([
+        {
+          caption: [
+            {
+              text: 'alt text',
+            },
+          ],
+          children: [
+            {
+              text: '',
+            },
+          ],
+          indent: 1,
+          listStyleType: 'disc',
+          type: 'img',
+          url: 'https://example.com/image.png',
+        },
+      ]);
+    });
   });
 });

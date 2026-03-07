@@ -18,14 +18,14 @@ describe('ViewPlugin', () => {
   });
 
   describe('integration with createStaticEditor', () => {
-    it('should be included in static editor', () => {
+    it('is included in the static editor', () => {
       const editor = createStaticEditor();
 
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
       expect(editor.tf.setFragmentData).toBeDefined();
     });
 
-    it('should handle copy event properly', () => {
+    it('handles copy events without throwing', () => {
       const editor = createStaticEditor();
       editor.children = [
         {
@@ -91,7 +91,7 @@ describe('ViewPlugin', () => {
       global.encodeURIComponent = originalEncodeURIComponent;
     });
 
-    it('should handle copy with no selection', () => {
+    it('handle copy with no selection', () => {
       const editor = createStaticEditor();
 
       // Mock utilities to return null
@@ -108,7 +108,7 @@ describe('ViewPlugin', () => {
       expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
     });
 
-    it('should handle non-copy events', () => {
+    it('handle non-copy events', () => {
       const editor = createStaticEditor();
 
       // Should pass through for non-copy events
@@ -119,7 +119,7 @@ describe('ViewPlugin', () => {
       expect(mockData.setData).not.toHaveBeenCalled();
     });
 
-    it('should handle copy with selection outside editor', () => {
+    it('handle copy with selection outside editor', () => {
       // Mock selection outside editor
       const mockHtml = document.createElement('div');
       const editorDiv = document.createElement('div');

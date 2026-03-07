@@ -24,7 +24,7 @@ const output = (
 ) as any;
 
 describe('SingleLinePlugin', () => {
-  it('should merge all blocks into the first block', () => {
+  it('merge all blocks into the first block', () => {
     const editor = createSlateEditor({
       plugins: [SingleLinePlugin],
       value: input.children,
@@ -35,7 +35,7 @@ describe('SingleLinePlugin', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should filter out line break characters from text', () => {
+  it('filter out line break characters from text', () => {
     const inputWithLineBreaks = createEditor(
       (
         <editor>
@@ -63,7 +63,7 @@ describe('SingleLinePlugin', () => {
     expect(editor.children).toEqual(expectedOutput.children);
   });
 
-  it('should prevent insertBreak', () => {
+  it('prevent insertBreak', () => {
     const singleLineInput = (
       <editor>
         <hp>
@@ -87,7 +87,7 @@ describe('SingleLinePlugin', () => {
     ]);
   });
 
-  it('should prevent insertSoftBreak', () => {
+  it('prevent insertSoftBreak', () => {
     const singleLineInput = (
       <editor>
         <hp>
@@ -111,7 +111,7 @@ describe('SingleLinePlugin', () => {
     ]);
   });
 
-  it('should handle empty blocks correctly', () => {
+  it('handle empty blocks correctly', () => {
     const emptyBlocksInput = createEditor(
       (
         <editor>

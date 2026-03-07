@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { type SlateEditor, createEditor, createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeLine } from './insertCodeLine';
@@ -10,7 +9,7 @@ import { insertCodeLine } from './insertCodeLine';
 jsxt;
 
 describe('insert code line', () => {
-  it('should insert code line below selected line', () => {
+  it('insert code line below selected line', () => {
     const input = createEditor(
       (
         <editor>
@@ -37,7 +36,7 @@ describe('insert code line', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

@@ -1,11 +1,11 @@
 import React from 'react';
-import { serializeHtml } from '../serializeHtml';
-import { createStaticEditor } from './create-static-editor';
-import { createTSlatePlugin, createSlateEditor } from '../../lib';
+import { createSlateEditor, createTSlatePlugin } from '../lib';
+import { serializeHtml } from './serializeHtml';
+import { createStaticEditor } from './__tests__/create-static-editor';
 import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 
-describe('serializePlateStatic nodes', () => {
-  it('should serialize render below nodes', async () => {
+describe('serializeHtml custom render hooks', () => {
+  it('renders belowNodes output around children', async () => {
     const renderBelowPlugin = createTSlatePlugin({
       key: 'test-list',
       render: {
@@ -41,7 +41,7 @@ describe('serializePlateStatic nodes', () => {
     );
   });
 
-  it('should serialize string with %', async () => {
+  it('preserves literal percent signs', async () => {
     const editor = createStaticEditor([
       {
         children: [
@@ -71,7 +71,7 @@ describe('serializePlateStatic nodes', () => {
     );
   });
 
-  it('should serialize with both render.node and render.leaf', async () => {
+  it('applies both node and leaf renderers', async () => {
     const testPlugin = createTSlatePlugin({
       key: 'test',
       node: {
@@ -113,7 +113,7 @@ describe('serializePlateStatic nodes', () => {
     );
   });
 
-  it('should serialize with both render.node', async () => {
+  it('applies a component renderer to decoration leaves', async () => {
     const testPlugin = createTSlatePlugin({
       key: 'test',
       node: {
@@ -151,7 +151,7 @@ describe('serializePlateStatic nodes', () => {
     );
   });
 
-  it('should serialize with both render.node', async () => {
+  it('applies a component renderer to non-decoration leaves', async () => {
     const testPlugin = createTSlatePlugin({
       key: 'test',
       node: {

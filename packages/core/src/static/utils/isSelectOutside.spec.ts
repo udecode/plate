@@ -18,7 +18,7 @@ describe('isSelectOutside', () => {
   });
 
   describe('when HTML element is provided', () => {
-    it('should return true when element contains data-slate-editor attribute', () => {
+    it('returns true when element contains data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       editorElement.dataset.slateEditor = 'true';
@@ -30,7 +30,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('should return false when element does not contain data-slate-editor attribute', () => {
+    it('returns false when element does not contain data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const innerElement = document.createElement('p');
       innerElement.textContent = 'Some text';
@@ -42,7 +42,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('should return false for empty element', () => {
+    it('returns false for empty element', () => {
       const mockDiv = document.createElement('div');
 
       const result = isSelectOutside(mockDiv);
@@ -51,7 +51,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('should check nested elements for data-slate-editor attribute', () => {
+    it('check nested elements for data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const wrapper = document.createElement('div');
       const editorElement = document.createElement('div');
@@ -66,7 +66,7 @@ describe('isSelectOutside', () => {
   });
 
   describe('when HTML element is not provided', () => {
-    it('should call getSelectedDomNode and return true if selection contains editor', () => {
+    it('call getSelectedDomNode and return true if selection contains editor', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       editorElement.dataset.slateEditor = 'true';
@@ -78,7 +78,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
     });
 
-    it('should return false when getSelectedDomNode returns null', () => {
+    it('returns false when getSelectedDomNode returns null', () => {
       mockGetSelectedDomNode.mockReturnValue(null);
       const result = isSelectOutside();
 
@@ -86,7 +86,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
     });
 
-    it('should return false when getSelectedDomNode returns undefined', () => {
+    it('returns false when getSelectedDomNode returns undefined', () => {
       mockGetSelectedDomNode.mockReturnValue(undefined);
       const result = isSelectOutside();
 
@@ -94,7 +94,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).toHaveBeenCalled();
     });
 
-    it('should return false when selection does not contain editor', () => {
+    it('returns false when selection does not contain editor', () => {
       const mockDiv = document.createElement('div');
       const paragraph = document.createElement('p');
       paragraph.textContent = 'Regular content';
@@ -108,7 +108,7 @@ describe('isSelectOutside', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle malformed selector gracefully', () => {
+    it('handle malformed selector gracefully', () => {
       const mockDiv = document.createElement('div');
       // Override querySelector to throw an error
       const originalQuerySelector = mockDiv.querySelector;
@@ -123,7 +123,7 @@ describe('isSelectOutside', () => {
       mockDiv.querySelector = originalQuerySelector;
     });
 
-    it('should handle elements with data-slate-editor attribute', () => {
+    it('handle elements with data-slate-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       // The querySelector in the source has a missing closing bracket: '[data-slate-editor="true"'
@@ -136,7 +136,7 @@ describe('isSelectOutside', () => {
       expect(result).toBe(true);
     });
 
-    it('should not match elements with data-slate-editor set to other values', () => {
+    it('does not match elements with data-slate-editor set to other values', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       // Due to the missing closing bracket, this won't match
@@ -148,7 +148,7 @@ describe('isSelectOutside', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle multiple editor elements', () => {
+    it('handle multiple editor elements', () => {
       const mockDiv = document.createElement('div');
       const editor1 = document.createElement('div');
       editor1.dataset.slateEditor = 'true';

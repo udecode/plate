@@ -9,7 +9,7 @@ jsxt;
 
 describe('expandListItemsWithChildren', () => {
   describe('when input contains no list items', () => {
-    it('should return the same blocks unchanged', () => {
+    it('returns the same blocks unchanged', () => {
       const input = (
         <fragment>
           <hp id="1">
@@ -37,7 +37,7 @@ describe('expandListItemsWithChildren', () => {
   });
 
   describe('when input contains list items without children', () => {
-    it('should return the same list items', () => {
+    it('returns the same list items', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">
@@ -69,7 +69,7 @@ describe('expandListItemsWithChildren', () => {
   });
 
   describe('when input contains list items with children', () => {
-    it('should expand single list item to include its children', () => {
+    it('expand single list item to include its children', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">
@@ -104,7 +104,7 @@ describe('expandListItemsWithChildren', () => {
       ] as any);
     });
 
-    it('should handle multiple list items with children', () => {
+    it('handle multiple list items with children', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">
@@ -146,7 +146,7 @@ describe('expandListItemsWithChildren', () => {
       ] as any);
     });
 
-    it('should avoid duplicates when children are already in input', () => {
+    it('avoid duplicates when children are already in input', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">
@@ -183,7 +183,7 @@ describe('expandListItemsWithChildren', () => {
   });
 
   describe('when input contains mixed blocks', () => {
-    it('should expand only list items and keep other blocks as-is', () => {
+    it('expand only list items and keep other blocks as-is', () => {
       const input = (
         <fragment>
           <hp id="1">paragraph before</hp>
@@ -220,7 +220,7 @@ describe('expandListItemsWithChildren', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty input', () => {
+    it('handle empty input', () => {
       const editor = createEditor((<editor />) as any as SlateEditor);
 
       const result = expandListItemsWithChildren(editor, []);
@@ -228,7 +228,7 @@ describe('expandListItemsWithChildren', () => {
       expect(result).toEqual([]);
     });
 
-    it('should handle list items at end of document', () => {
+    it('handle list items at end of document', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">
@@ -255,7 +255,7 @@ describe('expandListItemsWithChildren', () => {
       ] as any);
     });
 
-    it('should handle deeply nested lists', () => {
+    it('handle deeply nested lists', () => {
       const input = (
         <fragment>
           <hp id="1" indent={1} listStyleType="disc">

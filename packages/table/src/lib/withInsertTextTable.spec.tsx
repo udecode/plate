@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from './withNormalizeTable.spec';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
 
@@ -15,7 +14,7 @@ describe('withInsertTextTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should wrap the children into a p (disableMerge: $disableMerge)', ({
+    ])('wraps the children into a p (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -70,7 +69,7 @@ describe('withInsertTextTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

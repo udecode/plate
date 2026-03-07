@@ -3,7 +3,7 @@ import type { MdMdxJsxTextElement } from '../../mdast';
 import { getStyleValue } from './getStyleValue';
 
 describe('getStyleValue', () => {
-  it('should return the value of a style property', () => {
+  it('returns the value of a style property', () => {
     const mdastNode: MdMdxJsxTextElement = {
       attributes: [
         {
@@ -21,7 +21,7 @@ describe('getStyleValue', () => {
     expect(getStyleValue(mdastNode, 'font-size')).toBe('16px');
   });
 
-  it('should return undefined if the style property does not exist', () => {
+  it('returns undefined if the style property does not exist', () => {
     const mdastNode: MdMdxJsxTextElement = {
       attributes: [
         {
@@ -38,7 +38,7 @@ describe('getStyleValue', () => {
     expect(getStyleValue(mdastNode, 'font-size')).toBeUndefined();
   });
 
-  it('should return undefined if the style attribute does not exist', () => {
+  it('returns undefined if the style attribute does not exist', () => {
     const mdastNode: MdMdxJsxTextElement = {
       attributes: [
         {
@@ -55,7 +55,7 @@ describe('getStyleValue', () => {
     expect(getStyleValue(mdastNode, 'color')).toBeUndefined();
   });
 
-  it('should handle multiple style properties correctly', () => {
+  it('handle multiple style properties correctly', () => {
     const mdastNode: MdMdxJsxTextElement = {
       attributes: [
         {

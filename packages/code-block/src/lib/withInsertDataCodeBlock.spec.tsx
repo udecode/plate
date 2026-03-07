@@ -3,8 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { createDataTransfer, jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
@@ -13,7 +12,7 @@ jsxt;
 const editorTest = (input: any, data: DataTransfer, expected: any) => {
   const plugins = [BaseParagraphPlugin, CodeBlockPlugin];
 
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -26,7 +25,7 @@ const editorTest = (input: any, data: DataTransfer, expected: any) => {
 };
 
 describe('when pasting text into a code block', () => {
-  it('should paste only the fragment', () => {
+  it('paste only the fragment', () => {
     const input = (
       <editor>
         <hcodeblock>

@@ -30,7 +30,7 @@ describe('getSelectedDomBlocks', () => {
   });
 
   describe('when selection exists', () => {
-    it('should return array of slate blocks with data attributes', () => {
+    it('returns array of slate blocks with data attributes', () => {
       const mockFragment = document.createDocumentFragment();
 
       // Create slate blocks
@@ -59,7 +59,7 @@ describe('getSelectedDomBlocks', () => {
       expect((result?.[1] as HTMLElement).dataset.slateId).toBe('block-2');
     });
 
-    it('should filter out non-slate elements', () => {
+    it('filter out non-slate elements', () => {
       const mockFragment = document.createDocumentFragment();
 
       // Create mixed elements
@@ -86,7 +86,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result?.[0]).toBe(slateBlock);
     });
 
-    it('should handle nested slate blocks', () => {
+    it('handle nested slate blocks', () => {
       const mockFragment = document.createDocumentFragment();
 
       const parentBlock = document.createElement('div');
@@ -110,7 +110,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result?.[1]).toBe(childBlock);
     });
 
-    it('should return empty array when no slate blocks found', () => {
+    it('returns empty array when no slate blocks found', () => {
       const mockFragment = document.createDocumentFragment();
 
       const regularDiv = document.createElement('div');
@@ -126,7 +126,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should handle blocks with only data-slate-node attribute', () => {
+    it('handle blocks with only data-slate-node attribute', () => {
       const mockFragment = document.createDocumentFragment();
 
       const block = document.createElement('div');
@@ -144,7 +144,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should handle blocks with only data-slate-id attribute', () => {
+    it('handle blocks with only data-slate-id attribute', () => {
       const mockFragment = document.createDocumentFragment();
 
       const block = document.createElement('div');
@@ -162,7 +162,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('should handle empty fragment', () => {
+    it('handle empty fragment', () => {
       const mockFragment = document.createDocumentFragment();
       mockRange.cloneContents = mock(() => mockFragment);
 
@@ -174,7 +174,7 @@ describe('getSelectedDomBlocks', () => {
   });
 
   describe('when selection does not exist', () => {
-    it('should return undefined when getSelection returns null', () => {
+    it('returns undefined when getSelection returns null', () => {
       window.getSelection = mock(() => null);
 
       const result = getSelectedDomBlocks();
@@ -182,7 +182,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result).toBeUndefined();
     });
 
-    it('should return undefined when rangeCount is 0', () => {
+    it('returns undefined when rangeCount is 0', () => {
       (mockSelection as any).rangeCount = 0;
 
       const result = getSelectedDomBlocks();
@@ -191,7 +191,7 @@ describe('getSelectedDomBlocks', () => {
       expect(mockSelection.getRangeAt).not.toHaveBeenCalled();
     });
 
-    it('should handle negative rangeCount', () => {
+    it('handle negative rangeCount', () => {
       (mockSelection as any).rangeCount = -1;
       // Mock cloneContents to return a valid fragment
       const mockFragment = document.createDocumentFragment();
@@ -207,7 +207,7 @@ describe('getSelectedDomBlocks', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle slate blocks with different node types', () => {
+    it('handle slate blocks with different node types', () => {
       const mockFragment = document.createDocumentFragment();
 
       const textNode = document.createElement('span');
@@ -231,7 +231,7 @@ describe('getSelectedDomBlocks', () => {
       expect(result?.[0]).toBe(elementNode);
     });
 
-    it('should handle getRangeAt throwing an error', () => {
+    it('handle getRangeAt throwing an error', () => {
       mockSelection.getRangeAt = mock(() => {
         throw new Error('Index out of bounds');
       });
@@ -240,7 +240,7 @@ describe('getSelectedDomBlocks', () => {
       expect(() => getSelectedDomBlocks()).toThrow('Index out of bounds');
     });
 
-    it('should handle cloneContents throwing an error', () => {
+    it('handle cloneContents throwing an error', () => {
       mockRange.cloneContents = mock(() => {
         throw new Error('Failed to clone');
       });
@@ -249,7 +249,7 @@ describe('getSelectedDomBlocks', () => {
       expect(() => getSelectedDomBlocks()).toThrow('Failed to clone');
     });
 
-    it('should handle complex DOM structures', () => {
+    it('handle complex DOM structures', () => {
       const mockFragment = document.createDocumentFragment();
 
       const wrapper = document.createElement('div');
@@ -281,7 +281,7 @@ describe('getSelectedDomBlocks', () => {
       expect((result?.[2] as HTMLElement).dataset.slateId).toBe('3');
     });
 
-    it('should preserve order of blocks', () => {
+    it('preserve order of blocks', () => {
       const mockFragment = document.createDocumentFragment();
 
       for (let i = 1; i <= 5; i++) {

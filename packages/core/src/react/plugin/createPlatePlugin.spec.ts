@@ -4,7 +4,7 @@ import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('withComponent method', () => {
-  it('should set the component for the plugin', () => {
+  it('set the component for the plugin', () => {
     const MockComponent: NodeComponent = () => null;
     const basePlugin = createPlatePlugin({ key: 'testPlugin' });
 
@@ -14,7 +14,7 @@ describe('withComponent method', () => {
     expect(resolvedPlugin.render.node).toBe(MockComponent);
   });
 
-  it('should override an existing component', () => {
+  it('override an existing component', () => {
     const OriginalComponent: NodeComponent = () => null;
     const NewComponent: NodeComponent = () => null;
 
@@ -32,7 +32,7 @@ describe('withComponent method', () => {
     expect(resolvedPlugin.node.component).toBe(NewComponent);
   });
 
-  it('should override an existing component with node.component', () => {
+  it('override an existing component with node.component', () => {
     const OriginalComponent: NodeComponent = () => null;
     const NewComponent: NodeComponent = () => null;
 
