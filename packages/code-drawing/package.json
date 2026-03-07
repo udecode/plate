@@ -50,7 +50,7 @@
     "@platejs/utils": "^52.0.17",
     "@uiw/react-codemirror": "4.25.4",
     "flowchart.js": "^1.15.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "mermaid": "^11.6.1",
     "plantuml-encoder": "^1.4.0",
     "react-compiler-runtime": "^1.0.0",
