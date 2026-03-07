@@ -1,0 +1,4 @@
+{
+  "ignoreCommand": "bash -c '[ \"$VERCEL_GIT_COMMIT_MESSAGE\" = \"Version Packages\" ]'",
+  "installCommand": "pnpm install --no-frozen-lockfile"
+}
