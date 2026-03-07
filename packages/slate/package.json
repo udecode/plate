@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slate",
-  "version": "52.3.3",
+  "version": "52.0.10",
   "description": "Slate extension",
   "keywords": [
     "slate"
@@ -52,8 +52,8 @@
   "devDependencies": {
     "@plate/scripts": "workspace:*",
     "@platejs/basic-nodes": "^52.0.11",
-    "@platejs/core": "^52.3.3",
+    "@platejs/core": "^52.0.17",
     "@platejs/link": "^52.0.11",
-    "@platejs/test-utils": "^52.3.3"
+    "@platejs/test-utils": "^52.0.10"
   }
 }
