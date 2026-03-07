@@ -66,7 +66,7 @@ No coverage push in this phase. No e2e or browser work.
 - Replaced hyperscript fixtures in `mergeDeepToNodes` with plain object fixtures and one real editor object for the editor-root cases where `NodeApi` and `ElementApi` semantics differ.
 - Upgraded the old source-factory coverage from a trivial single-node case to a multi-node assertion that proves the factory runs once per matched node.
 - Refactored `packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` to use `createSlateEditor`, `it.each`, and behavior titles instead of the old repeated `createPlateEditor` setup.
-- Loaded the `planning-with-files` skill and added root planning-memory files so pass history, findings, and verification live on disk outside the chat transcript too.
+- Loaded the `planning-with-files` skill and added planning-memory notes so pass history, findings, and verification live on disk outside the chat transcript too. Those notes are consolidated in this plan file.
 
 ### Pass 7
 
@@ -335,6 +335,228 @@ Snapshot taken during pass 4 before edits:
 - For plugin composition hotspots, extract helpers like `getSortedKeys(...)` or `createStoreEditor(...)` before adding more inline editor setup.
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
 - Action helpers may create the editor and perform the transform, but assertions stay in the `it()` body.
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into this `.claude/docs/plans/...` file.
+
+## Consolidated Planning Notes
+
+Former repo-root planning files were merged here on 2026-03-07:
+
+- `task_plan.md`
+- `findings.md`
+- `progress.md`
+
+The phase-by-phase pass history already lives above in `## Completed`, `## Matrix Scan`, `## __tests__ Directory Scan`, and `## Current State`. The sections below preserve the extra task snapshot, findings, and verification detail that used to live in those repo-root files.
+
+### Task Snapshot
+
+**Goal**
+
+Raise the Plate test suite quality by replacing low-signal Slate integration tests with smaller unit or contract tests, while keeping pass history and decisions on disk.
+
+**Current Phase**
+
+Complete
+
+**Key Questions**
+
+1. Which editor-level specs still earn their keep after the title cleanup is done?
+2. Which remaining fixture-heavy suites should collapse only after their contracts are rewritten?
+3. How do we keep snapshot-backed title renames from leaving dead keys behind?
+
+### Planning Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Keep three layers only: unit, thin contract, golden I/O | Reduces fake integration coverage |
+| Use `*.spec.ts[x]` for all tests | Consistent file naming and Bun behavior |
+| Reserve `__tests__/` for helpers, fixtures, and intentional split suites | Keeps file-scoped tests beside the code |
+| Prefer plain object fixtures for pure tree utilities | Hyperscript adds noise when structure is simple |
+| Avoid snapshots unless serialized output is the contract | Snapshots were hiding behavior instead of proving it |
+| Use a real editor object only for editor-root semantics | `NodeApi` and `ElementApi` do not treat plain objects like real editors |
+| Package tests should use local rule lists or package exports, not app registries | Prevents cross-package coupling and cleaner seams |
+| Autoformat mark tests should use `KEYS` instead of React plugin `.key` imports | The rules only need stable type strings |
+| Block autoformat specs should add only the base plugins the rule actually needs | Keeps the seam honest and the setup small |
+| Tiny one-case mark specs should collapse into one matrix file | Better scanability, less file noise |
+| Snapshot-backed title renames should delete and regenerate the snapshot file | `bun test -u` adds and updates keys but does not reliably prune dead ones |
+| Titles should describe behavior semantically, not echo raw option names | `when normalization is disabled` reads better than `when shouldNormalizeEditor false` |
+| Markdown package tests must configure `MarkdownPlugin` locally | Importing `MarkdownKit` from `apps/www` is app-coupled test sludge |
+| Remaining `createPlateEditor` usage is an allowlist, not a backlog | The final scan leaves only React/provider/render/store suites and known Plate-only APIs |
+
+### Requirements
+
+- Improve the test suite without adding coverage work.
+- Remove useless or overlapping tests.
+- Prefer smaller seams over broad Slate integration tests.
+- Keep testing style consistent and documented for future contributors.
+- Avoid slow e2e or browser testing in this phase.
+
+### Research Findings
+
+- `streamInsertChunk.spec.tsx` was the highest-ROI remaining AI hotspot: 864 lines, 5 skips, 2 snapshots, and heavy overlap with markdown parser behavior.
+- The `mergeDeepToNodes` suite was eight tiny hyperscript specs for one pure helper. The split added noise without adding seams.
+- `NodeApi.isDescendant` and `ElementApi.isElement` behave differently on a real editor object than on a plain `{ children: [...] }` object. Editor-root tests need a real editor when that distinction matters.
+- `withAutoformat/trigger.spec.tsx` was using `createPlateEditor` even though the contract is pure Slate behavior.
+- The `autoformat` package typecheck blocker was self-inflicted test debt: package specs were importing `@platejs/basic-nodes/react` and `@platejs/link/react` just to read `.key`.
+- `withAutoformat` text and mark specs get cleaner fast when they use package-local rule arrays plus one shared `createAutoformatEditor` helper.
+- Importing `AutoformatKit` from `www` is fine for true app-level integration coverage, but it is the wrong seam for file-scoped package specs.
+- Block autoformat specs only needed a few base plugins: `BaseListPlugin` + `BaseIndentPlugin` for list rules, and `BaseCodeBlockPlugin` for code-block rules.
+- The four one-off basic mark specs added zero signal as separate files. One matrix file is strictly better.
+- The whole `withAutoformat` suite now has zero `AutoformatKit`, `createPlateEditor`, bad React-only key imports, or placeholder `should ...` titles.
+- Hidden title debt survives naive greps. The remaining pockets were in `it.each(...)('...')`, `String.raw\`...\`` titles, config names echoed inside test descriptions, and snapshot keys generated from those titles.
+- `serializeMd.spec.tsx` had a small but stupid snapshot trap: two assertions were only there to prove whitespace-sensitive string output, and the snapshot file itself started failing `git diff --check` because those strings ended with meaningful spaces.
+- `bun test -u` updates snapshot files but does not reliably prune old keys after title renames. If snapshot-backed titles change in bulk, deleting and regenerating the snapshot file is faster and cleaner than trusting Bun to do the right thing.
+- The repo-wide title debt scan is now clean for the tracked patterns: no `should ...`, `fixures`, or `qoute` matches remain in spec titles or snapshot keys.
+- After the title pass, the remaining hotspots were mostly concentrated in core plugin composition tests. The best remaining cleanup was not more title churn; it was narrowing pure option-store tests to `createSlateEditor` and table-driving deterministic plugin-order cases.
+- The post-pass matrix looks healthy enough now: the biggest remaining files are still large, but they are mostly real plugin or transform boundary suites rather than skipped, duplicated, or obviously fake unit coverage.
+- A second post-matrix pass confirmed the same pattern for `extendApi.spec.ts`: it was still using the Plate editor seam for pure plugin API composition with zero React behavior in scope. Dropping it to `createSlateEditor` was the right cleanup.
+- The last obvious non-runtime junk was dead commented-out tests. They were scattered across `core`, `table`, `list-classic`, `docx`, `media`, and `diff`, and they added zero signal while making scans look worse than reality.
+- After the commented-spec cleanup, the best remaining hotspot was `withBreakRules.spec.tsx`: not fake integration, but still bloated with duplicated node-type cases and repeated editor setup.
+- `withDeleteRules.spec.tsx` had the same sibling pattern: real boundary coverage, but too much repeated plugin setup and repeated delete action scaffolding.
+- `createSlateEditor` works cleanly for more than the early hotspots: HTML deserializers, `code-block`, `date`, `dnd`, `layout`, `link`, `media`, `slate` utilities, table transforms, and markdown parser contracts all passed after seam narrowing.
+- The selection holdouts are real exceptions, not laziness. `moveSelection` and `shiftSelection` depend on Plate-only capabilities, and forcing them onto `createSlateEditor` breaks the contract.
+- The markdown package helper was still cheating by importing `MarkdownKit` from `apps/www`, but that kit was just `MarkdownPlugin.configure(...)` plus remark plugins. The package tests do not need the app registry at all.
+- After the final repo-wide seam scan, the only remaining `createPlateEditor` usages are in React/provider/render/store suites, Plate plugin conversion tests, and the two known Plate-only selection APIs.
+- A final no-change audit found no remaining skips, placeholder titles, commented-out tests, or cross-spec imports in package specs.
+- The remaining `__tests__/` specs are the expected ones: fixture-heavy `docx` and `docx-io`, plus the intentionally split `withAutoformat` suite.
+
+### Technical Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Rewrite large hotspot specs before chasing broad title debt | Bigger signal gain per pass |
+| Collapse single-helper split suites into one adjacent spec with `it.each` | Easier to scan, less duplicated setup |
+| Keep one mixed-document smoke case for streaming markdown | Proves the broad contract without giant hand-written trees |
+| Use explicit assertions instead of snapshots for AI streaming | Easier to read and less fragile |
+| Use `KEYS` or base plugins for mark and link type strings in package tests | Avoids React-only import churn and typecheck failures |
+| Build focused autoformat tests from local rule arrays before reaching for `AutoformatKit` | Cleaner contract, less duplicate setup |
+| Add only the base plugins a block rule needs in package tests | Avoids app-level coupling while keeping behavior real |
+| Collapse multiple one-case mark specs into one matrix file | Keeps the suite dense without losing behavior coverage |
+| Describe behavior semantically instead of mirroring raw option names in titles | `when normalization is disabled` is clearer than `when shouldNormalizeEditor false` |
+| Use explicit `toBe(...)` assertions for tiny whitespace-sensitive serializer outputs | Easier to read, avoids snapshot churn, and keeps `git diff --check` happy |
+| Delete and regenerate snapshot files after broad title renames | Bun snapshot updates keep dead keys around |
+| Use `createSlateEditor` for pure plugin option-store tests and selector extension | Plate React wiring adds noise when hooks and providers are not under test |
+| For plugin composition suites, extract helper functions before adding more inline editor setup | Sorting and option-store cases are easier to read as `getSortedKeys(...)` and `createStoreEditor(...)` than repeated editor constructions |
+| Pure plugin API and transform composition tests should also use `createSlateEditor` | If no React hook, provider, or Plate-only wiring is involved, the Plate seam is just noise |
+| Commented-out tests should be deleted, not parked in the file | They rot, confuse matrix scans, and are worse than an honest missing test |
+| Rule-override suites should use one helper and table-drive repeated node-type cases | `withBreakRules` dropped from 725 lines to 472 without losing any behavior |
+| Rule-action helpers should return the editor, not assert internally | Keeps setup DRY without tripping Biome's misplaced-assertion rule |
+| Parser, deserializer, DnD, and `insertData` contract tests should default to `createSlateEditor` | Plugin stores and transforms are enough; React adds nothing there |
+| Markdown package tests must configure `MarkdownPlugin` locally instead of importing `MarkdownKit` from `apps/www` | Package tests should not depend on app registries |
+| Remaining `createPlateEditor` files should be treated as a reviewed allowlist, not a future cleanup queue | Those files are now legitimate React/provider/render/store or Plate-only boundary suites |
+
+### Verification Log
+
+| Test | Input | Expected | Actual | Status |
+|------|-------|----------|--------|--------|
+| AI streaming specs | `bun test packages/ai/src/react/ai-chat/streaming/streamInsertChunk.spec.tsx packages/ai/src/react/ai-chat/streaming/streamDeserializeMd.spec.tsx packages/ai/src/react/ai-chat/streaming/streamSerializeMd.spec.tsx` | Rewritten streaming suite passes | 27 pass, 0 fail | ✓ |
+| AI build | `pnpm turbo build --filter=./packages/ai` | Package builds | Passed | ✓ |
+| AI typecheck | `pnpm turbo typecheck --filter=./packages/ai` | Package typechecks | Passed | ✓ |
+| Core + autoformat build | `pnpm turbo build --filter=./packages/core --filter=./packages/autoformat` | Packages build | Passed | ✓ |
+| Core utils + autoformat specs | `bun test packages/core/src/lib/utils/mergeDeepToNodes.spec.ts packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` | Rewritten suites pass | 11 pass, 0 fail | ✓ |
+| Core typecheck | `pnpm turbo typecheck --filter=./packages/core` | Package typechecks | Passed | ✓ |
+| Autoformat hotspot specs | `bun test packages/autoformat/src/lib/__tests__/withAutoformat/text.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/markup.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/ignoreTrim.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/mark/multiple-marks.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/singleCharTrigger.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` | Rewritten suites pass | 18 pass, 0 fail | ✓ |
+| Autoformat build | `pnpm turbo build --filter=./packages/autoformat` | Package builds | Passed | ✓ |
+| Autoformat typecheck | `pnpm turbo typecheck --filter=./packages/autoformat` | Package typechecks | Passed | ✓ |
+| Autoformat touched-file Biome | `pnpm exec biome check --write packages/autoformat/src/lib/__tests__/withAutoformat/createAutoformatEditor.ts packages/autoformat/src/lib/__tests__/withAutoformat/text.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/markup.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/ignoreTrim.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/mark/multiple-marks.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/singleCharTrigger.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` | Formatting and lint pass | Passed, 1 file auto-fixed | ✓ |
+| Autoformat suite sweep | `bun test packages/autoformat/src/lib/__tests__/withAutoformat/block/list.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/code-block.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/heading.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/blockquote.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/preFormat.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/invalid.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/mark/multiple-marks.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/text.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/markup.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/ignoreTrim.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/block/singleCharTrigger.spec.tsx packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx` | Rewritten block and mark suites pass | 36 pass, 0 fail | ✓ |
+| Autoformat rebuild after block cleanup | `pnpm turbo build --filter=./packages/autoformat` | Package builds after final test edits | Passed | ✓ |
+| Autoformat re-typecheck after block cleanup | `pnpm turbo typecheck --filter=./packages/autoformat` | Package typechecks after final test edits | Passed | ✓ |
+| Title-hardening targeted sweep | `bun test packages/core/src/react/components/Plate.spec.tsx packages/core/src/lib/plugins/slate-extension/transforms/init.spec.ts packages/slate/src/internal/transforms-extension/removeMarks.spec.tsx packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx packages/markdown/src/lib/serializer/serializeMd.spec.tsx` | Cleaned suites pass with regenerated snapshots | 79 pass, 0 fail | ✓ |
+| Markdown snapshot regeneration | `bun test -u packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx packages/markdown/src/lib/serializer/serializeMd.spec.tsx` | Snapshot files recreated without stale keys | 18 pass, 0 fail | ✓ |
+| Repo-wide changed-spec sweep | `git diff --name-only -- packages | rg '\\.spec\\.' | xargs bun test` | All changed specs still pass | 1590 pass, 0 fail | ✓ |
+| Core + slate + markdown build | `pnpm turbo build --filter=./packages/core --filter=./packages/slate --filter=./packages/markdown` | Packages build | Passed | ✓ |
+| Core + slate + markdown typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/slate --filter=./packages/markdown` | Packages typecheck | Passed | ✓ |
+| Repo-wide touched-file Biome | `git diff --name-only -- . ':(exclude)pnpm-lock.yaml' | xargs pnpm exec biome check --write` | Formatting and lint pass on changed files | Checked 211 files, fixed 4 | ✓ |
+| Title-debt scan | `rg -n '^[[:space:]]*(it|test|describe)\\([^\\n]*(should|fixures|qoute)|^[[:space:]]*\\]\\)\\([^\\n]*(should|fixures|qoute)' packages --glob '*.spec.*'` | No tracked title debt remains | No matches | ✓ |
+| Snapshot-key scan | `rg -n 'exports\\[\\`.*(should |fixures|qoute|serialize a |deserialize a )' packages --glob '*.snap'` | No stale snapshot keys remain | No matches | ✓ |
+| Diff check | `git diff --check` | No whitespace or patch-format issues | Clean | ✓ |
+| Core plugin-composition specs | `bun test packages/core/src/internal/plugin/resolvePlugins.spec.tsx packages/core/src/internal/plugin/resolvePlugins-store.spec.tsx` | Refactored core plugin specs pass | 52 pass, 0 fail | ✓ |
+| Core rebuild after plugin-composition cleanup | `pnpm turbo build --filter=./packages/core` | Package builds after refactor | Passed | ✓ |
+| Core re-typecheck after plugin-composition cleanup | `pnpm turbo typecheck --filter=./packages/core` | Package typechecks after refactor | Passed | ✓ |
+| Pure plugin API seam sweep | `bun test packages/core/src/lib/utils/extendApi.spec.ts packages/core/src/internal/plugin/resolvePlugins.spec.tsx packages/core/src/internal/plugin/resolvePlugins-store.spec.tsx` | Refactored pure core composition specs pass | 72 pass, 0 fail | ✓ |
+| Core rebuild after pure seam cleanup | `pnpm turbo build --filter=./packages/core` | Package builds after seam narrowing | Passed | ✓ |
+| Core re-typecheck after pure seam cleanup | `pnpm turbo typecheck --filter=./packages/core` | Package typechecks after seam narrowing | Passed | ✓ |
+| Dead commented-spec sweep | `bun test packages/core/src/react/utils/shortcuts.spec.tsx packages/core/src/react/hooks/useEditableProps.spec.tsx packages/core/src/react/components/EditorMethodsEffect.spec.tsx packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.spec.ts packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/list-classic/src/lib/withList.spec.tsx packages/table/src/react/components/TableCellElement/setSelectedCellsBorder.spec.tsx packages/docx/src/lib/docx-cleaner/cleanDocx.spec.ts packages/media/src/lib/image/withImageUpload.spec.tsx packages/diff/src/lib/computeDiff.spec.ts` | Touched cleanup specs still pass after comment deletion | 90 pass, 0 fail | ✓ |
+| Dead commented-spec package build | `pnpm turbo build --filter=./packages/core --filter=./packages/table --filter=./packages/list-classic --filter=./packages/docx --filter=./packages/media --filter=./packages/diff` | Affected packages build | Passed | ✓ |
+| Dead commented-spec package typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/table --filter=./packages/list-classic --filter=./packages/docx --filter=./packages/media --filter=./packages/diff` | Affected packages typecheck | Passed | ✓ |
+| Commented test scan | `rg -n '^\\s*//\\s*(it|test|describe)\\(' packages --glob '*.spec.ts' --glob '*.spec.tsx'` | No commented-out test blocks remain | No matches | ✓ |
+| Override-rule matrix cleanup | `bun test packages/core/src/lib/plugins/override/withBreakRules.spec.tsx` | Refactored break-rule suite still passes | 15 pass, 0 fail | ✓ |
+| Override-rule core build | `pnpm turbo build --filter=./packages/core` | Core still builds after break-rule refactor | Passed | ✓ |
+| Override-rule core typecheck | `pnpm turbo typecheck --filter=./packages/core` | Core still typechecks after break-rule refactor | Passed | ✓ |
+| Delete-rule sibling cleanup | `bun test packages/core/src/lib/plugins/override/withDeleteRules.spec.tsx` | Refactored delete-rule suite still passes | 14 pass, 0 fail | ✓ |
+| Delete-rule core build | `pnpm turbo build --filter=./packages/core` | Core still builds after delete-rule refactor | Passed | ✓ |
+| Delete-rule core typecheck | `pnpm turbo typecheck --filter=./packages/core` | Core still typechecks after delete-rule refactor | Passed | ✓ |
+| Core + table seam narrowing | `bun test packages/core/src/lib/utils/overrideEditor.spec.ts packages/core/src/lib/editor/SlateEditorMethods.spec.ts packages/basic-nodes/src/lib/BaseHeadingPlugin.spec.ts packages/core/src/lib/plugin/createSlatePlugin.spec.ts packages/table/src/lib/transforms/insertTable.spec.tsx packages/table/src/lib/transforms/insertTableColumn.spec.tsx packages/table/src/lib/transforms/deleteColumn.spec.tsx packages/table/src/lib/transforms/insertTableRow.spec.tsx` | Deterministic core and table seams pass on `createSlateEditor` | 93 pass, 0 fail | ✓ |
+| Core + table seam build | `pnpm turbo build --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/table` | Touched packages build after seam narrowing | Passed | ✓ |
+| Core + table seam typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/basic-nodes --filter=./packages/table` | Touched packages typecheck after seam narrowing | Passed | ✓ |
+| HTML + selection sweep | `bun test packages/core/src/lib/plugins/html/HtmlPlugin.spec.tsx packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.spec.ts packages/core/src/lib/plugins/html/utils/deserializeHtml.spec.tsx packages/core/src/lib/plugins/html/utils/deserializeHtmlElement.spec.tsx packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.spec.tsx packages/core/src/lib/plugins/html/utils/deserializeHtmlNodeGoogleDocs.spec.tsx packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.spec.tsx packages/core/src/lib/plugins/html/utils/htmlElementToElement.spec.tsx packages/core/src/lib/plugins/html/utils/htmlBodyToFragment.spec.tsx packages/selection/src/internal/transforms/selectBlocks.spec.tsx packages/selection/src/react/internal/api/setSelectedIds.spec.tsx packages/selection/src/react/utils/copySelectedBlocks.spec.tsx packages/selection/src/react/internal/api/moveSelection.spec.tsx packages/selection/src/react/internal/api/shiftSelection.spec.tsx` | HTML seams narrowed; selection exceptions verified | 90 pass, 0 fail | ✓ |
+| HTML + selection typecheck | `pnpm turbo typecheck --filter=./packages/core --filter=./packages/selection` | Touched packages typecheck after seam and exception validation | Passed | ✓ |
+| Code-block seam cleanup | `bun test packages/code-block/src/lib/queries/isCodeBlockEmpty.spec.tsx packages/code-block/src/lib/queries/isSelectionAtCodeBlockStart.spec.tsx packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts packages/code-block/src/lib/transforms/indentCodeLine.spec.tsx packages/code-block/src/lib/transforms/insertCodeBlock.spec.tsx packages/code-block/src/lib/transforms/insertCodeLine.spec.tsx packages/code-block/src/lib/transforms/insertEmptyCodeBlock.spec.tsx packages/code-block/src/lib/transforms/outdentCodeLine.spec.tsx packages/code-block/src/lib/transforms/toggleCodeBlock.spec.tsx packages/code-block/src/lib/transforms/unwrapCodeBlock.spec.tsx packages/code-block/src/lib/withCodeBlock.spec.tsx packages/code-block/src/lib/withInsertDataCodeBlock.spec.tsx packages/code-block/src/lib/withInsertFragmentCodeBlock.spec.tsx packages/code-block/src/lib/withNormalizeCodeBlock.spec.tsx packages/code-block/src/react/CodeBlockPlugin.spec.tsx packages/core/src/lib/plugins/debug/DebugPlugin.spec.ts packages/core/src/lib/plugin/getEditorPlugin.spec.ts` | Deterministic `code-block` and pure plugin utility seams pass | 49 pass, 0 fail | ✓ |
+| Code-block seam build | `pnpm turbo build --filter=./packages/code-block --filter=./packages/core` | Touched packages build after seam cleanup | Passed | ✓ |
+| Code-block seam typecheck | `pnpm turbo typecheck --filter=./packages/code-block --filter=./packages/core` | Touched packages typecheck after seam cleanup | Passed | ✓ |
+| Non-core seam sweep | `bun test packages/date/src/lib/BaseDatePlugin.spec.tsx packages/dnd/src/transforms/onHoverNode.spec.ts packages/dnd/src/transforms/onDropNode.spec.ts packages/layout/src/lib/transforms/setColumns.spec.tsx packages/layout/src/lib/transforms/toggleColumnGroup.spec.tsx packages/link/src/lib/withLink.spec.tsx packages/link/src/react/utils/getLinkAttributes.spec.ts packages/media/src/lib/image/withImageUpload.spec.tsx packages/slate/src/internal/editor/isEmpty.spec.tsx packages/slate/src/interfaces/node-children.spec.tsx packages/core/src/lib/utils/normalizeDescendantsToDocumentFragment.spec.tsx packages/markdown/src/lib/rules/defaultRule.spec.ts packages/markdown/src/lib/deserializer/deserializeMd.spec.tsx packages/list/src/lib/ListPlugin.spec.tsx` | Deterministic package seams pass on `createSlateEditor` | 119 pass, 0 fail | ✓ |
+| Non-core seam build | `pnpm turbo build --filter=./packages/date --filter=./packages/dnd --filter=./packages/layout --filter=./packages/link --filter=./packages/media --filter=./packages/slate --filter=./packages/core --filter=./packages/markdown --filter=./packages/list` | Touched packages build after the final seam cleanup | Passed | ✓ |
+| Non-core seam typecheck | `pnpm turbo typecheck --filter=./packages/date --filter=./packages/dnd --filter=./packages/layout --filter=./packages/link --filter=./packages/media --filter=./packages/slate --filter=./packages/core --filter=./packages/markdown --filter=./packages/list` | Touched packages typecheck after the final seam cleanup | Passed | ✓ |
+| Final no-change audit: skips | `rg -n "\\b(it|test)\\.skip\\b|\\bdescribe\\.skip\\b" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | No skipped tests remain in package specs | No matches | ✓ |
+| Final no-change audit: title debt | `rg -n "^[[:space:]]*(it|test|describe)\\([^\\n]*(should|fixures|qoute)|^[[:space:]]*\\]\\)\\([^\\n]*(should|fixures|qoute)" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | No tracked placeholder titles remain | No matches | ✓ |
+| Final no-change audit: commented tests | `rg -n "^\\s*//\\s*(it|test|describe)\\(" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | No commented-out tests remain | No matches | ✓ |
+| Final no-change audit: cross-spec imports | `rg -n "(\\.spec|\\.test)['\\\"]|from ['\\\"][^'\\\"]*\\.spec|from ['\\\"][^'\\\"]*\\.test" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | No spec imports another spec | No matches | ✓ |
+| Final no-change audit: intentional Plate allowlist | `rg -n "createPlateEditor\\(" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | Remaining usages are intentional React/provider/render/store or Plate-only suites | Allowlist only | ✓ |
+| Final no-change audit: markdown helper leak | `rg -n "MarkdownKit|apps/www/src/registry/components/editor/plugins/markdown-kit" packages/markdown/src -g '!**/*.snap'` | Markdown package no longer imports app registry helpers | No matches | ✓ |
+
+### Error Log
+
+| Timestamp | Error | Attempt | Resolution |
+|-----------|-------|---------|------------|
+| 2026-03-06 | `streamInsertChunk.spec.tsx` helper triggered `noMisplacedAssertion` | 1 | Moved the assertion back into each `it()` |
+| 2026-03-06 | `mergeDeepToNodes.spec.ts` editor-root cases compared whole editor objects | 1 | Used a real editor and asserted on `children` plus root boundaries |
+| 2026-03-06 | `autoformat` typecheck failed on unresolved imports from `@platejs/basic-nodes/react` and `@platejs/link/react` in existing specs | 1 | Removed the React-only `.key` imports from the hotspot specs and typecheck passed |
+| 2026-03-06 | `planning-with-files` catchup script pointed at a missing `~/.codex/skills/planning-with-files` path | 1 | Used the existing planning notes directly and later consolidated them into this plan file |
+| 2026-03-06 | `bun test -u` left dead snapshot keys in markdown after title renames | 1 | Deleted the affected snapshot files and regenerated them from scratch |
+| 2026-03-06 | Markdown serializer snapshots contained meaningful trailing spaces, so `git diff --check` flagged them | 1 | Replaced those two cases with explicit string assertions instead of snapshots |
+| 2026-03-06 | `moveSelection` and `shiftSelection` looked like easy seam reductions but failed when switched to `createSlateEditor` | 1 | Kept them on Plate and documented the exception instead of cargo-culting the rule |
+| 2026-03-06 | The markdown helper imported `MarkdownKit` from `apps/www` | 1 | Replaced it with local `MarkdownPlugin.configure(...)` plus remark plugins |
+
+### Resources
+
+- `.claude/skills/testing/testing.mdc`
+- `.claude/docs/plans/2026-03-06-test-suite-cleanup-plan.md`
+- `packages/ai/src/react/ai-chat/streaming/streamInsertChunk.spec.tsx`
+- `packages/core/src/lib/utils/mergeDeepToNodes.spec.ts`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/trigger.spec.tsx`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/createAutoformatEditor.ts`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/text.spec.tsx`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/markup.spec.tsx`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/block/list.spec.tsx`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/block/code-block.spec.tsx`
+- `packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx`
+- `packages/core/src/react/components/Plate.spec.tsx`
+- `packages/core/src/lib/plugins/slate-extension/transforms/init.spec.ts`
+- `packages/slate/src/internal/transforms-extension/removeMarks.spec.tsx`
+- `packages/markdown/src/lib/serializer/serializeMd.spec.tsx`
+- `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`
+- `packages/core/src/internal/plugin/resolvePlugins.spec.tsx`
+- `packages/core/src/internal/plugin/resolvePlugins-store.spec.tsx`
+- `packages/core/src/lib/utils/extendApi.spec.ts`
+- `packages/markdown/src/lib/__tests__/createTestEditor.tsx`
+- `packages/date/src/lib/BaseDatePlugin.spec.tsx`
+- `packages/dnd/src/transforms/onHoverNode.spec.ts`
+- `packages/dnd/src/transforms/onDropNode.spec.ts`
+- `packages/layout/src/lib/transforms/setColumns.spec.tsx`
+- `packages/layout/src/lib/transforms/toggleColumnGroup.spec.tsx`
+- `packages/link/src/lib/withLink.spec.tsx`
+- `packages/link/src/react/utils/getLinkAttributes.spec.ts`
+- `packages/media/src/lib/image/withImageUpload.spec.tsx`
+- `packages/slate/src/internal/editor/isEmpty.spec.tsx`
+- `packages/slate/src/interfaces/node-children.spec.tsx`
+- `packages/core/src/lib/utils/normalizeDescendantsToDocumentFragment.spec.tsx`
+- `packages/markdown/src/lib/rules/defaultRule.spec.ts`
+- `packages/markdown/src/lib/deserializer/deserializeMd.spec.tsx`
+- `packages/list/src/lib/ListPlugin.spec.tsx`
+
+### Visual or Browser Findings
+
+- None. This cleanup phase stayed fully local and terminal-based.
 
 ## Current State
 
