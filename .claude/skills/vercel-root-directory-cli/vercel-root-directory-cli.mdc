@@ -1,13 +1,3 @@
----
-name: vercel-root-directory-cli
-description: |
-  Fix for Vercel CLI deploy failures in monorepos when the project Root Directory is a subdirectory
-  but vercel.json lives above it. Use when: (1) `vercel deploy` or `vercel deploy --prebuilt`
-  fails with "The vercel.json file should be inside of the provided root directory", (2) dashboard
-  builds succeed but the CLI fails, (3) the Vercel project Root Directory is `apps/...` with
-  "Include files outside the root directory" enabled. Covers root-directory config mismatch in Vercel.
----
-
 # Vercel Root Directory vs CLI Deploy
 
 ## Problem

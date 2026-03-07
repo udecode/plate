@@ -32,7 +32,8 @@
 
 ## Compound Engineering Overrides
 
-- **Git:** Never git add, commit, push, or create PR.
+- **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
+- **PR:** Before creating or updating a PR, run `bun check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `bun check` unless the user explicitly says to.
 - **plan:** Include test-browser in acceptance criteria for browser features
 - **deepen-plan:** Context7 only when not covered by skills
 - **work:** UI tasks require test-browser BEFORE marking complete. Never guess.
@@ -118,6 +119,7 @@ pnpm --filter @platejs/core lint:fix
 
 - [ ] Typecheck (IF updated .ts files): Bash `bun typecheck`
 - [ ] Lint: Bash `bun lint:fix`
+- [ ] PR gate (IF creating/updating a PR): Bash `bun check`
 - [ ] Learn (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: Skill(learn) NOW to extract the knowledge (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery

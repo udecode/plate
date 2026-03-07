@@ -13,6 +13,10 @@ inputs:
     description: 'Add a specific cache-prefix'
     required: false
     default: 'default'
+  link-workspace-packages:
+    description: 'Link local workspace packages during install'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -30,6 +34,13 @@ runs:
     - name: 📥 Install dependencies
       shell: bash
       working-directory: ${{ inputs.cwd }}
-      run: pnpm install --no-frozen-lockfile
+      run: |
+        args=(install --no-frozen-lockfile)
+
+        if [ "${{ inputs.link-workspace-packages }}" = "true" ]; then
+          args+=(--config.link-workspace-packages=true)
+        fi
+
+        pnpm "${args[@]}"
       env:
         HUSKY: '0'
