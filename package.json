@@ -132,6 +132,10 @@
     "pnpm": ">=9.15.0"
   },
   "pnpm": {
+    "overrides": {
+      "@platejs/core": "52.0.17",
+      "@platejs/slate": "52.0.10"
+    },
     "patchedDependencies": {
       "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
       "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
