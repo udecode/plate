@@ -24,7 +24,9 @@ describe('AutoformatPlugin invalid match handling', () => {
           <hp>hello* </hp>
         </fragment>
       ) as any,
-      rules: [{ match: '*', mode: 'mark', type: KEYS.italic }] satisfies AutoformatRule[],
+      rules: [
+        { match: '*', mode: 'mark', type: KEYS.italic },
+      ] satisfies AutoformatRule[],
       text: [' '],
       title: 'leaves text alone when only the trailing delimiter exists',
     },
@@ -42,7 +44,9 @@ describe('AutoformatPlugin invalid match handling', () => {
           <hp>a**hello**</hp>
         </fragment>
       ) as any,
-      rules: [{ match: '**', mode: 'mark', type: KEYS.bold }] satisfies AutoformatRule[],
+      rules: [
+        { match: '**', mode: 'mark', type: KEYS.bold },
+      ] satisfies AutoformatRule[],
       text: ['*', '*'],
       title:
         'does not format when a non-whitespace character precedes the opening delimiter',

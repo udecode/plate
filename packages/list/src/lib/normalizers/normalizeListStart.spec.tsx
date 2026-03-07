@@ -1,6 +1,11 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, type Value, BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import {
+  type SlateEditor,
+  type Value,
+  BaseParagraphPlugin,
+  createSlateEditor,
+} from 'platejs';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';

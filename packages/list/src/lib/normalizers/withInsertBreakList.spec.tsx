@@ -2,7 +2,12 @@
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import {
+  type SlateEditor,
+  BaseParagraphPlugin,
+  KEYS,
+  createSlateEditor,
+} from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
