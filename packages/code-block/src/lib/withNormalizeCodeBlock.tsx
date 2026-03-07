@@ -45,7 +45,13 @@ export const withNormalizeCodeBlock: OverrideEditor<CodeBlockConfig> = ({
         );
 
         if (nonCodeLine) {
-          editor.tf.setNodes({ type: codeLineType }, { at: nonCodeLine[1] });
+          // Use wrapNodes instead of setNodes to properly wrap bare text
+          // children in code_line elements (setNodes just adds a type
+          // property to text leaves, producing malformed nodes)
+          editor.tf.wrapNodes(
+            { type: codeLineType, children: [] },
+            { at: nonCodeLine[1] }
+          );
         }
       }
     },
