@@ -131,7 +131,7 @@ topic: <kebab-case-topic>
 - [Any unresolved questions for the planning phase]
 
 ## Next Steps
-→ `/workflows:plan` for implementation details
+→ `/ce:plan` for implementation details
 ```
 
 **Output Location:** `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`
@@ -140,7 +140,7 @@ topic: <kebab-case-topic>
 
 Present clear options for what to do next:
 
-1. **Proceed to planning** → Run `/workflows:plan`
+1. **Proceed to planning** → Run `/ce:plan`
 2. **Refine further** → Continue exploring the design
 3. **Done for now** → User will return later
 
@@ -187,4 +187,4 @@ Planning answers **HOW** to build it:
 - Technical details and code patterns
 - Testing strategy and verification
 
-When brainstorm output exists, `/workflows:plan` should detect it and use it as input, skipping its own idea refinement phase.
+When brainstorm output exists, `/ce:plan` should detect it and use it as input, skipping its own idea refinement phase.
