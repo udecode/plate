@@ -167,6 +167,18 @@ No coverage push in this phase. No e2e or browser work.
 - Confirmed the remaining `createPlateEditor` files are still the intentional React/provider/render/store allowlist plus the two Plate-only selection APIs.
 - Confirmed the remaining `__tests__/` specs are the expected fixture-heavy `docx` and `docx-io` suites plus the intentionally split `withAutoformat` suite.
 
+### Pass 21
+
+- Moved the `@platejs/slate` specs that were really exercising cross-package editor wiring out of `slate` and into `apps/www`, which already carries the full package surface without adding new internal package devDependencies.
+- Consolidated the moved coverage into one `www` integration spec for inline-link traversal, inline `isEmpty`, mark toggling, and void delete boundaries.
+- Removed the two `platejs`-only type imports from `@platejs/core` test helpers and dropped the now-unused `platejs` devDependency from `core`.
+
+### Pass 22
+
+- Moved the `@platejs/core` static `serializeHtml` integration specs out of `packages/core` and into `apps/www`, because they depended on `BaseEditorKit` and registry fixture values from the app anyway.
+- Deleted the last `packages/core/src/static/__tests__/create-static-editor.ts` helper after moving its only remaining callers into the app-level integration folder.
+- Confirmed the remaining `www`-coupled package tests still live in `docx-io` and `ai`, so the next cleanup pass should move those clusters too instead of adding more internal package devDependencies.
+
 ## Matrix Scan
 
 Snapshot taken during pass 3 before edits:

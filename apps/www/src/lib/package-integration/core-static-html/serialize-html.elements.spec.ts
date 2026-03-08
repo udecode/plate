@@ -1,9 +1,9 @@
 import { decode } from 'html-entities';
+import { serializeHtml } from 'platejs/static';
 
-import { serializeHtml } from './serializeHtml';
-import { createStaticEditor } from './__tests__/create-static-editor';
+import { createStaticEditor } from './create-static-editor';
 
-describe('serializeHtml element rendering', () => {
+describe('core static serializeHtml element rendering', () => {
   it('renders paragraph text', async () => {
     const editor = createStaticEditor([
       {
@@ -13,6 +13,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain('Some random paragraph here...');
   });
 
@@ -33,6 +34,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain('Heading 1');
     expect(html).toContain('Heading 2');
     expect(html).toContain('Heading 3');
@@ -47,6 +49,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain('Blockquoted text here...');
   });
 
@@ -62,6 +65,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain(decode('href="https://example.com/"'));
     expect(html).toContain('slate-a');
   });
@@ -76,6 +80,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain('src="https://example.com/image.jpg"');
   });
 
@@ -96,6 +101,7 @@ describe('serializeHtml element rendering', () => {
     ]);
 
     const html = await serializeHtml(editor);
+
     expect(html).toContain('Cell 1');
     expect(html).toContain('Cell 2');
   });

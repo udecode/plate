@@ -40,8 +40,8 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "^52.0.17",
-    "@platejs/slate": "^52.0.10",
+    "@platejs/core": "workspace:^",
+    "@platejs/slate": "workspace:^",
     "@udecode/react-utils": "^52.0.11",
     "@udecode/utils": "^52.0.1",
     "clsx": "^2.1.1",
@@ -58,8 +58,6 @@
   "type": "module",
   "module": "./dist/index.js",
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "@platejs/test-utils": "^52.3.2",
-    "platejs": "^52.3.2"
+    "@plate/scripts": "workspace:*"
   }
 }

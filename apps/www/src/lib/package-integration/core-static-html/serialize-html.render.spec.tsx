@@ -1,10 +1,13 @@
 import React from 'react';
-import { createSlateEditor, createTSlatePlugin } from '../lib';
-import { serializeHtml } from './serializeHtml';
-import { createStaticEditor } from './__tests__/create-static-editor';
-import { BaseEditorKit } from 'www/src/registry/components/editor/editor-base-kit';
 
-describe('serializeHtml custom render hooks', () => {
+import { createSlateEditor, createTSlatePlugin } from 'platejs';
+import { serializeHtml } from 'platejs/static';
+
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
+
+import { createStaticEditor } from './create-static-editor';
+
+describe('core static serializeHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
     const renderBelowPlugin = createTSlatePlugin({
       key: 'test-list',
@@ -60,7 +63,6 @@ describe('serializeHtml custom render hooks', () => {
     const html = await serializeHtml(editor, {
       preserveClassNames: [],
       stripClassNames: true,
-      // stripDataAttributes: true,
     });
 
     expect(html).toContain(

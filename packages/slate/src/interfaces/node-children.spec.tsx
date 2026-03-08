@@ -1,7 +1,5 @@
 /** @jsx jsx */
 
-import { createSlateEditor } from '@platejs/core';
-import { BaseLinkPlugin } from '@platejs/link';
 import { jsx } from '@platejs/test-utils';
 
 import { createEditor } from '../create-editor';
@@ -137,48 +135,6 @@ describe('NodeApi.children', () => {
         ).map(([node]) => node);
 
         expect(siblings).toEqual([]);
-      });
-    });
-
-    describe('when has siblings', () => {
-      it('returns sibling nodes', () => {
-        const input = createEditor(
-          (
-            <editor>
-              <hp>
-                <htext>first</htext>
-                <ha>
-                  test
-                  <cursor />
-                </ha>
-                <htext />
-                <htext>last</htext>
-              </hp>
-            </editor>
-          ) as any
-        );
-
-        const output = [{ text: '' }, { text: 'last' }];
-
-        const editor = createSlateEditor({
-          plugins: [BaseLinkPlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        const [, blockPath] = editor.api.block()!;
-        const selectionPath = editor.api
-          .path(input.selection!)!
-          .slice(blockPath.length);
-        const childIndex = selectionPath[0];
-
-        const siblings = Array.from(
-          NodeApi.children(editor as any, blockPath, {
-            from: childIndex + 1,
-          })
-        ).map(([node]) => node);
-
-        expect(siblings).toEqual(output);
       });
     });
   });

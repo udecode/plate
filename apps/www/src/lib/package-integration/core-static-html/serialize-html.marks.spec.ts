@@ -1,7 +1,8 @@
-import { serializeHtml } from './serializeHtml';
-import { createStaticEditor } from './__tests__/create-static-editor';
+import { serializeHtml } from 'platejs/static';
 
-describe('serializeHtml mark rendering', () => {
+import { createStaticEditor } from './create-static-editor';
+
+describe('core static serializeHtml mark rendering', () => {
   it('renders bold text', async () => {
     const editor = createStaticEditor([
       {
@@ -40,6 +41,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-italic="true"><em><span data-slate-string="true">italic</span></em></span>'
     );
@@ -61,6 +63,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-underline="true"><u><span data-slate-string="true">underlined</span></u></span>'
     );
@@ -82,6 +85,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-strikethrough="true"><s><span data-slate-string="true">strikethrough</span></s></span>'
     );
@@ -103,6 +107,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-code="true"><code><span data-slate-string="true">some code</span></code></span>'
     );
@@ -124,6 +129,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-subscript="true"><sub><span data-slate-string="true">subscripted</span></sub></span>'
     );
@@ -145,6 +151,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-superscript="true"><sup><span data-slate-string="true">superscripted</span></sup></span>'
     );
@@ -166,6 +173,7 @@ describe('serializeHtml mark rendering', () => {
       preserveClassNames: [],
       stripClassNames: true,
     });
+
     expect(html).toContain(
       '<span data-slate-leaf="true" data-slate-kbd="true"><kbd><span data-slate-string="true">keyboard shortcut</span></kbd></span>'
     );

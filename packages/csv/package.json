@@ -41,14 +41,13 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/table": "52.0.11",
+    "@platejs/table": "workspace:*",
     "papaparse": "^5.5.3",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@types/papaparse": "^5.3.16",
-    "platejs": "^52.0.17"
+    "@types/papaparse": "^5.3.16"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

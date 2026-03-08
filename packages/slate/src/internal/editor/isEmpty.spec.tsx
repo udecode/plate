@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@platejs/core';
-import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 import { createEditor } from '../../create-editor';
 import type { Editor, LegacyEditorMethods } from '../../interfaces';
@@ -132,61 +130,6 @@ describe('isEmpty', () => {
 
         expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
           true
-        );
-      });
-    });
-
-    describe('when no text after', () => {
-      it('returns true', () => {
-        const input = createEditor(
-          (
-            <editor>
-              <hp>
-                <htext>first</htext>
-                <ha>
-                  test
-                  <cursor />
-                </ha>
-              </hp>
-            </editor>
-          ) as any
-        ) as Editor & LegacyEditorMethods;
-
-        const editor = createSlateEditor({
-          editor: input as any,
-          plugins: [BaseLinkPlugin],
-        });
-
-        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
-          true
-        );
-      });
-    });
-
-    describe('when text after', () => {
-      it('returns false', () => {
-        const input = createEditor(
-          (
-            <editor>
-              <hp>
-                <htext>first</htext>
-                <ha>
-                  test
-                  <cursor />
-                </ha>
-                last
-              </hp>
-            </editor>
-          ) as any
-        ) as Editor & LegacyEditorMethods;
-
-        const editor = createSlateEditor({
-          editor: input as any,
-          plugins: [BaseLinkPlugin],
-        });
-
-        expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(
-          false
         );
       });
     });

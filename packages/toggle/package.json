@@ -40,14 +40,13 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/indent": "52.0.11",
+    "@platejs/indent": "workspace:*",
     "jotai": "^2.18.0",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*",
-    "platejs": "^52.0.17"
+    "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",
