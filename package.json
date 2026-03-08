@@ -67,6 +67,7 @@
     "@biomejs/biome": "2.3.6",
     "@changesets/cli": "2.29.7",
     "@changesets/get-github-info": "0.6.0",
+    "@hocuspocus/provider": "3.4.4",
     "@platejs/basic-nodes": "workspace:^",
     "@platejs/basic-styles": "workspace:^",
     "@platejs/code-block": "workspace:^",
@@ -114,6 +115,7 @@
     "barrelsby": "2.8.1",
     "bun": "1.2.13",
     "bun-types": "1.2.13",
+    "class-variance-authority": "0.7.1",
     "commander": "14.0.1",
     "concurrently": "9.1.2",
     "cross-env": "7.0.3",
@@ -124,11 +126,14 @@
     "platejs": "workspace:^",
     "prompts": "2.4.2",
     "react": "19.2.3",
+    "react-dnd": "16.0.1",
+    "react-dnd-html5-backend": "16.0.1",
     "react-dnd-test-backend": "16.0.1",
     "react-dom": "19.2.3",
     "rimraf": "6.0.1",
     "slate-test-utils": "1.3.2",
     "tailwindcss": "4.1.8",
+    "tailwind-merge": "3.3.1",
     "tinyglobby": "0.2.14",
     "tsdown": "0.16.6",
     "turbo": "2.6.1",
@@ -136,6 +141,7 @@
     "typescript": "5.8.3",
     "typescript-eslint": "^8.47.0",
     "ultracite": "6.3.4",
+    "y-webrtc": "10.3.0",
     "zod": "4.1.12"
   },
   "packageManager": "pnpm@9.15.0",
@@ -144,10 +150,6 @@
     "pnpm": ">=9.15.0"
   },
   "pnpm": {
-    "overrides": {
-      "@platejs/core": "52.0.17",
-      "@platejs/slate": "52.0.10"
-    },
     "patchedDependencies": {
       "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
       "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
