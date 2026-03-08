@@ -1,10 +1,9 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from 'platejs/react';
-
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
+import type { PlateEditor } from '../../../../react/editor';
 import { createPlateTestEditor } from '../../../../react/__tests__/createPlateTestEditor';
 import { getEdgeNodes } from './getEdgeNodes';
 
