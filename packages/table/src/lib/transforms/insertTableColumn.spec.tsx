@@ -1,11 +1,15 @@
 /** @jsx jsxt */
 
-import type { Editor, SlateEditor, TElement } from 'platejs';
+import {
+  type Editor,
+  type SlateEditor,
+  type TElement,
+  createSlateEditor,
+} from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { insertTableColumn } from './insertTableColumn';
 import { insertTableRow } from './insertTableRow';
 
@@ -48,7 +52,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert at last column (disableMerge: $disableMerge)', ({
+    ])('inserts at the last column (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = makeTableWithCols({
@@ -67,7 +71,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -83,7 +87,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert using atCell (disableMerge: $disableMerge)', ({
+    ])('inserts using atCell (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = makeTableWithCols({
@@ -101,7 +105,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -117,9 +121,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert using at (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
+    ])('inserts using at (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = makeTableWithCols({
         cursorPath: [1, 0],
         rowCols: [
@@ -136,7 +138,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -152,7 +154,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert column before the current column (disableMerge: $disableMerge)', ({
+    ])('inserts a column before the current column (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = makeTableWithCols({
@@ -171,7 +173,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -190,7 +192,7 @@ describe('insertTableColumn', () => {
       it.each([
         { disableMerge: true },
         { disableMerge: false },
-      ])('should add the last column width to colSizes (disableMerge: $disableMerge)', ({
+      ])('adds the last column width to colSizes (disableMerge: $disableMerge)', ({
         disableMerge,
       }) => {
         const input = makeTableWithCols({
@@ -211,7 +213,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -232,7 +234,7 @@ describe('insertTableColumn', () => {
       it.each([
         { disableMerge: true },
         { disableMerge: false },
-      ])('should add the second column width to colSizes (disableMerge: $disableMerge)', ({
+      ])('adds the second column width to colSizes (disableMerge: $disableMerge)', ({
         disableMerge,
       }) => {
         const input = makeTableWithCols({
@@ -253,7 +255,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -272,7 +274,7 @@ describe('insertTableColumn', () => {
       it.each([
         { disableMerge: true },
         { disableMerge: false },
-      ])('should add the first column width to colSizes using at (disableMerge: $disableMerge)', ({
+      ])('adds the first column width to colSizes using at (disableMerge: $disableMerge)', ({
         disableMerge,
       }) => {
         const input = makeTableWithCols({
@@ -293,7 +295,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -314,7 +316,7 @@ describe('insertTableColumn', () => {
       it.each([
         { disableMerge: true },
         { disableMerge: false },
-      ])('should shrink all columns by the same factor (disableMerge: $disableMerge)', ({
+      ])('shrinks all columns by the same factor (disableMerge: $disableMerge)', ({
         disableMerge,
       }) => {
         const input = makeTableWithCols({
@@ -335,7 +337,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -354,7 +356,7 @@ describe('insertTableColumn', () => {
       it.each([
         { disableMerge: true },
         { disableMerge: false },
-      ])('should not shrink columns below minColumnsWidth (disableMerge: $disableMerge)', ({
+      ])('does not shrink columns below minColumnsWidth (disableMerge: $disableMerge)', ({
         disableMerge,
       }) => {
         const input = makeTableWithCols({
@@ -375,7 +377,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createPlateEditor({
+        const editor = createSlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -395,7 +397,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert column before and adjust column sizes (disableMerge: $disableMerge)', ({
+    ])('inserts a column before and adjusts column sizes (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = makeTableWithCols({
@@ -416,7 +418,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -437,7 +439,7 @@ describe('insertTableColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should have correct number of cells (disableMerge: $disableMerge)', ({
+    ])('keeps the correct number of cells (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -466,7 +468,7 @@ describe('insertTableColumn', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

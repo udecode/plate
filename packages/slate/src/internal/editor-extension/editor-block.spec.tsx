@@ -18,7 +18,7 @@ describe('block', () => {
       ) as any
     );
 
-    it('should get block at selection', () => {
+    it('get block at selection', () => {
       const res = input.api.block();
 
       expect(res).toEqual([{ children: [{ text: '1' }], type: 'p' }, [0]]);
@@ -39,7 +39,7 @@ describe('block', () => {
       ) as any
     );
 
-    it('should get block at path', () => {
+    it('get block at path', () => {
       const res = input.api.block({ at: [1, 0, 0] });
 
       expect(res).toEqual([
@@ -64,7 +64,7 @@ describe('block', () => {
       ) as any
     );
 
-    it('should get block above selection', () => {
+    it('get block above selection', () => {
       const res = input.api.block({ above: true });
 
       expect(res).toEqual([
@@ -73,7 +73,7 @@ describe('block', () => {
       ]);
     });
 
-    it('should get block above path', () => {
+    it('get block above path', () => {
       const res = input.api.block({ above: true, at: [0, 0, 0] });
 
       expect(res).toEqual([
@@ -99,7 +99,7 @@ describe('block', () => {
       ) as any
     );
 
-    it('should get highest block at selection', () => {
+    it('get highest block at selection', () => {
       const res = input.api.block({ highest: true });
 
       expect(res).toEqual([
@@ -112,7 +112,7 @@ describe('block', () => {
       ]);
     });
 
-    it('should get highest block at path', () => {
+    it('get highest block at path', () => {
       const res = input.api.block({ at: [0, 0, 0], highest: true });
 
       expect(res).toEqual([<hp>first</hp>, [0]]);
@@ -128,13 +128,13 @@ describe('block', () => {
       ) as any
     );
 
-    it('should return undefined for non-existent path', () => {
+    it('returns undefined for non-existent path', () => {
       const res = input.api.block({ at: [1] });
 
       expect(res).toBeUndefined();
     });
 
-    it('should return undefined for non-matching options', () => {
+    it('returns undefined for non-matching options', () => {
       const res = input.api.block({ match: { type: 'non-existent' } });
 
       expect(res).toBeUndefined();

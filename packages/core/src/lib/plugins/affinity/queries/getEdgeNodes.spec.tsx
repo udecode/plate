@@ -1,10 +1,9 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from 'platejs/react';
-
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
+import type { PlateEditor } from '../../../../react/editor';
 import { createPlateTestEditor } from '../../../../react/__tests__/createPlateTestEditor';
 import { getEdgeNodes } from './getEdgeNodes';
 
@@ -12,7 +11,7 @@ jsxt;
 
 describe('getEdgeNodes', () => {
   describe('Text node edges', () => {
-    it('should return edge nodes when cursor is at start of text', async () => {
+    it('returns edge nodes when cursor is at start of text', async () => {
       const input = (
         <editor>
           <hp>
@@ -36,7 +35,7 @@ describe('getEdgeNodes', () => {
       expect(after).toEqual([{ bold: true, text: 'second' }, [0, 1]]);
     });
 
-    it('should return edge nodes when cursor is at end of text', async () => {
+    it('returns edge nodes when cursor is at end of text', async () => {
       const input = (
         <editor>
           <hp>
@@ -60,7 +59,7 @@ describe('getEdgeNodes', () => {
       expect(after).toEqual([{ bold: true, text: 'second' }, [0, 1]]);
     });
 
-    it('should return null for second element when no next sibling exists', async () => {
+    it('returns null for second element when no next sibling exists', async () => {
       const input = (
         <editor>
           <hp>
@@ -83,7 +82,7 @@ describe('getEdgeNodes', () => {
       expect(after).toEqual(null);
     });
 
-    it('should return [null, textEntry] when cursor is at start of first text node', async () => {
+    it('returns [null, textEntry] when cursor is at start of first text node', async () => {
       const input = (
         <editor>
           <hp>
@@ -108,7 +107,7 @@ describe('getEdgeNodes', () => {
   });
 
   describe('Link element edges', () => {
-    it('should handle cursor at start of link element', async () => {
+    it('handle cursor at start of link element', async () => {
       const input = (
         <editor>
           <hp>
@@ -142,7 +141,7 @@ describe('getEdgeNodes', () => {
       ]);
     });
 
-    it('should handle cursor at end of link element', async () => {
+    it('handle cursor at end of link element', async () => {
       const input = (
         <editor>
           <hp>

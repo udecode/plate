@@ -10,7 +10,7 @@ jsxt;
 describe('deserializeMdList - comprehensive coverage', () => {
   const editor = createTestEditor([BaseListPlugin]);
 
-  it('should deserialize a single Markdown string containing all list edge cases', () => {
+  it('deserializes a single Markdown string containing all list edge cases', () => {
     /**
      * Explanation of this Markdown:
      *
@@ -219,7 +219,7 @@ describe('deserializeMdList - comprehensive coverage', () => {
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize a empty list', () => {
+  it('deserializes an empty list', () => {
     const input = `
     - list
       - list
@@ -231,7 +231,7 @@ describe('deserializeMdList - comprehensive coverage', () => {
     expect(deserializeMd(editor, input)).toMatchSnapshot();
   });
 
-  it('should deserialize a todo list', () => {
+  it('deserializes a todo list', () => {
     const input = `
     - [ ] todo list
     - [x] todo list

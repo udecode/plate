@@ -26,7 +26,7 @@ describe('withImageEmbed', () => {
     </editor>
   ) as any;
 
-  it('should insert image from the text', () => {
+  it('insert image from the text', () => {
     const editor = createSlateEditor({
       editor: input,
       plugins: [BaseImagePlugin],

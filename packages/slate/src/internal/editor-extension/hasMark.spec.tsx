@@ -8,7 +8,7 @@ jsxt;
 
 describe('hasMark', () => {
   describe('when mark is active', () => {
-    it('should return true', () => {
+    it('returns true', () => {
       const editor = createEditor(
         (
           <editor>
@@ -26,7 +26,7 @@ describe('hasMark', () => {
   });
 
   describe('when mark is not active', () => {
-    it('should return false', () => {
+    it('returns false', () => {
       const editor = createEditor(
         (
           <editor>

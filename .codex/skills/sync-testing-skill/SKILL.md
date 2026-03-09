@@ -3,7 +3,7 @@ name: sync-testing-skill
 description: 'Command: sync-testing-skill'
 ---
 
-Scan package tests, update @.claude/rules/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.
+Scan package tests, update @.claude/skills/testing/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.
 
 **Process:**
 
@@ -16,6 +16,7 @@ Scan package tests, update @.claude/rules/testing.mdc with new patterns. Follow 
 5. Report: `Found X patterns → Updated Y sections`
 
 **Critical:**
+
 - Only actual codebase patterns. No theoretical examples. No duplication.
 - Test globals (`describe`, `it`, `expect`, etc.) are global via `tooling/config/global.d.ts` - NO imports needed
 - ONLY import `mock` and `spyOn` when used

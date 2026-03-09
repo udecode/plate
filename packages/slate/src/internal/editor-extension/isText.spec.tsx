@@ -16,14 +16,14 @@ describe('isText', () => {
   );
 
   describe('when element path', () => {
-    it('should return false', () => {
+    it('returns false', () => {
       const path = [0];
       expect(editor.api.isText(path)).toBe(false);
     });
   });
 
   describe('when text path', () => {
-    it('should return true', () => {
+    it('returns true', () => {
       const path = [0, 0];
       expect(editor.api.isText(path)).toBe(true);
     });

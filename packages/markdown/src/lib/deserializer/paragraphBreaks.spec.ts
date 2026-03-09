@@ -5,7 +5,7 @@ import { deserializeMd } from './deserializeMd';
 describe('paragraph breaks preservation', () => {
   const editor = createTestEditor();
 
-  it('should preserve empty paragraphs during serialization and deserialization', () => {
+  it('preserve empty paragraphs during serialization and deserialization', () => {
     const originalValue = [
       {
         children: [
@@ -62,7 +62,7 @@ describe('paragraph breaks preservation', () => {
     expect(deserialized).toEqual(originalValue);
   });
 
-  it('should preserve multiple consecutive empty paragraphs', () => {
+  it('preserve multiple consecutive empty paragraphs', () => {
     const originalValue = [
       {
         children: [{ text: 'line 1' }],
@@ -90,7 +90,7 @@ describe('paragraph breaks preservation', () => {
     expect(deserialized[2].children[0].text).toBe('');
   });
 
-  it('should handle mixed empty and non-empty paragraphs', () => {
+  it('handle mixed empty and non-empty paragraphs', () => {
     const originalValue = [
       {
         children: [{ text: '' }],
@@ -128,7 +128,7 @@ describe('paragraph breaks preservation', () => {
     expect(deserialized[5].children[0].text).toBe('');
   });
 
-  it('should not affect paragraphs with actual content', () => {
+  it('does not affect paragraphs with actual content', () => {
     const originalValue = [
       {
         children: [
@@ -167,7 +167,7 @@ describe('paragraph breaks preservation', () => {
     });
   });
 
-  it('should handle zero-width space in regular text content', () => {
+  it('handle zero-width space in regular text content', () => {
     const originalValue = [
       {
         children: [{ text: 'text with \u200B zero-width space' }],

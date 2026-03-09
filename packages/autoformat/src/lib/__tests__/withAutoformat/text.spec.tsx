@@ -1,207 +1,188 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+
+import {
+  autoformatLegal,
+  autoformatLegalHtml,
+} from '../../rules/autoformatLegal';
+import { autoformatPunctuation } from '../../rules/autoformatPunctuation';
+import { autoformatSmartQuotes } from '../../rules/autoformatSmartQuotes';
+import { autoformatOperation } from '../../rules/math/autoformatOperation';
+import { createAutoformatEditor } from './createAutoformatEditor';
 
 jsxt;
 
-describe('when --space', () => {
-  it('should insert —', () => {
-    const input = (
-      <fragment>
-        <hp>
-          -
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          —
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
+describe('AutoformatPlugin text rules', () => {
+  it.each([
+    {
+      expected: (
+        <fragment>
+          <hp>
+            —
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            -
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatPunctuation,
+      text: '-',
+      title: 'formats -- into an em dash',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>
+            -O-
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            -O
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatPunctuation,
+      text: '-',
+      title: 'leaves a single intervening character alone',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>
+            -OO-
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            -OO
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatPunctuation,
+      text: '-',
+      title: 'leaves multiple intervening characters alone',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>
+            ™
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            (tm
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatLegal,
+      text: ')',
+      title: 'formats (tm) into the trademark symbol',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>
+            §
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            &sect
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatLegalHtml,
+      text: ';',
+      title: 'formats &sect; into the section symbol',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>
+            ÷
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            /
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatOperation,
+      text: '/',
+      title: 'formats // into the division symbol',
+    },
+    {
+      expected: (
+        <fragment>
+          <hp>“hello” .</hp>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            "hello
+            <cursor /> .
+          </hp>
+        </fragment>
+      ) as any,
+      rules: autoformatSmartQuotes,
+      text: '"',
+      title: 'formats straight quotes into smart quotes',
+    },
+  ])('$title', ({ expected, input, rules, text }) => {
+    const editor = createAutoformatEditor({
+      rules,
       value: input,
     });
 
-    editor.tf.insertText('-');
+    editor.tf.insertText(text);
 
-    expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(expected.children);
   });
 
-  it('should not insert — with multiple in between chars', () => {
-    const input = (
-      <fragment>
-        <hp>
-          -OO
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          -OO-
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText('-');
-
-    expect(input.children).toEqual(output.children);
-  });
-
-  it('should not insert — with 1 in between char', () => {
-    const input = (
-      <fragment>
-        <hp>
-          -O
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          -O-
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText('-');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when (tm)', () => {
-  it('should insert &trade;', () => {
-    const input = (
-      <fragment>
-        <hp>
-          (tm
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          ™
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText(')');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when &sect', () => {
-  it('should insert §', () => {
-    const input = (
-      <fragment>
-        <hp>
-          &sect
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          §
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText(';');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when //', () => {
-  it('should insert ÷', () => {
-    const input = (
-      <fragment>
-        <hp>
-          /
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>
-          ÷
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText('/');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when typing %%%', () => {
-  it('should autoformat', () => {
+  it('formats %% and %%% into per-mille then per-ten-thousand', () => {
     const input = (
       <fragment>
         <hp>
@@ -212,7 +193,7 @@ describe('when typing %%%', () => {
       </fragment>
     ) as any;
 
-    const output1 = (
+    const perMille = (
       <fragment>
         <hp>
           ‰
@@ -222,7 +203,7 @@ describe('when typing %%%', () => {
       </fragment>
     ) as any;
 
-    const output2 = (
+    const perTenThousand = (
       <fragment>
         <hp>
           ‱
@@ -232,57 +213,15 @@ describe('when typing %%%', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
+    const editor = createAutoformatEditor({
+      rules: autoformatOperation,
       value: input,
     });
 
     editor.tf.insertText('%');
-
-    expect(input.children).toEqual(output1.children);
+    expect(input.children).toEqual(perMille.children);
 
     editor.tf.insertText('%');
-
-    expect(input.children).toEqual(output2.children);
-  });
-});
-
-describe('when using quotes', () => {
-  it('should autoformat to smart quotes', () => {
-    const input = (
-      <fragment>
-        <hp>
-          "hello
-          <cursor /> .
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>“hello” .</hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        AutoformatKit[0].configure({
-          options: {
-            rules: [
-              {
-                format: ['“', '”'],
-                match: '"',
-                mode: 'text',
-              },
-            ],
-          },
-        }),
-      ],
-      value: input,
-    });
-
-    editor.tf.insertText('"');
-
-    expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(perTenThousand.children);
   });
 });

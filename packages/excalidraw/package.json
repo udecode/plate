@@ -46,8 +46,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@types/lodash": "^4.17.13",
-    "platejs": "^52.0.17"
+    "@types/lodash": "^4.17.13"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

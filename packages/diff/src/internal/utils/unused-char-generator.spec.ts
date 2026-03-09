@@ -1,7 +1,7 @@
 import { unusedCharGenerator } from './unused-char-generator';
 
 describe('unusedCharGenerator', () => {
-  it('should generate unique chars that are not skipped', () => {
+  it('generate unique chars that are not skipped', () => {
     const generator = unusedCharGenerator({
       skipChars: 'DO NOT USE ANY OF THESE CHARS',
     });

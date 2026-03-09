@@ -47,7 +47,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "52.3.3",
+    "@platejs/slate": "workspace:*",
     "@udecode/react-hotkeys": "52.0.11",
     "@udecode/react-utils": "52.0.11",
     "@udecode/utils": "52.0.1",
@@ -80,15 +80,6 @@
   "module": "./dist/index.js",
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/basic-nodes": "^52.0.11",
-    "@platejs/basic-styles": "^52.0.11",
-    "@platejs/code-block": "^52.0.11",
-    "@platejs/link": "^52.0.11",
-    "@platejs/list-classic": "^52.0.11",
-    "@platejs/media": "^52.0.11",
-    "@platejs/table": "^52.0.11",
-    "@platejs/test-utils": "^52.3.3",
-    "mutative": "^1.1.0",
-    "platejs": "^52.3.3"
+    "mutative": "^1.1.0"
   }
 }

@@ -15,7 +15,7 @@ const editor = createEditor(
   ) as any
 );
 
-it('should return true when type matches', () => {
+it('returns true when type matches', () => {
   expect(
     isType(createSlateEditor({ editor }), editor.children[0], 'p')
   ).toEqual(true);

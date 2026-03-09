@@ -1,31 +1,31 @@
 import { htmlToJsx } from './htmlToJsx';
 
 describe('htmlToJsx', () => {
-  it('should convert br tags', () => {
+  it('convert br tags', () => {
     const input = 'Line 1<br>Line 2';
     const output = 'Line 1<br />Line 2';
     expect(htmlToJsx(input)).toBe(output);
   });
 
-  it('should convert img tags', () => {
+  it('convert img tags', () => {
     const input = '<img src="test.png">';
     const output = '<img src="test.png" />';
     expect(htmlToJsx(input)).toBe(output);
   });
 
-  it('should convert hr tags', () => {
+  it('convert hr tags', () => {
     const input = '<hr>';
     const output = '<hr />';
     expect(htmlToJsx(input)).toBe(output);
   });
 
-  it('should handle already self-closing tags', () => {
+  it('handle already self-closing tags', () => {
     const input = '<img src="test.png" />';
     const output = '<img src="test.png" />';
     expect(htmlToJsx(input)).toBe(output);
   });
 
-  it('should convert HTML comments', () => {
+  it('convert HTML comments', () => {
     const input = `<!-- Figure comment -->
 <figure>
   <img src="test.png">
@@ -38,7 +38,7 @@ describe('htmlToJsx', () => {
     expect(result).toContain('*/}');
   });
 
-  it('should convert class to className', () => {
+  it('convert class to className', () => {
     const input =
       '<figure class="hero"><img src="test.png"><figcaption>Title</figcaption></figure>';
     const result = htmlToJsx(input);
@@ -46,7 +46,7 @@ describe('htmlToJsx', () => {
     expect(result).toContain('<img src="test.png" />');
   });
 
-  it('should handle unquoted attributes', () => {
+  it('handle unquoted attributes', () => {
     const input = '<img src=images/fig1.png width=650 alt="test">';
     const result = htmlToJsx(input);
     expect(result).toContain('src="images/fig1.png"');
@@ -54,14 +54,14 @@ describe('htmlToJsx', () => {
     expect(result).toContain('alt="test"');
   });
 
-  it('should handle boolean attributes', () => {
+  it('handle boolean attributes', () => {
     const input = '<input type="checkbox" checked disabled>';
     const result = htmlToJsx(input);
     expect(result).toContain('checked="true"');
     expect(result).toContain('disabled="true"');
   });
 
-  it('should handle complex figure structure', () => {
+  it('handle complex figure structure', () => {
     const input = `<figure class="figure">  
     <!-- This is a figure -->  
     <img src=images/fig1.png width=650 alt="Code Compilation" align=center checked>  
@@ -85,14 +85,14 @@ describe('htmlToJsx', () => {
     expect(result).not.toMatch(/\sclass=/);
   });
 
-  it('should convert for attribute in label but not in other words', () => {
+  it('convert for attribute in label but not in other words', () => {
     const input = '<label for="email">Email</label>';
     const result = htmlToJsx(input);
     expect(result).toContain('htmlFor="email"');
     expect(result).not.toContain('htmlFor="email" for=');
   });
 
-  it('should not convert for in transform attribute', () => {
+  it('does not convert for in transform attribute', () => {
     const input = '<div transform="rotate" for="partial">Test</div>';
     const result = htmlToJsx(input);
     expect(result).toContain('htmlFor="partial"');
@@ -100,7 +100,7 @@ describe('htmlToJsx', () => {
     expect(result).not.toContain('transform-htmlFor');
   });
 
-  it('should not convert for in class in quoted values', () => {
+  it('does not convert for in class in quoted values', () => {
     const input =
       '<input placeholder="Email for account registration." title="tools for developers">';
     const result = htmlToJsx(input);
@@ -109,14 +109,14 @@ describe('htmlToJsx', () => {
     expect(result).not.toContain('htmlFor=');
   });
 
-  it('should not convert class in x-class or other prefixed attributes', () => {
+  it('does not convert class in x-class or other prefixed attributes', () => {
     const input = '<div x-class="active">Content</div>';
     const result = htmlToJsx(input);
     expect(result).not.toContain('className=');
     expect(result).toContain('x-class="active"');
   });
 
-  it('should convert class after other attributes', () => {
+  it('convert class after other attributes', () => {
     const input = '<div id="main" class="container">Content</div>';
     const result = htmlToJsx(input);
     expect(result).toContain('className="container"');

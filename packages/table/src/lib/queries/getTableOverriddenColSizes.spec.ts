@@ -18,7 +18,7 @@ const makeTableElement = (
 
 describe('getTableOverriddenColSizes', () => {
   describe('when colSizes is not defined', () => {
-    it('should return all zeros', () => {
+    it('returns all zeros', () => {
       const tableElement = makeTableElement(3);
       const overrides = new Map<number, number>();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
@@ -26,7 +26,7 @@ describe('getTableOverriddenColSizes', () => {
       );
     });
 
-    it('should apply overrides', () => {
+    it('apply overrides', () => {
       const tableElement = makeTableElement(3);
       const overrides = new Map<number, number>([
         [0, 100],
@@ -39,7 +39,7 @@ describe('getTableOverriddenColSizes', () => {
   });
 
   describe('when colSizes is defined', () => {
-    it('should return colSizes', () => {
+    it('returns colSizes', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
       const overrides = new Map<number, number>();
       expect(getTableOverriddenColSizes(tableElement, overrides)).toMatchObject(
@@ -47,7 +47,7 @@ describe('getTableOverriddenColSizes', () => {
       );
     });
 
-    it('should apply overrides', () => {
+    it('apply overrides', () => {
       const tableElement = makeTableElement(3, [100, 200, 300]);
       const overrides = new Map<number, number>([
         [0, 1000],

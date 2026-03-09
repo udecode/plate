@@ -8,7 +8,7 @@ jsx;
 
 describe('replaceNodes', () => {
   describe('when replacing node', () => {
-    it('should replace node at path', () => {
+    it('replace node at path', () => {
       const editor = createEditor(
         (
           <editor>
@@ -41,7 +41,7 @@ describe('replaceNodes', () => {
   });
 
   describe('when replacing children', () => {
-    it('should replace children at path', () => {
+    it('replace children at path', () => {
       const editor = createEditor(
         (
           <editor>
@@ -87,7 +87,7 @@ describe('replaceNodes', () => {
       ]);
     });
 
-    it('should handle undefined at', () => {
+    it('handle undefined at', () => {
       const editor = createEditor(
         (
           <editor>

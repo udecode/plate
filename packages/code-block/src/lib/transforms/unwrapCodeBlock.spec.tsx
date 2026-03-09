@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
@@ -11,7 +11,7 @@ import { unwrapCodeBlock } from './unwrapCodeBlock';
 jsxt;
 
 describe('unwrap code block', () => {
-  it('should turn a code block to multiple p', () => {
+  it('turn a code block to multiple p', () => {
     const input = (
       <editor>
         <hcodeblock>
@@ -35,7 +35,7 @@ describe('unwrap code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -46,7 +46,7 @@ describe('unwrap code block', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should turn multiple code blocks to multiple p', () => {
+  it('turn multiple code blocks to multiple p', () => {
     const input = (
       <editor>
         <hcodeblock>
@@ -83,7 +83,7 @@ describe('unwrap code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -95,7 +95,7 @@ describe('unwrap code block', () => {
   });
 
   describe('when not inside code block', () => {
-    it('should do nothing', () => {
+    it('keeps the editor unchanged outside code blocks', () => {
       const input = (
         <editor>
           <hp>
@@ -126,7 +126,7 @@ describe('unwrap code block', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

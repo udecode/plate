@@ -9,9 +9,59 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
 
+const createElementPlugin = ({
+  key,
+  match,
+  mergeRules,
+  type = key,
+}: {
+  key: string;
+  match?: ({ node }: any) => boolean;
+  mergeRules?: Record<string, unknown>;
+  type?: string;
+}) =>
+  createSlatePlugin({
+    key,
+    node: {
+      isElement: true,
+      type,
+    },
+    ...(mergeRules || match
+      ? {
+          rules: {
+            ...(mergeRules ? { merge: mergeRules } : {}),
+            ...(match ? { match } : {}),
+          },
+        }
+      : {}),
+  });
+
+const getEditorAfterAction = ({
+  action,
+  input,
+  nodeId,
+  plugins = [],
+}: {
+  action: (editor: ReturnType<typeof createSlateEditor>) => void;
+  input: any;
+  nodeId?: boolean;
+  plugins?: any[];
+}) => {
+  const editor = createSlateEditor({
+    nodeId,
+    plugins,
+    selection: input.selection,
+    value: input.children,
+  });
+
+  action(editor);
+
+  return editor;
+};
+
 describe('withMergeRules', () => {
-  describe('rules: { merge: { removeEmpty: true } }', () => {
-    it('should remove empty previous node when merging', () => {
+  describe('remove-empty merge rules', () => {
+    it('removes an empty previous node when merging backward', () => {
       const input = (
         <editor>
           <hp>
@@ -33,28 +83,22 @@ describe('withMergeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'p',
-            node: {
-              isElement: true,
-              type: 'p',
-            },
-            rules: { merge: { removeEmpty: true } },
+            mergeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should NOT remove non-empty previous node when merging', () => {
+    it('keeps previous content when merging into a non-empty node', () => {
       const input = (
         <editor>
           <hp>previous content</hp>
@@ -75,30 +119,27 @@ describe('withMergeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'p',
-            node: {
-              isElement: true,
-              type: 'p',
-            },
-            rules: { merge: { removeEmpty: true } },
+            mergeRules: { removeEmpty: true },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('rules: { merge: { removeEmpty: false } }', () => {
-    it('should NOT remove empty previous node when merging', () => {
+  describe('default merge behavior', () => {
+    it.each([
+      ['with removeEmpty disabled', { removeEmpty: false }],
+      ['without merge rules', undefined],
+    ])('%s keeps the merged node instead of deleting content', (_label, mergeRules) => {
       const input = (
         <editor>
           <element type="custom">
@@ -120,74 +161,24 @@ describe('withMergeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
             key: 'custom',
-            node: {
-              isElement: true,
-              type: 'custom',
-            },
-            rules: { merge: { removeEmpty: false } },
+            mergeRules: mergeRules as Record<string, unknown> | undefined,
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('mergeRules: undefined (default)', () => {
-    it('should NOT remove empty previous node by default', () => {
-      const input = (
-        <editor>
-          <element type="custom">
-            <htext />
-          </element>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'custom',
-            node: {
-              isElement: true,
-              type: 'custom',
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-  });
-
-  describe('matchRules override behavior', () => {
-    it('should use matchRules override to prevent removal', () => {
+  describe('match overrides', () => {
+    it('uses the matching override to prevent removeEmpty behavior', () => {
       const input = (
         <editor>
           <hp customProperty="customValue">
@@ -209,75 +200,28 @@ describe('withMergeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          // Base paragraph plugin that normally removes empty previous
-          createSlatePlugin({
+          createElementPlugin({
             key: 'p',
-            node: {
-              isElement: true,
-              type: 'p',
-            },
-            rules: { merge: { removeEmpty: true } },
+            mergeRules: { removeEmpty: true },
           }),
-          // Override plugin that prevents removal for nodes with customProperty
-          createSlatePlugin({
+          createElementPlugin({
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              merge: { removeEmpty: false },
-              match: ({ node }: { node: any }) => Boolean(node.customProperty),
-            },
+            match: ({ node }: { node: any }) => Boolean(node.customProperty),
+            mergeRules: { removeEmpty: false },
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    describe('deleteForward empty -> codeblock', () => {
-      it('should merge', () => {
-        const input = (
-          <editor>
-            <hp>
-              <cursor />
-            </hp>
-            <hcodeblock>
-              <hcodeline>content</hcodeline>
-            </hcodeblock>
-          </editor>
-        ) as any;
-
-        const output = (
-          <editor>
-            <hp>
-              <cursor />
-              content
-            </hp>
-          </editor>
-        ) as any;
-
-        const editor = createSlateEditor({
-          plugins: [BaseCodeBlockPlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteForward('character');
-
-        expect(editor.children).toEqual(output.children);
-        expect(editor.selection).toEqual(output.selection);
-      });
-    });
-
-    it('should use default behavior when matchRules does not match', () => {
+    it('falls back to the base merge behavior when the override does not match', () => {
       const input = (
         <editor>
           <hp>
@@ -299,45 +243,66 @@ describe('withMergeRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          // Base paragraph plugin that removes empty previous
-          createSlatePlugin({
+          createElementPlugin({
             key: 'p',
-            node: {
-              isElement: true,
-              type: 'p',
-            },
-            rules: { merge: { removeEmpty: true } },
+            mergeRules: { removeEmpty: true },
           }),
-          // Override plugin that only matches nodes with customProperty (won't match)
-          createSlatePlugin({
+          createElementPlugin({
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              merge: { removeEmpty: false },
-              match: ({ node }: { node: any }) => Boolean(node.customProperty),
-            },
+            match: ({ node }: { node: any }) => Boolean(node.customProperty),
+            mergeRules: { removeEmpty: false },
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('table', () => {
-    // https://github.com/udecode/editor-protocol/issues/22
-    describe('Delete backward after a table', () => {
-      it('should select the last cell', () => {
-        const input = (
+  describe('special merge boundaries', () => {
+    it('merges an empty paragraph forward into a code block', () => {
+      const input = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+          <hcodeblock>
+            <hcodeline>content</hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            content
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteForward('character'),
+        input,
+        plugins: [BaseCodeBlockPlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('table boundaries', () => {
+    it.each([
+      [
+        'moves backward from after a table into the last cell',
+        (
           <editor>
             <htable>
               <htr>
@@ -353,9 +318,8 @@ describe('withMergeRules', () => {
               <cursor />a
             </hp>
           </editor>
-        ) as any as SlateEditor;
-
-        const output = (
+        ) as any as SlateEditor,
+        (
           <editor>
             <htable>
               <htr>
@@ -371,25 +335,13 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const editor = createSlateEditor({
-          nodeId: true,
-          plugins: [BaseTablePlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteBackward();
-
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
-      });
-    });
-
-    describe('Delete backward after empty cell', () => {
-      it('should select the last cell', () => {
-        const input = (
+        ) as any as SlateEditor,
+        (editor: ReturnType<typeof createSlateEditor>) =>
+          editor.tf.deleteBackward(),
+      ],
+      [
+        'moves backward from after a table with an empty last cell into that cell',
+        (
           <editor>
             <htable>
               <htr>
@@ -407,9 +359,8 @@ describe('withMergeRules', () => {
               <cursor />a
             </hp>
           </editor>
-        ) as any as SlateEditor;
-
-        const output = (
+        ) as any as SlateEditor,
+        (
           <editor>
             <htable>
               <htr>
@@ -424,26 +375,13 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const editor = createSlateEditor({
-          nodeId: true,
-          plugins: [BaseTablePlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteBackward();
-
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
-      });
-    });
-
-    // https://github.com/udecode/editor-protocol/issues/23
-    describe('Delete forward before a table', () => {
-      it('should select its first cell', () => {
-        const input = (
+        ) as any as SlateEditor,
+        (editor: ReturnType<typeof createSlateEditor>) =>
+          editor.tf.deleteBackward(),
+      ],
+      [
+        'moves forward from before a table into the first cell',
+        (
           <editor>
             <hp>
               a
@@ -460,9 +398,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const output = (
+        ) as any as SlateEditor,
+        (
           <editor>
             <hp>
               a<cursor />
@@ -481,25 +418,13 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const editor = createSlateEditor({
-          nodeId: true,
-          plugins: [BaseTablePlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteForward();
-
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
-      });
-    });
-
-    describe('Delete forward from end of last cell', () => {
-      it('should merge with next element', () => {
-        const input = (
+        ) as any as SlateEditor,
+        (editor: ReturnType<typeof createSlateEditor>) =>
+          editor.tf.deleteForward(),
+      ],
+      [
+        'moves forward from the last cell into the next block',
+        (
           <editor>
             <htable>
               <htr>
@@ -516,9 +441,8 @@ describe('withMergeRules', () => {
             </htable>
             <hp>next content</hp>
           </editor>
-        ) as any as SlateEditor;
-
-        const output = (
+        ) as any as SlateEditor,
+        (
           <editor>
             <htable>
               <htr>
@@ -535,25 +459,13 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const editor = createSlateEditor({
-          nodeId: true,
-          plugins: [BaseTablePlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteForward();
-
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
-      });
-    });
-
-    describe('Delete backward from start of first cell', () => {
-      it('should merge with previous element', () => {
-        const input = (
+        ) as any as SlateEditor,
+        (editor: ReturnType<typeof createSlateEditor>) =>
+          editor.tf.deleteForward(),
+      ],
+      [
+        'moves backward from the first table cell into the previous block',
+        (
           <editor>
             <hp>previous content</hp>
             <htable>
@@ -570,9 +482,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const output = (
+        ) as any as SlateEditor,
+        (
           <editor>
             <hp>
               previous content
@@ -592,20 +503,20 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor;
-
-        const editor = createSlateEditor({
-          nodeId: true,
-          plugins: [BaseTablePlugin],
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteBackward();
-
-        expect(editor.children).toMatchObject(output.children);
-        expect(editor.selection).toEqual(output.selection);
+        ) as any as SlateEditor,
+        (editor: ReturnType<typeof createSlateEditor>) =>
+          editor.tf.deleteBackward(),
+      ],
+    ])('%s', (_label, input, output, action) => {
+      const editor = getEditorAfterAction({
+        action,
+        input,
+        nodeId: true,
+        plugins: [BaseTablePlugin],
       });
+
+      expect(editor.children).toMatchObject(output.children);
+      expect(editor.selection).toEqual(output.selection);
     });
   });
 });

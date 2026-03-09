@@ -1,80 +1,60 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
 
-import { AutoformatPlugin } from '../../../AutoformatPlugin';
+import { createAutoformatEditor } from '../createAutoformatEditor';
 
 jsxt;
 
-describe('when #space', () => {
-  it('should set block type to h1', () => {
-    const input = (
-      <fragment>
-        <hp>
-          #
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hh1>hello</hh1>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: [
-        AutoformatPlugin.configure({
-          options: {
-            rules: [
-              {
-                match: '# ',
-                mode: 'block',
-                // preFormat: preFormat,
-                type: 'h1',
-              },
-            ],
-          },
-        }),
-      ],
+describe('AutoformatPlugin heading block rules', () => {
+  it.each([
+    {
+      expected: (
+        <fragment>
+          <hh1>hello</hh1>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            #
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      match: '# ',
+      title: 'formats # into an h1 block',
+      type: KEYS.h1,
+    },
+    {
+      expected: (
+        <fragment>
+          <hh2>hello</hh2>
+        </fragment>
+      ) as any,
+      input: (
+        <fragment>
+          <hp>
+            ##
+            <cursor />
+            hello
+          </hp>
+        </fragment>
+      ) as any,
+      match: '## ',
+      title: 'formats ## into an h2 block',
+      type: KEYS.h2,
+    },
+  ])('$title', ({ expected, input, match, type }) => {
+    const editor = createAutoformatEditor({
+      rules: [{ match, mode: 'block', type }],
       value: input,
     });
 
     editor.tf.insertText(' ');
 
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when ##space', () => {
-  it('should set block type to h2', () => {
-    const input = (
-      <fragment>
-        <hp>
-          ##
-          <cursor />
-          hello
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hh2>hello</hh2>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText(' ');
-
-    expect(input.children).toEqual(output.children);
+    expect(input.children).toEqual(expected.children);
   });
 });

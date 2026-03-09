@@ -3,28 +3,9 @@
 import { jsxt } from '@platejs/test-utils';
 import { type Value, createSlateEditor } from 'platejs';
 
-import { type TableConfig, BaseTablePlugin } from './BaseTablePlugin';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
-
-// biome-ignore lint/suspicious/noExportsInTest: test helper function
-export const getTestTablePlugins = (
-  options?: Partial<TableConfig['options']>,
-  override?: (plugin: typeof BaseTablePlugin) => any
-) => {
-  let tablePlugin = BaseTablePlugin.configure({
-    options: {
-      disableMerge: true,
-      ...options,
-    },
-  });
-
-  if (override) {
-    tablePlugin = override(tablePlugin);
-  }
-
-  return [tablePlugin];
-};
 
 describe('withNormalizeTable', () => {
   // https://github.com/udecode/editor-protocol/issues/65
@@ -32,7 +13,7 @@ describe('withNormalizeTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should wrap the children into a p (disableMerge: $disableMerge)', ({
+    ])('wraps the children into a p (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -82,9 +63,7 @@ describe('withNormalizeTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should set colSizes (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
+    ])('sets colSizes (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = (
         <fragment>
           <htable>
@@ -171,9 +150,7 @@ describe('withNormalizeTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should set colSizes (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
+    ])('sets colSizes (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = (
         <fragment>
           <htable colSizes={[0, 40, 0]}>
@@ -260,7 +237,7 @@ describe('withNormalizeTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should do nothing (disableMerge: $disableMerge)', ({
+    ])('keeps existing colSizes when every column width is already defined (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -350,7 +327,7 @@ describe('withNormalizeTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should unwrap the nested table, tr, td (disableMerge: $disableMerge)', ({
+    ])('unwraps nested table, tr, and td nodes (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (

@@ -6,7 +6,7 @@ import { createSlateEditor } from '../editor';
 import { createTSlatePlugin } from './createSlatePlugin';
 
 describe('createTSlatePlugin', () => {
-  it('should work with fn', () => {
+  it('work with fn', () => {
     // Test plugin creation with a function
     const functionPlugin = createTSlatePlugin<
       PluginConfig<'functionPlugin', { editorId: string }>
@@ -19,7 +19,7 @@ describe('createTSlatePlugin', () => {
     expect(resolvedFunctionPlugin.key).toBe('functionPlugin');
   });
 
-  it('should create a plugin with explicit types and cover various scenarios', () => {
+  it('create a plugin with explicit types and cover various scenarios', () => {
     type TestOptions = {
       optionA?: string;
       optionB?: number;

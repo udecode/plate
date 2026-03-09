@@ -16,7 +16,7 @@ output:
 1. E1
   1. |E2
 */
-it('should indent single list item (start of item)', () => {
+it('indent single list item (start of item)', () => {
   const input = (
     <editor>
       <hul>
@@ -70,7 +70,7 @@ output:
 1. E1
   1. E2|
 */
-it('should indent single list item (end of item)', () => {
+it('indent single list item (end of item)', () => {
   const input = (
     <editor>
       <hul>
@@ -126,7 +126,7 @@ output:
   1. |E2
   2. E3|
 */
-it('should indent multiple list items (start/end)', () => {
+it('indent multiple list items (start/end)', () => {
   const input = (
     <editor>
       <hul>
@@ -194,7 +194,7 @@ output:
 2. |E2
 3. E3|
 */
-it('should un-indent multiple list items (start/end)', () => {
+it('un-indent multiple list items (start/end)', () => {
   const input = (
     <editor>
       <hul>
@@ -264,7 +264,7 @@ output:
 3. E3
 |
 */
-it('should un-indent multiple list items (start/out)', () => {
+it('un-indent multiple list items (start/out)', () => {
   const input = (
     <editor>
       <hul>
@@ -321,7 +321,7 @@ it('should un-indent multiple list items (start/out)', () => {
   expect(editor.children).toEqual(output.children);
 });
 
-it('should unhang before indentation', () => {
+it('unhang before indentation', () => {
   const input = (
     <editor>
       <hul>
@@ -384,7 +384,7 @@ it('should unhang before indentation', () => {
   expect(editor.children).toEqual(output.children);
 });
 
-it('should NOT not adjust selection length when unhanging ranges', () => {
+it('does not not adjust selection length when unhanging ranges', () => {
   const input = (
     <editor>
       <hp>
@@ -410,7 +410,7 @@ it('should NOT not adjust selection length when unhanging ranges', () => {
   expect(editor.selection).toEqual(selectionBefore);
 });
 
-it('should convert top-level list item into body upon unindent if enableResetOnShiftTab is true', () => {
+it('convert top-level list item into body upon unindent if enableResetOnShiftTab is true', () => {
   const input = (
     <editor>
       <hul>
@@ -460,7 +460,7 @@ it('should convert top-level list item into body upon unindent if enableResetOnS
   expect(editor.children).toEqual(output.children);
 });
 
-it('should convert top-level (first) list item into body upon unindent if enableResetOnShiftTab is true', () => {
+it('convert top-level (first) list item into body upon unindent if enableResetOnShiftTab is true', () => {
   const input = (
     <editor>
       <hul>
@@ -508,7 +508,7 @@ it('should convert top-level (first) list item into body upon unindent if enable
   expect(editor.children).toEqual(output.children);
 });
 
-it('should convert top-level (last) list item into body upon unindent if enableResetOnShiftTab is true', () => {
+it('convert top-level (last) list item into body upon unindent if enableResetOnShiftTab is true', () => {
   const input = (
     <editor>
       <hul>
@@ -556,7 +556,7 @@ it('should convert top-level (last) list item into body upon unindent if enableR
   expect(editor.children).toEqual(output.children);
 });
 
-it('should NOT convert top-level list item into body upon unindent if enableResetOnShiftTab is false', () => {
+it('does not convert top-level list item into body upon unindent if enableResetOnShiftTab is false', () => {
   const input = (
     <editor>
       <hul>

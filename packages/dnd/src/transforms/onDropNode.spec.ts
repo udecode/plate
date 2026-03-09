@@ -1,7 +1,7 @@
 import type { TElement } from 'platejs';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import type { DragItemNode } from '../types';
 
@@ -9,7 +9,7 @@ import * as utils from '../utils';
 import { onDropNode } from './onDropNode';
 
 describe('onDropNode', () => {
-  let editor: ReturnType<typeof createPlateEditor>;
+  let editor: ReturnType<typeof createSlateEditor>;
   let dragItem: DragItemNode;
 
   const monitor = { canDrop: () => true } as DropTargetMonitor;
@@ -21,7 +21,7 @@ describe('onDropNode', () => {
   let getHoverDirectionMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    editor = createPlateEditor();
+    editor = createSlateEditor();
     editor.tf.moveNodes = mock();
     editor.tf.insertNodes = mock();
     editor.tf.focus = mock();
@@ -44,7 +44,7 @@ describe('onDropNode', () => {
   });
 
   describe('when direction is undefined', () => {
-    it('should do nothing', () => {
+    it('returns early when no drop direction is available', () => {
       getHoverDirectionMock.mockReturnValueOnce(undefined);
 
       onDropNode(editor, {
@@ -59,7 +59,7 @@ describe('onDropNode', () => {
   });
 
   describe('when nodes are not found', () => {
-    it('should do nothing if drag node is not found', () => {
+    it('returns early when the drag node is missing', () => {
       getHoverDirectionMock.mockReturnValueOnce('bottom');
       (editor.api.findPath as ReturnType<typeof mock>).mockReturnValueOnce(
         undefined
@@ -75,7 +75,7 @@ describe('onDropNode', () => {
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
-    it('should do nothing if hover node is not found', () => {
+    it('returns early when the hover node is missing', () => {
       getHoverDirectionMock.mockReturnValueOnce('bottom');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([0])
@@ -93,7 +93,7 @@ describe('onDropNode', () => {
   });
 
   describe('vertical orientation', () => {
-    it('should move node below when direction is bottom', () => {
+    it('move node below when direction is bottom', () => {
       getHoverDirectionMock.mockReturnValue('bottom');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([0])
@@ -112,7 +112,7 @@ describe('onDropNode', () => {
       });
     });
 
-    it('should move node above when direction is top', () => {
+    it('move node above when direction is top', () => {
       getHoverDirectionMock.mockReturnValue('top');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([2])
@@ -131,7 +131,7 @@ describe('onDropNode', () => {
       });
     });
 
-    it('should not move if already in position for bottom', () => {
+    it('does not move if already in position for bottom', () => {
       getHoverDirectionMock.mockReturnValue('bottom');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([1])
@@ -147,7 +147,7 @@ describe('onDropNode', () => {
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
-    it('should not move if already in position for top', () => {
+    it('does not move if already in position for top', () => {
       getHoverDirectionMock.mockReturnValue('top');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([0])
@@ -165,7 +165,7 @@ describe('onDropNode', () => {
   });
 
   describe('horizontal orientation', () => {
-    it('should move node right when direction is right', () => {
+    it('move node right when direction is right', () => {
       getHoverDirectionMock.mockReturnValue('right');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([2, 0])
@@ -185,7 +185,7 @@ describe('onDropNode', () => {
       });
     });
 
-    it('should move node left when direction is left', () => {
+    it('move node left when direction is left', () => {
       getHoverDirectionMock.mockReturnValue('left');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([2, 2])
@@ -205,7 +205,7 @@ describe('onDropNode', () => {
       });
     });
 
-    it('should not move if already in position for right', () => {
+    it('does not move if already in position for right', () => {
       getHoverDirectionMock.mockReturnValue('right');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([2, 1])
@@ -222,7 +222,7 @@ describe('onDropNode', () => {
       expect(editor.tf.moveNodes).not.toHaveBeenCalled();
     });
 
-    it('should not move if already in position for left', () => {
+    it('does not move if already in position for left', () => {
       getHoverDirectionMock.mockReturnValue('left');
       (editor.api.findPath as ReturnType<typeof mock>)
         .mockReturnValueOnce([2, 0])
@@ -241,10 +241,10 @@ describe('onDropNode', () => {
   });
 
   describe('cross editor drop', () => {
-    it('should remove nodes from the source editor after inserting into the target editor', () => {
+    it('remove nodes from the source editor after inserting into the target editor', () => {
       getHoverDirectionMock.mockReturnValue('bottom');
 
-      const sourceEditor = createPlateEditor();
+      const sourceEditor = createSlateEditor();
       sourceEditor.tf.removeNodes = mock() as any;
       sourceEditor.api.node = mock().mockReturnValue([dragElement, [0]]) as any;
 

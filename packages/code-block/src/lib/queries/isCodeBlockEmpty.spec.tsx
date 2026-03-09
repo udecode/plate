@@ -1,85 +1,72 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor, createSlateEditor } from 'platejs';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsxt;
 
 describe('isCodeBlockEmpty', () => {
-  it('should be false when not in a code block', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hp>
+  const run = (input: any) =>
+    isCodeBlockEmpty(createSlateEditor({ editor: createEditor(input) }));
+
+  it.each([
+    [
+      'returns false outside a code block',
+      <editor>
+        <hp>
+          <htext />
+          <cursor />
+        </hp>
+        <hcodeblock>
+          <hcodeline>
+            <htext />
+          </hcodeline>
+        </hcodeblock>
+      </editor>,
+      false,
+    ],
+    [
+      'returns false for a multi-line code block',
+      <editor>
+        <hcodeblock>
+          <hcodeline>
             <htext />
             <cursor />
-          </hp>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
-
-    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
-  });
-
-  it('should be false when in a code block with multiple lines', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
-
-    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
-  });
-
-  it('should be false when in a non-empty code line', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              test
-              <cursor />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
-
-    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(false);
-  });
-
-  it('should be true when in an empty code line', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-              <cursor />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
-
-    expect(isCodeBlockEmpty(createPlateEditor({ editor: input }))).toBe(true);
+          </hcodeline>
+          <hcodeline>
+            <htext />
+          </hcodeline>
+        </hcodeblock>
+      </editor>,
+      false,
+    ],
+    [
+      'returns false for a non-empty code line',
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            test
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>,
+      false,
+    ],
+    [
+      'returns true for a single empty code line',
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <htext />
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>,
+      true,
+    ],
+  ])('%s', (_label, input, expected) => {
+    expect(run(input)).toBe(expected);
   });
 });

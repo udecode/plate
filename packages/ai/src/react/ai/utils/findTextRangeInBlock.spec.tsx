@@ -2,7 +2,7 @@ import { createTestEditor } from './__tests__/createTestEditor';
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 describe('findTextRangeInBlock', () => {
-  it('should find text in a simple nested inline node', () => {
+  it('find text in a simple nested inline node', () => {
     const editor = createTestEditor([
       {
         id: '231asasd',
@@ -29,7 +29,7 @@ describe('findTextRangeInBlock', () => {
     });
   });
 
-  it('should find text spanning multiple styled nodes', () => {
+  it('find text spanning multiple styled nodes', () => {
     const editor = createTestEditor([
       {
         id: 'gYBjGfssdm',
@@ -56,7 +56,7 @@ describe('findTextRangeInBlock', () => {
     });
   });
 
-  it('should fallback to prefix when full text not found', () => {
+  it('fallback to prefix when full text not found', () => {
     const editor = createTestEditor([
       {
         id: 'block1',
@@ -77,7 +77,7 @@ describe('findTextRangeInBlock', () => {
     });
   });
 
-  it('should return null when neither full nor prefix found', () => {
+  it('returns null when neither full nor prefix found', () => {
     const editor = createTestEditor([
       {
         id: 'block2',
@@ -94,7 +94,7 @@ describe('findTextRangeInBlock', () => {
     expect(range).toBeNull();
   });
 
-  it('should correctly match text spanning multiple nodes with minor spacing differences', () => {
+  it('correctly match text spanning multiple nodes with minor spacing differences', () => {
     const editor = createTestEditor([
       {
         id: '-WVMecrPDQ',
@@ -159,7 +159,7 @@ describe('findTextRangeInBlock', () => {
     });
   });
 
-  it('should not match text spanning multiple nodes when there are significant differences', () => {
+  it('does not match text spanning multiple nodes when there are significant differences', () => {
     const editor = createTestEditor([
       {
         id: '-WVMecrPDQ',

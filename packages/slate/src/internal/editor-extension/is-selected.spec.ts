@@ -3,7 +3,7 @@ import type { Range, Value } from '../../interfaces';
 import { isSelected } from './is-selected';
 
 describe('isSelected', () => {
-  it('should return false when no selection', () => {
+  it('returns false when no selection', () => {
     const editor = createEditor<Value>({
       children: [{ children: [{ text: 'test' }], type: 'p' }],
     });
@@ -12,7 +12,7 @@ describe('isSelected', () => {
     expect(isSelected(editor, [0])).toBe(false);
   });
 
-  it('should return true when selection intersects with path', () => {
+  it('returns true when selection intersects with path', () => {
     const editor = createEditor<Value>({
       children: [{ children: [{ text: 'test' }], type: 'p' }],
       selection: {
@@ -24,7 +24,7 @@ describe('isSelected', () => {
     expect(isSelected(editor, [0])).toBe(true);
   });
 
-  it('should return false when selection does not intersect with path', () => {
+  it('returns false when selection does not intersect with path', () => {
     const editor = createEditor<Value>({
       children: [
         { children: [{ text: 'one' }], type: 'p' },
@@ -40,7 +40,7 @@ describe('isSelected', () => {
   });
 
   describe('contains option', () => {
-    it('should return true when selection fully contains path', () => {
+    it('returns true when selection fully contains path', () => {
       const editor = createEditor<Value>({
         children: [{ children: [{ text: 'test' }], type: 'p' }],
         selection: {
@@ -52,7 +52,7 @@ describe('isSelected', () => {
       expect(isSelected(editor, [0], { contains: true })).toBe(true);
     });
 
-    it('should return false when selection partially contains path', () => {
+    it('returns false when selection partially contains path', () => {
       const editor = createEditor<Value>({
         children: [{ children: [{ text: 'test' }], type: 'p' }],
         selection: {
@@ -64,7 +64,7 @@ describe('isSelected', () => {
       expect(isSelected(editor, [0], { contains: true })).toBe(false);
     });
 
-    it('should return false when selection is outside path', () => {
+    it('returns false when selection is outside path', () => {
       const editor = createEditor<Value>({
         children: [
           { children: [{ text: 'one' }], type: 'p' },
@@ -81,7 +81,7 @@ describe('isSelected', () => {
   });
 
   describe('range input', () => {
-    it('should return true when selection intersects with range', () => {
+    it('returns true when selection intersects with range', () => {
       const editor = createEditor<Value>({
         children: [{ children: [{ text: 'test' }], type: 'p' }],
         selection: {
@@ -98,7 +98,7 @@ describe('isSelected', () => {
       expect(isSelected(editor, range)).toBe(true);
     });
 
-    it('should return false when selection does not intersect with range', () => {
+    it('returns false when selection does not intersect with range', () => {
       const editor = createEditor<Value>({
         children: [{ children: [{ text: 'test' }], type: 'p' }],
         selection: {
@@ -116,7 +116,7 @@ describe('isSelected', () => {
     });
 
     describe('contains option', () => {
-      it('should return true when selection fully contains range', () => {
+      it('returns true when selection fully contains range', () => {
         const editor = createEditor<Value>({
           children: [{ children: [{ text: 'test' }], type: 'p' }],
           selection: {
@@ -133,7 +133,7 @@ describe('isSelected', () => {
         expect(isSelected(editor, range, { contains: true })).toBe(true);
       });
 
-      it('should return false when selection partially contains range', () => {
+      it('returns false when selection partially contains range', () => {
         const editor = createEditor<Value>({
           children: [{ children: [{ text: 'test' }], type: 'p' }],
           selection: {

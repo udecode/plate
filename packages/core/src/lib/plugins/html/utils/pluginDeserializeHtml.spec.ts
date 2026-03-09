@@ -1,21 +1,14 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-import { createPlateEditor } from '../../../../react/editor/withPlate';
+import { createSlateEditor } from '../../../editor';
 import { type HtmlDeserializer, createSlatePlugin } from '../../../plugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { pluginDeserializeHtml } from './pluginDeserializeHtml';
 
 const parse = () => ({ type: BaseParagraphPlugin.key });
 
-// describe('when type', () => {
-//   let deserializer: Deserializer = {};
-//   const htmlDeserializer: HtmlDeserializer = {};
-//
-//   deserializer = htmlDeserializer;
-// });
-
 describe('when element is p and validNodeName is P', () => {
-  it('should be p type', () => {
+  it('returns a paragraph node', () => {
     const deserializer: HtmlDeserializer = {
       isElement: true,
       parse,
@@ -28,7 +21,7 @@ describe('when element is p and validNodeName is P', () => {
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -50,7 +43,7 @@ describe('when element is p, validAttribute', () => {
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -77,7 +70,7 @@ describe('when element is p, validAttribute', () => {
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -101,13 +94,13 @@ describe('when element is p, validAttribute', () => {
 });
 
 describe('when element is p with color and rule style is different', () => {
-  it('should not be p type', () => {
+  it('does not return a paragraph node', () => {
     const element = document.createElement('p');
     element.style.color = '#FF0000';
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -133,13 +126,13 @@ describe('when element is p with color and rule style is different', () => {
 });
 
 describe('when element is p with same style color than rule', () => {
-  it('should be', () => {
+  it('matches an exact style rule', () => {
     const element = document.createElement('p');
     element.style.color = 'rgb(255, 0, 0)';
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -165,13 +158,13 @@ describe('when element is p with same style color than rule', () => {
 });
 
 describe('when element has style color and rule style color is *', () => {
-  it('should be p type', () => {
+  it('matches wildcard style rules', () => {
     const element = document.createElement('p');
     element.style.color = '#FF0000';
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
@@ -197,13 +190,13 @@ describe('when element has style color and rule style color is *', () => {
 });
 
 describe('when element is strong and validNodeName is strong', () => {
-  it('should be', () => {
+  it('returns the matching leaf mark', () => {
     const el = document.createElement('strong');
     el.textContent = 'hello';
 
     expect(
       pluginDeserializeHtml(
-        createPlateEditor(),
+        createSlateEditor(),
         createSlatePlugin({
           node: { isLeaf: true, type: BoldPlugin.key },
           parsers: {

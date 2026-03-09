@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { deleteColumn } from './deleteColumn';
 
 jsxt;
@@ -15,9 +14,7 @@ describe('deleteColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should delete column (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
+    ])('deletes a column (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = (
         <editor>
           <htable>
@@ -61,7 +58,7 @@ describe('deleteColumn', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -78,9 +75,7 @@ describe('deleteColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should delete cell 12 (disableMerge: $disableMerge)', ({
-      disableMerge,
-    }) => {
+    ])('deletes cell 12 (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = (
         <editor>
           <htable>
@@ -121,7 +116,7 @@ describe('deleteColumn', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -138,7 +133,7 @@ describe('deleteColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should delete 11 (disableMerge: $disableMerge)', ({ disableMerge }) => {
+    ])('deletes cell 11 (disableMerge: $disableMerge)', ({ disableMerge }) => {
       const input = (
         <editor>
           <htable>
@@ -179,7 +174,7 @@ describe('deleteColumn', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -196,7 +191,7 @@ describe('deleteColumn', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should do nothing (disableMerge: $disableMerge)', ({
+    ])('keeps the table unchanged when no second-column match exists (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -245,7 +240,7 @@ describe('deleteColumn', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

@@ -3,7 +3,7 @@
 import type { ElementEntry, SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
@@ -12,7 +12,7 @@ jsxt;
 
 describe('outdent code line', () => {
   describe('when line is indented', () => {
-    it('should outdent line', () => {
+    it('outdent line', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -29,7 +29,7 @@ describe('outdent code line', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -45,7 +45,7 @@ describe('outdent code line', () => {
   });
 
   describe('when line is not indented', () => {
-    it('should do nothing', () => {
+    it('keeps an unindented line unchanged', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -62,7 +62,7 @@ describe('outdent code line', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

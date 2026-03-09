@@ -5,7 +5,7 @@ describe('unhangRange', () => {
   const editor = createEditor();
 
   describe('when character is true', () => {
-    it('should return same range if paths are equal', () => {
+    it('returns same range if paths are equal', () => {
       const range: TRange = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
@@ -19,7 +19,7 @@ describe('unhangRange', () => {
       });
     });
 
-    it('should move end point forward if offset is 0', () => {
+    it('move end point forward if offset is 0', () => {
       const range: TRange = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 0, path: [0, 1] },
@@ -37,7 +37,7 @@ describe('unhangRange', () => {
       });
     });
 
-    it('should move start point backward if end offset is not 0', () => {
+    it('move start point backward if end offset is not 0', () => {
       const range: TRange = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 1] },
@@ -55,7 +55,7 @@ describe('unhangRange', () => {
       });
     });
 
-    it('should return original range if no valid points found', () => {
+    it('returns original range if no valid points found', () => {
       const range: TRange = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 0, path: [0, 1] },
@@ -71,7 +71,7 @@ describe('unhangRange', () => {
   });
 
   describe('when character is false or undefined', () => {
-    it('should return original range when unhang is false', () => {
+    it('returns original range when unhang is false', () => {
       const range: TRange = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 1, path: [0, 1] },

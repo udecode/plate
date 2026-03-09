@@ -56,18 +56,8 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/basic-nodes": "^52.0.11",
-    "@platejs/code-block": "^52.0.11",
-    "@platejs/link": "^52.0.11",
-    "@platejs/list": "^52.0.11",
-    "@platejs/list-classic": "^52.0.11",
-    "@platejs/mention": "^52.0.15",
-    "@platejs/suggestion": "^52.0.11",
-    "@platejs/table": "^52.0.11",
-    "@platejs/test-utils": "^52.0.10",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
-    "platejs": "^52.0.17",
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0"
   },

@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { isTableBorderHidden } from './isTableBorderHidden';
 
 jsxt;
@@ -17,7 +16,7 @@ const createEditorInstance = ({
   children?: any;
   selection?: any;
 }) =>
-  createPlateEditor({
+  createSlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection,
@@ -57,19 +56,19 @@ describe('isTableBorderHidden', () => {
     </editor>
   ) as any as SlateEditor;
 
-  it('should return true if left border is hidden', () => {
+  it('returns true if left border is hidden', () => {
     const editor = createEditorInstance(input);
     const hidden = isTableBorderHidden(editor, 'left');
     expect(hidden).toBe(false);
   });
 
-  it('should return true if top border is hidden', () => {
+  it('returns true if top border is hidden', () => {
     const editor = createEditorInstance(input);
     const hidden = isTableBorderHidden(editor, 'top');
     expect(hidden).toBe(true);
   });
 
-  it('should return false if left border is not hidden', () => {
+  it('returns false if left border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
       anchor: { offset: 0, path: [0, 0, 0] },
@@ -79,7 +78,7 @@ describe('isTableBorderHidden', () => {
     expect(hidden).toBe(false);
   });
 
-  it('should return false if top border is not hidden', () => {
+  it('returns false if top border is not hidden', () => {
     const editor = createEditorInstance(input);
     editor.selection = {
       anchor: { offset: 0, path: [0, 1, 0] },
@@ -89,7 +88,7 @@ describe('isTableBorderHidden', () => {
     expect(hidden).toBe(false);
   });
 
-  it('should return false if no matching cell is found', () => {
+  it('returns false if no matching cell is found', () => {
     const emptyEditor = createEditorInstance({ children: [] });
     const hidden = isTableBorderHidden(emptyEditor, 'left');
     expect(hidden).toBe(false);

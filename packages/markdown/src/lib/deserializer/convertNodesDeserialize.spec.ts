@@ -71,7 +71,7 @@ describe('convertNodesDeserialize', () => {
   ];
 
   describe('allowedNodes option', () => {
-    it('should only include nodes specified in allowedNodes', () => {
+    it('only include nodes specified in allowedNodes', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         allowedNodes: ['heading', 'text'],
@@ -83,7 +83,7 @@ describe('convertNodesDeserialize', () => {
       expect(result).toEqual([mockHeadingNodeSlate]);
     });
 
-    it('should include all nodes when allowedNodes is null or undefined', () => {
+    it('include all nodes when allowedNodes is null or undefined', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         allowedNodes: null,
@@ -94,7 +94,7 @@ describe('convertNodesDeserialize', () => {
       expect(result).toEqual(mockNodesSlate);
     });
 
-    it('should include no nodes when allowedNodes is empty', () => {
+    it('include no nodes when allowedNodes is empty', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         allowedNodes: [],
@@ -106,7 +106,7 @@ describe('convertNodesDeserialize', () => {
   });
 
   describe('disabledNodes option', () => {
-    it('should exclude nodes specified in disabledNodes', () => {
+    it('exclude nodes specified in disabledNodes', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         disallowedNodes: ['heading'],
@@ -121,7 +121,7 @@ describe('convertNodesDeserialize', () => {
       ]);
     });
 
-    it('should exclude inline nodes specified in disallowedNodes', () => {
+    it('exclude inline nodes specified in disallowedNodes', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         disallowedNodes: ['bold'],
@@ -142,7 +142,7 @@ describe('convertNodesDeserialize', () => {
   });
 
   describe('allowNode option', () => {
-    it('should exclude nodes specified in allowNode', () => {
+    it('exclude nodes specified in allowNode', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         allowNode: {
@@ -162,7 +162,7 @@ describe('convertNodesDeserialize', () => {
       ]);
     });
 
-    it('should exclude inline nodes specified in allowNode', () => {
+    it('exclude inline nodes specified in allowNode', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
         allowNode: {

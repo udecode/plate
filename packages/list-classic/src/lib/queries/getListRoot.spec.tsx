@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor } from 'platejs';
 import { createSlateEditor } from 'platejs';
 
 import { getListRoot } from './getListRoot';
@@ -29,10 +28,13 @@ const listRoot = (
 
 const input = (<editor>{listRoot}</editor>) as any;
 
-it('should be', () => {
-  const sublist = getListRoot(
-    createSlateEditor({ editor: createEditor(input) })
-  );
+it('returns the top-most list containing the current selection', () => {
+  const editor = createSlateEditor({
+    selection: input.selection,
+    value: input.children,
+  });
+
+  const sublist = getListRoot(editor);
 
   expect(sublist).toEqual([listRoot, [0]]);
 });

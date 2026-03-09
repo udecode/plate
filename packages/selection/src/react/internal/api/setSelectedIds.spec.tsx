@@ -1,120 +1,166 @@
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor, type SlateEditor } from 'platejs';
 
+import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
-/** @jsx jsxt */
+import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
-describe('BlockSelectionPlugin', () => {
-  const createTestEditor = () =>
-    createPlateEditor({
-      plugins: [BlockSelectionPlugin],
-      value: [
-        {
-          id: 'table1',
-          children: [
-            {
-              id: 'tr1',
-              children: [{ text: 'Row 1' }],
-              type: 'tr',
-            },
-            {
-              id: 'tr2',
-              children: [{ text: 'Row 2' }],
-              type: 'tr',
-            },
-          ],
-          type: 'table',
-        },
-        {
-          id: 'p1',
-          children: [{ text: 'Paragraph 1' }],
-          type: 'p',
-        },
-        {
-          id: 'table2',
-          children: [
-            {
-              id: 'tr3',
-              children: [{ text: 'Row 3' }],
-              type: 'tr',
-            },
-          ],
-          type: 'table',
-        },
-      ],
-    });
-
-  it.skip('should deselect ancestor when selecting descendants', () => {
-    const editor = createTestEditor();
-    const api = editor.getApi(BlockSelectionPlugin).blockSelection;
-
-    // Select table1
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['table1']));
-
-    // Add tr1 and tr2 (descendants of table1)
-    api.add(['tr1', 'tr2']);
-
-    // Should deselect table1 and only have tr1 and tr2
-    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
-    expect(Array.from(selectedIds!).sort()).toEqual(['tr1', 'tr2']);
+const createTestEditor = () =>
+  createSlateEditor({
+    plugins: [BlockSelectionPlugin],
+    value: [
+      {
+        id: 'existing',
+        children: [{ text: 'Existing' }],
+        type: 'p',
+      },
+      {
+        id: 'row-1',
+        children: [{ text: 'Row 1' }],
+        type: 'tr',
+      },
+      {
+        id: 'row-2',
+        children: [{ text: 'Row 2' }],
+        type: 'tr',
+      },
+    ],
   });
 
-  it.skip('should select ancestor and deselect descendants when selecting outside', () => {
-    const editor = createTestEditor();
-    const api = editor.getApi(BlockSelectionPlugin).blockSelection;
+const createSelectableElement = (id?: string) =>
+  ({
+    dataset: id ? { blockId: id } : {},
+  }) as unknown as Element;
 
-    // First select tr1
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['tr1']));
+const getSelectedIds = (editor: SlateEditor) =>
+  Array.from(
+    editor.getOption(BlockSelectionPlugin, 'selectedIds') ?? []
+  ).sort();
 
-    // Then select p1 (outside of table1)
-    api.add('p1');
+describe('setSelectedIds', () => {
+  let editor: SlateEditor;
 
-    // Should select table1 (ancestor) and p1, deselecting tr1
-    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
-    expect(Array.from(selectedIds!).sort()).toEqual(['p1', 'table1']);
+  beforeEach(() => {
+    editor = createTestEditor();
   });
 
-  it.skip('should deselect ancestor when selecting descendants', () => {
-    const editor = createTestEditor();
-    const api = editor.getApi(BlockSelectionPlugin).blockSelection;
-
-    // Select table1
-    editor.setOption(BlockSelectionPlugin, 'selectedIds', new Set(['table1']));
-
-    // Select tr1
-    api.add('tr1');
-
-    // Should deselect table1 and only have tr1
-    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
-    expect(Array.from(selectedIds!).sort()).toEqual(['tr1']);
-  });
-
-  it.skip('should handle multiple tables and their rows independently', () => {
-    const editor = createTestEditor();
-    const api = editor.getApi(BlockSelectionPlugin).blockSelection;
-
-    // Select tr1 from table1 and tr3 from table2
+  it('replaces the selection when explicit ids are provided', () => {
     editor.setOption(
       BlockSelectionPlugin,
       'selectedIds',
-      new Set(['tr1', 'tr3'])
+      new Set(['existing'])
     );
 
-    // Both rows should be selected as they're in different tables
-    const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
-    expect(Array.from(selectedIds!).sort()).toEqual(['tr1', 'tr3']);
+    setSelectedIds(editor, { ids: ['row-1', 'row-2'] });
 
-    // Now select p1 (outside both tables)
-    api.add('p1');
+    expect(getSelectedIds(editor)).toEqual(['row-1', 'row-2']);
+    expect(editor.getOption(BlockSelectionPlugin, 'isSelecting')).toBe(true);
+  });
 
-    // Should select both tables and p1, deselecting all rows
-    const newSelectedIds = editor.getOption(
+  it('merges added ids and removes removed ids from selectable elements', () => {
+    editor.setOption(
       BlockSelectionPlugin,
-      'selectedIds'
+      'selectedIds',
+      new Set(['existing', 'row-2'])
     );
-    expect(Array.from(newSelectedIds!).sort()).toEqual([
-      'p1',
-      'table1',
-      'table2',
-    ]);
+
+    setSelectedIds(editor, {
+      added: [createSelectableElement('row-1'), createSelectableElement()],
+      removed: [createSelectableElement('row-2'), createSelectableElement()],
+    });
+
+    expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
+    expect(editor.getOption(BlockSelectionPlugin, 'isSelecting')).toBe(true);
+  });
+});
+
+describe('addSelectedRow', () => {
+  let editor: SlateEditor;
+  let querySelectorSelectableSpy: ReturnType<typeof spyOn> | undefined;
+  let setTimeoutSpy: ReturnType<typeof spyOn> | undefined;
+
+  afterEach(() => {
+    querySelectorSelectableSpy?.mockRestore();
+    setTimeoutSpy?.mockRestore();
+  });
+
+  beforeEach(() => {
+    editor = createTestEditor();
+  });
+
+  it('clears the previous selection before selecting a new row by default', () => {
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockImplementation(((id: string) =>
+      createSelectableElement(id)) as typeof domUtils.querySelectorSelectable);
+    editor.setOption(
+      BlockSelectionPlugin,
+      'selectedIds',
+      new Set(['existing'])
+    );
+
+    addSelectedRow(editor, 'row-1');
+
+    expect(getSelectedIds(editor)).toEqual(['row-1']);
+  });
+
+  it('preserves the existing selection when clear is false', () => {
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockImplementation(((id: string) =>
+      createSelectableElement(id)) as typeof domUtils.querySelectorSelectable);
+    editor.setOption(
+      BlockSelectionPlugin,
+      'selectedIds',
+      new Set(['existing'])
+    );
+
+    addSelectedRow(editor, 'row-1', { clear: false });
+
+    expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
+  });
+
+  it('keeps selection state unchanged when the row cannot be found', () => {
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockReturnValue(null);
+    editor.setOption(
+      BlockSelectionPlugin,
+      'selectedIds',
+      new Set(['existing'])
+    );
+
+    addSelectedRow(editor, 'missing');
+
+    expect(getSelectedIds(editor)).toEqual(['existing']);
+  });
+
+  it('removes the temporary row selection after the configured delay', () => {
+    querySelectorSelectableSpy = spyOn(
+      domUtils,
+      'querySelectorSelectable'
+    ).mockImplementation(((id: string) =>
+      createSelectableElement(id)) as typeof domUtils.querySelectorSelectable);
+    setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
+      callback: TimerHandler
+    ) => {
+      if (typeof callback === 'function') {
+        callback();
+      }
+
+      return 0 as any;
+    }) as typeof globalThis.setTimeout);
+    editor.setOption(
+      BlockSelectionPlugin,
+      'selectedIds',
+      new Set(['existing'])
+    );
+
+    addSelectedRow(editor, 'row-1', { clear: false, delay: 25 });
+
+    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(25);
+    expect(getSelectedIds(editor)).toEqual(['existing']);
   });
 });

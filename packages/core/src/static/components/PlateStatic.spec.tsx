@@ -100,7 +100,7 @@ describe('PlateStatic Memoization', () => {
     resetLeafRenderCount();
   });
 
-  it('should render elements/leaves initially', () => {
+  it('render elements/leaves initially', () => {
     const editor = createEditor();
 
     render(<PlateStatic editor={editor} />);
@@ -110,7 +110,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(1);
   });
 
-  it('should NOT re-render elements/leaves if the same `value` reference is passed', () => {
+  it('does not re-render elements/leaves if the same `value` reference is passed', () => {
     const editor = createEditor();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -123,7 +123,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toEqual(1);
   });
 
-  it('should re-render elements/leaves if `value` changes by reference', () => {
+  it('re-render elements/leaves if `value` changes by reference', () => {
     const editor = createEditor();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -144,7 +144,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(1);
   });
 
-  it('should re-render if slate mutation', () => {
+  it('re-render if slate mutation', () => {
     const editor = createEditor();
 
     render(<PlateStatic editor={editor} />);
@@ -160,7 +160,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(2);
   });
 
-  it('should not re-render if only text changes since element is memoized', () => {
+  it('does not re-render if only text changes since element is memoized', () => {
     const editor = createEditor();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -176,7 +176,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(1);
   });
 
-  it('should only re-render modified element and leaf when editing a single element', () => {
+  it('only re-render modified element and leaf when editing a single element', () => {
     const editor = createEditorWithMultipleElements();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -217,7 +217,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(3);
   });
 
-  it('should preserve memoization when adding and removing new elements', () => {
+  it('preserve memoization when adding and removing new elements', () => {
     const editor = createEditorWithMultipleElements();
 
     const { rerender } = render(<PlateStatic editor={editor} />);
@@ -240,7 +240,7 @@ describe('PlateStatic Memoization', () => {
     expect(getElementRenderCount()).toBe(3);
   });
 
-  it('should use _memo property for memoization when available', () => {
+  it('use _memo property for memoization when available', () => {
     const editor = createEditor();
 
     editor.children[0]._memo = 'memo-value';
@@ -263,7 +263,7 @@ describe('PlateStatic Memoization', () => {
     expect(getElementRenderCount()).toBe(1);
   });
 
-  it('should re-render when _memo changes', () => {
+  it('re-render when _memo changes', () => {
     const editor = createEditor();
 
     editor.children[0]._memo = 'memo-value';
@@ -283,7 +283,7 @@ describe('PlateStatic Memoization', () => {
   });
 
   describe('when rendering unknown element type', () => {
-    it('should not crash when encountering an element with an unknown type', () => {
+    it('does not crash when encountering an element with an unknown type', () => {
       const editor = createSlateEditor({
         plugins: [createSlatePlugin({ key: 'bold', node: { isLeaf: true } })],
         value: [

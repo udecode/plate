@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
-import { type PlateEditor, createPlateEditor } from 'platejs/react';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
 import * as utilsModule from '../../../lib/utils';
@@ -12,7 +12,7 @@ import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 jsx;
 
 describe('setSelectedCellsBorder', () => {
-  let editor: PlateEditor;
+  let editor: SlateEditor;
   let setBorderSizeSpy: ReturnType<typeof spyOn>;
   let getCellIndicesSpy: ReturnType<typeof spyOn>;
   let getCellTypesSpy: ReturnType<typeof spyOn>;
@@ -70,7 +70,7 @@ describe('setSelectedCellsBorder', () => {
       'getLeftTableCell'
     ).mockImplementation(getLeftTableCellMock as any);
 
-    editor = createPlateEditor({ nodeId: true });
+    editor = createSlateEditor({ nodeId: true });
     const findPathMock = mock(() => [0]);
     (editor.api as any).findPath = findPathMock;
   });
@@ -83,54 +83,8 @@ describe('setSelectedCellsBorder', () => {
     getLeftTableCellSpy?.mockRestore();
   });
 
-  // describe('when border is "none"', () => {
-  // it('should toggle all borders to 1 when all are 0', () => {
-  //   const cell: any = {
-  //     id: 'c11',
-  //     borders: {
-  //       bottom: { size: 0 },
-  //       left: { size: 0 },
-  //       right: { size: 0 },
-  //       top: { size: 0 },
-  //     },
-  //   };
-
-  //   setSelectedCellsBorder(editor, {
-  //     border: 'none',
-  //     cells: [cell],
-  //   });
-
-  //   expect(setBorderSize).toHaveBeenCalledWith(editor, 1, {
-  //     at: [0],
-  //     border: 'all',
-  //   });
-  // });
-
-  //   it('should toggle all borders to 0 when any border is set', () => {
-  //     const cell: any = {
-  //       id: 'c11',
-  //       borders: {
-  //         bottom: { size: 0 },
-  //         left: { size: 1 },
-  //         right: { size: 0 },
-  //         top: { size: 0 },
-  //       },
-  //     };
-
-  //     setSelectedCellsBorder(editor, {
-  //       border: 'none',
-  //       cells: [cell],
-  //     });
-
-  //     expect(setBorderSize).toHaveBeenCalledWith(editor, 0, {
-  //       at: [0],
-  //       border: 'all',
-  //     });
-  //   });
-  // });
-
   describe('when border is "outer"', () => {
-    it('should set outer borders to 1 when not all set', () => {
+    it('set outer borders to 1 when not all set', () => {
       const cell1: any = {
         id: 'c11',
         borders: { left: { size: 0 }, top: { size: 0 } },
@@ -156,7 +110,7 @@ describe('setSelectedCellsBorder', () => {
       });
     });
 
-    it('should set outer borders to 0 when all set', () => {
+    it('set outer borders to 0 when all set', () => {
       const cell1: any = {
         id: 'c11',
         borders: { left: { size: 1 }, top: { size: 1 } },
@@ -179,7 +133,7 @@ describe('setSelectedCellsBorder', () => {
   });
 
   describe('when border is a direction', () => {
-    it('should set border to 1 when not all set', () => {
+    it('set border to 1 when not all set', () => {
       const cell1: any = {
         id: 'c11',
         borders: { top: { size: 0 } },
@@ -200,7 +154,7 @@ describe('setSelectedCellsBorder', () => {
       });
     });
 
-    it('should set border to 0 when all set', () => {
+    it('set border to 0 when all set', () => {
       const cell1: any = {
         id: 'c11',
         borders: { top: { size: 1 } },
@@ -221,7 +175,7 @@ describe('setSelectedCellsBorder', () => {
       });
     });
 
-    it('should handle adjacent cells for top/left borders', () => {
+    it('handle adjacent cells for top/left borders', () => {
       const cell: any = {
         id: 'c22',
         borders: { top: { size: 0 } },

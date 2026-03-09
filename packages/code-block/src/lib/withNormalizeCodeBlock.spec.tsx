@@ -1,15 +1,19 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createEditor, NodeApi } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import {
+  type SlateEditor,
+  createEditor,
+  createSlateEditor,
+  NodeApi,
+} from 'platejs';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
 jsxt;
 
 describe('clean up code block', () => {
-  it('should turn children of code block to code lines', () => {
+  it('turn children of code block to code lines', () => {
     const input = createEditor(
       (
         <editor>
@@ -30,7 +34,7 @@ describe('clean up code block', () => {
       </editor>
     ) as any as SlateEditor;
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

@@ -1,33 +1,31 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 import { ParagraphPlugin } from 'platejs/react';
 
+import { normalizeRoot } from '../__tests__/normalizeRoot';
 import { TrailingBlockPlugin } from './TrailingBlockPlugin';
 
 jsxt;
 
-describe('when last node is invalid', () => {
-  const input = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-    </editor>
-  ) as any;
-
-  const output = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-      <hdefault>
-        <htext />
-      </hdefault>
-    </editor>
-  ) as any;
-
-  it('should be', () => {
-    const editor = createSlateEditor({
+describe('TrailingBlockPlugin', () => {
+  it.each([
+    {
+      input: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+        </editor>
+      ) as any,
+      output: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+          <hdefault>
+            <htext />
+          </hdefault>
+        </editor>
+      ) as any,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -36,40 +34,29 @@ describe('when last node is invalid', () => {
           },
         }),
       ],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.normalizeNode([input, []]);
-
-    expect(editor.children).toEqual(output.children);
-  });
-});
-
-describe('when level = 1', () => {
-  const input = (
-    <editor>
-      <element>
-        <hh1>test</hh1>
-        <hh1>test2</hh1>
-      </element>
-    </editor>
-  ) as any;
-
-  const output = (
-    <editor>
-      <element>
-        <hh1>test</hh1>
-        <hh1>test2</hh1>
-        <hdefault>
-          <htext />
-        </hdefault>
-      </element>
-    </editor>
-  ) as any;
-
-  it('should be', () => {
-    const editor = createSlateEditor({
+      title:
+        'appends a trailing block at the root when the last node is invalid',
+    },
+    {
+      input: (
+        <editor>
+          <element>
+            <hh1>test</hh1>
+            <hh1>test2</hh1>
+          </element>
+        </editor>
+      ) as any,
+      output: (
+        <editor>
+          <element>
+            <hh1>test</hh1>
+            <hh1>test2</hh1>
+            <hdefault>
+              <htext />
+            </hdefault>
+          </element>
+        </editor>
+      ) as any,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -78,33 +65,21 @@ describe('when level = 1', () => {
           },
         }),
       ],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.normalizeNode([input, []]);
-
-    expect(editor.children).toEqual(output.children);
-  });
-});
-
-describe('when using query', () => {
-  const input = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-    </editor>
-  ) as any;
-
-  const output = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-    </editor>
-  ) as any;
-
-  it('should be', () => {
-    const editor = createSlateEditor({
+      title: 'appends the trailing block at the configured depth',
+    },
+    {
+      input: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+        </editor>
+      ) as any,
+      output: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+        </editor>
+      ) as any,
       plugins: [
         TrailingBlockPlugin.configure({
           options: {
@@ -114,65 +89,44 @@ describe('when using query', () => {
           },
         }),
       ],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.normalizeNode([input, []]);
-
-    expect(editor.children).toEqual(output.children);
-  });
-});
-
-describe('when the last node is valid', () => {
-  const input = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-      <hdefault>default</hdefault>
-    </editor>
-  ) as any;
-
-  const output = (
-    <editor>
-      <hh1>test</hh1>
-      <hh1>test2</hh1>
-      <hdefault>default</hdefault>
-    </editor>
-  ) as any;
-
-  it('should be', () => {
-    const editor = createSlateEditor({
+      title: 'skips insertion when the last node is excluded by the query',
+    },
+    {
+      input: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+          <hdefault>default</hdefault>
+        </editor>
+      ) as any,
+      output: (
+        <editor>
+          <hh1>test</hh1>
+          <hh1>test2</hh1>
+          <hdefault>default</hdefault>
+        </editor>
+      ) as any,
       plugins: [TrailingBlockPlugin],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.normalizeNode([input, []]);
-
-    expect(editor.children).toEqual(output.children);
-  });
-});
-
-describe('when editor has no children', () => {
-  const input = (<editor />) as any;
-
-  const output = (
-    <editor>
-      <hdefault>
-        <htext />
-      </hdefault>
-    </editor>
-  ) as any;
-
-  it('should be', () => {
-    const editor = createSlateEditor({
+      title: 'keeps an existing trailing block unchanged',
+    },
+    {
+      input: (<editor />) as any,
+      output: (
+        <editor>
+          <hdefault>
+            <htext />
+          </hdefault>
+        </editor>
+      ) as any,
       plugins: [TrailingBlockPlugin],
+      title: 'inserts a trailing block into an empty editor',
+    },
+  ])('$title', ({ input, output, plugins }) => {
+    const editor = normalizeRoot({
+      plugins,
       selection: input.selection,
       value: input.children,
     });
-
-    editor.tf.normalizeNode([editor, []]);
 
     expect(editor.children).toEqual(output.children);
   });

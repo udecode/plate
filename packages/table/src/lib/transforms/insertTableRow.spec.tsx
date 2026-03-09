@@ -1,11 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { insertTableRow } from './insertTableRow';
 
 jsxt;
@@ -15,7 +14,7 @@ describe('insertTableRow', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a tr with empty cells (disableMerge: $disableMerge)', ({
+    ])('inserts a tr with empty cells (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -79,7 +78,7 @@ describe('insertTableRow', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -97,7 +96,7 @@ describe('insertTableRow', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a tr with empty cells (disableMerge: $disableMerge)', ({
+    ])('inserts a tr with empty cells (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -161,7 +160,7 @@ describe('insertTableRow', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -179,7 +178,7 @@ describe('insertTableRow', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should insert a tr with empty cells before the current row (disableMerge: $disableMerge)', ({
+    ])('inserts a tr with empty cells before the current row (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -243,7 +242,7 @@ describe('insertTableRow', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

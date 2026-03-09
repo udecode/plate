@@ -2,7 +2,7 @@ import type { SlateEditor } from '../editor';
 import type { PluginConfig } from './BasePlugin';
 import type { AnySlatePlugin, SlatePluginContext } from './SlatePlugin';
 
-import { createPlateEditor } from '../../react';
+import { createSlateEditor } from '../editor';
 import { createSlatePlugin, createTSlatePlugin } from './createSlatePlugin';
 import { getEditorPlugin } from './getEditorPlugin';
 
@@ -19,12 +19,12 @@ describe('getEditorPlugin', () => {
       },
     });
 
-    editor = createPlateEditor({
+    editor = createSlateEditor({
       plugins: [testPlugin],
     });
   });
 
-  it('should get plugin context by plugin object', () => {
+  it('get plugin context by plugin object', () => {
     const context = getEditorPlugin(
       editor,
       testPlugin.configure({ options: { testOption: 't' } })
@@ -42,7 +42,7 @@ describe('getEditorPlugin', () => {
     });
   });
 
-  it('should work extendEditor', () => {
+  it('work extendEditor', () => {
     type Config = PluginConfig<
       'test',
       {
@@ -65,7 +65,7 @@ describe('getEditorPlugin', () => {
     expect(a).toBeDefined();
   });
 
-  it('should get plugin context by plugin key', () => {
+  it('get plugin context by plugin key', () => {
     const context = getEditorPlugin(editor, { key: 'test' });
 
     expect(context).toMatchObject({
@@ -80,7 +80,7 @@ describe('getEditorPlugin', () => {
     });
   });
 
-  it('should resolve unresolved plugin', () => {
+  it('resolve unresolved plugin', () => {
     const unresolvedPlugin = createSlatePlugin({
       key: 'unresolved',
       node: { type: 'unresolved-type' },

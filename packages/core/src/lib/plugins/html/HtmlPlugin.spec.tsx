@@ -6,9 +6,8 @@ import { LinkPlugin } from '@platejs/link/react';
 import { MediaEmbedPlugin } from '@platejs/media/react';
 import { jsxt } from '@platejs/test-utils';
 
-import type { SlateEditor } from '../../editor';
+import { createSlateEditor, type SlateEditor } from '../../editor';
 
-import { createPlateEditor } from '../../../react';
 import { BaseParagraphPlugin } from '../paragraph';
 
 jsxt;
@@ -32,7 +31,7 @@ describe('when inserting html', () => {
     }) as any;
 
   describe('when inserting h1 inside p (not empty)', () => {
-    it('should just insert h1 text inside p', () => {
+    it('inserts heading text into the current paragraph', () => {
       const input = (
         <editor>
           <hp>
@@ -53,7 +52,7 @@ describe('when inserting html', () => {
 
       const plugins = [HeadingPlugin];
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -66,7 +65,7 @@ describe('when inserting html', () => {
   });
 
   describe('when inserting h1 inside an empty p', () => {
-    it('should set p type to h1 and insert h1 text', () => {
+    it('set p type to h1 and insert h1 text', () => {
       const input = (
         <editor>
           <hp>
@@ -86,7 +85,7 @@ describe('when inserting html', () => {
 
       const plugins = [HeadingPlugin];
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -99,7 +98,7 @@ describe('when inserting html', () => {
   });
 
   describe('when inserting a text node surrounded by elements', () => {
-    it('should insert the text node surrounded by elements', () => {
+    it('insert the text node surrounded by elements', () => {
       const input = (
         <editor>
           <hp>
@@ -121,7 +120,7 @@ describe('when inserting html', () => {
 
       const plugins = [BaseParagraphPlugin];
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -162,10 +161,10 @@ describe('when inserting empty html', () => {
     </editor>
   ) as any;
 
-  it('should do nothing', () => {
+  it('keeps the editor unchanged', () => {
     const plugins = [BoldPlugin];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -203,10 +202,10 @@ describe('when inserting an iframe without src', () => {
     </editor>
   ) as any;
 
-  it('should do nothing', () => {
+  it('falls back to inserting the iframe text content', () => {
     const plugins = [MediaEmbedPlugin];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -247,10 +246,10 @@ describe('when inserting link with href', () => {
     </editor>
   ) as any;
 
-  it('should insert the link with url', () => {
+  it('insert the link with url', () => {
     const plugins = [BaseParagraphPlugin, LinkPlugin];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -291,12 +290,12 @@ describe('when inserting plain text', () => {
     jsonParseSpy?.mockRestore();
   });
 
-  it('should run default insert', () => {
+  it('falls back to the default insertData behavior', () => {
     jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
       <fragment>inserted</fragment>
     );
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [],
       selection: input.selection,
       value: input.children,

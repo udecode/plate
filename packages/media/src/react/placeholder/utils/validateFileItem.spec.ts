@@ -9,7 +9,7 @@ describe('validateFileItem', () => {
     return file;
   };
 
-  it('should validate files within constraints', () => {
+  it('validate files within constraints', () => {
     const files = [createFile('test.jpg', 500)];
     const config: MediaItemConfig = {
       maxFileSize: '1KB',
@@ -19,7 +19,7 @@ describe('validateFileItem', () => {
     expect(validateFileItem(files, config, 'image')).toBe(true);
   });
 
-  it('should throw MaxFileCountExceeded when files exceed maximum', () => {
+  it('throw MaxFileCountExceeded when files exceed maximum', () => {
     const files = [
       createFile('test1.jpg', 500),
       createFile('test2.jpg', 500),
@@ -40,7 +40,7 @@ describe('validateFileItem', () => {
     });
   });
 
-  it('should throw MaxFileSizeExceeded when any file exceeds size limit', () => {
+  it('throw MaxFileSizeExceeded when any file exceeds size limit', () => {
     const files = [createFile('test.jpg', 2048)];
     const config: MediaItemConfig = {
       maxFileSize: '1KB',
@@ -56,7 +56,7 @@ describe('validateFileItem', () => {
     });
   });
 
-  it('should use default values for min and max file count', () => {
+  it('use default values for min and max file count', () => {
     const files = [createFile('test.jpg', 500)];
     const config: MediaItemConfig = {
       maxFileSize: '1KB',

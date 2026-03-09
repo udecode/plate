@@ -40,7 +40,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert link', () => {
+      it('insert link', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { url });
 
@@ -69,7 +69,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert link with text', () => {
+      it('insert link with text', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: 'another', url });
 
@@ -101,7 +101,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert text', () => {
+      it('insert text', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { insertTextInLink: true, url });
 
@@ -133,7 +133,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should do nothing', () => {
+      it('keeps the existing link unchanged', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: 'insert link', url });
 
@@ -166,7 +166,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should update link url', () => {
+      it('update link url', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { url: urlOutput });
 
@@ -204,7 +204,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert text', () => {
+      it('insert text', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: 'edit link', url });
 
@@ -235,7 +235,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert text', () => {
+      it('insert text', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { insertTextInLink: true, url });
 
@@ -267,7 +267,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should set text to url', () => {
+      it('set text to url', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: '', url });
 
@@ -299,7 +299,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert link', () => {
+      it('insert link', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: 'insert link', url });
 
@@ -329,7 +329,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert link', () => {
+      it('insert link', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { text: 'another', url });
 
@@ -363,7 +363,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should insert text', () => {
+      it('insert text', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { url });
 
@@ -393,7 +393,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('should delete and insert link', () => {
+      it('delete and insert link', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { url: urlOutput });
 
@@ -429,7 +429,7 @@ describe('upsertLink', () => {
         </editor>
       ) as any;
 
-      it('the new link should keep the marks', () => {
+      it('preserves marks on the new link', () => {
         const editor = createTestEditor(input);
         upsertLink(editor, { url: urlOutput });
 
@@ -456,7 +456,7 @@ describe('upsertLink', () => {
       </editor>
     ) as any;
 
-    it('should do nothing', () => {
+    it('keeps content unchanged for invalid URLs', () => {
       const editor = createTestEditor(input);
       upsertLink(editor, {
         skipValidation: false,
@@ -487,7 +487,7 @@ describe('upsertLink', () => {
       </editor>
     ) as any;
 
-    it('should insert', () => {
+    it('insert', () => {
       const editor = createTestEditor(input);
       upsertLink(editor, {
         skipValidation: true,

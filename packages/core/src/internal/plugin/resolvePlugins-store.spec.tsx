@@ -67,24 +67,28 @@ const TestComponentNested = ({
   );
 };
 
+const createStoreEditor = (
+  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
+) => createSlateEditor({ plugins });
+
 describe('SlatePlugin store', () => {
-  it('should create a store for each plugin', () => {
+  it('create a store for each plugin', () => {
     const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
     const p2 = createSlatePlugin({ key: 'plugin2', options: { value: 2 } });
-    const editor = createPlateEditor({ plugins: [p1, p2] });
+    const editor = createStoreEditor([p1, p2]);
 
     expect(editor.getOptionsStore(p1)).toBeDefined();
     expect(editor.getOptionsStore(p2)).toBeDefined();
   });
 
-  it('should initialize the store with plugin options', () => {
+  it('initialize the store with plugin options', () => {
     const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
     const editor = createSlateEditor({ plugins: [p1] });
 
     expect(editor.getOptions(p1)).toEqual({ value: 1 });
   });
 
-  it('should update plugin options when setOption is called', () => {
+  it('update plugin options when setOption is called', () => {
     const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
     const editor = createSlateEditor({ plugins: [p1] });
 
@@ -93,7 +97,7 @@ describe('SlatePlugin store', () => {
     expect(editor.getOptions(p1)).toEqual({ value: 2 });
   });
 
-  it('should handle nested options in the store', () => {
+  it('handle nested options in the store', () => {
     const p1 = createSlatePlugin({
       key: 'plugin1',
       options: { nested: { value: 1 } },
@@ -105,7 +109,7 @@ describe('SlatePlugin store', () => {
     expect(editor.getOptions(p1)).toEqual({ nested: { value: 2 } });
   });
 
-  it('should maintain separate stores for each plugin', () => {
+  it('maintain separate stores for each plugin', () => {
     const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
     const p2 = createSlatePlugin({ key: 'plugin2', options: { value: 2 } });
     const editor = createSlateEditor({ plugins: [p1, p2] });
@@ -116,14 +120,14 @@ describe('SlatePlugin store', () => {
     expect(editor.getOptions(p2)).toEqual({ value: 2 });
   });
 
-  it('should handle plugins with no initial options', () => {
+  it('handle plugins with no initial options', () => {
     const p1 = createSlatePlugin({ key: 'plugin1' });
     const editor = createSlateEditor({ plugins: [p1] });
 
     expect(editor.getOptions(p1)).toEqual({});
   });
 
-  it('should preserve other plugin properties when updating store', () => {
+  it('preserve other plugin properties when updating store', () => {
     const p1 = createSlatePlugin({
       key: 'plugin1',
       node: { type: 'test' },
@@ -137,16 +141,16 @@ describe('SlatePlugin store', () => {
     expect(editor.getPlugin(p1).node.type).toBe('test');
   });
 
-  it('should allow getting the entire store', () => {
+  it('allow getting the entire store', () => {
     const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
-    const editor = createPlateEditor({ plugins: [p1] });
+    const editor = createStoreEditor([p1]);
 
     const store = editor.getOptionsStore(p1);
     expect(store).toBeDefined();
   });
 
   describe('extendSelectors', () => {
-    it('should add new selectors to the plugin store', () => {
+    it('add new selectors to the plugin store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
@@ -155,13 +159,13 @@ describe('SlatePlugin store', () => {
         param: (a1: number, a2: number) => getOptions().value + a1 + a2,
       }));
 
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       expect(editor.getOption(p1, 'doubleValue')).toBe(2);
       expect(editor.getOption(p1, 'param', 2, 2)).toBe(5);
     });
 
-    it('should allow chaining multiple extendSelectors calls', () => {
+    it('allow chaining multiple extendSelectors calls', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
@@ -173,13 +177,13 @@ describe('SlatePlugin store', () => {
           tripleValue: () => getOption('doubleValue', 2) * 3,
         }));
 
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       expect(editor.getOption(p1, 'doubleValue', 2)).toBe(2);
       expect(editor.getOption(p1, 'tripleValue')).toBe(6);
     });
 
-    it('should update extended selectors when options change', () => {
+    it('update extended selectors when options change', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
@@ -187,7 +191,7 @@ describe('SlatePlugin store', () => {
         doubleValue: () => getOptions().value * 2,
       }));
 
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       expect(editor.getOption(p1, 'doubleValue')).toBe(2);
 
@@ -199,45 +203,22 @@ describe('SlatePlugin store', () => {
 });
 
 describe('PlatePlugin usePluginOption', () => {
-  it('should re-render component when setOption is called', async () => {
-    const p1 = createPlatePlugin({
-      key: 'plugin1',
-      options: { value: 1 },
-    });
-    const editor = createPlateEditor({ plugins: [p1] });
-
-    const { getByTestId } = render(
-      <TestComponent editor={editor} plugin={p1 as any} />
-    );
-
-    // Initial render
-    (expect(getByTestId('test-component')) as any).toHaveTextContent('1');
-
-    // Update store
-    act(() => {
-      editor.setOption(p1, 'value', 2);
-    });
-
-    // Check if component re-rendered with new value
-    (expect(getByTestId('test-component')) as any).toHaveTextContent('2');
-  });
-
   describe('setOption', () => {
-    it('should update a single option', () => {
+    it('update a single option', () => {
       const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       editor.setOption(p1, 'value', 2);
 
       expect(editor.getOptions(p1)).toEqual({ value: 2 });
     });
 
-    it('should merge multiple options', () => {
+    it('merge multiple options', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { other: 'test', untouched: 1, value: 1 },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       editor.setOptions(p1, { other: 'updated', value: 2 });
 
@@ -248,12 +229,12 @@ describe('PlatePlugin usePluginOption', () => {
       });
     });
 
-    it('should update with immer', () => {
+    it('update with immer', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { other: 'test', value: 1 },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       editor.setOptions(p1, (draft) => {
         draft.other = 'updated';
@@ -262,12 +243,12 @@ describe('PlatePlugin usePluginOption', () => {
       expect(editor.getOptions(p1)).toEqual({ other: 'updated', value: 1 });
     });
 
-    it('should update nested options', () => {
+    it('update nested options', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { nested: { subValue: 'initial' } },
       });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       editor.setOption(p1, 'nested', { subValue: 'updated' });
 
@@ -278,7 +259,7 @@ describe('PlatePlugin usePluginOption', () => {
   });
 
   describe('usePluginOption', () => {
-    it('should return the current option value', () => {
+    it('returns the current option value', () => {
       const p1 = createSlatePlugin({ key: 'plugin1', options: { value: 1 } });
       const editor = createPlateEditor({ plugins: [p1] });
 
@@ -293,7 +274,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-hook')) as any).toHaveTextContent('1');
     });
 
-    it('should update when option value changes', () => {
+    it('update when option value changes', () => {
       const p1 = createPlatePlugin({ key: 'plugin1', options: { value: 1 } });
       const editor = createPlateEditor({ plugins: [p1] });
 
@@ -310,7 +291,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-component')) as any).toHaveTextContent('2');
     });
 
-    it('should handle nested option values', () => {
+    it('handle nested option values', () => {
       const p1 = createPlatePlugin({
         key: 'plugin1',
         options: { nested: { subValue: 'initial' }, value: 1 },
@@ -330,7 +311,7 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-nested')) as any).toHaveTextContent('updated');
     });
 
-    it('should not cause unnecessary re-renders', () => {
+    it('does not cause unnecessary re-renders', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { other: 'test', value: 1 },
@@ -357,13 +338,13 @@ describe('PlatePlugin usePluginOption', () => {
       (expect(getByTestId('test-hook')) as any).toHaveTextContent('1');
     });
 
-    it('should throw when setting an option that was undefined', () => {
+    it('throw when setting an option that was undefined', () => {
       // Create a plugin with no initial options, but with a defined type
       type PluginOptions = {
         existingOption: string;
       };
       const p1 = createSlatePlugin<any, PluginOptions>({ key: 'plugin1' });
-      const editor = createPlateEditor({ plugins: [p1] });
+      const editor = createStoreEditor([p1]);
 
       // Setting an existing option should work
       expect(() => {
@@ -371,7 +352,7 @@ describe('PlatePlugin usePluginOption', () => {
       }).not.toThrow(new PlateError('', ''));
     });
 
-    it('should work with extended options', () => {
+    it('work with extended options', () => {
       const p1 = createPlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
@@ -403,7 +384,7 @@ describe('PlatePlugin usePluginOption', () => {
   });
 
   describe('usePluginOptions', () => {
-    it('should allow access to the entire store', () => {
+    it('allow access to the entire store', () => {
       const p1 = createSlatePlugin({
         key: 'plugin1',
         options: { other: 'test', value: 1 },

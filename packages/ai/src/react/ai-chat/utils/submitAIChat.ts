@@ -2,7 +2,13 @@ import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type Descendant, type Range, type TIdElement, KEYS } from 'platejs';
+import {
+  type Descendant,
+  KEYS,
+  type NodeEntry,
+  type Range,
+  type TIdElement,
+} from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import type { AIMode, AIToolName } from '../../../lib/types';
@@ -57,7 +63,9 @@ export const submitAIChat = (
 
   setOption('toolName', toolName);
 
-  const blocks = editor.getApi(BlockSelectionPlugin).blockSelection.getNodes();
+  const blocks: NodeEntry<TIdElement>[] = editor
+    .getApi(BlockSelectionPlugin)
+    .blockSelection.getNodes();
   const blocksRange = editor.api.nodesRange(blocks);
 
   const promptText = getEditorPrompt(editor, {
