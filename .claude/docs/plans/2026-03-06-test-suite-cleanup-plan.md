@@ -179,6 +179,18 @@ No coverage push in this phase. No e2e or browser work.
 - Deleted the last `packages/core/src/static/__tests__/create-static-editor.ts` helper after moving its only remaining callers into the app-level integration folder.
 - Confirmed the remaining `www`-coupled package tests still live in `docx-io` and `ai`, so the next cleanup pass should move those clusters too instead of adding more internal package devDependencies.
 
+### Pass 23
+
+- Moved the `@platejs/docx-io` roundtrip fixture suite out of `packages/docx-io/src/lib/__tests__/roundtrip.spec.tsx` and into `apps/www/src/__tests__/package-integration/docx-io.roundtrip.spec.tsx`, because that coverage depends on `BaseEditorKit` and `DocxExportKit` from the app registry.
+- Deleted the `@/*` and `www/*` aliases from `packages/docx-io/tsconfig.json`, so package typecheck no longer drags `apps/www/src` through an app-only import seam.
+- Gave `apps/www` the direct test deps the moved integration actually uses: `mammoth` for Node-side DOCX fixture import and `@types/unist` for the app's existing local `src/types/unist.ts` type import.
+- Re-ran `@platejs/docx-io` typecheck on the real workspace graph with no root overrides, so the package now passes without the fake pinning detour.
+
+### Pass 24
+
+- Moved the entire `apps/www` app-owned package integration cluster from `src/lib/package-integration` to `src/__tests__/package-integration`.
+- Kept the existing buckets under `package-integration` so cross-package contracts and static HTML coverage stay grouped without dumping everything into one root-level test folder.
+
 ## Matrix Scan
 
 Snapshot taken during pass 3 before edits:
@@ -515,6 +527,12 @@ Complete
 | Final no-change audit: cross-spec imports | `rg -n "(\\.spec|\\.test)['\\\"]|from ['\\\"][^'\\\"]*\\.spec|from ['\\\"][^'\\\"]*\\.test" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | No spec imports another spec | No matches | ✓ |
 | Final no-change audit: intentional Plate allowlist | `rg -n "createPlateEditor\\(" packages --glob "*.spec.ts" --glob "*.spec.tsx"` | Remaining usages are intentional React/provider/render/store or Plate-only suites | Allowlist only | ✓ |
 | Final no-change audit: markdown helper leak | `rg -n "MarkdownKit|apps/www/src/registry/components/editor/plugins/markdown-kit" packages/markdown/src -g '!**/*.snap'` | Markdown package no longer imports app registry helpers | No matches | ✓ |
+| DOCX app integration roundtrip | `bun test apps/www/src/__tests__/package-integration/docx-io.roundtrip.spec.tsx` | Moved app-level `docx-io` roundtrip suite still passes | 5 pass, 0 fail | ✓ |
+| DOCX package build | `pnpm turbo build --filter=./packages/docx-io` | `@platejs/docx-io` builds after removing app aliases | Passed | ✓ |
+| DOCX package typecheck | `pnpm --filter @platejs/docx-io typecheck` | `@platejs/docx-io` typechecks without pulling `apps/www/src` | Passed | ✓ |
+| App typecheck after moved DOCX seam | `pnpm --filter www typecheck` | `www` typechecks after owning the moved DOCX integration and direct deps | Passed | ✓ |
+| Repo package typecheck after DOCX seam cleanup | `pnpm typecheck` | Workspace packages still typecheck on the real graph | Passed | ✓ |
+| Repo lint fix after DOCX seam cleanup | `bun lint:fix` | Formatting and Biome checks stay clean after the move | Checked 2585 files, 0 fixes | ✓ |
 
 ### Error Log
 
@@ -528,6 +546,7 @@ Complete
 | 2026-03-06 | Markdown serializer snapshots contained meaningful trailing spaces, so `git diff --check` flagged them | 1 | Replaced those two cases with explicit string assertions instead of snapshots |
 | 2026-03-06 | `moveSelection` and `shiftSelection` looked like easy seam reductions but failed when switched to `createSlateEditor` | 1 | Kept them on Plate and documented the exception instead of cargo-culting the rule |
 | 2026-03-06 | The markdown helper imported `MarkdownKit` from `apps/www` | 1 | Replaced it with local `MarkdownPlugin.configure(...)` plus remark plugins |
+| 2026-03-09 | Moving the DOCX roundtrip spec into `www` broke on `Cannot find package 'mammoth'` and then exposed `src/types/unist.ts` missing direct types | 2 | Added `mammoth` and `@types/unist` to `apps/www` so the moved app-owned integration and existing app types both resolve honestly |
 
 ### Resources
 
@@ -585,3 +604,6 @@ Complete
 - `withDeleteRules.spec.tsx` dropped from 648 lines to 496 while keeping the same contract coverage.
 - The repo-wide `createPlateEditor` scan is now an intentional allowlist of React/provider/render/store suites plus the two Plate-only selection APIs.
 - `packages/markdown/src/lib/__tests__/createTestEditor.tsx` no longer imports `apps/www`.
+- `packages/docx-io/tsconfig.json` no longer aliases `apps/www`, so package typecheck stops pulling app-only registry code into the package graph.
+- `apps/www/src/__tests__/package-integration/docx-io.roundtrip.spec.tsx` now owns the DOCX export/import roundtrip coverage that depends on app kits and static registry components.
+- `apps/www/src/__tests__/package-integration` is the home for app-owned cross-package integration tests; buckets stay local under that folder instead of spreading through `src/lib`.

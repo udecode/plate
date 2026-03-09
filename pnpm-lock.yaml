@@ -686,6 +686,9 @@ importers:
       '@types/react-syntax-highlighter':
         specifier: 15.5.13
         version: 15.5.13
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
       autoprefixer:
         specifier: 10.4.21
         version: 10.4.21(postcss@8.5.4)
@@ -707,6 +710,9 @@ importers:
       listr2:
         specifier: 8.3.3
         version: 8.3.3
+      mammoth:
+        specifier: ^1.11.0
+        version: 1.11.0
       mdast-util-toc:
         specifier: 7.1.0
         version: 7.1.0
