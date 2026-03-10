@@ -15,4 +15,4 @@ export const {
     showCaption: false,
   } as MediaStore,
   { name: 'media' }
-);
+) as any;

@@ -20,19 +20,19 @@ async function loadZipFromBlob(blob: Blob): Promise<JSZip> {
 
 describe('htmlToDocxBlob', () => {
   describe('basic functionality', () => {
-    it('should return a Blob', async () => {
+    it('returns a Blob', async () => {
       const result = await htmlToDocxBlob('<p>Test</p>');
       expect(result).toBeInstanceOf(Blob);
     });
 
-    it('should return blob with correct MIME type', async () => {
+    it('returns blob with correct MIME type', async () => {
       const result = await htmlToDocxBlob('<p>Test</p>');
       expect(result.type).toBe(
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );
     });
 
-    it('should create a valid DOCX (ZIP) file structure', async () => {
+    it('create a valid DOCX (ZIP) file structure', async () => {
       const result = await htmlToDocxBlob('<p>Test</p>');
       const zip = await loadZipFromBlob(result);
 
@@ -43,7 +43,7 @@ describe('htmlToDocxBlob', () => {
       expect(zip.file('word/styles.xml')).not.toBeNull();
     });
 
-    it('should include content in document.xml', async () => {
+    it('include content in document.xml', async () => {
       const htmlContent = '<p>Hello World</p>';
       const result = await htmlToDocxBlob(htmlContent);
       const zip = await loadZipFromBlob(result);
@@ -52,7 +52,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Hello World');
     });
 
-    it('should handle empty HTML', async () => {
+    it('handle empty HTML', async () => {
       const result = await htmlToDocxBlob('');
       expect(result).toBeInstanceOf(Blob);
       expect(result.size).toBeGreaterThan(0);
@@ -60,7 +60,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('document orientation', () => {
-    it('should default to portrait orientation', async () => {
+    it('default to portrait orientation', async () => {
       const result = await htmlToDocxBlob('<p>Test</p>');
       const zip = await loadZipFromBlob(result);
 
@@ -70,7 +70,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('w:orient="portrait"');
     });
 
-    it('should support landscape orientation', async () => {
+    it('support landscape orientation', async () => {
       const result = await htmlToDocxBlob('<p>Test</p>', {
         orientation: 'landscape',
       });
@@ -82,7 +82,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('text formatting', () => {
-    it('should handle bold text', async () => {
+    it('handle bold text', async () => {
       const html = '<p><strong>Bold text</strong></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -92,7 +92,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('<w:b');
     });
 
-    it('should handle italic text', async () => {
+    it('handle italic text', async () => {
       const html = '<p><em>Italic text</em></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -102,7 +102,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('<w:i');
     });
 
-    it('should handle underlined text', async () => {
+    it('handle underlined text', async () => {
       const html = '<p><u>Underlined text</u></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -112,7 +112,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('<w:u');
     });
 
-    it('should handle strikethrough text', async () => {
+    it('handle strikethrough text', async () => {
       const html = '<p><s>Strikethrough text</s></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -124,7 +124,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('headings', () => {
-    it('should handle h1-h6 headings', async () => {
+    it('handle h1-h6 headings', async () => {
       const html = `
         <h1>Heading 1</h1>
         <h2>Heading 2</h2>
@@ -145,7 +145,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('tables', () => {
-    it('should handle basic tables', async () => {
+    it('handle basic tables', async () => {
       const html = `
         <table>
           <tr><th>Header 1</th><th>Header 2</th></tr>
@@ -161,7 +161,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('<w:tbl');
     });
 
-    it('should handle tables with border-collapse', async () => {
+    it('handle tables with border-collapse', async () => {
       const html = `
         <table style="border-collapse: collapse; border: 1px solid black;">
           <tr><td>Cell 1</td><td>Cell 2</td></tr>
@@ -175,7 +175,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('<w:tblBorders');
     });
 
-    it('should NOT add borders for tables with border: none', async () => {
+    it('does not add borders for tables with border: none', async () => {
       const html = `
         <table style="border: none; border-collapse: collapse;">
           <tr>
@@ -193,7 +193,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).not.toContain('<w:tblBorders');
     });
 
-    it('should NOT add borders for tables with border: 0', async () => {
+    it('does not add borders for tables with border: 0', async () => {
       const html = `
         <table style="border: 0; border-collapse: collapse;">
           <tr>
@@ -212,7 +212,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('lists', () => {
-    it('should handle unordered lists', async () => {
+    it('handle unordered lists', async () => {
       const html = '<ul><li>Item 1</li><li>Item 2</li></ul>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -222,7 +222,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Item 2');
     });
 
-    it('should handle ordered lists', async () => {
+    it('handle ordered lists', async () => {
       const html = '<ol><li>First</li><li>Second</li></ol>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -232,7 +232,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Second');
     });
 
-    it('should handle nested lists', async () => {
+    it('handle nested lists', async () => {
       const html = `
         <ul>
           <li>Item 1
@@ -250,7 +250,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Nested Item 1');
     });
 
-    it('should handle list indentation via margin-left', async () => {
+    it('handle list indentation via margin-left', async () => {
       const html = `
         <ul style="margin-left: 24px;">
           <li>Indented item</li>
@@ -265,7 +265,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('links', () => {
-    it('should handle hyperlinks', async () => {
+    it('handle hyperlinks', async () => {
       const html = '<p><a href="https://example.com">Click here</a></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -277,7 +277,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('special characters', () => {
-    it('should handle Unicode characters', async () => {
+    it('handle Unicode characters', async () => {
       const html = '<p>Hello World</p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -286,7 +286,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Hello World');
     });
 
-    it('should handle CJK characters', async () => {
+    it('handle CJK characters', async () => {
       const html = '<p>Hello World</p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -295,7 +295,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('Hello World');
     });
 
-    it('should handle emojis', async () => {
+    it('handle emojis', async () => {
       const html = '<p>Hello World</p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -306,7 +306,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('code blocks', () => {
-    it('should handle inline code', async () => {
+    it('handle inline code', async () => {
       const html = '<p><code>inline code</code></p>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -315,7 +315,7 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('inline code');
     });
 
-    it('should handle code blocks', async () => {
+    it('handle code blocks', async () => {
       const html = '<pre><code>const x = 1;</code></pre>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
@@ -326,7 +326,7 @@ describe('htmlToDocxBlob', () => {
   });
 
   describe('blockquote', () => {
-    it('should handle blockquotes', async () => {
+    it('handle blockquotes', async () => {
       const html = '<blockquote>This is a quote</blockquote>';
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);

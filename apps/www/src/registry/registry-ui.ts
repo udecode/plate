@@ -1022,6 +1022,31 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@platejs/code-drawing'],
+    description:
+      'Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.',
+    files: [
+      { path: 'ui/code-drawing-node.tsx', type: 'registry:ui' },
+      {
+        path: 'ui/code-drawing-node-static.tsx',
+        type: 'registry:ui',
+      },
+    ],
+    meta: {
+      docs: [
+        { route: '/docs/code-drawing' },
+        {
+          route: 'https://pro.platejs.org/docs/components/code-drawing-node',
+        },
+      ],
+      examples: ['code-drawing-demo'],
+    },
+    name: 'code-drawing-node',
+    registryDependencies: ['shadcn/popover', 'shadcn/button', 'shadcn/select'],
+    title: 'Code Drawing Node',
+    type: 'registry:ui',
+  },
+  {
     dependencies: [],
     description: 'An inline component for code snippets.',
     files: [

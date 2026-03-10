@@ -16,7 +16,7 @@ describe('isPointNextToNode', () => {
     });
 
   describe('when point is next to a node of specified type', () => {
-    it('should return true', () => {
+    it('returns true', () => {
       const editor = createTestEditor(
         <editor>
           <hp>
@@ -34,7 +34,7 @@ describe('isPointNextToNode', () => {
   });
 
   describe('when point is not next to a node of specified type', () => {
-    it('should return false', () => {
+    it('returns false', () => {
       const editor = createTestEditor(
         <editor>
           <hp>
@@ -53,7 +53,7 @@ describe('isPointNextToNode', () => {
   });
 
   describe('when reverse option is true', () => {
-    it('should check the previous node', () => {
+    it('check the previous node', () => {
       const editor = createTestEditor(
         <editor>
           <hp>
@@ -73,7 +73,7 @@ describe('isPointNextToNode', () => {
   });
 
   describe('when at option is provided', () => {
-    it('should check from the specified point', () => {
+    it('check from the specified point', () => {
       const editor = createTestEditor(
         <editor>
           <hp>

@@ -1,99 +1,70 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
-import { AutoformatKit } from 'www/src/registry/components/editor/plugins/autoformat-kit';
+
+import type { AutoformatRule } from '../../types';
+import { createAutoformatEditor } from './createAutoformatEditor';
 
 jsxt;
 
-describe('when the start match is not present and the end match is present', () => {
-  it('should run default', () => {
-    const input = (
-      <fragment>
-        <hp>
-          hello*
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>hello* </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
+describe('AutoformatPlugin invalid match handling', () => {
+  it.each([
+    {
+      input: (
+        <fragment>
+          <hp>
+            hello*
+            <cursor />
+          </hp>
+        </fragment>
+      ) as any,
+      output: (
+        <fragment>
+          <hp>hello* </hp>
+        </fragment>
+      ) as any,
+      rules: [
+        { match: '*', mode: 'mark', type: KEYS.italic },
+      ] satisfies AutoformatRule[],
+      text: [' '],
+      title: 'leaves text alone when only the trailing delimiter exists',
+    },
+    {
+      input: (
+        <fragment>
+          <hp>
+            a**hello
+            <cursor />
+          </hp>
+        </fragment>
+      ) as any,
+      output: (
+        <fragment>
+          <hp>a**hello**</hp>
+        </fragment>
+      ) as any,
+      rules: [
+        { match: '**', mode: 'mark', type: KEYS.bold },
+      ] satisfies AutoformatRule[],
+      text: ['*', '*'],
+      title:
+        'does not format when a non-whitespace character precedes the opening delimiter',
+    },
+  ])('$title', ({ input, output, rules, text }) => {
+    const editor = createAutoformatEditor({
+      rules,
       value: input,
     });
 
-    editor.tf.insertText(' ');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when there is a character before match', () => {
-  it('should run default', () => {
-    const input = (
-      <fragment>
-        <hp>
-          a**hello
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>a**hello**</hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
+    text.forEach((step) => {
+      editor.tf.insertText(step);
     });
 
-    editor.tf.insertText('*');
-    editor.tf.insertText('*');
-
     expect(input.children).toEqual(output.children);
   });
-});
 
-describe('when there is a character before match', () => {
-  it('should run default', () => {
-    const input = (
-      <fragment>
-        <hp>
-          a**hello
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const output = (
-      <fragment>
-        <hp>a**hello**</hp>
-      </fragment>
-    ) as any;
-
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
-      value: input,
-    });
-
-    editor.tf.insertText('*');
-    editor.tf.insertText('*');
-
-    expect(input.children).toEqual(output.children);
-  });
-});
-
-describe('when selection is null', () => {
-  it('should run insertText', () => {
+  it('ignores autoformat when selection is null', () => {
     const input = (
       <fragment>
         <hp>**hello**</hp>
@@ -106,8 +77,8 @@ describe('when selection is null', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
-      plugins: AutoformatKit,
+    const editor = createAutoformatEditor({
+      rules: [{ match: '**', mode: 'mark', type: KEYS.bold }],
       value: input,
     });
 

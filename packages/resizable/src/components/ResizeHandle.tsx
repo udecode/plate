@@ -28,7 +28,7 @@ export const {
 } = createAtomStore(initialState as ResizeHandleStoreState, {
   name: 'resizeHandle',
   suppressWarnings: true,
-});
+}) as any;
 
 export type ResizeHandleOptions = {
   direction?: ResizeDirection;

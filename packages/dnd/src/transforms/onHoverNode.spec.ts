@@ -1,7 +1,6 @@
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { type TElement, RangeApi } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { type TElement, RangeApi, createSlateEditor } from 'platejs';
 
 import type { DragItemNode } from '../types';
 
@@ -10,7 +9,7 @@ import * as onDropNodeModule from './onDropNode';
 import { onHoverNode } from './onHoverNode';
 
 describe('onHoverNode', () => {
-  let editor: ReturnType<typeof createPlateEditor>;
+  let editor: ReturnType<typeof createSlateEditor>;
   let dragItem: DragItemNode;
 
   const monitor = {} as DropTargetMonitor;
@@ -24,10 +23,10 @@ describe('onHoverNode', () => {
   let getDropPathMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    editor = createPlateEditor();
-    editor.getOptions = mock();
+    editor = createSlateEditor();
+    editor.getOptions = mock() as any;
     editor.selection = null;
-    editor.setOption = mock();
+    editor.setOption = mock() as any;
     editor.tf.collapse = mock();
     editor.tf.focus = mock();
 
@@ -37,19 +36,19 @@ describe('onHoverNode', () => {
       element: dragElement,
     };
 
-    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
+    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
 
     isExpandedMock = mock();
     isExpandedSpy = spyOn(RangeApi, 'isExpanded').mockImplementation(
-      isExpandedMock
+      isExpandedMock as unknown as typeof RangeApi.isExpanded
     );
 
     getDropPathMock = mock();
     getDropPathSpy = spyOn(onDropNodeModule, 'getDropPath').mockImplementation(
-      getDropPathMock
+      getDropPathMock as unknown as typeof onDropNodeModule.getDropPath
     );
   });
 
@@ -58,7 +57,7 @@ describe('onHoverNode', () => {
     getDropPathSpy?.mockRestore();
   });
 
-  it('should update plugin options when direction changes', () => {
+  it('update plugin options when direction changes', () => {
     getDropPathMock.mockReturnValueOnce({
       direction: 'bottom',
       dragPath: [0],
@@ -80,7 +79,7 @@ describe('onHoverNode', () => {
     });
   });
 
-  it('should collapse selection and focus editor if direction is returned and selection is expanded', () => {
+  it('collapse selection and focus editor if direction is returned and selection is expanded', () => {
     getDropPathMock.mockReturnValueOnce({
       direction: 'bottom',
       dragPath: [0],
@@ -105,7 +104,7 @@ describe('onHoverNode', () => {
     expect(editor.tf.focus).toHaveBeenCalled();
   });
 
-  it('should handle horizontal orientation', () => {
+  it('handle horizontal orientation', () => {
     getDropPathMock.mockReturnValueOnce({
       direction: 'left',
       dragPath: [0],
@@ -128,10 +127,10 @@ describe('onHoverNode', () => {
     });
   });
 
-  it('should clear dropTarget when no direction is returned', () => {
+  it('clear dropTarget when no direction is returned', () => {
     getDropPathMock.mockReturnValueOnce(undefined);
 
-    (editor.getOptions as ReturnType<typeof mock>).mockReturnValue({
+    (editor.getOptions as unknown as ReturnType<typeof mock>).mockReturnValue({
       dropTarget: { id: 'hover', line: 'bottom' },
     });
 

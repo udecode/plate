@@ -4,7 +4,7 @@ import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { ListPlugin } from '@platejs/list-classic/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
@@ -19,10 +19,10 @@ describe('when children is a text', () => {
     </fragment>
   );
 
-  it('should set the mark on the text', () => {
+  it('set the mark on the text', () => {
     expect(
       htmlElementToLeaf(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [BoldPlugin],
         }),
         parseHtmlElement('<strong>test</strong>')
@@ -34,10 +34,10 @@ describe('when children is a text', () => {
 describe('when there is no plugins', () => {
   const output = [{ text: 'test' }];
 
-  it('should do nothing', () => {
+  it('keeps the text leaf unchanged', () => {
     expect(
       htmlElementToLeaf(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [createSlatePlugin({ key: 'a' })],
         }),
         parseHtmlElement('<strong>test</strong>')
@@ -58,10 +58,10 @@ describe('when there is a mark above multiple elements', () => {
     </fragment>
   );
 
-  it('should set the mark to all children leaves', () => {
+  it('set the mark to all children leaves', () => {
     expect(
       htmlElementToLeaf(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [BaseParagraphPlugin, ListPlugin, BoldPlugin, ItalicPlugin],
         }),
         parseHtmlElement('<strong><li><p>test</p>test</li></strong>')

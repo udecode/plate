@@ -9,7 +9,7 @@ import {
 
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
-export const usePlaceholderElementState = () => {
+export const usePlaceholderElementState = (): any => {
   const element = useElement();
   const editor = useEditorRef();
   const focused = useFocused();

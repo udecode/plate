@@ -29,7 +29,6 @@ const CodeBlock: FC<{
           __bunCommand__: `bun add ${value}`,
           __npmCommand__: `npm install ${value}`,
           __pnpmCommand__: `pnpm add ${value}`,
-          __yarnCommand__: `yarn add ${value}`,
         }}
       />
     ) : (

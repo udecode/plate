@@ -1,5 +1,20 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "platejs": ["./packages/plate/src/index.tsx"],
+      "platejs/*": ["./packages/plate/src/*"],
+      "@platejs/*": [
+        "./packages/*/src/index.ts",
+        "./packages/*/src/index.tsx",
+        "./packages/*/src"
+      ],
+      "@udecode/*": [
+        "./packages/udecode/*/src/index.ts",
+        "./packages/udecode/*/src/index.tsx",
+        "./packages/udecode/*/src"
+      ]
+    },
     "rootDir": ".",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "allowJs": true,
@@ -21,7 +36,7 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "target": "ESNext",
-    "types": ["node", "@testing-library/jest-dom", "bun-types"]
+    "types": ["node", "@testing-library/jest-dom", "bun-types", "jest"]
   },
   "include": ["**/*", "tooling/config/global.d.ts"],
   "exclude": ["node_modules", "**/node_modules", "dist", "**/dist"]

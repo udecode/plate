@@ -8,7 +8,7 @@ import { BaseListPlugin } from '../BaseListPlugin';
 jsxt;
 
 describe('clean up list items', () => {
-  it('should move children up from sublis if their parent has no lic', () => {
+  it('move children up from sublis if their parent has no lic', () => {
     const input = (
       <editor>
         <hul>

@@ -25,7 +25,7 @@ const output = (
 ) as any;
 
 describe('SingleBlockPlugin', () => {
-  it('should merge all blocks into the first block with soft breaks', () => {
+  it('merge all blocks into the first block with soft breaks', () => {
     const editor = createSlateEditor({
       plugins: [SingleBlockPlugin],
       selection: input.selection,
@@ -37,7 +37,7 @@ describe('SingleBlockPlugin', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should convert hard breaks to soft breaks', () => {
+  it('convert hard breaks to soft breaks', () => {
     const input = (
       <editor>
         <hp>
@@ -61,7 +61,7 @@ describe('SingleBlockPlugin', () => {
     ]);
   });
 
-  it('should handle single block without changes', () => {
+  it('handle single block without changes', () => {
     const singleBlockInput = createEditor(
       (
         <editor>
@@ -81,7 +81,7 @@ describe('SingleBlockPlugin', () => {
     expect(editor.children).toEqual(singleBlockInput.children);
   });
 
-  it('should preserve existing line breaks in text', () => {
+  it('preserve existing line breaks in text', () => {
     const inputWithLineBreaks = createEditor(
       (
         <editor>
@@ -109,7 +109,7 @@ describe('SingleBlockPlugin', () => {
     expect(editor.children).toEqual(expectedOutput.children);
   });
 
-  it('should handle empty blocks correctly', () => {
+  it('handle empty blocks correctly', () => {
     const emptyBlocksInput = createEditor(
       (
         <editor>

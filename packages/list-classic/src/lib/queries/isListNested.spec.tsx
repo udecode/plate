@@ -32,7 +32,7 @@ describe('when the list is nested', () => {
     ) as any
   );
 
-  it('should be', () => {
+  it('returns true', () => {
     const editor = createSlateEditor({ editor: input });
 
     const list = editor.api.node({ id: '21' });
@@ -54,7 +54,7 @@ describe('when the list is not nested', () => {
     ) as any
   );
 
-  it('should be', () => {
+  it('returns false', () => {
     const editor = createSlateEditor({ editor: input });
 
     const list = editor.api.node({ id: '1' });

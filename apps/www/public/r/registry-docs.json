@@ -33,6 +33,7 @@
         "https://platejs.org/r/blockquote-docs",
         "https://platejs.org/r/callout-docs",
         "https://platejs.org/r/code-block-docs",
+        "https://platejs.org/r/code-drawing-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/date-docs",
         "https://platejs.org/r/equation-docs",
@@ -516,6 +517,19 @@
       ],
       "name": "code-block-docs",
       "title": "Code Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code Drawing",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/code-drawing.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/code-drawing.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-drawing-docs",
+      "title": "Code Drawing",
       "type": "registry:file"
     },
     {

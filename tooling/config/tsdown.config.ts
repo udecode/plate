@@ -56,7 +56,10 @@ export default defineConfig((opts) => [
     platform: 'neutral',
     tsconfig: 'tsconfig.build.json',
     sourcemap: enableSourcemaps,
-    dts: { sourcemap: enableSourcemaps },
+    dts: {
+      bundle: true,
+      sourcemap: enableSourcemaps,
+    },
     exports: true,
     plugins: [
       pluginBabel({

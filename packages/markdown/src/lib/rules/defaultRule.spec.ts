@@ -1,6 +1,5 @@
-import { H1Plugin } from '@platejs/basic-nodes/react';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { createPlateEditor, ParagraphPlugin } from 'platejs/react';
+import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
+import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
 import { deserializeMd } from '../deserializer';
 import { MarkdownPlugin } from '../MarkdownPlugin';
@@ -8,7 +7,7 @@ import { serializeMd } from '../serializer';
 import { createTestEditor } from '../__tests__/createTestEditor';
 
 describe('defaultRules', () => {
-  it('should serialize custom keys', () => {
+  it('serialize custom keys', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
@@ -20,23 +19,23 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         MarkdownPlugin,
-        H1Plugin.configure({
+        BaseH1Plugin.configure({
           node: { type: 'custom-h1' },
         }),
-        ParagraphPlugin.configure({
+        BaseParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
       ],
     });
 
     const result = serializeMd(editor, { value: nodes });
-    expect(result).toMatchSnapshot();
+    expect(result).toBe('# Heading 1\n\nParagraph\n');
   });
 
-  it('should serialize custom mark', () => {
+  it('serialize custom mark', () => {
     const nodes = [
       {
         children: [
@@ -47,26 +46,26 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         MarkdownPlugin,
-        H1Plugin.configure({
+        BaseH1Plugin.configure({
           node: { type: 'custom-h1' },
         }),
-        ParagraphPlugin.configure({
+        BaseParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
-        BoldPlugin.configure({
+        BaseBoldPlugin.configure({
           node: { type: 'custom-bold' },
         }),
       ],
     });
 
     const result = serializeMd(editor, { value: nodes });
-    expect(result).toMatchSnapshot();
+    expect(result).toBe('Paragraph**text**\n');
   });
 
-  it('should deserialize custom keys', () => {
+  it('deserialize custom keys', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
@@ -78,13 +77,13 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         MarkdownPlugin,
-        H1Plugin.configure({
+        BaseH1Plugin.configure({
           node: { type: 'custom-h1' },
         }),
-        ParagraphPlugin.configure({
+        BaseParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
       ],
@@ -94,7 +93,7 @@ describe('defaultRules', () => {
     expect(result).toEqual(nodes);
   });
 
-  it('should deserialize custom mark', () => {
+  it('deserialize custom mark', () => {
     const nodes = [
       {
         children: [{ text: 'Heading 1' }],
@@ -109,16 +108,16 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [
         MarkdownPlugin,
-        H1Plugin.configure({
+        BaseH1Plugin.configure({
           node: { type: 'custom-h1' },
         }),
-        ParagraphPlugin.configure({
+        BaseParagraphPlugin.configure({
           node: { type: 'custom-p' },
         }),
-        BoldPlugin.configure({
+        BaseBoldPlugin.configure({
           node: { type: 'custom-bold' },
         }),
       ],
@@ -128,7 +127,7 @@ describe('defaultRules', () => {
     expect(result).toEqual(nodes);
   });
 
-  it('should deserialize table with math formula in cell', () => {
+  it('deserialize table with math formula in cell', () => {
     const editor = createTestEditor();
 
     const result = deserializeMd(

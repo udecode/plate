@@ -1,6 +1,53 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`serializeMd should serialize a simple paragraph 1`] = `
+exports[`serializeMd fixtures serializes marks with trailing whitespace 1`] = `
+"Make text **bold**, _italic_, <u>underlined</u>, or apply a _**<u>combination</u>**_ of these styles for a visually striking effect.
+"
+`;
+
+exports[`serializeMd fixtures keeps bold and italic formatting at the start of a block 1`] = `
+"_**Italic**_ **in a bold paragraph**
+
+**This is an _Italic_** **in a bold paragraph**
+"
+`;
+
+exports[`serializeMd fixtures serializes inline code 1`] = `
+"_**\`Inline code\`**_
+
+_\`Inline code\`_
+"
+`;
+
+exports[`serializeMd fixtures serializes a block quote as a single line 1`] = `
+"> Block quote with a new line _**\` Inline code\`**_
+"
+`;
+
+exports[`serializeMd fixtures serializes a code block 1`] = `
+"\`\`\`
+Code block 1 line 1
+Code block 1 line 2
+Code block 1 line 3
+Code block 1 line 4
+\`\`\`
+"
+`;
+
+exports[`serializeMd fixtures serializes a \\n within a block quote as a new line 1`] = `
+"> Block quote\\
+> with a new line
+"
+`;
+
+exports[`serializeMd fixtures serializes two \\n within a block quote as two new lines 1`] = `
+"> Block quote\\
+> \\
+> with a new line
+"
+`;
+
+exports[`serializeMd serializes a simple paragraph 1`] = `
 "# Playground
 
 ## Comments and suggestions
@@ -90,73 +137,13 @@ Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
 "
 `;
 
-exports[`serializeMd fixures should serialize marks with trailing whitespace 1`] = `
-"Make text **bold**, _italic_, <u>underlined</u>, or apply a _**<u>combination</u>**_ of these styles for a visually striking effect.
-"
-`;
-
-exports[`serializeMd fixures Combination of bold and italic at the start of a block losing formatting 1`] = `
-"_**Italic**_ **in a bold paragraph**
-
-**This is an _Italic_** **in a bold paragraph**
-"
-`;
-
-exports[`serializeMd fixures should serialize a value with inline code 1`] = `
-"_**\`Inline code\`**_
-
-_\`Inline code\`_
-"
-`;
-
-exports[`serializeMd fixures should serialize a value within a block qoute as a single line 1`] = `
-"> Block quote with a new line _**\` Inline code\`**_
-"
-`;
-
-exports[`serializeMd fixures should serialize a codeblock 1`] = `
-"\`\`\`
-Code block 1 line 1
-Code block 1 line 2
-Code block 1 line 3
-Code block 1 line 4
-\`\`\`
-"
-`;
-
-exports[`serializeMd fixures should serialize a \\n within a block qoute as new line 1`] = `
-"> Block quote\\
-> with a new line
-"
-`;
-
-exports[`serializeMd fixures should serialize two \\n within a block qoute as two new lines 1`] = `
-"> Block quote\\
-> \\
-> with a new line
-"
-`;
-
-exports[`serializeMd fixures should serialize two leading \\n at the end of a block qoute as a new line 1`] = `
-"> Block quote\\ 
-> <br />
-"
-`;
-
-exports[`serializeMd fixures should serialize three leading \\n at the end of a paragraph qoute as a new line 1`] = `
-"Paragaph with two new Lines\\
-\\ 
-<br />
-"
-`;
-
-exports[`serializeMd should serialize the leading break at the end of a block qoute as a <br /> 1`] = `
+exports[`serializeMd serializes a trailing break in a paragraph as <br /> 1`] = `
 "Paragaph with a new Line
 <br />
 "
 `;
 
-exports[`serializeMd should serialize paragraphs with only a new line to a <br /> 1`] = `
+exports[`serializeMd serializes paragraphs containing only a new line as <br /> 1`] = `
 "
 <br />
 

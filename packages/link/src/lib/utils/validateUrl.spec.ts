@@ -10,12 +10,12 @@ describe('validateUrl', () => {
     });
 
   describe('internal links', () => {
-    it('should validate paths starting with /', () => {
+    it('validate paths starting with /', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '/internal/path')).toBe(true);
     });
 
-    it('should validate anchor links starting with #', () => {
+    it('validate anchor links starting with #', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '#section-name')).toBe(true);
       expect(validateUrl(editor, '#top')).toBe(true);
@@ -23,37 +23,37 @@ describe('validateUrl', () => {
   });
 
   describe('markdown headings', () => {
-    it('should NOT validate markdown heading level 1', () => {
+    it('does not validate markdown heading level 1', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '# heading1')).toBe(false);
     });
 
-    it('should NOT validate markdown heading level 2', () => {
+    it('does not validate markdown heading level 2', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '## heading2')).toBe(false);
     });
 
-    it('should NOT validate markdown heading level 3', () => {
+    it('does not validate markdown heading level 3', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '### heading3')).toBe(false);
     });
 
-    it('should NOT validate markdown heading level 4', () => {
+    it('does not validate markdown heading level 4', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '#### heading4')).toBe(false);
     });
 
-    it('should NOT validate markdown heading level 5', () => {
+    it('does not validate markdown heading level 5', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '##### heading5')).toBe(false);
     });
 
-    it('should NOT validate markdown heading level 6', () => {
+    it('does not validate markdown heading level 6', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '###### heading6')).toBe(false);
     });
 
-    it('should NOT validate markdown headings with various content', () => {
+    it('does not validate markdown headings with various content', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '# My Title')).toBe(false);
       expect(validateUrl(editor, '## 2.3 Section')).toBe(false);
@@ -62,17 +62,17 @@ describe('validateUrl', () => {
   });
 
   describe('external links', () => {
-    it('should validate http URLs', () => {
+    it('validate http URLs', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, 'http://example.com')).toBe(true);
     });
 
-    it('should validate https URLs', () => {
+    it('validate https URLs', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, 'https://example.com')).toBe(true);
     });
 
-    it('should validate URLs with custom isUrl function', () => {
+    it('validate URLs with custom isUrl function', () => {
       const editor = createTestEditor({
         allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
         isUrl: (url: string) => url.startsWith('custom://'),
@@ -81,7 +81,7 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, 'http://example.com')).toBe(false);
     });
 
-    it('should still sanitize URLs even with custom isUrl function', () => {
+    it('still sanitize URLs even with custom isUrl function', () => {
       const editor = createTestEditor({
         allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
         isUrl: (url: string) =>
@@ -93,7 +93,7 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, 'custom://example')).toBe(true);
     });
 
-    it('should skip sanitization when dangerouslySkipSanitization is true', () => {
+    it('skip sanitization when dangerouslySkipSanitization is true', () => {
       const editor = createTestEditor({
         dangerouslySkipSanitization: true,
         isUrl: (url: string) => url.startsWith('javascript:'),
@@ -104,12 +104,12 @@ describe('validateUrl', () => {
   });
 
   describe('edge cases', () => {
-    it('should still validate anchor links without content after #', () => {
+    it('still validate anchor links without content after #', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '#')).toBe(true);
     });
 
-    it('should validate anchor links that look like markdown but are not', () => {
+    it('validate anchor links that look like markdown but are not', () => {
       const editor = createTestEditor();
       // These are valid anchor links, not markdown headings (no space after #)
       expect(validateUrl(editor, '#heading1')).toBe(true);

@@ -1,5 +1,7 @@
 # @platejs/ai
 
+## 52.3.1
+
 ## 52.1.0
 
 ### Minor Changes

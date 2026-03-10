@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import type { UnifiedProvider } from '@platejs/yjs';
 import { YjsPlugin } from '@platejs/yjs/react';
 import { RefreshCw } from 'lucide-react';
 import { nanoid } from 'nanoid';
@@ -178,7 +179,7 @@ function CollaborativeEditor({
       <div className="bg-muted px-4 py-2 font-medium">
         Connected as <span style={{ color: cursorColor }}>{username}</span>
         <div className="mt-1 flex items-center gap-2 text-xs">
-          {providers.map((provider) => (
+          {providers.map((provider: UnifiedProvider) => (
             <span
               key={provider.type}
               className={`rounded px-2 py-0.5 ${

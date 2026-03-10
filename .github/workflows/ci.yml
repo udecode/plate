@@ -9,8 +9,8 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'bunfig.toml'
@@ -28,8 +28,8 @@ on:
       - 'packages/**'
       - '.github/actions/**'
       - '.github/workflows/**'
-      - '.yarnrc.yml'
-      - 'yarn.lock'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
       - 'biome.jsonc'
       - 'eslint*'
       - 'bunfig.toml'
@@ -50,6 +50,9 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.title != '[Release] Version packages') &&
+      (github.event_name != 'push' || github.event.head_commit.message != 'Version Packages')
 
     steps:
       - uses: actions/checkout@v4
@@ -65,10 +68,10 @@ jobs:
           bun-version: latest
 
       - name: 📥 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+        uses: ./.github/actions/pnpm-install
 
       - name: 🔬 Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
@@ -76,24 +79,24 @@ jobs:
           path: |
             ${{ github.workspace }}/.cache
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: 🏗 Build
-        run: yarn build
+        run: pnpm build
 
       - name: 🕵️ Typecheck
-        run: yarn typecheck
+        run: pnpm typecheck
 
       - name: 🧪 Test
-        run: yarn test
+        run: pnpm test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |
-      #     yarn playwright install-deps
-      #     yarn playwright install
+      #     pnpm exec playwright install-deps
+      #     pnpm exec playwright install
 
       # - name: 🎭 Run Playwright tests
-      #   run: yarn e2e
+      #   run: pnpm e2e
 
   # notify-failure:
   #   name: Discord Notification

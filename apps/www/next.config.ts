@@ -9,6 +9,11 @@ const nextConfig = async (phase: string) => {
     },
 
     experimental: {
+      cpus: 8,
+      memoryBasedWorkersCount: false,
+      staticGenerationMaxConcurrency: 8,
+      staticGenerationMinPagesPerWorker: 25,
+      staticGenerationRetryCount: 1,
       turbopackFileSystemCacheForDev: true,
     },
     productionBrowserSourceMaps: false,
@@ -61,18 +66,24 @@ const nextConfig = async (phase: string) => {
           permanent: true,
           source: '/rd/:path([^.]*)',
         },
-      ];
-    },
-
-    rewrites: async () => {
-      return [
+        // Redirect old ?locale=cn URLs to /cn/* paths
         {
-          destination: '/?locale=cn',
-          source: '/cn',
+          destination: '/cn',
+          has: [{ key: 'locale', type: 'query', value: 'cn' }],
+          permanent: true,
+          source: '/',
         },
         {
-          destination: '/:path*?locale=cn', // Rewrite it to the corresponding path without /cn
-          source: '/cn/:path*', // Match any path under /cn
+          destination: '/cn/docs/:path*',
+          has: [{ key: 'locale', type: 'query', value: 'cn' }],
+          permanent: true,
+          source: '/docs/:path*',
+        },
+        {
+          destination: '/cn/:path*',
+          has: [{ key: 'locale', type: 'query', value: 'cn' }],
+          permanent: true,
+          source: '/:path*',
         },
       ];
     },

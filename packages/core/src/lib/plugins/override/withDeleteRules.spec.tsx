@@ -7,9 +7,56 @@ import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
 jsxt;
 
+const createElementPlugin = ({
+  deleteRules,
+  key,
+  match,
+  type = key,
+}: {
+  deleteRules?: Record<string, unknown>;
+  key: string;
+  match?: ({ node }: any) => boolean;
+  type?: string;
+}) =>
+  createSlatePlugin({
+    key,
+    node: {
+      isElement: true,
+      type,
+    },
+    ...(deleteRules || match
+      ? {
+          rules: {
+            ...(deleteRules ? { delete: deleteRules } : {}),
+            ...(match ? { match } : {}),
+          },
+        }
+      : {}),
+  });
+
+const getEditorAfterAction = ({
+  action,
+  input,
+  plugins = [],
+}: {
+  action: (editor: ReturnType<typeof createSlateEditor>) => void;
+  input: any;
+  plugins?: any[];
+}) => {
+  const editor = createSlateEditor({
+    plugins,
+    selection: input.selection,
+    value: input.children,
+  });
+
+  action(editor);
+
+  return editor;
+};
+
 describe('withDeleteRules', () => {
-  describe('rules: { delete: { empty: "reset" }', () => {
-    it('should reset on deleteBackward when block is empty', () => {
+  describe('empty reset rules', () => {
+    it('resets an empty block on deleteBackward', () => {
       const input = (
         <editor>
           <element type="blockquote">
@@ -26,28 +73,22 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { empty: 'reset' },
             key: 'blockquote',
-            node: {
-              isElement: true,
-              type: 'blockquote',
-            },
-            rules: { delete: { empty: 'reset' } },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should NOT reset on deleteBackward when at start with content', () => {
+    it('does not reset a non-empty block when only empty reset is configured', () => {
       const input = (
         <editor>
           <hp>
@@ -69,108 +110,77 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { empty: 'reset' },
             key: 'blockquote',
-            node: {
-              isElement: true,
-              type: 'blockquote',
-            },
-            rules: { delete: { empty: 'reset' } },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('rules: { delete: { start: "reset" }', () => {
-    it('should reset on deleteBackward when at start with content', () => {
-      const input = (
-        <editor>
-          <element type="h1">
-            <cursor />
-            Heading content
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-            Heading content
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
+  describe('start reset rules', () => {
+    it.each([
+      [
+        'resets a non-empty heading at the start',
+        (
+          <editor>
+            <element type="h1">
+              <cursor />
+              Heading content
+            </element>
+          </editor>
+        ) as any,
+        (
+          <editor>
+            <hp>
+              <cursor />
+              Heading content
+            </hp>
+          </editor>
+        ) as any,
+      ],
+      [
+        'resets an empty heading at the start',
+        (
+          <editor>
+            <element type="h1">
+              <cursor />
+            </element>
+          </editor>
+        ) as any,
+        (
+          <editor>
+            <hp>
+              <cursor />
+            </hp>
+          </editor>
+        ) as any,
+      ],
+    ])('%s', (_label, input, output) => {
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'reset' },
             key: 'h1',
-            node: {
-              isElement: true,
-              type: 'h1',
-            },
-            rules: { delete: { start: 'reset' } },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should reset on deleteBackward when block is empty', () => {
-      const input = (
-        <editor>
-          <element type="h1">
-            <cursor />
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <hp>
-            <cursor />
-          </hp>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'h1',
-            node: {
-              isElement: true,
-              type: 'h1',
-            },
-            rules: { delete: { start: 'reset' } },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-
-    it('should NOT reset when not at start and has content', () => {
+    it('keeps the block type when deleting away from the start', () => {
       const input = (
         <editor>
           <element type="h1">
@@ -191,66 +201,16 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'reset' },
             key: 'h1',
-            node: {
-              isElement: true,
-              type: 'h1',
-            },
-            rules: { delete: { start: 'reset' } },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-  });
-
-  describe('rules: { delete: undefined (default)', () => {
-    it('should NOT reset on deleteBackward when at start', () => {
-      const input = (
-        <editor>
-          <hp>
-            <htext />
-          </hp>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'custom',
-            node: {
-              isElement: true,
-              type: 'custom',
-            },
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
@@ -258,7 +218,7 @@ describe('withDeleteRules', () => {
   });
 
   describe('property cleanup', () => {
-    it('should remove custom properties when resetting', () => {
+    it('removes custom properties when resetting', () => {
       const input = (
         <editor>
           <element customProp="value" level={1} type="h1">
@@ -275,32 +235,27 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'reset' },
             key: 'h1',
-            node: {
-              isElement: true,
-              type: 'h1',
-            },
-            rules: { delete: { start: 'reset' } },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('default reset behavior', () => {
-    describe('when delete from start to end of editor', () => {
-      it('should reset editor to default paragraph', () => {
-        const input = (
+  describe('default editor reset behavior', () => {
+    it.each([
+      [
+        'resets the editor after deleting a forward fragment across the full document',
+        (
           <editor>
             <hp test="test">
               <anchor />
@@ -311,31 +266,11 @@ describe('withDeleteRules', () => {
               <focus />
             </hp>
           </editor>
-        ) as any;
-
-        const output = (
-          <editor>
-            <hp>
-              <htext />
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
-
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteFragment();
-
-        expect(editor.children).toEqual(output.children);
-      });
-    });
-
-    describe('when delete from end to start of editor', () => {
-      it('should reset editor to default paragraph', () => {
-        const input = (
+        ) as any,
+      ],
+      [
+        'resets the editor after deleting a backward fragment across the full document',
+        (
           <editor>
             <hp test="test">
               <focus />
@@ -346,62 +281,59 @@ describe('withDeleteRules', () => {
               <anchor />
             </hp>
           </editor>
-        ) as any;
+        ) as any,
+      ],
+    ])('%s', (_label, input) => {
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
 
-        const output = (
-          <editor>
-            <hp>
-              <htext />
-              <cursor />
-            </hp>
-          </editor>
-        ) as any;
-
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteFragment();
-
-        expect(editor.children).toEqual(output.children);
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteFragment(),
+        input,
       });
+
+      expect(editor.children).toEqual(output.children);
     });
 
-    describe('when delete at first block start', () => {
-      it('should reset first block to default paragraph', () => {
-        const input = (
-          <editor>
-            <hh1 test="test">
-              <cursor />
-              test
-            </hh1>
-          </editor>
-        ) as any;
+    it('resets the first block to a paragraph when deleting at editor start', () => {
+      const input = (
+        <editor>
+          <hh1 test="test">
+            <cursor />
+            test
+          </hh1>
+        </editor>
+      ) as any;
 
-        const output = (
-          <editor>
-            <hp>
-              <cursor />
-              test
-            </hp>
-          </editor>
-        ) as any;
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            test
+          </hp>
+        </editor>
+      ) as any;
 
-        const editor = createSlateEditor({
-          selection: input.selection,
-          value: input.children,
-        });
-
-        editor.tf.deleteBackward('character');
-
-        expect(editor.children).toEqual(output.children);
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
       });
+
+      expect(editor.children).toEqual(output.children);
     });
   });
 
-  describe('rules: { delete: undefined (default)', () => {
-    it('should use default behavior when deleteRules is undefined', () => {
+  describe('default delete behavior', () => {
+    it.each([
+      ['without delete rules', undefined],
+      ['with an empty delete rule object', {}],
+    ])('%s keeps Slate default delete behavior', (_label, deleteRules) => {
       const input = (
         <editor>
           <hp>
@@ -423,73 +355,24 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: deleteRules as Record<string, unknown> | undefined,
             key: 'custom',
-            node: {
-              isElement: true,
-              type: 'custom',
-              // deleteRules is undefined
-            },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
-
-      expect(editor.children).toEqual(output.children);
-      expect(editor.selection).toEqual(output.selection);
-    });
-
-    it('should use default behavior when deleteRules is empty object', () => {
-      const input = (
-        <editor>
-          <hp>
-            <htext />
-          </hp>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const output = (
-        <editor>
-          <element type="custom">
-            <cursor />
-            content
-          </element>
-        </editor>
-      ) as any;
-
-      const editor = createSlateEditor({
-        plugins: [
-          createSlatePlugin({
-            key: 'custom',
-            node: {
-              isElement: true,
-              type: 'custom',
-            },
-            rules: { delete: {} }, // empty object
-          }),
-        ],
-        selection: input.selection,
-        value: input.children,
-      });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
   });
 
-  describe('matchRules override behavior', () => {
-    it('should use matchRules override instead of default plugin deleteRules for start scenario', () => {
+  describe('match overrides', () => {
+    it('uses the matching override for start reset behavior', () => {
       const input = (
         <editor>
           <element customProperty="customValue" type="paragraph">
@@ -508,40 +391,28 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          // Base paragraph plugin with no delete behavior
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'default' },
             key: 'paragraph',
-            node: {
-              isElement: true,
-              type: 'paragraph',
-            },
-            rules: { delete: { start: 'default' } }, // Default behavior
           }),
-          // Override plugin that matches nodes with customProperty
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'reset' },
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              delete: { start: 'reset' }, // Override behavior
-              match: ({ node }: { node: any }) => Boolean(node.customProperty),
-            },
+            match: ({ node }: { node: any }) => Boolean(node.customProperty),
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should use default behavior when matchRules does not match', () => {
+    it('falls back to the base delete behavior when the override does not match', () => {
       const input = (
         <editor>
           <hp>
@@ -563,40 +434,28 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          // Base paragraph plugin with no delete behavior
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'default' },
             key: 'p',
-            node: {
-              isElement: true,
-              type: 'p',
-            },
-            rules: { delete: { start: 'default' } }, // Default behavior
           }),
-          // Override plugin that only matches nodes with customProperty
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { start: 'reset' },
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              delete: { start: 'reset' }, // Override behavior
-              match: ({ node }: { node: any }) => Boolean(node.customProperty), // Won't match
-            },
+            match: ({ node }: { node: any }) => Boolean(node.customProperty),
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
 
-    it('should handle matchRules override for empty scenario', () => {
+    it('uses the matching override for empty reset behavior', () => {
       const input = (
         <editor>
           <element customProperty="customValue" type="paragraph">
@@ -613,32 +472,22 @@ describe('withDeleteRules', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
         plugins: [
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { empty: 'default' },
             key: 'paragraph',
-            node: {
-              isElement: true,
-              type: 'paragraph',
-            },
-            rules: { delete: { empty: 'default' } },
           }),
-          createSlatePlugin({
+          createElementPlugin({
+            deleteRules: { empty: 'reset' },
             key: 'customOverride',
-            node: {
-              type: 'override',
-            },
-            rules: {
-              delete: { empty: 'reset' },
-              match: ({ node }: { node: any }) => Boolean(node.customProperty),
-            },
+            match: ({ node }: { node: any }) => Boolean(node.customProperty),
+            type: 'override',
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
-
-      editor.tf.deleteBackward('character');
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);

@@ -88,7 +88,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should', () => {
+it('moves the removed item children into the previous sublist', () => {
   const editor = createSlateEditor({ editor: input });
 
   const list = input.api.node({ id: '1', at: [] }) as any;

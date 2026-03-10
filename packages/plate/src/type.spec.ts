@@ -1,6 +1,6 @@
 import { createSlateEditor, isType } from '@platejs/core';
 
-it('should not throw', () => {
+it('does not throw', () => {
   const editor = createSlateEditor();
 
   expect(

@@ -53,7 +53,7 @@ const output = (
   </editor>
 ) as any;
 
-it('should', () => {
+it('moves sublist items into the target list', () => {
   const editor = createSlateEditor({
     selection: input.selection,
     value: input.children,

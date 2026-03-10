@@ -371,12 +371,23 @@ export const defaultRules: MdRules = {
     }),
   },
   img: {
-    deserialize: (mdastNode, _deco, options) => ({
-      caption: [{ text: mdastNode.alt } as TText],
-      children: [{ text: '' } as TText],
-      type: getPluginType(options.editor!, KEYS.img),
-      url: mdastNode.url,
-    }),
+    deserialize: (mdastNode, _deco, options) => {
+      const { alt, attributes, title, url } = mdastNode as any;
+      const {
+        alt: altAttr,
+        src,
+        ...rest
+      } = attributes ? parseAttributes(attributes) : ({} as any);
+
+      return {
+        caption: [{ text: altAttr || alt || '' } as TText],
+        children: [{ text: '' } as TText],
+        ...(title && { title }),
+        type: getPluginType(options.editor!, KEYS.img),
+        url: src || url,
+        ...rest,
+      };
+    },
     serialize: ({ caption, url }) => {
       const image: MdImage = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,

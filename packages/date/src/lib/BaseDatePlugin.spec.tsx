@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
-import { KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { KEYS, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseDatePlugin } from './BaseDatePlugin';
@@ -9,8 +8,8 @@ import { BaseDatePlugin } from './BaseDatePlugin';
 jsxt;
 
 describe('BaseDatePlugin', () => {
-  it('should configure date as void inline element', () => {
-    const editor = createPlateEditor({
+  it('configure date as void inline element', () => {
+    const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
     });
 
@@ -21,8 +20,8 @@ describe('BaseDatePlugin', () => {
     expect(plugin.node.isElement).toBe(true);
   });
 
-  it('should mark date elements as not selectable', () => {
-    const editor = createPlateEditor({
+  it('mark date elements as not selectable', () => {
+    const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
     });
 
@@ -31,8 +30,8 @@ describe('BaseDatePlugin', () => {
     expect(plugin.node.isSelectable).toBe(false);
   });
 
-  it('should provide insert.date transform', () => {
-    const editor = createPlateEditor({
+  it('provide insert.date transform', () => {
+    const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
     });
 

@@ -6,7 +6,7 @@ import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 import { deserializeHtmlElement } from './deserializeHtmlElement';
@@ -25,10 +25,10 @@ describe('when element has class and attribute, and plugin has deserialize type,
     </editor>
   ) as any;
 
-  it('should have type and attribute', () => {
+  it('parses the custom node type and attributes', () => {
     expect(
       deserializeHtmlElement(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [
             createSlatePlugin({
               key: 'a',
@@ -78,10 +78,10 @@ describe('when plugin has deserialize attributeNames', () => {
     </editor>
   ) as any;
 
-  it('should have "attributes" field', () => {
+  it('stores allowed DOM attributes on the node', () => {
     expect(
       deserializeHtmlElement(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [TablePlugin],
         }),
         element
@@ -101,10 +101,10 @@ describe('when element has a comment node', () => {
     </editor>
   ) as any;
 
-  it('should ignore the comment node', () => {
+  it('ignore the comment node', () => {
     expect(
       deserializeHtmlElement(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [],
         }),
         element
@@ -123,8 +123,8 @@ describe('when element has pre without child', () => {
     </editor>
   ) as any;
 
-  it('should ignore pre', () => {
-    expect(deserializeHtmlElement(createPlateEditor(), element)).toEqual(
+  it('ignores empty pre tags', () => {
+    expect(deserializeHtmlElement(createSlateEditor(), element)).toEqual(
       output.children
     );
   });
@@ -140,10 +140,10 @@ describe('when there is no plugins', () => {
     </editor>
   ) as any;
 
-  it('should not deserialize the tags without plugins', () => {
+  it('does not deserialize the tags without plugins', () => {
     expect(
       deserializeHtmlElement(
-        createPlateEditor({
+        createSlateEditor({
           plugins: [],
         }),
         element
@@ -155,7 +155,7 @@ describe('when there is no plugins', () => {
 describe('when plugin has deserializer.attributeNames', () => {
   const html = `<html><body><img alt="removed" src="https://i.imgur.com/removed.png" /></body></html>`;
 
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
       ImagePlugin.extend({
         parsers: {
@@ -182,7 +182,7 @@ describe('when plugin has deserializer.attributeNames', () => {
     </editor>
   ) as any;
 
-  it('should set these in node "attributes"', () => {
+  it('copies configured attributes onto the node', () => {
     expect(deserializeHtmlElement(editor, element)).toEqual(output.children);
   });
 });
@@ -190,7 +190,7 @@ describe('when plugin has deserializer.attributeNames', () => {
 describe('when plugin has deserializer.parse', () => {
   const html = `<html><body><p><a href="http://google.com" target="_blank">a</a></p></body></html>`;
 
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
       LinkPlugin.extend(() => ({
@@ -221,7 +221,7 @@ describe('when plugin has deserializer.parse', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
+  it('uses the custom parse function result', () => {
     expect(deserializeHtmlElement(editor, element)).toEqual(output.children);
   });
 });
@@ -229,7 +229,7 @@ describe('when plugin has deserializer.parse', () => {
 describe('when plugin has deserializer.rules.validNodeName', () => {
   const html = '<html><body><p><b>strong</b></p></body></html>';
 
-  const editor = createPlateEditor({
+  const editor = createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BoldPlugin.extend({
@@ -254,7 +254,7 @@ describe('when plugin has deserializer.rules.validNodeName', () => {
     </editor>
   ) as any;
 
-  it('should be', () => {
+  it('respects validNodeName rules for marks', () => {
     expect(deserializeHtmlElement(editor, element)).toEqual(output.children);
   });
 });

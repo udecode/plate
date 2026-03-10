@@ -1,7 +1,7 @@
 import { parseMarkdownBlocks } from './parseMarkdownBlocks';
 
 describe('parseMarkdownBlocks', () => {
-  it('should parse markdown content into tokens', () => {
+  it('parse markdown content into tokens', () => {
     const input = '# Heading\n \nParagraph';
 
     const tokens = parseMarkdownBlocks(input);
@@ -23,7 +23,7 @@ describe('parseMarkdownBlocks', () => {
     );
   });
 
-  it('should not filter tokens when exclude is empty', () => {
+  it('does not filter tokens when exclude is empty', () => {
     const input = '# Heading\n \nParagraph';
 
     const tokensWithSpace = parseMarkdownBlocks(input, { exclude: [] });
@@ -35,7 +35,7 @@ describe('parseMarkdownBlocks', () => {
     );
   });
 
-  it('should filter multiple token types', () => {
+  it('filter multiple token types', () => {
     const input = '# Heading\n\n---\n\nParagraph';
     const tokens = parseMarkdownBlocks(input, {
       exclude: ['space', 'hr'],
@@ -56,7 +56,7 @@ describe('parseMarkdownBlocks', () => {
     );
   });
 
-  it('should not trim content when trim is false', () => {
+  it('does not trim content when trim is false', () => {
     const input = '# Heading \n \n';
 
     const tokens = parseMarkdownBlocks(input, { exclude: [], trim: false });
@@ -69,7 +69,7 @@ describe('parseMarkdownBlocks', () => {
     );
   });
 
-  it('should trim content by default', () => {
+  it('trim content by default', () => {
     const input = '# Heading \n';
 
     const tokens = parseMarkdownBlocks(input);

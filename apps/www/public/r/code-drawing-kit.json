@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "code-drawing-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/code-drawing"
+  ],
+  "registryDependencies": [
+    "https://platejs.org/r/code-drawing-base-kit",
+    "https://platejs.org/r/code-drawing-node"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/code-drawing-kit.tsx",
+      "content": "'use client';\n\nimport { CodeDrawingPlugin } from '@platejs/code-drawing/react';\n\nimport { CodeDrawingElement } from '@/registry/ui/code-drawing-node';\n\nexport const CodeDrawingKit = [\n  CodeDrawingPlugin.withComponent(CodeDrawingElement),\n];\n",
+      "type": "registry:component"
+    }
+  ]
+}

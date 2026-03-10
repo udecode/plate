@@ -31,7 +31,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('basic functionality', () => {
-    it('should create a static editor', () => {
+    it('create a static editor', () => {
       const { result } = renderHook(() => usePlateViewEditor());
 
       expect(result.current).toBeDefined();
@@ -40,7 +40,7 @@ describe('usePlateViewEditor', () => {
       );
     });
 
-    it('should pass options to createStaticEditor', () => {
+    it('pass options to createStaticEditor', () => {
       const options = {
         id: 'custom-id',
         plugins: [createSlatePlugin({ key: 'test' })],
@@ -56,7 +56,7 @@ describe('usePlateViewEditor', () => {
       expect(result.current.id).toBe('custom-id');
     });
 
-    it('should memoize the editor instance', () => {
+    it('memoize the editor instance', () => {
       const { rerender, result } = renderHook(() => usePlateViewEditor());
 
       const firstEditor = result.current;
@@ -72,7 +72,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('enabled option', () => {
-    it('should return null when enabled is false', () => {
+    it('returns null when enabled is false', () => {
       const { result } = renderHook(() =>
         usePlateViewEditor({ enabled: false })
       );
@@ -81,7 +81,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).not.toHaveBeenCalled();
     });
 
-    it('should create editor when enabled is true', () => {
+    it('create editor when enabled is true', () => {
       const { result } = renderHook(() =>
         usePlateViewEditor({ enabled: true })
       );
@@ -90,7 +90,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalled();
     });
 
-    it('should create editor when enabled is undefined', () => {
+    it('create editor when enabled is undefined', () => {
       const { result } = renderHook(() =>
         usePlateViewEditor({ enabled: undefined })
       );
@@ -99,7 +99,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalled();
     });
 
-    it('should recreate editor when enabled changes from false to true', () => {
+    it('recreate editor when enabled changes from false to true', () => {
       const { rerender, result } = renderHook(
         ({ enabled }) => usePlateViewEditor({ enabled }),
         { initialProps: { enabled: false as boolean | undefined } }
@@ -115,7 +115,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(1);
     });
 
-    it('should return null when enabled changes from true to false', () => {
+    it('returns null when enabled changes from true to false', () => {
       const { rerender, result } = renderHook(
         ({ enabled }) => usePlateViewEditor({ enabled }),
         { initialProps: { enabled: true as boolean | undefined } }
@@ -134,7 +134,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('dependency list', () => {
-    it('should recreate editor when id changes', () => {
+    it('recreate editor when id changes', () => {
       const { rerender, result } = renderHook(
         ({ id }) => usePlateViewEditor({ id }),
         { initialProps: { id: 'editor-1' } }
@@ -151,7 +151,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(2);
     });
 
-    it('should use custom dependencies', () => {
+    it('use custom dependencies', () => {
       let customDep = 'initial';
 
       const { rerender, result } = renderHook(() =>
@@ -170,7 +170,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(2);
     });
 
-    it('should not recreate editor when non-dependency options change', () => {
+    it('does not recreate editor when non-dependency options change', () => {
       const { rerender, result } = renderHook(
         ({ value }) => usePlateViewEditor({ value }),
         {
@@ -193,7 +193,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('mounting behavior', () => {
-    it('should handle component unmounting', () => {
+    it('handle component unmounting', () => {
       const { unmount } = renderHook(() => usePlateViewEditor());
 
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(1);
@@ -204,7 +204,7 @@ describe('usePlateViewEditor', () => {
       expect(() => unmount()).not.toThrow();
     });
 
-    it('should create editor on remount', () => {
+    it('create editor on remount', () => {
       const { result, unmount } = renderHook(() => usePlateViewEditor());
 
       const firstEditor = result.current;
@@ -222,7 +222,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('type safety', () => {
-    it('should properly type the return value based on enabled option', () => {
+    it('properly type the return value based on enabled option', () => {
       // Test compile-time type checking
       const { result: enabledTrue } = renderHook(() =>
         usePlateViewEditor({ enabled: true })
@@ -249,7 +249,7 @@ describe('usePlateViewEditor', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle rapid prop changes', () => {
+    it('handle rapid prop changes', () => {
       const { rerender, result } = renderHook(
         ({ id, enabled }) => usePlateViewEditor({ id, enabled }),
         {
@@ -270,7 +270,7 @@ describe('usePlateViewEditor', () => {
       expect(mockCreateStaticEditor).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle options with all properties', () => {
+    it('handle options with all properties', () => {
       const complexOptions = {
         id: 'complex-editor',
         enabled: true,
@@ -293,7 +293,7 @@ describe('usePlateViewEditor', () => {
       );
     });
 
-    it('should handle empty options object', () => {
+    it('handle empty options object', () => {
       const { result } = renderHook(() => usePlateViewEditor({}));
 
       expect(result.current).toBeDefined();

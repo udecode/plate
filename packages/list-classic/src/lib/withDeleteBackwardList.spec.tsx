@@ -10,7 +10,7 @@ import { BaseListPlugin } from './BaseListPlugin';
 jsxt;
 
 describe('li > lic * 2 with selection at second child start', () => {
-  it('should merge the children', () => {
+  it('merge the children', () => {
     const input = (
       <editor>
         <hul>
@@ -48,7 +48,7 @@ describe('li > lic * 2 with selection at second child start', () => {
 });
 
 describe('li with selection at start', () => {
-  it('should remove the list item', () => {
+  it('remove the list item', () => {
     const input = (
       <editor>
         <hul>
@@ -89,7 +89,7 @@ describe('li with selection at start', () => {
 });
 
 describe('list + sublist where second item has multiple children', () => {
-  it('should merge all text into first sublist item', () => {
+  it('merge all text into first sublist item', () => {
     const input = (
       <editor>
         <hul>

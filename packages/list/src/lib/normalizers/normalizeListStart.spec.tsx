@@ -1,13 +1,15 @@
 /** @jsx jsxt */
 
-import type { Value } from 'platejs';
-import type { SlateEditor } from 'platejs';
+import {
+  type SlateEditor,
+  type Value,
+  BaseParagraphPlugin,
+  createSlateEditor,
+} from 'platejs';
 
-import { IndentPlugin } from '@platejs/indent/react';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 import { omit } from 'lodash';
-import { ParagraphPlugin } from 'platejs/react';
-import { createPlateEditor } from 'platejs/react';
 
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
@@ -23,10 +25,10 @@ const createEditor = ({
   normalizeInitial?: boolean;
   pages?: boolean;
 }) =>
-  createPlateEditor({
+  createSlateEditor({
     plugins: [
-      ParagraphPlugin,
-      IndentPlugin,
+      BaseParagraphPlugin,
+      BaseIndentPlugin,
       pages ? listPluginPage : BaseListPlugin,
     ],
     shouldNormalizeEditor: normalizeInitial,

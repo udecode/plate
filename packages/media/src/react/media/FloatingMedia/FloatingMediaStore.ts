@@ -19,4 +19,4 @@ export const FloatingMediaStore = createZustandStore(
 export const {
   useState: useFloatingMediaState,
   useValue: useFloatingMediaValue,
-} = FloatingMediaStore;
+} = FloatingMediaStore as any;

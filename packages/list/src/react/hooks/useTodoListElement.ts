@@ -2,7 +2,11 @@ import type { TElement } from 'platejs';
 
 import { useEditorRef, useReadOnly } from 'platejs/react';
 
-export const useTodoListElementState = ({ element }: { element: TElement }) => {
+export const useTodoListElementState = ({
+  element,
+}: {
+  element: TElement;
+}): any => {
   const editor = useEditorRef();
   const { checked } = element;
   const readOnly = useReadOnly();

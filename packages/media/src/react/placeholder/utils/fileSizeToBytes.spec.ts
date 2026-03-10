@@ -2,63 +2,44 @@ import { UploadErrorCode } from '../type';
 import { bytesToFileSize, fileSizeToBytes } from './fileSizeToBytes';
 
 describe('fileSizeToBytes', () => {
-  it('should convert bytes correctly', () => {
-    expect(fileSizeToBytes('1B', new File([], ''))).toBe(1);
-    expect(fileSizeToBytes('1024B', new File([], ''))).toBe(1024);
+  const file = new File([], 'test.bin');
+
+  const getErrorCode = (input: string) => {
+    try {
+      fileSizeToBytes(input as any, file);
+    } catch (error: any) {
+      return error.code;
+    }
+  };
+
+  it.each([
+    ['1B', 1],
+    ['1024B', 1024],
+    ['1KB', 1024],
+    ['1MB', 1_048_576],
+    ['1GB', 1_073_741_824],
+    ['1kb', 1024],
+    ['1 KB', 1024],
+  ])('converts %s to %i bytes', (input, expected) => {
+    expect(fileSizeToBytes(input as any, file)).toBe(expected);
   });
 
-  it('should convert kilobytes correctly', () => {
-    expect(fileSizeToBytes('1KB', new File([], ''))).toBe(1024);
-  });
-
-  it('should convert megabytes correctly', () => {
-    expect(fileSizeToBytes('1MB', new File([], ''))).toBe(1_048_576);
-  });
-
-  it('should convert gigabytes correctly', () => {
-    expect(fileSizeToBytes('1GB', new File([], ''))).toBe(1_073_741_824);
-  });
-
-  it('should be case insensitive', () => {
-    expect(fileSizeToBytes('1KB', new File([], ''))).toBe(1024);
-  });
-
-  it('should handle whitespace', () => {});
-
-  it('should throw InvalidFileSize for invalid formats', () => {
-    expect(() => {
-      try {
-        fileSizeToBytes('invalid' as any, new File([], ''));
-      } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.INVALID_FILE_SIZE);
-      }
-    });
-
-    expect(() => {
-      try {
-        fileSizeToBytes('-1KB' as any, new File([], ''));
-      } catch (error: any) {
-        expect(error.code).toBe(UploadErrorCode.INVALID_FILE_SIZE);
-      }
-    });
+  it.each(['invalid', '-1KB'])('rejects %s with InvalidFileSize', (input) => {
+    expect(getErrorCode(input)).toBe(UploadErrorCode.INVALID_FILE_SIZE);
   });
 });
 
 describe('bytesToFileSize', () => {
-  it('should handle zero and negative one', () => {
-    expect(bytesToFileSize(0)).toBe('0B');
-    expect(bytesToFileSize(-1)).toBe('0B');
-  });
-
-  it('should convert bytes to human readable format', () => {
-    expect(bytesToFileSize(500)).toBe('500.00B');
-    expect(bytesToFileSize(1024)).toBe('1.02KB');
-    expect(bytesToFileSize(1_048_576)).toBe('1.05MB');
-    expect(bytesToFileSize(1_073_741_824)).toBe('1.07GB');
-  });
-
-  it('should round to 2 decimal places', () => {
-    expect(bytesToFileSize(1536)).toBe('1.54KB');
-    expect(bytesToFileSize(2_621_440)).toBe('2.62MB');
+  it.each([
+    [0, '0B'],
+    [-1, '0B'],
+    [500, '500.00B'],
+    [1024, '1.02KB'],
+    [1536, '1.54KB'],
+    [1_048_576, '1.05MB'],
+    [2_621_440, '2.62MB'],
+    [1_073_741_824, '1.07GB'],
+  ])('formats %i bytes as %s', (input, expected) => {
+    expect(bytesToFileSize(input)).toBe(expected);
   });
 });

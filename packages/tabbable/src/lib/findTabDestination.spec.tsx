@@ -69,7 +69,7 @@ describe('findTabDestination', () => {
     describe('when direction is forward', () => {
       const directionOverride = {} as any;
 
-      it('should return the next tabbable with the same path', () => {
+      it('returns the next tabbable with the same path', () => {
         const tabDestination = findTabDestination(editor, {
           ...defaultOptions,
           ...activeOverride,
@@ -86,7 +86,7 @@ describe('findTabDestination', () => {
     describe('when direction is backward', () => {
       const directionOverride = { direction: 'backward' } as any;
 
-      it('should return the path of the tabbable', () => {
+      it('returns the path of the tabbable', () => {
         const tabDestination = findTabDestination(editor, {
           ...defaultOptions,
           ...activeOverride,
@@ -107,7 +107,7 @@ describe('findTabDestination', () => {
     describe('when direction is forward', () => {
       const directionOverride = {} as any;
 
-      it('should return the path after that of the tabbable', () => {
+      it('returns the path after that of the tabbable', () => {
         const tabDestination = findTabDestination(editor, {
           ...defaultOptions,
           ...activeOverride,
@@ -124,7 +124,7 @@ describe('findTabDestination', () => {
     describe('when direction is backward', () => {
       const directionOverride = { direction: 'backward' } as any;
 
-      it('should return the previous tabbable with the same path', () => {
+      it('returns the previous tabbable with the same path', () => {
         const tabDestination = findTabDestination(editor, {
           ...defaultOptions,
           ...activeOverride,
@@ -154,7 +154,7 @@ describe('findTabDestination', () => {
       describe('when direction is forward', () => {
         const directionOverride = {} as any;
 
-        it('should return the next tabbable', () => {
+        it('returns the next tabbable', () => {
           const tabDestination = findTabDestination(editorWithSelection, {
             ...defaultOptions,
             ...activeOverride,
@@ -171,7 +171,7 @@ describe('findTabDestination', () => {
       describe('when direction is backward', () => {
         const directionOverride = { direction: 'backward' } as any;
 
-        it('should return the previous tabbable', () => {
+        it('returns the previous tabbable', () => {
           const tabDestination = findTabDestination(editorWithSelection, {
             ...defaultOptions,
             ...activeOverride,
@@ -198,7 +198,7 @@ describe('findTabDestination', () => {
       describe('when direction is backward', () => {
         const directionOverride = { direction: 'backward' } as any;
 
-        it('should return null', () => {
+        it('returns null', () => {
           const tabDestination = findTabDestination(editorWithSelection, {
             ...defaultOptions,
             ...activeOverride,
@@ -222,7 +222,7 @@ describe('findTabDestination', () => {
       describe('when direction is forward', () => {
         const directionOverride = {} as any;
 
-        it('should return null', () => {
+        it('returns null', () => {
           const tabDestination = findTabDestination(editorWithSelection, {
             ...defaultOptions,
             ...activeOverride,

@@ -1,11 +1,11 @@
 import { htmlBrToNewLine } from './htmlBrToNewLine';
 
-describe('', () => {
+describe('htmlBrToNewLine', () => {
   describe('when br', () => {
     const input = document.createElement('br');
     const output = '\n';
 
-    it('should be \n', () => {
+    it('returns a newline', () => {
       expect(htmlBrToNewLine(input)).toEqual(output);
     });
   });
@@ -14,7 +14,7 @@ describe('', () => {
     const input = document.createElement('div');
     const output = undefined;
 
-    it('should be undefined', () => {
+    it('returns undefined', () => {
       expect(htmlBrToNewLine(input)).toEqual(output);
     });
   });

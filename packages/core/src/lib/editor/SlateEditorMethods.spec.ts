@@ -1,8 +1,8 @@
-import { createPlateEditor } from '../../react';
 import { createSlatePlugin } from '../plugin';
+import { createSlateEditor } from './withSlate';
 
 describe('getApi method', () => {
-  it('should return correctly typed plugin API', () => {
+  it('returns correctly typed plugin API', () => {
     const TestPlugin = createSlatePlugin({
       key: 'test',
     }).extendEditorApi(() => ({
@@ -10,7 +10,7 @@ describe('getApi method', () => {
       testNumber: () => 42,
     }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [TestPlugin],
     });
 
@@ -25,14 +25,14 @@ describe('getApi method', () => {
     expect(testApi.testNumber()).toBe(42);
   });
 
-  it('should work with generic', () => {
+  it('work with generic', () => {
     const Plugin1 = createSlatePlugin({
       key: 'plugin1',
     }).extendEditorApi(() => ({
       method1: () => 'plugin1',
     }));
 
-    const editor = createPlateEditor({
+    const editor = createSlateEditor({
       plugins: [Plugin1],
     });
 
@@ -42,13 +42,13 @@ describe('getApi method', () => {
   });
 
   describe('getPlugin method', () => {
-    it('should return correctly typed plugin', () => {
+    it('returns correctly typed plugin', () => {
       const TestPlugin = createSlatePlugin({
         key: 'test',
         options: { testOption: 'value' },
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [TestPlugin],
       });
 
@@ -58,13 +58,13 @@ describe('getApi method', () => {
       expect(plugin.options.testOption).toBe('value');
     });
 
-    it('should work with generic', () => {
+    it('work with generic', () => {
       const Plugin1 = createSlatePlugin({
         key: 'plugin1',
         options: { option1: 'value1' },
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [Plugin1],
       });
 
@@ -74,13 +74,13 @@ describe('getApi method', () => {
   });
 
   describe('getOptions method', () => {
-    it('should return correctly typed plugin options', () => {
+    it('returns correctly typed plugin options', () => {
       const TestPlugin = createSlatePlugin({
         key: 'test',
         options: { testOption: 'value' },
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [TestPlugin],
       });
 
@@ -89,13 +89,13 @@ describe('getApi method', () => {
       expect(options.testOption).toBe('value');
     });
 
-    it('should work with generic', () => {
+    it('work with generic', () => {
       const Plugin1 = createSlatePlugin({
         key: 'plugin1',
         options: { option1: 'value1' },
       });
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         plugins: [Plugin1],
       });
 

@@ -1,0 +1,46 @@
+########################################################################################
+# "pnpm install" composite action for pnpm workspaces                                   #
+########################################################################################
+
+name: 'Monorepo install (pnpm)'
+description: 'Run pnpm install with cache enabled'
+inputs:
+  cwd:
+    description: "Changes node's process.cwd() if the project is not located on the root"
+    required: false
+    default: '.'
+  cache-prefix:
+    description: 'Add a specific cache-prefix'
+    required: false
+    default: 'default'
+  link-workspace-packages:
+    description: 'Link local workspace packages during install'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: ⚙️ Install pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: ⚙️ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: 'pnpm'
+
+    - name: 📥 Install dependencies
+      shell: bash
+      working-directory: ${{ inputs.cwd }}
+      run: |
+        args=(install --no-frozen-lockfile)
+
+        if [ "${{ inputs.link-workspace-packages }}" = "true" ]; then
+          args+=(--config.link-workspace-packages=true)
+        fi
+
+        pnpm "${args[@]}"
+      env:
+        HUSKY: '0'

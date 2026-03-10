@@ -10,7 +10,7 @@ import {
 
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
-export const usePlaceholderPopoverState = () => {
+export const usePlaceholderPopoverState = (): any => {
   const editor = useEditorRef();
   const readOnly = useReadOnly();
   const selected = useSelected();

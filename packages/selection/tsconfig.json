@@ -1,8 +1,5 @@
 {
   "extends": "../../tooling/config/tsconfig.base.json",
-  "compilerOptions": {
-    "paths": {}
-  },
   "include": ["src", "../../tooling/config/global.d.ts"],
   "exclude": []
 }

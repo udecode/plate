@@ -1,12 +1,11 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createPlateEditor } from 'platejs/react';
 
 import { getTableGridAbove } from './queries/getTableGridAbove';
-import { getTestTablePlugins } from './withNormalizeTable.spec';
+import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
 
@@ -16,7 +15,7 @@ describe('withGetFragmentTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should copy a table 2x1 with 11-21 cells (disableMerge: $disableMerge)', ({
+    ])('copies a table 2x1 with 11-21 cells (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -40,7 +39,7 @@ describe('withGetFragmentTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -58,7 +57,7 @@ describe('withGetFragmentTable', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should copy only the 2 blocks (disableMerge: $disableMerge)', ({
+    ])('copies only the 2 blocks (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const blocks = (
@@ -84,7 +83,7 @@ describe('withGetFragmentTable', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createPlateEditor({
+      const editor = createSlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

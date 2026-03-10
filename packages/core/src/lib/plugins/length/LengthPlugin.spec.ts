@@ -1,18 +1,18 @@
 import type { SlateEditor } from '../../editor';
 
-import { createPlateEditor } from '../../../react';
+import { createSlateEditor } from '../../editor';
 
 describe('LengthPlugin', () => {
   let editor: SlateEditor;
 
   const createEditorWithLength = (maxLength: number) =>
-    createPlateEditor({
+    createSlateEditor({
       autoSelect: true,
       maxLength,
     });
 
   describe('when inserting text', () => {
-    it('should allow inserting text within the maxLength', () => {
+    it('allow inserting text within the maxLength', () => {
       editor = createEditorWithLength(10);
       editor.tf.insertText('Hello');
 
@@ -21,7 +21,7 @@ describe('LengthPlugin', () => {
       ]);
     });
 
-    it('should truncate text that exceeds maxLength', () => {
+    it('truncate text that exceeds maxLength', () => {
       editor = createEditorWithLength(5);
       editor.tf.insertText('Hello, World!');
 
@@ -30,7 +30,7 @@ describe('LengthPlugin', () => {
       ]);
     });
 
-    it('should handle multiple insertions up to maxLength', () => {
+    it('handle multiple insertions up to maxLength', () => {
       editor = createEditorWithLength(10);
       editor.tf.insertText('Hello');
       editor.tf.insertText(', ');
@@ -43,7 +43,7 @@ describe('LengthPlugin', () => {
   });
 
   describe('when deleting text', () => {
-    it('should allow deleting text', () => {
+    it('allow deleting text', () => {
       editor = createEditorWithLength(10);
       editor.tf.insertText('Hello, World');
       editor.tf.delete({ distance: 7, reverse: true });
@@ -55,7 +55,7 @@ describe('LengthPlugin', () => {
   });
 
   describe('when pasting text', () => {
-    it('should truncate pasted text that exceeds maxLength', () => {
+    it('truncate pasted text that exceeds maxLength', () => {
       editor = createEditorWithLength(10);
       editor.tf.insertFragment([
         { children: [{ text: 'This is a long pasted text' }], type: 'p' },
@@ -68,8 +68,8 @@ describe('LengthPlugin', () => {
   });
 
   describe('when maxLength is not set', () => {
-    it('should not limit text input', () => {
-      editor = createPlateEditor({
+    it('does not limit text input', () => {
+      editor = createSlateEditor({
         autoSelect: true,
       });
       editor.tf.insertText(
@@ -90,7 +90,7 @@ describe('LengthPlugin', () => {
   });
 
   describe('plugin options', () => {
-    it('should correctly set maxLength option', () => {
+    it('correctly set maxLength option', () => {
       editor = createEditorWithLength(15);
       const options = editor.plugins.length.options;
 

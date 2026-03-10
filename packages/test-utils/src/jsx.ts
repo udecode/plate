@@ -27,6 +27,7 @@ declare global {
       hblockquote: any;
       hcallout: any;
       hcodeblock: any;
+      hcodedrawing: any;
       hcodeline: any;
       hcolumn: any;
       hcolumngroup: any;
@@ -84,6 +85,7 @@ export const elements: HyperscriptShorthands = {
   hblockquote: { type: 'blockquote' },
   hcallout: { type: 'callout' },
   hcodeblock: { type: 'code_block' },
+  hcodedrawing: { children: voidChildren, type: 'code_drawing' },
   hcodeline: { type: 'code_line' },
   hcolumn: { type: 'column' },
   hcolumngroup: { type: 'column_group' },

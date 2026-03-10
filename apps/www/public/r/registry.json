@@ -1677,6 +1677,43 @@
       }
     },
     {
+      "name": "code-drawing-node",
+      "type": "registry:ui",
+      "title": "Code Drawing Node",
+      "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
+      "dependencies": [
+        "@platejs/code-drawing"
+      ],
+      "registryDependencies": [
+        "popover",
+        "button",
+        "select"
+      ],
+      "files": [
+        {
+          "path": "src/registry/ui/code-drawing-node.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "src/registry/ui/code-drawing-node-static.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "meta": {
+        "docs": [
+          {
+            "route": "/docs/code-drawing"
+          },
+          {
+            "route": "https://pro.platejs.org/docs/components/code-drawing-node"
+          }
+        ],
+        "examples": [
+          "code-drawing-demo"
+        ]
+      }
+    },
+    {
       "name": "code-node",
       "type": "registry:ui",
       "title": "Code Leaf",
@@ -2784,6 +2821,22 @@
       ]
     },
     {
+      "name": "code-drawing-base-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/code-drawing"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/code-drawing-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/code-drawing-base-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "column-base-kit",
       "type": "registry:component",
       "dependencies": [
@@ -3048,6 +3101,7 @@
         "https://platejs.org/r/basic-marks-base-kit",
         "https://platejs.org/r/callout-base-kit",
         "https://platejs.org/r/code-block-base-kit",
+        "https://platejs.org/r/code-drawing-base-kit",
         "https://platejs.org/r/column-base-kit",
         "https://platejs.org/r/comment-base-kit",
         "https://platejs.org/r/date-base-kit",
@@ -3276,6 +3330,23 @@
       ]
     },
     {
+      "name": "code-drawing-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/code-drawing"
+      ],
+      "registryDependencies": [
+        "https://platejs.org/r/code-drawing-base-kit",
+        "https://platejs.org/r/code-drawing-node"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/code-drawing-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
       "name": "column-kit",
       "type": "registry:component",
       "dependencies": [
@@ -3443,6 +3514,7 @@
         "https://platejs.org/r/block-placeholder-kit",
         "https://platejs.org/r/callout-kit",
         "https://platejs.org/r/code-block-kit",
+        "https://platejs.org/r/code-drawing-kit",
         "https://platejs.org/r/column-kit",
         "https://platejs.org/r/comment-kit",
         "https://platejs.org/r/cursor-overlay-kit",
@@ -4673,6 +4745,7 @@
         "https://platejs.org/r/blockquote-docs",
         "https://platejs.org/r/callout-docs",
         "https://platejs.org/r/code-block-docs",
+        "https://platejs.org/r/code-drawing-docs",
         "https://platejs.org/r/column-docs",
         "https://platejs.org/r/date-docs",
         "https://platejs.org/r/equation-docs",
@@ -5156,6 +5229,19 @@
       ],
       "name": "code-block-docs",
       "title": "Code Block",
+      "type": "registry:file"
+    },
+    {
+      "description": "Documentation for Code Drawing",
+      "files": [
+        {
+          "path": "../../docs/(plugins)/(elements)/code-drawing.mdx",
+          "target": "content/docs/plate/(plugins)/(elements)/code-drawing.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "code-drawing-docs",
+      "title": "Code Drawing",
       "type": "registry:file"
     },
     {

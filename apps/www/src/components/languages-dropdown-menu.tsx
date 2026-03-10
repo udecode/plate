@@ -15,28 +15,24 @@ export function LanguagesDropdownMenu() {
   const pathname = usePathname();
 
   const handleClick = (locale?: string) => {
-    const url = new URL(window.location.href);
+    let newPathname: string;
 
-    if (locale) {
-      if (pathname?.includes(locale)) {
-        return;
+    if (locale === 'cn') {
+      // Switch to Chinese - add /cn prefix if not present
+      if (pathname?.startsWith('/cn')) {
+        return; // Already on CN
       }
-
-      url.pathname = `/${locale}${pathname}`;
-      url.searchParams.set('locale', locale);
+      newPathname = `/cn${pathname || '/'}`;
     } else {
-      if (!pathname?.includes('cn')) return;
-      if (pathname) {
-        const segments = pathname.split('/').filter((p) => !!p);
-        const newSegments = segments.filter((segment) => segment !== 'cn');
-        url.pathname =
-          newSegments.length > 0 ? `/${newSegments.join('/')}` : '/';
+      // Switch to English - remove /cn prefix
+      if (!pathname?.startsWith('/cn')) {
+        return; // Already on English
       }
-
-      url.searchParams.delete('locale');
+      const segments = pathname.split('/').filter((p) => !!p && p !== 'cn');
+      newPathname = segments.length > 0 ? `/${segments.join('/')}` : '/';
     }
 
-    window.location.href = url.toString();
+    window.location.href = newPathname;
   };
 
   return (

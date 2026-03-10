@@ -47,7 +47,7 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: 📥 Install
-        run: bun install --frozen-lockfile
+        run: bun install --no-frozen-lockfile
 
       - name: 🏗 Build
         run: bun run build

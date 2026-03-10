@@ -2,7 +2,7 @@ import { useEditorRef, useElement } from 'platejs/react';
 
 import { BaseCaptionPlugin } from '../../lib';
 
-export const useCaptionButtonState = () => {
+export const useCaptionButtonState = (): any => {
   const editor = useEditorRef();
   const element = useElement();
 

@@ -33,7 +33,7 @@ const createTestEditor = (plugins: any[] = []) =>
 const editor = createTestEditor();
 
 describe('deserializeMd - paragraph', () => {
-  it('should deserialize paragraph with one linebreak', () => {
+  it('deserialize paragraph with one linebreak', () => {
     const input = `
 Paragaph with two new Lines\\
 <br />`;
@@ -50,7 +50,7 @@ Paragaph with two new Lines\\
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with two leading linebreaks', () => {
+  it('deserialize paragraph with two leading linebreaks', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
@@ -69,7 +69,7 @@ Paragaph with two new Lines\\
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with leading linebreaks in the middle', () => {
+  it('deserialize paragraph with leading linebreaks in the middle', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
@@ -89,7 +89,7 @@ followed by text`;
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize paragraph with leading linebreaks in the middle', () => {
+  it('deserialize paragraph with leading linebreaks in the middle', () => {
     const input = `
 Paragaph with two new Lines\\
 \\
@@ -109,7 +109,7 @@ followed by text`;
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should deserialize leading empty paragraphts as <br />', () => {
+  it('deserialize leading empty paragraphts as <br />', () => {
     const input = `
 Paragaph followed by two empty paragraphts
 
@@ -132,7 +132,7 @@ Paragaph followed by two empty paragraphts
     expect(deserializeMd(editor, input)).toEqual(output);
   });
 
-  it('should collapse leading linebreak - collapsing break', () => {
+  it('collapse leading linebreak - collapsing break', () => {
     const input = `
 > Blockquote followed by emtpy lines
 >

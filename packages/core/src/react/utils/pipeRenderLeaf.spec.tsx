@@ -13,7 +13,7 @@ const attributes = { 'data-slate-leaf': true, 'data-testid': 'Leaf' } as any;
 
 const text = { test: true, text: 'test' };
 
-it('should render the default leaf', () => {
+it('render the default leaf', () => {
   const Leaf = pipeRenderLeaf(createPlateEditor({ plugins: [] }))!;
 
   const { getByTestId } = render(
@@ -33,7 +33,7 @@ it('should render the default leaf', () => {
   );
 });
 
-it('should render with render.leaf and isDecoration=false', () => {
+it('render with render.leaf and isDecoration=false', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
     node: {
@@ -67,7 +67,7 @@ it('should render with render.leaf and isDecoration=false', () => {
   (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
-it('should render with render.leaf and isDecoration=true', () => {
+it('render with render.leaf and isDecoration=true', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
     node: {
@@ -101,7 +101,7 @@ it('should render with render.leaf and isDecoration=true', () => {
   (expect(getByTestId('leaf-wrapper')) as any).toBeInTheDocument();
 });
 
-it('should render with render.node', () => {
+it('render with render.node', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
     node: {

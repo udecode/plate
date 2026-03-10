@@ -484,7 +484,6 @@ function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
                   __bunCommand__: `bun add ${deps}`,
                   __npmCommand__: `npm install ${deps}`,
                   __pnpmCommand__: `pnpm add ${deps}`,
-                  __yarnCommand__: `yarn add ${deps}`,
                 }}
                 icon={<Package />}
               />

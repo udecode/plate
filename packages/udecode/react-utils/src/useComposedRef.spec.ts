@@ -4,7 +4,7 @@ import React from 'react';
 import { composeRefs, useComposedRef } from './useComposedRef';
 
 describe('useComposedRef', () => {
-  it('should handle regular refs', () => {
+  it('handle regular refs', () => {
     const ref1 = React.createRef<HTMLDivElement>();
     const ref2 = React.createRef<HTMLDivElement>();
 
@@ -17,7 +17,7 @@ describe('useComposedRef', () => {
     expect(ref2.current).toBe(element);
   });
 
-  it('should handle callback refs', () => {
+  it('handle callback refs', () => {
     let captured1: HTMLDivElement | null = null;
     let captured2: HTMLDivElement | null = null;
 
@@ -40,7 +40,7 @@ describe('useComposedRef', () => {
     expect(captured2 as any).toBe(element);
   });
 
-  it('should handle mixed ref types', () => {
+  it('handle mixed ref types', () => {
     const ref = React.createRef<HTMLDivElement>();
     let captured: HTMLDivElement | null = null;
 
@@ -57,7 +57,7 @@ describe('useComposedRef', () => {
     expect(captured as any).toBe(element);
   });
 
-  it('should handle undefined refs', () => {
+  it('handle undefined refs', () => {
     const ref = React.createRef<HTMLDivElement>();
 
     const { result } = renderHook(() => useComposedRef(ref, undefined, null));
@@ -67,13 +67,16 @@ describe('useComposedRef', () => {
     expect(ref.current).toBe(element);
   });
 
-  it('should not return a function when no cleanup functions are returned', () => {
+  it('does not return a function when no cleanup functions are returned', () => {
     const ref = React.createRef<HTMLDivElement>();
     const callbackRef = mock((_node: HTMLDivElement | null) => {
       // Callback ref without cleanup
     });
 
-    const composedRef = composeRefs(ref, callbackRef);
+    const composedRef = composeRefs(
+      ref,
+      callbackRef as unknown as React.Ref<HTMLDivElement>
+    );
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -82,7 +85,7 @@ describe('useComposedRef', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should compose cleanup functions from callback refs', () => {
+  it('compose cleanup functions from callback refs', () => {
     const cleanup1 = mock();
     const cleanup2 = mock();
 
@@ -100,7 +103,11 @@ describe('useComposedRef', () => {
 
     const normalRef = React.createRef<HTMLDivElement>();
 
-    const composedRef = composeRefs(normalRef, callbackRef1, callbackRef2);
+    const composedRef = composeRefs(
+      normalRef,
+      callbackRef1 as unknown as React.Ref<HTMLDivElement>,
+      callbackRef2 as unknown as React.Ref<HTMLDivElement>
+    );
     const element = document.createElement('div');
 
     const result = composedRef(element);
@@ -115,7 +122,7 @@ describe('useComposedRef', () => {
     expect(cleanup2).toHaveBeenCalled();
   });
 
-  it('should handle mixed refs with some returning cleanup functions', () => {
+  it('handle mixed refs with some returning cleanup functions', () => {
     const cleanup = mock();
 
     const callbackRefWithCleanup = mock((node: HTMLDivElement | null) => {
@@ -132,8 +139,8 @@ describe('useComposedRef', () => {
 
     const composedRef = composeRefs(
       normalRef,
-      callbackRefWithCleanup,
-      callbackRefWithoutCleanup
+      callbackRefWithCleanup as unknown as React.Ref<HTMLDivElement>,
+      callbackRefWithoutCleanup as unknown as React.Ref<HTMLDivElement>
     );
     const element = document.createElement('div');
 

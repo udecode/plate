@@ -3,7 +3,7 @@
 import { jsxt } from '@platejs/test-utils';
 import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
 
-import { getTestTablePlugins } from '../withNormalizeTable.spec';
+import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTableGridAbove } from './getTableGridAbove';
 
 jsxt;
@@ -14,7 +14,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [cell 1] (disableMerge: $disableMerge)', ({
+    ])('returns the selected single cell (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -56,7 +56,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [12, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the selected right column slice (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -112,7 +112,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [21, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the selected bottom row slice (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -166,7 +166,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [11, 21] (disableMerge: $disableMerge)', ({
+    ])('returns the selected left column slice when traversing upward (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -223,7 +223,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [11, 12, 21, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the full 2x2 selection from top-left to bottom-right (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -285,7 +285,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [11, 12, 21, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the full 2x2 selection from bottom-right to top-left (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -347,7 +347,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [11, 12, 21, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the full 2x2 selection from top-right to bottom-left (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (
@@ -409,7 +409,7 @@ describe('getTableGridByRange', () => {
     it.each([
       { disableMerge: true },
       { disableMerge: false },
-    ])('should be [11, 12, 21, 22] (disableMerge: $disableMerge)', ({
+    ])('returns the full 2x2 selection from bottom-left to top-right (disableMerge: $disableMerge)', ({
       disableMerge,
     }) => {
       const input = (

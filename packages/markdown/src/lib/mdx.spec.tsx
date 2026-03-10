@@ -11,7 +11,7 @@ jsxt;
 const editor = createTestEditor();
 
 describe('roundTrip', () => {
-  it('should round trip basic marks', () => {
+  it('round trip basic marks', () => {
     const input = (
       <fragment>
         <htoc>
@@ -34,7 +34,7 @@ describe('roundTrip', () => {
     expect(slate).toEqual(input);
   });
 
-  it('should serialize callout correctly', () => {
+  it('serialize callout correctly', () => {
     const input = (
       <fragment>
         <hcallout>
@@ -49,7 +49,7 @@ describe('roundTrip', () => {
     expect(md).toMatchSnapshot();
   });
 
-  it('should serialize callout with icon attribute', () => {
+  it('serialize callout with icon attribute', () => {
     const input = (
       <fragment>
         <hcallout icon="⚠️">

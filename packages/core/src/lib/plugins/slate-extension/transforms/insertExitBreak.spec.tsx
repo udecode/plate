@@ -10,7 +10,7 @@ jsxt;
 
 describe('exitBreak', () => {
   describe('basic functionality', () => {
-    it('should exit break when no isExitable logic applies', () => {
+    it('exit break when no isExitable logic applies', () => {
       const input = (
         <editor>
           <hp>
@@ -40,7 +40,7 @@ describe('exitBreak', () => {
       expect(result).toBe(true);
     });
 
-    it('should exit break with reverse option', () => {
+    it('exit break with reverse option', () => {
       const input = (
         <editor>
           <hp>
@@ -72,7 +72,7 @@ describe('exitBreak', () => {
   });
 
   describe('isStrictSiblings behavior', () => {
-    it('should exit from codeblock when cursor is in codeline', () => {
+    it('exit from codeblock when cursor is in codeline', () => {
       const input = (
         <editor>
           <element type="codeblock">
@@ -120,7 +120,7 @@ describe('exitBreak', () => {
       expect(result).toBe(true);
     });
 
-    it('should exit from table when cursor is in td', () => {
+    it('exit from table when cursor is in td', () => {
       const input = (
         <editor>
           <element type="table">
@@ -172,7 +172,7 @@ describe('exitBreak', () => {
       expect(result).toBe(true);
     });
 
-    it('should handle nested column structure: exit from codeblock within column', () => {
+    it('handle nested column structure: exit from codeblock within column', () => {
       const input = (
         <editor>
           <element type="column_group">
@@ -240,7 +240,7 @@ describe('exitBreak', () => {
       expect(result).toBe(true);
     });
 
-    it('should exit from column to after column_group with level parameter', () => {
+    it('exit from column to after column_group with level parameter', () => {
       const input = (
         <editor>
           <element type="column_group">
@@ -294,7 +294,7 @@ describe('exitBreak', () => {
   });
 
   describe('edge cases', () => {
-    it('should return early if no selection', () => {
+    it('returns early if no selection', () => {
       const input = (
         <editor>
           <hp>test</hp>
@@ -312,7 +312,7 @@ describe('exitBreak', () => {
       expect(result).toBe(undefined);
     });
 
-    it('should use fallback logic when no non-exitable ancestor found', () => {
+    it('use fallback logic when no non-exitable ancestor found', () => {
       const input = (
         <editor>
           <hp>

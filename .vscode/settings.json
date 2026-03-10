@@ -1,6 +1,6 @@
 {
   "files.exclude": {
-    ".yarn": true,
+    ".pnpm-store": true,
     "docs/**/*cn.mdx": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",

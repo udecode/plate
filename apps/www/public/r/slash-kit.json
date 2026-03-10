@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/slash-kit.tsx",
-      "content": "'use client';\n\nimport { SlashInputPlugin, SlashPlugin } from '@platejs/slash-command/react';\nimport { KEYS } from 'platejs';\n\nimport { SlashInputElement } from '@/registry/ui/slash-node';\n\nexport const SlashKit = [\n  SlashPlugin.configure({\n    options: {\n      triggerQuery: (editor) =>\n        !editor.api.some({\n          match: { type: editor.getType(KEYS.codeBlock) },\n        }),\n    },\n  }),\n  SlashInputPlugin.withComponent(SlashInputElement),\n];\n",
+      "content": "'use client';\n\nimport { SlashInputPlugin, SlashPlugin } from '@platejs/slash-command/react';\nimport { type SlateEditor, KEYS } from 'platejs';\n\nimport { SlashInputElement } from '@/registry/ui/slash-node';\n\nexport const SlashKit = [\n  SlashPlugin.configure({\n    options: {\n      triggerQuery: (editor: SlateEditor) =>\n        !editor.api.some({\n          match: { type: editor.getType(KEYS.codeBlock) },\n        }),\n    },\n  }),\n  SlashInputPlugin.withComponent(SlashInputElement),\n];\n",
       "type": "registry:component"
     }
   ]

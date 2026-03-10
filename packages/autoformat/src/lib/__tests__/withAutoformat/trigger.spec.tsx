@@ -1,53 +1,42 @@
 /** @jsx jsxt */
 
-import { createPlateEditor } from 'platejs/react';
-import {
-  BoldPlugin,
-  ItalicPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { createAutoformatEditor } from './createAutoformatEditor';
 
 jsxt;
 
-const input = (
-  <fragment>
-    <hp>
-      _***hello***
-      <cursor />
-    </hp>
-  </fragment>
-) as any;
+describe('AutoformatPlugin trigger handling', () => {
+  it('formats marks when a custom trigger closes the match', () => {
+    const input = (
+      <fragment>
+        <hp>
+          _***hello***
+          <cursor />
+        </hp>
+      </fragment>
+    ) as any;
 
-const output = (
-  <fragment>
-    <hp>
-      <htext bold italic underline>
-        hello
-      </htext>
-    </hp>
-  </fragment>
-) as any;
+    const output = (
+      <fragment>
+        <hp>
+          <htext bold italic underline>
+            hello
+          </htext>
+        </hp>
+      </fragment>
+    ) as any;
 
-describe('when trigger is defined', () => {
-  it('should autoformat', () => {
-    const editor = createPlateEditor({
-      plugins: [
-        AutoformatPlugin.configure({
-          options: {
-            rules: [
-              {
-                ignoreTrim: true,
-                match: { end: '***', start: '_***' },
-                mode: 'mark',
-                trigger: '_',
-                type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-              },
-            ],
-          },
-        }),
+    const editor = createAutoformatEditor({
+      rules: [
+        {
+          ignoreTrim: true,
+          match: { end: '***', start: '_***' },
+          mode: 'mark',
+          trigger: '_',
+          type: [KEYS.underline, KEYS.bold, KEYS.italic],
+        },
       ],
       value: input,
     });
@@ -56,11 +45,33 @@ describe('when trigger is defined', () => {
 
     expect(input.children).toEqual(output.children);
   });
-});
 
-describe('when undo is enabled', () => {
-  it('should undo text format upon delete', () => {
-    const undoInput = (
+  it.each([
+    {
+      enableUndoOnDelete: true,
+      expected: (
+        <fragment>
+          <hp>
+            1/4
+            <cursor />
+          </hp>
+        </fragment>
+      ) as any,
+      title: 'restores the original match when undo-on-delete is enabled',
+    },
+    {
+      enableUndoOnDelete: false,
+      expected: (
+        <fragment>
+          <hp>
+            ¼<cursor />
+          </hp>
+        </fragment>
+      ) as any,
+      title: 'deletes the formatted character when undo-on-delete is disabled',
+    },
+  ])('$title', ({ enableUndoOnDelete, expected }) => {
+    const input = (
       <fragment>
         <hp>
           1/
@@ -69,81 +80,21 @@ describe('when undo is enabled', () => {
       </fragment>
     ) as any;
 
-    const undoOutput = (
-      <fragment>
-        <hp>
-          1/4
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createPlateEditor({
-      plugins: [
-        AutoformatPlugin.configure({
-          options: {
-            enableUndoOnDelete: true,
-            rules: [
-              {
-                format: '¼',
-                match: '1/4',
-                mode: 'text',
-              },
-            ],
-          },
-        }),
+    const editor = createAutoformatEditor({
+      enableUndoOnDelete,
+      rules: [
+        {
+          format: '¼',
+          match: '1/4',
+          mode: 'text',
+        },
       ],
-      value: undoInput,
+      value: input,
     });
 
-    editor.tf.insertText('4'); // <-- this should triger the conversion
-
+    editor.tf.insertText('4');
     editor.tf.deleteBackward();
 
-    expect(undoInput.children).toEqual(undoOutput.children);
-  });
-});
-
-describe('when undo is disabled', () => {
-  it('should delete the autoformat text character itself', () => {
-    const undoInput = (
-      <fragment>
-        <hp>
-          1/
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const undoOutput = (
-      <fragment>
-        <hp>
-          ¼<cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createPlateEditor({
-      plugins: [
-        AutoformatPlugin.configure({
-          options: {
-            rules: [
-              {
-                format: '¼',
-                match: '1/4',
-                mode: 'text',
-              },
-            ],
-          },
-        }),
-      ],
-      value: undoInput,
-    });
-
-    editor.tf.insertText('4'); // <-- this should triger the conversion
-
-    editor.tf.deleteBackward();
-
-    expect(undoInput.children).toEqual(undoOutput.children);
+    expect(input.children).toEqual(expected.children);
   });
 });

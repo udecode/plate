@@ -9,7 +9,7 @@ jsxt;
 
 describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
   describe('moveLine', () => {
-    it('should call moveLine with reverse: true on ArrowUp', async () => {
+    it('call moveLine with reverse: true on ArrowUp', async () => {
       const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -29,7 +29,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: true });
     });
 
-    it('should call moveLine with reverse: false on ArrowDown', async () => {
+    it('call moveLine with reverse: false on ArrowDown', async () => {
       const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -49,7 +49,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: false });
     });
 
-    it('should allow custom moveLine implementation to handle the event', async () => {
+    it('allow custom moveLine implementation to handle the event', async () => {
       const moveLineMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
@@ -67,10 +67,10 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('ArrowUp');
 
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: true });
-      expect(moveLineMock).toHaveReturnedWith(true);
+      expect(moveLineMock.mock.results.at(-1)?.value).toBe(true);
     });
 
-    it('should use default behavior when moveLine returns false', async () => {
+    it('use default behavior when moveLine returns false', async () => {
       const moveLineMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -88,12 +88,12 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('ArrowDown');
 
       expect(moveLineMock).toHaveBeenCalledWith({ reverse: false });
-      expect(moveLineMock).toHaveReturnedWith(false);
+      expect(moveLineMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
   describe('tab', () => {
-    it('should call tab with reverse: false on Tab', async () => {
+    it('call tab with reverse: false on Tab', async () => {
       const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -113,7 +113,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(tabMock).toHaveBeenCalledWith({ reverse: false });
     });
 
-    it('should call tab with reverse: true on Shift+Tab', async () => {
+    it('call tab with reverse: true on Shift+Tab', async () => {
       const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -133,7 +133,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(tabMock).toHaveBeenCalledWith({ reverse: true });
     });
 
-    it('should allow custom tab implementation to handle the event', async () => {
+    it('allow custom tab implementation to handle the event', async () => {
       const tabMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
@@ -151,10 +151,10 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Tab');
 
       expect(tabMock).toHaveBeenCalledWith({ reverse: false });
-      expect(tabMock).toHaveReturnedWith(true);
+      expect(tabMock.mock.results.at(-1)?.value).toBe(true);
     });
 
-    it('should use default behavior when tab returns false', async () => {
+    it('use default behavior when tab returns false', async () => {
       const tabMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -172,12 +172,12 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Shift+Tab');
 
       expect(tabMock).toHaveBeenCalledWith({ reverse: true });
-      expect(tabMock).toHaveReturnedWith(false);
+      expect(tabMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
   describe('selectAll', () => {
-    it('should call selectAll on Mod+A', async () => {
+    it('call selectAll on Mod+A', async () => {
       const selectAllMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -197,7 +197,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(selectAllMock).toHaveBeenCalledWith();
     });
 
-    it('should allow custom selectAll implementation to handle the event', async () => {
+    it('allow custom selectAll implementation to handle the event', async () => {
       const selectAllMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
@@ -215,10 +215,10 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('mod+a');
 
       expect(selectAllMock).toHaveBeenCalledWith();
-      expect(selectAllMock).toHaveReturnedWith(true);
+      expect(selectAllMock.mock.results.at(-1)?.value).toBe(true);
     });
 
-    it('should use default behavior when selectAll returns false', async () => {
+    it('use default behavior when selectAll returns false', async () => {
       const selectAllMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -236,12 +236,12 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('mod+a');
 
       expect(selectAllMock).toHaveBeenCalledWith();
-      expect(selectAllMock).toHaveReturnedWith(false);
+      expect(selectAllMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
   describe('escape', () => {
-    it('should call escape on Escape key', async () => {
+    it('call escape on Escape key', async () => {
       const escapeMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -261,7 +261,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       expect(escapeMock).toHaveBeenCalledWith();
     });
 
-    it('should allow custom escape implementation to handle the event', async () => {
+    it('allow custom escape implementation to handle the event', async () => {
       const escapeMock = mock().mockReturnValue(true);
 
       const testPlugin = createPlatePlugin({
@@ -279,10 +279,10 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Escape');
 
       expect(escapeMock).toHaveBeenCalledWith();
-      expect(escapeMock).toHaveReturnedWith(true);
+      expect(escapeMock.mock.results.at(-1)?.value).toBe(true);
     });
 
-    it('should use default behavior when escape returns false', async () => {
+    it('use default behavior when escape returns false', async () => {
       const escapeMock = mock().mockReturnValue(false);
 
       const testPlugin = createPlatePlugin({
@@ -300,12 +300,12 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Escape');
 
       expect(escapeMock).toHaveBeenCalledWith();
-      expect(escapeMock).toHaveReturnedWith(false);
+      expect(escapeMock.mock.results.at(-1)?.value).toBe(false);
     });
   });
 
   describe('default behavior', () => {
-    it('should use default moveLine implementation when not overridden', async () => {
+    it('use default moveLine implementation when not overridden', async () => {
       const [, { triggerKeyboardEvent }] = await createPlateTestEditor({
         plugins: [],
       });
@@ -315,7 +315,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('ArrowDown');
     });
 
-    it('should use default tab implementation when not overridden', async () => {
+    it('use default tab implementation when not overridden', async () => {
       const [, { triggerKeyboardEvent }] = await createPlateTestEditor({
         plugins: [],
       });
@@ -325,7 +325,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('Shift+Tab');
     });
 
-    it('should use default selectAll implementation when not overridden', async () => {
+    it('use default selectAll implementation when not overridden', async () => {
       const [, { triggerKeyboardEvent }] = await createPlateTestEditor({
         plugins: [],
       });
@@ -334,7 +334,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       await triggerKeyboardEvent('mod+a');
     });
 
-    it('should use default escape implementation when not overridden', async () => {
+    it('use default escape implementation when not overridden', async () => {
       const [, { triggerKeyboardEvent }] = await createPlateTestEditor({
         plugins: [],
       });
@@ -345,7 +345,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
   });
 
   describe('integration', () => {
-    it('should work with multiple custom implementations', async () => {
+    it('work with multiple custom implementations', async () => {
       const moveLineMock = mock().mockReturnValue(true);
       const tabMock = mock().mockReturnValue(false);
       const selectAllMock = mock().mockReturnValue(true);

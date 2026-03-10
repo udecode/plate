@@ -36,11 +36,11 @@
   "scripts": {
     "build": "tsdown --log-level warn",
     "build:watch": "tsdown --watch",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "clean": "yarn p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "clean": "plate-pkg p:clean",
     "start": "node dist/index.js",
-    "typecheck": "yarn p:typecheck"
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
     "@antfu/ni": "24.3.0",
@@ -51,6 +51,7 @@
     "zod": "3.25.61"
   },
   "devDependencies": {
+    "@plate/scripts": "workspace:*",
     "@types/prompts": "2.4.9"
   },
   "publishConfig": {

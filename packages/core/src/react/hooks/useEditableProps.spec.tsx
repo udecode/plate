@@ -8,7 +8,7 @@ import { createPlateEditor } from '../editor';
 
 describe('useEditableProps', () => {
   describe('default', () => {
-    it('should trigger decorate only once', () => {
+    it('trigger decorate only once', () => {
       const decorate = mock();
 
       const editor = createPlateEditor({
@@ -33,42 +33,4 @@ describe('useEditableProps', () => {
       expect(decorate).toHaveBeenCalledTimes(8);
     });
   });
-
-  // describe('redecorate', () => {
-  //   it('should trigger decorate twice', () => {
-  //     const decorate = mock();
-  //
-  //     const plugins: PlatePluginList = [
-  //       {
-  //         key: 'a',
-  //         decorate: () => {
-  //           decorate();
-  //           return [];
-  //         },
-  //       },
-  //     ];
-  //
-  //     const A = () => {
-  //       useEditableProps()
-  //
-  //       return null
-  //     }
-  //
-  //     const wrapper = ({ children }: any) => (
-  //       <Plate plugins={plugins}><A />{children}</Plate>
-  //     );
-  //
-  //     const { result } = renderHook(() => useEditorValue(), {
-  //       wrapper,
-  //     });
-  //
-  //     render(<Plate plugins={plugins} />);
-  //
-  //     act(() => {
-  //       getPlateActions().redecorate();
-  //     });
-  //
-  //     expect(decorate).toBeCalledTimes(6);
-  //   });
-  // });
 });

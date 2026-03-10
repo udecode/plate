@@ -26,7 +26,7 @@ describe('center', () => {
     </editor>
   ) as any;
 
-  it('should align center', () => {
+  it('align center', () => {
     const editor = createSlateEditor({
       plugins: [BaseTextAlignPlugin],
       selection: input.selection,
@@ -57,7 +57,7 @@ describe('left', () => {
     </editor>
   ) as any;
 
-  it('should remove align prop', () => {
+  it('remove align prop', () => {
     const editor = createSlateEditor({
       plugins: [BaseTextAlignPlugin],
       selection: input.selection,
@@ -87,7 +87,7 @@ describe('no-type', () => {
       </editor>
     ) as any as SlateEditor;
 
-    it('should not align', () => {
+    it('does not align', () => {
       const editor = createSlateEditor({
         plugins: [BaseTextAlignPlugin],
         selection: input.selection,

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import type { Atom } from 'jotai';
 import type { TIndentElement, Value } from 'platejs';
 
 import { KEYS } from 'platejs';
@@ -45,7 +46,10 @@ export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
   return result;
 };
 
-export const editorAtom = plateStore.atom.trackedEditor;
+export const editorAtom = plateStore.atom.trackedEditor as Atom<{
+  editor: { children: TIndentElement[] };
+  version: number;
+}>;
 
 // Due to a limitation of jotai-x, it's not possible to derive a state from both `toggleControllerStore` and plateStore`.
 // In order minimize re-renders, we subscribe to both separately, but only re-render unnecessarily when opening or closing a toggle,
@@ -68,7 +72,7 @@ export const useIsVisible = (elementId: string) => {
   return useStoreAtomValue(usePlateStore(), isVisibleAtom);
 };
 
-export const toggleIndexAtom = atom((get) =>
+export const toggleIndexAtom: Atom<Map<string, string[]>> = atom((get) =>
   buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
 );
 

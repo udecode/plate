@@ -57,7 +57,7 @@ export const useFloatingLinkInsert = ({
   isOpen,
   readOnly,
   triggerFloatingLinkHotkeys,
-}: ReturnType<typeof useFloatingLinkInsertState>) => {
+}: ReturnType<typeof useFloatingLinkInsertState>): any => {
   const { api, editor, getOptions, setOption } = useEditorPlugin(LinkPlugin);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =

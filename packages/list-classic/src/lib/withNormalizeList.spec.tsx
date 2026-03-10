@@ -21,7 +21,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
 };
 
 describe('merge lists', () => {
-  it('should not merge lists with different type', () => {
+  it('does not merge lists with different type', () => {
     const input = (
       <editor>
         <hul>
@@ -55,7 +55,7 @@ describe('merge lists', () => {
     testNormalize(input, output);
   });
 
-  it('should merge the next list if it has the same type', () => {
+  it('merge the next list if it has the same type', () => {
     const input = (
       <editor>
         <hul>
@@ -87,7 +87,7 @@ describe('merge lists', () => {
     testNormalize(input, output);
   });
 
-  it('should merge the previous list if it has the same type', () => {
+  it('merge the previous list if it has the same type', () => {
     const input = (
       <editor>
         <hul>
@@ -121,7 +121,7 @@ describe('merge lists', () => {
 });
 
 describe('clean up lists', () => {
-  it('should remove list without list items', () => {
+  it('remove list without list items', () => {
     const input = (
       <editor>
         <hul />
@@ -133,7 +133,7 @@ describe('clean up lists', () => {
     testNormalize(input, output);
   });
 
-  it('should only allow li to be child of ul', () => {
+  it('only allow li to be child of ul', () => {
     const input = (
       <editor>
         <hul>

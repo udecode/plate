@@ -9,7 +9,8 @@
       "@/lib/*": ["apps/www/src/lib/*"],
       "@/registry/*": ["apps/www/src/registry/*"],
       "@/styles/*": ["apps/www/src/styles/*"],
-      "@/types/*": ["apps/www/src/types/*"]
+      "@/types/*": ["apps/www/src/types/*"],
+      "www/*": ["apps/www/*"]
     }
   },
   "extends": "../../tsconfig.json"

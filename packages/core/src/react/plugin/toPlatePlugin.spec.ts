@@ -55,7 +55,7 @@ describe('toPlatePlugin', () => {
   const MockComponent: NodeComponent = () => null;
   const MockAboveComponent: NodeComponent = () => null;
 
-  it('should extend a SlatePlugin with React-specific properties and API', () => {
+  it('extend a SlatePlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
@@ -78,7 +78,7 @@ describe('toPlatePlugin', () => {
     expect(resolvedPlugin.api.someApiMethod()).toBe('API method result');
   });
 
-  it('should extend with a function configuration', () => {
+  it('extend with a function configuration', () => {
     const ParagraphPlugin = toPlatePlugin(
       BaseParagraphPlugin,
       ({ editor }) => ({
@@ -98,7 +98,7 @@ describe('toPlatePlugin', () => {
     expect(resolvedPlugin.api.getEditorId()).toBe(editor.id);
   });
 
-  it('should add new handlers and API methods', () => {
+  it('add new handlers and API methods', () => {
     const mockOnKeyDown = mock();
     const mockOnChange = mock();
 
@@ -119,7 +119,7 @@ describe('toPlatePlugin', () => {
     expect(resolvedPlugin.api.customMethod()).toBe('custom result');
   });
 
-  it('should throw an error when extending a non-existent plugin', () => {
+  it('throw an error when extending a non-existent plugin', () => {
     const NonExistentPlugin = { key: 'nonexistent' };
 
     expect(() => {
@@ -130,7 +130,7 @@ describe('toPlatePlugin', () => {
   });
 
   // Type checks for toPlatePlugin
-  it('should have correct types', () => {
+  it('have correct types', () => {
     type TestConfig = PluginConfig<'test', { foo: string }>;
     type ExtendedConfig = PluginConfig<'test', { baz: number; foo: string }>;
 
@@ -146,7 +146,7 @@ describe('toPlatePlugin', () => {
 });
 
 describe('toPlatePlugin type tests', () => {
-  it('should work with CodeBlockConfig for toPlatePlugin', () => {
+  it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
@@ -209,7 +209,7 @@ describe('toPlatePlugin type tests', () => {
     pluginApi.nonExistentMethod;
   });
 
-  it('should work with function-based extension', () => {
+  it('work with function-based extension', () => {
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
@@ -245,7 +245,7 @@ describe('toPlatePlugin type tests', () => {
     extendedOptions.hotkey;
   });
 
-  it('should allow partial extension of options', () => {
+  it('allow partial extension of options', () => {
     type TestConfig = PluginConfig<'test', { bar: number; foo: string }>;
 
     const BasePlugin = createTSlatePlugin<TestConfig>({
@@ -268,7 +268,7 @@ describe('toPlatePlugin type tests', () => {
     options.bar;
   });
 
-  it('should allow adding new properties', () => {
+  it('allow adding new properties', () => {
     type BaseConfig = PluginConfig<'test', { foo: string }>;
     type ExtendedConfig = ExtendConfig<BaseConfig, { bar: number }>;
 
@@ -312,7 +312,7 @@ describe('toPlatePlugin type tests', () => {
 
 // Type tests for toTPlatePlugin
 describe('toTPlatePlugin type tests', () => {
-  it('should work with CodeBlockConfig for toTPlatePlugin', () => {
+  it('work with CodeBlockConfig for toTPlatePlugin', () => {
     const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
       key: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
@@ -381,7 +381,7 @@ describe('toTPlatePlugin type tests', () => {
     pluginApi.nonExistentMethod;
   });
 
-  it('should work with function-based extension and explicit typing', () => {
+  it('work with function-based extension and explicit typing', () => {
     type CodeBlockConfig = PluginConfig<
       'code_block',
       { syntax: boolean; syntaxPopularFirst: boolean }
@@ -419,7 +419,7 @@ describe('toTPlatePlugin type tests', () => {
 });
 
 describe('toPlatePlugin with extendPlugin', () => {
-  it('should correctly type extendPlugin with SlatePlugin', () => {
+  it('correctly type extendPlugin with SlatePlugin', () => {
     type BaseConfig = PluginConfig<'base', { foo: string }>;
     type ChildConfig = PluginConfig<
       'child',
@@ -455,7 +455,7 @@ describe('toPlatePlugin with extendPlugin', () => {
     options.bar;
   });
 
-  it('should correctly type extendPlugin with PlatePlugin', () => {
+  it('correctly type extendPlugin with PlatePlugin', () => {
     type BaseConfig = PluginConfig<'base', { foo: string }>;
     type ChildConfig = PluginConfig<'child', { bar: number }>;
 
@@ -494,7 +494,7 @@ describe('toPlatePlugin with extendPlugin', () => {
 });
 
 describe('toPlatePlugin with direct merge for object configs', () => {
-  it('should directly merge object configs without pushing to __extensions', () => {
+  it('directly merge object configs without pushing to __extensions', () => {
     type LinkConfig = PluginConfig<
       'link',
       {
@@ -534,7 +534,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     });
   });
 
-  it('should override an existing component', () => {
+  it('override an existing component', () => {
     const NewComponent: NodeComponent = () => null;
 
     const basePlugin = createSlatePlugin({

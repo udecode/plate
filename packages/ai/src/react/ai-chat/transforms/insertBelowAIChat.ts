@@ -2,7 +2,14 @@ import type { PlateEditor } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { type SlateEditor, KEYS, PathApi, RangeApi } from 'platejs';
+import {
+  type NodeEntry,
+  KEYS,
+  PathApi,
+  RangeApi,
+  type SlateEditor,
+  type TIdElement,
+} from 'platejs';
 
 import { withAIBatch } from '../../../lib';
 import { AIPlugin } from '../../ai/AIPlugin';
@@ -20,7 +27,7 @@ export const insertBelowAIChat = (
   if (toolName === 'generate')
     return insertBelowGenerate(editor, sourceEditor, { format });
 
-  const selectedBlocks = editor
+  const selectedBlocks: NodeEntry<TIdElement>[] = editor
     .getApi(BlockSelectionPlugin)
     .blockSelection.getNodes();
 

@@ -9,9 +9,6 @@ import {
   BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
-import { BaseParagraphPlugin } from 'platejs';
-
-import { createPlateEditor } from 'platejs/react';
 import {
   BaseBlockquotePlugin,
   BaseH1Plugin,
@@ -30,14 +27,24 @@ import {
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
-// import { BaseColumnItemPlugin, BaseColumnPlugin } from '@platejs/layout';
-import { MarkdownKit } from '../../../../../apps/www/src/registry/components/editor/plugins/markdown-kit';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseLinkPlugin } from '@platejs/link';
+import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+
+import { MarkdownPlugin } from '../MarkdownPlugin';
+import { remarkMdx, remarkMention } from '../plugins';
+
+const markdownPlugin = MarkdownPlugin.configure({
+  options: {
+    plainMarks: [KEYS.suggestion, KEYS.comment],
+    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+  },
+});
 
 export const createTestEditor = (plugins: any[] = []) =>
-  createPlateEditor({
-    // plugins: [...BaseEditorKit, ...plugins],
+  createSlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BaseH1Plugin,
@@ -65,7 +72,7 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseKbdPlugin,
       BaseListPlugin,
       BaseLinkPlugin,
-      ...MarkdownKit,
+      markdownPlugin,
       ...plugins,
     ],
   });

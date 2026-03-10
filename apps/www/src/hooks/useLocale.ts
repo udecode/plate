@@ -1,11 +1,10 @@
-import { useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export const useLocale = () => {
-  const searchParams = useSearchParams();
-  const locale = searchParams?.get('locale') || 'en';
+  const pathname = usePathname();
 
-  return locale;
+  return pathname?.startsWith('/cn') ? 'cn' : 'en';
 };
 
 export const getLocalizedPath = (locale: string, href: string) =>
-  locale === 'cn' ? `/cn${href}?locale=cn` : href;
+  locale === 'cn' ? `/cn${href}` : href;

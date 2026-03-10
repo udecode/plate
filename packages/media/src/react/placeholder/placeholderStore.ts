@@ -26,4 +26,4 @@ export const {
     updatedFiles: [],
   } as PlaceholderStore,
   { name: 'placeholder' }
-);
+) as any;

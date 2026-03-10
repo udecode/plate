@@ -1,8 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlatePlugin } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { LinkPlugin } from '@platejs/link/react';
+import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 import type { AutoformatConfig } from '../../../AutoformatPlugin';
 
@@ -38,14 +36,14 @@ it('autoformats a block with a single character trigger', () => {
                 const [, text, url] = /\[(.+)]\((.*)/.exec(linkInputText)!;
                 editor.tf.insertText(text, { at: linkInputRange });
                 editor.tf.wrapNodes(
-                  { children: [], type: LinkPlugin.key, url },
+                  { children: [], type: KEYS.link, url },
                   { at: linkInputRange }
                 );
               },
               match: ')',
               mode: 'block',
               triggerAtBlockStart: false,
-              type: LinkPlugin.key,
+              type: KEYS.link,
             },
           ],
         },

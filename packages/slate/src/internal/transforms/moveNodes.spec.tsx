@@ -9,7 +9,7 @@ jsxt;
 
 describe('moveNodes', () => {
   describe('when moving children', () => {
-    it('should move all children to target path', () => {
+    it('move all children to target path', () => {
       const input = createEditor(
         (
           <editor>
@@ -68,7 +68,7 @@ describe('moveNodes', () => {
       expect(moved).toBe(true);
     });
 
-    it('should move children from specified index', () => {
+    it('move children from specified index', () => {
       const input = createEditor(
         (
           <editor>
@@ -133,7 +133,7 @@ describe('moveNodes', () => {
       expect(moved).toBe(true);
     });
 
-    it('should move children matching condition', () => {
+    it('move children matching condition', () => {
       const input = createEditor(
         (
           <editor>
@@ -198,7 +198,7 @@ describe('moveNodes', () => {
       expect(moved).toBe(true);
     });
 
-    it('should do nothing if not a block node', () => {
+    it('keeps nodes unchanged if the target is not a block node', () => {
       const input = createEditor(
         (
           <editor>

@@ -8,6 +8,7 @@ export const NODES = {
   callout: 'callout',
   code: 'code',
   codeBlock: 'code_block',
+  codeDrawing: 'code_drawing',
   codeLine: 'code_line',
   codeSyntax: 'code_syntax',
   column: 'column',

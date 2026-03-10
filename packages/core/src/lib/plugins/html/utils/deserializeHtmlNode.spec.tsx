@@ -2,13 +2,13 @@
 
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createPlateEditor } from '../../../../react';
+import { createSlateEditor } from '../../../editor';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 jsxt;
 
 describe('when element has a br', () => {
-  const editor = createPlateEditor({ plugins: [] });
+  const editor = createSlateEditor({ plugins: [] });
 
   const html = '<html><body>test<br /></body></html>';
   const element = getHtmlDocument(html).body;
@@ -19,7 +19,7 @@ describe('when element has a br', () => {
     </editor>
   ) as any;
 
-  it('should have the break line', () => {
+  it('converts br tags to newlines', () => {
     expect(deserializeHtmlNode(editor)(element)).toEqual(output.children);
   });
 });

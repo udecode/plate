@@ -1,12 +1,12 @@
 import type { Path } from 'platejs';
 
-import { createPlateEditor } from 'platejs/react';
+import { createSlateEditor } from 'platejs';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
 import { toggleColumnGroup } from './toggleColumnGroup';
 
 describe('toggleColumnGroup', () => {
-  let editor: ReturnType<typeof createPlateEditor>;
+  let editor: ReturnType<typeof createSlateEditor>;
   let initialValue: any[];
 
   beforeEach(() => {
@@ -17,13 +17,13 @@ describe('toggleColumnGroup', () => {
       },
     ];
 
-    editor = createPlateEditor({
+    editor = createSlateEditor({
       plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
       value: initialValue,
     });
   });
 
-  it('should wrap a paragraph in a column group when toggling from a paragraph', () => {
+  it('wrap a paragraph in a column group when toggling from a paragraph', () => {
     const at: Path = [0, 0]; // Inside the paragraph text
     editor.tf.select(editor.api.start(at)!);
 
@@ -43,7 +43,7 @@ describe('toggleColumnGroup', () => {
     expect(node.children[1].children[0].children[0].text).toBe('');
   });
 
-  it('should update the number of columns if already a column group', () => {
+  it('update the number of columns if already a column group', () => {
     // Start with a column group of 2 columns
     editor.children = [
       {
@@ -88,7 +88,7 @@ describe('toggleColumnGroup', () => {
     expect(node.children[2].children[0].children[0].text).toBe('');
   });
 
-  it('should preserve content when toggling between different column counts', () => {
+  it('preserve content when toggling between different column counts', () => {
     // Start with a column group of 2 columns
     editor.children = [
       {
@@ -137,7 +137,7 @@ describe('toggleColumnGroup', () => {
     expect(col2Texts).toContain('Col3 extra text');
   });
 
-  it('should do nothing if no selection is provided', () => {
+  it('keeps the document unchanged if no selection is provided', () => {
     // No selection
     toggleColumnGroup(editor, { columns: 2 });
     // Should remain a single paragraph
@@ -145,7 +145,7 @@ describe('toggleColumnGroup', () => {
     expect(node.type).toBe('p');
   });
 
-  it('should handle toggling from a selection inside a column as well', () => {
+  it('handle toggling from a selection inside a column as well', () => {
     // Start with a column group of 2 columns
     editor.children = [
       {

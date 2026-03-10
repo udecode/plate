@@ -78,7 +78,7 @@ export const useFloatingLinkEdit = ({
   floating,
   triggerFloatingLinkHotkeys,
   versionEditor,
-}: ReturnType<typeof useFloatingLinkEditState>) => {
+}: ReturnType<typeof useFloatingLinkEditState>): any => {
   const { api, getOptions } = useEditorPlugin(LinkPlugin);
 
   React.useEffect(() => {

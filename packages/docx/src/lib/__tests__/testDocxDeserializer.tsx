@@ -52,7 +52,7 @@ export const testDocxDeserializer = ({
   overridePlugins?: SlatePlugin['override']['plugins'];
   plugins?: any[];
 }) => {
-  it('should deserialize', () => {
+  it('deserialize', () => {
     const actual = createSlateEditor({
       override: {
         plugins: overridePlugins,

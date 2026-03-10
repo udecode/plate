@@ -64,19 +64,12 @@ export const metadata: Metadata = {
   },
 };
 
-export type SearchParams = Promise<{
-  locale: string;
-}>;
+export const dynamic = 'force-static';
 
 // SYNC
 
-export default async function IndexPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const locale = ((await searchParams).locale || 'en') as keyof typeof i18n;
-  const content = i18n[locale];
+export default async function IndexPage() {
+  const content = i18n.en;
 
   return (
     <>

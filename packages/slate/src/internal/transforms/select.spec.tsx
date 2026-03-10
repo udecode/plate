@@ -9,7 +9,7 @@ jsx;
 describe('select', () => {
   describe('when edge option', () => {
     describe('block edges', () => {
-      it('should select end of block', () => {
+      it('select end of block', () => {
         const editor = createEditor(
           (
             <editor>
@@ -30,7 +30,7 @@ describe('select', () => {
         });
       });
 
-      it('should select start of block', () => {
+      it('select start of block', () => {
         const editor = createEditor(
           (
             <editor>
@@ -51,7 +51,7 @@ describe('select', () => {
         });
       });
 
-      it('should select edge of specified block', () => {
+      it('select edge of specified block', () => {
         const editor = createEditor(
           (
             <editor>
@@ -72,7 +72,7 @@ describe('select', () => {
   });
 
   describe('when at is defined', () => {
-    it('should select at specific point', () => {
+    it('select at specific point', () => {
       const editor = createEditor(
         (
           <editor>
@@ -100,7 +100,7 @@ describe('select', () => {
   });
 
   describe('when focus option', () => {
-    it('should focus editor before selecting', () => {
+    it('focus editor before selecting', () => {
       const editor = createEditor(
         (
           <editor>
@@ -131,7 +131,7 @@ describe('select', () => {
       focusSpy.mockRestore();
     });
 
-    it('should focus editor before selecting at specific point', () => {
+    it('focus editor before selecting at specific point', () => {
       const editor = createEditor(
         (
           <editor>
@@ -167,7 +167,7 @@ describe('select', () => {
   });
 
   describe('when sibling option', () => {
-    it('should select start of next sibling', () => {
+    it('select start of next sibling', () => {
       const editor = createEditor(
         (
           <editor>
@@ -188,7 +188,7 @@ describe('select', () => {
       });
     });
 
-    it('should select end of previous sibling', () => {
+    it('select end of previous sibling', () => {
       const editor = createEditor(
         (
           <editor>
@@ -209,7 +209,7 @@ describe('select', () => {
       });
     });
 
-    it('should focus when selecting sibling', () => {
+    it('focus when selecting sibling', () => {
       const editor = createEditor(
         (
           <editor>

@@ -22,7 +22,7 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 
 describe('when pasting ul > 2 li fragment', () => {
   describe('when selection in li', () => {
-    it('should insert lis next to the lowest li', () => {
+    it('insert lis next to the lowest li', () => {
       const input = (
         <editor>
           <hul>
@@ -84,7 +84,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert nested lis next to the lowest li, without the leading empty lis', () => {
+    it('insert nested lis next to the lowest li, without the leading empty lis', () => {
       const input = (
         <editor>
           <hul>
@@ -150,7 +150,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert nested lis with selected lic being an empty node and with nested lis', () => {
+    it('insert nested lis with selected lic being an empty node and with nested lis', () => {
       const input = (
         <editor>
           <hul>
@@ -220,7 +220,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert nested lis with selected lic being an empty node', () => {
+    it('insert nested lis with selected lic being an empty node', () => {
       const input = (
         <editor>
           <hul>
@@ -282,7 +282,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert lis with missing lics due to copying lis at different levels', () => {
+    it('insert lis with missing lics due to copying lis at different levels', () => {
       const input = (
         <editor>
           <hul>
@@ -348,7 +348,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert a single li as text', () => {
+    it('insert a single li as text', () => {
       const input = (
         <editor>
           <hul>
@@ -400,7 +400,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert a paragraph and a list', () => {
+    it('insert a paragraph and a list', () => {
       const input = (
         <editor>
           <hul>
@@ -456,7 +456,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert multiple paragraphs', () => {
+    it('insert multiple paragraphs', () => {
       const input = (
         <editor>
           <hul>
@@ -509,7 +509,7 @@ describe('when pasting ul > 2 li fragment', () => {
     });
 
     // Auto-correct generates a Paragraph node (in Chromium)
-    it('should insert autocorrect-inserted paragraph inside a list', () => {
+    it('insert autocorrect-inserted paragraph inside a list', () => {
       const input = (
         <editor>
           <hul>
@@ -558,7 +558,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert simple text inside a list with selection across multiple list items', () => {
+    it('insert simple text inside a list with selection across multiple list items', () => {
       const input = (
         <editor>
           <hul>
@@ -604,7 +604,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert nested lis with selected lic being an empty node after selection removed', () => {
+    it('insert nested lis with selected lic being an empty node after selection removed', () => {
       const input = (
         <editor>
           <hul>
@@ -661,7 +661,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should insert nested lis with selection across multiple lics', () => {
+    it('insert nested lis with selection across multiple lics', () => {
       const input = (
         <editor>
           <hul>
@@ -729,7 +729,7 @@ describe('when pasting ul > 2 li fragment', () => {
   });
 
   describe('when selection not in li', () => {
-    it('should paste the list', () => {
+    it('paste the list', () => {
       const input = (
         <editor>
           <hp>
@@ -766,7 +766,7 @@ describe('when pasting ul > 2 li fragment', () => {
       editorTest(input, fragment, expected);
     });
 
-    it('should paste the list with multiple lis', () => {
+    it('paste the list with multiple lis', () => {
       const input = (
         <editor>
           <hp>
@@ -811,7 +811,7 @@ describe('when pasting ul > 2 li fragment', () => {
   });
 
   describe('when pasted lis not contain lic', () => {
-    it('should normalize li children', () => {
+    it('normalize li children', () => {
       const input = (
         <editor>
           <hp>

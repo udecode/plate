@@ -1,19 +1,14 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
-import {
-  BoldPlugin,
-  ItalicPlugin,
-  UnderlinePlugin,
-} from '@platejs/basic-nodes/react';
+import { KEYS } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
-import { AutoformatPlugin } from '../../AutoformatPlugin';
+import { createAutoformatEditor } from './createAutoformatEditor';
 
 jsxt;
 
-describe('when ignoreTrim is true', () => {
-  it('should autoformat', () => {
+describe('AutoformatPlugin ignoreTrim handling', () => {
+  it('formats a mark when ignoreTrim allows surrounding whitespace', () => {
     const input = (
       <fragment>
         <hp>
@@ -31,20 +26,14 @@ describe('when ignoreTrim is true', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
-      plugins: [
-        AutoformatPlugin.configure({
-          options: {
-            rules: [
-              {
-                ignoreTrim: true,
-                match: '*',
-                mode: 'mark',
-                type: ItalicPlugin.key,
-              },
-            ],
-          },
-        }),
+    const editor = createAutoformatEditor({
+      rules: [
+        {
+          ignoreTrim: true,
+          match: '*',
+          mode: 'mark',
+          type: KEYS.italic,
+        },
       ],
       value: input,
     });
@@ -53,47 +42,37 @@ describe('when ignoreTrim is true', () => {
 
     expect(input.children).toEqual(output.children);
   });
-});
 
-describe('when ignoreTrim is false', () => {
-  describe('when the match text is not trimmed', () => {
-    it('should run default', () => {
-      const input = (
-        <fragment>
-          <hp>
-            **hello **
-            <cursor />
-          </hp>
-        </fragment>
-      ) as any;
+  it('leaves the text alone when whitespace prevents a trim-sensitive match', () => {
+    const input = (
+      <fragment>
+        <hp>
+          **hello **
+          <cursor />
+        </hp>
+      </fragment>
+    ) as any;
 
-      const output = (
-        <fragment>
-          <hp>**hello ** </hp>
-        </fragment>
-      ) as any;
+    const output = (
+      <fragment>
+        <hp>**hello ** </hp>
+      </fragment>
+    ) as any;
 
-      const editor = createSlateEditor({
-        plugins: [
-          AutoformatPlugin.configure({
-            options: {
-              rules: [
-                {
-                  match: { end: '***__', start: '___***' },
-                  mode: 'mark',
-                  trigger: '_',
-                  type: [UnderlinePlugin.key, BoldPlugin.key, ItalicPlugin.key],
-                },
-              ],
-            },
-          }),
-        ],
-        value: input,
-      });
-
-      editor.tf.insertText(' ');
-
-      expect(input.children).toEqual(output.children);
+    const editor = createAutoformatEditor({
+      rules: [
+        {
+          match: { end: '***__', start: '___***' },
+          mode: 'mark',
+          trigger: '_',
+          type: [KEYS.underline, KEYS.bold, KEYS.italic],
+        },
+      ],
+      value: input,
     });
+
+    editor.tf.insertText(' ');
+
+    expect(input.children).toEqual(output.children);
   });
 });

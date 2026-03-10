@@ -29,7 +29,7 @@ describe('getHoverDirection', () => {
     // Mocks cleared in afterEach
   });
 
-  it('should return "top" when vertical and mouse is above middle', () => {
+  it('returns "top" when vertical and mouse is above middle', () => {
     nodeRef.current.getBoundingClientRect.mockReturnValue({
       bottom: 200,
       top: 100,
@@ -47,7 +47,7 @@ describe('getHoverDirection', () => {
     expect(direction).toBe('top');
   });
 
-  it('should return "bottom" when vertical and mouse is below middle', () => {
+  it('returns "bottom" when vertical and mouse is below middle', () => {
     nodeRef.current.getBoundingClientRect.mockReturnValue({
       bottom: 200,
       top: 100,
@@ -65,7 +65,7 @@ describe('getHoverDirection', () => {
     expect(direction).toBe('bottom');
   });
 
-  it('should return "left" when horizontal and mouse is left of middle', () => {
+  it('returns "left" when horizontal and mouse is left of middle', () => {
     nodeRef.current.getBoundingClientRect.mockReturnValue({
       left: 100,
       right: 200,
@@ -83,7 +83,7 @@ describe('getHoverDirection', () => {
     expect(direction).toBe('left');
   });
 
-  it('should return "right" when horizontal and mouse is right of middle', () => {
+  it('returns "right" when horizontal and mouse is right of middle', () => {
     nodeRef.current.getBoundingClientRect.mockReturnValue({
       left: 100,
       right: 200,
@@ -101,7 +101,7 @@ describe('getHoverDirection', () => {
     expect(direction).toBe('right');
   });
 
-  it('should return undefined if dragId === id', () => {
+  it('returns undefined if dragId === id', () => {
     const direction = getHoverDirection({
       dragItem,
       element: dragElement,

@@ -12,10 +12,6 @@ export function rehypeNpmCommand() {
       if (node.properties?.__rawString__?.startsWith('npm install')) {
         const npmCommand = node.properties?.__rawString__;
         node.properties.__npmCommand__ = npmCommand;
-        node.properties.__yarnCommand__ = npmCommand.replace(
-          'npm install',
-          'yarn add'
-        );
         node.properties.__pnpmCommand__ = npmCommand.replace(
           'npm install',
           'pnpm add'
@@ -29,10 +25,6 @@ export function rehypeNpmCommand() {
       if (node.properties?.__rawString__?.startsWith('npx create-')) {
         const npmCommand = node.properties?.__rawString__;
         node.properties.__npmCommand__ = npmCommand;
-        node.properties.__yarnCommand__ = npmCommand.replace(
-          'npx create-',
-          'yarn create '
-        );
         node.properties.__pnpmCommand__ = npmCommand.replace(
           'npx create-',
           'pnpm create '
@@ -47,10 +39,6 @@ export function rehypeNpmCommand() {
       if (node.properties?.__rawString__?.startsWith('npm create')) {
         const npmCommand = node.properties?.__rawString__;
         node.properties.__npmCommand__ = npmCommand;
-        node.properties.__yarnCommand__ = npmCommand.replace(
-          'npm create',
-          'yarn create'
-        );
         node.properties.__pnpmCommand__ = npmCommand.replace(
           'npm create',
           'pnpm create'
@@ -68,7 +56,6 @@ export function rehypeNpmCommand() {
       ) {
         const npmCommand = node.properties?.__rawString__;
         node.properties.__npmCommand__ = npmCommand;
-        node.properties.__yarnCommand__ = npmCommand;
         node.properties.__pnpmCommand__ = npmCommand.replace('npx', 'pnpm dlx');
         node.properties.__bunCommand__ = npmCommand.replace(
           'npx',
@@ -80,7 +67,6 @@ export function rehypeNpmCommand() {
       if (node.properties?.__rawString__?.startsWith('npm run')) {
         const npmCommand = node.properties?.__rawString__;
         node.properties.__npmCommand__ = npmCommand;
-        node.properties.__yarnCommand__ = npmCommand.replace('npm run', 'yarn');
         node.properties.__pnpmCommand__ = npmCommand.replace('npm run', 'pnpm');
         node.properties.__bunCommand__ = npmCommand.replace('npm run', 'bun');
       }

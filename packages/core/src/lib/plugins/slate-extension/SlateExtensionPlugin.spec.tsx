@@ -10,7 +10,7 @@ import { SlateExtensionPlugin } from './SlateExtensionPlugin';
 
 describe('SlateExtensionPlugin', () => {
   describe('onNodeChange', () => {
-    it('should call onNodeChange callback when a node operation occurs', () => {
+    it('call onNodeChange callback when a node operation occurs', () => {
       const onNodeChange = mock();
 
       const editor = createSlateEditor({
@@ -46,7 +46,7 @@ describe('SlateExtensionPlugin', () => {
       });
     });
 
-    it('should not call onNodeChange for text operations', () => {
+    it('does not call onNodeChange for text operations', () => {
       const onNodeChange = mock();
 
       const editor = createSlateEditor({
@@ -71,7 +71,7 @@ describe('SlateExtensionPlugin', () => {
       expect(onNodeChange).not.toHaveBeenCalled();
     });
 
-    it('should call onNodeChange for different node operations', () => {
+    it('call onNodeChange for different node operations', () => {
       const onNodeChange = mock();
 
       const editor = createSlateEditor({
@@ -109,7 +109,7 @@ describe('SlateExtensionPlugin', () => {
       });
     });
 
-    it('should provide different node and prevNode for set_node operations', () => {
+    it('provide different node and prevNode for set_node operations', () => {
       const onNodeChange = mock();
 
       const editor = createSlateEditor({
@@ -147,7 +147,7 @@ describe('SlateExtensionPlugin', () => {
   });
 
   describe('onTextChange', () => {
-    it('should call onTextChange callback when a text operation occurs', () => {
+    it('call onTextChange callback when a text operation occurs', () => {
       const onTextChange = mock();
 
       const editor = createSlateEditor({
@@ -187,7 +187,7 @@ describe('SlateExtensionPlugin', () => {
       });
     });
 
-    it('should not call onTextChange for node operations', () => {
+    it('does not call onTextChange for node operations', () => {
       const onTextChange = mock();
 
       const editor = createSlateEditor({
@@ -215,7 +215,7 @@ describe('SlateExtensionPlugin', () => {
       expect(onTextChange).not.toHaveBeenCalled();
     });
 
-    it('should handle remove_text operations', () => {
+    it('handle remove_text operations', () => {
       const onTextChange = mock();
 
       const editor = createSlateEditor({
@@ -260,7 +260,7 @@ describe('SlateExtensionPlugin', () => {
       });
     });
 
-    it('should provide the parent node for text operations', () => {
+    it('provide the parent node for text operations', () => {
       const onTextChange = mock();
 
       const editor = createSlateEditor({
@@ -298,7 +298,7 @@ describe('SlateExtensionPlugin', () => {
   });
 
   describe('performance optimization', () => {
-    it('should not capture state when no handlers are registered', () => {
+    it('does not capture state when no handlers are registered', () => {
       const editor = createSlateEditor({
         plugins: [SlateExtensionPlugin],
         value: [
@@ -321,7 +321,7 @@ describe('SlateExtensionPlugin', () => {
       getSpy.mockRestore();
     });
 
-    it('should capture state when handlers are registered', () => {
+    it('capture state when handlers are registered', () => {
       const onTextChange = mock();
 
       const editor = createSlateEditor({
@@ -358,38 +358,7 @@ describe('SlateExtensionPlugin', () => {
 
 // https://github.com/udecode/editor-protocol/issues/81
 describe('delete marked text at block start', () => {
-  // it('delete backward in a marked text at offset 1, it should remove the mark (legacy)', () => {
-  //   const input = (
-  //     <editor>
-  //       <hp>
-  //         <htext bold>
-  //           a<cursor />
-  //           bc
-  //         </htext>
-  //       </hp>
-  //     </editor>
-  //   ) as any;
-
-  //   const output = (
-  //     <editor>
-  //       <hp>
-  //         a<htext bold>bc</htext>
-  //       </hp>
-  //     </editor>
-  //   ) as any;
-
-  //   const editor = createSlateEditor({
-  //     selection: input.selection,
-  //     value: input.children,
-  //   });
-
-  //   (editor as typeof editor & LegacyEditorMethods).deleteBackward('character');
-  //   (editor as typeof editor & LegacyEditorMethods).insertText('a');
-
-  //   expect(editor.children).toEqual(output.children);
-  // });
-
-  it('delete backward in a marked text at offset 1, it should remove the mark', () => {
+  it('removes the mark after deleting backward in marked text at offset 1', () => {
     const input = (
       <editor>
         <hp>
@@ -420,7 +389,7 @@ describe('delete marked text at block start', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('when delete forward at start of a marked block, it should remove the mark', () => {
+  it('removes the mark when deleting forward at the start of a marked block', () => {
     const input = (
       <editor>
         <hp>
@@ -451,7 +420,7 @@ describe('delete marked text at block start', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('when delete fragment with anchor or focus at start of a marked block, should remove the mark', () => {
+  it('removes the mark when deleting a fragment at the start of a marked block', () => {
     const input = (
       <editor>
         <hp>
@@ -484,7 +453,7 @@ describe('delete marked text at block start', () => {
 });
 
 describe('editor.tf.setValue', () => {
-  it('should set the editor value correctly', () => {
+  it('set the editor value correctly', () => {
     const input = (
       <editor>
         <hp>existing content</hp>
@@ -507,7 +476,7 @@ describe('editor.tf.setValue', () => {
     expect(editor.children).toEqual(output.children);
   });
 
-  it('should set empty value when no argument is provided', () => {
+  it('set empty value when no argument is provided', () => {
     const input = (
       <editor>
         <hp>existing content</hp>

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/test-utils",
-  "version": "52.0.10",
+  "version": "52.3.3",
   "description": "Testing utilities for Plate",
   "keywords": [
     "plate",
@@ -30,23 +30,26 @@
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "yarn p:brl",
-    "build": "yarn p:build",
-    "build:watch": "yarn p:build:watch",
-    "clean": "yarn p:clean",
-    "lint": "yarn p:lint",
-    "lint:fix": "yarn p:lint:fix",
-    "test": "yarn p:test",
-    "test:watch": "yarn p:test:watch",
-    "typecheck": "yarn p:typecheck"
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "52.0.10",
-    "slate": "0.120.0",
+    "@platejs/slate": "workspace:*",
+    "slate": "0.123.0",
     "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {
     "access": "public"
   },
-  "module": "./dist/index.js"
+  "module": "./dist/index.js",
+  "devDependencies": {
+    "@plate/scripts": "workspace:*"
+  }
 }

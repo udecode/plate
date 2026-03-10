@@ -203,7 +203,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     belowNodes: (props) => {
       if (!props.element.listStyleType) return;
 
-      return (props) => <List {...props} />;
+      return (props) => <List {...(props as SlateRenderElementProps)} />;
     },
   },
   rules: {

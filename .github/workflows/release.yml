@@ -24,7 +24,9 @@ jobs:
           node-version: 22
 
       - name: 📦 Monorepo install
-        uses: ./.github/actions/yarn-nm-install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
 
       # @link https://github.com/changesets/action
       - name: 🦋 Create Release Pull Request or Publish
@@ -33,7 +35,7 @@ jobs:
         with:
           cwd: ${{ github.workspace }}
           title: '[Release] Version packages'
-          publish: yarn release
+          publish: pnpm release
         env:
           # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}

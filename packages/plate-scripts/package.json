@@ -1,0 +1,8 @@
+{
+  "name": "@plate/scripts",
+  "version": "1.0.0",
+  "private": true,
+  "bin": {
+    "plate-pkg": "./plate-pkg.cjs"
+  }
+}
