@@ -1,6 +1,6 @@
 {
   "name": "@platejs/autoformat",
-  "version": "52.0.11",
+  "version": "52.3.4",
   "description": "Autoformatting plugin for Plate",
   "keywords": [
     "plate",
@@ -46,7 +46,7 @@
     "@plate/scripts": "workspace:*"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.11",
+    "platejs": ">=52.3.4",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

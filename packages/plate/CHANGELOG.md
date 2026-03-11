@@ -1,5 +1,12 @@
 # platejs
 
+## 52.3.4
+
+### Patch Changes
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+  - Update internal `@platejs/*` and `@udecode/*` dependency ranges to workspace references.
+
 ## 52.3.3
 
 ## 52.3.2

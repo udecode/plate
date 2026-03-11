@@ -1,5 +1,17 @@
 # @udecode/react-utils
 
+## 52.3.4
+
+### Patch Changes
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixed `createPrimitiveComponent` so `setProps` is applied without leaking onto DOM elements.
+  - Fixed `createPrimitiveComponent` to preserve merged hook and consumer `style` props instead of overwriting hook styles when a consumer passes `style`.
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+  - Update internal `@udecode/*` dependency ranges to workspace references.
+
 ## 52.0.11
 
 ### Patch Changes

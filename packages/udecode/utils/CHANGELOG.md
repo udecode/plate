@@ -1,5 +1,12 @@
 # @udecode/utils
 
+## 52.3.4
+
+### Patch Changes
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `escapeRegExp()` to stop escaping plain `s` characters and only escape actual regular-expression syntax.
+
 ## 52.0.1
 
 ### Patch Changes
