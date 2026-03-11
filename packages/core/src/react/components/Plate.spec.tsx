@@ -21,7 +21,7 @@ import {
   useEditorValue,
   usePlateStore,
 } from '../stores';
-import { Plate } from './Plate';
+import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateContent } from './PlateContent';
 
 describe('Plate', () => {
@@ -208,6 +208,24 @@ describe('Plate', () => {
           );
           expect(getStore(wrapper)).toBeDefined();
           expect(getId(wrapper)).toBe('test');
+          expect(getIsFallback(wrapper)).toBe(false);
+        });
+
+        it('prefers the closest Plate store over PlateController state', () => {
+          const EXPECTED_STORE = 'controller store' as any;
+          const editor = createPlateEditor({ id: 'local' });
+
+          const wrapper = ({ children }: any) => (
+            <PlateController
+              activeId="controller"
+              editorStores={{ controller: EXPECTED_STORE }}
+            >
+              <Plate editor={editor}>{children}</Plate>
+            </PlateController>
+          );
+
+          expect(getStore(wrapper)).not.toBe(EXPECTED_STORE);
+          expect(getId(wrapper)).toBe('local');
           expect(getIsFallback(wrapper)).toBe(false);
         });
       });

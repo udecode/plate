@@ -120,13 +120,29 @@ pnpm lint:fix
 
 ### Run Unit Tests
 
-Tests are written using [Jest](https://jestjs.io/). You can run all the tests from the root of the repository.
+Tests are run with Bun. Use the fast root loop during development and the full suite before you finish.
 
 ```bash
-pnpm test
+bun run test
 ```
 
-There are various modes available for running tests, including **`--watch`**, **`--coverage`**, and **`--runInBand`**. These can be selected from the command line interface or passed to **`pnpm test`** as specific parameters.
+Run the full suite with:
+
+```bash
+bun test
+```
+
+For fast watch mode:
+
+```bash
+bun run test:watch
+```
+
+For full coverage:
+
+```bash
+pnpm test:coverage
+```
 
 Please ensure that the tests are passing when submitting a pull request. If you're adding new features, please include tests.
 

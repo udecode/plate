@@ -121,13 +121,29 @@ pnpm lint:fix
 
 ### 运行单元测试
 
-测试使用 [Jest](https://jestjs.io/) 编写。您可以从仓库的根目录运行所有测试。
+测试使用 Bun 运行。开发时使用快速测试循环，结束前运行完整测试套件。
 
 ```bash
-pnpm test
+bun run test
 ```
 
-运行测试有多种模式可用，包括 **`--watch`**、**`--coverage`** 和 **`--runInBand`**。这些可以从命令行界面选择或作为特定参数传递给 **`pnpm test`**。
+运行完整测试套件：
+
+```bash
+bun test
+```
+
+快速 watch 模式：
+
+```bash
+bun run test:watch
+```
+
+完整覆盖率：
+
+```bash
+pnpm test:coverage
+```
 
 请确保在提交拉取请求时测试通过。如果您添加新功能，请包含测试。
 

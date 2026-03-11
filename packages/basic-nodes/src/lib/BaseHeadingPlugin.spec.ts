@@ -67,7 +67,7 @@ describe('BaseHeadingPlugin', () => {
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
 
-      headingPlugin.plugins.forEach((plugin, index) => {
+      headingPlugin.plugins.forEach((plugin: any, index: number) => {
         expect(plugin.node.isElement).toBe(true);
         expect(plugin.handlers?.onKeyDown).not.toBeDefined();
         expect(plugin.parsers.html.deserializer?.rules).toEqual([

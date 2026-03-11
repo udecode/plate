@@ -87,7 +87,7 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
             if (rule && typeof rule.match === 'string') {
               editor.tf.insertText(rule.match);
             } else {
-              const matchArray = rule.match as string[];
+              const matchArray = rule.match as readonly string[];
 
               if (matchArray && matchArray.length > 0) {
                 editor.tf.insertText(matchArray[0]);

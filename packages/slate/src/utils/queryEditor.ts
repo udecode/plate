@@ -1,6 +1,6 @@
 import castArray from 'lodash/castArray.js';
 
-import type { Editor, TLocation } from '../interfaces';
+import { ElementApi, type Editor, type TLocation } from '../interfaces';
 import type { QueryNodeOptions } from './queryNode';
 
 /** Query the editor state. */
@@ -39,17 +39,25 @@ export const queryEditor = <E extends Editor>(
     return false;
   }
 
-  const allows = castArray(allow);
+  const allows = allow == null ? [] : castArray(allow);
+  const levels = Array.from(editor.api.levels({ at, reverse: true }));
 
-  if (allows.length > 0 && !editor.api.some({ at, match: { type: allows } })) {
+  if (
+    allows.length > 0 &&
+    !levels.some(
+      ([node]) => ElementApi.isElement(node) && allows.includes(node.type)
+    )
+  ) {
     return false;
   }
 
-  const excludes = castArray(exclude);
+  const excludes = exclude == null ? [] : castArray(exclude);
 
   if (
     excludes.length > 0 &&
-    editor.api.some({ at, match: { type: excludes } })
+    levels.some(
+      ([node]) => ElementApi.isElement(node) && excludes.includes(node.type)
+    )
   ) {
     return false;
   }

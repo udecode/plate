@@ -1,11 +1,27 @@
-import type { Descendant, SlateEditor, TElement, TNode } from 'platejs';
+import type { SlateEditor } from 'platejs';
 
-import papaparse from 'papaparse';
+import { parse } from 'papaparse';
 import { KEYS } from 'platejs';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
 
-const { parse } = papaparse;
+type CsvTextNode = {
+  text: string;
+};
+
+type CsvElementNode = {
+  children: CsvDescendantNode[];
+  type: string;
+};
+
+type CsvDescendantNode = CsvElementNode | CsvTextNode;
+
+const parseCsv = <T>(data: string, config?: CsvParseOptions) =>
+  parse<T>(data, {
+    ...config,
+    download: false,
+    worker: false,
+  });
 
 const isValidCsv = (
   data: Record<string, string>[][],
@@ -31,15 +47,15 @@ export const deserializeCsv = (
   }: {
     data: string;
   } & CsvParseOptions
-): Descendant[] | undefined => {
+): SlateEditor['children'] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
     editor.getOptions(CsvPlugin);
 
   // Verify it's a csv string
-  const testCsv = parse(data, { preview: 2 });
+  const testCsv = parseCsv<unknown[]>(data, { preview: 2 });
 
   if (testCsv.errors.length === 0) {
-    const csv = parse(data, {
+    const csv = parseCsv<any>(data, {
       ...pluginParseOptions,
       ...parseOptions,
     });
@@ -59,7 +75,7 @@ export const deserializeCsv = (
     const tr = editor.getType(KEYS.tr);
     const td = editor.getType(KEYS.td);
 
-    const ast: TNode = {
+    const ast: CsvElementNode = {
       children: [],
       type: table,
     };
@@ -94,7 +110,7 @@ export const deserializeCsv = (
         });
 
         for (const cell of row) {
-          (ast.children.at(-1) as TElement).children.push({
+          (ast.children.at(-1) as CsvElementNode | undefined)?.children.push({
             children: [{ children: [{ text: cell }], type: paragraph }],
             type: td,
           });

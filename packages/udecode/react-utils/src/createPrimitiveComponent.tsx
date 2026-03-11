@@ -63,7 +63,9 @@ export const createPrimitiveComponent = <
           className: classNameProp,
           getClassName,
           options,
+          setProps,
           state: stateProp,
+          style: styleProp,
           ...props
         },
         ref
@@ -87,8 +89,8 @@ export const createPrimitiveComponent = <
             ? clsx(hookProps?.className, classNameProp)
             : undefined;
         const style =
-          hookProps?.style || props.style
-            ? { ...hookProps?.style, ...props.style }
+          hookProps?.style || styleProp
+            ? { ...hookProps?.style, ...styleProp }
             : undefined;
 
         if (!asChild && hidden) return null;
@@ -101,7 +103,7 @@ export const createPrimitiveComponent = <
             className={className}
             style={style}
             {...props}
-            {...(props.setProps?.(hookProps ?? {}) ?? {})}
+            {...(setProps?.(hookProps ?? {}) ?? {})}
           />
         );
       }

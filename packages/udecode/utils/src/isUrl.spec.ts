@@ -124,6 +124,14 @@ describe('is-url', () => {
       expect(!isUrl('')).toBeTruthy();
     });
 
+    it('null', () => {
+      expect(!isUrl(null)).toBeTruthy();
+    });
+
+    it('undefined', () => {
+      expect(!isUrl(undefined)).toBeTruthy();
+    });
+
     it('object', () => {
       expect(!isUrl({})).toBeTruthy();
     });
@@ -134,6 +142,10 @@ describe('is-url', () => {
 
     it('mailto:', () => {
       expect(!isUrl('mailto:')).toBeTruthy();
+    });
+
+    it('whitespace in hostname', () => {
+      expect(!isUrl('https://exa mple.com')).toBeTruthy();
     });
   });
 

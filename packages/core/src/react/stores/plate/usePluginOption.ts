@@ -86,12 +86,25 @@ export function useEditorPluginOption<
     return undefined as any;
   }
 
-  if (!(key in store.get('state')) && !(key in store.selectors)) {
+  if (
+    key !== 'state' &&
+    !(key in store.get('state')) &&
+    !(key in store.selectors)
+  ) {
     editor.api.debug.error(
       `usePluginOption: ${key as any} option is not defined in plugin ${plugin.key}`,
       'OPTION_UNDEFINED'
     );
     return undefined as any;
+  }
+
+  if (key === 'state') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useStoreSelect(
+      store,
+      (state) => state,
+      args[0] as TEqualityChecker<StateType> | undefined
+    ) as any;
   }
 
   return (useStoreValue as any)(store, key, ...args);

@@ -7,6 +7,8 @@ on:
       - next
     paths:
       - 'packages/**'
+      - 'tooling/**'
+      - 'package.json'
       - '.github/actions/**'
       - '.github/workflows/lint-typecheck.yml'
       - 'pnpm-workspace.yaml'
@@ -26,6 +28,8 @@ on:
       - reopened
     paths:
       - 'packages/**'
+      - 'tooling/**'
+      - 'package.json'
       - '.github/actions/**'
       - '.github/workflows/**'
       - 'pnpm-workspace.yaml'
@@ -88,7 +92,7 @@ jobs:
         run: pnpm typecheck
 
       - name: 🧪 Test
-        run: pnpm test
+        run: bun test
 
       # - name: 📥 Install Playwright dependencies
       #   run: |

@@ -64,6 +64,45 @@ describe('isEmpty', () => {
     });
   });
 
+  describe('when target is a node', () => {
+    it('returns false for a void block target', () => {
+      const editor = createEditor({
+        children: [
+          {
+            children: [{ text: '' }],
+            type: 'tag',
+            void: true,
+          },
+        ] as any,
+      }) as Editor & LegacyEditorMethods;
+
+      editor.isVoid = (element) => element.type === 'tag';
+
+      expect(editor.api.isEmpty(editor.children[0] as any)).toBe(false);
+    });
+
+    it('returns false for a non-empty inline target', () => {
+      const editor = createEditor({
+        children: [
+          {
+            children: [
+              { text: 'one' },
+              { children: [{ text: 'two' }], type: 'a' },
+              { text: 'three' },
+            ],
+            type: 'p',
+          },
+        ] as any,
+      }) as Editor & LegacyEditorMethods;
+
+      editor.isInline = (element) => element.type === 'a';
+
+      expect(editor.api.isEmpty(editor.children[0].children[1] as any)).toBe(
+        false
+      );
+    });
+  });
+
   describe('when after=true', () => {
     describe('when no selection', () => {
       it('returns true', () => {
@@ -228,6 +267,21 @@ describe('isEmpty', () => {
         );
       });
     });
+
+    it('returns true when the cursor is already at the end of the block', () => {
+      const editor = createEditor(
+        (
+          <editor>
+            <hp>
+              test
+              <cursor />
+            </hp>
+          </editor>
+        ) as any
+      ) as Editor & LegacyEditorMethods;
+
+      expect(editor.api.isEmpty(editor.selection, { after: true })).toBe(true);
+    });
   });
 
   describe('when block=true', () => {
@@ -243,6 +297,24 @@ describe('isEmpty', () => {
       );
 
       expect(editor.api.isEmpty(editor.selection, { block: true })).toBe(true);
+    });
+  });
+
+  describe('when target is a location', () => {
+    it('returns false when any matched node is not empty', () => {
+      const editor = createEditor(
+        (
+          <editor>
+            <hp>
+              <anchor />
+              text
+              <focus />
+            </hp>
+          </editor>
+        ) as any
+      );
+
+      expect(editor.api.isEmpty(editor.selection)).toBe(false);
     });
   });
 });

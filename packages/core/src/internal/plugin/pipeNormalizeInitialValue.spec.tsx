@@ -3,7 +3,8 @@ import React from 'react';
 import { renderHook } from '@testing-library/react';
 
 import { createSlatePlugin } from '../../lib/plugin';
-import { createPlateEditor, Plate, useEditorValue } from '../../react';
+import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
+import { createPlateEditor, useEditorValue } from '../../react';
 
 describe('pipeNormalizeInitialValue', () => {
   const createTestPlugin = (key: string) =>
