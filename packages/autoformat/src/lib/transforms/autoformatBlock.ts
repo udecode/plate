@@ -23,7 +23,7 @@ export const autoformatBlock = (
     type = KEYS.p,
   }: AutoformatBlockOptions
 ) => {
-  const matches = castArray(_match as string[] | string);
+  const matches = castArray(_match as readonly string[] | string);
 
   for (const match of matches) {
     const { end, triggers } = getMatchRange({

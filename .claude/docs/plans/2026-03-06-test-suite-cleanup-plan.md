@@ -15,7 +15,7 @@ Push the suite toward three layers only:
 - Thin editor or plugin contract tests for real Plate or Slate wiring.
 - Golden input or output tests for serializer and parser behavior.
 
-No coverage push in this phase. No e2e or browser work.
+No blind repo-wide coverage push in this phase. No e2e or browser work.
 
 ## Completed
 
@@ -190,6 +190,39 @@ No coverage push in this phase. No e2e or browser work.
 
 - Moved the entire `apps/www` app-owned package integration cluster from `src/lib/package-integration` to `src/__tests__/package-integration`.
 - Kept the existing buckets under `package-integration` so cross-package contracts and static HTML coverage stay grouped without dumping everything into one root-level test folder.
+
+### Pass 25
+
+- Made `@platejs/slate` the explicit phase-1 priority and used the slate phase-1 execution log as the working source, while keeping this file as the canonical cleanup history.
+- Mined upstream `../slate` and `slate-history` tests selectively instead of mirroring them blindly, pulling only the invariants that improved our local public-contract coverage cheaply.
+- Finished the slate package at `395` passing tests, with `packages/slate/src` at `100.00%` function coverage and `96.97%` line coverage from `lcov`.
+- Covered the real slate contract buckets:
+  - `slate-history` and history helper behavior
+  - `Path`, `Range`, `Node`, and `location-ref` contracts
+  - editor query and navigation seams like `above`, `next`, `previous`, `marks`, `string`, `nodes`, `isAt`, and `getPointBefore`
+  - transform and helper seams like `deleteText`, `deleteMerge`, `mergeNodes`, `toggleMark`, `setNodes`, `moveSelection`, `duplicateNodes`, and `addMarks`
+- Stopped phase 1 once the remaining misses were mostly deferred DOM wrappers plus a few low-risk non-DOM files like `isEmpty`, `prop`, `getFragment`, and `queryNode`.
+
+#### Pass 25 Methodology
+
+- Bun-first and speed-first: `bun test` stays the default workflow; no browser or e2e coverage in this program.
+- Coverage is hotspot telemetry, not a vanity target.
+- For package-only truth, prefer `lcov` over Bun’s broad text summary.
+- Test public behavior through editor APIs, transforms, plugin APIs, or rendered output only when the contract is actually React or DOM specific.
+- Use the narrowest seam that proves the contract:
+  - `createEditor` for pure Slate behavior
+  - `createSlateEditor` for non-React plugin or editor wiring
+  - `createPlateEditor` only when the contract is genuinely Plate-specific
+- Prefer explicit assertions over snapshots; keep snapshots only when the serialized form is the contract and inline assertions would be worse.
+- Put compile-only type contracts in `type-tests/`, not runtime specs.
+- No aspirational skipped tests, no fake smoke tests, no cross-spec helper imports, and no app-registry imports in package tests.
+- Adapt upstream Slate invariants when local runtime semantics differ; do not cargo-cult upstream fixtures.
+
+#### Pass 25 Learnings
+
+- Direct helper specs were worth it for custom slate code like `deleteMerge`, `location-ref`, `toggleMark`, and `mergeNodes`; indirect coverage was lying.
+- Bun’s text coverage summary is noisy for targeted package runs, so `lcov` is the trustworthy package-level source of truth.
+- Upstream invariants are reference material, not holy scripture; when local runtime behavior differs, keep the invariant and rewrite the fixture around the real public contract.
 
 ## Matrix Scan
 

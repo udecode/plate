@@ -88,6 +88,7 @@
     "@platejs/playwright": "workspace:^",
     "@platejs/resizable": "workspace:^",
     "@platejs/selection": "workspace:^",
+    "@platejs/slate": "workspace:^",
     "@platejs/slash-command": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/tabbable": "workspace:^",

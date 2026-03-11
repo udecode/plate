@@ -68,6 +68,23 @@ export const isAt = <E extends Editor>(
       return WHITESPACE_OR_END_REGEX.test(afterText);
     }
 
+    if (start || end) {
+      const blockEntry = editor.api.block({
+        at,
+        ...options,
+      });
+
+      if (!blockEntry) return false;
+
+      if (start) {
+        return editor.api.isStart(at, blockEntry[1]);
+      }
+
+      if (end) {
+        return editor.api.isEnd(at, blockEntry[1]);
+      }
+    }
+
     return false;
   }
   // Handle Range

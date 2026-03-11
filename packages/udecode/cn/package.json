@@ -36,7 +36,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@udecode/react-utils": "52.0.11",
+    "@udecode/react-utils": "workspace:*",
     "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {

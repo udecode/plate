@@ -8,11 +8,11 @@ import { render } from '@testing-library/react';
 import { createSlateEditor } from '../../lib/editor';
 import { type PluginConfig, createSlatePlugin } from '../../lib/plugin';
 import { PlateError } from '../../lib/plugins';
+import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
 import {
   type PlatePlugin,
   createPlateEditor,
   createPlatePlugin,
-  Plate,
   useEditorPluginOption,
   useEditorPluginOptions,
   usePluginOption,

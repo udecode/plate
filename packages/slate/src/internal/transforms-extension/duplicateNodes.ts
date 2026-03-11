@@ -11,10 +11,9 @@ export const duplicateNodes = (
 ) => {
   const at = getAt(editor, options.at) ?? editor.selection;
 
-  if (!nodes) return;
+  if (!nodes && !block) return;
 
-  // Use provided nodes or get blocks if block=true
-  const entries = nodes ?? (at ? (block ? editor.api.blocks({ at }) : []) : []);
+  const entries = nodes ?? (at ? editor.api.blocks({ at }) : []);
 
   if (entries.length === 0) return;
 

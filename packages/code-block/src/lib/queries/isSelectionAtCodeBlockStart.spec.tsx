@@ -14,62 +14,70 @@ describe('isSelectionAtCodeBlockStart', () => {
     );
 
   it.each([
-    [
-      'returns false outside a code block',
-      <editor>
-        <hp>
-          <htext />
-          <cursor />
-        </hp>
-        <hcodeblock>
-          <hcodeline>
-            <htext />
-          </hcodeline>
-        </hcodeblock>
-      </editor>,
-      false,
-    ],
-    [
-      'returns false on a later code line',
-      <editor>
-        <hcodeblock>
-          <hcodeline>
-            <htext />
-          </hcodeline>
-          <hcodeline>
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hp>
             <htext />
             <cursor />
-          </hcodeline>
-        </hcodeblock>
-      </editor>,
-      false,
-    ],
-    [
-      'returns false when the cursor is not at the line start',
-      <editor>
-        <hcodeblock>
-          <hcodeline>
-            test
-            <cursor />
-          </hcodeline>
-        </hcodeblock>
-      </editor>,
-      false,
-    ],
-    [
-      'returns true at the start of the first code line',
-      <editor>
-        <hcodeblock>
-          <hcodeline>
-            <cursor />
-            line 1
-          </hcodeline>
-          <hcodeline>line 2</hcodeline>
-        </hcodeblock>
-      </editor>,
-      true,
-    ],
-  ])('%s', (_label, input, expected) => {
+          </hp>
+          <hcodeblock>
+            <hcodeline>
+              <htext />
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false outside a code block',
+    },
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              <htext />
+            </hcodeline>
+            <hcodeline>
+              <htext />
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false on a later code line',
+    },
+    {
+      expected: false,
+      input: (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              test
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns false when the cursor is not at the line start',
+    },
+    {
+      expected: true,
+      input: (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              <cursor />
+              line 1
+            </hcodeline>
+            <hcodeline>line 2</hcodeline>
+          </hcodeblock>
+        </editor>
+      ),
+      title: 'returns true at the start of the first code line',
+    },
+  ])('$title', ({ input, expected }) => {
     expect(run(input)).toBe(expected);
   });
 });

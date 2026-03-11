@@ -48,9 +48,9 @@
   },
   "dependencies": {
     "@platejs/slate": "workspace:*",
-    "@udecode/react-hotkeys": "52.0.11",
-    "@udecode/react-utils": "52.0.11",
-    "@udecode/utils": "52.0.1",
+    "@udecode/react-hotkeys": "workspace:*",
+    "@udecode/react-utils": "workspace:*",
+    "@udecode/utils": "workspace:*",
     "clsx": "^2.1.1",
     "html-entities": "^2.6.0",
     "is-hotkey": "^0.2.0",

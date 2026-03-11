@@ -28,6 +28,18 @@ describe('getPointBefore', () => {
         path: [0, 0],
       });
     });
+
+    it('returns undefined for an invalid location instead of throwing', () => {
+      const editor = createEditor(
+        (
+          <editor>
+            <hp>test</hp>
+          </editor>
+        ) as any
+      );
+
+      expect(editor.api.before([9, 9, 9] as any)).toBeUndefined();
+    });
   });
 
   describe('when afterMatch=true', () => {
@@ -191,6 +203,32 @@ describe('getPointBefore', () => {
             skipInvalid: true,
           })
         ).toBeUndefined();
+      });
+
+      it('returns the block start when matchBlockStart is true', () => {
+        const editor = createEditor(
+          (
+            <editor>
+              <hp>find z</hp>
+              <hp>
+                test http://google.com
+                <cursor />
+              </hp>
+            </editor>
+          ) as any
+        );
+
+        expect(
+          editor.api.before(editor.selection as any, {
+            afterMatch: true,
+            matchBlockStart: true,
+            matchString: 'z',
+            skipInvalid: true,
+          })
+        ).toEqual({
+          offset: 0,
+          path: [1, 0],
+        });
       });
     });
   });
