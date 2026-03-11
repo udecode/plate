@@ -1,5 +1,12 @@
 # @platejs/autoformat
 
+## 52.3.4
+
+### Patch Changes
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed readonly array support for autoformat rule options like `match`, `trigger`, `type`, and text `format` so `as const` rule definitions typecheck cleanly.
+
 ## 52.0.11
 
 ### Patch Changes
