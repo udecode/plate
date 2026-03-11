@@ -86,11 +86,10 @@ const nextConfig = async (_phase: string) => {
     },
 
     experimental: {
-      cpus: 8,
+      cpus: 4,
       externalDir: isDev,
-      memoryBasedWorkersCount: false,
-      staticGenerationMaxConcurrency: 8,
-      staticGenerationMinPagesPerWorker: 25,
+      memoryBasedWorkersCount: true,
+      staticGenerationMaxConcurrency: 2,
       staticGenerationRetryCount: 1,
       turbopackFileSystemCacheForDev: true,
     },
