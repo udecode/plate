@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import type { Heading } from '@platejs/toc';
 import type { PlateElementProps } from 'platejs/react';
 
 import { useTocElement, useTocElementState } from '@platejs/toc/react';
@@ -33,7 +32,7 @@ export function TocElement(props: PlateElementProps) {
     <PlateElement {...props} className="mb-1 p-0">
       <div contentEditable={false}>
         {headingList.length > 0 ? (
-          headingList.map((item: Heading) => (
+          headingList.map((item) => (
             <Button
               key={item.id}
               variant="ghost"

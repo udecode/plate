@@ -8,7 +8,7 @@ import {
   BlockMenuPlugin,
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
-import { type NodeEntry, type TElement, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
 import { useEditorPlugin, usePlateState, usePluginOption } from 'platejs/react';
 
 import {
@@ -38,7 +38,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       editor
         .getApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
-        .forEach(([node, path]: NodeEntry<TElement>) => {
+        .forEach(([node, path]) => {
           if (node[KEYS.listType]) {
             editor.tf.unsetNodes([KEYS.listType, 'indent'], {
               at: path,
