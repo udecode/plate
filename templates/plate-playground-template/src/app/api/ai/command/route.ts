@@ -2,9 +2,10 @@ import { createGateway } from '@ai-sdk/gateway';
 import {
   createUIMessageStream,
   createUIMessageStreamResponse,
-  generateObject,
+  generateText,
+  type LanguageModel,
+  Output,
   streamText,
-  streamObject,
   tool,
   type UIMessageStreamWriter,
 } from 'ai';
@@ -23,16 +24,6 @@ import {
   getEditPrompt,
   getGeneratePrompt,
 } from './prompt';
-
-type AiSdkLanguageModel = Parameters<typeof generateObject>[0]['model'];
-const emptyToolSchema = z.object({});
-
-// `@ai-sdk/gateway` exposes V3 models, while `ai@5` still types model inputs as V2.
-// Runtime is fine; keep the cast at this boundary instead of spreading `as any` everywhere.
-const getGatewayModel = (
-  gatewayProvider: ReturnType<typeof createGateway>,
-  modelId: string
-) => gatewayProvider(modelId as never) as unknown as AiSdkLanguageModel;
 
 export async function POST(req: NextRequest) {
   const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
@@ -76,10 +67,9 @@ export async function POST(req: NextRequest) {
             : ['generate', 'comment'];
           const modelId = model || 'google/gemini-2.5-flash';
 
-          const { object: AIToolName } = await generateObject({
-            enum: enumOptions,
-            model: getGatewayModel(gatewayProvider, modelId),
-            output: 'enum',
+          const { output: AIToolName } = await generateText({
+            model: gatewayProvider(modelId),
+            output: Output.choice({ options: enumOptions }),
             prompt,
           });
 
@@ -93,24 +83,18 @@ export async function POST(req: NextRequest) {
 
         const stream = streamText({
           experimental_transform: markdownJoinerTransform(),
-          model: getGatewayModel(gatewayProvider, model || 'openai/gpt-4o-mini'),
+          model: gatewayProvider(model || 'openai/gpt-4o-mini'),
           // Not used
           prompt: '',
           tools: {
             comment: getCommentTool(editor, {
               messagesRaw,
-              model: getGatewayModel(
-                gatewayProvider,
-                model || 'google/gemini-2.5-flash'
-              ),
+              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
               writer,
             }),
             table: getTableTool(editor, {
               messagesRaw,
-              model: getGatewayModel(
-                gatewayProvider,
-                model || 'google/gemini-2.5-flash'
-              ),
+              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
               writer,
             }),
           },
@@ -142,14 +126,8 @@ export async function POST(req: NextRequest) {
                 model:
                   editType === 'selection'
                     ? //The selection task is more challenging, so we chose to use Gemini 2.5 Flash.
-                      getGatewayModel(
-                        gatewayProvider,
-                        model || 'google/gemini-2.5-flash'
-                      )
-                    : getGatewayModel(
-                        gatewayProvider,
-                        model || 'openai/gpt-4o-mini'
-                      ),
+                      gatewayProvider(model || 'google/gemini-2.5-flash')
+                    : gatewayProvider(model || 'openai/gpt-4o-mini'),
                 messages: [
                   {
                     content: editPrompt,
@@ -174,10 +152,7 @@ export async function POST(req: NextRequest) {
                     role: 'user',
                   },
                 ],
-                model: getGatewayModel(
-                  gatewayProvider,
-                  model || 'openai/gpt-4o-mini'
-                ),
+                model: gatewayProvider(model || 'openai/gpt-4o-mini'),
               };
             }
           },
@@ -204,15 +179,15 @@ const getCommentTool = (
     writer,
   }: {
     messagesRaw: ChatMessage[];
-    model: AiSdkLanguageModel;
+    model: LanguageModel;
     writer: UIMessageStreamWriter<ChatMessage>;
   }
 ) =>
   tool({
     description: 'Comment on the content',
-    inputSchema: emptyToolSchema,
+    inputSchema: z.object({}),
     strict: true,
-    execute: async (_input: z.infer<typeof emptyToolSchema>) => {
+    execute: async () => {
       const commentSchema = z.object({
         blockId: z
           .string()
@@ -229,18 +204,17 @@ const getCommentTool = (
           ),
       });
 
-      const { partialObjectStream } = streamObject({
+      const { partialOutputStream } = streamText({
         model,
+        output: Output.array({ element: commentSchema }),
         prompt: getCommentPrompt(editor, {
           messages: messagesRaw,
         }),
-        output: 'array',
-        schema: commentSchema,
       });
 
       let lastLength = 0;
 
-      for await (const partialArray of partialObjectStream) {
+      for await (const partialArray of partialOutputStream) {
         for (let i = lastLength; i < partialArray.length; i++) {
           const comment = partialArray[i];
           const commentDataId = nanoid();
@@ -267,7 +241,7 @@ const getCommentTool = (
         type: 'data-comment',
       });
     },
-  } as any);
+  });
 
 const getTableTool = (
   editor: SlateEditor,
@@ -277,15 +251,15 @@ const getTableTool = (
     writer,
   }: {
     messagesRaw: ChatMessage[];
-    model: AiSdkLanguageModel;
+    model: LanguageModel;
     writer: UIMessageStreamWriter<ChatMessage>;
   }
 ) =>
   tool({
     description: 'Edit table cells',
-    inputSchema: emptyToolSchema,
+    inputSchema: z.object({}),
     strict: true,
-    execute: async (_input: z.infer<typeof emptyToolSchema>) => {
+    execute: async () => {
       const cellUpdateSchema = z.object({
         content: z
           .string()
@@ -295,16 +269,15 @@ const getTableTool = (
         id: z.string().describe('The id of the table cell to update.'),
       });
 
-      const { partialObjectStream } = streamObject({
+      const { partialOutputStream } = streamText({
         model,
+        output: Output.array({ element: cellUpdateSchema }),
         prompt: buildEditTableMultiCellPrompt(editor, messagesRaw),
-        output: 'array',
-        schema: cellUpdateSchema,
       });
 
       let lastLength = 0;
 
-      for await (const partialArray of partialObjectStream) {
+      for await (const partialArray of partialOutputStream) {
         for (let i = lastLength; i < partialArray.length; i++) {
           const cellUpdate = partialArray[i];
 
@@ -330,4 +303,4 @@ const getTableTool = (
         type: 'data-table',
       });
     },
-  } as any);
+  });
