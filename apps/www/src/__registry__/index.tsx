@@ -946,7 +946,7 @@ export const Index: Record<string, any> = {
     name: "code-drawing-node",
     description: "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/popover","@shadcn/button","@shadcn/select","@shadcn/sidebar"],
+    registryDependencies: ["@shadcn/popover","@shadcn/button","@shadcn/select","https://platejs.org/r/use-mobile.json"],
     files: [{
       path: "src/registry/ui/code-drawing-node.tsx",
       type: "registry:ui",
@@ -3123,6 +3123,23 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/hooks/use-debounce.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "use-mobile": {
+    name: "use-mobile",
+    description: "",
+    type: "registry:hook",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/hooks/use-mobile.ts",
+      type: "registry:hook",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/hooks/use-mobile.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

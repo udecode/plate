@@ -11,7 +11,7 @@
     "@shadcn/popover",
     "@shadcn/button",
     "@shadcn/select",
-    "@shadcn/sidebar"
+    "https://platejs.org/r/use-mobile.json"
   ],
   "files": [
     {

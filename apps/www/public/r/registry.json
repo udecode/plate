@@ -1691,7 +1691,7 @@
         "@shadcn/popover",
         "@shadcn/button",
         "@shadcn/select",
-        "@shadcn/sidebar"
+        "https://platejs.org/r/use-mobile.json"
       ],
       "files": [
         {
@@ -4413,6 +4413,16 @@
       "files": [
         {
           "path": "src/registry/hooks/use-debounce.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "use-mobile",
+      "type": "registry:hook",
+      "files": [
+        {
+          "path": "src/registry/hooks/use-mobile.ts",
           "type": "registry:hook"
         }
       ]
