@@ -6,11 +6,11 @@
     "@platejs/basic-nodes"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/basic-marks-base-kit",
-    "https://platejs.org/r/code-node",
-    "https://platejs.org/r/highlight-node",
-    "https://platejs.org/r/kbd-node",
-    "https://platejs.org/r/mark-toolbar-button"
+    "https://platejs.org/r/basic-marks-base-kit.json",
+    "https://platejs.org/r/code-node.json",
+    "https://platejs.org/r/highlight-node.json",
+    "https://platejs.org/r/kbd-node.json",
+    "https://platejs.org/r/mark-toolbar-button.json"
   ],
   "files": [
     {

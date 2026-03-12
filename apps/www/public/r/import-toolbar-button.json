@@ -5,11 +5,12 @@
   "title": "Import Toolbar Button",
   "description": "A toolbar button to import editor content from a file.",
   "dependencies": [
+    "@platejs/docx-io",
     "use-file-picker@2.1.2"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "https://platejs.org/r/toolbar"
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

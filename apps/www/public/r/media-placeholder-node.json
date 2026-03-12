@@ -9,7 +9,7 @@
     "use-file-picker@2.1.2"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/uploadthing"
+    "https://platejs.org/r/uploadthing.json"
   ],
   "files": [
     {

@@ -22,7 +22,16 @@ export function PlateSlate({
   const editor = useEditorRef(id);
 
   let aboveSlate: React.ReactElement<any> | null = (
-    <Slate {...(slateProps as any)}>{children}</Slate>
+    <Slate
+      key={slateProps.key}
+      editor={slateProps.editor}
+      initialValue={slateProps.initialValue}
+      onChange={slateProps.onChange}
+      onSelectionChange={slateProps.onSelectionChange}
+      onValueChange={slateProps.onValueChange}
+    >
+      {children}
+    </Slate>
   );
 
   editor.meta.pluginCache.render.aboveSlate.forEach((key) => {

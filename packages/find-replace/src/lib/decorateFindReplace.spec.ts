@@ -22,7 +22,7 @@ describe('decorateFindReplace', () => {
   });
 
   it('matches text case-insensitively in a single text node', () => {
-    expect(decorate({ children: [{ text: 'test' }], search: 'Test' })).toEqual([
+    const expected = [
       {
         [FindReplacePlugin.key]: true,
         anchor: {
@@ -35,16 +35,15 @@ describe('decorateFindReplace', () => {
         },
         search: 'Test',
       },
-    ]);
+    ];
+
+    expect(decorate({ children: [{ text: 'test' }], search: 'Test' })).toEqual(
+      expected
+    );
   });
 
   it('splits one match across adjacent text nodes', () => {
-    expect(
-      decorate({
-        children: [{ text: 'tes' }, { bold: true, text: 't' }],
-        search: 'test',
-      })
-    ).toEqual([
+    const expected = [
       {
         [FindReplacePlugin.key]: true,
         anchor: {
@@ -69,20 +68,18 @@ describe('decorateFindReplace', () => {
         },
         search: 't',
       },
-    ]);
+    ];
+
+    expect(
+      decorate({
+        children: [{ text: 'tes' }, { bold: true, text: 't' }],
+        search: 'test',
+      })
+    ).toEqual(expected);
   });
 
   it('returns ranges for multiple matches across text nodes', () => {
-    expect(
-      decorate({
-        children: [
-          { text: 'tes' },
-          { bold: true, text: 'ts and tests and t' },
-          { text: 'ests' },
-        ],
-        search: 'test',
-      })
-    ).toEqual([
+    const expected = [
       {
         [FindReplacePlugin.key]: true,
         anchor: {
@@ -143,7 +140,18 @@ describe('decorateFindReplace', () => {
         },
         search: 'est',
       },
-    ]);
+    ];
+
+    expect(
+      decorate({
+        children: [
+          { text: 'tes' },
+          { bold: true, text: 'ts and tests and t' },
+          { text: 'ests' },
+        ],
+        search: 'test',
+      })
+    ).toEqual(expected);
   });
 
   it('is wired into FindReplacePlugin.decorate', () => {
@@ -155,12 +163,7 @@ describe('decorateFindReplace', () => {
 
     editor.setOption(FindReplacePlugin, 'search', 'test');
 
-    expect(
-      plugin.decorate?.({
-        ...getEditorPlugin(editor, plugin),
-        entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
-      })
-    ).toEqual([
+    const expected = [
       {
         [FindReplacePlugin.key]: true,
         anchor: {
@@ -173,6 +176,13 @@ describe('decorateFindReplace', () => {
         },
         search: 'test',
       },
-    ]);
+    ];
+
+    expect(
+      plugin.decorate?.({
+        ...getEditorPlugin(editor, plugin),
+        entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
+      })
+    ).toEqual(expected);
   });
 });

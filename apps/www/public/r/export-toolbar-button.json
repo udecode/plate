@@ -5,15 +5,17 @@
   "title": "Export Toolbar Button",
   "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
   "dependencies": [
+    "@platejs/docx-io",
     "@platejs/markdown",
     "html2canvas-pro",
     "pdf-lib",
     "lucide-react"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/editor-base-kit"
+    "https://platejs.org/r/docx-export-kit.json",
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/editor-base-kit.json"
   ],
   "files": [
     {

@@ -24,8 +24,8 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
-    "typecheck": "pnpm prebuild && tsc --noEmit",
-    "typecheck:watch": "pnpm typecheck --watch"
+    "typecheck": "pnpm prebuild && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
+    "typecheck:watch": "pnpm prebuild && concurrently \"tsc --noEmit -p tsconfig.json --watch\" \"tsc --noEmit -p tsconfig.package-integration.json --watch\""
   },
   "browserslist": {
     "production": [
@@ -88,6 +88,7 @@
     "@platejs/playwright": "workspace:^",
     "@platejs/resizable": "workspace:^",
     "@platejs/selection": "workspace:^",
+    "@platejs/slate": "workspace:^",
     "@platejs/slash-command": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/tabbable": "workspace:^",

@@ -36,6 +36,9 @@ export const createPlateTestEditor = async <
   ]
 > =>
   buildTestHarness(PlateTest)({
+    componentProps: {
+      suppressInstanceWarning: true,
+    },
     editor: createPlateEditor(options),
     ...buildTestHarnessOptions,
-  }) as any;
+  } as any) as any;

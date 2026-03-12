@@ -5,8 +5,8 @@
   "description": "A multi-select editor",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/plate-ui",
-    "https://platejs.org/r/select-editor-demo"
+    "https://platejs.org/r/plate-ui.json",
+    "https://platejs.org/r/select-editor-demo.json"
   ],
   "files": [
     {

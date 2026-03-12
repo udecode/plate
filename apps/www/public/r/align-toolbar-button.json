@@ -8,8 +8,8 @@
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "https://platejs.org/r/toolbar"
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@ import type { TElement } from '@platejs/slate';
 
 import { act, render } from '@testing-library/react';
 
-import { Plate } from '../../components';
+import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
 import { useElement } from './useElement';
 import { ElementProvider } from './useElementStore';

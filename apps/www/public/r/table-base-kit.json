@@ -6,7 +6,7 @@
     "@platejs/table"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/table-node"
+    "https://platejs.org/r/table-node.json"
   ],
   "files": [
     {

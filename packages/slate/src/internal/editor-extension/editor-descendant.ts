@@ -62,7 +62,7 @@ export const descendant = <
 
     for (const [node, path] of nodeEntries) {
       if (match(node, path, _match as any)) {
-        return [node, (at as Path).concat(path)];
+        return [node, PathApi.isPath(at) ? at.concat(path) : path];
       }
     }
   } catch {

@@ -10,10 +10,10 @@
     "@udecode/cmdk"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor",
-    "command",
-    "popover",
-    "https://platejs.org/r/tag-node"
+    "https://platejs.org/r/editor.json",
+    "@shadcn/command",
+    "@shadcn/popover",
+    "https://platejs.org/r/tag-node.json"
   ],
   "files": [
     {

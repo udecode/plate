@@ -1,6 +1,6 @@
 {
   "name": "@platejs/utils",
-  "version": "52.3.2",
+  "version": "52.3.4",
   "description": "Plate utils",
   "keywords": [
     "plate",
@@ -42,8 +42,8 @@
   "dependencies": {
     "@platejs/core": "workspace:^",
     "@platejs/slate": "workspace:^",
-    "@udecode/react-utils": "^52.0.11",
-    "@udecode/utils": "^52.0.1",
+    "@udecode/react-utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
     "clsx": "^2.1.1",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"

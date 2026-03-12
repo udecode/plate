@@ -7,7 +7,7 @@
     "@excalidraw/excalidraw"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/excalidraw-node"
+    "https://platejs.org/r/excalidraw-node.json"
   ],
   "files": [
     {

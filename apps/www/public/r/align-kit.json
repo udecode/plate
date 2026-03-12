@@ -6,8 +6,8 @@
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/align-base-kit",
-    "https://platejs.org/r/align-toolbar-button"
+    "https://platejs.org/r/align-base-kit.json",
+    "https://platejs.org/r/align-toolbar-button.json"
   ],
   "files": [
     {

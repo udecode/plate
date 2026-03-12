@@ -6,8 +6,8 @@
     "prismjs"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/basic-nodes-kit",
-    "https://platejs.org/r/editor"
+    "https://platejs.org/r/basic-nodes-kit.json",
+    "https://platejs.org/r/editor.json"
   ],
   "files": [
     {

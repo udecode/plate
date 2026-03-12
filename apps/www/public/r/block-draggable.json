@@ -9,8 +9,8 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "tooltip",
-    "https://platejs.org/r/use-mounted"
+    "@shadcn/tooltip",
+    "https://platejs.org/r/use-mounted.json"
   ],
   "files": [
     {

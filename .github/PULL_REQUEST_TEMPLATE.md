@@ -2,7 +2,7 @@
 
 - [x] `pnpm typecheck`
 - [x] `pnpm lint:fix`
-- [x] `pnpm test`
+- [x] `bun test`
 - [x] `pnpm brl`
 - [x] `pnpm changeset`
 - [x] [ui changelog](docs/components/changelog.mdx)

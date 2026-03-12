@@ -1,5 +1,7 @@
 # @platejs/test-utils
 
+## 52.3.4
+
 ## 52.3.3
 
 ### Patch Changes

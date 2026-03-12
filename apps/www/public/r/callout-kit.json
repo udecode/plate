@@ -6,8 +6,8 @@
     "@platejs/callout"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/callout-base-kit",
-    "https://platejs.org/r/callout-node"
+    "https://platejs.org/r/callout-base-kit.json",
+    "https://platejs.org/r/callout-node.json"
   ],
   "files": [
     {

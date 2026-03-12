@@ -1,5 +1,24 @@
 # @udecode/slate
 
+## 52.3.4
+
+### Patch Changes
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixed `editor.tf.duplicateNodes({ block: true })` to duplicate the selected block even when `nodes` is omitted.
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixed `withHistory(createEditor())` legacy method sync so `editor`, `editor.api`, and `editor.tf` all use the history-aware `apply`, `undo`, and `redo` methods.
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Fixed `queryEditor`, `isAt`, and `editor.api.descendant` so bottom-up location checks, point start/end checks, and non-path descendant searches behave consistently.
+
+- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
+  - Update internal `@udecode/*` dependency ranges to workspace references.
+
 ## 52.3.3
 
 ### Patch Changes

@@ -6,8 +6,8 @@
     "@platejs/mention"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/mention-base-kit",
-    "https://platejs.org/r/mention-node"
+    "https://platejs.org/r/mention-base-kit.json",
+    "https://platejs.org/r/mention-node.json"
   ],
   "files": [
     {

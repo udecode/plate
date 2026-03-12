@@ -6,9 +6,9 @@
   "description": "A dropdown to convert block types with classic list support.",
   "dependencies": [],
   "registryDependencies": [
-    "dropdown-menu",
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/transforms-classic"
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/transforms-classic.json"
   ],
   "files": [
     {

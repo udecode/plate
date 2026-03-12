@@ -6,10 +6,10 @@
     "@platejs/list"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/list-base-kit",
-    "https://platejs.org/r/block-list",
-    "https://platejs.org/r/list-toolbar-button",
-    "https://platejs.org/r/indent-kit"
+    "https://platejs.org/r/list-base-kit.json",
+    "https://platejs.org/r/block-list.json",
+    "https://platejs.org/r/list-toolbar-button.json",
+    "https://platejs.org/r/indent-kit.json"
   ],
   "files": [
     {

@@ -1,13 +1,12 @@
 import type { Value } from '@platejs/slate';
 
-import {
-  type InferPlugins,
-  createSlateEditor,
-  createSlatePlugin,
-  DebugPlugin,
-  someHtmlElement,
-} from '@platejs/core';
-import { createPlateEditor, withPlate } from '@platejs/core/react';
+import type { InferPlugins } from '../../lib/editor/SlateEditor';
+
+import { createSlateEditor } from '../../lib/editor/withSlate';
+import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
+import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
+import { createPlateEditor, withPlate } from './withPlate';
 import { LinkPlugin } from '@platejs/link/react';
 
 describe('TPlateEditor core package', () => {

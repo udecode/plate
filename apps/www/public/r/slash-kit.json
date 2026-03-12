@@ -6,7 +6,7 @@
     "@platejs/slash-command"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/slash-node"
+    "https://platejs.org/r/slash-node.json"
   ],
   "files": [
     {

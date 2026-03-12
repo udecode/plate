@@ -6,9 +6,9 @@
     "next-themes"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/plate-ui",
-    "https://platejs.org/r/editor-base-kit",
-    "button"
+    "https://platejs.org/r/plate-ui.json",
+    "https://platejs.org/r/editor-base-kit.json",
+    "@shadcn/button"
   ],
   "files": [
     {

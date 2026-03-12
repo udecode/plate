@@ -1,5 +1,11 @@
 import { createEditor } from '../create-editor';
-import { getMatch, match } from './match';
+import {
+  combineMatchOptions,
+  combineTransformMatchOptions,
+  getMatch,
+  getQueryOptions,
+  match,
+} from './match';
 
 describe('match', () => {
   describe('when predicate is an object', () => {
@@ -135,5 +141,72 @@ describe('getMatch', () => {
       expect(matchFn!({ text: '' }, [])).toBe(false);
       expect(matchFn!({ children: [], type: 'heading' }, [])).toBe(false);
     });
+  });
+});
+
+describe('getQueryOptions', () => {
+  it('normalizes location and predicate options together', () => {
+    const editor = createEditor({
+      children: [{ type: 'p', children: [{ text: 'word' }] }] as any,
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    const options = getQueryOptions(editor, {
+      at: editor.children[0],
+      match: { type: 'p' },
+    });
+
+    expect(options.at).toEqual([0]);
+    expect(options.match(editor.children[0] as any, [0])).toBe(true);
+  });
+});
+
+describe('combineMatchOptions', () => {
+  it('requires both the base predicate and the option predicate to match', () => {
+    const editor = createEditor();
+    const combined = combineMatchOptions(
+      editor,
+      (node: any) => node.kind === 'allowed',
+      { match: { type: 'p' } }
+    );
+
+    expect(
+      combined({ children: [], kind: 'allowed', type: 'p' } as any, [])
+    ).toBe(true);
+    expect(
+      combined({ children: [], kind: 'blocked', type: 'p' } as any, [])
+    ).toBe(false);
+    expect(
+      combined({ children: [], kind: 'allowed', type: 'blockquote' } as any, [])
+    ).toBe(false);
+  });
+});
+
+describe('combineTransformMatchOptions', () => {
+  it('defaults to the explicit path node when at is a path', () => {
+    const editor = createEditor({
+      children: [
+        { type: 'p', children: [{ text: 'one' }] },
+        { type: 'blockquote', children: [{ text: 'two' }] },
+      ] as any,
+    });
+
+    const combined = combineTransformMatchOptions(editor, undefined, {
+      at: [1],
+    }) as any;
+
+    expect(combined(editor.children[1] as any, [1])).toBe(true);
+    expect(combined(editor.children[0] as any, [0])).toBe(false);
+  });
+
+  it('defaults to block elements when no match option is provided', () => {
+    const editor = createEditor();
+    const combined = combineTransformMatchOptions(editor) as any;
+
+    expect(combined({ children: [], type: 'p' } as any, [0])).toBe(true);
+    expect(combined({ text: 'word' } as any, [0, 0])).toBe(false);
   });
 });

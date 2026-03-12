@@ -7,16 +7,16 @@
   "dependencies": [
     "@platejs/ai",
     "@platejs/selection",
-    "ai@5.0.28",
+    "ai@6",
     "cmdk",
     "@faker-js/faker"
   ],
   "registryDependencies": [
-    "command",
-    "popover",
-    "https://platejs.org/r/use-chat",
-    "https://platejs.org/r/editor-base-kit",
-    "https://platejs.org/r/ai-node"
+    "@shadcn/command",
+    "@shadcn/popover",
+    "https://platejs.org/r/use-chat.json",
+    "https://platejs.org/r/editor-base-kit.json",
+    "https://platejs.org/r/ai-node.json"
   ],
   "files": [
     {

@@ -4,3 +4,5 @@
 preload = ["./tooling/config/bunTestSetup.ts"]
 # Use test-specific tsconfig for path mappings (e.g., @/registry/*)
 tsconfig = "./tooling/config/tsconfig.test.json"
+# Keep the inner loop quiet. Full pass spam is slower and useless.
+onlyFailures = true

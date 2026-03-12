@@ -9,13 +9,13 @@
     "@radix-ui/react-popover"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "popover",
-    "https://platejs.org/r/resize-handle",
-    "https://platejs.org/r/block-selection",
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/tailwind-scrollbar-hide",
-    "https://platejs.org/r/font-color-toolbar-button"
+    "@shadcn/dropdown-menu",
+    "@shadcn/popover",
+    "https://platejs.org/r/resize-handle.json",
+    "https://platejs.org/r/block-selection.json",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/tailwind-scrollbar-hide.json",
+    "https://platejs.org/r/font-color-toolbar-button.json"
   ],
   "files": [
     {

@@ -35,6 +35,7 @@ pnpm-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+*local.md
 
 # vercel
 .vercel
@@ -42,17 +43,3 @@ pnpm-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-CLAUDE.local.md
-.codex
-
-# START Skiller Generated Files
-/.claude/skills
-/.codex/config.toml
-/.cursor/mcp.json
-/.cursor/rules
-/.mcp.json
-/.skillz
-/AGENTS.md
-/CLAUDE.md
-# END Skiller Generated Files

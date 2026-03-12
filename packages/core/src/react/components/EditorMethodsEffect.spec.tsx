@@ -2,8 +2,8 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
+import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
-import { Plate } from './Plate';
 import { PlateContent } from './PlateContent';
 
 describe('EditorMethodsEffect and redecorate', () => {

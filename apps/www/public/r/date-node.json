@@ -8,7 +8,7 @@
     "@platejs/date"
   ],
   "registryDependencies": [
-    "calendar"
+    "@shadcn/calendar"
   ],
   "files": [
     {

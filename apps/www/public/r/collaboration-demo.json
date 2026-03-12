@@ -8,10 +8,10 @@
     "nanoid"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/use-mounted",
-    "https://platejs.org/r/remote-cursor-overlay",
-    "button",
-    "input"
+    "https://platejs.org/r/use-mounted.json",
+    "https://platejs.org/r/remote-cursor-overlay.json",
+    "@shadcn/button",
+    "@shadcn/input"
   ],
   "files": [
     {

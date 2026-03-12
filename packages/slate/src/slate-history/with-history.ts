@@ -5,6 +5,7 @@ import {
   OperationApi,
   PathApi,
 } from '../interfaces/index';
+import { syncLegacyMethods } from '../utils/assignLegacyTransforms';
 
 /**
  * The `withHistory` plugin keeps track of the operation history of a Slate
@@ -115,6 +116,8 @@ export const withHistory = <T extends Editor>(editor: T) => {
   e.writeHistory = (stack: 'redos' | 'undos', batch: any) => {
     e.history[stack].push(batch);
   };
+
+  syncLegacyMethods(e);
 
   return e as T;
 };

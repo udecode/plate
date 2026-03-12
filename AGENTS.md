@@ -16,6 +16,7 @@
 
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - ALWAYS read and understand relevant files before proposing edits. Do not speculate about code you have not inspected.
+- Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
 - Never browse GitHub, use `gh` instead. Use `dig` skill when the user asks a question about a library, needs to understand a library's API, or when you need information about a library that you don't know about.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Proactively use Skill(tdd) when it adds value; skip TDD for high-friction tests (hard setup or slow React/UI flows).
@@ -37,7 +38,7 @@ When using the following skills, override the default behavior.
 - If `agent-browser` gets blocked or loops on the same step, stop and ask the user to unblock. After the unblock works:
   - [Add browser learning]
 
-`workflows:*`:
+`ce-*`:
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run `bun check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `bun check` unless the user explicitly says to.
@@ -55,8 +56,9 @@ When using the following skills, override the default behavior.
 
 1. `pnpm install` - Install all dependencies and update lockfile if needed
 2. `pnpm turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
-3. `pnpm turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
-4. `pnpm lint:fix` - Auto-fix linting issues
+3. Wait for the build command to finish successfully. Never run build and typecheck in parallel.
+4. `pnpm turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
+5. `pnpm lint:fix` - Auto-fix linting issues
 
 **For multiple modified packages:**
 
@@ -64,7 +66,7 @@ When using the following skills, override the default behavior.
 # Build multiple specific packages and their dependencies
 pnpm turbo build --filter=./packages/core --filter=./packages/utils
 
-# Typecheck multiple packages
+# Wait for build to finish, then typecheck the same packages
 pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils
 
 # Lint multiple packages
@@ -89,8 +91,8 @@ pnpm --filter @platejs/core lint:fix
 **Full project commands (use only if needed, these are very slow):**
 
 - `pnpm build` - Build all packages (only use when necessary)
-
-- `pnpm test` - Run tests
+- `bun run test` - Run the fast default test suite during iteration
+- `bun test` - Run the full test suite only at the end of the complete task
 
 ## Prompt Hook
 
@@ -126,7 +128,7 @@ pnpm --filter @platejs/core lint:fix
 - [ ] Typecheck (IF updated .ts files): Bash `bun typecheck`
 - [ ] Lint: Bash `bun lint:fix`
 - [ ] PR gate (IF creating/updating a PR): Bash `bun check`
-- [ ] Learn (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: Skill(learn) NOW to extract the knowledge (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
+- [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: Skill(ce-compound) NOW after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery
 

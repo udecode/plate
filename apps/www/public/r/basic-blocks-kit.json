@@ -4,11 +4,11 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/basic-blocks-base-kit",
-    "https://platejs.org/r/blockquote-node",
-    "https://platejs.org/r/heading-node",
-    "https://platejs.org/r/hr-node",
-    "https://platejs.org/r/paragraph-node"
+    "https://platejs.org/r/basic-blocks-base-kit.json",
+    "https://platejs.org/r/blockquote-node.json",
+    "https://platejs.org/r/heading-node.json",
+    "https://platejs.org/r/hr-node.json",
+    "https://platejs.org/r/paragraph-node.json"
   ],
   "files": [
     {
