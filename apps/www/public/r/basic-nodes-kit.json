@@ -3,8 +3,8 @@
   "name": "basic-nodes-kit",
   "type": "registry:component",
   "registryDependencies": [
-    "https://platejs.org/r/basic-blocks-kit",
-    "https://platejs.org/r/basic-marks-kit"
+    "https://platejs.org/r/basic-blocks-kit.json",
+    "https://platejs.org/r/basic-marks-kit.json"
   ],
   "files": [
     {

@@ -9,7 +9,7 @@
     "@platejs/resizable"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/caption"
+    "https://platejs.org/r/caption.json"
   ],
   "files": [
     {

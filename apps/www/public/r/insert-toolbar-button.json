@@ -6,9 +6,9 @@
   "description": "A menu for inserting different types of blocks.",
   "dependencies": [],
   "registryDependencies": [
-    "dropdown-menu",
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/transforms"
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/transforms.json"
   ],
   "files": [
     {

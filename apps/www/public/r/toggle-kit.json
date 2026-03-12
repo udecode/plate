@@ -6,10 +6,10 @@
     "@platejs/toggle"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toggle-base-kit",
-    "https://platejs.org/r/indent-kit",
-    "https://platejs.org/r/toggle-node",
-    "https://platejs.org/r/toggle-toolbar-button"
+    "https://platejs.org/r/toggle-base-kit.json",
+    "https://platejs.org/r/indent-kit.json",
+    "https://platejs.org/r/toggle-node.json",
+    "https://platejs.org/r/toggle-toolbar-button.json"
   ],
   "files": [
     {

@@ -8,8 +8,8 @@
     "@platejs/markdown"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/copilot-kit",
-    "https://platejs.org/r/editor-kit"
+    "https://platejs.org/r/copilot-kit.json",
+    "https://platejs.org/r/editor-kit.json"
   ],
   "files": [
     {

@@ -8,9 +8,9 @@
     "@platejs/tag"
   ],
   "registryDependencies": [
-    "form",
-    "button",
-    "https://platejs.org/r/select-editor"
+    "@shadcn/form",
+    "@shadcn/button",
+    "https://platejs.org/r/select-editor.json"
   ],
   "files": [
     {

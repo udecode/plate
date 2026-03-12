@@ -8,8 +8,8 @@
     "@platejs/mention"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/use-mounted",
-    "https://platejs.org/r/inline-combobox"
+    "https://platejs.org/r/use-mounted.json",
+    "https://platejs.org/r/inline-combobox.json"
   ],
   "files": [
     {

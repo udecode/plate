@@ -6,7 +6,7 @@
     "@platejs/toc"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toc-node"
+    "https://platejs.org/r/toc-node.json"
   ],
   "files": [
     {

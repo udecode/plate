@@ -7,7 +7,7 @@
     "@platejs/basic-nodes"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor"
+    "https://platejs.org/r/editor.json"
   ],
   "files": [
     {

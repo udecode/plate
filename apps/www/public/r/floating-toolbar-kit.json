@@ -4,8 +4,8 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/floating-toolbar",
-    "https://platejs.org/r/floating-toolbar-buttons"
+    "https://platejs.org/r/floating-toolbar.json",
+    "https://platejs.org/r/floating-toolbar-buttons.json"
   ],
   "files": [
     {

@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { rimraf } from 'rimraf';
@@ -27,6 +27,18 @@ const isDev = process.env.NODE_ENV === 'development';
 const MERGE_DOCS = true;
 const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
 const TARGET = isDev ? 'public/rd/registry.json' : 'public/r/registry.json';
+const REGISTRY_ITEM_SUFFIX =
+  REGISTRY_URL.startsWith('http://') || REGISTRY_URL.startsWith('https://')
+    ? '.json'
+    : '';
+
+function resolveRegistryDependency(dep: string) {
+  if (dep.startsWith('@')) {
+    return dep;
+  }
+
+  return `${REGISTRY_URL}/${dep}${REGISTRY_ITEM_SUFFIX}`;
+}
 
 const registry: Registry = {
   name: NAME,
@@ -49,10 +61,8 @@ const registry: Registry = {
       ...registryExamples,
     ].map((item) => ({
       ...item,
-      registryDependencies: item.registryDependencies?.map((dep) =>
-        dep.startsWith('shadcn/')
-          ? dep.split('shadcn/')[1]
-          : `${REGISTRY_URL}/${dep}`
+      registryDependencies: item.registryDependencies?.map(
+        resolveRegistryDependency
       ),
     }))
   ),
@@ -160,16 +170,24 @@ async function buildRegistryJsonFile(items: RegistryItem[] = []) {
 }
 
 async function buildRegistry() {
-  return new Promise((resolve, reject) => {
-    const process = exec(`pnpm shadcn:${isDev ? 'dev' : 'build'}`);
+  return new Promise<void>((resolve, reject) => {
+    const script = `shadcn:${isDev ? 'dev' : 'build'}`;
+    const child = spawn('pnpm', ['run', script], { stdio: 'inherit' });
 
-    console.info(`pnpm shadcn:${isDev ? 'dev' : 'build'}`);
+    console.info(`pnpm run ${script}`);
 
-    process.on('exit', (code) => {
+    child.once('error', reject);
+    child.once('exit', (code, signal) => {
       if (code === 0) {
         resolve(undefined);
       } else {
-        reject(new Error(`Process exited with code ${code}`));
+        reject(
+          new Error(
+            signal
+              ? `Process exited with signal ${signal}`
+              : `Process exited with code ${code}`
+          )
+        );
       }
     });
   });

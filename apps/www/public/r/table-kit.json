@@ -6,9 +6,9 @@
     "@platejs/table"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/table-base-kit",
-    "https://platejs.org/r/table-node",
-    "https://platejs.org/r/table-toolbar-button"
+    "https://platejs.org/r/table-base-kit.json",
+    "https://platejs.org/r/table-node.json",
+    "https://platejs.org/r/table-toolbar-button.json"
   ],
   "files": [
     {

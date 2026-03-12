@@ -9,7 +9,7 @@
     "react-dnd-html5-backend"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/block-draggable"
+    "https://platejs.org/r/block-draggable.json"
   ],
   "files": [
     {

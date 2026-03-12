@@ -6,8 +6,8 @@
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/line-height-base-kit",
-    "https://platejs.org/r/line-height-toolbar-button"
+    "https://platejs.org/r/line-height-base-kit.json",
+    "https://platejs.org/r/line-height-toolbar-button.json"
   ],
   "files": [
     {

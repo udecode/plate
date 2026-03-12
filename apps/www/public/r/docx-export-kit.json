@@ -6,11 +6,11 @@
     "@platejs/docx-io"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/callout-node-static",
-    "https://platejs.org/r/code-block-node-static",
-    "https://platejs.org/r/column-node-static",
-    "https://platejs.org/r/equation-node-static",
-    "https://platejs.org/r/toc-node-static"
+    "https://platejs.org/r/callout-node.json",
+    "https://platejs.org/r/code-block-node.json",
+    "https://platejs.org/r/column-node.json",
+    "https://platejs.org/r/equation-node.json",
+    "https://platejs.org/r/toc-node.json"
   ],
   "files": [
     {

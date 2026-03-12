@@ -4,7 +4,7 @@
   "type": "registry:component",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/block-discussion"
+    "https://platejs.org/r/block-discussion.json"
   ],
   "files": [
     {

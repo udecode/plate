@@ -8,7 +8,7 @@
     "@platejs/list"
   ],
   "registryDependencies": [
-    "checkbox"
+    "@shadcn/checkbox"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@
     "@platejs/tabbable"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor-kit"
+    "https://platejs.org/r/editor-kit.json"
   ],
   "files": [
     {

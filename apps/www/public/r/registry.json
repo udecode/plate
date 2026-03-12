@@ -19,7 +19,7 @@
       "description": "Install Plate package and styles",
       "devDependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/plate"
+        "https://platejs.org/r/plate.json"
       ],
       "files": [],
       "cssVars": {
@@ -39,16 +39,16 @@
       "dependencies": [
         "@platejs/ai",
         "@platejs/selection",
-        "ai@5.0.28",
+        "ai@6",
         "cmdk",
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "command",
-        "popover",
-        "https://platejs.org/r/use-chat",
-        "https://platejs.org/r/editor-base-kit",
-        "https://platejs.org/r/ai-node"
+        "@shadcn/command",
+        "@shadcn/popover",
+        "https://platejs.org/r/use-chat.json",
+        "https://platejs.org/r/editor-base-kit.json",
+        "https://platejs.org/r/ai-node.json"
       ],
       "files": [
         {
@@ -87,7 +87,7 @@
         "@platejs/ai"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -122,8 +122,8 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -152,9 +152,9 @@
         "@platejs/selection"
       ],
       "registryDependencies": [
-        "calendar",
-        "context-menu",
-        "https://platejs.org/r/use-is-touch-device"
+        "@shadcn/calendar",
+        "@shadcn/context-menu",
+        "https://platejs.org/r/use-is-touch-device.json"
       ],
       "files": [
         {
@@ -213,11 +213,12 @@
       "title": "Import Toolbar Button",
       "description": "A toolbar button to import editor content from a file.",
       "dependencies": [
+        "@platejs/docx-io",
         "use-file-picker@2.1.2"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -244,15 +245,17 @@
       "title": "Export Toolbar Button",
       "description": "A toolbar button for exporting editor content in various formats (HTML, PDF, Image, Markdown).",
       "dependencies": [
+        "@platejs/docx-io",
         "@platejs/markdown",
         "html2canvas-pro",
         "pdf-lib",
         "lucide-react"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/editor-base-kit"
+        "https://platejs.org/r/docx-export-kit.json",
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/editor-base-kit.json"
       ],
       "files": [
         {
@@ -283,7 +286,7 @@
         "@platejs/caption"
       ],
       "registryDependencies": [
-        "button"
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -316,11 +319,11 @@
         "lodash"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "separator",
-        "button",
-        "tooltip",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "@shadcn/separator",
+        "@shadcn/button",
+        "@shadcn/tooltip",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -351,7 +354,7 @@
         "@platejs/comment"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/comment-kit"
+        "https://platejs.org/r/comment-kit.json"
       ],
       "files": [
         {
@@ -394,20 +397,20 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "button",
-        "popover",
-        "avatar",
-        "dropdown-menu",
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/ai-node",
-        "https://platejs.org/r/date-node",
-        "https://platejs.org/r/emoji-node",
-        "https://platejs.org/r/link-node",
-        "https://platejs.org/r/mention-node",
-        "https://platejs.org/r/highlight-style",
-        "https://platejs.org/r/suggestion-kit",
-        "https://platejs.org/r/discussion-kit",
-        "https://platejs.org/r/basic-marks-kit"
+        "@shadcn/button",
+        "@shadcn/popover",
+        "@shadcn/avatar",
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/ai-node.json",
+        "https://platejs.org/r/date-node.json",
+        "https://platejs.org/r/emoji-node.json",
+        "https://platejs.org/r/link-node.json",
+        "https://platejs.org/r/mention-node.json",
+        "https://platejs.org/r/highlight-style.json",
+        "https://platejs.org/r/suggestion-kit.json",
+        "https://platejs.org/r/discussion-kit.json",
+        "https://platejs.org/r/basic-marks-kit.json"
       ],
       "files": [
         {
@@ -477,8 +480,8 @@
         "@platejs/selection"
       ],
       "registryDependencies": [
-        "tooltip",
-        "https://platejs.org/r/use-mounted"
+        "@shadcn/tooltip",
+        "https://platejs.org/r/use-mounted.json"
       ],
       "files": [
         {
@@ -546,10 +549,10 @@
         "@udecode/cmdk"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "command",
-        "popover",
-        "https://platejs.org/r/tag-node"
+        "https://platejs.org/r/editor.json",
+        "@shadcn/command",
+        "@shadcn/popover",
+        "https://platejs.org/r/tag-node.json"
       ],
       "files": [
         {
@@ -580,7 +583,7 @@
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -610,28 +613,28 @@
       "description": "A set of commonly used formatting buttons.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/align-toolbar-button",
-        "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/emoji-toolbar-button",
-        "https://platejs.org/r/font-color-toolbar-button",
-        "https://platejs.org/r/font-size-toolbar-button",
-        "https://platejs.org/r/history-toolbar-button",
-        "https://platejs.org/r/list-toolbar-button",
-        "https://platejs.org/r/indent-toolbar-button",
-        "https://platejs.org/r/import-toolbar-button",
-        "https://platejs.org/r/insert-toolbar-button",
-        "https://platejs.org/r/line-height-toolbar-button",
-        "https://platejs.org/r/link-toolbar-button",
-        "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/media-toolbar-button",
-        "https://platejs.org/r/mode-toolbar-button",
-        "https://platejs.org/r/more-toolbar-button",
-        "https://platejs.org/r/table-toolbar-button",
-        "https://platejs.org/r/toggle-toolbar-button",
-        "https://platejs.org/r/turn-into-toolbar-button",
-        "https://platejs.org/r/export-toolbar-button"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/ai-toolbar-button.json",
+        "https://platejs.org/r/align-toolbar-button.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/emoji-toolbar-button.json",
+        "https://platejs.org/r/font-color-toolbar-button.json",
+        "https://platejs.org/r/font-size-toolbar-button.json",
+        "https://platejs.org/r/history-toolbar-button.json",
+        "https://platejs.org/r/list-toolbar-button.json",
+        "https://platejs.org/r/indent-toolbar-button.json",
+        "https://platejs.org/r/import-toolbar-button.json",
+        "https://platejs.org/r/insert-toolbar-button.json",
+        "https://platejs.org/r/line-height-toolbar-button.json",
+        "https://platejs.org/r/link-toolbar-button.json",
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/media-toolbar-button.json",
+        "https://platejs.org/r/mode-toolbar-button.json",
+        "https://platejs.org/r/more-toolbar-button.json",
+        "https://platejs.org/r/table-toolbar-button.json",
+        "https://platejs.org/r/toggle-toolbar-button.json",
+        "https://platejs.org/r/turn-into-toolbar-button.json",
+        "https://platejs.org/r/export-toolbar-button.json"
       ],
       "files": [
         {
@@ -651,23 +654,23 @@
       "title": "Fixed Toolbar List Buttons",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/align-toolbar-button",
-        "https://platejs.org/r/font-color-toolbar-button",
-        "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/emoji-toolbar-button",
-        "https://platejs.org/r/insert-toolbar-classic-button",
-        "https://platejs.org/r/line-height-toolbar-button",
-        "https://platejs.org/r/list-classic-toolbar-button",
-        "https://platejs.org/r/link-toolbar-button",
-        "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/media-toolbar-button",
-        "https://platejs.org/r/mode-toolbar-button",
-        "https://platejs.org/r/more-toolbar-button",
-        "https://platejs.org/r/table-toolbar-button",
-        "https://platejs.org/r/toggle-toolbar-button",
-        "https://platejs.org/r/turn-into-toolbar-classic-button"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/ai-toolbar-button.json",
+        "https://platejs.org/r/align-toolbar-button.json",
+        "https://platejs.org/r/font-color-toolbar-button.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/emoji-toolbar-button.json",
+        "https://platejs.org/r/insert-toolbar-classic-button.json",
+        "https://platejs.org/r/line-height-toolbar-button.json",
+        "https://platejs.org/r/list-classic-toolbar-button.json",
+        "https://platejs.org/r/link-toolbar-button.json",
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/media-toolbar-button.json",
+        "https://platejs.org/r/mode-toolbar-button.json",
+        "https://platejs.org/r/more-toolbar-button.json",
+        "https://platejs.org/r/table-toolbar-button.json",
+        "https://platejs.org/r/toggle-toolbar-button.json",
+        "https://platejs.org/r/turn-into-toolbar-classic-button.json"
       ],
       "files": [
         {
@@ -684,8 +687,8 @@
       "description": "A fixed toolbar that stays at the top of the editor.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/tailwind-scrollbar-hide"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/tailwind-scrollbar-hide.json"
       ],
       "files": [
         {
@@ -706,15 +709,15 @@
       "description": "A set of formatting buttons for the floating toolbar.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/equation-toolbar-button",
-        "https://platejs.org/r/link-toolbar-button",
-        "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/more-toolbar-button",
-        "https://platejs.org/r/suggestion-toolbar-button",
-        "https://platejs.org/r/turn-into-toolbar-button"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/ai-toolbar-button.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/equation-toolbar-button.json",
+        "https://platejs.org/r/link-toolbar-button.json",
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/more-toolbar-button.json",
+        "https://platejs.org/r/suggestion-toolbar-button.json",
+        "https://platejs.org/r/turn-into-toolbar-button.json"
       ],
       "files": [
         {
@@ -744,15 +747,15 @@
       "description": "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/equation-toolbar-button",
-        "https://platejs.org/r/link-toolbar-button",
-        "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/more-toolbar-button",
-        "https://platejs.org/r/suggestion-toolbar-button",
-        "https://platejs.org/r/turn-into-toolbar-classic-button"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/ai-toolbar-button.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/equation-toolbar-button.json",
+        "https://platejs.org/r/link-toolbar-button.json",
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/more-toolbar-button.json",
+        "https://platejs.org/r/suggestion-toolbar-button.json",
+        "https://platejs.org/r/turn-into-toolbar-classic-button.json"
       ],
       "files": [
         {
@@ -776,8 +779,8 @@
         "@platejs/floating"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/tailwind-scrollbar-hide"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/tailwind-scrollbar-hide.json"
       ],
       "files": [
         {
@@ -837,7 +840,7 @@
       "description": "Toolbar buttons for undo and redo operations.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -866,7 +869,7 @@
         "@platejs/list"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -894,7 +897,7 @@
         "@platejs/indent"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -952,9 +955,9 @@
       "description": "A menu for inserting different types of blocks.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/transforms"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/transforms.json"
       ],
       "files": [
         {
@@ -975,9 +978,9 @@
       "description": "A menu for inserting different types of blocks with classic list support.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/transforms-classic"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/transforms-classic.json"
       ],
       "files": [
         {
@@ -1000,8 +1003,8 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "dropdown-menu"
+        "https://platejs.org/r/toolbar.json",
+        "@shadcn/dropdown-menu"
       ],
       "files": [
         {
@@ -1030,10 +1033,10 @@
         "@platejs/floating"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "popover",
-        "separator"
+        "@shadcn/button",
+        "@shadcn/input",
+        "@shadcn/popover",
+        "@shadcn/separator"
       ],
       "files": [
         {
@@ -1068,7 +1071,7 @@
         "@platejs/link"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1100,7 +1103,7 @@
         "@platejs/list-classic"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1128,7 +1131,7 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1157,10 +1160,10 @@
         "@platejs/media"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "popover",
-        "separator"
+        "@shadcn/button",
+        "@shadcn/input",
+        "@shadcn/popover",
+        "@shadcn/separator"
       ],
       "files": [
         {
@@ -1191,10 +1194,10 @@
         "sonner"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar",
-        "input",
-        "dropdown-menu",
-        "alert-dialog"
+        "https://platejs.org/r/toolbar.json",
+        "@shadcn/input",
+        "@shadcn/dropdown-menu",
+        "@shadcn/alert-dialog"
       ],
       "files": [
         {
@@ -1249,8 +1252,8 @@
       "description": "A menu for switching between editor modes.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1271,8 +1274,8 @@
       "description": "A menu for additional text formatting options.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1331,8 +1334,8 @@
         "@platejs/table"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1364,7 +1367,7 @@
         "@platejs/toggle"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1390,9 +1393,9 @@
       "description": "A menu for converting between different block types.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/transforms"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/transforms.json"
       ],
       "files": [
         {
@@ -1419,9 +1422,9 @@
       "description": "A dropdown to convert block types with classic list support.",
       "dependencies": [],
       "registryDependencies": [
-        "dropdown-menu",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/transforms-classic"
+        "@shadcn/dropdown-menu",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/transforms-classic.json"
       ],
       "files": [
         {
@@ -1468,9 +1471,9 @@
         "@radix-ui/react-toolbar"
       ],
       "registryDependencies": [
-        "tooltip",
-        "separator",
-        "dropdown-menu"
+        "@shadcn/tooltip",
+        "@shadcn/separator",
+        "@shadcn/dropdown-menu"
       ],
       "files": [
         {
@@ -1489,7 +1492,7 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1549,7 +1552,7 @@
         "@platejs/list"
       ],
       "registryDependencies": [
-        "checkbox"
+        "@shadcn/checkbox"
       ],
       "files": [
         {
@@ -1612,7 +1615,7 @@
         "@platejs/callout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/emoji-toolbar-button"
+        "https://platejs.org/r/emoji-toolbar-button.json"
       ],
       "files": [
         {
@@ -1648,9 +1651,9 @@
         "lowlight"
       ],
       "registryDependencies": [
-        "command",
-        "popover",
-        "button"
+        "@shadcn/command",
+        "@shadcn/popover",
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -1685,9 +1688,10 @@
         "@platejs/code-drawing"
       ],
       "registryDependencies": [
-        "popover",
-        "button",
-        "select"
+        "@shadcn/popover",
+        "@shadcn/button",
+        "@shadcn/select",
+        "https://platejs.org/r/use-mobile.json"
       ],
       "files": [
         {
@@ -1754,7 +1758,7 @@
         "@platejs/layout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/resize-handle"
+        "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
         {
@@ -1789,7 +1793,7 @@
         "@platejs/comment"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/highlight-style"
+        "https://platejs.org/r/highlight-style.json"
       ],
       "files": [
         {
@@ -1825,7 +1829,7 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/suggestion-kit"
+        "https://platejs.org/r/suggestion-kit.json"
       ],
       "files": [
         {
@@ -1858,7 +1862,7 @@
         "@platejs/date"
       ],
       "registryDependencies": [
-        "calendar"
+        "@shadcn/calendar"
       ],
       "files": [
         {
@@ -1894,7 +1898,7 @@
         "react-textarea-autosize"
       ],
       "registryDependencies": [
-        "popover"
+        "@shadcn/popover"
       ],
       "files": [
         {
@@ -1927,7 +1931,7 @@
         "@platejs/math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -1958,8 +1962,8 @@
         "@emoji-mart/data@1.2.1"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-combobox",
-        "https://platejs.org/r/use-debounce"
+        "https://platejs.org/r/inline-combobox.json",
+        "https://platejs.org/r/use-debounce.json"
       ],
       "files": [
         {
@@ -2013,8 +2017,8 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "popover",
-        "https://platejs.org/r/toolbar"
+        "@shadcn/popover",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -2072,7 +2076,7 @@
       "description": "A text highlighter with customizable colors.",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/highlight-style"
+        "https://platejs.org/r/highlight-style.json"
       ],
       "files": [
         {
@@ -2136,9 +2140,9 @@
         "@platejs/resizable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-toolbar",
-        "https://platejs.org/r/caption",
-        "https://platejs.org/r/resize-handle"
+        "https://platejs.org/r/media-toolbar.json",
+        "https://platejs.org/r/caption.json",
+        "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
         {
@@ -2269,7 +2273,7 @@
         "@platejs/list-classic"
       ],
       "registryDependencies": [
-        "checkbox"
+        "@shadcn/checkbox"
       ],
       "files": [
         {
@@ -2298,7 +2302,7 @@
         "@platejs/resizable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/caption"
+        "https://platejs.org/r/caption.json"
       ],
       "files": [
         {
@@ -2337,9 +2341,9 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-toolbar",
-        "https://platejs.org/r/caption",
-        "https://platejs.org/r/resize-handle"
+        "https://platejs.org/r/media-toolbar.json",
+        "https://platejs.org/r/caption.json",
+        "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
         {
@@ -2375,7 +2379,7 @@
         "@platejs/resizable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/caption"
+        "https://platejs.org/r/caption.json"
       ],
       "files": [
         {
@@ -2412,7 +2416,7 @@
         "use-file-picker@2.1.2"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/uploadthing"
+        "https://platejs.org/r/uploadthing.json"
       ],
       "files": [
         {
@@ -2447,9 +2451,9 @@
         "react-lite-youtube-embed"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-toolbar",
-        "https://platejs.org/r/caption",
-        "https://platejs.org/r/resize-handle"
+        "https://platejs.org/r/media-toolbar.json",
+        "https://platejs.org/r/caption.json",
+        "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
         {
@@ -2488,8 +2492,8 @@
         "@platejs/mention"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/use-mounted",
-        "https://platejs.org/r/inline-combobox"
+        "https://platejs.org/r/use-mounted.json",
+        "https://platejs.org/r/inline-combobox.json"
       ],
       "files": [
         {
@@ -2577,8 +2581,8 @@
         "@platejs/ai"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-combobox",
-        "https://platejs.org/r/transforms"
+        "https://platejs.org/r/inline-combobox.json",
+        "https://platejs.org/r/transforms.json"
       ],
       "files": [
         {
@@ -2612,13 +2616,13 @@
         "@radix-ui/react-popover"
       ],
       "registryDependencies": [
-        "dropdown-menu",
-        "popover",
-        "https://platejs.org/r/resize-handle",
-        "https://platejs.org/r/block-selection",
-        "https://platejs.org/r/toolbar",
-        "https://platejs.org/r/tailwind-scrollbar-hide",
-        "https://platejs.org/r/font-color-toolbar-button"
+        "@shadcn/dropdown-menu",
+        "@shadcn/popover",
+        "https://platejs.org/r/resize-handle.json",
+        "https://platejs.org/r/block-selection.json",
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/tailwind-scrollbar-hide.json",
+        "https://platejs.org/r/font-color-toolbar-button.json"
       ],
       "files": [
         {
@@ -2715,7 +2719,7 @@
         "@platejs/toggle"
       ],
       "registryDependencies": [
-        "button"
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -2757,10 +2761,10 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/blockquote-node",
-        "https://platejs.org/r/heading-node",
-        "https://platejs.org/r/hr-node",
-        "https://platejs.org/r/paragraph-node"
+        "https://platejs.org/r/blockquote-node.json",
+        "https://platejs.org/r/heading-node.json",
+        "https://platejs.org/r/hr-node.json",
+        "https://platejs.org/r/paragraph-node.json"
       ],
       "files": [
         {
@@ -2776,9 +2780,9 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-node",
-        "https://platejs.org/r/highlight-node",
-        "https://platejs.org/r/kbd-node"
+        "https://platejs.org/r/code-node.json",
+        "https://platejs.org/r/highlight-node.json",
+        "https://platejs.org/r/kbd-node.json"
       ],
       "files": [
         {
@@ -2794,7 +2798,7 @@
         "@platejs/callout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/callout-node"
+        "https://platejs.org/r/callout-node.json"
       ],
       "files": [
         {
@@ -2811,7 +2815,7 @@
         "lowlight"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-block-node"
+        "https://platejs.org/r/code-block-node.json"
       ],
       "files": [
         {
@@ -2827,7 +2831,7 @@
         "@platejs/code-drawing"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-drawing-node"
+        "https://platejs.org/r/code-drawing-node.json"
       ],
       "files": [
         {
@@ -2843,7 +2847,7 @@
         "@platejs/layout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/column-node"
+        "https://platejs.org/r/column-node.json"
       ],
       "files": [
         {
@@ -2859,7 +2863,7 @@
         "@platejs/comment"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/comment-node"
+        "https://platejs.org/r/comment-node.json"
       ],
       "files": [
         {
@@ -2875,7 +2879,7 @@
         "@platejs/date"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/date-node"
+        "https://platejs.org/r/date-node.json"
       ],
       "files": [
         {
@@ -2892,7 +2896,7 @@
         "@excalidraw/excalidraw"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/excalidraw-node"
+        "https://platejs.org/r/excalidraw-node.json"
       ],
       "files": [
         {
@@ -2950,7 +2954,7 @@
         "@platejs/link"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/link-node"
+        "https://platejs.org/r/link-node.json"
       ],
       "files": [
         {
@@ -2966,8 +2970,8 @@
         "@platejs/list"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-list",
-        "https://platejs.org/r/indent-base-kit"
+        "https://platejs.org/r/block-list.json",
+        "https://platejs.org/r/indent-base-kit.json"
       ],
       "files": [
         {
@@ -2983,7 +2987,7 @@
         "@platejs/math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/equation-node"
+        "https://platejs.org/r/equation-node.json"
       ],
       "files": [
         {
@@ -2999,10 +3003,10 @@
         "@platejs/media"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-audio-node",
-        "https://platejs.org/r/media-file-node",
-        "https://platejs.org/r/media-image-node",
-        "https://platejs.org/r/media-video-node"
+        "https://platejs.org/r/media-audio-node.json",
+        "https://platejs.org/r/media-file-node.json",
+        "https://platejs.org/r/media-image-node.json",
+        "https://platejs.org/r/media-video-node.json"
       ],
       "files": [
         {
@@ -3018,7 +3022,7 @@
         "@platejs/mention"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/mention-node"
+        "https://platejs.org/r/mention-node.json"
       ],
       "files": [
         {
@@ -3034,7 +3038,7 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/suggestion-node"
+        "https://platejs.org/r/suggestion-node.json"
       ],
       "files": [
         {
@@ -3050,7 +3054,7 @@
         "@platejs/table"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/table-node"
+        "https://platejs.org/r/table-node.json"
       ],
       "files": [
         {
@@ -3066,7 +3070,7 @@
         "@platejs/toc"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toc-node"
+        "https://platejs.org/r/toc-node.json"
       ],
       "files": [
         {
@@ -3082,7 +3086,7 @@
         "@platejs/toggle"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toggle-node"
+        "https://platejs.org/r/toggle-node.json"
       ],
       "files": [
         {
@@ -3095,28 +3099,28 @@
       "name": "editor-base-kit",
       "type": "registry:component",
       "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/align-base-kit",
-        "https://platejs.org/r/basic-blocks-base-kit",
-        "https://platejs.org/r/basic-marks-base-kit",
-        "https://platejs.org/r/callout-base-kit",
-        "https://platejs.org/r/code-block-base-kit",
-        "https://platejs.org/r/code-drawing-base-kit",
-        "https://platejs.org/r/column-base-kit",
-        "https://platejs.org/r/comment-base-kit",
-        "https://platejs.org/r/date-base-kit",
-        "https://platejs.org/r/font-base-kit",
-        "https://platejs.org/r/line-height-base-kit",
-        "https://platejs.org/r/link-base-kit",
-        "https://platejs.org/r/list-base-kit",
-        "https://platejs.org/r/math-base-kit",
-        "https://platejs.org/r/media-base-kit",
-        "https://platejs.org/r/mention-base-kit",
-        "https://platejs.org/r/suggestion-base-kit",
-        "https://platejs.org/r/table-base-kit",
-        "https://platejs.org/r/toc-base-kit",
-        "https://platejs.org/r/toggle-base-kit",
-        "https://platejs.org/r/markdown-kit"
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/align-base-kit.json",
+        "https://platejs.org/r/basic-blocks-base-kit.json",
+        "https://platejs.org/r/basic-marks-base-kit.json",
+        "https://platejs.org/r/callout-base-kit.json",
+        "https://platejs.org/r/code-block-base-kit.json",
+        "https://platejs.org/r/code-drawing-base-kit.json",
+        "https://platejs.org/r/column-base-kit.json",
+        "https://platejs.org/r/comment-base-kit.json",
+        "https://platejs.org/r/date-base-kit.json",
+        "https://platejs.org/r/font-base-kit.json",
+        "https://platejs.org/r/line-height-base-kit.json",
+        "https://platejs.org/r/link-base-kit.json",
+        "https://platejs.org/r/list-base-kit.json",
+        "https://platejs.org/r/math-base-kit.json",
+        "https://platejs.org/r/media-base-kit.json",
+        "https://platejs.org/r/mention-base-kit.json",
+        "https://platejs.org/r/suggestion-base-kit.json",
+        "https://platejs.org/r/table-base-kit.json",
+        "https://platejs.org/r/toc-base-kit.json",
+        "https://platejs.org/r/toggle-base-kit.json",
+        "https://platejs.org/r/markdown-kit.json"
       ],
       "files": [
         {
@@ -3132,12 +3136,12 @@
         "@platejs/ai"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/markdown-kit",
-        "https://platejs.org/r/cursor-overlay-kit",
-        "https://platejs.org/r/ai-menu",
-        "https://platejs.org/r/ai-node",
-        "https://platejs.org/r/ai-toolbar-button",
-        "https://platejs.org/r/ai-api"
+        "https://platejs.org/r/markdown-kit.json",
+        "https://platejs.org/r/cursor-overlay-kit.json",
+        "https://platejs.org/r/ai-menu.json",
+        "https://platejs.org/r/ai-node.json",
+        "https://platejs.org/r/ai-toolbar-button.json",
+        "https://platejs.org/r/ai-api.json"
       ],
       "files": [
         {
@@ -3153,8 +3157,8 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/align-base-kit",
-        "https://platejs.org/r/align-toolbar-button"
+        "https://platejs.org/r/align-base-kit.json",
+        "https://platejs.org/r/align-toolbar-button.json"
       ],
       "files": [
         {
@@ -3172,8 +3176,8 @@
         "@platejs/list-classic"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/list-classic-node",
-        "https://platejs.org/r/list-classic-toolbar-button"
+        "https://platejs.org/r/list-classic-node.json",
+        "https://platejs.org/r/list-classic-toolbar-button.json"
       ],
       "files": [
         {
@@ -3202,11 +3206,11 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/basic-blocks-base-kit",
-        "https://platejs.org/r/blockquote-node",
-        "https://platejs.org/r/heading-node",
-        "https://platejs.org/r/hr-node",
-        "https://platejs.org/r/paragraph-node"
+        "https://platejs.org/r/basic-blocks-base-kit.json",
+        "https://platejs.org/r/blockquote-node.json",
+        "https://platejs.org/r/heading-node.json",
+        "https://platejs.org/r/hr-node.json",
+        "https://platejs.org/r/paragraph-node.json"
       ],
       "files": [
         {
@@ -3222,11 +3226,11 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/basic-marks-base-kit",
-        "https://platejs.org/r/code-node",
-        "https://platejs.org/r/highlight-node",
-        "https://platejs.org/r/kbd-node",
-        "https://platejs.org/r/mark-toolbar-button"
+        "https://platejs.org/r/basic-marks-base-kit.json",
+        "https://platejs.org/r/code-node.json",
+        "https://platejs.org/r/highlight-node.json",
+        "https://platejs.org/r/kbd-node.json",
+        "https://platejs.org/r/mark-toolbar-button.json"
       ],
       "files": [
         {
@@ -3239,8 +3243,8 @@
       "name": "basic-nodes-kit",
       "type": "registry:component",
       "registryDependencies": [
-        "https://platejs.org/r/basic-blocks-kit",
-        "https://platejs.org/r/basic-marks-kit"
+        "https://platejs.org/r/basic-blocks-kit.json",
+        "https://platejs.org/r/basic-marks-kit.json"
       ],
       "files": [
         {
@@ -3256,8 +3260,8 @@
         "@platejs/selection"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-context-menu",
-        "https://platejs.org/r/block-selection-kit"
+        "https://platejs.org/r/block-context-menu.json",
+        "https://platejs.org/r/block-selection-kit.json"
       ],
       "files": [
         {
@@ -3285,7 +3289,7 @@
         "@platejs/selection"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-selection"
+        "https://platejs.org/r/block-selection.json"
       ],
       "files": [
         {
@@ -3301,8 +3305,8 @@
         "@platejs/callout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/callout-base-kit",
-        "https://platejs.org/r/callout-node"
+        "https://platejs.org/r/callout-base-kit.json",
+        "https://platejs.org/r/callout-node.json"
       ],
       "files": [
         {
@@ -3319,8 +3323,8 @@
         "lowlight"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-block-base-kit",
-        "https://platejs.org/r/code-block-node"
+        "https://platejs.org/r/code-block-base-kit.json",
+        "https://platejs.org/r/code-block-node.json"
       ],
       "files": [
         {
@@ -3336,8 +3340,8 @@
         "@platejs/code-drawing"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/code-drawing-base-kit",
-        "https://platejs.org/r/code-drawing-node"
+        "https://platejs.org/r/code-drawing-base-kit.json",
+        "https://platejs.org/r/code-drawing-node.json"
       ],
       "files": [
         {
@@ -3353,8 +3357,8 @@
         "@platejs/layout"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/column-base-kit",
-        "https://platejs.org/r/column-node"
+        "https://platejs.org/r/column-base-kit.json",
+        "https://platejs.org/r/column-node.json"
       ],
       "files": [
         {
@@ -3370,10 +3374,10 @@
         "@platejs/comment"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/comment-base-kit",
-        "https://platejs.org/r/comment-node",
-        "https://platejs.org/r/comment-toolbar-button",
-        "https://platejs.org/r/discussion-kit"
+        "https://platejs.org/r/comment-base-kit.json",
+        "https://platejs.org/r/comment-node.json",
+        "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/discussion-kit.json"
       ],
       "files": [
         {
@@ -3391,8 +3395,8 @@
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/ghost-text",
-        "https://platejs.org/r/markdown-kit"
+        "https://platejs.org/r/ghost-text.json",
+        "https://platejs.org/r/markdown-kit.json"
       ],
       "files": [
         {
@@ -3408,7 +3412,7 @@
         "@platejs/selection"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/cursor-overlay"
+        "https://platejs.org/r/cursor-overlay.json"
       ],
       "files": [
         {
@@ -3424,8 +3428,8 @@
         "@platejs/date"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/date-base-kit",
-        "https://platejs.org/r/date-node"
+        "https://platejs.org/r/date-base-kit.json",
+        "https://platejs.org/r/date-node.json"
       ],
       "files": [
         {
@@ -3439,7 +3443,7 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/block-discussion"
+        "https://platejs.org/r/block-discussion.json"
       ],
       "files": [
         {
@@ -3458,7 +3462,7 @@
         "react-dnd-html5-backend"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-draggable"
+        "https://platejs.org/r/block-draggable.json"
       ],
       "files": [
         {
@@ -3488,11 +3492,11 @@
         "@platejs/docx-io"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/callout-node-static",
-        "https://platejs.org/r/code-block-node-static",
-        "https://platejs.org/r/column-node-static",
-        "https://platejs.org/r/equation-node-static",
-        "https://platejs.org/r/toc-node-static"
+        "https://platejs.org/r/callout-node.json",
+        "https://platejs.org/r/code-block-node.json",
+        "https://platejs.org/r/column-node.json",
+        "https://platejs.org/r/equation-node.json",
+        "https://platejs.org/r/toc-node.json"
       ],
       "files": [
         {
@@ -3505,41 +3509,41 @@
       "name": "editor-kit",
       "type": "registry:component",
       "registryDependencies": [
-        "https://platejs.org/r/editor-base-kit",
-        "https://platejs.org/r/ai-kit",
-        "https://platejs.org/r/align-kit",
-        "https://platejs.org/r/autoformat-kit",
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/block-menu-kit",
-        "https://platejs.org/r/block-placeholder-kit",
-        "https://platejs.org/r/callout-kit",
-        "https://platejs.org/r/code-block-kit",
-        "https://platejs.org/r/code-drawing-kit",
-        "https://platejs.org/r/column-kit",
-        "https://platejs.org/r/comment-kit",
-        "https://platejs.org/r/cursor-overlay-kit",
-        "https://platejs.org/r/date-kit",
-        "https://platejs.org/r/discussion-kit",
-        "https://platejs.org/r/dnd-kit",
-        "https://platejs.org/r/docx-kit",
-        "https://platejs.org/r/emoji-kit",
-        "https://platejs.org/r/excalidraw-kit",
-        "https://platejs.org/r/exit-break-kit",
-        "https://platejs.org/r/fixed-toolbar-kit",
-        "https://platejs.org/r/floating-toolbar-kit",
-        "https://platejs.org/r/font-kit",
-        "https://platejs.org/r/line-height-kit",
-        "https://platejs.org/r/link-kit",
-        "https://platejs.org/r/list-kit",
-        "https://platejs.org/r/markdown-kit",
-        "https://platejs.org/r/math-kit",
-        "https://platejs.org/r/media-kit",
-        "https://platejs.org/r/mention-kit",
-        "https://platejs.org/r/slash-kit",
-        "https://platejs.org/r/suggestion-kit",
-        "https://platejs.org/r/table-kit",
-        "https://platejs.org/r/toc-kit",
-        "https://platejs.org/r/toggle-kit"
+        "https://platejs.org/r/editor-base-kit.json",
+        "https://platejs.org/r/ai-kit.json",
+        "https://platejs.org/r/align-kit.json",
+        "https://platejs.org/r/autoformat-kit.json",
+        "https://platejs.org/r/basic-nodes-kit.json",
+        "https://platejs.org/r/block-menu-kit.json",
+        "https://platejs.org/r/block-placeholder-kit.json",
+        "https://platejs.org/r/callout-kit.json",
+        "https://platejs.org/r/code-block-kit.json",
+        "https://platejs.org/r/code-drawing-kit.json",
+        "https://platejs.org/r/column-kit.json",
+        "https://platejs.org/r/comment-kit.json",
+        "https://platejs.org/r/cursor-overlay-kit.json",
+        "https://platejs.org/r/date-kit.json",
+        "https://platejs.org/r/discussion-kit.json",
+        "https://platejs.org/r/dnd-kit.json",
+        "https://platejs.org/r/docx-kit.json",
+        "https://platejs.org/r/emoji-kit.json",
+        "https://platejs.org/r/excalidraw-kit.json",
+        "https://platejs.org/r/exit-break-kit.json",
+        "https://platejs.org/r/fixed-toolbar-kit.json",
+        "https://platejs.org/r/floating-toolbar-kit.json",
+        "https://platejs.org/r/font-kit.json",
+        "https://platejs.org/r/line-height-kit.json",
+        "https://platejs.org/r/link-kit.json",
+        "https://platejs.org/r/list-kit.json",
+        "https://platejs.org/r/markdown-kit.json",
+        "https://platejs.org/r/math-kit.json",
+        "https://platejs.org/r/media-kit.json",
+        "https://platejs.org/r/mention-kit.json",
+        "https://platejs.org/r/slash-kit.json",
+        "https://platejs.org/r/suggestion-kit.json",
+        "https://platejs.org/r/table-kit.json",
+        "https://platejs.org/r/toc-kit.json",
+        "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [
         {
@@ -3556,8 +3560,8 @@
         "@emoji-mart/data@1.2.1"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/emoji-node",
-        "https://platejs.org/r/emoji-toolbar-button"
+        "https://platejs.org/r/emoji-node.json",
+        "https://platejs.org/r/emoji-toolbar-button.json"
       ],
       "files": [
         {
@@ -3582,8 +3586,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/fixed-toolbar-classic-buttons"
+        "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/fixed-toolbar-classic-buttons.json"
       ],
       "files": [
         {
@@ -3597,8 +3601,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/fixed-toolbar-buttons"
+        "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/fixed-toolbar-buttons.json"
       ],
       "files": [
         {
@@ -3612,8 +3616,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/floating-toolbar",
-        "https://platejs.org/r/floating-toolbar-buttons"
+        "https://platejs.org/r/floating-toolbar.json",
+        "https://platejs.org/r/floating-toolbar-buttons.json"
       ],
       "files": [
         {
@@ -3627,8 +3631,8 @@
       "type": "registry:component",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/floating-toolbar",
-        "https://platejs.org/r/floating-toolbar-classic-buttons"
+        "https://platejs.org/r/floating-toolbar.json",
+        "https://platejs.org/r/floating-toolbar-classic-buttons.json"
       ],
       "files": [
         {
@@ -3644,9 +3648,9 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/font-base-kit",
-        "https://platejs.org/r/font-size-toolbar-button",
-        "https://platejs.org/r/font-color-toolbar-button"
+        "https://platejs.org/r/font-base-kit.json",
+        "https://platejs.org/r/font-size-toolbar-button.json",
+        "https://platejs.org/r/font-color-toolbar-button.json"
       ],
       "files": [
         {
@@ -3662,7 +3666,7 @@
         "@platejs/indent"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/indent-toolbar-button"
+        "https://platejs.org/r/indent-toolbar-button.json"
       ],
       "files": [
         {
@@ -3678,8 +3682,8 @@
         "@platejs/basic-styles"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/line-height-base-kit",
-        "https://platejs.org/r/line-height-toolbar-button"
+        "https://platejs.org/r/line-height-base-kit.json",
+        "https://platejs.org/r/line-height-toolbar-button.json"
       ],
       "files": [
         {
@@ -3695,10 +3699,10 @@
         "@platejs/link"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/link-base-kit",
-        "https://platejs.org/r/link-node",
-        "https://platejs.org/r/link-toolbar",
-        "https://platejs.org/r/link-toolbar-button"
+        "https://platejs.org/r/link-base-kit.json",
+        "https://platejs.org/r/link-node.json",
+        "https://platejs.org/r/link-toolbar.json",
+        "https://platejs.org/r/link-toolbar-button.json"
       ],
       "files": [
         {
@@ -3714,9 +3718,9 @@
         "@platejs/list-classic"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/list-classic-node",
-        "https://platejs.org/r/list-classic-toolbar-button",
-        "https://platejs.org/r/autoformat-classic-kit"
+        "https://platejs.org/r/list-classic-node.json",
+        "https://platejs.org/r/list-classic-toolbar-button.json",
+        "https://platejs.org/r/autoformat-classic-kit.json"
       ],
       "files": [
         {
@@ -3732,10 +3736,10 @@
         "@platejs/list"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/list-base-kit",
-        "https://platejs.org/r/block-list",
-        "https://platejs.org/r/list-toolbar-button",
-        "https://platejs.org/r/indent-kit"
+        "https://platejs.org/r/list-base-kit.json",
+        "https://platejs.org/r/block-list.json",
+        "https://platejs.org/r/list-toolbar-button.json",
+        "https://platejs.org/r/indent-kit.json"
       ],
       "files": [
         {
@@ -3767,9 +3771,9 @@
         "@platejs/math"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/math-base-kit",
-        "https://platejs.org/r/equation-toolbar-button",
-        "https://platejs.org/r/equation-node"
+        "https://platejs.org/r/math-base-kit.json",
+        "https://platejs.org/r/equation-toolbar-button.json",
+        "https://platejs.org/r/equation-node.json"
       ],
       "files": [
         {
@@ -3787,17 +3791,17 @@
         "@platejs/media"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-base-kit",
-        "https://platejs.org/r/media-audio-node",
-        "https://platejs.org/r/media-embed-node",
-        "https://platejs.org/r/media-file-node",
-        "https://platejs.org/r/media-image-node",
-        "https://platejs.org/r/media-placeholder-node",
-        "https://platejs.org/r/media-preview-dialog",
-        "https://platejs.org/r/media-toolbar",
-        "https://platejs.org/r/media-upload-toast",
-        "https://platejs.org/r/media-video-node",
-        "https://platejs.org/r/media-toolbar-button"
+        "https://platejs.org/r/media-base-kit.json",
+        "https://platejs.org/r/media-audio-node.json",
+        "https://platejs.org/r/media-embed-node.json",
+        "https://platejs.org/r/media-file-node.json",
+        "https://platejs.org/r/media-image-node.json",
+        "https://platejs.org/r/media-placeholder-node.json",
+        "https://platejs.org/r/media-preview-dialog.json",
+        "https://platejs.org/r/media-toolbar.json",
+        "https://platejs.org/r/media-upload-toast.json",
+        "https://platejs.org/r/media-video-node.json",
+        "https://platejs.org/r/media-toolbar-button.json"
       ],
       "files": [
         {
@@ -3812,8 +3816,8 @@
       "description": "media-kit + media-uploadthing-api",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/media-kit",
-        "https://platejs.org/r/media-uploadthing-api"
+        "https://platejs.org/r/media-kit.json",
+        "https://platejs.org/r/media-uploadthing-api.json"
       ],
       "files": []
     },
@@ -3824,8 +3828,8 @@
         "@platejs/mention"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/mention-base-kit",
-        "https://platejs.org/r/mention-node"
+        "https://platejs.org/r/mention-base-kit.json",
+        "https://platejs.org/r/mention-node.json"
       ],
       "files": [
         {
@@ -3841,7 +3845,7 @@
         "@platejs/slash-command"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/slash-node"
+        "https://platejs.org/r/slash-node.json"
       ],
       "files": [
         {
@@ -3857,10 +3861,10 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/suggestion-base-kit",
-        "https://platejs.org/r/suggestion-node",
-        "https://platejs.org/r/suggestion-toolbar-button",
-        "https://platejs.org/r/discussion-kit"
+        "https://platejs.org/r/suggestion-base-kit.json",
+        "https://platejs.org/r/suggestion-node.json",
+        "https://platejs.org/r/suggestion-toolbar-button.json",
+        "https://platejs.org/r/discussion-kit.json"
       ],
       "files": [
         {
@@ -3889,9 +3893,9 @@
         "@platejs/table"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/table-base-kit",
-        "https://platejs.org/r/table-node",
-        "https://platejs.org/r/table-toolbar-button"
+        "https://platejs.org/r/table-base-kit.json",
+        "https://platejs.org/r/table-node.json",
+        "https://platejs.org/r/table-toolbar-button.json"
       ],
       "files": [
         {
@@ -3907,8 +3911,8 @@
         "@platejs/toc"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toc-base-kit",
-        "https://platejs.org/r/toc-node"
+        "https://platejs.org/r/toc-base-kit.json",
+        "https://platejs.org/r/toc-node.json"
       ],
       "files": [
         {
@@ -3924,10 +3928,10 @@
         "@platejs/toggle"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toggle-base-kit",
-        "https://platejs.org/r/indent-kit",
-        "https://platejs.org/r/toggle-node",
-        "https://platejs.org/r/toggle-toolbar-button"
+        "https://platejs.org/r/toggle-base-kit.json",
+        "https://platejs.org/r/indent-kit.json",
+        "https://platejs.org/r/toggle-node.json",
+        "https://platejs.org/r/toggle-toolbar-button.json"
       ],
       "files": [
         {
@@ -3940,13 +3944,13 @@
       "name": "ai-api",
       "type": "registry:file",
       "dependencies": [
-        "@ai-sdk/react@2.0.28",
-        "ai@5.0.28",
+        "@ai-sdk/react@3",
+        "ai@6",
         "dedent@1.0.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-api",
-        "https://platejs.org/r/markdown-joiner-transform"
+        "https://platejs.org/r/copilot-api.json",
+        "https://platejs.org/r/markdown-joiner-transform.json"
       ],
       "files": [
         {
@@ -4000,7 +4004,7 @@
       "name": "copilot-api",
       "type": "registry:file",
       "dependencies": [
-        "ai@5.0.28"
+        "ai@6"
       ],
       "registryDependencies": [],
       "files": [
@@ -4018,7 +4022,7 @@
         "uploadthing@7.7.4"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/uploadthing"
+        "https://platejs.org/r/uploadthing.json"
       ],
       "files": [
         {
@@ -4035,12 +4039,12 @@
         "@platejs/ai"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/ai-kit",
-        "button",
-        "command",
-        "dialog",
-        "input",
-        "popover"
+        "https://platejs.org/r/ai-kit.json",
+        "@shadcn/button",
+        "@shadcn/command",
+        "@shadcn/dialog",
+        "@shadcn/input",
+        "@shadcn/popover"
       ],
       "files": [
         {
@@ -4053,11 +4057,11 @@
       "name": "use-chat",
       "type": "registry:component",
       "dependencies": [
-        "@ai-sdk/react@2.0.28",
+        "@ai-sdk/react@3",
         "@faker-js/faker"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/ai-kit"
+        "https://platejs.org/r/ai-kit.json"
       ],
       "files": [
         {
@@ -4135,44 +4139,44 @@
         "sonner"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/plate-ui",
-        "https://platejs.org/r/copilot-kit",
-        "https://platejs.org/r/media-uploadthing-api",
-        "https://platejs.org/r/plate-types",
-        "https://platejs.org/r/settings-dialog",
-        "https://platejs.org/r/editor-base-kit",
-        "https://platejs.org/r/ai-kit",
-        "https://platejs.org/r/align-kit",
-        "https://platejs.org/r/autoformat-kit",
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/block-menu-kit",
-        "https://platejs.org/r/block-placeholder-kit",
-        "https://platejs.org/r/callout-kit",
-        "https://platejs.org/r/code-block-kit",
-        "https://platejs.org/r/column-kit",
-        "https://platejs.org/r/comment-kit",
-        "https://platejs.org/r/cursor-overlay-kit",
-        "https://platejs.org/r/date-kit",
-        "https://platejs.org/r/discussion-kit",
-        "https://platejs.org/r/dnd-kit",
-        "https://platejs.org/r/docx-kit",
-        "https://platejs.org/r/emoji-kit",
-        "https://platejs.org/r/exit-break-kit",
-        "https://platejs.org/r/fixed-toolbar-kit",
-        "https://platejs.org/r/floating-toolbar-kit",
-        "https://platejs.org/r/font-kit",
-        "https://platejs.org/r/line-height-kit",
-        "https://platejs.org/r/link-kit",
-        "https://platejs.org/r/list-kit",
-        "https://platejs.org/r/markdown-kit",
-        "https://platejs.org/r/math-kit",
-        "https://platejs.org/r/media-kit",
-        "https://platejs.org/r/mention-kit",
-        "https://platejs.org/r/slash-kit",
-        "https://platejs.org/r/suggestion-kit",
-        "https://platejs.org/r/table-kit",
-        "https://platejs.org/r/toc-kit",
-        "https://platejs.org/r/toggle-kit"
+        "https://platejs.org/r/plate-ui.json",
+        "https://platejs.org/r/copilot-kit.json",
+        "https://platejs.org/r/media-uploadthing-api.json",
+        "https://platejs.org/r/plate-types.json",
+        "https://platejs.org/r/settings-dialog.json",
+        "https://platejs.org/r/editor-base-kit.json",
+        "https://platejs.org/r/ai-kit.json",
+        "https://platejs.org/r/align-kit.json",
+        "https://platejs.org/r/autoformat-kit.json",
+        "https://platejs.org/r/basic-nodes-kit.json",
+        "https://platejs.org/r/block-menu-kit.json",
+        "https://platejs.org/r/block-placeholder-kit.json",
+        "https://platejs.org/r/callout-kit.json",
+        "https://platejs.org/r/code-block-kit.json",
+        "https://platejs.org/r/column-kit.json",
+        "https://platejs.org/r/comment-kit.json",
+        "https://platejs.org/r/cursor-overlay-kit.json",
+        "https://platejs.org/r/date-kit.json",
+        "https://platejs.org/r/discussion-kit.json",
+        "https://platejs.org/r/dnd-kit.json",
+        "https://platejs.org/r/docx-kit.json",
+        "https://platejs.org/r/emoji-kit.json",
+        "https://platejs.org/r/exit-break-kit.json",
+        "https://platejs.org/r/fixed-toolbar-kit.json",
+        "https://platejs.org/r/floating-toolbar-kit.json",
+        "https://platejs.org/r/font-kit.json",
+        "https://platejs.org/r/line-height-kit.json",
+        "https://platejs.org/r/link-kit.json",
+        "https://platejs.org/r/list-kit.json",
+        "https://platejs.org/r/markdown-kit.json",
+        "https://platejs.org/r/math-kit.json",
+        "https://platejs.org/r/media-kit.json",
+        "https://platejs.org/r/mention-kit.json",
+        "https://platejs.org/r/slash-kit.json",
+        "https://platejs.org/r/suggestion-kit.json",
+        "https://platejs.org/r/table-kit.json",
+        "https://platejs.org/r/toc-kit.json",
+        "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [
         {
@@ -4199,8 +4203,8 @@
       "description": "A multi-select editor",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/plate-ui",
-        "https://platejs.org/r/select-editor-demo"
+        "https://platejs.org/r/plate-ui.json",
+        "https://platejs.org/r/select-editor-demo.json"
       ],
       "files": [
         {
@@ -4225,10 +4229,10 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/plate-ui",
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/basic-marks-kit"
+        "https://platejs.org/r/plate-ui.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/basic-nodes-kit.json",
+        "https://platejs.org/r/basic-marks-kit.json"
       ],
       "files": [
         {
@@ -4252,9 +4256,9 @@
         "next-themes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/plate-ui",
-        "https://platejs.org/r/editor-base-kit",
-        "button"
+        "https://platejs.org/r/plate-ui.json",
+        "https://platejs.org/r/editor-base-kit.json",
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -4366,7 +4370,7 @@
       "name": "markdown-joiner-transform",
       "type": "registry:hook",
       "dependencies": [
-        "ai@5.0.28"
+        "ai@6"
       ],
       "files": [
         {
@@ -4414,6 +4418,16 @@
       ]
     },
     {
+      "name": "use-mobile",
+      "type": "registry:hook",
+      "files": [
+        {
+          "path": "src/registry/hooks/use-mobile.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
       "name": "use-mounted",
       "type": "registry:hook",
       "files": [
@@ -4442,8 +4456,8 @@
         "@platejs/markdown"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-kit",
-        "https://platejs.org/r/editor-kit"
+        "https://platejs.org/r/copilot-kit.json",
+        "https://platejs.org/r/editor-kit.json"
       ],
       "files": [
         {
@@ -4473,9 +4487,9 @@
         "@platejs/tag"
       ],
       "registryDependencies": [
-        "form",
-        "button",
-        "https://platejs.org/r/select-editor"
+        "@shadcn/form",
+        "@shadcn/button",
+        "https://platejs.org/r/select-editor.json"
       ],
       "files": [
         {
@@ -4495,8 +4509,8 @@
       "name": "controlled-demo",
       "type": "registry:example",
       "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "button"
+        "https://platejs.org/r/editor.json",
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -4513,7 +4527,7 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor"
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4530,7 +4544,7 @@
       "name": "hundreds-editors-demo",
       "type": "registry:example",
       "registryDependencies": [
-        "https://platejs.org/r/editor"
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4552,12 +4566,12 @@
         "@platejs/media"
       ],
       "registryDependencies": [
-        "separator",
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/media-kit",
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/turn-into-toolbar-button"
+        "@shadcn/separator",
+        "https://platejs.org/r/basic-nodes-kit.json",
+        "https://platejs.org/r/media-kit.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/turn-into-toolbar-button.json"
       ],
       "files": [
         {
@@ -4587,7 +4601,7 @@
         "lodash"
       ],
       "registryDependencies": [
-        "button"
+        "@shadcn/button"
       ],
       "files": [
         {
@@ -4603,8 +4617,8 @@
         "prismjs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/basic-nodes-kit",
-        "https://platejs.org/r/editor"
+        "https://platejs.org/r/basic-nodes-kit.json",
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4624,8 +4638,8 @@
         "remark-emoji"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-kit",
-        "https://platejs.org/r/use-debounce"
+        "https://platejs.org/r/editor-kit.json",
+        "https://platejs.org/r/use-debounce.json"
       ],
       "files": [
         {
@@ -4639,9 +4653,9 @@
       "type": "registry:example",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-kit",
-        "https://platejs.org/r/editor-kit",
-        "https://platejs.org/r/markdown-joiner-transform"
+        "https://platejs.org/r/copilot-kit.json",
+        "https://platejs.org/r/editor-kit.json",
+        "https://platejs.org/r/markdown-joiner-transform.json"
       ],
       "files": [
         {
@@ -4659,10 +4673,10 @@
         "nanoid"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/use-mounted",
-        "https://platejs.org/r/remote-cursor-overlay",
-        "button",
-        "input"
+        "https://platejs.org/r/use-mounted.json",
+        "https://platejs.org/r/remote-cursor-overlay.json",
+        "@shadcn/button",
+        "@shadcn/input"
       ],
       "files": [
         {
@@ -4679,12 +4693,12 @@
         "@platejs/basic-nodes"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor",
-        "https://platejs.org/r/fixed-toolbar",
-        "https://platejs.org/r/mark-toolbar-button",
-        "https://platejs.org/r/heading-node",
-        "https://platejs.org/r/paragraph-node",
-        "https://platejs.org/r/blockquote-node"
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/heading-node.json",
+        "https://platejs.org/r/paragraph-node.json",
+        "https://platejs.org/r/blockquote-node.json"
       ],
       "files": [
         {
@@ -4700,7 +4714,7 @@
         "@platejs/tabbable"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-kit"
+        "https://platejs.org/r/editor-kit.json"
       ],
       "files": [
         {

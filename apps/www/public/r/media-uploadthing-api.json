@@ -6,7 +6,7 @@
     "uploadthing@7.7.4"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/uploadthing"
+    "https://platejs.org/r/uploadthing.json"
   ],
   "files": [
     {

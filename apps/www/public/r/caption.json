@@ -9,7 +9,7 @@
     "@platejs/caption"
   ],
   "registryDependencies": [
-    "button"
+    "@shadcn/button"
   ],
   "files": [
     {

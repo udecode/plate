@@ -6,7 +6,7 @@
     "@platejs/callout"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/callout-node"
+    "https://platejs.org/r/callout-node.json"
   ],
   "files": [
     {

@@ -8,9 +8,9 @@
     "@radix-ui/react-toolbar"
   ],
   "registryDependencies": [
-    "tooltip",
-    "separator",
-    "dropdown-menu"
+    "@shadcn/tooltip",
+    "@shadcn/separator",
+    "@shadcn/dropdown-menu"
   ],
   "files": [
     {

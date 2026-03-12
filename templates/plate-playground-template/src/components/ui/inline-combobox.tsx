@@ -87,6 +87,17 @@ const InlineCombobox = ({
   const hasValueProp = valueProp !== undefined;
   const value = hasValueProp ? valueProp : valueState;
 
+  // Check if current user is the creator of this element (for Yjs collaboration)
+  const isCreator = React.useMemo(() => {
+    const elementUserId = (element as any).userId;
+    const currentUserId = editor.meta.userId;
+
+    // If no userId (backwards compatibility or non-Yjs), allow
+    if (!elementUserId) return true;
+
+    return elementUserId === currentUserId;
+  }, [editor.meta.userId, element]);
+
   const setValue = React.useCallback(
     (newValue: string) => {
       setValueProp?.(newValue);
@@ -124,6 +135,7 @@ const InlineCombobox = ({
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: true,
     cursorState,
+    autoFocus: isCreator,
     ref: inputRef,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
@@ -258,6 +270,27 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
   ...props
 }) => {
   // Portal prevents CSS from leaking into popover
+  const store = useComboboxContext();
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!store) return;
+
+    const state = store.getState();
+    const { items, activeId } = state;
+
+    if (!items.length) return;
+
+    const currentIndex = items.findIndex((item) => item.id === activeId);
+
+    if (event.key === 'ArrowUp' && currentIndex <= 0) {
+      event.preventDefault();
+      store.setActiveId(store.last());
+    } else if (event.key === 'ArrowDown' && currentIndex >= items.length - 1) {
+      event.preventDefault();
+      store.setActiveId(store.first());
+    }
+  }
+
   return (
     <Portal>
       <ComboboxPopover
@@ -265,6 +298,7 @@ const InlineComboboxContent: typeof ComboboxPopover = ({
           'z-500 max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
           className
         )}
+        onKeyDownCapture={handleKeyDown}
         {...props}
       />
     </Portal>

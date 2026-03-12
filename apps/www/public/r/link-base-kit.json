@@ -6,7 +6,7 @@
     "@platejs/link"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/link-node"
+    "https://platejs.org/r/link-node.json"
   ],
   "files": [
     {

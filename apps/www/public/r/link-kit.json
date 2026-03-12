@@ -6,10 +6,10 @@
     "@platejs/link"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/link-base-kit",
-    "https://platejs.org/r/link-node",
-    "https://platejs.org/r/link-toolbar",
-    "https://platejs.org/r/link-toolbar-button"
+    "https://platejs.org/r/link-base-kit.json",
+    "https://platejs.org/r/link-node.json",
+    "https://platejs.org/r/link-toolbar.json",
+    "https://platejs.org/r/link-toolbar-button.json"
   ],
   "files": [
     {

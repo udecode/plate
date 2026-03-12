@@ -3,7 +3,7 @@
   "name": "hundreds-editors-demo",
   "type": "registry:example",
   "registryDependencies": [
-    "https://platejs.org/r/editor"
+    "https://platejs.org/r/editor.json"
   ],
   "files": [
     {

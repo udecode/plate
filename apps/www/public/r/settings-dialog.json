@@ -6,12 +6,12 @@
     "@platejs/ai"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/ai-kit",
-    "button",
-    "command",
-    "dialog",
-    "input",
-    "popover"
+    "https://platejs.org/r/ai-kit.json",
+    "@shadcn/button",
+    "@shadcn/command",
+    "@shadcn/dialog",
+    "@shadcn/input",
+    "@shadcn/popover"
   ],
   "files": [
     {

@@ -9,9 +9,9 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "calendar",
-    "context-menu",
-    "https://platejs.org/r/use-is-touch-device"
+    "@shadcn/calendar",
+    "@shadcn/context-menu",
+    "https://platejs.org/r/use-is-touch-device.json"
   ],
   "files": [
     {

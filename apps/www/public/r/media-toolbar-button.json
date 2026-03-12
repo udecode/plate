@@ -10,10 +10,10 @@
     "sonner"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar",
-    "input",
-    "dropdown-menu",
-    "alert-dialog"
+    "https://platejs.org/r/toolbar.json",
+    "@shadcn/input",
+    "@shadcn/dropdown-menu",
+    "@shadcn/alert-dialog"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@
     "@platejs/comment"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/comment-node"
+    "https://platejs.org/r/comment-node.json"
   ],
   "files": [
     {

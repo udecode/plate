@@ -342,7 +342,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'emojify',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Emojify',
+        prompt:
+          'Add a small number of contextually relevant emojis within each block only. You may insert emojis, but do not remove, replace, or rewrite existing text, and do not modify Markdown syntax, links, or line breaks.',
         toolName: 'edit',
       });
     },
@@ -367,7 +368,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'fixSpelling',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Fix spelling and grammar',
+        prompt:
+          'Fix spelling, grammar, and punctuation errors within each block only, without changing meaning, tone, or adding new information.',
         toolName: 'edit',
       });
     },
@@ -400,7 +402,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'improveWriting',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Improve the writing',
+        prompt:
+          'Improve the writing for clarity and flow, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
@@ -422,7 +425,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'makeLonger',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Make longer',
+        prompt:
+          'Make the content longer by elaborating on existing ideas within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
@@ -433,7 +437,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'makeShorter',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Make shorter',
+        prompt:
+          'Make the content shorter by reducing verbosity within each block only, without changing meaning or removing essential information.',
         toolName: 'edit',
       });
     },
@@ -452,7 +457,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'simplifyLanguage',
     onSelect: ({ editor, input }) => {
       void editor.getApi(AIChatPlugin).aiChat.submit(input, {
-        prompt: 'Simplify the language',
+        prompt:
+          'Simplify the language by using clearer and more straightforward wording within each block only, without changing meaning or adding new information.',
         toolName: 'edit',
       });
     },
@@ -659,7 +665,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          '-translate-x-1/2 absolute bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
+          'absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
@@ -684,7 +690,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          '-translate-x-1/2 absolute bottom-4 left-1/2 z-50 flex flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
+          'absolute bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
           'p-3'
         )}
       >
