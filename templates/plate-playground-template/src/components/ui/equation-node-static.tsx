@@ -77,7 +77,7 @@ export function InlineEquationElementStatic(
     >
       <div
         className={cn(
-          'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+          'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
           props.element.texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'
@@ -91,6 +91,73 @@ export function InlineEquationElementStatic(
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
+      {props.children}
+    </SlateElement>
+  );
+}
+
+/**
+ * DOCX-compatible block equation component.
+ * Displays LaTeX source code with styling.
+ */
+export function EquationElementDocx(
+  props: SlateElementProps<TEquationElement>
+) {
+  const { element } = props;
+
+  if (!element.texExpression || element.texExpression.length === 0) {
+    return (
+      <SlateElement {...props}>
+        <p style={{ color: '#888', fontStyle: 'italic' }}>[Empty equation]</p>
+        {props.children}
+      </SlateElement>
+    );
+  }
+
+  return (
+    <SlateElement {...props}>
+      <p
+        style={{
+          fontFamily: 'Cambria Math, Consolas, monospace',
+          fontSize: '12pt',
+          margin: '8pt 0',
+          textAlign: 'center',
+        }}
+      >
+        {element.texExpression}
+      </p>
+      {props.children}
+    </SlateElement>
+  );
+}
+
+/**
+ * DOCX-compatible inline equation component.
+ * Displays LaTeX source code inline.
+ */
+export function InlineEquationElementDocx(
+  props: SlateElementProps<TEquationElement>
+) {
+  const { element } = props;
+
+  if (!element.texExpression || element.texExpression.length === 0) {
+    return (
+      <SlateElement {...props} as="span">
+        <span style={{ color: '#888', fontStyle: 'italic' }}>[equation]</span>
+        {props.children}
+      </SlateElement>
+    );
+  }
+
+  return (
+    <SlateElement {...props} as="span">
+      <span
+        style={{
+          fontFamily: 'Cambria Math, Consolas, monospace',
+        }}
+      >
+        {element.texExpression}
+      </span>
       {props.children}
     </SlateElement>
   );

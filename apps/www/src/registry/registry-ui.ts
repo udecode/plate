@@ -103,7 +103,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['use-file-picker@2.1.2'],
+    dependencies: ['@platejs/docx-io', 'use-file-picker@2.1.2'],
     description: 'A toolbar button to import editor content from a file.',
     files: [{ path: 'ui/import-toolbar-button.tsx', type: 'registry:ui' }],
     meta: {
@@ -118,6 +118,7 @@ export const uiComponents: Registry['items'] = [
   },
   {
     dependencies: [
+      '@platejs/docx-io',
       '@platejs/markdown',
       'html2canvas-pro',
       'pdf-lib',
@@ -133,6 +134,7 @@ export const uiComponents: Registry['items'] = [
     },
     name: 'export-toolbar-button',
     registryDependencies: [
+      'docx-export-kit',
       'shadcn/dropdown-menu',
       'toolbar',
       'editor-base-kit',
@@ -1042,7 +1044,12 @@ export const uiNodes: Registry['items'] = [
       examples: ['code-drawing-demo'],
     },
     name: 'code-drawing-node',
-    registryDependencies: ['shadcn/popover', 'shadcn/button', 'shadcn/select'],
+    registryDependencies: [
+      'shadcn/popover',
+      'shadcn/button',
+      'shadcn/select',
+      'use-mobile',
+    ],
     title: 'Code Drawing Node',
     type: 'registry:ui',
   },

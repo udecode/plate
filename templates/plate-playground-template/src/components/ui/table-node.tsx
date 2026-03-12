@@ -435,7 +435,7 @@ export function TableRowElement({
   );
   const hasControls = !readOnly && !isSelectionAreaVisible;
 
-  const { isDragging, previewRef, handleRef } = useDraggable({
+  const { isDragging, nodeRef, previewRef, handleRef } = useDraggable({
     element,
     type: element.type,
     canDropNode: ({ dragEntry, dropEntry }) =>
@@ -461,7 +461,7 @@ export function TableRowElement({
         'data-selected': selected ? 'true' : undefined,
       }}
       className={cn('group/row', isDragging && 'opacity-50')}
-      ref={useComposedRef(props.ref, previewRef)}
+      ref={useComposedRef(props.ref, previewRef, nodeRef)}
     >
       {hasControls && (
         <td className="w-2 select-none" contentEditable={false}>
@@ -482,7 +482,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
   return (
     <Button
       className={cn(
-        '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+        'absolute top-1/2 left-0 z-51 h-6 w-4 -translate-y-1/2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
         'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-has-data-[resizing="true"]/row:opacity-0'
       )}
@@ -598,7 +598,7 @@ export function TableCellElement({
               {!hiddenLeft && (
                 <ResizeHandle
                   {...leftProps}
-                  className="-left-1 top-0 w-2"
+                  className="top-0 -left-1 w-2"
                   data-resizer-left={colIndex === 0 ? 'true' : undefined}
                 />
               )}
