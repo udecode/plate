@@ -125,10 +125,12 @@ type TableResizeDragState = {
 };
 
 type TableResizeContextValue = {
-  activeHandleKey: string | null;
   disableMarginLeft: boolean;
   clearResizePreview: (handleKey: string) => void;
-  setResizePreview: (options: TableResizeStartOptions) => void;
+  setResizePreview: (
+    event: React.PointerEvent<HTMLDivElement>,
+    options: TableResizeStartOptions
+  ) => void;
   startResize: (
     event: React.PointerEvent<HTMLDivElement>,
     options: TableResizeStartOptions
@@ -155,6 +157,7 @@ function useTableResizeContext() {
 function useTableResizeController({
   deferColumnResize,
   dragIndicatorRef,
+  hoverIndicatorRef,
   marginLeft,
   controlColumnWidth,
   tablePath,
@@ -163,6 +166,7 @@ function useTableResizeController({
 }: {
   deferColumnResize: boolean;
   dragIndicatorRef: React.RefObject<HTMLDivElement | null>;
+  hoverIndicatorRef: React.RefObject<HTMLDivElement | null>;
   marginLeft: number;
   controlColumnWidth: number;
   tablePath: number[];
@@ -174,15 +178,14 @@ function useTableResizeController({
   const colSizes = useTableColSizes({ disableOverrides: true });
   const colSizesRef = React.useRef(colSizes);
   const activeHandleKeyRef = React.useRef<string | null>(null);
+  const activeRowElementRef = React.useRef<HTMLTableRowElement | null>(null);
+  const cleanupListenersRef = React.useRef<(() => void) | null>(null);
   const marginLeftRef = React.useRef(marginLeft);
   const dragStateRef = React.useRef<TableResizeDragState | null>(null);
   const previewHandleKeyRef = React.useRef<string | null>(null);
   const overrideColSize = useOverrideColSize();
   const overrideMarginLeft = useOverrideMarginLeft();
   const overrideRowSize = useOverrideRowSize();
-  const [activeHandleKey, setActiveHandleKey] = React.useState<string | null>(
-    null
-  );
 
   React.useEffect(() => {
     colSizesRef.current = colSizes;
@@ -191,10 +194,6 @@ function useTableResizeController({
   React.useEffect(() => {
     marginLeftRef.current = marginLeft;
   }, [marginLeft]);
-
-  React.useEffect(() => {
-    activeHandleKeyRef.current = activeHandleKey;
-  }, [activeHandleKey]);
 
   const hideDeferredResizeIndicator = React.useCallback(() => {
     const indicator = dragIndicatorRef.current;
@@ -218,51 +217,48 @@ function useTableResizeController({
   );
 
   const hideResizeIndicator = React.useCallback(() => {
-    const wrapper = wrapperRef.current;
+    const indicator = hoverIndicatorRef.current;
 
-    if (!wrapper) return;
+    if (!indicator) return;
 
-    delete wrapper.dataset.resizeIndicator;
-    wrapper.style.removeProperty('--table-resize-line-x');
-  }, [wrapperRef]);
+    indicator.style.display = 'none';
+    indicator.style.removeProperty('left');
+  }, [hoverIndicatorRef]);
 
   const showResizeIndicator = React.useCallback(
     ({
-      colIndex,
+      event,
       direction,
-    }: Pick<TableResizeStartOptions, 'colIndex' | 'direction'>) => {
+    }: Pick<TableResizeStartOptions, 'direction'> & {
+      event: React.PointerEvent<HTMLDivElement>;
+    }) => {
       if (direction === 'bottom') return;
 
+      const indicator = hoverIndicatorRef.current;
       const wrapper = wrapperRef.current;
 
-      if (!wrapper) return;
+      if (!indicator || !wrapper) return;
 
-      const terms =
-        direction === 'left'
-          ? [`${controlColumnWidth}px`]
-          : [
-              `${controlColumnWidth}px`,
-              ...Array.from(
-                { length: colIndex + 1 },
-                (_, index) => `var(--table-col-${index}, 120px)`
-              ),
-            ];
+      const handleRect = event.currentTarget.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const boundaryOffset =
+        handleRect.left - wrapperRect.left + handleRect.width / 2;
 
-      wrapper.dataset.resizeIndicator = direction;
-      wrapper.style.setProperty(
-        '--table-resize-line-x',
-        terms.length === 1 ? terms[0]! : `calc(${terms.join(' + ')})`
-      );
+      indicator.style.display = 'block';
+      indicator.style.left = `${boundaryOffset}px`;
     },
-    [controlColumnWidth, wrapperRef]
+    [hoverIndicatorRef, wrapperRef]
   );
 
   const setResizePreview = React.useCallback(
-    (options: TableResizeStartOptions) => {
+    (
+      event: React.PointerEvent<HTMLDivElement>,
+      options: TableResizeStartOptions
+    ) => {
       if (activeHandleKeyRef.current) return;
 
       previewHandleKeyRef.current = options.handleKey;
-      showResizeIndicator(options);
+      showResizeIndicator({ ...options, event });
     },
     [showResizeIndicator]
   );
@@ -417,37 +413,23 @@ function useTableResizeController({
     ]
   );
 
-  React.useEffect(() => {
-    if (!activeHandleKey) return;
+  const stopResize = React.useCallback(() => {
+    cleanupListenersRef.current?.();
+    cleanupListenersRef.current = null;
+    activeHandleKeyRef.current = null;
+    previewHandleKeyRef.current = null;
+    dragStateRef.current = null;
 
-    const handlePointerMove = (event: PointerEvent) => {
-      applyResize(event, false);
-    };
+    if (activeRowElementRef.current) {
+      delete activeRowElementRef.current.dataset.tableResizing;
+      activeRowElementRef.current = null;
+    }
 
-    const handlePointerEnd = (event: PointerEvent) => {
-      applyResize(event, true);
-      dragStateRef.current = null;
-      previewHandleKeyRef.current = null;
-      setActiveHandleKey(null);
-      hideDeferredResizeIndicator();
-      hideResizeIndicator();
-    };
+    hideDeferredResizeIndicator();
+    hideResizeIndicator();
+  }, [hideDeferredResizeIndicator, hideResizeIndicator]);
 
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerEnd);
-    window.addEventListener('pointercancel', handlePointerEnd);
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerEnd);
-      window.removeEventListener('pointercancel', handlePointerEnd);
-    };
-  }, [
-    activeHandleKey,
-    applyResize,
-    hideDeferredResizeIndicator,
-    hideResizeIndicator,
-  ]);
+  React.useEffect(() => stopResize, [stopResize]);
 
   const startResize = React.useCallback(
     (
@@ -469,9 +451,44 @@ function useTableResizeController({
         marginLeft: marginLeftRef.current,
         rowIndex,
       };
-
+      activeHandleKeyRef.current = handleKey;
       previewHandleKeyRef.current = null;
-      setActiveHandleKey(handleKey);
+
+      const rowElement = tableRef.current?.rows.item(rowIndex) ?? null;
+
+      if (
+        activeRowElementRef.current &&
+        activeRowElementRef.current !== rowElement
+      ) {
+        delete activeRowElementRef.current.dataset.tableResizing;
+      }
+
+      activeRowElementRef.current = rowElement;
+
+      if (rowElement) {
+        rowElement.dataset.tableResizing = 'true';
+      }
+
+      cleanupListenersRef.current?.();
+
+      const handlePointerMove = (pointerEvent: PointerEvent) => {
+        applyResize(pointerEvent, false);
+      };
+
+      const handlePointerEnd = (pointerEvent: PointerEvent) => {
+        applyResize(pointerEvent, true);
+        stopResize();
+      };
+
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerEnd);
+      window.addEventListener('pointercancel', handlePointerEnd);
+
+      cleanupListenersRef.current = () => {
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerEnd);
+        window.removeEventListener('pointercancel', handlePointerEnd);
+      };
 
       if (deferColumnResize && direction !== 'bottom') {
         hideResizeIndicator();
@@ -484,7 +501,7 @@ function useTableResizeController({
               )
         );
       } else {
-        showResizeIndicator({ colIndex, direction });
+        showResizeIndicator({ direction, event });
       }
 
       event.preventDefault();
@@ -497,25 +514,20 @@ function useTableResizeController({
       hideResizeIndicator,
       showDeferredResizeIndicator,
       showResizeIndicator,
+      stopResize,
       tableRef,
+      applyResize,
     ]
   );
 
   return React.useMemo(
     () => ({
-      activeHandleKey,
       clearResizePreview,
       disableMarginLeft,
       setResizePreview,
       startResize,
     }),
-    [
-      activeHandleKey,
-      clearResizePreview,
-      disableMarginLeft,
-      setResizePreview,
-      startResize,
-    ]
+    [clearResizePreview, disableMarginLeft, setResizePreview, startResize]
   );
 }
 
@@ -539,6 +551,7 @@ export const TableElement = withHOC(
     const colSizes = useTableColSizes();
     const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
     const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
+    const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
     const deferColumnResize =
       colSizes.length * props.element.children.length >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
@@ -551,6 +564,7 @@ export const TableElement = withHOC(
       controlColumnWidth,
       deferColumnResize,
       dragIndicatorRef,
+      hoverIndicatorRef,
       marginLeft,
       tablePath,
       tableRef,
@@ -604,11 +618,9 @@ export const TableElement = withHOC(
               contentEditable={false}
             />
             <div
-              className={cn(
-                '-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] bg-ring/80',
-                'group-data-[resize-indicator=left]/table:block group-data-[resize-indicator=right]/table:block'
-              )}
-              style={{ left: 'var(--table-resize-line-x)' }}
+              ref={hoverIndicatorRef}
+              className="-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] bg-ring/80"
+              contentEditable={false}
             />
             <table
               ref={tableRef}
@@ -1074,7 +1086,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
       className={cn(
         '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
-        'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-has-data-[resizing="true"]/row:opacity-0'
+        'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-data-[table-resizing=true]/row:opacity-0'
       )}
       onClick={() => {
         editor.tf.select(element);
@@ -1197,7 +1209,6 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
   rowIndex: number;
 }) {
   const {
-    activeHandleKey,
     clearResizePreview,
     disableMarginLeft,
     setResizePreview,
@@ -1207,9 +1218,6 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
   const bottomHandleKey = `bottom:${rowIndex}:${colIndex}`;
   const leftHandleKey = `left:${rowIndex}:${colIndex}`;
   const isLeftHandle = colIndex === 0 && !disableMarginLeft;
-  const isBottomActive = activeHandleKey === bottomHandleKey;
-  const isLeftActive = activeHandleKey === leftHandleKey;
-  const isRightActive = activeHandleKey === rightHandleKey;
 
   return (
     <div
@@ -1219,9 +1227,8 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
     >
       <div
         className="-top-2 -right-1 pointer-events-auto absolute z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
-        data-resizing={isRightActive ? 'true' : undefined}
-        onPointerEnter={() => {
-          setResizePreview({
+        onPointerEnter={(event) => {
+          setResizePreview(event, {
             colIndex,
             direction: 'right',
             handleKey: rightHandleKey,
@@ -1242,9 +1249,8 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
       />
       <div
         className="-bottom-1 pointer-events-auto absolute left-0 z-40 h-2 w-full cursor-row-resize touch-none"
-        data-resizing={isBottomActive ? 'true' : undefined}
-        onPointerEnter={() => {
-          setResizePreview({
+        onPointerEnter={(event) => {
+          setResizePreview(event, {
             colIndex,
             direction: 'bottom',
             handleKey: bottomHandleKey,
@@ -1266,9 +1272,8 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
       {isLeftHandle && (
         <div
           className="-left-1 pointer-events-auto absolute top-0 z-40 h-full w-2 cursor-col-resize touch-none"
-          data-resizing={isLeftActive ? 'true' : undefined}
-          onPointerEnter={() => {
-            setResizePreview({
+          onPointerEnter={(event) => {
+            setResizePreview(event, {
               colIndex,
               direction: 'left',
               handleKey: leftHandleKey,
