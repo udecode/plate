@@ -3,7 +3,7 @@
 # Allow claude to read these files
 apps/www/src/app/api/ai
 apps/www/public/rd
-**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
 templates/my-app
 .cursor/local
 
