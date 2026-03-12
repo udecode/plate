@@ -225,6 +225,18 @@ function useTableResizeController({
     indicator.style.removeProperty('left');
   }, [hoverIndicatorRef]);
 
+  const showResizeIndicatorAtOffset = React.useCallback(
+    (offset: number) => {
+      const indicator = hoverIndicatorRef.current;
+
+      if (!indicator) return;
+
+      indicator.style.display = 'block';
+      indicator.style.left = `${offset}px`;
+    },
+    [hoverIndicatorRef]
+  );
+
   const showResizeIndicator = React.useCallback(
     ({
       event,
@@ -234,20 +246,18 @@ function useTableResizeController({
     }) => {
       if (direction === 'bottom') return;
 
-      const indicator = hoverIndicatorRef.current;
       const wrapper = wrapperRef.current;
 
-      if (!indicator || !wrapper) return;
+      if (!wrapper) return;
 
       const handleRect = event.currentTarget.getBoundingClientRect();
       const wrapperRect = wrapper.getBoundingClientRect();
       const boundaryOffset =
         handleRect.left - wrapperRect.left + handleRect.width / 2;
 
-      indicator.style.display = 'block';
-      indicator.style.left = `${boundaryOffset}px`;
+      showResizeIndicatorAtOffset(boundaryOffset);
     },
-    [hoverIndicatorRef, wrapperRef]
+    [showResizeIndicatorAtOffset, wrapperRef]
   );
 
   const setResizePreview = React.useCallback(
@@ -359,6 +369,9 @@ function useTableResizeController({
             controlColumnWidth + (nextMarginLeft - dragState.marginLeft)
           );
         } else {
+          showResizeIndicatorAtOffset(
+            controlColumnWidth + (nextMarginLeft - dragState.marginLeft)
+          );
           overrideMarginLeft(nextMarginLeft);
           overrideColSize(dragState.colIndex, nextWidth);
         }
@@ -391,6 +404,9 @@ function useTableResizeController({
           getColumnBoundaryOffset(dragState.colIndex, currentWidth)
         );
       } else {
+        showResizeIndicatorAtOffset(
+          getColumnBoundaryOffset(dragState.colIndex, currentWidth)
+        );
         overrideColSize(dragState.colIndex, currentWidth);
 
         if (nextWidth !== undefined) {
@@ -406,6 +422,7 @@ function useTableResizeController({
       deferColumnResize,
       getColumnBoundaryOffset,
       showDeferredResizeIndicator,
+      showResizeIndicatorAtOffset,
       minColumnWidth,
       overrideColSize,
       overrideMarginLeft,
