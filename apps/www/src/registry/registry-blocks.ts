@@ -187,7 +187,7 @@ export const registryBlocks: Registry['items'] = [
       rsc: true,
     },
     name: 'slate-to-html',
-    registryDependencies: ['editor-base-kit', 'shadcn/button'],
+    registryDependencies: ['editor-base-kit', '@shadcn/button'],
     type: 'registry:block',
   },
 ];

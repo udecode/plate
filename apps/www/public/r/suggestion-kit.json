@@ -6,10 +6,10 @@
     "@platejs/suggestion"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/suggestion-base-kit",
-    "https://platejs.org/r/suggestion-node",
-    "https://platejs.org/r/suggestion-toolbar-button",
-    "https://platejs.org/r/discussion-kit"
+    "https://platejs.org/r/suggestion-base-kit.json",
+    "https://platejs.org/r/suggestion-node.json",
+    "https://platejs.org/r/suggestion-toolbar-button.json",
+    "https://platejs.org/r/discussion-kit.json"
   ],
   "files": [
     {

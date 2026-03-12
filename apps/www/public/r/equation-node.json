@@ -9,7 +9,7 @@
     "react-textarea-autosize"
   ],
   "registryDependencies": [
-    "popover"
+    "@shadcn/popover"
   ],
   "files": [
     {

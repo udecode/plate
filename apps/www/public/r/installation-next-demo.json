@@ -7,12 +7,12 @@
     "@platejs/basic-nodes"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor",
-    "https://platejs.org/r/fixed-toolbar",
-    "https://platejs.org/r/mark-toolbar-button",
-    "https://platejs.org/r/heading-node",
-    "https://platejs.org/r/paragraph-node",
-    "https://platejs.org/r/blockquote-node"
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/mark-toolbar-button.json",
+    "https://platejs.org/r/heading-node.json",
+    "https://platejs.org/r/paragraph-node.json",
+    "https://platejs.org/r/blockquote-node.json"
   ],
   "files": [
     {

@@ -7,8 +7,8 @@
     "lowlight"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/code-block-base-kit",
-    "https://platejs.org/r/code-block-node"
+    "https://platejs.org/r/code-block-base-kit.json",
+    "https://platejs.org/r/code-block-node.json"
   ],
   "files": [
     {

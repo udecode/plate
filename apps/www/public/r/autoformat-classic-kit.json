@@ -8,8 +8,8 @@
     "@platejs/list-classic"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/list-classic-node",
-    "https://platejs.org/r/list-classic-toolbar-button"
+    "https://platejs.org/r/list-classic-node.json",
+    "https://platejs.org/r/list-classic-toolbar-button.json"
   ],
   "files": [
     {

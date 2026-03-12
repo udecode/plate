@@ -6,7 +6,7 @@
   "description": "A text highlighter with customizable colors.",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/highlight-style"
+    "https://platejs.org/r/highlight-style.json"
   ],
   "files": [
     {

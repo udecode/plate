@@ -9,8 +9,8 @@
     "@platejs/floating"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/tailwind-scrollbar-hide"
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/tailwind-scrollbar-hide.json"
   ],
   "files": [
     {

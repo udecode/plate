@@ -5,8 +5,8 @@
   "description": "media-kit + media-uploadthing-api",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/media-kit",
-    "https://platejs.org/r/media-uploadthing-api"
+    "https://platejs.org/r/media-kit.json",
+    "https://platejs.org/r/media-uploadthing-api.json"
   ],
   "files": []
 }

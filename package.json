@@ -55,7 +55,7 @@
     "templates:check": "cd templates/plate-template && pnpm lint && pnpm typecheck && cd ../plate-playground-template && pnpm lint && pnpm typecheck",
     "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
     "templates:test": "cd templates/plate-template && npx shadcn@latest add http://localhost:3000/rd/editor-ai -o && pnpm lint && pnpm typecheck",
-    "templates:update": "pnpm templates:basic && pnpm templates:ai",
+    "templates:update": "./tooling/scripts/update-templates.sh",
     "test": "bun tooling/scripts/test-fast.mjs",
     "test:coverage": "bun test --coverage",
     "test:slowest": "bun tooling/scripts/test-slowest.mjs",

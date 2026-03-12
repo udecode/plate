@@ -20,7 +20,7 @@ When using the following skills, override the default behavior.
 - Use `agent-browser` instead of next-devtools browser evaluation.
 - If `agent-browser` gets blocked or loops on the same step, stop and ask the user to unblock.
 
-`workflows:*`:
+`ce-*`:
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run the local verification that actually matters here. At minimum: `bun run typecheck`, `bun run lint:fix`, and `bun run build` if the task touched app behavior or build config.
@@ -83,6 +83,7 @@ When using the following skills, override the default behavior.
 - [ ] Typecheck (IF updated .ts files): Bash `bun run typecheck`
 - [ ] Lint: Bash `bun run lint:fix`
 - [ ] Build (IF updated app behavior or config): Bash `bun run build`
+- [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: Skill(ce-compound) NOW after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery
 

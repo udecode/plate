@@ -6,8 +6,8 @@
     "@platejs/date"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/date-base-kit",
-    "https://platejs.org/r/date-node"
+    "https://platejs.org/r/date-base-kit.json",
+    "https://platejs.org/r/date-node.json"
   ],
   "files": [
     {

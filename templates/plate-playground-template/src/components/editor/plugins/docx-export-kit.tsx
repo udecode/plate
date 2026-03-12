@@ -1,8 +1,5 @@
-'use client';
-
 import { DocxExportPlugin } from '@platejs/docx-io';
 import { KEYS } from 'platejs';
-
 import { CalloutElementDocx } from '@/components/ui/callout-node-static';
 import {
   CodeBlockElementDocx,
@@ -20,16 +17,22 @@ import {
 import { TocElementDocx } from '@/components/ui/toc-node-static';
 
 /**
- * Editor kit optimized for DOCX export.
+ * Editor kit for DOCX export.
  *
- * Uses docx-specific static components for elements that require
- * inline styles instead of Tailwind classes.
+ * Uses standard static components for most elements (with juice CSS inlining),
+ * but uses docx-specific components for elements that need special handling:
+ * - Code blocks (syntax highlighting, line breaks)
+ * - Columns (table layout instead of flexbox)
+ * - Equations (inline font instead of KaTeX)
+ * - Callouts (table layout for icon placement)
+ * - TOC (anchor links with paragraph breaks)
+ *
+ * Tables use base version with juice CSS inlining.
  */
 export const DocxExportKit = [
   DocxExportPlugin.configure({
     override: {
       components: {
-        [KEYS.callout]: CalloutElementDocx,
         [KEYS.codeBlock]: CodeBlockElementDocx,
         [KEYS.codeLine]: CodeLineElementDocx,
         [KEYS.codeSyntax]: CodeSyntaxLeafDocx,
@@ -37,6 +40,7 @@ export const DocxExportKit = [
         [KEYS.columnGroup]: ColumnGroupElementDocx,
         [KEYS.equation]: EquationElementDocx,
         [KEYS.inlineEquation]: InlineEquationElementDocx,
+        [KEYS.callout]: CalloutElementDocx,
         [KEYS.toc]: TocElementDocx,
       },
     },

@@ -6,15 +6,15 @@
   "description": "A set of commonly used formatting buttons for the floating toolbar with classic list support.",
   "dependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar",
-    "https://platejs.org/r/ai-toolbar-button",
-    "https://platejs.org/r/comment-toolbar-button",
-    "https://platejs.org/r/equation-toolbar-button",
-    "https://platejs.org/r/link-toolbar-button",
-    "https://platejs.org/r/mark-toolbar-button",
-    "https://platejs.org/r/more-toolbar-button",
-    "https://platejs.org/r/suggestion-toolbar-button",
-    "https://platejs.org/r/turn-into-toolbar-classic-button"
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/ai-toolbar-button.json",
+    "https://platejs.org/r/comment-toolbar-button.json",
+    "https://platejs.org/r/equation-toolbar-button.json",
+    "https://platejs.org/r/link-toolbar-button.json",
+    "https://platejs.org/r/mark-toolbar-button.json",
+    "https://platejs.org/r/more-toolbar-button.json",
+    "https://platejs.org/r/suggestion-toolbar-button.json",
+    "https://platejs.org/r/turn-into-toolbar-classic-button.json"
   ],
   "files": [
     {

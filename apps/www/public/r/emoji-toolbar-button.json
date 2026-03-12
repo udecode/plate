@@ -10,7 +10,7 @@
     "@radix-ui/react-popover"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar"
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@
     "@platejs/indent"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/indent-toolbar-button"
+    "https://platejs.org/r/indent-toolbar-button.json"
   ],
   "files": [
     {

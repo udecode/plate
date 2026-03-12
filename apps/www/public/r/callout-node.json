@@ -7,7 +7,7 @@
     "@platejs/callout"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/emoji-toolbar-button"
+    "https://platejs.org/r/emoji-toolbar-button.json"
   ],
   "files": [
     {

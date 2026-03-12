@@ -6,10 +6,10 @@
     "@platejs/media"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/media-audio-node",
-    "https://platejs.org/r/media-file-node",
-    "https://platejs.org/r/media-image-node",
-    "https://platejs.org/r/media-video-node"
+    "https://platejs.org/r/media-audio-node.json",
+    "https://platejs.org/r/media-file-node.json",
+    "https://platejs.org/r/media-image-node.json",
+    "https://platejs.org/r/media-video-node.json"
   ],
   "files": [
     {

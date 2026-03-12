@@ -6,8 +6,8 @@
     "remark-emoji"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor-kit",
-    "https://platejs.org/r/use-debounce"
+    "https://platejs.org/r/editor-kit.json",
+    "https://platejs.org/r/use-debounce.json"
   ],
   "files": [
     {

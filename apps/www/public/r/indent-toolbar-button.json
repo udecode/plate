@@ -8,7 +8,7 @@
     "@platejs/indent"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/toolbar"
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

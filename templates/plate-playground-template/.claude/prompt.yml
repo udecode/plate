@@ -33,6 +33,15 @@ beforeComplete:
       - 'Test Browser (IF new features, styling, visual bugs, state changes. SKIP trivial markup, non-UI): Skill(agent-browser)'
       - 'Typecheck (IF updated .ts files): Bash `bun typecheck`'
       - 'Lint: Bash `bun lint:fix`'
+      - |
+        ce-compound (SKIP if trivial):
+        CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge.
+        EVALUATION PROTOCOL (NON-NEGOTIABLE):
+        (1) COMPLETE the user's request first
+        (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation?
+        (3) IF YES to any: Skill(ce-compound) NOW after the fix is verified and follow its workflow to capture the solution in `docs/solutions/`
+        (4) IF NO to all: Skip - no extraction needed
+        This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 afterCompact:
   - tag: POST-COMPACT-RECOVERY

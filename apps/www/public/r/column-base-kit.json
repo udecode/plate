@@ -6,7 +6,7 @@
     "@platejs/layout"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/column-node"
+    "https://platejs.org/r/column-node.json"
   ],
   "files": [
     {

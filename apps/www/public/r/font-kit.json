@@ -6,9 +6,9 @@
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/font-base-kit",
-    "https://platejs.org/r/font-size-toolbar-button",
-    "https://platejs.org/r/font-color-toolbar-button"
+    "https://platejs.org/r/font-base-kit.json",
+    "https://platejs.org/r/font-size-toolbar-button.json",
+    "https://platejs.org/r/font-color-toolbar-button.json"
   ],
   "files": [
     {

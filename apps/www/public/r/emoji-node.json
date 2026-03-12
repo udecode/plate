@@ -9,8 +9,8 @@
     "@emoji-mart/data@1.2.1"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/inline-combobox",
-    "https://platejs.org/r/use-debounce"
+    "https://platejs.org/r/inline-combobox.json",
+    "https://platejs.org/r/use-debounce.json"
   ],
   "files": [
     {

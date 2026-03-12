@@ -10,11 +10,11 @@
     "lodash"
   ],
   "registryDependencies": [
-    "dropdown-menu",
-    "separator",
-    "button",
-    "tooltip",
-    "https://platejs.org/r/toolbar"
+    "@shadcn/dropdown-menu",
+    "@shadcn/separator",
+    "@shadcn/button",
+    "@shadcn/tooltip",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

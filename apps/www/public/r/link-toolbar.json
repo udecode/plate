@@ -9,10 +9,10 @@
     "@platejs/floating"
   ],
   "registryDependencies": [
-    "button",
-    "input",
-    "popover",
-    "separator"
+    "@shadcn/button",
+    "@shadcn/input",
+    "@shadcn/popover",
+    "@shadcn/separator"
   ],
   "files": [
     {

@@ -20,6 +20,14 @@ import { registry } from '../registry/registry';
 
 const registryShadcn = registryShadcnData as unknown as Registry;
 
+function isShadcnRegistryDependency(name: string) {
+  return name.startsWith('@shadcn/');
+}
+
+function getShadcnRegistryItemName(name: string) {
+  return name.slice('@shadcn/'.length);
+}
+
 export function fixImport(content: string) {
   const regex =
     /@\/(.+?)\/((?:.*?\/)?(?:components|ui|hooks|lib|example))\/([\w-]+)/g;
@@ -89,10 +97,10 @@ export function getAllFiles(
   const files: string[] = [
     ...(component.files ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep: any) => {
-      const isDependencyShadcn = dep.includes('shadcn/');
+      const isDependencyShadcn = isShadcnRegistryDependency(dep);
 
       return getAllFiles(
-        isDependencyShadcn ? dep.split('shadcn/')[1] : dep,
+        isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
         seen,
         isShadcn || isDependencyShadcn
       ).filter(Boolean);
@@ -165,10 +173,10 @@ export function getAllDependencies(
   const deps = [
     ...(component.dependencies ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep) => {
-      const isDependencyShadcn = dep.includes('shadcn/');
+      const isDependencyShadcn = isShadcnRegistryDependency(dep);
 
       return getAllDependencies(
-        isDependencyShadcn ? dep.split('shadcn/')[1] : dep,
+        isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
         seen,
         isShadcn || isDependencyShadcn
       );
@@ -309,7 +317,7 @@ async function getAllItemFiles(
   seen.add(name);
 
   // Skip shadcn files unless explicitly requested
-  if (!isShadcn && name.includes('shadcn/')) {
+  if (!isShadcn && isShadcnRegistryDependency(name)) {
     return [];
   }
 
@@ -332,13 +340,13 @@ async function getAllItemFiles(
 
   // Recursively get files from dependencies
   for (const dep of item.registryDependencies ?? []) {
-    const isDependencyShadcn = dep.includes('shadcn/');
+    const isDependencyShadcn = isShadcnRegistryDependency(dep);
     // Skip shadcn dependencies unless we're already in a shadcn context
     if (!isShadcn && isDependencyShadcn) {
       continue;
     }
     const depFiles = await getAllItemFiles(
-      isDependencyShadcn ? dep.split('shadcn/')[1] : dep,
+      isDependencyShadcn ? getShadcnRegistryItemName(dep) : dep,
       seen,
       isShadcn || isDependencyShadcn
     );
