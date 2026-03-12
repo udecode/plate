@@ -259,7 +259,11 @@ const DragHandle = React.memo(function DragHandle({
                 : editor.api.blocks({ mode: 'highest' });
 
             // If current block is not in selection, use it as the starting point
-            if (!selectionNodes.some(([node]) => node.id === element.id)) {
+            if (
+              !selectionNodes.some(
+                ([node]: [TElement, unknown]) => node.id === element.id
+              )
+            ) {
               selectionNodes = [[element, editor.api.findPath(element)!]];
             }
 
@@ -297,7 +301,11 @@ const DragHandle = React.memo(function DragHandle({
                 : editor.api.blocks({ mode: 'highest' });
 
             // If current block is not in selection, use it as the starting point
-            if (!selectedBlocks.some(([node]) => node.id === element.id)) {
+            if (
+              !selectedBlocks.some(
+                ([node]: [TElement, unknown]) => node.id === element.id
+              )
+            ) {
               selectedBlocks = [[element, editor.api.findPath(element)!]];
             }
 

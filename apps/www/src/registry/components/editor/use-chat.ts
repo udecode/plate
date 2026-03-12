@@ -13,7 +13,14 @@ import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import {
+  type NodeEntry,
+  type TNode,
+  KEYS,
+  nanoid,
+  NodeApi,
+  TextApi,
+} from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
@@ -1538,7 +1545,7 @@ const createCommentChunks = (editor: PlateEditor) => {
       selectionFallback: true,
       sort: true,
     })
-    .map(([block]) => block);
+    .map(([block]: NodeEntry<TNode>) => block);
 
   const isSelectingSome = editor.getOption(
     BlockSelectionPlugin,

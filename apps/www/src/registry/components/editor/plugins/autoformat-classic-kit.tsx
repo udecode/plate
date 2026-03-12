@@ -239,7 +239,7 @@ export const AutoformatKit = [
         ...autoformatLists,
       ].map((rule) => ({
         ...rule,
-        query: (editor) =>
+        query: (editor: SlateEditor) =>
           !editor.api.some({
             match: { type: editor.getType(KEYS.codeBlock) },
           }),

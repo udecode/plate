@@ -24,7 +24,7 @@ const useUploadErrorToast = () => {
       case UploadErrorCode.INVALID_FILE_SIZE: {
         toast.error(
           `The size of files ${data.files
-            .map((f) => f.name)
+            .map((f: File) => f.name)
             .join(', ')} is invalid`
         );
 
@@ -33,7 +33,7 @@ const useUploadErrorToast = () => {
       case UploadErrorCode.INVALID_FILE_TYPE: {
         toast.error(
           `The type of files ${data.files
-            .map((f) => f.name)
+            .map((f: File) => f.name)
             .join(', ')} is invalid`
         );
 
@@ -42,7 +42,7 @@ const useUploadErrorToast = () => {
       case UploadErrorCode.TOO_LARGE: {
         toast.error(
           `The size of files ${data.files
-            .map((f) => f.name)
+            .map((f: File) => f.name)
             .join(', ')} is too large than ${data.maxFileSize}`
         );
 

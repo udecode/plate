@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 
-import type * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-
 import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
@@ -32,7 +30,6 @@ import {
   useTableMergeState,
   useTableValue,
 } from '@platejs/table/react';
-import { PopoverAnchor } from '@radix-ui/react-popover';
 import {
   ArrowDown,
   ArrowLeft,
@@ -82,7 +79,11 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 import { blockSelectionVariants } from './block-selection';
@@ -813,7 +814,7 @@ function TableFloatingToolbar({
 }
 
 function TableBordersDropdownMenuContent(
-  props: React.ComponentProps<typeof DropdownMenuPrimitive.Content>
+  props: React.ComponentProps<typeof DropdownMenuContent>
 ) {
   const editor = useEditorRef();
   const {
@@ -899,7 +900,9 @@ function ColorDropdownMenu({
   const [open, setOpen] = React.useState(false);
 
   const editor = useEditorRef();
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells') as
+    | TElement[]
+    | null;
 
   const onUpdateColor = React.useCallback(
     (color: string) => {
@@ -1022,7 +1025,9 @@ function useTableCellPresentation(element: TTableCellElement) {
   const borders = useTableCellBorders({ element });
   const { col, row } = useCellIndices();
   const selected = useIsCellSelected(element);
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
+  const selectedCells = usePluginOption(TablePlugin, 'selectedCells') as
+    | TElement[]
+    | null;
 
   React.useEffect(() => {
     if (
