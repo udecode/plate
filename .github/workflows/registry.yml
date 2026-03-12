@@ -1,0 +1,68 @@
+name: Registry
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/actions/**'
+      - '.github/workflows/registry.yml'
+      - 'apps/www/package.json'
+      - 'apps/www/scripts/**'
+      - 'apps/www/src/app/globals.css'
+      - 'apps/www/src/registry/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-registry:
+    name: Update Registry
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: ♻️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 📦 Monorepo install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
+
+      - name: 🔧 Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: 🏗 Build Registry
+        run: pnpm --filter www build:registry && pnpm --filter www build:tw
+
+      - name: ◻️ Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          title: 'Update Registry'
+          body: |
+            Update Registry.
+          commit-message: 'chore: update registry [skip release]'
+          committer: GitHub <noreply@github.com>
+          branch: registry
+          delete-branch: true
+          add-paths: |
+            apps/www/public/r
+            apps/www/public/tailwind.css
+            apps/www/src/__registry__/index.tsx
