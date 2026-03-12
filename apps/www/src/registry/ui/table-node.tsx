@@ -135,6 +135,7 @@ type TableResizeContextValue = {
 };
 
 const TABLE_CONTROL_COLUMN_WIDTH = 8;
+const TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT = 1200;
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -151,12 +152,16 @@ function useTableResizeContext() {
 }
 
 function useTableResizeController({
+  deferColumnResize,
+  dragIndicatorRef,
   marginLeft,
   controlColumnWidth,
   tablePath,
   tableRef,
   wrapperRef,
 }: {
+  deferColumnResize: boolean;
+  dragIndicatorRef: React.RefObject<HTMLDivElement | null>;
   marginLeft: number;
   controlColumnWidth: number;
   tablePath: number[];
@@ -189,6 +194,27 @@ function useTableResizeController({
   React.useEffect(() => {
     activeHandleKeyRef.current = activeHandleKey;
   }, [activeHandleKey]);
+
+  const hideDeferredResizeIndicator = React.useCallback(() => {
+    const indicator = dragIndicatorRef.current;
+
+    if (!indicator) return;
+
+    indicator.style.display = 'none';
+    indicator.style.removeProperty('left');
+  }, [dragIndicatorRef]);
+
+  const showDeferredResizeIndicator = React.useCallback(
+    (offset: number) => {
+      const indicator = dragIndicatorRef.current;
+
+      if (!indicator) return;
+
+      indicator.style.display = 'block';
+      indicator.style.left = `${offset}px`;
+    },
+    [dragIndicatorRef]
+  );
 
   const hideResizeIndicator = React.useCallback(() => {
     const wrapper = wrapperRef.current;
@@ -279,6 +305,16 @@ function useTableResizeController({
     [editor, overrideMarginLeft, tablePath]
   );
 
+  const getColumnBoundaryOffset = React.useCallback(
+    (colIndex: number, currentWidth: number) =>
+      controlColumnWidth +
+      colSizesRef.current
+        .slice(0, colIndex)
+        .reduce((total, colSize) => total + colSize, 0) +
+      currentWidth,
+    [controlColumnWidth]
+  );
+
   const applyResize = React.useCallback(
     (event: PointerEvent, finished: boolean) => {
       const dragState = dragStateRef.current;
@@ -321,6 +357,10 @@ function useTableResizeController({
         if (finished) {
           commitMarginLeft(nextMarginLeft);
           commitColSize(dragState.colIndex, nextWidth);
+        } else if (deferColumnResize) {
+          showDeferredResizeIndicator(
+            controlColumnWidth + (nextMarginLeft - dragState.marginLeft)
+          );
         } else {
           overrideMarginLeft(nextMarginLeft);
           overrideColSize(dragState.colIndex, nextWidth);
@@ -349,6 +389,10 @@ function useTableResizeController({
         if (nextWidth !== undefined) {
           commitColSize(dragState.colIndex + 1, nextWidth);
         }
+      } else if (deferColumnResize) {
+        showDeferredResizeIndicator(
+          getColumnBoundaryOffset(dragState.colIndex, currentWidth)
+        );
       } else {
         overrideColSize(dragState.colIndex, currentWidth);
 
@@ -361,6 +405,10 @@ function useTableResizeController({
       commitColSize,
       commitMarginLeft,
       commitRowSize,
+      controlColumnWidth,
+      deferColumnResize,
+      getColumnBoundaryOffset,
+      showDeferredResizeIndicator,
       minColumnWidth,
       overrideColSize,
       overrideMarginLeft,
@@ -380,6 +428,7 @@ function useTableResizeController({
       dragStateRef.current = null;
       previewHandleKeyRef.current = null;
       setActiveHandleKey(null);
+      hideDeferredResizeIndicator();
       hideResizeIndicator();
     };
 
@@ -392,7 +441,12 @@ function useTableResizeController({
       window.removeEventListener('pointerup', handlePointerEnd);
       window.removeEventListener('pointercancel', handlePointerEnd);
     };
-  }, [activeHandleKey, applyResize, hideResizeIndicator]);
+  }, [
+    activeHandleKey,
+    applyResize,
+    hideDeferredResizeIndicator,
+    hideResizeIndicator,
+  ]);
 
   const startResize = React.useCallback(
     (
@@ -417,11 +471,33 @@ function useTableResizeController({
 
       previewHandleKeyRef.current = null;
       setActiveHandleKey(handleKey);
-      showResizeIndicator({ colIndex, direction });
+
+      if (deferColumnResize && direction !== 'bottom') {
+        hideResizeIndicator();
+        showDeferredResizeIndicator(
+          direction === 'left'
+            ? controlColumnWidth
+            : getColumnBoundaryOffset(
+                colIndex,
+                colSizesRef.current[colIndex] ?? 0
+              )
+        );
+      } else {
+        showResizeIndicator({ colIndex, direction });
+      }
+
       event.preventDefault();
       event.stopPropagation();
     },
-    [showResizeIndicator, tableRef]
+    [
+      controlColumnWidth,
+      deferColumnResize,
+      getColumnBoundaryOffset,
+      hideResizeIndicator,
+      showDeferredResizeIndicator,
+      showResizeIndicator,
+      tableRef,
+    ]
   );
 
   return React.useMemo(
@@ -461,6 +537,10 @@ export const TableElement = withHOC(
     } = useTableElement();
     const colSizes = useTableColSizes();
     const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
+    const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
+    const deferColumnResize =
+      colSizes.length * props.element.children.length >
+      TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
     const tablePath = useElementSelector(([, path]) => path, [], {
       key: KEYS.table,
     });
@@ -468,6 +548,8 @@ export const TableElement = withHOC(
     const wrapperRef = React.useRef<HTMLDivElement>(null);
     const resizeController = useTableResizeController({
       controlColumnWidth,
+      deferColumnResize,
+      dragIndicatorRef,
       marginLeft,
       tablePath,
       tableRef,
@@ -515,6 +597,11 @@ export const TableElement = withHOC(
             className="group/table relative w-fit"
             style={tableVariableStyle}
           >
+            <div
+              ref={dragIndicatorRef}
+              className="-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] bg-ring/70"
+              contentEditable={false}
+            />
             <div
               className={cn(
                 '-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] bg-ring/80',
