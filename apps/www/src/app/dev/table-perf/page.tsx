@@ -300,7 +300,11 @@ export default function TablePerfPage() {
   const shouldUpdateMetricsRef = useRef(true);
 
   const onRenderCallback: ProfilerOnRenderCallback = useCallback(
-    (_id, phase, actualDuration, _baseDuration) => {
+    (id, phase, actualDuration, baseDuration) => {
+      console.log(
+        `[Profiler] ${id} (${phase}): ${actualDuration.toFixed(2)}ms (base: ${baseDuration.toFixed(2)}ms)`
+      );
+
       // Store in ref
       profilerDataRef.current.lastRenderDuration = actualDuration;
       profilerDataRef.current.renderCount += 1;
@@ -353,6 +357,12 @@ export default function TablePerfPage() {
     const COOLDOWN_MS = 100;
     const renderTimes: number[] = [];
 
+    console.log('[Benchmark] Starting benchmark...');
+    console.log(`[Benchmark] Config: ${config.rows}x${config.cols} cells`);
+    console.log(
+      `[Benchmark] ${WARMUP_RUNS} warmup runs, ${MEASURED_RUNS} measured runs`
+    );
+
     for (let i = 0; i < WARMUP_RUNS + MEASURED_RUNS; i++) {
       const isWarmup = i < WARMUP_RUNS;
 
@@ -383,6 +393,11 @@ export default function TablePerfPage() {
 
       if (initialRender !== null && !isWarmup) {
         renderTimes.push(initialRender);
+        console.log(
+          `[Benchmark] Run ${i - WARMUP_RUNS + 1}/${MEASURED_RUNS}: ${initialRender.toFixed(2)}ms`
+        );
+      } else if (isWarmup) {
+        console.log(`[Benchmark] Warmup ${i + 1}/${WARMUP_RUNS}`);
       }
 
       // Cooldown between iterations
@@ -392,6 +407,9 @@ export default function TablePerfPage() {
     const result = calculateStats(renderTimes);
     setBenchmarkResult(result);
     setIsBenchmarking(false);
+
+    console.log('[Benchmark] Complete!');
+    console.log('[Benchmark] Results:', result);
   }, [config.cols, config.rows]);
 
   const measureInputLatency = useCallback(async () => {
@@ -402,8 +420,11 @@ export default function TablePerfPage() {
     const NUM_SAMPLES = 50;
     const WARMUP_SAMPLES = 10;
 
+    console.log('[Input Latency] Starting measurement...');
+
     const editor = plateEditorRef.current;
     if (!editor) {
+      console.error('[Input Latency] Could not find Plate editor');
       setIsMeasuringLatency(false);
       return;
     }
@@ -426,7 +447,8 @@ export default function TablePerfPage() {
         anchor: { offset: 0, path: firstCellPath },
         focus: { offset: 0, path: firstCellPath },
       });
-    } catch {
+    } catch (e) {
+      console.error('[Input Latency] Could not select first cell:', e);
       setIsMeasuringLatency(false);
       return;
     }
@@ -456,6 +478,11 @@ export default function TablePerfPage() {
 
       if (!isWarmup) {
         samples.push(latency);
+        if (i % 10 === 0) {
+          console.log(
+            `[Input Latency] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
+          );
+        }
       }
 
       // Small delay between inputs
@@ -482,6 +509,9 @@ export default function TablePerfPage() {
 
     setInputLatencyResult(result);
     setIsMeasuringLatency(false);
+
+    console.log('[Input Latency] Complete!');
+    console.log('[Input Latency] Results:', result);
   }, []);
 
   return (
