@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import {
   AIChatPlugin,
   AIPlugin,
@@ -28,23 +30,21 @@ import {
   X,
 } from 'lucide-react';
 import {
+  type NodeEntry,
+  type SlateEditor,
   isHotkey,
   KEYS,
   NodeApi,
-  type NodeEntry,
-  type SlateEditor,
   TextApi,
 } from 'platejs';
 import {
-  type PlateEditor,
   useEditorPlugin,
-  useEditorRef,
   useFocusedLast,
   useHotkeys,
   usePluginOption,
 } from 'platejs/react';
-import * as React from 'react';
-import { commentPlugin } from '@/components/editor/plugins/comment-kit';
+import { type PlateEditor, useEditorRef } from 'platejs/react';
+
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -58,6 +58,7 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { commentPlugin } from '@/components/editor/plugins/comment-kit';
 
 import { AIChatEditor } from './ai-chat-editor';
 
@@ -174,26 +175,26 @@ export function AIMenu() {
   if (toolName === 'edit' && mode === 'chat' && isLoading) return null;
 
   return (
-    <Popover modal={false} onOpenChange={setOpen} open={open}>
+    <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverAnchor virtualRef={{ current: anchorElement! }} />
 
       <PopoverContent
-        align="center"
         className="border-none bg-transparent p-0 shadow-none"
+        style={{
+          width: anchorElement?.offsetWidth,
+        }}
         onEscapeKeyDown={(e) => {
           e.preventDefault();
 
           api.aiChat.hide();
         }}
+        align="center"
         side="bottom"
-        style={{
-          width: anchorElement?.offsetWidth,
-        }}
       >
         <Command
           className="w-full rounded-lg border shadow-md"
-          onValueChange={setValue}
           value={value}
+          onValueChange={setValue}
         >
           {mode === 'chat' &&
             isSelecting &&
@@ -207,13 +208,12 @@ export function AIMenu() {
             </div>
           ) : (
             <CommandPrimitive.Input
-              autoFocus
               className={cn(
                 'flex h-9 w-full min-w-0 border-input bg-transparent px-3 py-1 text-base outline-none transition-[color,box-shadow] placeholder:text-muted-foreground md:text-sm dark:bg-input/30',
                 'aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
                 'border-b focus-visible:ring-transparent'
               )}
-              data-plate-focus
+              value={input}
               onKeyDown={(e) => {
                 if (isHotkey('backspace')(e) && input.length === 0) {
                   e.preventDefault();
@@ -227,7 +227,8 @@ export function AIMenu() {
               }}
               onValueChange={setInput}
               placeholder="Ask AI anything..."
-              value={input}
+              data-plate-focus
+              autoFocus
             />
           )}
 
@@ -594,11 +595,12 @@ export const AIMenuItems = ({
   return (
     <>
       {menuGroups.map((group, index) => (
-        <CommandGroup heading={group.heading} key={index}>
+        <CommandGroup key={index} heading={group.heading}>
           {group.items.map((menuItem) => (
             <CommandItem
-              className="[&_svg]:text-muted-foreground"
               key={menuItem.value}
+              className="[&_svg]:text-muted-foreground"
+              value={menuItem.value}
               onSelect={() => {
                 menuItem.onSelect?.({
                   aiEditor,
@@ -607,7 +609,6 @@ export const AIMenuItems = ({
                 });
                 setInput('');
               }}
-              value={menuItem.value}
             >
               {menuItem.icon}
               <span>{menuItem.label}</span>
@@ -665,16 +666,16 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
+          '-translate-x-1/2 absolute bottom-4 left-1/2 z-20 flex items-center gap-3 rounded-md border border-border bg-muted px-3 py-1.5 text-muted-foreground text-sm shadow-md transition-all duration-300'
         )}
       >
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
         <span>{status === 'submitted' ? 'Thinking...' : 'Writing...'}</span>
         <Button
-          className="flex items-center gap-1 text-xs"
-          onClick={() => api.aiChat.stop()}
           size="sm"
           variant="ghost"
+          className="flex items-center gap-1 text-xs"
+          onClick={() => api.aiChat.stop()}
         >
           <PauseIcon className="h-4 w-4" />
           Stop
@@ -690,7 +691,7 @@ export function AILoadingBar() {
     return (
       <div
         className={cn(
-          'absolute bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
+          '-translate-x-1/2 absolute bottom-4 left-1/2 z-50 flex flex-col items-center gap-0 rounded-xl border border-border/50 bg-popover p-1 text-muted-foreground text-sm shadow-xl backdrop-blur-sm',
           'p-3'
         )}
       >
@@ -698,17 +699,17 @@ export function AILoadingBar() {
         <div className="flex w-full items-center justify-between gap-3">
           <div className="flex items-center gap-5">
             <Button
+              size="sm"
               disabled={isLoading}
               onClick={() => handleComments('accept')}
-              size="sm"
             >
               Accept
             </Button>
 
             <Button
+              size="sm"
               disabled={isLoading}
               onClick={() => handleComments('reject')}
-              size="sm"
             >
               Reject
             </Button>

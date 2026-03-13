@@ -65,18 +65,17 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
   return (
     <PlateElement
       {...props}
+      className="inline-block"
       attributes={{
         ...props.attributes,
         contentEditable: false,
       }}
-      className="inline-block"
     >
       <Popover>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
-            initialFocus
-            mode="single"
+            selected={new Date(element.date as string)}
             onSelect={(date) => {
               if (!date) return;
 
@@ -85,7 +84,8 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
                 { at: element }
               );
             }}
-            selected={new Date(element.date as string)}
+            mode="single"
+            initialFocus
           />
         </PopoverContent>
       </Popover>

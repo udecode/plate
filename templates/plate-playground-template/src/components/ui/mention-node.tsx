@@ -1,19 +1,21 @@
 'use client';
 
-import { getMentionOnSelectItem } from '@platejs/mention';
+import * as React from 'react';
 
 import type { TComboboxInputElement, TMentionElement } from 'platejs';
-import { IS_APPLE, KEYS } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
+
+import { getMentionOnSelectItem } from '@platejs/mention';
+import { IS_APPLE, KEYS } from 'platejs';
 import {
   PlateElement,
   useFocused,
   useReadOnly,
   useSelected,
 } from 'platejs/react';
-import * as React from 'react';
-import { useMounted } from '@/hooks/use-mounted';
+
 import { cn } from '@/lib/utils';
+import { useMounted } from '@/hooks/use-mounted';
 
 import {
   InlineCombobox,
@@ -39,12 +41,6 @@ export function MentionElement(
   return (
     <PlateElement
       {...props}
-      attributes={{
-        ...props.attributes,
-        contentEditable: false,
-        'data-slate-value': element.value,
-        draggable: true,
-      }}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
         !readOnly && 'cursor-pointer',
@@ -53,6 +49,12 @@ export function MentionElement(
         element.children[0][KEYS.italic] === true && 'italic',
         element.children[0][KEYS.underline] === true && 'underline'
       )}
+      attributes={{
+        ...props.attributes,
+        contentEditable: false,
+        'data-slate-value': element.value,
+        draggable: true,
+      }}
     >
       {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
@@ -84,11 +86,11 @@ export function MentionInputElement(
   return (
     <PlateElement {...props} as="span">
       <InlineCombobox
+        value={search}
         element={element}
         setValue={setSearch}
         showTrigger={false}
         trigger="@"
-        value={search}
       >
         <span className="inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline text-sm ring-ring focus-within:ring-2">
           <InlineComboboxInput />
@@ -101,8 +103,8 @@ export function MentionInputElement(
             {MENTIONABLES.map((item) => (
               <InlineComboboxItem
                 key={item.key}
-                onClick={() => onSelectItem(editor, item, search)}
                 value={item.text}
+                onClick={() => onSelectItem(editor, item, search)}
               >
                 {item.text}
               </InlineComboboxItem>

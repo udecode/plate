@@ -1,10 +1,13 @@
 'use client';
 
+import * as React from 'react';
+
+import type { TImageElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
+
 import { useDraggable } from '@platejs/dnd';
 import { Image, ImagePlugin, useMediaState } from '@platejs/media/react';
 import { ResizableProvider, useResizableValue } from '@platejs/resizable';
-import type { TImageElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -43,14 +46,14 @@ export const ImageElement = withHOC(
                 options={{ direction: 'left' }}
               />
               <Image
-                alt={props.attributes.alt as string | undefined}
+                ref={handleRef}
                 className={cn(
                   'block w-full max-w-full cursor-pointer object-cover px-0',
                   'rounded-sm',
                   focused && selected && 'ring-2 ring-ring ring-offset-2',
                   isDragging && 'opacity-50'
                 )}
-                ref={handleRef}
+                alt={props.attributes.alt as string | undefined}
               />
               <ResizeHandle
                 className={mediaResizeHandleVariants({
@@ -60,13 +63,13 @@ export const ImageElement = withHOC(
               />
             </Resizable>
 
-            <Caption align={align} style={{ width }}>
+            <Caption style={{ width }} align={align}>
               <CaptionTextarea
+                readOnly={readOnly}
                 onFocus={(e) => {
                   e.preventDefault();
                 }}
                 placeholder="Write a caption..."
-                readOnly={readOnly}
               />
             </Caption>
           </figure>

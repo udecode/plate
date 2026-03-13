@@ -1,18 +1,17 @@
 'use client';
 
+import * as React from 'react';
+
 import { formatCodeBlock, isLangSupported } from '@platejs/code-block';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
-import { NodeApi, type TCodeBlockElement, type TCodeSyntaxLeaf } from 'platejs';
+import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
 import {
-  PlateElement,
   type PlateElementProps,
-  PlateLeaf,
   type PlateLeafProps,
-  useEditorRef,
-  useElement,
-  useReadOnly,
+  PlateElement,
+  PlateLeaf,
 } from 'platejs/react';
-import * as React from 'react';
+import { useEditorRef, useElement, useReadOnly } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -49,11 +48,11 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
         >
           {isLangSupported(element.lang) && (
             <Button
+              size="icon"
+              variant="ghost"
               className="size-6 text-xs"
               onClick={() => formatCodeBlock(editor, { element })}
-              size="icon"
               title="Format code"
-              variant="ghost"
             >
               <BracesIcon className="!size-3.5 text-muted-foreground" />
             </Button>
@@ -62,10 +61,10 @@ export function CodeBlockElement(props: PlateElementProps<TCodeBlockElement>) {
           <CodeBlockCombobox />
 
           <CopyButton
-            className="size-6 gap-1 text-muted-foreground text-xs"
             size="icon"
-            value={() => NodeApi.string(element)}
             variant="ghost"
+            className="size-6 gap-1 text-muted-foreground text-xs"
+            value={() => NodeApi.string(element)}
           />
         </div>
       </div>
@@ -94,14 +93,14 @@ function CodeBlockCombobox() {
   if (readOnly) return null;
 
   return (
-    <Popover onOpenChange={setOpen} open={open}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          aria-expanded={open}
-          className="h-6 select-none justify-between gap-1 px-2 text-muted-foreground text-xs"
-          role="combobox"
           size="sm"
           variant="ghost"
+          className="h-6 select-none justify-between gap-1 px-2 text-muted-foreground text-xs"
+          aria-expanded={open}
+          role="combobox"
         >
           {languages.find((language) => language.value === value)?.label ??
             'Plain Text'}
@@ -114,9 +113,9 @@ function CodeBlockCombobox() {
         <Command shouldFilter={false}>
           <CommandInput
             className="h-9"
+            value={searchValue}
             onValueChange={(value) => setSearchValue(value)}
             placeholder="Search language..."
-            value={searchValue}
           />
           <CommandEmpty>No language found.</CommandEmpty>
 
@@ -124,8 +123,9 @@ function CodeBlockCombobox() {
             <CommandGroup>
               {items.map((language) => (
                 <CommandItem
-                  className="cursor-pointer"
                   key={language.label}
+                  className="cursor-pointer"
+                  value={language.value}
                   onSelect={(value) => {
                     editor.tf.setNodes<TCodeBlockElement>(
                       { lang: value },
@@ -134,7 +134,6 @@ function CodeBlockCombobox() {
                     setSearchValue(value);
                     setOpen(false);
                   }}
-                  value={language.value}
                 >
                   <Check
                     className={cn(

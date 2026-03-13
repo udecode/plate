@@ -1,6 +1,6 @@
 'use client';
 
-import { TrailingBlockPlugin, type Value } from 'platejs';
+import { type Value, TrailingBlockPlugin } from 'platejs';
 import { type TPlateEditor, useEditorRef } from 'platejs/react';
 
 import { AIKit } from '@/components/editor/plugins/ai-kit';

@@ -1,20 +1,25 @@
+import type {
+  ChatMessage,
+  ToolName,
+} from '@/components/editor/use-chat';
+import type { NextRequest } from 'next/server';
+
 import { createGateway } from '@ai-sdk/gateway';
 import {
+  type LanguageModel,
+  type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
   generateText,
-  type LanguageModel,
   Output,
   streamText,
   tool,
-  type UIMessageStreamWriter,
 } from 'ai';
-import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createSlateEditor, nanoid, type SlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
+
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
-import type { ChatMessage, ToolName } from '@/components/editor/use-chat';
 import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
 
 import {

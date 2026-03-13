@@ -2,10 +2,10 @@
 
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
-  PlateElement,
   type PlateElementProps,
-  PlateText,
   type PlateTextProps,
+  PlateElement,
+  PlateText,
   usePluginOption,
 } from 'platejs/react';
 

@@ -1,9 +1,10 @@
+import type { ChatMessage } from '@/components/editor/use-chat';
+import type { UIMessage } from 'ai';
+
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
-import type { UIMessage } from 'ai';
 import dedent from 'dedent';
-import { KEYS, RangeApi, type SlateEditor } from 'platejs';
-import type { ChatMessage } from '@/components/editor/use-chat';
+import { type SlateEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines

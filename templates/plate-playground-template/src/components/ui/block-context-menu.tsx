@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   BLOCK_CONTEXT_MENU_ID,
@@ -8,7 +10,6 @@ import {
 } from '@platejs/selection/react';
 import { KEYS } from 'platejs';
 import { useEditorPlugin, usePlateState, usePluginOption } from 'platejs/react';
-import * as React from 'react';
 
 import {
   ContextMenu,
@@ -65,12 +66,12 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
 
   return (
     <ContextMenu
-      modal={false}
       onOpenChange={(open) => {
         if (!open) {
           api.blockMenu.hide();
         }
       }}
+      modal={false}
     >
       <ContextMenuTrigger
         asChild

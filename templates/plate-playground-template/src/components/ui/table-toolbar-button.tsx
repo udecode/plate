@@ -1,8 +1,10 @@
 'use client';
 
-import { TablePlugin, useTableMergeState } from '@platejs/table/react';
+import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
+import { TablePlugin, useTableMergeState } from '@platejs/table/react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -17,7 +19,6 @@ import {
 } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditorPlugin, useEditorSelector } from 'platejs/react';
-import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -44,16 +45,16 @@ export function TableToolbarButton(props: DropdownMenuProps) {
   const mergeState = useTableMergeState();
 
   return (
-    <DropdownMenu modal={false} onOpenChange={setOpen} open={open} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={open} tooltip="Table">
+        <ToolbarButton pressed={open} tooltip="Table" isDropdown>
           <Table />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex w-[180px] min-w-0 flex-col"
+        align="start"
       >
         <DropdownMenuGroup>
           <DropdownMenuSub>
@@ -244,11 +245,11 @@ function TablePicker() {
         {tablePicker.grid.map((rows, rowIndex) =>
           rows.map((value, columIndex) => (
             <div
+              key={`(${rowIndex},${columIndex})`}
               className={cn(
                 'col-span-1 size-3 border border-solid bg-secondary',
                 !!value && 'border-current'
               )}
-              key={`(${rowIndex},${columIndex})`}
               onMouseMove={() => {
                 onCellMove(rowIndex, columIndex);
               }}

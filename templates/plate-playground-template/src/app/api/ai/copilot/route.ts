@@ -1,5 +1,6 @@
-import { generateText } from 'ai';
 import type { NextRequest } from 'next/server';
+
+import { generateText } from 'ai';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {

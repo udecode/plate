@@ -1,15 +1,16 @@
 'use client';
 
+import * as React from 'react';
+
+import type { VariantProps } from 'class-variance-authority';
+
 import {
-  Resizable as ResizablePrimitive,
   type ResizeHandle as ResizeHandlePrimitive,
+  Resizable as ResizablePrimitive,
   useResizeHandle,
   useResizeHandleState,
 } from '@platejs/resizable';
-
-import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
-import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 

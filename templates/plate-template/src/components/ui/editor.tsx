@@ -1,10 +1,12 @@
 'use client';
 
+import * as React from 'react';
+
 import type { VariantProps } from 'class-variance-authority';
-import { cva } from 'class-variance-authority';
 import type { PlateContentProps, PlateViewProps } from 'platejs/react';
+
+import { cva } from 'class-variance-authority';
 import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
-import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -55,7 +57,7 @@ const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-pre-wrap break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    '**:data-slate-placeholder:!top-1/2 placeholder:text-muted-foreground/80 **:data-slate-placeholder:-translate-y-1/2 **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
+    '**:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-slate-placeholder:text-muted-foreground/80 **:data-slate-placeholder:opacity-100!',
     '[&_strong]:font-bold'
   ),
   {
@@ -97,6 +99,7 @@ export const Editor = ({
   ...props
 }: EditorProps & { ref?: React.RefObject<HTMLDivElement | null> }) => (
   <PlateContent
+    ref={ref}
     className={cn(
       editorVariants({
         disabled,
@@ -105,9 +108,8 @@ export const Editor = ({
       }),
       className
     )}
-    disableDefaultStyles
     disabled={disabled}
-    ref={ref}
+    disableDefaultStyles
     {...props}
   />
 );

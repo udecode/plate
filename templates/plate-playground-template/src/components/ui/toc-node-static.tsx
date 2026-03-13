@@ -1,7 +1,10 @@
-import { BaseTocPlugin, type Heading, isHeading } from '@platejs/toc';
-import { cva } from 'class-variance-authority';
-import { NodeApi, type SlateEditor, type TElement } from 'platejs';
+import * as React from 'react';
+
 import type { SlateElementProps } from 'platejs/static';
+
+import { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';
+import { cva } from 'class-variance-authority';
+import { type SlateEditor, type TElement, NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 import { Button } from '@/components/ui/button';
@@ -29,11 +32,11 @@ export function TocElementStatic(props: SlateElementProps) {
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button
+              key={item.title}
+              variant="ghost"
               className={headingItemVariants({
                 depth: item.depth as 1 | 2 | 3,
               })}
-              key={item.title}
-              variant="ghost"
             >
               {item.title}
             </Button>

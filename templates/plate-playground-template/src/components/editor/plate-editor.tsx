@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { normalizeNodeId } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 

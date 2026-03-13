@@ -1,6 +1,9 @@
 'use client';
 
+import * as React from 'react';
+
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
+
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -27,17 +30,17 @@ import {
 } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { type PlateEditor, useEditorRef } from 'platejs/react';
-import * as React from 'react';
-import {
-  insertBlock,
-  insertInlineElement,
-} from '@/components/editor/transforms';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  insertBlock,
+  insertInlineElement,
+} from '@/components/editor/transforms';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
@@ -225,23 +228,23 @@ export function InsertToolbarButton(props: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <DropdownMenu modal={false} onOpenChange={setOpen} open={open} {...props}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton isDropdown pressed={open} tooltip="Insert">
+        <ToolbarButton pressed={open} tooltip="Insert" isDropdown>
           <PlusIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        align="start"
         className="flex max-h-[500px] min-w-0 flex-col overflow-y-auto"
+        align="start"
       >
         {groups.map(({ group, items: nestedItems }) => (
           <ToolbarMenuGroup key={group} label={group}>
             {nestedItems.map(({ icon, label, value, onSelect }) => (
               <DropdownMenuItem
-                className="min-w-[180px]"
                 key={value}
+                className="min-w-[180px]"
                 onSelect={() => {
                   onSelect(editor, value);
                   editor.tf.focus();

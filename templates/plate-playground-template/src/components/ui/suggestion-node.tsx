@@ -1,16 +1,19 @@
 'use client';
 
-import { cva } from 'class-variance-authority';
-import { CornerDownLeftIcon } from 'lucide-react';
+import * as React from 'react';
+
 import type { TSuggestionData, TSuggestionText } from 'platejs';
 import type { PlateLeafProps, RenderNodeWrapper } from 'platejs/react';
+
+import { cva } from 'class-variance-authority';
+import { CornerDownLeftIcon } from 'lucide-react';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
-import * as React from 'react';
+
+import { cn } from '@/lib/utils';
 import {
   type SuggestionConfig,
   suggestionPlugin,
 } from '@/components/editor/plugins/suggestion-kit';
-import { cn } from '@/lib/utils';
 
 const suggestionVariants = cva(
   cn(
@@ -62,11 +65,6 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
     <PlateLeaf
       {...props}
       as={Component}
-      attributes={{
-        ...props.attributes,
-        onMouseEnter: () => setOption('hoverId', leafId),
-        onMouseLeave: () => setOption('hoverId', null),
-      }}
       className={cn(
         suggestionVariants({
           insertActive: hasActive || hasHover,
@@ -74,6 +72,11 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
           removeActive: (hasActive || hasHover) && hasRemove,
         })
       )}
+      attributes={{
+        ...props.attributes,
+        onMouseEnter: () => setOption('hoverId', leafId),
+        onMouseLeave: () => setOption('hoverId', null),
+      }}
     >
       {props.children}
     </PlateLeaf>
@@ -122,6 +125,7 @@ function SuggestionLineBreakContent({
         <>
           {children}
           <span
+            ref={spanRef}
             className={cn(
               'absolute text-justify',
               suggestionVariants({
@@ -130,12 +134,11 @@ function SuggestionLineBreakContent({
                 removeActive: (isActive || isHover) && isRemove,
               })
             )}
-            contentEditable={false}
-            ref={spanRef}
             style={{
               bottom: 3.5,
               height: 21,
             }}
+            contentEditable={false}
           >
             <CornerDownLeftIcon className="mt-0.5 size-4" />
           </span>
@@ -149,9 +152,9 @@ function SuggestionLineBreakContent({
               removeActive: (isActive || isHover) && isRemove,
             })
           )}
-          data-block-suggestion="true"
           onMouseEnter={() => setOption('hoverId', suggestionData.id)}
           onMouseLeave={() => setOption('hoverId', null)}
+          data-block-suggestion="true"
         >
           {children}
         </div>

@@ -1,14 +1,17 @@
 'use client';
 
+import * as React from 'react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import ReactPlayer from 'react-player';
+
+import type { TResizableProps, TVideoElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
+
 import { useDraggable } from '@platejs/dnd';
 import { parseTwitterUrl, parseVideoUrl } from '@platejs/media';
 import { useMediaState } from '@platejs/media/react';
 import { ResizableProvider, useResizableValue } from '@platejs/resizable';
-import type { TResizableProps, TVideoElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, useEditorMounted, withHOC } from 'platejs/react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import ReactPlayer from 'react-player';
 
 import { cn } from '@/lib/utils';
 
@@ -48,8 +51,8 @@ export const VideoElement = withHOC(
       <PlateElement className="py-2.5" {...props}>
         <figure className="relative m-0 cursor-default" contentEditable={false}>
           <Resizable
-            align={align}
             className={cn(isDragging && 'opacity-50')}
+            align={align}
             options={{
               align,
               maxWidth: isTweet ? 550 : '100%',
@@ -96,20 +99,20 @@ export const VideoElement = withHOC(
               {isUpload && isEditorMounted && (
                 <div ref={handleRef}>
                   <ReactPlayer
-                    controls
                     height="100%"
                     src={unsafeUrl}
                     width="100%"
+                    controls
                   />
                 </div>
               )}
             </div>
           </Resizable>
 
-          <Caption align={align} style={{ width }}>
+          <Caption style={{ width }} align={align}>
             <CaptionTextarea
-              placeholder="Write a caption..."
               readOnly={readOnly}
+              placeholder="Write a caption..."
             />
           </Caption>
         </figure>

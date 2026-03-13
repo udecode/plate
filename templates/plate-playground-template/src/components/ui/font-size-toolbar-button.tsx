@@ -1,12 +1,14 @@
 'use client';
 
+import * as React from 'react';
+
+import type { TElement } from 'platejs';
+
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';
 import { Minus, Plus } from 'lucide-react';
-import type { TElement } from 'platejs';
 import { KEYS } from 'platejs';
 import { useEditorPlugin, useEditorSelector } from 'platejs/react';
-import * as React from 'react';
 
 import {
   Popover,
@@ -95,13 +97,13 @@ export function FontSizeToolbarButton() {
         <Minus />
       </ToolbarButton>
 
-      <Popover modal={false} open={isFocused}>
+      <Popover open={isFocused} modal={false}>
         <PopoverTrigger asChild>
           <input
             className={cn(
               'h-full w-10 shrink-0 bg-transparent px-1 text-center text-sm hover:bg-muted'
             )}
-            data-plate-focus="true"
+            value={displayValue}
             onBlur={() => {
               setIsFocused(false);
               handleInputChange();
@@ -117,8 +119,8 @@ export function FontSizeToolbarButton() {
                 handleInputChange();
               }
             }}
+            data-plate-focus="true"
             type="text"
-            value={displayValue}
           />
         </PopoverTrigger>
         <PopoverContent
@@ -127,15 +129,15 @@ export function FontSizeToolbarButton() {
         >
           {FONT_SIZES.map((size) => (
             <button
+              key={size}
               className={cn(
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
-              data-highlighted={size === displayValue}
-              key={size}
               onClick={() => {
                 tf.fontSize.addMark(`${size}px`);
                 setIsFocused(false);
               }}
+              data-highlighted={size === displayValue}
               type="button"
             >
               {size}

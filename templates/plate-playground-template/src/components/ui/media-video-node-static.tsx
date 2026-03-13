@@ -1,6 +1,9 @@
+import * as React from 'react';
+
 import type { TCaptionElement, TResizableProps, TVideoElement } from 'platejs';
-import { NodeApi } from 'platejs';
 import type { SlateElementProps } from 'platejs/static';
+
+import { NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 export function VideoElementStatic(
@@ -17,8 +20,8 @@ export function VideoElementStatic(
         >
           <video
             className="w-full max-w-full rounded-sm object-cover px-0"
-            controls
             src={url}
+            controls
           />
           {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}
         </figure>

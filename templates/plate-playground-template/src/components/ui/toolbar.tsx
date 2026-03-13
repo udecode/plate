@@ -1,10 +1,11 @@
 'use client';
 
+import * as React from 'react';
+
 import * as ToolbarPrimitive from '@radix-ui/react-toolbar';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { cva, type VariantProps } from 'class-variance-authority';
+import { type VariantProps, cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
-import * as React from 'react';
 
 import {
   DropdownMenuLabel,
@@ -130,7 +131,7 @@ export const ToolbarButton = withTooltip(function ToolbarButton({
   ...props
 }: ToolbarButtonProps) {
   return typeof pressed === 'boolean' ? (
-    <ToolbarToggleGroup disabled={props.disabled} type="single" value="single">
+    <ToolbarToggleGroup disabled={props.disabled} value="single" type="single">
       <ToolbarToggleItem
         className={cn(
           toolbarButtonVariants({

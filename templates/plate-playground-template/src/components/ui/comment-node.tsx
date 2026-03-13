@@ -1,12 +1,15 @@
 'use client';
 
-import { getCommentCount } from '@platejs/comment';
+import * as React from 'react';
 
 import type { TCommentText } from 'platejs';
 import type { PlateLeafProps } from 'platejs/react';
+
+import { getCommentCount } from '@platejs/comment';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
-import { commentPlugin } from '@/components/editor/plugins/comment-kit';
+
 import { cn } from '@/lib/utils';
+import { commentPlugin } from '@/components/editor/plugins/comment-kit';
 
 export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const { children, leaf } = props;
@@ -23,12 +26,6 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   return (
     <PlateLeaf
       {...props}
-      attributes={{
-        ...props.attributes,
-        onClick: () => setOption('activeId', currentId ?? null),
-        onMouseEnter: () => setOption('hoverId', currentId ?? null),
-        onMouseLeave: () => setOption('hoverId', null),
-      }}
       className={cn(
         'border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200',
         (isHover || isActive) && 'border-b-highlight bg-highlight/25',
@@ -37,6 +34,12 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
           isOverlapping &&
           'border-b-highlight bg-highlight/45'
       )}
+      attributes={{
+        ...props.attributes,
+        onClick: () => setOption('activeId', currentId ?? null),
+        onMouseEnter: () => setOption('hoverId', currentId ?? null),
+        onMouseLeave: () => setOption('hoverId', null),
+      }}
     >
       {children}
     </PlateLeaf>

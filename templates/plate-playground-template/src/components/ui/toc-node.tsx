@@ -1,8 +1,11 @@
 'use client';
 
+import * as React from 'react';
+
+import type { PlateElementProps } from 'platejs/react';
+
 import { useTocElement, useTocElementState } from '@platejs/toc/react';
 import { cva } from 'class-variance-authority';
-import type { PlateElementProps } from 'platejs/react';
 import { PlateElement } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -31,13 +34,13 @@ export function TocElement(props: PlateElementProps) {
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button
-              aria-current
+              key={item.id}
+              variant="ghost"
               className={headingItemVariants({
                 depth: item.depth as 1 | 2 | 3,
               })}
-              key={item.id}
               onClick={(e) => btnProps.onClick(e, item, 'smooth')}
-              variant="ghost"
+              aria-current
             >
               {item.title}
             </Button>
