@@ -1,13 +1,11 @@
 'use client';
 
-import * as React from 'react';
-
 import { useDraggable, useDropLine } from '@platejs/dnd';
+import { resizeLengthClampStatic } from '@platejs/resizable';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
 } from '@platejs/selection/react';
-import { resizeLengthClampStatic } from '@platejs/resizable';
 import {
   setCellBackground,
   setTableColSize,
@@ -15,16 +13,16 @@ import {
   setTableRowSize,
 } from '@platejs/table';
 import {
+  roundCellSizeToStep,
   TablePlugin,
   TableProvider,
-  roundCellSizeToStep,
   useCellIndices,
   useIsCellSelected,
   useOverrideColSize,
   useOverrideMarginLeft,
   useOverrideRowSize,
-  useTableCellBorders,
   useTableBordersDropdownMenuContentState,
+  useTableCellBorders,
   useTableColSizes,
   useTableElement,
   useTableMergeState,
@@ -45,21 +43,22 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  KEYS,
+  PathApi,
   type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
-  KEYS,
-  PathApi,
 } from 'platejs';
 import {
-  type PlateElementProps,
   PlateElement,
+  type PlateElementProps,
   useComposedRef,
   useEditorPlugin,
   useEditorRef,
   useEditorSelector,
   useElement,
+  useElementSelector,
   useFocusedLast,
   usePluginOption,
   useReadOnly,
@@ -67,7 +66,7 @@ import {
   useSelected,
   withHOC,
 } from 'platejs/react';
-import { useElementSelector } from 'platejs/react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -625,26 +624,26 @@ export const TableElement = withHOC(
       >
         <TableResizeContext.Provider value={resizeController}>
           <div
-            ref={wrapperRef}
             className="group/table relative w-fit"
+            ref={wrapperRef}
             style={tableVariableStyle}
           >
             <div
-              ref={dragIndicatorRef}
-              className="-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] bg-ring/70"
+              className="pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] -translate-x-[1.5px] bg-ring/70"
               contentEditable={false}
+              ref={dragIndicatorRef}
             />
             <div
-              ref={hoverIndicatorRef}
-              className="-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] bg-ring/80"
+              className="pointer-events-none absolute inset-y-0 z-35 hidden w-[3px] -translate-x-[1.5px] bg-ring/80"
               contentEditable={false}
+              ref={hoverIndicatorRef}
             />
             <table
-              ref={tableRef}
               className={cn(
                 'mr-0 ml-px table h-px table-fixed border-collapse',
                 isSelectingCell && 'selection:bg-transparent'
               )}
+              ref={tableRef}
               style={tableStyle}
               {...tableProps}
             >
@@ -715,14 +714,14 @@ function TableFloatingToolbar({
 
   return (
     <Popover
-      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
       modal={false}
+      open={isFocusedLast && (canMerge || canSplit || collapsedInside)}
     >
       <PopoverAnchor asChild>{children}</PopoverAnchor>
       <PopoverContent
         asChild
-        onOpenAutoFocus={(e) => e.preventDefault()}
         contentEditable={false}
+        onOpenAutoFocus={(e) => e.preventDefault()}
         {...props}
       >
         <Toolbar
@@ -858,12 +857,12 @@ function TableBordersDropdownMenuContent(
 
   return (
     <DropdownMenuContent
+      align="start"
       className="min-w-[220px]"
       onCloseAutoFocus={(e) => {
         e.preventDefault();
         editor.tf.focus();
       }}
-      align="start"
       side="right"
       sideOffset={0}
       {...props}
@@ -950,7 +949,7 @@ function ColorDropdownMenu({
   }, [selectedCells, editor]);
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
       </DropdownMenuTrigger>
@@ -1020,19 +1019,19 @@ export function TableRowElement({
   return (
     <PlateElement
       {...props}
-      ref={useComposedRef(props.ref, previewRef, nodeRef)}
       as="tr"
+      attributes={{
+        ...props.attributes,
+        'data-selected': selected ? 'true' : undefined,
+      }}
       className={cn('group/row', isDragging && 'opacity-50')}
+      ref={useComposedRef(props.ref, previewRef, nodeRef)}
       style={
         {
           ...props.style,
           '--tableRowMinHeight': rowMinHeight ? `${rowMinHeight}px` : undefined,
         } as React.CSSProperties
       }
-      attributes={{
-        ...props.attributes,
-        'data-selected': selected ? 'true' : undefined,
-      }}
     >
       {hasControls && (
         <td
@@ -1098,16 +1097,16 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
 
   return (
     <Button
-      ref={dragRef}
-      variant="outline"
       className={cn(
-        '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
+        'absolute top-1/2 left-0 z-51 h-6 w-4 -translate-y-1/2 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
         'cursor-grab active:cursor-grabbing',
         'opacity-0 transition-opacity duration-100 group-hover/row:opacity-100 group-data-[table-resizing=true]/row:opacity-0'
       )}
       onClick={() => {
         editor.tf.select(element);
       }}
+      ref={dragRef}
+      variant="outline"
     >
       <GripVertical className="text-muted-foreground" />
     </Button>
@@ -1165,6 +1164,11 @@ export function TableCellElement({
     <PlateElement
       {...props}
       as={isHeader ? 'th' : 'td'}
+      attributes={{
+        ...props.attributes,
+        colSpan,
+        rowSpan,
+      }}
       className={cn(
         'relative h-full overflow-visible border-none bg-background p-0',
         element.background ? 'bg-(--cellBackground)' : 'bg-background',
@@ -1184,11 +1188,6 @@ export function TableCellElement({
           minWidth: width,
         } as React.CSSProperties
       }
-      attributes={{
-        ...props.attributes,
-        colSpan,
-        rowSpan,
-      }}
     >
       <div
         className="relative z-20 box-border h-full px-3 py-2"
@@ -1243,7 +1242,15 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
       suppressContentEditableWarning={true}
     >
       <div
-        className="-top-2 -right-1 pointer-events-auto absolute z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        className="pointer-events-auto absolute -top-2 -right-1 z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        onPointerDown={(event) => {
+          startResize(event, {
+            colIndex,
+            direction: 'right',
+            handleKey: rightHandleKey,
+            rowIndex,
+          });
+        }}
         onPointerEnter={(event) => {
           setResizePreview(event, {
             colIndex,
@@ -1255,17 +1262,17 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
         onPointerLeave={() => {
           clearResizePreview(rightHandleKey);
         }}
+      />
+      <div
+        className="pointer-events-auto absolute -bottom-1 left-0 z-40 h-2 w-full cursor-row-resize touch-none"
         onPointerDown={(event) => {
           startResize(event, {
             colIndex,
-            direction: 'right',
-            handleKey: rightHandleKey,
+            direction: 'bottom',
+            handleKey: bottomHandleKey,
             rowIndex,
           });
         }}
-      />
-      <div
-        className="-bottom-1 pointer-events-auto absolute left-0 z-40 h-2 w-full cursor-row-resize touch-none"
         onPointerEnter={(event) => {
           setResizePreview(event, {
             colIndex,
@@ -1277,18 +1284,18 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
         onPointerLeave={() => {
           clearResizePreview(bottomHandleKey);
         }}
-        onPointerDown={(event) => {
-          startResize(event, {
-            colIndex,
-            direction: 'bottom',
-            handleKey: bottomHandleKey,
-            rowIndex,
-          });
-        }}
       />
       {isLeftHandle && (
         <div
-          className="-left-1 pointer-events-auto absolute top-0 z-40 h-full w-2 cursor-col-resize touch-none"
+          className="pointer-events-auto absolute top-0 -left-1 z-40 h-full w-2 cursor-col-resize touch-none"
+          onPointerDown={(event) => {
+            startResize(event, {
+              colIndex,
+              direction: 'left',
+              handleKey: leftHandleKey,
+              rowIndex,
+            });
+          }}
           onPointerEnter={(event) => {
             setResizePreview(event, {
               colIndex,
@@ -1299,14 +1306,6 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
           }}
           onPointerLeave={() => {
             clearResizePreview(leftHandleKey);
-          }}
-          onPointerDown={(event) => {
-            startResize(event, {
-              colIndex,
-              direction: 'left',
-              handleKey: leftHandleKey,
-              rowIndex,
-            });
           }}
         />
       )}

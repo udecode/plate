@@ -1,16 +1,14 @@
 'use client';
 
-import * as React from 'react';
-import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import { Tweet } from 'react-tweet';
-
-import type { TMediaEmbedElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
-
 import { parseTwitterUrl, parseVideoUrl } from '@platejs/media';
 import { MediaEmbedPlugin, useMediaState } from '@platejs/media/react';
 import { ResizableProvider, useResizableValue } from '@platejs/resizable';
+
+import type { TMediaEmbedElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, withHOC } from 'platejs/react';
+import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 
@@ -93,14 +91,14 @@ export const MediaEmbedElement = withHOC(
                     )}
                   >
                     <iframe
+                      allowFullScreen
                       className={cn(
                         'absolute top-0 left-0 size-full rounded-sm',
                         isVideo && 'border-0',
                         focused && selected && 'ring-2 ring-ring ring-offset-2'
                       )}
-                      title="embed"
                       src={embed!.url}
-                      allowFullScreen
+                      title="embed"
                     />
                   </div>
                 )
@@ -125,7 +123,7 @@ export const MediaEmbedElement = withHOC(
               />
             </Resizable>
 
-            <Caption style={{ width }} align={align}>
+            <Caption align={align} style={{ width }}>
               <CaptionTextarea placeholder="Write a caption..." />
             </Caption>
           </figure>

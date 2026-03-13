@@ -9,7 +9,7 @@
 
 const perfMeasures = new Map<string, { count: number; total: number }>();
 
-export function startPerfMeasure(name: string): number {
+export function startPerfMeasure(_name: string): number {
   return performance.now();
 }
 
@@ -26,18 +26,15 @@ export function resetPerfMeasures(): void {
   perfMeasures.clear();
 }
 
-export function logPerfResults(): void {
-  console.log('\n=== Performance Breakdown ===');
+export function logPerfResults(): string[] {
   const sorted = Array.from(perfMeasures.entries()).sort(
     (a, b) => b[1].total - a[1].total
   );
 
-  for (const [name, { count, total }] of sorted) {
-    console.log(
+  return sorted.map(
+    ([name, { count, total }]) =>
       `${name}: ${total.toFixed(2)}ms total, ${count} calls, ${(total / count).toFixed(3)}ms avg`
-    );
-  }
-  console.log('=============================\n');
+  );
 }
 
 // Hook call counter for debugging

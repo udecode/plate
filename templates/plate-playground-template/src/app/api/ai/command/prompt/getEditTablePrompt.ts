@@ -1,8 +1,7 @@
-import type { ChatMessage } from '@/components/editor/use-chat';
-import type { SlateEditor } from 'platejs';
-
 import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
+import type { SlateEditor } from 'platejs';
+import type { ChatMessage } from '@/components/editor/use-chat';
 
 import {
   buildStructuredPrompt,

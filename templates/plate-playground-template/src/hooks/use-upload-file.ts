@@ -1,14 +1,12 @@
+import { generateReactHelpers } from '@uploadthing/react';
 import * as React from 'react';
-
-import type { OurFileRouter } from '@/lib/uploadthing';
+import { toast } from 'sonner';
 import type {
   ClientUploadedFileData,
   UploadFilesOptions,
 } from 'uploadthing/types';
-
-import { generateReactHelpers } from '@uploadthing/react';
-import { toast } from 'sonner';
 import { z } from 'zod';
+import type { OurFileRouter } from '@/lib/uploadthing';
 
 export type UploadedFile<T = unknown> = ClientUploadedFileData<T>;
 

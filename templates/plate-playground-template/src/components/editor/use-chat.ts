@@ -1,9 +1,8 @@
 'use client';
 
-import * as React from 'react';
-
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
+import { withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   aiCommentToRange,
@@ -12,14 +11,12 @@ import {
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { DefaultChatTransport, type UIMessage } from 'ai';
+import { KEYS, NodeApi, nanoid, TextApi, type TNode } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
-
+import * as React from 'react';
 import { aiChatPlugin } from '@/components/editor/plugins/ai-kit';
-
 import { discussionPlugin } from './plugins/discussion-kit';
-import { withAIBatch } from '@platejs/ai';
 
 export type ToolName = 'comment' | 'edit' | 'generate';
 

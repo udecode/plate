@@ -80,7 +80,7 @@ case "$MODE" in
     echo ""
     echo "Environment:"
     echo "  TEMPLATE_REGISTRY_URL - Override the registry prefix (for example: http://127.0.0.1:3210/r)"
-    echo "  TEMPLATE_SKIP_VERIFY - Skip bun lint:fix and bun typecheck after generation"
+    echo "  TEMPLATE_SKIP_VERIFY - Skip bun typecheck after generation"
     exit 1
     ;;
 esac
@@ -115,10 +115,10 @@ echo "Adding $REGISTRY_NAME via shadcn..."
 if [[ "$USE_LOCAL_FILES" == true ]]; then
   (
     cd "$LOCAL_REGISTRY_DIR"
-    npx --yes shadcn@latest add "$REGISTRY_NAME" --cwd "$TEMPLATE_DIR" -o
+    pnpm dlx shadcn@latest add "$REGISTRY_NAME" --cwd "$TEMPLATE_DIR" -o
   )
 else
-  npx --yes shadcn@latest add "$REGISTRY_NAME" -o
+  pnpm dlx shadcn@latest add "$REGISTRY_NAME" -o
 fi
 
 # shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.

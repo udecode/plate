@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { AIChatPlugin } from '@platejs/ai/react';
 import {
   type CursorData,
@@ -56,12 +54,12 @@ function Cursor({
     <>
       {selectionRects.map((position, i) => (
         <div
-          key={i}
           className={cn(
             'pointer-events-none absolute z-10',
             id === 'selection' && 'bg-brand/25',
             id === 'selection' && isCursor && 'bg-primary'
           )}
+          key={i}
           style={{
             ...selectionStyle,
             ...position,

@@ -1,15 +1,11 @@
 'use client';
 
-import * as React from 'react';
-
-import type { Point, TElement } from 'platejs';
-
 import {
-  type ComboboxItemProps,
   Combobox,
   ComboboxGroup,
   ComboboxGroupLabel,
   ComboboxItem,
+  type ComboboxItemProps,
   ComboboxPopover,
   ComboboxProvider,
   ComboboxRow,
@@ -24,7 +20,9 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
+import type { Point, TElement } from 'platejs';
 import { useComposedRef, useEditorRef } from 'platejs/react';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -243,20 +241,20 @@ const InlineComboboxInput = ({
 
       <span className="relative min-h-[1lh]">
         <span
-          className="invisible overflow-hidden text-nowrap"
           aria-hidden="true"
+          className="invisible overflow-hidden text-nowrap"
         >
           {value || '\u200B'}
         </span>
 
         <Combobox
-          ref={ref}
+          autoSelect
           className={cn(
             'absolute top-0 left-0 size-full bg-transparent outline-none',
             className
           )}
+          ref={ref}
           value={value}
-          autoSelect
           {...inputProps}
           {...props}
         />

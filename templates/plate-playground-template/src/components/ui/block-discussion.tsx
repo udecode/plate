@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
-
 import { getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin } from '@platejs/comment/react';
 import { getTransientSuggestionKey } from '@platejs/suggestion';
@@ -17,14 +13,21 @@ import {
   type AnyPluginConfig,
   type NodeEntry,
   type Path,
+  PathApi,
   type TCommentText,
   type TElement,
-  type TSuggestionText,
-  PathApi,
   TextApi,
+  type TSuggestionText,
 } from 'platejs';
+import type { PlateElementProps, RenderNodeWrapper } from 'platejs/react';
 import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
-
+import * as React from 'react';
+import { commentPlugin } from '@/components/editor/plugins/comment-kit';
+import {
+  discussionPlugin,
+  type TDiscussion,
+} from '@/components/editor/plugins/discussion-kit';
+import { suggestionPlugin } from '@/components/editor/plugins/suggestion-kit';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -32,12 +35,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { commentPlugin } from '@/components/editor/plugins/comment-kit';
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/components/editor/plugins/discussion-kit';
-import { suggestionPlugin } from '@/components/editor/plugins/suggestion-kit';
 
 import {
   BlockSuggestionCard,
@@ -180,7 +177,6 @@ const BlockCommentContent = ({
   return (
     <div className="flex w-full justify-between">
       <Popover
-        open={open}
         onOpenChange={(_open_) => {
           if (!_open_ && isCommenting && draftCommentNode) {
             editor.tf.unsetNodes(getDraftCommentKey(), {
@@ -191,6 +187,7 @@ const BlockCommentContent = ({
           }
           setOpen(_open_);
         }}
+        open={open}
       >
         <div className="w-full">{children}</div>
         {anchorElement && (
@@ -202,10 +199,10 @@ const BlockCommentContent = ({
         )}
 
         <PopoverContent
+          align="center"
           className="max-h-[min(50dvh,calc(-24px+var(--radix-popper-available-height)))] w-[380px] min-w-[130px] max-w-[calc(100vw-24px)] overflow-y-auto p-0 data-[state=closed]:opacity-0"
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => e.preventDefault()}
-          align="center"
           side="bottom"
         >
           {isCommenting ? (
@@ -214,16 +211,16 @@ const BlockCommentContent = ({
             sortedMergedData.map((item, index) =>
               isResolvedSuggestion(item) ? (
                 <BlockSuggestionCard
-                  key={item.suggestionId}
                   idx={index}
                   isLast={index === sortedMergedData.length - 1}
+                  key={item.suggestionId}
                   suggestion={item}
                 />
               ) : (
                 <BlockComment
-                  key={item.id}
                   discussion={item}
                   isLast={index === sortedMergedData.length - 1}
+                  key={item.id}
                 />
               )
             )
@@ -231,9 +228,9 @@ const BlockCommentContent = ({
             <>
               {activeSuggestion && (
                 <BlockSuggestionCard
-                  key={activeSuggestion.suggestionId}
                   idx={0}
                   isLast={true}
+                  key={activeSuggestion.suggestionId}
                   suggestion={activeSuggestion}
                 />
               )}
@@ -249,10 +246,10 @@ const BlockCommentContent = ({
           <div className="relative left-0 size-0 select-none">
             <PopoverTrigger asChild>
               <Button
-                variant="ghost"
                 className="!px-1.5 mt-1 ml-1 flex h-6 gap-1 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
-                data-active={open}
                 contentEditable={false}
+                data-active={open}
+                variant="ghost"
               >
                 {suggestionsCount > 0 && discussionsCount === 0 && (
                   <PencilLineIcon className="size-4 shrink-0" />
@@ -290,12 +287,12 @@ function BlockComment({
       <div className="p-4">
         {discussion.comments.map((comment, index) => (
           <Comment
-            key={comment.id ?? index}
             comment={comment}
             discussionLength={discussion.comments.length}
             documentContent={discussion?.documentContent}
             editingId={editingId}
             index={index}
+            key={comment.id ?? index}
             setEditingId={setEditingId}
             showDocumentContent
           />

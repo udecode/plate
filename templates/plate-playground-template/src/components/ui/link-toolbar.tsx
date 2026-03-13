@@ -1,18 +1,14 @@
 'use client';
 
-import * as React from 'react';
-
-import type { TLinkElement } from 'platejs';
-
 import {
-  type UseVirtualFloatingOptions,
   flip,
   offset,
+  type UseVirtualFloatingOptions,
 } from '@platejs/floating';
 import { getLinkAttributes } from '@platejs/link';
 import {
-  type LinkFloatingToolbarState,
   FloatingLinkUrlInput,
+  type LinkFloatingToolbarState,
   useFloatingLinkEdit,
   useFloatingLinkEditState,
   useFloatingLinkInsert,
@@ -20,6 +16,7 @@ import {
 } from '@platejs/link/react';
 import { cva } from 'class-variance-authority';
 import { ExternalLink, Link, Text, Unlink } from 'lucide-react';
+import type { TLinkElement } from 'platejs';
 import { KEYS } from 'platejs';
 import {
   useEditorRef,
@@ -27,6 +24,7 @@ import {
   useFormInputProps,
   usePluginOption,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -107,8 +105,8 @@ export function LinkFloatingToolbar({
 
         <FloatingLinkUrlInput
           className={inputVariants()}
-          placeholder="Paste link"
           data-plate-focus
+          placeholder="Paste link"
         />
       </div>
       <Separator className="my-1" />
@@ -118,8 +116,8 @@ export function LinkFloatingToolbar({
         </div>
         <input
           className={inputVariants()}
-          placeholder="Text to display"
           data-plate-focus
+          placeholder="Text to display"
           {...textInputProps}
         />
       </div>
@@ -159,11 +157,11 @@ export function LinkFloatingToolbar({
 
   return (
     <>
-      <div ref={insertRef} className={popoverVariants()} {...insertProps}>
+      <div className={popoverVariants()} ref={insertRef} {...insertProps}>
         {input}
       </div>
 
-      <div ref={editRef} className={popoverVariants()} {...editProps}>
+      <div className={popoverVariants()} ref={editRef} {...editProps}>
         {editContent}
       </div>
     </>
@@ -192,6 +190,7 @@ function LinkOpenButton() {
   return (
     <a
       {...attributes}
+      aria-label="Open link in a new tab"
       className={buttonVariants({
         size: 'sm',
         variant: 'ghost',
@@ -199,7 +198,6 @@ function LinkOpenButton() {
       onMouseOver={(e) => {
         e.stopPropagation();
       }}
-      aria-label="Open link in a new tab"
       target="_blank"
     >
       <ExternalLink width={18} />

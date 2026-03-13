@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { CreatePlateEditorOptions } from 'platejs/react';
-
 import { getCommentKey, getDraftCommentKey } from '@platejs/comment';
 import { CommentPlugin, useCommentId } from '@platejs/comment/react';
 import {
@@ -21,13 +17,14 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  KEYS,
+  NodeApi,
   type NodeEntry,
+  nanoid,
   type TCommentText,
   type Value,
-  KEYS,
-  nanoid,
-  NodeApi,
 } from 'platejs';
+import type { CreatePlateEditorOptions } from 'platejs/react';
 import {
   Plate,
   useEditorPlugin,
@@ -35,7 +32,12 @@ import {
   usePlateEditor,
   usePluginOption,
 } from 'platejs/react';
-
+import * as React from 'react';
+import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
+import {
+  discussionPlugin,
+  type TDiscussion,
+} from '@/components/editor/plugins/discussion-kit';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,11 +48,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { BasicMarksKit } from '@/components/editor/plugins/basic-marks-kit';
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/components/editor/plugins/discussion-kit';
 
 import { Editor, EditorContainer } from './editor';
 
@@ -206,16 +203,18 @@ export function Comment(props: {
           <div className="absolute top-0 right-0 flex space-x-1">
             {index === 0 && (
               <Button
-                variant="ghost"
                 className="h-6 p-1 text-muted-foreground"
                 onClick={onResolveComment}
                 type="button"
+                variant="ghost"
               >
                 <CheckIcon className="size-4" />
               </Button>
             )}
 
             <CommentMoreDropdown
+              comment={comment}
+              dropdownOpen={dropdownOpen}
               onCloseAutoFocus={() => {
                 setTimeout(() => {
                   commentEditor.tf.focus({ edge: 'endEditor' });
@@ -227,8 +226,6 @@ export function Comment(props: {
                   void removeDiscussion(comment.discussionId);
                 }
               }}
-              comment={comment}
-              dropdownOpen={dropdownOpen}
               setDropdownOpen={setDropdownOpen}
               setEditingId={setEditingId}
             />
@@ -250,24 +247,24 @@ export function Comment(props: {
         {!isLast && (
           <div className="absolute top-0 left-3 h-full w-0.5 shrink-0 bg-muted" />
         )}
-        <Plate readOnly={!isEditing} editor={commentEditor}>
+        <Plate editor={commentEditor} readOnly={!isEditing}>
           <EditorContainer variant="comment">
             <Editor
-              variant="comment"
               className="w-auto grow"
               onClick={() => onEditorClick?.()}
+              variant="comment"
             />
 
             {isEditing && (
               <div className="ml-auto flex shrink-0 gap-1">
                 <Button
-                  size="icon"
-                  variant="ghost"
                   className="size-[28px]"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
                     void onCancel();
                   }}
+                  size="icon"
+                  variant="ghost"
                 >
                   <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
                     <XIcon className="size-3 stroke-[3px] text-background" />
@@ -275,12 +272,12 @@ export function Comment(props: {
                 </Button>
 
                 <Button
-                  size="icon"
-                  variant="ghost"
                   onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.stopPropagation();
                     void onSave();
                   }}
+                  size="icon"
+                  variant="ghost"
                 >
                   <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
                     <CheckIcon className="size-3 stroke-[3px] text-background" />
@@ -360,12 +357,12 @@ function CommentMoreDropdown(props: {
 
   return (
     <DropdownMenu
-      open={dropdownOpen}
-      onOpenChange={setDropdownOpen}
       modal={false}
+      onOpenChange={setDropdownOpen}
+      open={dropdownOpen}
     >
       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-        <Button variant="ghost" className={cn('h-6 p-1 text-muted-foreground')}>
+        <Button className={cn('h-6 p-1 text-muted-foreground')} variant="ghost">
           <MoreHorizontalIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -566,14 +563,15 @@ export function CommentCreateForm({
 
       <div className="relative flex grow gap-2">
         <Plate
+          editor={commentEditor}
           onChange={({ value }) => {
             setCommentValue(value);
           }}
-          editor={commentEditor}
         >
           <EditorContainer variant="comment">
             <Editor
-              variant="comment"
+              autoComplete="off"
+              autoFocus={autoFocus}
               className="min-h-[25px] grow pt-0.5 pr-8"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -582,19 +580,18 @@ export function CommentCreateForm({
                 }
               }}
               placeholder="Reply..."
-              autoComplete="off"
-              autoFocus={autoFocus}
+              variant="comment"
             />
 
             <Button
-              size="icon"
-              variant="ghost"
               className="absolute right-0.5 bottom-0.5 ml-auto size-6 shrink-0"
               disabled={commentContent.trim().length === 0}
               onClick={(e) => {
                 e.stopPropagation();
                 onAddComment();
               }}
+              size="icon"
+              variant="ghost"
             >
               <div className="flex size-6 items-center justify-center rounded-full">
                 <ArrowUpIcon />

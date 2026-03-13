@@ -1,10 +1,7 @@
-import * as React from 'react';
-
-import type { TEquationElement } from 'platejs';
-import type { SlateElementProps } from 'platejs/static';
-
 import { getEquationHtml } from '@platejs/math';
 import { RadicalIcon } from 'lucide-react';
+import type { TEquationElement } from 'platejs';
+import type { SlateElementProps } from 'platejs/static';
 import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
@@ -80,7 +77,7 @@ export function InlineEquationElementStatic(
     >
       <div
         className={cn(
-          'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
+          'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
           props.element.texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'

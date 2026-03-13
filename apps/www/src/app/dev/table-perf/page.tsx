@@ -6,9 +6,8 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-  forwardRef,
 } from 'react';
-import type { ProfilerOnRenderCallback } from 'react';
+import type { ProfilerOnRenderCallback, RefObject } from 'react';
 
 import type {
   TTableCellElement,
@@ -29,19 +28,19 @@ import { TableKit } from '@/registry/components/editor/plugins/table-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 // Types
-interface TableConfig {
+type TableConfig = {
   cols: number;
   rows: number;
-}
+};
 
-interface Metrics {
+type Metrics = {
   initialRender: number | null;
   lastRenderDuration: number | null;
   renderCount: number;
   renderDurations: number[];
-}
+};
 
-interface BenchmarkResult {
+type BenchmarkResult = {
   max: number;
   mean: number;
   median: number;
@@ -49,16 +48,16 @@ interface BenchmarkResult {
   p95: number;
   p99: number;
   stdDev: number;
-}
+};
 
-interface InputLatencyResult {
+type InputLatencyResult = {
   max: number;
   mean: number;
   median: number;
   min: number;
   p95: number;
   samples: number[];
-}
+};
 
 // Presets for O(n²) analysis
 const PRESETS: { cells: number; cols: number; label: string; rows: number }[] =
@@ -301,11 +300,7 @@ export default function TablePerfPage() {
   const shouldUpdateMetricsRef = useRef(true);
 
   const onRenderCallback: ProfilerOnRenderCallback = useCallback(
-    (id, phase, actualDuration, baseDuration) => {
-      console.log(
-        `[Profiler] ${id} (${phase}): ${actualDuration.toFixed(2)}ms (base: ${baseDuration.toFixed(2)}ms)`
-      );
-
+    (_id, phase, actualDuration, _baseDuration) => {
       // Store in ref
       profilerDataRef.current.lastRenderDuration = actualDuration;
       profilerDataRef.current.renderCount += 1;
@@ -358,12 +353,6 @@ export default function TablePerfPage() {
     const COOLDOWN_MS = 100;
     const renderTimes: number[] = [];
 
-    console.log('[Benchmark] Starting benchmark...');
-    console.log(`[Benchmark] Config: ${config.rows}x${config.cols} cells`);
-    console.log(
-      `[Benchmark] ${WARMUP_RUNS} warmup runs, ${MEASURED_RUNS} measured runs`
-    );
-
     for (let i = 0; i < WARMUP_RUNS + MEASURED_RUNS; i++) {
       const isWarmup = i < WARMUP_RUNS;
 
@@ -394,11 +383,6 @@ export default function TablePerfPage() {
 
       if (initialRender !== null && !isWarmup) {
         renderTimes.push(initialRender);
-        console.log(
-          `[Benchmark] Run ${i - WARMUP_RUNS + 1}/${MEASURED_RUNS}: ${initialRender.toFixed(2)}ms`
-        );
-      } else if (isWarmup) {
-        console.log(`[Benchmark] Warmup ${i + 1}/${WARMUP_RUNS}`);
       }
 
       // Cooldown between iterations
@@ -408,9 +392,6 @@ export default function TablePerfPage() {
     const result = calculateStats(renderTimes);
     setBenchmarkResult(result);
     setIsBenchmarking(false);
-
-    console.log('[Benchmark] Complete!');
-    console.log('[Benchmark] Results:', result);
   }, [config.cols, config.rows]);
 
   const measureInputLatency = useCallback(async () => {
@@ -421,11 +402,8 @@ export default function TablePerfPage() {
     const NUM_SAMPLES = 50;
     const WARMUP_SAMPLES = 10;
 
-    console.log('[Input Latency] Starting measurement...');
-
     const editor = plateEditorRef.current;
     if (!editor) {
-      console.error('[Input Latency] Could not find Plate editor');
       setIsMeasuringLatency(false);
       return;
     }
@@ -448,8 +426,7 @@ export default function TablePerfPage() {
         anchor: { offset: 0, path: firstCellPath },
         focus: { offset: 0, path: firstCellPath },
       });
-    } catch (e) {
-      console.error('[Input Latency] Could not select first cell:', e);
+    } catch {
       setIsMeasuringLatency(false);
       return;
     }
@@ -479,11 +456,6 @@ export default function TablePerfPage() {
 
       if (!isWarmup) {
         samples.push(latency);
-        if (i % 10 === 0) {
-          console.log(
-            `[Input Latency] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
-          );
-        }
       }
 
       // Small delay between inputs
@@ -510,9 +482,6 @@ export default function TablePerfPage() {
 
     setInputLatencyResult(result);
     setIsMeasuringLatency(false);
-
-    console.log('[Input Latency] Complete!');
-    console.log('[Input Latency] Results:', result);
   }, []);
 
   return (
@@ -525,9 +494,12 @@ export default function TablePerfPage() {
 
         <div className="mb-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm">Rows:</label>
+            <label className="text-sm" htmlFor="table-rows">
+              Rows:
+            </label>
             <Input
               className="w-20"
+              id="table-rows"
               max={100}
               min={1}
               type="number"
@@ -542,9 +514,12 @@ export default function TablePerfPage() {
           </div>
           <span className="text-muted-foreground">x</span>
           <div className="flex items-center gap-2">
-            <label className="text-sm">Cols:</label>
+            <label className="text-sm" htmlFor="table-cols">
+              Cols:
+            </label>
             <Input
               className="w-20"
+              id="table-cols"
               max={100}
               min={1}
               type="number"
@@ -625,7 +600,10 @@ export default function TablePerfPage() {
             id="TableEditor"
             onRender={onRenderCallback}
           >
-            <TablePerfEditor ref={plateEditorRef} tableValue={tableValue} />
+            <TablePerfEditor
+              editorRef={plateEditorRef}
+              tableValue={tableValue}
+            />
           </Profiler>
         </div>
       </div>
@@ -634,16 +612,19 @@ export default function TablePerfPage() {
 }
 
 // Editor component (separated for profiling)
-const TablePerfEditor = forwardRef<
-  PlateEditor | null,
-  { tableValue: TTableElement }
->(function TablePerfEditor({ tableValue }, ref) {
+function TablePerfEditor({
+  editorRef,
+  tableValue,
+}: {
+  editorRef?: RefObject<PlateEditor | null>;
+  tableValue: TTableElement;
+}) {
   const editor = usePlateEditor({
     plugins: [...BasicBlocksKit, ...BasicMarksKit, ...TableKit],
     value: [tableValue],
   });
 
-  useImperativeHandle(ref, () => editor, [editor]);
+  useImperativeHandle(editorRef, () => editor, [editor]);
 
   return (
     <Plate editor={editor}>
@@ -652,4 +633,4 @@ const TablePerfEditor = forwardRef<
       </EditorContainer>
     </Plate>
   );
-});
+}
