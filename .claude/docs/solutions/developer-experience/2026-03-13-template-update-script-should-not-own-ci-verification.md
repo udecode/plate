@@ -6,7 +6,7 @@ component: tooling
 symptoms:
   - "`registry.yml` failed inside `pnpm templates:update --local` before workflow-level template checks even ran"
   - "`update-template.sh` died on `bun lint:fix` with template-local Biome unresolved-import noise"
-  - "Local shadcn file installs could also stop for an interactive `npx shadcn@latest` prompt"
+  - "GitHub Actions could fail inside `shadcn add` with `ERR_MODULE_NOT_FOUND` for `tinyexec`"
 root_cause: workflow_boundary_error
 resolution_type: tooling_change
 severity: medium
@@ -33,8 +33,9 @@ Two things were wrong:
 
 1. `update-template.sh` mixed generation with verification.
 2. local shadcn installs still had sharp edges:
-   - `npx shadcn@latest` could prompt interactively in CI
+   - `npx shadcn@latest` was not reliable in CI and could blow up on transitive module resolution
    - local-file installs could write relative imports with `.ts` or `.tsx` extensions back into generated files
+   - generated template files needed to be lint-fixed and committed, or `ci-templates` would fail on formatting drift
 
 The first issue made the workflow brittle. The second made the updater noisy and flaky.
 
@@ -44,7 +45,7 @@ Keep verification at the workflow layer.
 
 In `tooling/scripts/update-template.sh`:
 
-- use `npx --yes shadcn@latest add ...` so CI never stalls on an install prompt
+- use `pnpm dlx shadcn@latest add ...` instead of `npx`, which avoided the Actions-only `tinyexec` module failure
 - normalize relative `.ts` and `.tsx` import specifiers after local-file installs
 - always run `bun lint:fix` so generated template files are normalized immediately
 - support `TEMPLATE_SKIP_VERIFY=true` to skip only the script-local `bun typecheck`
@@ -53,6 +54,7 @@ In the workflows:
 
 - set `TEMPLATE_SKIP_VERIFY=true` when running `pnpm templates:update --local`
 - run template `bun lint` and `bun run build` checks after sync at the workflow level instead of inside the helper
+- reproduce the registry and template paths with `gh act` before pushing a fix when CI behavior is unclear
 
 That keeps the updater focused on generation and keeps CI responsible for CI.
 
@@ -80,30 +82,40 @@ For generated templates, Biome was also a bad source of false failures:
 
 The stable fix was to disable both rules in the template `biome.jsonc` files and let `update-template.sh` run `bun lint:fix` immediately after generation.
 
-### `gh act` still needs Docker even for dry runs
+### Generated template churn is part of the fix
 
-`gh act -n` was not a useful escape hatch here. It still tried to talk to Docker and failed immediately when the daemon was down.
+`templates:update --local` plus `bun lint:fix` can legitimately rewrite a lot of generated template files. If CI is failing on template lint after a registry sync, that churn usually belongs in the commit. Pretending it is unrelated just leaves `ci-templates` red.
 
 ## Verification
 
 These commands passed after the fix:
 
 ```bash
+pnpm lint
 pnpm --filter www rd
 TEMPLATE_SKIP_VERIFY=true pnpm templates:update --local
-cd templates/plate-template && bun run build
-cd templates/plate-playground-template && bun run build
-bash -n tooling/scripts/update-template.sh
+cd templates/plate-template && bun lint && bun run build
+cd templates/plate-playground-template && bun lint && bun run build
+gh act pull_request -W .github/workflows/ci-templates.yml -j ci
+gh act pull_request -W .github/workflows/registry.yml -j validate-registry
 ```
 
-`gh act` could not fully run on this machine because Docker was unavailable:
+The full repo gate also passed:
 
 ```bash
-gh act push -W .github/workflows/registry.yml -j update-registry
+bun check
 ```
 
-It failed with:
+Before Docker was available, `gh act` failed immediately with:
 
 ```text
 Cannot connect to the Docker daemon at unix:///var/run/docker.sock
+```
+
+After Docker was up, both local workflow reproductions passed:
+
+```bash
+cd templates/plate-template && bun run build
+cd templates/plate-playground-template && bun run build
+bash -n tooling/scripts/update-template.sh
 ```
