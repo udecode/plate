@@ -107,6 +107,8 @@ jobs:
       - name: 🔄 Update templates
         id: update-templates
         continue-on-error: true
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
         run: pnpm templates:update --local
 
       - name: 🔍 Detect template changes

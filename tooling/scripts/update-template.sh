@@ -7,6 +7,7 @@ USE_LOCAL=false
 MODE="${1:-basic}"
 USE_LOCAL_FILES=false
 LOCAL_REGISTRY_DIR=""
+RUN_VERIFY=true
 
 # Check for --local flag
 if [[ "${1:-}" == "--local" ]]; then
@@ -14,6 +15,10 @@ if [[ "${1:-}" == "--local" ]]; then
   MODE="${2:-basic}"
 elif [[ "${2:-}" == "--local" ]]; then
   USE_LOCAL=true
+fi
+
+if [[ "${TEMPLATE_SKIP_VERIFY:-false}" == "true" ]]; then
+  RUN_VERIFY=false
 fi
 
 # Determine registry prefix
@@ -42,6 +47,18 @@ get_registry_item() {
   echo "$REGISTRY_PREFIX/$name"
 }
 
+normalize_relative_ts_imports() {
+  local root="$1"
+
+  if ! command -v rg >/dev/null 2>&1; then
+    return
+  fi
+
+  while IFS= read -r file; do
+    perl -0pi -e "s/from '((?:\\.?\\.\\/)[^']+)\\.(?:tsx|ts)'/from '\\1'/g; s/from \"((?:\\.?\\.\\/)[^\"]+)\\.(?:tsx|ts)\"/from \"\\1\"/g" "$file"
+  done < <(rg -l "from ['\"](?:\\.?\\.\\/)[^'\"]+\\.(?:ts|tsx)['\"]" "$root")
+}
+
 # Map mode to template and registry
 case "$MODE" in
   basic)
@@ -59,10 +76,11 @@ case "$MODE" in
     echo "  ai    - Updates plate-playground-template with @plate/editor-ai"
     echo ""
     echo "Options:"
-    echo "  --local - Use local registry (http://localhost:3000/rd/...)"
+    echo "  --local - Use prepared local registry files from apps/www/public/rd"
     echo ""
     echo "Environment:"
     echo "  TEMPLATE_REGISTRY_URL - Override the registry prefix (for example: http://127.0.0.1:3210/r)"
+    echo "  TEMPLATE_SKIP_VERIFY - Skip bun lint:fix and bun typecheck after generation"
     exit 1
     ;;
 esac
@@ -97,19 +115,26 @@ echo "Adding $REGISTRY_NAME via shadcn..."
 if [[ "$USE_LOCAL_FILES" == true ]]; then
   (
     cd "$LOCAL_REGISTRY_DIR"
-    npx shadcn@latest add "$REGISTRY_NAME" --cwd "$TEMPLATE_DIR" -o
+    npx --yes shadcn@latest add "$REGISTRY_NAME" --cwd "$TEMPLATE_DIR" -o
   )
 else
-  npx shadcn@latest add "$REGISTRY_NAME" -o
+  npx --yes shadcn@latest add "$REGISTRY_NAME" -o
 fi
 
-# Run lint:fix
-echo "Running bun lint:fix..."
-bun lint:fix
+# shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.
+normalize_relative_ts_imports "$TEMPLATE_DIR/src"
 
-# Run typecheck
-echo "Running bun typecheck..."
-bun typecheck
+if [[ "$RUN_VERIFY" == true ]]; then
+  echo "Running bun lint:fix..."
+  bun lint:fix
 
-echo "✅ Done! Packages updated, $REGISTRY_NAME added, linted, and typechecked in $TEMPLATE_NAME."
+  echo "Running bun typecheck..."
+  bun typecheck
+
+  echo "✅ Done! Packages updated, $REGISTRY_NAME added, linted, and typechecked in $TEMPLATE_NAME."
+else
+  echo "⏭️ Skipping template-local lint/typecheck (TEMPLATE_SKIP_VERIFY=true)."
+  echo "✅ Done! Packages updated and $REGISTRY_NAME added in $TEMPLATE_NAME."
+fi
+
 cd "$BASE"
