@@ -33,25 +33,39 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
 
+      - name: 🔎 Detect changesets in push
+        id: changesets
+        run: |
+          if git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | rg -q '^\\.changeset/'; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: ♻️ Setup Node.js
+        if: ${{ steps.changesets.outputs.present != 'true' }}
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: 📦 Monorepo install
+        if: ${{ steps.changesets.outputs.present != 'true' }}
         uses: ./.github/actions/pnpm-install
         with:
           link-workspace-packages: 'true'
 
       - name: 🔧 Configure git
+        if: ${{ steps.changesets.outputs.present != 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: 🏗 Build Registry
+        if: ${{ steps.changesets.outputs.present != 'true' }}
         run: pnpm --filter www build:registry && pnpm --filter www build:tw
 
       - name: ◻️ Create Pull Request
+        if: ${{ steps.changesets.outputs.present != 'true' }}
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
