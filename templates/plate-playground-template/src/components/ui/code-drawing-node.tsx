@@ -1,22 +1,22 @@
 'use client';
 
-import * as React from 'react';
-
 import type {
   CodeDrawingType,
   TCodeDrawingElement,
   ViewMode,
 } from '@platejs/code-drawing';
 import {
-  VIEW_MODE,
-  DEFAULT_MIN_HEIGHT,
   CODE_DRAWING_TYPE_ARRAY,
-  VIEW_MODE_ARRAY,
-  renderCodeDrawing,
-  RENDER_DEBOUNCE_DELAY,
-  downloadImage,
+  DEFAULT_MIN_HEIGHT,
   DOWNLOAD_FILENAME,
+  downloadImage,
+  RENDER_DEBOUNCE_DELAY,
+  renderCodeDrawing,
+  VIEW_MODE,
+  VIEW_MODE_ARRAY,
 } from '@platejs/code-drawing';
+import debounce from 'lodash/debounce.js';
+import { DownloadIcon, Trash2 } from 'lucide-react';
 import type { PlateElementProps } from 'platejs/react';
 import {
   PlateElement,
@@ -27,11 +27,9 @@ import {
   useReadOnly,
   useSelected,
 } from 'platejs/react';
-import debounce from 'lodash/debounce.js';
-import { Trash2, DownloadIcon } from 'lucide-react';
+import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Popover,
   PopoverAnchor,
@@ -44,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const editor = useEditorRef();
@@ -210,15 +209,15 @@ export function CodeDrawingElement(
       <div contentEditable={false}>
         <CodeDrawingPreview
           code={code}
-          drawingType={drawingType}
           drawingMode={drawingMode}
+          drawingType={drawingType}
           image={image}
+          isMobile={isMobile}
           loading={loading}
           onCodeChange={handleCodeChange}
-          onDrawingTypeChange={handleDrawingTypeChange}
           onDrawingModeChange={handleDrawingModeChange}
+          onDrawingTypeChange={handleDrawingTypeChange}
           readOnly={readOnly}
-          isMobile={isMobile}
         />
       </div>
     </PlateElement>
@@ -229,7 +228,7 @@ export function CodeDrawingElement(
   }
 
   return (
-    <Popover open={open} modal={false}>
+    <Popover modal={false} open={open}>
       <PopoverAnchor asChild>{content}</PopoverAnchor>
       <PopoverContent
         className="w-auto p-1"
@@ -239,21 +238,21 @@ export function CodeDrawingElement(
         <div className="flex items-center gap-1">
           {image && (
             <Button
-              size="icon"
-              variant="ghost"
               className="size-8"
               onClick={handleDownload}
+              size="icon"
               title="Export"
+              variant="ghost"
             >
               <DownloadIcon className="size-4" />
             </Button>
           )}
           <Button
-            size="icon"
-            variant="ghost"
             className="size-8"
             onClick={removeNode}
+            size="icon"
             title="Delete"
+            variant="ghost"
           >
             <Trash2 className="size-4" />
           </Button>
@@ -300,11 +299,11 @@ function CodeDrawingPreview({
   const toolbar = readOnly ? null : (
     <CodeDrawingToolbar
       drawingType={drawingType}
-      viewMode={viewMode}
-      readOnly={readOnly}
       isMobile={isMobile}
-      onDrawingTypeChange={onDrawingTypeChange}
       onDrawingModeChange={onDrawingModeChange}
+      onDrawingTypeChange={onDrawingTypeChange}
+      readOnly={readOnly}
+      viewMode={viewMode}
     />
   );
 
@@ -318,25 +317,25 @@ function CodeDrawingPreview({
       {showCode && (
         <CodeDrawingTextarea
           code={code}
-          viewMode={viewMode}
-          readOnly={readOnly}
           isMobile={isMobile}
-          showBorder={showBorder}
           onCodeChange={handleCodeChange}
+          readOnly={readOnly}
+          showBorder={showBorder}
           toolbar={viewMode === VIEW_MODE.Code ? toolbar : null}
+          viewMode={viewMode}
         />
       )}
 
       {viewMode !== VIEW_MODE.Code && (
         <CodeDrawingPreviewArea
-          image={image}
-          loading={loading}
           code={code}
-          viewMode={viewMode}
-          readOnly={readOnly}
+          image={image}
           isMobile={isMobile}
+          loading={loading}
+          readOnly={readOnly}
           showBorder={showBorder}
           toolbar={toolbar}
+          viewMode={viewMode}
         />
       )}
     </div>
@@ -373,7 +372,6 @@ function CodeDrawingToolbar({
 
   return (
     <div
-      role="toolbar"
       className={`${positionClass} transition-opacity ${opacityClass}`}
       onMouseEnter={() => setToolbarVisible(true)}
       onMouseLeave={() => {
@@ -381,13 +379,14 @@ function CodeDrawingToolbar({
           setToolbarVisible(false);
         }
       }}
+      role="toolbar"
     >
       {!readOnly && (
         <Select
-          value={drawingType}
+          onOpenChange={setLanguageSelectOpen}
           onValueChange={onDrawingTypeChange}
           open={languageSelectOpen}
-          onOpenChange={setLanguageSelectOpen}
+          value={drawingType}
         >
           <SelectTrigger
             className={`h-8 w-[120px] border-0 bg-muted/50 text-xs shadow-none ${
@@ -408,10 +407,10 @@ function CodeDrawingToolbar({
 
       {!readOnly && (
         <Select
-          value={viewMode}
+          onOpenChange={setViewModeSelectOpen}
           onValueChange={onDrawingModeChange}
           open={viewModeSelectOpen}
-          onOpenChange={setViewModeSelectOpen}
+          value={viewMode}
         >
           <SelectTrigger
             className={`h-8 w-[80px] border-0 bg-muted/50 text-xs shadow-none ${
@@ -501,14 +500,14 @@ function CodeDrawingTextarea({
         >
           <code className="block h-full w-full">
             <textarea
-              ref={textareaRef}
-              value={internalCode}
-              onChange={handleChange}
-              readOnly={readOnly}
               className="m-0 h-full w-full resize-none overflow-auto border-0 bg-transparent p-0 font-mono text-sm outline-none"
-              style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px` }}
+              onChange={handleChange}
               placeholder="Enter your code here..."
+              readOnly={readOnly}
+              ref={textareaRef}
               spellCheck={false}
+              style={{ minHeight: `${DEFAULT_MIN_HEIGHT}px` }}
+              value={internalCode}
             />
           </code>
         </pre>
@@ -565,9 +564,9 @@ function CodeDrawingPreviewArea({
           {loading && <div className="text-muted-foreground">Loading...</div>}
           {!loading && image && (
             <img
-              src={image}
               alt="Code drawing"
               className="max-h-full max-w-full object-contain"
+              src={image}
             />
           )}
           {!loading && !image && (

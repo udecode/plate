@@ -6,9 +6,8 @@ import {
   useImperativeHandle,
   useRef,
   useState,
-  forwardRef,
 } from 'react';
-import type { ProfilerOnRenderCallback } from 'react';
+import type { ProfilerOnRenderCallback, RefObject } from 'react';
 
 import type {
   TTableCellElement,
@@ -29,19 +28,19 @@ import { TableKit } from '@/registry/components/editor/plugins/table-kit';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 // Types
-interface TableConfig {
+type TableConfig = {
   cols: number;
   rows: number;
-}
+};
 
-interface Metrics {
+type Metrics = {
   initialRender: number | null;
   lastRenderDuration: number | null;
   renderCount: number;
   renderDurations: number[];
-}
+};
 
-interface BenchmarkResult {
+type BenchmarkResult = {
   max: number;
   mean: number;
   median: number;
@@ -49,16 +48,16 @@ interface BenchmarkResult {
   p95: number;
   p99: number;
   stdDev: number;
-}
+};
 
-interface InputLatencyResult {
+type InputLatencyResult = {
   max: number;
   mean: number;
   median: number;
   min: number;
   p95: number;
   samples: number[];
-}
+};
 
 // Presets for O(n²) analysis
 const PRESETS: { cells: number; cols: number; label: string; rows: number }[] =
@@ -525,9 +524,12 @@ export default function TablePerfPage() {
 
         <div className="mb-4 flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm">Rows:</label>
+            <label className="text-sm" htmlFor="table-rows">
+              Rows:
+            </label>
             <Input
               className="w-20"
+              id="table-rows"
               max={100}
               min={1}
               type="number"
@@ -542,9 +544,12 @@ export default function TablePerfPage() {
           </div>
           <span className="text-muted-foreground">x</span>
           <div className="flex items-center gap-2">
-            <label className="text-sm">Cols:</label>
+            <label className="text-sm" htmlFor="table-cols">
+              Cols:
+            </label>
             <Input
               className="w-20"
+              id="table-cols"
               max={100}
               min={1}
               type="number"
@@ -625,7 +630,10 @@ export default function TablePerfPage() {
             id="TableEditor"
             onRender={onRenderCallback}
           >
-            <TablePerfEditor ref={plateEditorRef} tableValue={tableValue} />
+            <TablePerfEditor
+              editorRef={plateEditorRef}
+              tableValue={tableValue}
+            />
           </Profiler>
         </div>
       </div>
@@ -634,16 +642,19 @@ export default function TablePerfPage() {
 }
 
 // Editor component (separated for profiling)
-const TablePerfEditor = forwardRef<
-  PlateEditor | null,
-  { tableValue: TTableElement }
->(function TablePerfEditor({ tableValue }, ref) {
+function TablePerfEditor({
+  editorRef,
+  tableValue,
+}: {
+  editorRef?: RefObject<PlateEditor | null>;
+  tableValue: TTableElement;
+}) {
   const editor = usePlateEditor({
     plugins: [...BasicBlocksKit, ...BasicMarksKit, ...TableKit],
     value: [tableValue],
   });
 
-  useImperativeHandle(ref, () => editor, [editor]);
+  useImperativeHandle(editorRef, () => editor, [editor]);
 
   return (
     <Plate editor={editor}>
@@ -652,4 +663,4 @@ const TablePerfEditor = forwardRef<
       </EditorContainer>
     </Plate>
   );
-});
+}

@@ -98,6 +98,16 @@
   },
   "overrides": [
     {
+      "includes": ["**/dev/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {

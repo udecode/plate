@@ -1,7 +1,6 @@
-import type { ChatMessage } from '@/components/editor/use-chat';
-import type { SlateEditor } from 'platejs';
-
 import dedent from 'dedent';
+import type { SlateEditor } from 'platejs';
+import type { ChatMessage } from '@/components/editor/use-chat';
 
 import {
   addSelection,
@@ -13,9 +12,9 @@ import {
   isSelectionInTable,
   isSingleCellSelection,
 } from '../utils';
-
-import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
 import { commonEditRules } from './common';
+import { buildEditTableMultiCellPrompt } from './getEditTablePrompt';
+
 function buildEditMultiBlockPrompt(
   editor: SlateEditor,
   messages: ChatMessage[]

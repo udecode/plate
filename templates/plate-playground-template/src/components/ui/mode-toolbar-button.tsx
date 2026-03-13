@@ -1,14 +1,13 @@
 'use client';
 
-import * as React from 'react';
-
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
-  type DropdownMenuProps,
   DropdownMenuItemIndicator,
+  type DropdownMenuProps,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
 import { useEditorRef, usePlateState, usePluginOption } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -49,17 +48,16 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
+    <DropdownMenu modal={false} onOpenChange={setOpen} open={open} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Editing mode" isDropdown>
+        <ToolbarButton isDropdown pressed={open} tooltip="Editing mode">
           {item[value].icon}
           <span className="hidden lg:inline">{item[value].label}</span>
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-[180px]" align="start">
+      <DropdownMenuContent align="start" className="min-w-[180px]">
         <DropdownMenuRadioGroup
-          value={value}
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
               setReadOnly(true);
@@ -81,6 +79,7 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
               return;
             }
           }}
+          value={value}
         >
           <DropdownMenuRadioItem
             className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"

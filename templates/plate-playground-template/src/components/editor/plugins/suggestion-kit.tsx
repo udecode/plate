@@ -1,11 +1,10 @@
 'use client';
 
-import type { ExtendConfig, Path } from 'platejs';
-
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
+import type { ExtendConfig, Path } from 'platejs';
 import { isSlateEditor, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 

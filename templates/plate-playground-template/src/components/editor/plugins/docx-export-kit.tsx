@@ -1,3 +1,5 @@
+import { DocxExportPlugin } from '@platejs/docx-io';
+import { KEYS } from 'platejs';
 import { CalloutElementDocx } from '@/components/ui/callout-node-static';
 import {
   CodeBlockElementDocx,
@@ -13,8 +15,6 @@ import {
   InlineEquationElementDocx,
 } from '@/components/ui/equation-node-static';
 import { TocElementDocx } from '@/components/ui/toc-node-static';
-import { DocxExportPlugin } from '@platejs/docx-io';
-import { KEYS } from 'platejs';
 
 /**
  * Editor kit for DOCX export.

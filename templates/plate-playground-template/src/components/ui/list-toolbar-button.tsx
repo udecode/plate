@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import { ListStyleType, someList, toggleList } from '@platejs/list';
 import {
   useIndentTodoToolBarButton,
@@ -9,6 +7,7 @@ import {
 } from '@platejs/list/react';
 import { List, ListOrdered, ListTodoIcon } from 'lucide-react';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
+import * as React from 'react';
 
 import {
   DropdownMenu,
@@ -43,17 +42,17 @@ export function BulletedListToolbarButton() {
     <ToolbarSplitButton pressed={open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+        data-state={pressed ? 'on' : 'off'}
         onClick={() => {
           toggleList(editor, {
             listStyleType: ListStyleType.Disc,
           });
         }}
-        data-state={pressed ? 'on' : 'off'}
       >
         <List className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
         <DropdownMenuTrigger asChild>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>
@@ -123,17 +122,17 @@ export function NumberedListToolbarButton() {
     <ToolbarSplitButton pressed={open}>
       <ToolbarSplitButtonPrimary
         className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+        data-state={pressed ? 'on' : 'off'}
         onClick={() =>
           toggleList(editor, {
             listStyleType: ListStyleType.Decimal,
           })
         }
-        data-state={pressed ? 'on' : 'off'}
       >
         <ListOrdered className="size-4" />
       </ToolbarSplitButtonPrimary>
 
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenu modal={false} onOpenChange={setOpen} open={open}>
         <DropdownMenuTrigger asChild>
           <ToolbarSplitButtonSecondary />
         </DropdownMenuTrigger>

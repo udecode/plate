@@ -1,7 +1,5 @@
 'use client';
 
-import type { PlateEditor } from 'platejs/react';
-
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertCodeDrawing } from '@platejs/code-drawing';
@@ -20,12 +18,13 @@ import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { TablePlugin } from '@platejs/table/react';
 import { insertToc } from '@platejs/toc';
 import {
+  KEYS,
   type NodeEntry,
   type Path,
-  type TElement,
-  KEYS,
   PathApi,
+  type TElement,
 } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 

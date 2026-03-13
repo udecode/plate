@@ -1,12 +1,9 @@
 'use client';
 
-import * as React from 'react';
-
-import type { TAudioElement } from 'platejs';
-import type { PlateElementProps } from 'platejs/react';
-
 import { useMediaState } from '@platejs/media/react';
 import { ResizableProvider } from '@platejs/resizable';
+import type { TAudioElement } from 'platejs';
+import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { Caption, CaptionTextarea } from './caption';
@@ -23,14 +20,14 @@ export const AudioElement = withHOC(
           contentEditable={false}
         >
           <div className="h-16">
-            <audio className="size-full" src={unsafeUrl} controls />
+            <audio className="size-full" controls src={unsafeUrl} />
           </div>
 
-          <Caption style={{ width: '100%' }} align={align}>
+          <Caption align={align} style={{ width: '100%' }}>
             <CaptionTextarea
               className="h-20"
-              readOnly={readOnly}
               placeholder="Write a caption..."
+              readOnly={readOnly}
             />
           </Caption>
         </figure>

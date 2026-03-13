@@ -1,7 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
 import {
   type FloatingToolbarState,
   flip,
@@ -16,6 +14,7 @@ import {
   useEventEditorValue,
   usePluginOption,
 } from 'platejs/react';
+import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -73,12 +72,12 @@ export function FloatingToolbar({
       <Toolbar
         {...props}
         {...rootProps}
-        ref={ref}
         className={cn(
           'scrollbar-hide absolute z-50 overflow-x-auto whitespace-nowrap rounded-md border bg-popover p-1 opacity-100 shadow-md print:hidden',
           'max-w-[80vw]',
           className
         )}
+        ref={ref}
       >
         {children}
       </Toolbar>

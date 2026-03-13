@@ -1,9 +1,5 @@
 'use client';
 
-import * as React from 'react';
-
-import type { WithRequiredKey } from 'platejs';
-
 import {
   FloatingMedia as FloatingMediaPrimitive,
   FloatingMediaStore,
@@ -12,6 +8,7 @@ import {
 } from '@platejs/media/react';
 import { cva } from 'class-variance-authority';
 import { Link, Trash2Icon } from 'lucide-react';
+import type { WithRequiredKey } from 'platejs';
 import {
   useEditorRef,
   useEditorSelector,
@@ -21,6 +18,7 @@ import {
   useRemoveNodeButton,
   useSelected,
 } from 'platejs/react';
+import * as React from 'react';
 
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -71,7 +69,7 @@ export function MediaToolbar({
   const { props: buttonProps } = useRemoveNodeButton({ element });
 
   return (
-    <Popover open={open} modal={false}>
+    <Popover modal={false} open={open}>
       <PopoverAnchor>{children}</PopoverAnchor>
 
       <PopoverContent
@@ -87,8 +85,8 @@ export function MediaToolbar({
 
               <FloatingMediaPrimitive.UrlInput
                 className={inputVariants()}
-                placeholder="Paste the embed link..."
                 options={{ plugin }}
+                placeholder="Paste the embed link..."
               />
             </div>
           </div>
@@ -104,7 +102,7 @@ export function MediaToolbar({
               Caption
             </CaptionButton>
 
-            <Separator orientation="vertical" className="mx-1 h-6" />
+            <Separator className="mx-1 h-6" orientation="vertical" />
 
             <Button size="sm" variant="ghost" {...buttonProps}>
               <Trash2Icon />

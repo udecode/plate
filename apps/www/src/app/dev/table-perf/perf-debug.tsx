@@ -9,7 +9,7 @@
 
 const perfMeasures = new Map<string, { count: number; total: number }>();
 
-export function startPerfMeasure(name: string): number {
+export function startPerfMeasure(_name: string): number {
   return performance.now();
 }
 
