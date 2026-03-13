@@ -85,7 +85,7 @@ jobs:
       - name: ⬆️ Push registry updates
         id: push-registry
         run: |
-          git add apps/www/public/r apps/www/public/tailwind.css apps/www/src/__registry__/index.tsx
+          git add .
 
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
