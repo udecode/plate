@@ -12,6 +12,8 @@
   "linter": {
     "rules": {
       "correctness": {
+        "noUnresolvedImports": "off", // biome resolver is wrong for template aliases and package exports
+        "useImportExtensions": "off", // relative .ts/.tsx imports break template tsconfig
         "useExhaustiveDependencies": "off", // eslint
         "useHookAtTopLevel": "off", // eslint
         "noUndeclaredVariables": "off", // ts

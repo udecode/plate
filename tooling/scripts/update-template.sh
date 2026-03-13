@@ -7,7 +7,7 @@ USE_LOCAL=false
 MODE="${1:-basic}"
 USE_LOCAL_FILES=false
 LOCAL_REGISTRY_DIR=""
-RUN_VERIFY=true
+RUN_TYPECHECK=true
 
 # Check for --local flag
 if [[ "${1:-}" == "--local" ]]; then
@@ -18,7 +18,7 @@ elif [[ "${2:-}" == "--local" ]]; then
 fi
 
 if [[ "${TEMPLATE_SKIP_VERIFY:-false}" == "true" ]]; then
-  RUN_VERIFY=false
+  RUN_TYPECHECK=false
 fi
 
 # Determine registry prefix
@@ -124,17 +124,17 @@ fi
 # shadcn local-file installs can reintroduce relative `.ts/.tsx` import extensions.
 normalize_relative_ts_imports "$TEMPLATE_DIR/src"
 
-if [[ "$RUN_VERIFY" == true ]]; then
-  echo "Running bun lint:fix..."
-  bun lint:fix
+echo "Running bun lint:fix..."
+bun lint:fix
 
+if [[ "$RUN_TYPECHECK" == true ]]; then
   echo "Running bun typecheck..."
   bun typecheck
 
   echo "✅ Done! Packages updated, $REGISTRY_NAME added, linted, and typechecked in $TEMPLATE_NAME."
 else
-  echo "⏭️ Skipping template-local lint/typecheck (TEMPLATE_SKIP_VERIFY=true)."
-  echo "✅ Done! Packages updated and $REGISTRY_NAME added in $TEMPLATE_NAME."
+  echo "⏭️ Skipping template-local typecheck (TEMPLATE_SKIP_VERIFY=true)."
+  echo "✅ Done! Packages updated, $REGISTRY_NAME added, and lint-fixed in $TEMPLATE_NAME."
 fi
 
 cd "$BASE"

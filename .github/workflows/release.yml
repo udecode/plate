@@ -127,10 +127,12 @@ jobs:
         run: |
           cd templates/plate-template
           bun install --no-frozen-lockfile
+          bun lint
           bun run build
 
           cd ../plate-playground-template
           bun install --no-frozen-lockfile
+          bun lint
           bun run build
 
       - name: ⬆️ Push template updates

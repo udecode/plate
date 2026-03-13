@@ -46,12 +46,13 @@ In `tooling/scripts/update-template.sh`:
 
 - use `npx --yes shadcn@latest add ...` so CI never stalls on an install prompt
 - normalize relative `.ts` and `.tsx` import specifiers after local-file installs
-- support `TEMPLATE_SKIP_VERIFY=true` to skip the script-local `bun lint:fix` and `bun typecheck`
+- always run `bun lint:fix` so generated template files are normalized immediately
+- support `TEMPLATE_SKIP_VERIFY=true` to skip only the script-local `bun typecheck`
 
 In the workflows:
 
 - set `TEMPLATE_SKIP_VERIFY=true` when running `pnpm templates:update --local`
-- run template builds after sync at the workflow level instead of inside the helper
+- run template `bun lint` and `bun run build` checks after sync at the workflow level instead of inside the helper
 
 That keeps the updater focused on generation and keeps CI responsible for CI.
 
@@ -59,16 +60,25 @@ That keeps the updater focused on generation and keeps CI responsible for CI.
 
 The workflow now has one clear boundary:
 
-- updater script: mutate template files
+- updater script: mutate template files and normalize them with `bun lint:fix`
 - workflow: decide what to verify and when to fail
 
-So a registry sync no longer dies because the helper script wandered into unrelated template lint/typecheck noise.
+So a registry sync no longer dies because the helper script wandered into unrelated typecheck noise, while the generated output is still cleaned up before CI checks it.
 
 ## Gotchas
 
 ### Don’t patch template-local Biome config as a workaround
 
 That just moved the mess around and widened lint scope in ugly ways. The problem was not “templates need special Biome config.” The problem was “the wrong layer was running verification.”
+
+### Template Biome needs two rules off
+
+For generated templates, Biome was also a bad source of false failures:
+
+- `noUnresolvedImports` flagged valid package imports, alias imports, and even `eslint.config.mjs` imports
+- `useImportExtensions` re-added relative `.ts` and `.tsx` extensions that break the template TypeScript config on build
+
+The stable fix was to disable both rules in the template `biome.jsonc` files and let `update-template.sh` run `bun lint:fix` immediately after generation.
 
 ### `gh act` still needs Docker even for dry runs
 
