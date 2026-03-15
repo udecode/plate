@@ -53,6 +53,9 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
             indentDepth,
           });
 
+          // Reset decoration cache so all lines get re-highlighted
+          resetCodeBlockDecorations(codeBlock[0] as TCodeBlockElement);
+
           return true;
         };
 
