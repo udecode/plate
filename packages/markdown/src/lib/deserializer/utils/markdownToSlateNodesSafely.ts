@@ -46,7 +46,7 @@ export const markdownToSlateNodesSafely = (
   const lastBlock = completeNodes.at(-1);
 
   if (ElementApi.isElement(lastBlock) && editor.api.isVoid(lastBlock)) {
-    return [newBlock];
+    return [...completeNodes, newBlock];
   }
 
   // FIXME table column will fail, need recursive find the last p
