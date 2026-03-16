@@ -9,9 +9,9 @@
     "@platejs/resizable"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/media-toolbar",
-    "https://platejs.org/r/caption",
-    "https://platejs.org/r/resize-handle"
+    "https://platejs.org/r/media-toolbar.json",
+    "https://platejs.org/r/caption.json",
+    "https://platejs.org/r/resize-handle.json"
   ],
   "files": [
     {

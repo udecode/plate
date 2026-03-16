@@ -86,11 +86,7 @@ const nextConfig = async (_phase: string) => {
     },
 
     experimental: {
-      cpus: 2,
       externalDir: isDev,
-      memoryBasedWorkersCount: true,
-      staticGenerationMaxConcurrency: 1,
-      staticGenerationRetryCount: 1,
       turbopackFileSystemCacheForDev: true,
     },
     productionBrowserSourceMaps: false,

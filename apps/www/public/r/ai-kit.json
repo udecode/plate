@@ -6,12 +6,12 @@
     "@platejs/ai"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/markdown-kit",
-    "https://platejs.org/r/cursor-overlay-kit",
-    "https://platejs.org/r/ai-menu",
-    "https://platejs.org/r/ai-node",
-    "https://platejs.org/r/ai-toolbar-button",
-    "https://platejs.org/r/ai-api"
+    "https://platejs.org/r/markdown-kit.json",
+    "https://platejs.org/r/cursor-overlay-kit.json",
+    "https://platejs.org/r/ai-menu.json",
+    "https://platejs.org/r/ai-node.json",
+    "https://platejs.org/r/ai-toolbar-button.json",
+    "https://platejs.org/r/ai-api.json"
   ],
   "files": [
     {

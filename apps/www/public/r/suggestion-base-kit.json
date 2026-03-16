@@ -6,7 +6,7 @@
     "@platejs/suggestion"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/suggestion-node"
+    "https://platejs.org/r/suggestion-node.json"
   ],
   "files": [
     {

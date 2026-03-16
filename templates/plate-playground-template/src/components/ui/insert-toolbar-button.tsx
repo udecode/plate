@@ -4,6 +4,7 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import {
   CalendarIcon,
   ChevronRightIcon,
+  Code2,
   Columns3Icon,
   FileCodeIcon,
   FilmIcon,
@@ -177,6 +178,11 @@ const groups: Group[] = [
         icon: <PenToolIcon />,
         label: 'Excalidraw',
         value: KEYS.excalidraw,
+      },
+      {
+        icon: <Code2 />,
+        label: 'Code Drawing',
+        value: KEYS.codeDrawing,
       },
     ].map((item) => ({
       ...item,

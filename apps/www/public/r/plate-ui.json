@@ -5,7 +5,7 @@
   "description": "Install Plate package and styles",
   "devDependencies": [],
   "registryDependencies": [
-    "https://platejs.org/r/plate"
+    "https://platejs.org/r/plate.json"
   ],
   "files": [],
   "cssVars": {

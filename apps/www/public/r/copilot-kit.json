@@ -8,8 +8,8 @@
     "@faker-js/faker"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/ghost-text",
-    "https://platejs.org/r/markdown-kit"
+    "https://platejs.org/r/ghost-text.json",
+    "https://platejs.org/r/markdown-kit.json"
   ],
   "files": [
     {

@@ -6,7 +6,7 @@
     "@platejs/date"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/date-node"
+    "https://platejs.org/r/date-node.json"
   ],
   "files": [
     {

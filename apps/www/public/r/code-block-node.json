@@ -9,9 +9,9 @@
     "lowlight"
   ],
   "registryDependencies": [
-    "command",
-    "popover",
-    "button"
+    "@shadcn/command",
+    "@shadcn/popover",
+    "@shadcn/button"
   ],
   "files": [
     {

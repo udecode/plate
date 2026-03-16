@@ -4,18 +4,23 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release:
     name: Release and changelog
     runs-on: ubuntu-latest
-    # Basic security: the release job can only be executed from this repo and from the main branch
-    if: ${{ github.repository == 'udecode/plate' && contains('refs/heads/main',github.ref)}}
+    if: ${{ github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
+      publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
 
     steps:
       - name: 📥 Checkout Repo
         uses: actions/checkout@v4
         with:
-          # To run comparison we need more than the latest commit
           fetch-depth: 0
 
       - name: ♻️ Setup Node.js
@@ -28,7 +33,6 @@ jobs:
         with:
           link-workspace-packages: 'true'
 
-      # @link https://github.com/changesets/action
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
@@ -37,8 +41,127 @@ jobs:
           title: '[Release] Version packages'
           publish: pnpm release
         env:
-          # See https://github.com/changesets/action/issues/147
           HOME: ${{ github.workspace }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  sync-release-artifacts:
+    name: Sync registry and templates after publish
+    runs-on: ubuntu-latest
+    needs: release
+    if: ${{ needs.release.result == 'success' && needs.release.outputs.published == 'true' }}
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
+        with:
+          bun-version: 1.3.9
+
+      - name: ♻️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 📦 Monorepo install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
+
+      - name: 🔧 Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: 🏗 Build production registry
+        run: pnpm --filter www build:registry && pnpm --filter www build:tw
+
+      - name: ⬆️ Push registry updates
+        id: push-registry
+        run: |
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "chore: update registry after release [skip release]"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: ⏳ Wait for npm propagation
+        env:
+          PUBLISHED_PACKAGES_JSON: ${{ needs.release.outputs.publishedPackages }}
+        run: node tooling/scripts/await-npm-publish.mjs
+
+      - name: 🏗 Build local dev registry
+        run: pnpm --filter www rd
+
+      - name: 🔄 Update templates
+        id: update-templates
+        continue-on-error: true
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
+        run: pnpm templates:update --local
+
+      - name: 🔍 Detect template changes
+        id: template-changes
+        run: |
+          if [[ -n "$(git status --porcelain --untracked-files=all -- templates)" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ✅ Run template CI
+        id: template-ci
+        if: ${{ steps.template-changes.outputs.changed == 'true' && steps.update-templates.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          cd templates/plate-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+          cd ../plate-playground-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+      - name: ⬆️ Push template updates
+        if: ${{ steps.template-changes.outputs.changed == 'true' && steps.update-templates.outcome == 'success' && steps.template-ci.outcome == 'success' }}
+        run: |
+          git add templates
+          git commit -m "chore: sync templates after release [skip release]"
+          git push origin HEAD:main
+
+      - name: ◻️ Create template fix PR
+        if: ${{ steps.template-changes.outputs.changed == 'true' && (steps.update-templates.outcome != 'success' || steps.template-ci.outcome != 'success') }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          title: 'Fix template sync after release'
+          body: |
+            Template sync after release produced changes but did not pass automation.
+
+            - `pnpm templates:update --local`: `${{ steps.update-templates.outcome }}`
+            - template CI: `${{ steps.template-ci.outcome || 'skipped' }}`
+          commit-message: 'chore: fix template sync after release [skip release]'
+          committer: GitHub <noreply@github.com>
+          branch: templates/release-sync-failure
+          delete-branch: true
+          add-paths: |
+            templates/**/*
+
+      - name: ❌ Fail on template sync errors
+        if: ${{ steps.update-templates.outcome != 'success' || (steps.template-changes.outputs.changed == 'true' && steps.template-ci.outcome != 'success') }}
+        run: |
+          echo "Template sync automation failed."
+          exit 1

@@ -6,7 +6,7 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/block-selection"
+    "https://platejs.org/r/block-selection.json"
   ],
   "files": [
     {

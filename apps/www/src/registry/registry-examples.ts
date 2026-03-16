@@ -40,7 +40,7 @@ export const examples: Registry['items'] = [
       ],
     },
     name: 'select-editor-demo',
-    registryDependencies: ['shadcn/form', 'shadcn/button', 'select-editor'],
+    registryDependencies: ['@shadcn/form', '@shadcn/button', 'select-editor'],
     title: 'Select Editor Form',
     type: 'registry:example',
   },
@@ -52,7 +52,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'controlled-demo',
-    registryDependencies: ['editor', 'shadcn/button'],
+    registryDependencies: ['editor', '@shadcn/button'],
     type: 'registry:example',
   },
   {
@@ -112,7 +112,7 @@ export const examples: Registry['items'] = [
     ],
     name: 'multiple-editors-demo',
     registryDependencies: [
-      'shadcn/separator',
+      '@shadcn/separator',
       'basic-nodes-kit',
       'media-kit',
       'editor',
@@ -130,7 +130,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'version-history-demo',
-    registryDependencies: ['shadcn/button'],
+    registryDependencies: ['@shadcn/button'],
     type: 'registry:example',
   },
   {
@@ -190,8 +190,8 @@ export const examples: Registry['items'] = [
     registryDependencies: [
       'use-mounted',
       'remote-cursor-overlay',
-      'shadcn/button',
-      'shadcn/input',
+      '@shadcn/button',
+      '@shadcn/input',
     ],
     type: 'registry:example',
   },
@@ -326,9 +326,9 @@ export const demoExamples: Registry['items'] = (
       name: 'editable-voids-demo',
       registryDependencies: [
         'editor-kit',
-        'shadcn/input',
-        'shadcn/label',
-        'shadcn/radio-group',
+        '@shadcn/input',
+        '@shadcn/label',
+        '@shadcn/radio-group',
       ],
       type: 'registry:example',
     },
@@ -367,7 +367,7 @@ export const demoExamples: Registry['items'] = (
       name: 'find-replace-demo',
       registryDependencies: [
         'fixed-toolbar',
-        'shadcn/input',
+        '@shadcn/input',
         'search-highlight-node',
         'editor-kit',
       ],

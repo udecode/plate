@@ -7,8 +7,8 @@
     "@emoji-mart/data@1.2.1"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/emoji-node",
-    "https://platejs.org/r/emoji-toolbar-button"
+    "https://platejs.org/r/emoji-node.json",
+    "https://platejs.org/r/emoji-toolbar-button.json"
   ],
   "files": [
     {

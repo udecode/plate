@@ -1,17 +1,23 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core", "ultracite/react", "ultracite/next"],
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "single"
     }
   },
   "files": {
-    "includes": ["**", "!!node_modules", "!!build", "!!.next", "!next-env.d.ts"]
+    "includes": ["!!node_modules", "!!build", "!!.next", "!next-env.d.ts"]
   },
   "linter": {
     "rules": {
       "correctness": {
+        "noUnresolvedImports": "off", // biome resolver is wrong for template aliases and package exports
+        "useImportExtensions": "off", // relative .ts/.tsx imports break template tsconfig
         "useExhaustiveDependencies": "off", // eslint
         "useHookAtTopLevel": "off", // eslint
         "noUndeclaredVariables": "off", // ts
@@ -45,7 +51,14 @@
         "noNestedTernary": "off", // chill
         "noNonNullAssertion": "off", // ts chill
         "useDefaultSwitchClause": "off", // chill
-        "useBlockStatements": "off" // chill
+        "useBlockStatements": "off", // chill
+        "useFilenamingConvention": "off", // chill
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "type"
+          }
+        }
       },
       "nursery": {
         "noShadow": "off", // chill

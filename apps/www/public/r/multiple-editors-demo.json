@@ -8,12 +8,12 @@
     "@platejs/media"
   ],
   "registryDependencies": [
-    "separator",
-    "https://platejs.org/r/basic-nodes-kit",
-    "https://platejs.org/r/media-kit",
-    "https://platejs.org/r/editor",
-    "https://platejs.org/r/fixed-toolbar",
-    "https://platejs.org/r/turn-into-toolbar-button"
+    "@shadcn/separator",
+    "https://platejs.org/r/basic-nodes-kit.json",
+    "https://platejs.org/r/media-kit.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/turn-into-toolbar-button.json"
   ],
   "files": [
     {

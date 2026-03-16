@@ -1,0 +1,62 @@
+# Claude Code Hook Configuration
+# Parsed by user-prompt-submit.sh
+
+beforeStart:
+  - tag: MANDATORY-FIRST-RESPONSE
+    header: 🚨 STOP - FIRST TOOL CALL MUST BE TodoWrite
+    instructions:
+      - DO NOT analyze. DO NOT read files. DO NOT edit. DO NOT load skills yet.
+      - 'FIRST ACTION: TodoWrite with todo below as in_progress'
+      - Condition NO → mark completed → proceed
+      - Condition YES → work through steps → mark completed → proceed
+      - Skipping TodoWrite = FAILED to follow instructions
+    todos:
+      - |
+        Skill analysis (SKIP if 'quick' in message):
+        (1) STOP rationalizing ('simple question', 'overkill', 'might be relevant')
+        (2) List ALL available skills
+        (3) For EACH: 'always apply' or 'Does task involve [topic]?' → YES/MIGHT/MAYBE = ✓. Only ✗ if DEFINITELY not related
+        (4) Skill(...) for ALL ✓ IN ONE PARALLEL CALL - do NOT load one then wait
+        (5) Output '[Skills: X available, Y loaded: name1, name2]'
+        CRITICAL: 'Might be relevant' = MUST load. '1% chance' = MUST load.
+
+beforeComplete:
+  - tag: VERIFICATION-CHECKLIST
+    header: 🔒 VERIFICATION REQUIRED - NO COMPLETION WITHOUT FRESH EVIDENCE
+    instructions:
+      - TodoWrite with ALL todos below (each has condition)
+      - Condition NO → mark completed and skip
+      - Condition YES → in_progress → verify → completed
+      - NEVER git commit unless explicitly asked
+      - 'NEVER `pnpm dev` or `pnpm run build` unless explicitly asked'
+    todos:
+      - 'Test Browser (IF new features, styling, visual bugs, state changes. SKIP trivial markup, non-UI): Skill(agent-browser)'
+      - 'Typecheck (IF updated .ts files): Bash `pnpm typecheck`'
+      - 'Lint: Bash `pnpm lint:fix`'
+      - |
+        ce-compound (SKIP if trivial):
+        CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge.
+        EVALUATION PROTOCOL (NON-NEGOTIABLE):
+        (1) COMPLETE the user's request first
+        (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation?
+        (3) IF YES to any: Skill(ce-compound) NOW after the fix is verified and follow its workflow to capture the solution in `docs/solutions/`
+        (4) IF NO to all: Skip - no extraction needed
+        This is NOT optional. Failing to evaluate = valuable knowledge lost.
+
+afterCompact:
+  - tag: POST-COMPACT-RECOVERY
+    header: 🚨 CONTEXT WIPED - MANDATORY SKILL RELOAD
+    instructions:
+      - STOP. Context compaction DELETED all skills. You FORGOT everything.
+      - DO NOT proceed until skill reload complete
+      - DO NOT assume you remember skills - they are GONE
+      - Skipping = GUARANTEED FAILURE
+    todos:
+      - |
+        Skill reload (MANDATORY):
+        (1) Check TodoWrite for current task
+        (2) List ALL available skills
+        (3) For EACH: 'always apply' or 'Does task involve [topic]?' → YES/MIGHT/MAYBE = ✓
+        (4) Skill(...) for ALL ✓ IN ONE PARALLEL CALL - do NOT load one then wait
+        (5) ONLY after reload, resume task
+        CRITICAL: ALL skills GONE. MUST reload. 'Might apply' = MUST load.

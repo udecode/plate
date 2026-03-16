@@ -6,7 +6,7 @@
     "@platejs/code-drawing"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/code-drawing-node"
+    "https://platejs.org/r/code-drawing-node.json"
   ],
   "files": [
     {

@@ -7,48 +7,177 @@ on:
     paths:
       - '.github/actions/**'
       - '.github/workflows/registry.yml'
+      - 'apps/www/package.json'
+      - 'apps/www/scripts/**'
+      - 'apps/www/src/app/globals.css'
+      - 'apps/www/src/registry/**'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - '.github/actions/**'
+      - '.github/workflows/registry.yml'
+      - 'apps/www/package.json'
+      - 'apps/www/scripts/**'
+      - 'apps/www/src/app/globals.css'
       - 'apps/www/src/registry/**'
 
+permissions:
+  contents: write
+
 jobs:
-  update-registry:
-    name: Update Registry
+  validate-registry:
+    name: Validate Registry
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.repository == 'udecode/plate' && github.event.pull_request.title != '[Release] Version packages' }}
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-validate-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ♻️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: 📥 Monorepo install
-        uses: ./.github/actions/pnpm-install
-
-      - name: ♻️ Restore packages cache
-        uses: actions/cache@v4
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
         with:
-          path: |
-            ${{ github.workspace }}/.cache
-            ${{ github.workspace }}/**/tsconfig.tsbuildinfo
-          key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          bun-version: 1.3.9
+
+      - name: 📦 Monorepo install
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
 
       - name: 🏗 Build Registry
         run: pnpm --filter www build:registry && pnpm --filter www build:tw
 
-      - name: ◻️ Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+      - name: 🏗 Build local dev registry
+        run: pnpm --filter www rd
+
+      - name: 🔄 Update templates
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
+        run: pnpm templates:update --local
+
+      - name: ✅ Run template CI
+        run: |
+          cd templates/plate-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+          cd ../plate-playground-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+  update-registry:
+    name: Update Registry
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+
+    concurrency:
+      group: ${{ github.workflow }}-publish-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
         with:
-          title: 'Update Registry'
-          body: |
-            Update Registry.
-          commit-message: docs
-          committer: GitHub <noreply@github.com>
-          branch: registry
-          delete-branch: true
-          add-paths: |
-            apps/www/**/*
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: 🔎 Detect pending changesets
+        id: changesets
+        run: |
+          pending_changesets="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' -print)"
+
+          if [[ -n "$pending_changesets" ]]; then
+            echo "Pending changesets found:"
+            echo "$pending_changesets"
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ♻️ Setup Node.js
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@v2
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        name: Install bun
+        with:
+          bun-version: 1.3.9
+
+      - name: 📦 Monorepo install
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        uses: ./.github/actions/pnpm-install
+        with:
+          link-workspace-packages: 'true'
+
+      - name: 🔧 Configure git
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: 🏗 Build Registry
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        run: pnpm --filter www build:registry && pnpm --filter www build:tw
+
+      - name: 🏗 Build local dev registry
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        run: pnpm --filter www rd
+
+      - name: 🔄 Update templates
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        env:
+          TEMPLATE_SKIP_VERIFY: 'true'
+        run: pnpm templates:update --local
+
+      - name: 🔍 Detect template changes
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        id: template-changes
+        run: |
+          if [[ -n "$(git status --porcelain --untracked-files=all -- templates)" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: ✅ Run template CI
+        if: ${{ steps.changesets.outputs.present != 'true' && steps.template-changes.outputs.changed == 'true' }}
+        run: |
+          cd templates/plate-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+          cd ../plate-playground-template
+          bun install --no-frozen-lockfile
+          bun lint
+          bun run build
+
+      - name: ⬆️ Push registry updates
+        if: ${{ steps.changesets.outputs.present != 'true' }}
+        run: |
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No registry changes to publish."
+            exit 0
+          fi
+
+          git commit -m "chore: sync registry and templates [skip release]"
+          git push origin HEAD:main

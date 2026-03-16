@@ -8,8 +8,8 @@
     "@platejs/ai"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/inline-combobox",
-    "https://platejs.org/r/transforms"
+    "https://platejs.org/r/inline-combobox.json",
+    "https://platejs.org/r/transforms.json"
   ],
   "files": [
     {

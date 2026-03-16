@@ -8,8 +8,8 @@
     "@platejs/basic-styles"
   ],
   "registryDependencies": [
-    "popover",
-    "https://platejs.org/r/toolbar"
+    "@shadcn/popover",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

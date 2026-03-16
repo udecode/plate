@@ -6,10 +6,10 @@
     "@platejs/comment"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/comment-base-kit",
-    "https://platejs.org/r/comment-node",
-    "https://platejs.org/r/comment-toolbar-button",
-    "https://platejs.org/r/discussion-kit"
+    "https://platejs.org/r/comment-base-kit.json",
+    "https://platejs.org/r/comment-node.json",
+    "https://platejs.org/r/comment-toolbar-button.json",
+    "https://platejs.org/r/discussion-kit.json"
   ],
   "files": [
     {

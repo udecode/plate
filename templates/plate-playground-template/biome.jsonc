@@ -7,11 +7,13 @@
     }
   },
   "files": {
-    "includes": ["**", "!!node_modules", "!!build", "!!.next", "!next-env.d.ts"]
+    "includes": ["!!node_modules", "!!build", "!!.next", "!next-env.d.ts"]
   },
   "linter": {
     "rules": {
       "correctness": {
+        "noUnresolvedImports": "off", // biome resolver is wrong for template aliases and package exports
+        "useImportExtensions": "off", // relative .ts/.tsx imports break template tsconfig
         "useExhaustiveDependencies": "off", // eslint
         "useHookAtTopLevel": "off", // eslint
         "noUndeclaredVariables": "off", // ts
@@ -45,7 +47,14 @@
         "noNestedTernary": "off", // chill
         "noNonNullAssertion": "off", // ts chill
         "useDefaultSwitchClause": "off", // chill
-        "useBlockStatements": "off" // chill
+        "useBlockStatements": "off", // chill
+        "useFilenamingConvention": "off", // chill
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "type"
+          }
+        }
       },
       "nursery": {
         "noShadow": "off", // chill
@@ -74,7 +83,8 @@
       },
       "performance": {
         "noNamespaceImport": "off", // shadcn
-        "noImgElement": "off" // agnostic
+        "noImgElement": "off", // agnostic
+        "noBarrelFile": "off" // tmp
       }
     }
   }

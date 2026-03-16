@@ -3,8 +3,8 @@
   "name": "controlled-demo",
   "type": "registry:example",
   "registryDependencies": [
-    "https://platejs.org/r/editor",
-    "button"
+    "https://platejs.org/r/editor.json",
+    "@shadcn/button"
   ],
   "files": [
     {

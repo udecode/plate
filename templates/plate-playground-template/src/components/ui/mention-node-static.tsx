@@ -16,6 +16,7 @@ export function MentionElementStatic(
   return (
     <SlateElement
       {...props}
+      as="span"
       attributes={{
         ...props.attributes,
         'data-slate-value': element.value,

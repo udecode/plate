@@ -39,13 +39,13 @@
     "debug@dotai": true,
     "dig@dotai": true,
     "dotai@dotai": true,
-    "git@dotai": true,
     "notification@dotai": true,
     "test@dotai": true,
     "frontend-design@claude-plugins-official": true,
     "compound-engineering@every-marketplace": true,
     "lsp-servers@claude-lsp-servers": true,
-    "planning-with-files@planning-with-files": true
+    "planning-with-files@planning-with-files": true,
+    "agent-browser@agent-browser": true
   },
   "extraKnownMarketplaces": {
     "dotai": {
@@ -73,6 +73,13 @@
       "source": {
         "source": "github",
         "repo": "othmanadi/planning-with-files"
+      },
+      "autoUpdate": true
+    },
+    "agent-browser": {
+      "source": {
+        "source": "github",
+        "repo": "vercel-labs/agent-browser"
       },
       "autoUpdate": true
     }

@@ -6,9 +6,9 @@
     "@platejs/math"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/math-base-kit",
-    "https://platejs.org/r/equation-toolbar-button",
-    "https://platejs.org/r/equation-node"
+    "https://platejs.org/r/math-base-kit.json",
+    "https://platejs.org/r/equation-toolbar-button.json",
+    "https://platejs.org/r/equation-node.json"
   ],
   "files": [
     {

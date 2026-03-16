@@ -16,7 +16,14 @@ import {
   TrashIcon,
   XIcon,
 } from 'lucide-react';
-import { KEYS, NodeApi, nanoid, type Value } from 'platejs';
+import {
+  KEYS,
+  NodeApi,
+  type NodeEntry,
+  nanoid,
+  type TCommentText,
+  type Value,
+} from 'platejs';
 import type { CreatePlateEditorOptions } from 'platejs/react';
 import {
   Plate,
@@ -503,7 +510,7 @@ export function CommentCreateForm({
     if (commentsNodeEntry.length === 0) return;
 
     const documentContent = commentsNodeEntry
-      .map(([node]) => node.text)
+      .map(([node, _path]: NodeEntry<TCommentText>) => node.text)
       .join('');
 
     const _discussionId = nanoid();
@@ -533,7 +540,7 @@ export function CommentCreateForm({
 
     const id = newDiscussion.id;
 
-    commentsNodeEntry.forEach(([, path]) => {
+    commentsNodeEntry.forEach(([, path]: NodeEntry<TCommentText>) => {
       editor.tf.setNodes(
         {
           [getCommentKey(id)]: true,

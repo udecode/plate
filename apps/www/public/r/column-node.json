@@ -9,7 +9,7 @@
     "@platejs/layout"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/resize-handle"
+    "https://platejs.org/r/resize-handle.json"
   ],
   "files": [
     {

@@ -6,8 +6,8 @@
     "@platejs/list"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/block-list",
-    "https://platejs.org/r/indent-base-kit"
+    "https://platejs.org/r/block-list.json",
+    "https://platejs.org/r/indent-base-kit.json"
   ],
   "files": [
     {

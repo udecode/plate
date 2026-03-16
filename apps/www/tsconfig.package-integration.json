@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/.contentlayer/generated": ["./.contentlayer/generated"],
+      "contentlayer/generated": ["./.contentlayer/generated"],
+      "registry": ["./public/r/registry.json"],
+      "registry-shadcn": ["./registry-shadcn.json"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/__tests__/package-integration/**/*.ts",
+    "src/__tests__/package-integration/**/*.tsx"
+  ],
+  "exclude": ["node_modules", "__registry__", "**/blocks/fumadocs"]
+}

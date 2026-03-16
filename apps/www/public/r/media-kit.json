@@ -8,17 +8,17 @@
     "@platejs/media"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/media-base-kit",
-    "https://platejs.org/r/media-audio-node",
-    "https://platejs.org/r/media-embed-node",
-    "https://platejs.org/r/media-file-node",
-    "https://platejs.org/r/media-image-node",
-    "https://platejs.org/r/media-placeholder-node",
-    "https://platejs.org/r/media-preview-dialog",
-    "https://platejs.org/r/media-toolbar",
-    "https://platejs.org/r/media-upload-toast",
-    "https://platejs.org/r/media-video-node",
-    "https://platejs.org/r/media-toolbar-button"
+    "https://platejs.org/r/media-base-kit.json",
+    "https://platejs.org/r/media-audio-node.json",
+    "https://platejs.org/r/media-embed-node.json",
+    "https://platejs.org/r/media-file-node.json",
+    "https://platejs.org/r/media-image-node.json",
+    "https://platejs.org/r/media-placeholder-node.json",
+    "https://platejs.org/r/media-preview-dialog.json",
+    "https://platejs.org/r/media-toolbar.json",
+    "https://platejs.org/r/media-upload-toast.json",
+    "https://platejs.org/r/media-video-node.json",
+    "https://platejs.org/r/media-toolbar-button.json"
   ],
   "files": [
     {

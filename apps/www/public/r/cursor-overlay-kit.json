@@ -6,7 +6,7 @@
     "@platejs/selection"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/cursor-overlay"
+    "https://platejs.org/r/cursor-overlay.json"
   ],
   "files": [
     {

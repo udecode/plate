@@ -10,20 +10,20 @@
     "@platejs/suggestion"
   ],
   "registryDependencies": [
-    "button",
-    "popover",
-    "avatar",
-    "dropdown-menu",
-    "https://platejs.org/r/editor",
-    "https://platejs.org/r/ai-node",
-    "https://platejs.org/r/date-node",
-    "https://platejs.org/r/emoji-node",
-    "https://platejs.org/r/link-node",
-    "https://platejs.org/r/mention-node",
-    "https://platejs.org/r/highlight-style",
-    "https://platejs.org/r/suggestion-kit",
-    "https://platejs.org/r/discussion-kit",
-    "https://platejs.org/r/basic-marks-kit"
+    "@shadcn/button",
+    "@shadcn/popover",
+    "@shadcn/avatar",
+    "@shadcn/dropdown-menu",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/ai-node.json",
+    "https://platejs.org/r/date-node.json",
+    "https://platejs.org/r/emoji-node.json",
+    "https://platejs.org/r/link-node.json",
+    "https://platejs.org/r/mention-node.json",
+    "https://platejs.org/r/highlight-style.json",
+    "https://platejs.org/r/suggestion-kit.json",
+    "https://platejs.org/r/discussion-kit.json",
+    "https://platejs.org/r/basic-marks-kit.json"
   ],
   "files": [
     {

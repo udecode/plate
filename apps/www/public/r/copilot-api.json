@@ -3,7 +3,7 @@
   "name": "copilot-api",
   "type": "registry:file",
   "dependencies": [
-    "ai@5.0.28"
+    "ai@6"
   ],
   "registryDependencies": [],
   "files": [
