@@ -179,17 +179,6 @@
   /* ::selection {
     @apply bg-selection text-selection-foreground;
   } */
-  [data-table-selecting="true"] *::selection {
-    background-color: transparent !important;
-    color: inherit !important;
-  }
-  [data-table-selecting="true"] *::-moz-selection {
-    background-color: transparent !important;
-    color: inherit !important;
-  }
-  [data-table-selecting="true"] * {
-    caret-color: transparent;
-  }
   /* html {
     @apply scroll-smooth;
   } */

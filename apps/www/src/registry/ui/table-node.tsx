@@ -639,7 +639,14 @@ export const TableElement = withHOC(
             />
             <table
               ref={tableRef}
-              className="mr-0 ml-px table h-px table-fixed border-collapse"
+              className={cn(
+                'mr-0 ml-px table h-px table-fixed border-collapse',
+                'data-[table-selecting=true]:[&_*::selection]:!bg-transparent',
+                'data-[table-selecting=true]:[&_*::selection]:!text-inherit',
+                'data-[table-selecting=true]:[&_*::-moz-selection]:!bg-transparent',
+                'data-[table-selecting=true]:[&_*::-moz-selection]:!text-inherit',
+                'data-[table-selecting=true]:[&_*]:!caret-transparent'
+              )}
               style={tableStyle}
               {...tableProps}
             >
