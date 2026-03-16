@@ -336,10 +336,13 @@ function ColorCustom({
       colors.some(
         (c) => normalizeColor(c.value) === normalizeColor(targetColor)
       ) ||
+      customColors.some(
+        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
+      ) ||
       fullCustomColors.some(
         (c) => normalizeColor(c.value) === normalizeColor(targetColor)
       ),
-    [colors, fullCustomColors]
+    [colors, customColors, fullCustomColors]
   );
 
   const [customColor, setCustomColor] = React.useState<string | null>(null);
