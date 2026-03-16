@@ -10,6 +10,12 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## March 2026 #29
 
+### March 16 #29.3
+- `table-node`: Hide browser text-selection fragments during multi-cell table selection by aligning the table selection data attribute with the selection-suppression CSS hook.
+
+### March 15 #29.2
+- `table-node`: Reduce large-table selection latency by syncing selected-cell highlights from the table root, caching repeated selection queries, indexing table cell DOM elements by id, reusing table grid lookups during selection range expansion, keeping the selection simulator on lightweight selected-cell ids, and deferring expanded selection toolbar mount until the selection settles.
+
 ### March 11 #29.1
 - `table-node`: Improved large-table editing performance by applying column widths at the table level, row heights at the row level, and keeping editable resize handles aligned with the table control column.
 

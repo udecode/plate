@@ -13,6 +13,7 @@ import {
   isSelectedCellBorder,
   setBorderSize,
 } from '../../../lib';
+import { TablePlugin } from '../../TablePlugin';
 
 /** Helper: sets one cell's specific border(s) to `size`. */
 function setCellBorderSize(
@@ -193,10 +194,12 @@ export function setSelectedCellsBorder(
  * rectangle, then decide which edges to flip on/off.
  */
 export const getOnSelectTableBorderFactory =
-  (editor: SlateEditor, selectedCells: TElement[] | null) =>
+  (editor: SlateEditor) =>
   (border: BorderDirection | 'none' | 'outer') =>
   () => {
-    let cells = selectedCells;
+    let cells = editor.getApi(TablePlugin).table.getSelectedCells() as
+      | TElement[]
+      | null;
 
     if (!cells || cells.length === 0) {
       const cell = editor.api.block({ match: { type: getCellTypes(editor) } });

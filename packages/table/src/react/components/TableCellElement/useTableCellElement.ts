@@ -1,8 +1,6 @@
-import React from 'react';
-
 import type { TTableCellElement } from 'platejs';
 
-import { useEditorPlugin, useElement, usePluginOption } from 'platejs/react';
+import { useEditorPlugin, useEditorSelector, useElement } from 'platejs/react';
 
 import type { BorderStylesDefault } from '../../../lib';
 
@@ -25,21 +23,13 @@ export type TableCellElementState = {
 };
 
 export const useTableCellElement = (): TableCellElementState => {
-  const { api, setOption } = useEditorPlugin(TablePlugin);
+  const { api } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
-
-  // Sync element transforms with selected cells
-  React.useEffect(() => {
-    if (selectedCells?.some((v) => v.id === element.id && element !== v)) {
-      setOption(
-        'selectedCells',
-        selectedCells.map((v) => (v.id === element.id ? element : v))
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [element]);
+  const isSelectingCell = useEditorSelector(
+    (editor) => editor.getApi(TablePlugin).table.isSelectingCell(),
+    []
+  );
 
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const { minHeight, width } = useTableCellSize({ element });
@@ -59,7 +49,7 @@ export const useTableCellElement = (): TableCellElementState => {
     borders,
     colIndex: endingColIndex,
     colSpan,
-    isSelectingCell: !!selectedCells,
+    isSelectingCell,
     minHeight: rowSizeOverrides.get?.(endingRowIndex) ?? minHeight,
     rowIndex: endingRowIndex,
     selected: isCellSelected,

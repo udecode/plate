@@ -17,9 +17,12 @@ const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
   }),
 ];
 
-const createTableEditor = (input: SlateEditor) =>
+const createTableEditor = (
+  input: SlateEditor,
+  options?: Partial<TableConfig['options']>
+) =>
   createSlateEditor({
-    plugins: getTestTablePlugins(),
+    plugins: getTestTablePlugins(options),
     selection: input.selection,
     value: input.children,
   });
@@ -401,6 +404,215 @@ describe('withTableCellSelection', () => {
           </editor>
         ).children
       );
+    });
+  });
+
+  describe('selection selectors', () => {
+    it('derives multi-cell selection queries from the editor selection', () => {
+      const input = (
+        <editor>
+          <htable id="table-1">
+            <htr>
+              <htd id="c11">
+                <hp>
+                  <anchor />
+                  cell11
+                </hp>
+              </htd>
+              <htd id="c12">
+                <hp>cell12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd id="c21">
+                <hp>cell21</hp>
+              </htd>
+              <htd id="c22">
+                <hp>
+                  cell22
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      expect(
+        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+      ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
+      expect(
+        editor
+          .getOption(BaseTablePlugin, 'selectedCells')
+          ?.map((cell) => cell.id)
+      ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
+      expect(
+        editor
+          .getOption(BaseTablePlugin, 'selectedTables')
+          ?.map((table) => table.type)
+      ).toStrictEqual(['table']);
+      expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(true);
+      expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c12')).toBe(
+        true
+      );
+      expect(editor.getOption(BaseTablePlugin, 'selectedCell', 'c21')?.id).toBe(
+        'c21'
+      );
+    });
+
+    it('returns empty multi-cell queries when the selection stays inside one cell', () => {
+      const input = (
+        <editor>
+          <htable id="table-1">
+            <htr>
+              <htd id="c11">
+                <hp>
+                  <htext>
+                    ce
+                    <anchor />
+                  </htext>
+                  <htext>
+                    ll
+                    <focus />
+                    11
+                  </htext>
+                </hp>
+              </htd>
+              <htd id="c12">
+                <hp>cell12</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      expect(editor.getOption(BaseTablePlugin, 'selectedCellIds')).toBeNull();
+      expect(editor.getOption(BaseTablePlugin, 'selectedCells')).toBeNull();
+      expect(editor.getOption(BaseTablePlugin, 'selectedTables')).toBeNull();
+      expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(false);
+      expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c11')).toBe(
+        false
+      );
+      expect(
+        editor.getOption(BaseTablePlugin, 'selectedCell', 'c11')
+      ).toBeNull();
+    });
+
+    it('reads the latest selected cell nodes after the table changes', () => {
+      const input = (
+        <editor>
+          <htable id="table-1">
+            <htr>
+              <htd id="c11">
+                <hp>
+                  <anchor />
+                  cell11
+                </hp>
+              </htd>
+              <htd id="c12">
+                <hp>
+                  cell12
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      editor.tf.setNodes({ background: 'red' }, { at: [0, 0, 0] });
+
+      expect(
+        editor.getOption(BaseTablePlugin, 'selectedCell', 'c11')
+      ).toMatchObject({
+        background: 'red',
+        id: 'c11',
+      });
+      expect(
+        editor
+          .getOption(BaseTablePlugin, 'selectedCells')
+          ?.map((cell) => cell.id)
+      ).toStrictEqual(['c11', 'c12']);
+    });
+
+    it('updates selected cell ids when the Slate selection changes', () => {
+      const input = (
+        <editor>
+          <htable id="table-1">
+            <htr>
+              <htd id="c11">
+                <hp>
+                  <cursor />
+                  cell11
+                </hp>
+              </htd>
+              <htd id="c12">
+                <hp>cell12</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      editor.tf.select({
+        anchor: editor.api.start([0, 0, 0])!,
+        focus: editor.api.end([0, 0, 1])!,
+      });
+
+      expect(
+        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+      ).toStrictEqual(['c11', 'c12']);
+
+      editor.tf.select(editor.api.start([0, 0, 0])!);
+
+      expect(editor.getOption(BaseTablePlugin, 'selectedCellIds')).toBeNull();
+    });
+
+    it('updates selected cell ids for unmerged tables when merge is enabled', () => {
+      const input = (
+        <editor>
+          <htable id="table-1">
+            <htr>
+              <htd id="c11">
+                <hp>
+                  <cursor />
+                  cell11
+                </hp>
+              </htd>
+              <htd id="c12">
+                <hp>cell12</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd id="c21">
+                <hp>cell21</hp>
+              </htd>
+              <htd id="c22">
+                <hp>cell22</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input, { disableMerge: false });
+
+      editor.tf.select({
+        anchor: editor.api.start([0, 0, 0])!,
+        focus: editor.api.end([0, 1, 1])!,
+      });
+
+      expect(
+        editor.getOption(BaseTablePlugin, 'selectedCellIds')
+      ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
     });
   });
 });
