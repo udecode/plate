@@ -1,6 +1,6 @@
 ---
 name: lfg
-description: Full autonomous engineering workflow
+description: Executes a full autonomous engineering workflow from planning through implementation, review, testing, and video recording. Orchestrates ce:plan, ce:work, ce:review, test-browser, and feature-video in strict sequential order with gate checks. Use when launching a complete end-to-end feature build pipeline. Trigger terms include "lfg", "let's go", "full workflow", "build feature end to end".
 argument-hint: '[feature description]'
 disable-model-invocation: true
 ---

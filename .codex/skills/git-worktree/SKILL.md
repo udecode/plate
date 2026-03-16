@@ -1,6 +1,6 @@
 ---
 name: git-worktree
-description: This skill manages Git worktrees for isolated parallel development. It handles creating, listing, switching, and cleaning up worktrees with a simple interactive interface, following KISS principles.
+description: This skill manages Git worktrees for isolated parallel development via the worktree-manager.sh script, handling creating, listing, switching, and cleaning up worktrees with automatic .env file copying and .gitignore management. Use when reviewing PRs in isolation, working on features in parallel, switching between multiple branches simultaneously, or cleaning up completed worktrees.
 ---
 
 # Git Worktree Manager

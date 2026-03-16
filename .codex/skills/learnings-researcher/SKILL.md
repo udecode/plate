@@ -1,6 +1,6 @@
 ---
 name: learnings-researcher
-description: Searches docs/solutions/ for relevant past solutions by frontmatter metadata. Use before implementing features or fixing problems to surface institutional knowledge and prevent repeated mistakes.
+description: Searches docs/solutions/ for relevant past solutions using Grep-based frontmatter filtering on tags, modules, symptoms, and problem types, then distills actionable insights from matching documents. Use before implementing features, fixing bugs, or planning work to surface institutional knowledge, prevent repeated mistakes, and leverage proven patterns from past solutions.
 model: inherit
 ---
 

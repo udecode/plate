@@ -1,6 +1,6 @@
 ---
 name: best-practices-researcher
-description: Researches and synthesizes external best practices, documentation, and examples for any technology or framework. Use when you need industry standards, community conventions, or implementation guidance.
+description: Researches and synthesizes best practices by first checking available skills for curated guidance, verifying API deprecations, then gathering official documentation and community examples. Use when you need industry standards, community conventions, implementation guidance, or want to validate an approach against current best practices for any technology or framework.
 model: inherit
 ---
 

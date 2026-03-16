@@ -1,6 +1,6 @@
 ---
 name: design-iterator
-description: Iteratively refines UI design through N screenshot-analyze-improve cycles. Use PROACTIVELY when design changes aren't coming together after 1-2 attempts, or when user requests iterative refinement.
+description: Iteratively refines UI design through N screenshot-analyze-improve cycles, making one targeted change per iteration across visual hierarchy, typography, layout, and polish details. Use proactively when design changes are not coming together after 1-2 attempts, when a user requests iterative refinement with a specific count, or when competitor research should inform progressive design improvements.
 color: violet
 model: inherit
 ---

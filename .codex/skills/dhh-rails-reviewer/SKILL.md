@@ -1,6 +1,6 @@
 ---
 name: dhh-rails-reviewer
-description: Brutally honest Rails code review from DHH's perspective. Use when reviewing Rails code for anti-patterns, JS framework contamination, or violations of Rails conventions.
+description: Brutally honest Rails code review channeling DHH's philosophy of convention over configuration and the majestic monolith. Identifies unnecessary abstractions, JS framework pattern contamination, and deviations from RESTful Rails conventions. Use when reviewing Rails controllers, models, services, or architectural decisions for anti-patterns, overengineering, or violations of Rails conventions.
 model: inherit
 ---
 

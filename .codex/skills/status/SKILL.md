@@ -1,5 +1,5 @@
 ---
-description: Show current planning status at a glance - phases, progress, and any logged errors.
+description: Displays current planning status at a glance by reading task_plan.md and summarizing phases, progress percentages, status icons, error counts, and file existence checks. Use when checking project planning progress, viewing phase status, or answering "where am I?" during a multi-phase workflow.
 name: status
 ---
 

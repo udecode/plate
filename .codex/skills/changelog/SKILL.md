@@ -1,6 +1,6 @@
 ---
 name: changelog
-description: Create engaging changelogs for recent merges to main branch
+description: Generates engaging, structured changelogs from recent merges to the main branch. Analyzes PRs via gh CLI, groups by type (breaking, features, fixes, improvements), credits contributors, and optionally posts to Discord. Use when summarizing daily or weekly development activity, creating release notes, or posting team updates. Trigger terms include "changelog", "release notes", "what changed", "daily summary", "weekly summary".
 argument-hint: '[optional: daily|weekly, or time period in days]'
 disable-model-invocation: true
 ---

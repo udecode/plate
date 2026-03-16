@@ -1,6 +1,6 @@
 ---
 name: pr-comment-resolver
-description: Addresses PR review comments by implementing requested changes and reporting resolutions. Use when code review feedback needs to be resolved with code changes.
+description: Addresses PR review comments by analyzing reviewer feedback, planning minimal targeted changes, implementing the requested modifications, and producing structured resolution reports. Use when code review feedback needs to be resolved with code changes, multiple review comments need systematic handling, or a reviewer has requested specific refactoring or improvements.
 color: blue
 model: inherit
 ---

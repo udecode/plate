@@ -1,6 +1,6 @@
 ---
 name: architecture-strategist
-description: Analyzes code changes from an architectural perspective for pattern compliance and design integrity. Use when reviewing PRs, adding services, or evaluating structural refactors.
+description: Analyzes code changes from an architectural perspective, checking pattern compliance, SOLID principles, coupling metrics, dependency boundaries, and design integrity. Produces structured reports covering architecture overview, change assessment, compliance checks, risk analysis, and recommendations. Use when reviewing PRs, adding services, evaluating structural refactors, or checking for architectural anti-patterns. Trigger terms include "architecture review", "design review", "structural analysis", "architecture strategist".
 model: inherit
 ---
 

@@ -1,12 +1,8 @@
 ---
 name: heal-skill
-description: Fix incorrect SKILL.md files when a skill has wrong instructions or outdated API references
+description: Fix incorrect SKILL.md files when a skill has wrong instructions or outdated API references. Use when a skill failed during execution, has outdated API references, incorrect instructions, or needs corrections based on runtime discovery.
 argument-hint: '[optional: specific issue to fix]'
-allowed-tools:
-  - Read
-  - Edit
-  - Bash(ls:*)
-  - Bash(git:*)
+allowed-tools: Read, Edit, Bash(ls:*), Bash(git:*)
 disable-model-invocation: true
 ---
 

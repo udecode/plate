@@ -1,6 +1,6 @@
 ---
 name: ce-review
-description: Perform exhaustive code reviews using multi-agent analysis, ultra-thinking, and worktrees
+description: Performs exhaustive code reviews on pull requests or branches using parallel multi-agent analysis, ultra-thinking deep dives, and Git worktrees for isolated inspection. Synthesizes findings from security, performance, architecture, and quality agents into prioritized todo files (P1/P2/P3). Supports serial mode for long sessions. Trigger terms: "code review", "review PR", "review branch", "ce review", "pull request review". Use when a PR or branch needs thorough multi-perspective code review before merge.
 argument-hint: '[PR number, GitHub URL, branch name, or latest] [--serial]'
 ---
 
@@ -341,44 +341,7 @@ Sub-agents can:
 
 5. Follow template structure from file-todos skill: `.claude/skills/file-todos/assets/todo-template.md`
 
-**Todo File Structure (from template):**
-
-Each todo must include:
-
-- **YAML frontmatter**: status, priority, issue_id, tags, dependencies
-- **Problem Statement**: What's broken/missing, why it matters
-- **Findings**: Discoveries from agents with evidence/location
-- **Proposed Solutions**: 2-3 options, each with pros/cons/effort/risk
-- **Recommended Action**: (Filled during triage, leave blank initially)
-- **Technical Details**: Affected files, components, database changes
-- **Acceptance Criteria**: Testable checklist items
-- **Work Log**: Dated record with actions and learnings
-- **Resources**: Links to PR, issues, documentation, similar patterns
-
-**File naming convention:**
-
-```
-{issue_id}-{status}-{priority}-{description}.md
-
-Examples:
-- 001-pending-p1-security-vulnerability.md
-- 002-pending-p2-performance-optimization.md
-- 003-pending-p3-code-cleanup.md
-```
-
-**Status values:**
-
-- `pending` - New findings, needs triage/decision
-- `ready` - Approved by manager, ready to work
-- `complete` - Work finished
-
-**Priority values:**
-
-- `p1` - Critical (blocks merge, security/data issues)
-- `p2` - Important (should fix, architectural/performance)
-- `p3` - Nice-to-have (enhancements, cleanup)
-
-**Tagging:** Always add `code-review` tag, plus: `security`, `performance`, `architecture`, `rails`, `quality`, etc.
+**Todo File Structure:** Follow the template at `.claude/skills/file-todos/assets/todo-template.md`. Each file uses `{issue_id}-{status}-{priority}-{description}.md` naming (e.g., `001-pending-p1-security-vulnerability.md`). Status: `pending` / `ready` / `complete`. Priority: `p1` (critical) / `p2` (important) / `p3` (nice-to-have). Always tag with `code-review` plus relevant domain tags.
 
 #### Step 3: Summary Report
 
@@ -446,113 +409,20 @@ After creating all todo files, present comprehensive summary:
    - Update Work Log as you work
    - Commit todos: `git add todos/ && git commit -m "refactor: add code review findings"`
 
-### Severity Breakdown:
-
-**🔴 P1 (Critical - Blocks Merge):**
-
-- Security vulnerabilities
-- Data corruption risks
-- Breaking changes
-- Critical architectural issues
-
-**🟡 P2 (Important - Should Fix):**
-
-- Performance issues
-- Significant architectural concerns
-- Major code quality problems
-- Reliability issues
-
-**🔵 P3 (Nice-to-Have):**
-
-- Minor improvements
-- Code cleanup
-- Optimization opportunities
-- Documentation updates
 ````
 
 ### 6. End-to-End Testing (Optional)
 
-<detect_project_type>
+Detect project type from PR files and offer appropriate testing:
 
-**First, detect the project type from PR files:**
+| Indicator | Type | Command |
+|-----------|------|---------|
+| `*.xcodeproj`, `Package.swift` | iOS/macOS | `/xcode-test` |
+| `package.json`, `app/views/*` | Web | `/test-browser` |
+| Both | Hybrid | Both commands |
 
-| Indicator | Project Type |
-|-----------|--------------|
-| `*.xcodeproj`, `*.xcworkspace`, `Package.swift` (iOS) | iOS/macOS |
-| `Gemfile`, `package.json`, `app/views/*`, `*.html.*` | Web |
-| Both iOS files AND web files | Hybrid (test both) |
-
-</detect_project_type>
-
-<offer_testing>
-
-After presenting the Summary Report, offer appropriate testing based on project type:
-
-**For Web Projects:**
-```markdown
-**"Want to run browser tests on the affected pages?"**
-1. Yes - run `/test-browser`
-2. No - skip
-```
-
-**For iOS Projects:**
-```markdown
-**"Want to run Xcode simulator tests on the app?"**
-1. Yes - run `/xcode-test`
-2. No - skip
-```
-
-**For Hybrid Projects (e.g., Rails + Hotwire Native):**
-```markdown
-**"Want to run end-to-end tests?"**
-1. Web only - run `/test-browser`
-2. iOS only - run `/xcode-test`
-3. Both - run both commands
-4. No - skip
-```
-
-</offer_testing>
-
-#### If User Accepts Web Testing:
-
-Spawn a subagent to run browser tests (preserves main context):
-
-```
-Task general-purpose("Run /test-browser for PR #[number]. Test all affected pages, check for console errors, handle failures by creating todos and fixing.")
-```
-
-The subagent will:
-1. Identify pages affected by the PR
-2. Navigate to each page and capture snapshots (using Playwright MCP or agent-browser CLI)
-3. Check for console errors
-4. Test critical interactions
-5. Pause for human verification on OAuth/email/payment flows
-6. Create P1 todos for any failures
-7. Fix and retry until all tests pass
-
-**Standalone:** `/test-browser [PR number]`
-
-#### If User Accepts iOS Testing:
-
-Spawn a subagent to run Xcode tests (preserves main context):
-
-```
-Task general-purpose("Run /xcode-test for scheme [name]. Build for simulator, install, launch, take screenshots, check for crashes.")
-```
-
-The subagent will:
-1. Verify XcodeBuildMCP is installed
-2. Discover project and schemes
-3. Build for iOS Simulator
-4. Install and launch app
-5. Take screenshots of key screens
-6. Capture console logs for errors
-7. Pause for human verification (Sign in with Apple, push, IAP)
-8. Create P1 todos for any failures
-9. Fix and retry until all tests pass
-
-**Standalone:** `/xcode-test [scheme]`
+Spawn subagents via `Task general-purpose(...)` for each test type the user accepts. Subagents identify affected pages/screens, run tests, capture snapshots, create P1 todos for failures, and retry until passing.
 
 ### Important: P1 Findings Block Merge
 
-Any **🔴 P1 (CRITICAL)** findings must be addressed before merging the PR. Present these prominently and ensure they're resolved before accepting the PR.
+Any P1 (CRITICAL) findings must be addressed before merging. Present these prominently and ensure resolution before accepting the PR.

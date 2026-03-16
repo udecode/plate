@@ -1,6 +1,6 @@
 ---
 name: writing-changesets
-description: Use when creating changeset files for Plate releases
+description: Creates changeset files for Plate package releases following strict conventions — one package per file, imperative voice, correct SemVer bump types, and Radix UI style prose. Use when writing .changeset/*.md files, documenting package changes for feat/fix/breaking releases, or updating docs/components/changelog.mdx for registry changes.
 ---
 
 # Writing Changesets

@@ -1,6 +1,6 @@
 ---
 name: report-bug
-description: Report a bug in the compound-engineering plugin
+description: Collects structured bug information (category, component, reproduction steps, expected vs actual behavior, error messages) and environment details, then files a GitHub issue against the compound-engineering plugin repository. Use when encountering a bug in any compound-engineering component (agent, command, skill, MCP server, or installation). Trigger terms include "report bug", "file bug", "bug report", "something broke".
 argument-hint: '[optional: brief description of the bug]'
 disable-model-invocation: true
 ---

@@ -1,6 +1,6 @@
 ---
 name: agent-native-reviewer
-description: Reviews code to ensure agent-native parity — any action a user can take, an agent can also take. Use after adding UI features, agent tools, or system prompts.
+description: Reviews code to ensure agent-native parity — any action a user can take, an agent can also take. Checks action parity, context parity, shared workspace architecture, tool design (primitives over workflows), and dynamic context injection. Use after adding UI features, agent tools, or system prompts, or during periodic architecture audits to ensure agents are first-class citizens.
 model: inherit
 ---
 

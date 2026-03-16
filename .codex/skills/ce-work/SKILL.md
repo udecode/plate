@@ -1,6 +1,6 @@
 ---
 name: ce-work
-description: Execute work plans efficiently while maintaining quality and finishing features
+description: Executes a work plan by reading the document, setting up a branch or worktree, breaking tasks into todos, implementing with incremental commits, running tests continuously, and shipping a complete PR with post-deploy monitoring. Supports swarm mode for parallel execution of complex plans. Use when a plan exists and implementation should begin, or when executing a specification or todo file. Trigger terms include "ce work", "execute plan", "implement feature", "start building", "ship it".
 argument-hint: '[plan file, specification, or todo file path]'
 ---
 

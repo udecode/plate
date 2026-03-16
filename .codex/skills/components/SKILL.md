@@ -1,6 +1,6 @@
 ---
 name: components
-description: React component architecture for creating composable, accessible components with data attributes. Use when creating/updating composable components, not for higher-level feature/page components.
+description: React component architecture for creating composable, accessible components with data attributes, variant systems, keyboard navigation, and screen reader support. Use when creating or updating low-level composable UI components with proper ARIA patterns, not for higher-level feature or page components.
 ---
 
 # Accessibility

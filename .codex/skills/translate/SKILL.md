@@ -1,6 +1,12 @@
 ---
 name: translate
-description: 'Command: translate'
+description: >-
+  Translates and synchronizes English MDX documentation files to Chinese (cn) while
+  preserving Markdown formatting, code blocks, and JSX component tags. Only translates
+  the diff between source and existing translation — does not re-translate unchanged
+  content. Trigger terms: "translate", "sync translation", "MDX to Chinese",
+  "localize docs". Use when English .mdx files have changed and the corresponding
+  .cn.mdx files need updating.
 ---
 
 You are a professional translator. Translate/Synchronize the following MDX content from English to cn.

@@ -1,6 +1,6 @@
 ---
 name: git-history-analyzer
-description: Performs archaeological analysis of git history to trace code evolution, identify contributors, and understand why code patterns exist. Use when you need historical context for code changes.
+description: Performs archaeological analysis of git history to trace code evolution, identify contributors, and understand why code patterns exist using git log, git blame, git shortlog, and pickaxe searches. Use when you need historical context for code changes, want to understand why a pattern was introduced, need to map contributor expertise domains, or are investigating the root cause of recurring issues.
 model: inherit
 ---
 

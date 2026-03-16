@@ -1,6 +1,6 @@
 ---
 name: deepen-plan
-description: Enhance a plan with parallel research agents for each section to add depth, best practices, and implementation details
+description: Enhances an existing plan file by launching parallel research sub-agents for each section to add best practices, performance optimizations, edge-case handling, and concrete implementation details. Discovers and applies all available skills, learnings from docs/solutions/, and review agents against the plan content. Trigger terms: "deepen plan", "enhance plan", "research plan", "add detail to plan", "enrich plan". Use when an existing plan from /ce:plan needs deeper research grounding before implementation begins.
 argument-hint: '[path to plan file]'
 ---
 
@@ -148,122 +148,21 @@ Task general-purpose: "Use the security-patterns skill at ~/.claude/skills/secur
 Check for documented learnings from /ce:compound. These are solved problems stored as markdown files. Spawn a sub-agent for each learning to check if it's relevant.
 </thinking>
 
-**LEARNINGS LOCATION - Check these exact folders:**
+**Learnings locations** (check in order): `docs/solutions/`, `.claude/docs/`, `~/.claude/docs/`
+
+**Process:**
+1. Find all `.md` files in learnings directories
+2. Read frontmatter (tags, category, module, symptom) of each file
+3. Filter by relevance: match tags/category/module against plan content. Skip clearly unrelated learnings (e.g., skip database learnings for frontend-only plans)
+4. Spawn parallel sub-agents for each relevant learning:
 
 ```
-docs/solutions/           <-- PRIMARY: Project-level learnings (created by /ce:compound)
-├── performance-issues/
-│   └── *.md
-├── debugging-patterns/
-│   └── *.md
-├── configuration-fixes/
-│   └── *.md
-├── integration-issues/
-│   └── *.md
-├── deployment-issues/
-│   └── *.md
-└── [other-categories]/
-    └── *.md
+Task general-purpose: "Read [learning path]. Check if it applies to this plan: [plan content].
+If relevant: explain how, quote key insight, suggest incorporation.
+If not: say 'Not applicable: [reason]'"
 ```
 
-**Step 1: Find ALL learning markdown files**
-
-Run these commands to get every learning file:
-
-```bash
-# PRIMARY LOCATION - Project learnings
-find docs/solutions -name "*.md" -type f 2>/dev/null
-
-# If docs/solutions doesn't exist, check alternate locations:
-find .claude/docs -name "*.md" -type f 2>/dev/null
-find ~/.claude/docs -name "*.md" -type f 2>/dev/null
-```
-
-**Step 2: Read frontmatter of each learning to filter**
-
-Each learning file has YAML frontmatter with metadata. Read the first ~20 lines of each file to get:
-
-```yaml
----
-title: "N+1 Query Fix for Briefs"
-category: performance-issues
-tags: [activerecord, n-plus-one, includes, eager-loading]
-module: Briefs
-symptom: "Slow page load, multiple queries in logs"
-root_cause: "Missing includes on association"
----
-```
-
-**For each .md file, quickly scan its frontmatter:**
-
-```bash
-# Read first 20 lines of each learning (frontmatter + summary)
-head -20 docs/solutions/**/*.md
-```
-
-**Step 3: Filter - only spawn sub-agents for LIKELY relevant learnings**
-
-Compare each learning's frontmatter against the plan:
-- `tags:` - Do any tags match technologies/patterns in the plan?
-- `category:` - Is this category relevant? (e.g., skip deployment-issues if plan is UI-only)
-- `module:` - Does the plan touch this module?
-- `symptom:` / `root_cause:` - Could this problem occur with the plan?
-
-**SKIP learnings that are clearly not applicable:**
-- Plan is frontend-only → skip `database-migrations/` learnings
-- Plan is Python → skip `rails-specific/` learnings
-- Plan has no auth → skip `authentication-issues/` learnings
-
-**SPAWN sub-agents for learnings that MIGHT apply:**
-- Any tag overlap with plan technologies
-- Same category as plan domain
-- Similar patterns or concerns
-
-**Step 4: Spawn sub-agents for filtered learnings**
-
-For each learning that passes the filter:
-
-```
-Task general-purpose: "
-LEARNING FILE: [full path to .md file]
-
-1. Read this learning file completely
-2. This learning documents a previously solved problem
-
-Check if this learning applies to this plan:
-
----
-[full plan content]
----
-
-If relevant:
-- Explain specifically how it applies
-- Quote the key insight or solution
-- Suggest where/how to incorporate it
-
-If NOT relevant after deeper analysis:
-- Say 'Not applicable: [reason]'
-"
-```
-
-**Example filtering:**
-```
-# Found 15 learning files, plan is about "Rails API caching"
-
-# SPAWN (likely relevant):
-docs/solutions/performance-issues/n-plus-one-queries.md      # tags: [activerecord] ✓
-docs/solutions/performance-issues/redis-cache-stampede.md    # tags: [caching, redis] ✓
-docs/solutions/configuration-fixes/redis-connection-pool.md  # tags: [redis] ✓
-
-# SKIP (clearly not applicable):
-docs/solutions/deployment-issues/heroku-memory-quota.md      # not about caching
-docs/solutions/frontend-issues/stimulus-race-condition.md    # plan is API, not frontend
-docs/solutions/authentication-issues/jwt-expiry.md           # plan has no auth
-```
-
-**Spawn sub-agents in PARALLEL for all filtered learnings.**
-
-**These learnings are institutional knowledge - applying them prevents repeating past mistakes.**
+These learnings are institutional knowledge -- applying them prevents repeating past mistakes.
 
 ### 4. Launch Per-Section Research Agents
 
@@ -301,65 +200,17 @@ Search for recent (2024-2026) articles, blog posts, and documentation on topics 
 Dynamically discover every available agent and run them ALL against the plan. Don't filter, don't skip, don't assume relevance. 40+ parallel agents is fine. Use everything available.
 </thinking>
 
-**Step 1: Discover ALL available agents from ALL sources**
+**Discover agents from ALL sources:** `.claude/agents/`, `~/.claude/agents/`, all plugin caches (`~/.claude/plugins/cache/*/...`), and local plugins from `installed_plugins.json`.
 
-```bash
-# 1. Project-local agents (highest priority - project-specific)
-find .claude/agents -name "*.md" 2>/dev/null
+For compound-engineering plugin: USE `review/`, `research/`, `design/`, `docs/` agents. SKIP `workflow/` agents.
 
-# 2. User's global agents (~/.claude/)
-find ~/.claude/agents -name "*.md" 2>/dev/null
-
-# 3. compound-engineering plugin agents (all subdirectories)
-find ~/.claude/plugins/cache/*/compound-engineering/*/agents -name "*.md" 2>/dev/null
-
-# 4. ALL other installed plugins - check every plugin for agents
-find ~/.claude/plugins/cache -path "*/agents/*.md" 2>/dev/null
-
-# 5. Check installed_plugins.json to find all plugin locations
-cat ~/.claude/plugins/installed_plugins.json
-
-# 6. For local plugins (isLocal: true), check their source directories
-# Parse installed_plugins.json and find local plugin paths
-```
-
-**Important:** Check EVERY source. Include agents from:
-- Project `.claude/agents/`
-- User's `~/.claude/agents/`
-- compound-engineering plugin (but SKIP workflow/ agents - only use review/, research/, design/, docs/)
-- ALL other installed plugins (agent-sdk-dev, frontend-design, etc.)
-- Any local plugins
-
-**For compound-engineering plugin specifically:**
-- USE: `agents/review/*` (all reviewers)
-- USE: `agents/research/*` (all researchers)
-- USE: `agents/design/*` (design agents)
-- USE: `agents/docs/*` (documentation agents)
-- SKIP: `agents/workflow/*` (these are workflow orchestrators, not reviewers)
-
-**Step 2: For each discovered agent, read its description**
-
-Read the first few lines of each agent file to understand what it reviews/analyzes.
-
-**Step 3: Launch ALL agents in parallel**
-
-For EVERY agent discovered, launch a Task in parallel:
+**Launch ALL discovered agents in parallel** -- do NOT filter by relevance. Let each agent decide applicability. 20-40+ parallel agents is fine. Goal is maximum coverage.
 
 ```
-Task [agent-name]: "Review this plan using your expertise. Apply all your checks and patterns. Plan content: [full plan content]"
+Task [agent-name]: "Review this plan using your expertise. Apply all checks and patterns. Plan content: [full plan]"
 ```
 
-**CRITICAL RULES:**
-- Do NOT filter agents by "relevance" - run them ALL
-- Do NOT skip agents because they "might not apply" - let them decide
-- Launch ALL agents in a SINGLE message with multiple Task tool calls
-- 20, 30, 40 parallel agents is fine - use everything
-- Each agent may catch something others miss
-- The goal is MAXIMUM coverage, not efficiency
-
-**Step 4: Also discover and run research agents**
-
-Research agents (like `best-practices-researcher`, `framework-docs-researcher`, `git-history-analyzer`, `repo-research-analyst`) should also be run for relevant plan sections.
+Also run research agents (best-practices-researcher, framework-docs-researcher, etc.) for relevant plan sections.
 
 ### 6. Wait for ALL Agents and Synthesize Everything
 
@@ -492,53 +343,8 @@ Based on selection:
 
 ## Example Enhancement
 
-**Before (from /workflows:plan):**
-```markdown
-## Technical Approach
+**Before:** `"Use React Query for data fetching with optimistic updates."`
 
-Use React Query for data fetching with optimistic updates.
-```
-
-**After (from /workflows:deepen-plan):**
-```markdown
-## Technical Approach
-
-Use React Query for data fetching with optimistic updates.
-
-### Research Insights
-
-**Best Practices:**
-- Configure `staleTime` and `cacheTime` based on data freshness requirements
-- Use `queryKey` factories for consistent cache invalidation
-- Implement error boundaries around query-dependent components
-
-**Performance Considerations:**
-- Enable `refetchOnWindowFocus: false` for stable data to reduce unnecessary requests
-- Use `select` option to transform and memoize data at query level
-- Consider `placeholderData` for instant perceived loading
-
-**Implementation Details:**
-```typescript
-// Recommended query configuration
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 2,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-```
-
-**Edge Cases:**
-- Handle race conditions with `cancelQueries` on component unmount
-- Implement retry logic for transient network failures
-- Consider offline support with `persistQueryClient`
-
-**References:**
-- https://tanstack.com/query/latest/docs/react/guides/optimistic-updates
-- https://tkdodo.eu/blog/practical-react-query
-```
+**After:** Same content preserved, plus a "Research Insights" subsection with best practices (staleTime/cacheTime config, queryKey factories), performance tips (refetchOnWindowFocus, select option), code examples, edge cases (race conditions, offline support), and reference links.
 
 NEVER CODE! Just research and enhance the plan.

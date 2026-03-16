@@ -1,6 +1,6 @@
 ---
 name: feature-video
-description: Record a video walkthrough of a feature and add it to the PR description
+description: Records a video walkthrough of a feature by capturing browser screenshots with agent-browser, assembling them into MP4/GIF via ffmpeg, uploading to cloud storage via rclone, and embedding the result in the PR description. Use when a PR needs a visual demo, or when documenting a feature for reviewers. Trigger terms include "feature video", "record demo", "video walkthrough", "PR video", "demo recording".
 argument-hint: '[PR number or ''current''] [optional: base URL, default localhost:3000]'
 ---
 

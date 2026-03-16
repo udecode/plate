@@ -1,6 +1,6 @@
 ---
 name: workflows-plan
-description: '[DEPRECATED] Use /ce:plan instead — renamed for clarity.'
+description: '[DEPRECATED] Redirects to /ce:plan for feature planning. This alias forwards all arguments and will be removed in a future version. Use when invoking the legacy /workflows:plan command. Trigger terms include "workflows plan".'
 argument-hint: '[feature description, bug report, or improvement idea]'
 disable-model-invocation: true
 ---

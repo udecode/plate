@@ -1,6 +1,6 @@
 ---
 name: performance-oracle
-description: Analyzes code for performance bottlenecks, algorithmic complexity, database queries, memory usage, and scalability. Use after implementing features or when performance concerns arise.
+description: Analyzes code for performance bottlenecks including algorithmic complexity (Big O), N+1 database queries, memory leaks, caching opportunities, network round trips, and frontend bundle size impact. Use after implementing features, when API responses are slow, when optimizing for scale, or when performance concerns arise during code review.
 model: inherit
 ---
 

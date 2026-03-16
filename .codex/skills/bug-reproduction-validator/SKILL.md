@@ -1,6 +1,6 @@
 ---
 name: bug-reproduction-validator
-description: Systematically reproduces and validates bug reports to confirm whether reported behavior is an actual bug. Use when you receive a bug report or issue that needs verification.
+description: Systematically reproduces and validates bug reports to confirm whether reported behavior is an actual bug. Extracts reproduction steps, sets up minimal test cases, classifies issues, and produces structured validation reports. Use when a bug report, issue ticket, or user-reported defect needs verification, reproduction, or root-cause triage.
 model: inherit
 ---
 

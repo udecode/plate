@@ -1,5 +1,5 @@
 ---
-description: Install all dotai registry items in one command
+description: Installs all dotai registry items (dotai, prompt) in one command using the shadcn CLI, and configures a postinstall script for auto-generating agent instructions via skiller. Use when setting up dotai in a project or adding all registry items at once. Trigger terms include "install dotai", "install registry", "setup dotai", "install all".
 allowed-tools: Bash
 name: install
 ---

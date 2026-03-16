@@ -1,7 +1,7 @@
 ---
-allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite
-description: Generate comprehensive app design document with project stage assessment
 name: create-app-design
+description: Generates a comprehensive Application Design Document by analyzing the codebase, assessing the project stage (Pre-MVP/MVP/Production/Enterprise), and running an interactive Q&A session. Produces a technology-agnostic design doc covering architecture, features, user experience, and business logic. Saves output to .claude/skills/1-app-design-document.mdc. Trigger terms: "app design", "design document", "architecture doc", "create design doc", "application overview". Use when the project needs a high-level design document for stakeholders, new developers, or architectural planning.
+allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite
 ---
 
 # Generate Application Design Document

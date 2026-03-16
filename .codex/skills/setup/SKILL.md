@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Configure which review agents run for your project. Auto-detects stack and writes compound-engineering.local.md.
+description: Interactively configures which review agents run during /ce:review and /ce:work by auto-detecting the project stack (Rails, Python, TypeScript, or general) and writing compound-engineering.local.md. Supports auto-configure and custom modes with stack, focus area, and depth options. Use when setting up compound engineering for a new project or reconfiguring review agents. Trigger terms include "setup", "configure review agents", "setup compound engineering", "ce setup".
 disable-model-invocation: true
 ---
 

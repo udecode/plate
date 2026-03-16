@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
+description: Guide for creating effective skills through a structured six-step process — understanding use cases, planning reusable contents, initializing with the template script, editing SKILL.md and bundled resources, packaging for distribution, and iterating. This skill should be used when users want to create a new skill, update an existing skill, or package a skill that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
 license: Complete terms in LICENSE.txt
 disable-model-invocation: true
 ---

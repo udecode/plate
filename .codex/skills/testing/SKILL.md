@@ -1,6 +1,6 @@
 ---
 name: testing
-description: 'Skill: testing'
+description: Defines the testing strategy, conventions, and rules for the Plate editor monorepo. Covers three test layers (unit, contract, golden I/O), Bun-first tooling, seam selection (createEditor vs createSlateEditor vs createPlateEditor), file organization, fixture patterns, and per-package rules. Use when writing tests, reviewing test coverage, choosing test seams, or cleaning up test suites. Trigger terms include "testing", "write tests", "test strategy", "test conventions", "bun test".
 ---
 
 ## Testing Goal

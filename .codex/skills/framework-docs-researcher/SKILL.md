@@ -1,6 +1,6 @@
 ---
 name: framework-docs-researcher
-description: Gathers comprehensive documentation and best practices for frameworks, libraries, or dependencies. Use when you need official docs, version-specific constraints, or implementation patterns.
+description: Gathers comprehensive documentation and best practices for frameworks, libraries, or dependencies by querying official docs, checking for deprecations, exploring gem or package source code, and searching GitHub for real-world usage. Use when you need official docs, version-specific constraints, API references, deprecation checks, or implementation patterns for a specific library or framework.
 model: inherit
 ---
 

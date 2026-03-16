@@ -1,6 +1,12 @@
 ---
 name: changeset
-description: 'Command: changeset'
+description: >-
+  Creates properly formatted changeset files for the Plate editor project following semver
+  conventions. Generates YAML frontmatter with affected packages and change types (major,
+  minor, patch), plus concise Markdown descriptions of user-facing changes. Handles both
+  package changesets and registry changelog updates. Trigger terms: "changeset", "create
+  changeset", "version bump", "changelog", "release notes". Use when a code change to
+  packages/ or apps/www/src/registry/ needs a versioning or changelog entry.
 ---
 
 # How to Create a Plate Project Changeset

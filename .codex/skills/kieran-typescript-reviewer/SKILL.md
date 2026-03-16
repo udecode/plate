@@ -1,6 +1,6 @@
 ---
 name: kieran-typescript-reviewer
-description: Reviews TypeScript code with an extremely high quality bar for type safety, modern patterns, and maintainability. Use after implementing features, modifying code, or creating new TypeScript components.
+description: Reviews TypeScript code with an extremely high quality bar for type safety, modern ES6+/TS5+ patterns, import organization, naming clarity, and maintainability. Flags any usage, regressions, and module extraction opportunities. Use after implementing features, modifying existing TypeScript code, creating new components or utilities, or refactoring modules that need strict type-safety review.
 model: inherit
 ---
 

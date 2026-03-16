@@ -1,6 +1,6 @@
 ---
 name: deploy-docs
-description: Validate and prepare documentation for GitHub Pages deployment
+description: Validates documentation site readiness and prepares it for GitHub Pages deployment by checking HTML pages, JSON configs, component counts, and uncommitted changes. Use when deploying docs, verifying deployment readiness, or setting up a GitHub Pages workflow for the first time.
 disable-model-invocation: true
 ---
 

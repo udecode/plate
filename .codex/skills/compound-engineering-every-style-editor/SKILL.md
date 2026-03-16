@@ -1,6 +1,6 @@
 ---
 name: compound-engineering-every-style-editor
-description: This skill should be used when reviewing or editing copy to ensure adherence to Every's style guide. It provides a systematic line-by-line review process for grammar, punctuation, mechanics, and style guide compliance.
+description: This skill should be used when reviewing or editing copy to ensure adherence to Every's style guide. It performs a systematic four-phase review — initial assessment, detailed line edit, mechanical review, and recommendations — checking grammar, punctuation, capitalization, number formatting, and style guide compliance. Use when proofreading articles, blog posts, newsletters, or preparing clean copy for editorial review against Every's conventions.
 ---
 
 # Every Style Editor

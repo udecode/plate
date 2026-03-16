@@ -1,6 +1,6 @@
 ---
 name: triage
-description: Triage and categorize findings for the CLI todo system
+description: Triages and categorizes findings (code review, security audit, performance analysis) for the CLI todo system. Presents each finding with severity, category, and proposed solution, then processes user decisions (approve, skip, customize) to manage todo files with proper status transitions. Use when processing review findings, audit results, or any batch of issues that need prioritization and tracking. Trigger terms include "triage", "categorize findings", "process review", "triage todos".
 argument-hint: '[findings list or source type]'
 disable-model-invocation: true
 ---

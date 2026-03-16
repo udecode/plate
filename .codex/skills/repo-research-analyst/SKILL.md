@@ -1,6 +1,6 @@
 ---
 name: repo-research-analyst
-description: Conducts thorough research on repository structure, documentation, conventions, and implementation patterns. Use when onboarding to a new codebase or understanding project conventions.
+description: Conducts thorough research on repository structure, documentation, conventions, templates, and implementation patterns by analyzing architecture files, issue history, contribution guidelines, and codebase search results. Use when onboarding to a new codebase, understanding project conventions, discovering issue or PR templates, or mapping naming and code organization patterns before contributing.
 model: inherit
 ---
 

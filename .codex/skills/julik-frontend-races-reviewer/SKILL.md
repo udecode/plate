@@ -1,6 +1,6 @@
 ---
 name: julik-frontend-races-reviewer
-description: Reviews JavaScript and Stimulus code for race conditions, timing issues, and DOM lifecycle problems. Use after implementing or modifying frontend controllers or async UI code.
+description: Reviews JavaScript and Stimulus code for race conditions, timing issues, DOM lifecycle problems, unhandled promise rejections, stale timer callbacks, and concurrent operation conflicts. Use after implementing or modifying Stimulus controllers, async UI code, Hotwire/Turbo integrations, or any frontend code involving setTimeout, setInterval, requestAnimationFrame, or CSS animations.
 model: inherit
 ---
 

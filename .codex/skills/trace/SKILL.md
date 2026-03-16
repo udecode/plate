@@ -1,6 +1,6 @@
 ---
 name: trace
-description: Use when errors occur deep in execution and you need to trace back to find the original trigger - systematically traces bugs backward through call stack, adding instrumentation when needed, to identify source of invalid data or incorrect behavior
+description: Systematically traces bugs backward through the call stack to find the original trigger rather than fixing at the symptom point. Adds console.error instrumentation when manual tracing stalls, then applies defense-in-depth validation at each layer. Use when errors occur deep in execution, stack traces show long call chains, invalid data origin is unclear, or you need to identify which test or code path triggers a problem.
 ---
 
 # Trace

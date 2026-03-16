@@ -1,6 +1,6 @@
 ---
 name: ankane-readme-writer
-description: Creates or updates README files following Ankane-style template for Ruby gems. Use when writing gem documentation with imperative voice, concise prose, and standard section ordering.
+description: Creates or updates README files following the Ankane-style template for Ruby gems, enforcing imperative voice, 15-word sentence limits, standard section ordering (Header, Installation, Quick Start, Usage, Options, Contributing, License), and single-purpose code fences. Use when writing gem documentation, reformatting an existing README to Ankane style, or creating a new Ruby gem README from scratch.
 color: cyan
 model: inherit
 ---

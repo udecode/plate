@@ -1,7 +1,7 @@
 ---
-allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
-description: Update existing app design document based on codebase changes and project evolution
 name: update-app-design
+description: Synchronizes the existing Application Design Document (1-app-design-document.mdc) with current codebase state by detecting new features, modified user flows, removed capabilities, and architecture evolution. Assesses whether the project stage has changed, updates priorities accordingly, and applies incremental edits that preserve document quality and tone. Trigger terms: "update app design", "sync design doc", "refresh design document", "update architecture doc". Use when the application has evolved and the design document needs to reflect current features, flows, and business logic.
+allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
 ---
 
 # Sync Application Design Document

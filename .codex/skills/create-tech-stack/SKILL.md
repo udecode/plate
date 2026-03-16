@@ -1,7 +1,7 @@
 ---
-allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
-description: Generate comprehensive technical stack documentation from codebase analysis
 name: create-tech-stack
+description: Generates comprehensive Tech Stack documentation by parsing package.json, configuration files, and codebase patterns. Detects frameworks, databases, testing tools, CI/CD setup, and deployment configs. Runs an interactive Q&A for non-discoverable infrastructure details. Saves output to .claude/skills/2-tech-stack.mdc with exact version numbers and config examples. Trigger terms: "tech stack", "create tech stack", "document dependencies", "stack documentation", "technology overview". Use when the project needs technical onboarding documentation or a comprehensive technology inventory.
+allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
 ---
 
 # Generate Tech Stack Documentation

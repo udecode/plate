@@ -1,6 +1,6 @@
 ---
 name: code-simplicity-reviewer
-description: Final review pass to ensure code is as simple and minimal as possible. Use after implementation is complete to identify YAGNI violations and simplification opportunities.
+description: Final review pass to ensure code is as simple and minimal as possible by analyzing every line for necessity, challenging abstractions, removing redundancy, and enforcing YAGNI principles. Use after implementation is complete to identify over-engineering, unnecessary complexity, dead code, premature generalizations, or simplification opportunities.
 model: inherit
 ---
 

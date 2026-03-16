@@ -1,6 +1,6 @@
 ---
 name: test-browser
-description: Run browser tests on pages affected by current PR or branch
+description: Runs end-to-end browser tests on pages affected by a PR or branch using the agent-browser CLI. Maps changed files to routes, detects the dev server port, navigates each affected page, checks for console errors and rendering issues, and produces a structured test summary. Use when validating UI changes, catching JavaScript integration bugs, or verifying layout regressions in a real browser. Trigger terms include "test browser", "browser test", "e2e test", "test UI", "test-browser".
 argument-hint: '[PR number, branch name, ''current'', or --port PORT]'
 ---
 

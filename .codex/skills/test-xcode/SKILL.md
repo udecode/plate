@@ -1,6 +1,6 @@
 ---
 name: test-xcode
-description: Build and test iOS apps on simulator using XcodeBuildMCP
+description: Builds, installs, and tests iOS apps on the simulator using XcodeBuildMCP. Discovers projects and schemes, boots the simulator, captures screenshots and console logs, supports human verification for external flows, and produces a structured test summary. Use when testing iOS or macOS app changes on the simulator, verifying builds, or checking for crashes after code changes. Trigger terms include "test xcode", "xcode test", "iOS test", "simulator test", "build and test iOS".
 argument-hint: '[scheme name or ''current'' to use default]'
 disable-model-invocation: true
 ---

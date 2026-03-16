@@ -1,6 +1,6 @@
 ---
 name: figma-design-sync
-description: Detects and fixes visual differences between a web implementation and its Figma design. Use iteratively when syncing implementation to match Figma specs.
+description: Detects and fixes visual differences between a web implementation and its Figma design by capturing screenshots, comparing layout, typography, colors, and spacing, then applying precise CSS/Tailwind corrections. Use when syncing a component or page to match Figma specs, checking pixel-perfect alignment, or iteratively refining design-to-code fidelity.
 model: inherit
 color: purple
 ---

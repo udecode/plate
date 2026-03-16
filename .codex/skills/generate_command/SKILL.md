@@ -1,6 +1,6 @@
 ---
-name: generate_command
-description: Create a new custom slash command following conventions and best practices
+name: generate-command
+description: Create custom slash commands in .claude/skills/ with YAML frontmatter, structured workflows, and success criteria. Use when creating new skills, building custom commands, or scaffolding agent automation.
 argument-hint: '[command purpose and requirements]'
 disable-model-invocation: true
 ---

@@ -1,6 +1,6 @@
 ---
 name: ce-compound
-description: Document a recently solved problem to compound your team's knowledge
+description: Documents a recently solved problem to compound team knowledge by coordinating 5 parallel sub-agents (context analyzer, solution extractor, related docs finder, prevention strategist, category classifier) and assembling structured documentation in docs/solutions/. Includes context budget checks and a compact-safe mode for constrained sessions. Use when a non-trivial problem has been solved and the solution should be captured for future reference. Trigger terms include "compound", "document fix", "capture solution", "it's fixed", "problem solved", "ce compound".
 argument-hint: '[optional: brief context about the fix]'
 ---
 

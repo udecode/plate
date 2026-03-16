@@ -1,6 +1,6 @@
 ---
 name: sync-testing-skill
-description: 'Command: sync-testing-skill'
+description: Scans package test files and updates the testing skill with newly discovered patterns. Reads diverse spec files, identifies patterns not yet documented (imports, mocking, assertions, RTL usage), and updates the skill with concise, DRY examples. Use when a package has new test patterns that should be captured in the testing skill. Trigger terms include "sync testing", "update testing skill", "sync test patterns".
 ---
 
 Scan package tests, update @.claude/skills/testing/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.

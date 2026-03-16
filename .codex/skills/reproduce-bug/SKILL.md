@@ -1,6 +1,6 @@
 ---
 name: reproduce-bug
-description: Reproduce and investigate a bug using logs, console inspection, and browser screenshots
+description: Investigates and reproduces a bug from a GitHub issue by reading the issue, running parallel log analysis (Rails console, AppSignal), visually reproducing via Playwright with screenshots, and documenting findings as a comment on the issue. Use when a bug needs investigation, reproduction, or visual verification before fixing. Trigger terms include "reproduce bug", "investigate issue", "repro bug", "debug issue".
 argument-hint: '[GitHub issue number]'
 disable-model-invocation: true
 ---

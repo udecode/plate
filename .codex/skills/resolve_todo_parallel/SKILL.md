@@ -1,6 +1,6 @@
 ---
-name: resolve_todo_parallel
-description: Resolve all pending CLI todos using parallel processing
+name: resolve-todo-parallel
+description: Resolve all pending CLI todos from /todos/*.md using parallel sub-agents. Use when clearing todo backlogs, batch-resolving pending items, or processing todo lists concurrently.
 argument-hint: '[optional: specific todo ID or pattern]'
 ---
 
@@ -22,7 +22,7 @@ Create a TodoWrite list of all unresolved items grouped by type.Make sure to loo
 
 Spawn a pr-comment-resolver agent for each unresolved item in parallel.
 
-So if there are 3 comments, it will spawn 3 pr-comment-resolver agents in parallel. liek this
+So if there are 3 comments, it will spawn 3 pr-comment-resolver agents in parallel. Like this:
 
 1. Task pr-comment-resolver(comment1)
 2. Task pr-comment-resolver(comment2)

@@ -1,6 +1,6 @@
 ---
 name: slfg
-description: Full autonomous engineering workflow using swarm mode for parallel execution
+description: Executes a full autonomous engineering workflow with swarm-mode parallelism. Runs ce:plan and deepen-plan sequentially, then launches ce:work with parallel agent swarm, followed by concurrent review and browser testing, and finishes with todo resolution and feature video. Use when building a feature end-to-end with maximum parallelism. Trigger terms include "slfg", "swarm lfg", "parallel build", "swarm workflow".
 argument-hint: '[feature description]'
 disable-model-invocation: true
 ---

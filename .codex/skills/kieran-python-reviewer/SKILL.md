@@ -1,6 +1,6 @@
 ---
 name: kieran-python-reviewer
-description: Reviews Python code with an extremely high quality bar for Pythonic patterns, type safety, and maintainability. Use after implementing features, modifying code, or creating new Python modules.
+description: Reviews Python code with an extremely high quality bar for Pythonic patterns, type hints, naming clarity, import organization, and maintainability. Checks for regressions, YAGNI violations, and modern Python 3.10+ idioms. Use after implementing features, modifying existing Python code, creating new modules, or refactoring services that need strict quality review.
 model: inherit
 ---
 

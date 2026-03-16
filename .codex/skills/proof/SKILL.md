@@ -1,11 +1,7 @@
 ---
 name: proof
-description: Create, edit, comment on, and share markdown documents via Proof's web API and local bridge. Use when asked to "proof", "share a doc", "create a proof doc", "comment on a document", "suggest edits", "review in proof", or when given a proofeditor.ai URL.
-allowed-tools:
-  - Bash
-  - Read
-  - Write
-  - WebFetch
+description: Create, edit, comment on, and share markdown documents via Proof's web API and local bridge. Use when asked to "proof", "share a doc", "create a proof doc", "comment on a document", "suggest edits", "review in proof", when given a proofeditor.ai URL, or when collaborative document editing is needed.
+allowed-tools: Bash, Read, Write, WebFetch
 ---
 
 # Proof - Collaborative Markdown Editor

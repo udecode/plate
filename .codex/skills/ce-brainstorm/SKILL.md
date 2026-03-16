@@ -1,6 +1,6 @@
 ---
 name: ce-brainstorm
-description: Explore requirements and approaches through collaborative dialogue before planning implementation
+description: Explores feature requirements and design approaches through structured collaborative dialogue before planning. Assesses clarity, conducts repo research, asks questions one at a time, proposes 2-3 approaches, and captures decisions in a brainstorm document under docs/brainstorms/. Use when a feature idea needs exploration, requirements are unclear, or multiple approaches should be evaluated before planning. Trigger terms include "brainstorm", "explore idea", "ce brainstorm", "what should we build".
 argument-hint: '[feature idea or problem to explore]'
 ---
 

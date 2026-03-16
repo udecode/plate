@@ -1,6 +1,6 @@
 ---
 name: ce-plan
-description: Transform feature descriptions into well-structured project plans following conventions
+description: Transforms feature descriptions, bug reports, or improvement ideas into well-structured markdown plan files under docs/plans/. Runs local and optional external research, performs SpecFlow analysis, supports three detail levels (minimal, standard, comprehensive), and offers post-generation options including deepen-plan, issue creation, and ce:work handoff. Use when a feature, fix, or refactor needs a structured plan before implementation. Trigger terms include "ce plan", "create plan", "plan feature", "write plan", "plan bug fix".
 argument-hint: '[feature description, bug report, or improvement idea]'
 ---
 

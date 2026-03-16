@@ -1,6 +1,6 @@
 ---
 name: vercel-root-directory-cli
-description: 'Skill: vercel-root-directory-cli'
+description: Diagnoses and resolves Vercel CLI deploy failures caused by a mismatch between the project Root Directory setting and the location of vercel.json in a monorepo. Walks through inspection, relocation, and verification steps. Use when vercel deploy fails with "vercel.json file should be inside of the provided root directory" or when dashboard builds succeed but CLI deploys fail. Trigger terms include "vercel deploy fail", "root directory mismatch", "vercel.json location", "vercel CLI error".
 ---
 
 # Vercel Root Directory vs CLI Deploy

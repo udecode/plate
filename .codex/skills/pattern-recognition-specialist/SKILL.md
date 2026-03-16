@@ -1,6 +1,6 @@
 ---
 name: pattern-recognition-specialist
-description: Analyzes code for design patterns, anti-patterns, naming conventions, and duplication. Use when checking codebase consistency or verifying new code follows established patterns.
+description: Analyzes code for design patterns, anti-patterns, naming conventions, duplication, and architectural boundary violations using AST-based and text-based search tools. Use when checking codebase consistency, verifying new code follows established patterns, auditing technical debt, or reviewing code quality across a project.
 model: inherit
 ---
 

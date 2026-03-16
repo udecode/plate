@@ -1,6 +1,6 @@
 ---
-name: resolve_parallel
-description: Resolve all TODO comments using parallel processing
+name: resolve-parallel
+description: Resolve all TODO comments using parallel sub-agents for concurrent processing. Use when resolving PR review comments, clearing TODO backlogs, or batch-fixing code issues in parallel.
 argument-hint: '[optional: specific TODO pattern or file]'
 disable-model-invocation: true
 ---
@@ -21,7 +21,7 @@ Create a TodoWrite list of all unresolved items grouped by type.Make sure to loo
 
 Spawn a pr-comment-resolver agent for each unresolved item in parallel.
 
-So if there are 3 comments, it will spawn 3 pr-comment-resolver agents in parallel. liek this
+So if there are 3 comments, it will spawn 3 pr-comment-resolver agents in parallel. Like this:
 
 1. Task pr-comment-resolver(comment1)
 2. Task pr-comment-resolver(comment2)

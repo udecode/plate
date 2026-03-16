@@ -1,6 +1,6 @@
 ---
 name: agent-native-audit
-description: Run comprehensive agent-native architecture review with scored principles
+description: Runs a comprehensive agent-native architecture review by launching 8 parallel sub-agents, each auditing one core principle (Action Parity, Tools as Primitives, Context Injection, Shared Workspace, CRUD Completeness, UI Integration, Capability Discovery, Prompt-Native Features). Produces scored tables and prioritized recommendations. Use when evaluating how well a codebase supports agent-driven interaction, or auditing a specific principle. Trigger terms include "agent audit", "agent-native review", "architecture audit", "agent parity check".
 argument-hint: '[optional: specific principle to audit]'
 disable-model-invocation: true
 ---

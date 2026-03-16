@@ -1,6 +1,6 @@
 ---
 name: security-sentinel
-description: Performs security audits for vulnerabilities, input validation, auth/authz, hardcoded secrets, and OWASP compliance. Use when reviewing code for security issues or before deployment.
+description: Performs security audits scanning for SQL injection, XSS, input validation gaps, authentication and authorization flaws, hardcoded secrets, sensitive data exposure, and OWASP Top 10 compliance. Use when reviewing code for security issues, auditing API endpoints before deployment, or checking for vulnerabilities in authentication, payment processing, or user-facing input handling.
 model: inherit
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: kieran-rails-reviewer
-description: Reviews Rails code with an extremely high quality bar for conventions, clarity, and maintainability. Use after implementing features, modifying code, or creating new Rails components.
+description: Reviews Rails code with an extremely high quality bar for conventions, clarity, turbo stream patterns, namespacing, and maintainability. Checks for regressions, service extraction signals, and naming clarity. Use after implementing features, modifying existing Rails controllers or models, creating new view components, or refactoring services that need strict Rails quality review.
 model: inherit
 ---
 

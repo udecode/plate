@@ -1,7 +1,7 @@
 ---
-allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
-description: Update tech stack documentation based on dependency changes and technical evolution
 name: update-tech-stack
+description: Updates existing Tech Stack documentation (2-tech-stack.mdc) by detecting dependency changes, version updates, new tool adoption, and infrastructure evolution since the last update. Compares current package.json and config files against the documented state, runs targeted Q&A for non-discoverable changes, and applies incremental updates with precise version numbers. Trigger terms: "update tech stack", "sync tech docs", "dependency updates", "refresh stack documentation". Use when dependencies, tools, or infrastructure have changed and the tech stack doc needs synchronization.
+allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
 ---
 
 # Update Tech Stack Documentation

@@ -1,5 +1,5 @@
 ---
-description: 'Command: docs-plugin'
+description: Generates and structures plugin documentation for the Plate editor framework following headless-first conventions. Produces consistent Kit Usage, Manual Usage, Plugins, API, and Transforms sections with proper formatting. Use when writing docs for a new plugin, updating existing plugin documentation, or standardizing documentation structure across Plate packages. Trigger terms include "document plugin", "plugin docs", "write documentation", "docs-plugin".
 globs: null
 alwaysApply: false
 name: docs-plugin
