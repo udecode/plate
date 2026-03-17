@@ -64,7 +64,33 @@ jobs:
           - plate-playground-template
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        name: Install bun
+        with:
+          bun-version: latest
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/cache@v4
+        name: ♻️ Setup bun cache
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: 📥 Install
+        run: bun install --no-frozen-lockfile
+        working-directory: templates/${{ matrix.template }}
+
+      - name: 🧹 Run lint:fix
+        run: bun lint:fix
+        working-directory: templates/${{ matrix.template }}
 
       - name: 🔄 Sync Templates
         env:
