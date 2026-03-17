@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 
+import { TablePlugin } from '@platejs/table/react';
 import {
   ArrowUpToLineIcon,
   BaselineIcon,
   BoldIcon,
   Code2Icon,
+  Grid2X2Icon,
   HighlighterIcon,
   ItalicIcon,
   PaintBucketIcon,
@@ -15,7 +17,7 @@ import {
   WandSparklesIcon,
 } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { useEditorReadOnly } from 'platejs/react';
+import { useEditorReadOnly, useEditorRef } from 'platejs/react';
 
 import { AIToolbarButton } from './ai-toolbar-button';
 import { AlignToolbarButton } from './align-toolbar-button';
@@ -44,8 +46,38 @@ import { ModeToolbarButton } from './mode-toolbar-button';
 import { MoreToolbarButton } from './more-toolbar-button';
 import { TableToolbarButton } from './table-toolbar-button';
 import { ToggleToolbarButton } from './toggle-toolbar-button';
-import { ToolbarGroup } from './toolbar';
+import { ToolbarButton, ToolbarGroup } from './toolbar';
 import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
+
+function DebugInsertTableToolbarButton() {
+  const editor = useEditorRef();
+
+  if (process.env.NODE_ENV === 'production') return null;
+
+  return (
+    <ToolbarButton
+      onClick={() => {
+        if (!editor.selection) {
+          const start = editor.api.start([]);
+
+          if (start) {
+            editor.tf.select(start);
+            editor.tf.focus({ at: start });
+          }
+        }
+
+        editor
+          .getTransforms(TablePlugin)
+          .insert.table({ colCount: 6, rowCount: 8 }, { select: true });
+        editor.tf.focus();
+      }}
+      onMouseDown={(e) => e.preventDefault()}
+      tooltip="Insert 8 x 6 table"
+    >
+      <Grid2X2Icon />
+    </ToolbarButton>
+  );
+}
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -130,6 +162,7 @@ export function FixedToolbarButtons() {
           <ToolbarGroup>
             <LinkToolbarButton />
             <TableToolbarButton />
+            <DebugInsertTableToolbarButton />
             <EmojiToolbarButton />
           </ToolbarGroup>
 
