@@ -9,7 +9,11 @@ import type {
 import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
-import { type PlateEditor, useEditorRef, useEditorSelector } from 'platejs/react';
+import {
+  type PlateEditor,
+  useEditorRef,
+  useEditorSelector,
+} from 'platejs/react';
 import React from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -50,10 +54,7 @@ function computeIsBrightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 130;
 }
 
-function getEditorColorMarks(
-  editor: PlateEditor,
-  nodeType: string
-): string[] {
+function getEditorColorMarks(editor: PlateEditor, nodeType: string): string[] {
   const usedColors = new Set<string>();
 
   for (const [node] of editor.api.nodes({
@@ -95,41 +96,30 @@ export function FontColorToolbarButton({
   const [open, setOpen] = React.useState(false);
   const [colorsQueue, setColorsQueue] = React.useState<string[]>([]);
 
-  const recordColorUsage = React.useCallback(
-    (color: string) => {
-      const normalized = normalizeColor(color);
+  const recordColorUsage = React.useCallback((color: string) => {
+    const normalized = normalizeColor(color);
 
-      if (!isValidHexColor(normalized)) return;
+    if (!isValidHexColor(normalized)) return;
 
-      setColorsQueue((prev) => {
-        const filtered = prev
-          .filter((c) => c !== normalized)
-          .filter(
-            (c) =>
-              !DEFAULT_COLORS.some(
-                (dc) => normalizeColor(dc.value) === c
-              )
-          );
+    setColorsQueue((prev) => {
+      const filtered = prev
+        .filter((c) => c !== normalized)
+        .filter(
+          (c) => !DEFAULT_COLORS.some((dc) => normalizeColor(dc.value) === c)
+        );
 
-        return [normalized, ...filtered].slice(0, 30);
-      });
-    },
-    []
-  );
+      return [normalized, ...filtered].slice(0, 30);
+    });
+  }, []);
 
   const appendColors = React.useCallback((colors: string[]) => {
     setColorsQueue((prev) => {
-      const normalized = colors
-        .map(normalizeColor)
-        .filter(isValidHexColor);
+      const normalized = colors.map(normalizeColor).filter(isValidHexColor);
       const existingSet = new Set(prev);
       const newColors = normalized
         .filter((c) => !existingSet.has(c))
         .filter(
-          (c) =>
-            !DEFAULT_COLORS.some(
-              (dc) => normalizeColor(dc.value) === c
-            )
+          (c) => !DEFAULT_COLORS.some((dc) => normalizeColor(dc.value) === c)
         );
 
       return [...newColors, ...prev].slice(0, 30);
@@ -197,11 +187,7 @@ export function FontColorToolbarButton({
   }, [color, selectionDefined]);
 
   return (
-    <DropdownMenu
-      modal
-      onOpenChange={onToggle}
-      open={open}
-    >
+    <DropdownMenu modal onOpenChange={onToggle} open={open}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip={tooltip}>
           {children}
@@ -319,9 +305,7 @@ function ColorCustom({
   const fullCustomColors = React.useMemo(
     () =>
       colorsQueue
-        .filter(
-          (c) => normalizeColor(c) !== normalizeColor(updatedColor || '')
-        )
+        .filter((c) => normalizeColor(c) !== normalizeColor(updatedColor || ''))
         .filter(
           (c) =>
             !DEFAULT_COLORS.some(
@@ -341,9 +325,7 @@ function ColorCustom({
         }))
         .slice(
           0,
-          MAX_CUSTOM_COLORS -
-            customColors.length -
-            (updatedColor ? 1 : 0)
+          MAX_CUSTOM_COLORS - customColors.length - (updatedColor ? 1 : 0)
         ),
     [colorsQueue, customColors, updatedColor]
   );
@@ -351,23 +333,18 @@ function ColorCustom({
   const isColorInCollections = React.useCallback(
     (targetColor: string) =>
       colors.some(
-        (c) =>
-          normalizeColor(c.value) === normalizeColor(targetColor)
+        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
       ) ||
       customColors.some(
-        (c) =>
-          normalizeColor(c.value) === normalizeColor(targetColor)
+        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
       ) ||
       fullCustomColors.some(
-        (c) =>
-          normalizeColor(c.value) === normalizeColor(targetColor)
+        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
       ),
     [colors, customColors, fullCustomColors]
   );
 
-  const [customColor, setCustomColor] = React.useState<string | null>(
-    null
-  );
+  const [customColor, setCustomColor] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!updatedColor || isColorInCollections(updatedColor)) {
@@ -549,7 +526,9 @@ export function ColorDropdownMenuItems({
         {colors.map(({ isBrightColor, name, value }) => (
           <ColorDropdownMenuItem
             isBrightColor={isBrightColor}
-            isSelected={!!color && normalizeColor(color) === normalizeColor(value)}
+            isSelected={
+              !!color && normalizeColor(color) === normalizeColor(value)
+            }
             key={name ?? value}
             name={name}
             updateColor={updateColor}
