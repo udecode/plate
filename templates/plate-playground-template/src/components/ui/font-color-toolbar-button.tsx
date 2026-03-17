@@ -549,7 +549,7 @@ export function ColorDropdownMenuItems({
         {colors.map(({ isBrightColor, name, value }) => (
           <ColorDropdownMenuItem
             isBrightColor={isBrightColor}
-            isSelected={color === value}
+            isSelected={!!color && normalizeColor(color) === normalizeColor(value)}
             key={name ?? value}
             name={name}
             updateColor={updateColor}
