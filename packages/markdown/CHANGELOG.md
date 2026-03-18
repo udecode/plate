@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.3.5
+
+### Patch Changes
+
+- [#4870](https://github.com/udecode/plate/pull/4870) by [@zbeyens](https://github.com/zbeyens) – Fix incomplete MDX fallback dropping preceding void blocks during markdown deserialization
+
 ## 52.3.1
 
 ### Patch Changes
