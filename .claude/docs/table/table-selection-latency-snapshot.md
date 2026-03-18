@@ -11,7 +11,7 @@
 
 ## Results
 
-### Initial baseline
+### Baseline
 
 | Category | Metric | Value |
 | --- | --- | ---: |
@@ -23,7 +23,7 @@
 | Table Selection Latency | Min | 368.90 ms |
 | Table Selection Latency | Max | 489.50 ms |
 
-### Current user-provided measurement
+### Current
 
 | Category | Metric | Value |
 | --- | --- | ---: |
@@ -42,8 +42,3 @@
 - P95: `477.90 -> 187.10 ms` (`-290.80 ms`, `-60.8%`)
 - Min: `368.90 -> 140.20 ms` (`-228.70 ms`, `-62.0%`)
 - Max: `489.50 -> 214.10 ms` (`-275.40 ms`, `-56.3%`)
-
-## Notes
-
-- Only these two runs are intentionally kept in this snapshot.
-- Compare future runs against the same page, table size, selected-cell count, and injected delay.
