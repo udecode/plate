@@ -92,7 +92,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: update registry after release [skip release]"
+          git commit -m "chore: update registry after release [skip ci] [skip release]"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"
 

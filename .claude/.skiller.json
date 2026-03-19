@@ -300,14 +300,6 @@
       },
       {
         "sourceType": "plugin",
-        "pluginId": "dig@dotai",
-        "pluginVersion": "0.1.0",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/dig",
-        "destRelPath": "dig"
-      },
-      {
-        "sourceType": "plugin",
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",

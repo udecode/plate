@@ -3,25 +3,35 @@
 
 <!-- Source: .claude/AGENTS.md -->
 
+- `.claude/AGENTS.md` and `.claude/skills/*/*.mdc` are source of truth. After editing them, run `install` to sync. Never edit `SKILL.md` directly.
+- In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
+
+- Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
+
+## Git
+
+- **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
+- **Push scope:** When you do commit and push, include unrelated dirty files outside src; those are often manual user changes or synced skill/docs updates, so do not silently leave them behind.
+- **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.
+- **PR branch:** If the user explicitly says to open or create a PR, do not ask for confirmation. If the current branch is `main`, create a new `codex/` branch first, then commit/push/open the PR. If already on a non-`main` branch, proceed directly.
+- Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
+- Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
+- For repo research, use `spawn_agent(... agent_type="explorer")` and return file-backed findings from docs, structure, exports, examples, and tests only.
+
 ## Packages
 
 - DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
 - Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow .claude/docs/solutions/style.md for writing tone/structure.
-- Always use @.claude/commands/changeset.md when updating packages to write a changeset before completing
-- Use tdd skill for package updates that add or change live behavior.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
 
-## General
+## Skill
 
-- In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
-- ALWAYS read and understand relevant files before proposing edits. Do not speculate about code you have not inspected.
-- Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
-- Never browse GitHub, use `gh` instead. Use `dig` skill when the user asks a question about a library, needs to understand a library's API, or when you need information about a library that you don't know about.
-- Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
-- Proactively use Skill(tdd) when it adds value; skip TDD for high-friction tests (hard setup or slow React/UI flows).
+Use those skills when relevant:
 
-## Skill Overrides
+- `tdd`
+- `ce-review` when doing a code review
+- @.claude/commands/changeset.md when updating packages to write a changeset before completing
 
 When using the following skills, override the default behavior.
 
@@ -40,8 +50,6 @@ When using the following skills, override the default behavior.
 
 `ce-*`:
 
-- **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
-- **PR:** Before creating or updating a PR, run `bun check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `bun check` unless the user explicitly says to.
 - **plan:** Include test-browser in acceptance criteria for browser features
 - **deepen-plan:** Context7 only when not covered by skills
 - **work:** UI tasks require test-browser BEFORE marking complete. Never guess.
@@ -51,6 +59,12 @@ When using the following skills, override the default behavior.
 ### Development
 
 **CRITICAL**: Before running type checking, you must first install dependencies and build the affected packages and their dependencies.
+
+Do not default to `pnpm typecheck` for package work in this repo. Package type checking often relies on built exports, so skipping the build step gives you fake failures and wastes time.
+
+If filtered package builds still leave unresolved workspace-package imports during typecheck, run `pnpm build` at the repo root before treating the failure as real package debt.
+
+**CLOSEOUT GATE**: If a task edits code, tests, package manifests, or build/type/lint config, do not post a final handoff until the relevant verification ran in this same turn. If you skip a required check or it fails, say that plainly and do not present the task as done.
 
 **Required sequence for type checking modified packages:**
 
@@ -79,8 +93,14 @@ pnpm lint:fix
 # Build since last commit (useful for PR changes)
 pnpm turbo build --filter='[HEAD^1]'
 
+# Then typecheck the same changed package graph
+pnpm turbo typecheck --filter='[HEAD^1]'
+
 # Build all changed packages in current branch
 pnpm turbo build --filter='...[origin/main]'
+
+# Then typecheck the same changed package graph
+pnpm turbo typecheck --filter='...[origin/main]'
 
 # For workspace-specific operations
 pnpm --filter @platejs/core build
@@ -91,6 +111,7 @@ pnpm --filter @platejs/core lint:fix
 **Full project commands (use only if needed, these are very slow):**
 
 - `pnpm build` - Build all packages (only use when necessary)
+- `pnpm typecheck` - Root package typecheck. It now warms the workspace with a full package build, retries that build once if the peer-graph race bites, then runs Turbo `typecheck --only`.
 - `bun run test` - Run the fast default test suite during iteration
 - `bun test` - Run the full test suite only at the end of the complete task
 
@@ -102,33 +123,39 @@ pnpm --filter @platejs/core lint:fix
 
 **Instructions:**
 • DO NOT edit until skill analysis is complete.
-• Use `TodoWrite` only if that tool is available in the current runtime.
-• If `TodoWrite` is unavailable, run the same checklist inline.
+• Use `update_plan` only if that tool is available in the current runtime.
+• If `update_plan` is unavailable, run the same checklist inline.
 • Condition NO -> mark completed -> proceed
 • Condition YES -> work through steps -> mark completed -> proceed
 • Skipping skill analysis = FAILED to follow instructions
 
 **Skill Analysis Checklist:**
-☐ Skill analysis (SKIP if 'quick' in message): (1) STOP rationalizing ('simple question', 'overkill', 'might be relevant') (2) List ALL available skills (3) For EACH: 'always apply' or 'Does task involve [topic]?' -> YES/MIGHT/MAYBE = ✓. Only ✗ if DEFINITELY not related (4) Skill(...) for ALL ✓ IN ONE PARALLEL CALL - do NOT load one then wait (5) Output '[Skills: X available, Y loaded: name1, name2]' CRITICAL: 'Might be relevant' = MUST load. '1% chance' = MUST load.
+☐ Skill analysis (SKIP if 'quick' in message): (1) STOP rationalizing ('simple question', 'overkill', 'might be relevant') (2) List ALL available skills (3) For EACH: 'always apply' or 'Does task involve [topic]?' -> YES/MIGHT/MAYBE = ✓. Only ✗ if DEFINITELY not related (4) Load all ✓ skills in one pass; do NOT load one then wait (5) Output '[Skills: X available, Y loaded: name1, name2]' CRITICAL: 'Might be relevant' = MUST load. '1% chance' = MUST load.
+
+**Default Skill Gates:**
+
+- Before non-trivial bug/feature work on existing code, load `learnings-researcher` and check `docs/solutions` first.
+- For multi-step work, anything likely to be compacted / use a full context window, or any task that starts trivial but grows into that shape, start/update `planning-with-files` immediately. Do not wait for compaction or the next turn.
+- For bug fixes or behavior changes with a sane test seam, use `tdd` before the fix.
 
 ### Verification Checklist
 
 🔒 VERIFICATION REQUIRED - NO COMPLETION WITHOUT FRESH EVIDENCE
 
 **Instructions:**
-• Track ALL verification items below (use `TodoWrite` if available, otherwise inline)
+• Track ALL verification items below (use `update_plan` if available, otherwise inline)
 • Condition NO -> mark completed and skip
 • Condition YES -> in_progress -> verify -> completed
-• NEVER git commit unless explicitly asked
-• Avoid unnecessary `bun dev` or `bun run build`
-• Use Skill(agent-browser) for all browser testing instead of next-devtools browser_eval
+• Avoid unnecessary `build` check
+• No final "done", "fixed", or "works" message without fresh same-turn evidence for every required item below, or an explicit blocker.
 
 **Verification Checklist:**
 
-- [ ] Typecheck (IF updated .ts files): Bash `bun typecheck`
-- [ ] Lint: Bash `bun lint:fix`
-- [ ] PR gate (IF creating/updating a PR): Bash `bun check`
-- [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: Skill(ce-compound) NOW after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
+- [ ] Typecheck (IF updated `.ts` files or typed test/build config): For package-scoped verification, follow the build-first sequence: `pnpm install` -> `pnpm turbo build --filter=...` -> `pnpm turbo typecheck --filter=...`. If unresolved workspace imports remain, run `pnpm build` at repo root, then rerun the package typecheck. For full repo verification, use `pnpm typecheck`. Do not default to `pnpm typecheck` for package verification.
+- [ ] Lint: Run `lint:fix`
+- [ ] PR gate (IF creating/updating a PR): Run `check`
+- [ ] Browser verification (IF a browser surface changed): verify with `agent-browser` before done
+- [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: load `ce-compound` after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery
 
@@ -138,10 +165,11 @@ pnpm --filter @platejs/core lint:fix
 • STOP. Context compaction DELETED all skills. You FORGOT everything.
 • DO NOT proceed until skill reload complete
 • DO NOT assume you remember skills - they are GONE
+• If `planning-with-files` should already have been active, load it immediately during recovery before continuing.
 • Skipping = GUARANTEED FAILURE
 
 **Skill Reload Checklist:**
-☐ Skill reload (MANDATORY): (1) Check current task tracking (TodoWrite if available, otherwise inline) (2) List ALL available skills (3) For EACH: 'always apply' or 'Does task involve [topic]?' -> YES/MIGHT/MAYBE = ✓ (4) Skill(...) for ALL ✓ IN ONE PARALLEL CALL - do NOT load one then wait (5) ONLY after reload, resume task CRITICAL: ALL skills GONE. MUST reload. 'Might apply' = MUST load.
+☐ Skill reload (MANDATORY): (1) Check current task tracking (`update_plan` if available, otherwise inline) (2) List ALL available skills (3) For EACH: 'always apply' or 'Does task involve [topic]?' -> YES/MIGHT/MAYBE = ✓ (4) Load all ✓ skills in one pass; do NOT load one then wait (5) If the task is already multi-step, near compaction, or obviously should have had a file plan, load `planning-with-files` now before resuming (6) ONLY after reload, resume task CRITICAL: ALL skills GONE. MUST reload. 'Might apply' = MUST load.
 
 
 

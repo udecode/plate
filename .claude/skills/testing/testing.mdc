@@ -48,6 +48,7 @@ Hard constraints:
 - Delete skipped tests, commented-out tests, and dead placeholder cases. Do not preserve wishful thinking.
 - No fake smoke tests.
 - No app-registry imports in package tests.
+- Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
 - When adding tests, measure fast-suite outliers with `bun run test:slowest`. If a fast-suite spec repeatedly crosses the thresholds in `tooling/config/test-suites.mjs`, move it into a slow bucket or document why it stays fast.
 
 ## Seam Selection
@@ -122,6 +123,7 @@ Hard constraints:
 - Add only the base plugins a rule actually needs.
 - Collapse tiny mark or block suites into matrices when the contract is the same.
 - Do not import `AutoformatKit` or app registries in package tests.
+- If an `autoformat` case needs cross-package behavior like `code-block` wiring or app-owned integration setup, move it to `apps/www/src/__tests__/package-integration` instead of expanding `packages/autoformat/package.json`.
 
 ### `markdown`
 

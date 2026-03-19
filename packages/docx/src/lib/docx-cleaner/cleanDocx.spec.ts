@@ -1,5 +1,13 @@
-import { readTestFile } from '../__tests__/readTestFile';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { cleanDocx } from './cleanDocx';
+
+const readTestFile = (filepath: string): string => {
+  const absoluteFilepath = path.resolve(__dirname, filepath);
+
+  return fs.readFileSync(absoluteFilepath, 'utf8');
+};
 
 describe('cleanDocx', () => {
   const MOCK_RTF = 'Whatever, RTF is only needed to process images';

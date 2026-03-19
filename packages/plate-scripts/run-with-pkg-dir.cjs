@@ -49,7 +49,9 @@ const runTsdown = (watch = false) => {
   );
   const args = ['--config', tsdownConfig, '--log-level', 'warn'];
   if (watch) args.push('--watch');
-  return run(tsdownBin, args);
+  const result = run(tsdownBin, args);
+
+  return result;
 };
 
 let result;
@@ -94,7 +96,7 @@ switch (command) {
     break;
   case 'p:brl': {
     const sh = process.platform === 'win32' ? 'sh' : 'sh';
-    result = run(sh, [path.join(PROJECT_CWD, 'scripts/brl.sh')], {
+    result = run(sh, [path.join(PROJECT_CWD, 'tooling/scripts/brl.sh')], {
       env: { ...process.env, INIT_CWD, PROJECT_CWD },
     });
     break;

@@ -31,7 +31,7 @@ describe('center', () => {
       plugins: [BaseTextAlignPlugin],
       selection: input.selection,
       value: input.children,
-    });
+    } as any);
 
     setAlign(editor, 'center');
 
@@ -62,7 +62,7 @@ describe('left', () => {
       plugins: [BaseTextAlignPlugin],
       selection: input.selection,
       value: input.children,
-    });
+    } as any);
 
     setAlign(editor, 'start');
 
@@ -92,7 +92,7 @@ describe('no-type', () => {
         plugins: [BaseTextAlignPlugin],
         selection: input.selection,
         value: input.children,
-      });
+      } as any);
 
       setAlign(editor, 'center');
 

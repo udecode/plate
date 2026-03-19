@@ -8,19 +8,42 @@ run_barrelsby() {
     local dir="$1"
     shift  # Remove the first argument (dir) from the list
     if [ ! -f "$dir/index.tsx" ]; then
-        barrelsby -d "$dir" "$@"
+        local temp_index=""
+
+        if [ -f "$dir/index.ts" ]; then
+            temp_index="$dir/.index.ts.brl.bak"
+            mv "$dir/index.ts" "$temp_index" || return 1
+        fi
+
+        if barrelsby -d "$dir" "$@"; then
+            if [ -n "$temp_index" ] && [ ! -f "$dir/index.ts" ]; then
+                mv "$temp_index" "$dir/index.ts" || return 1
+                echo "barrelsby did not regenerate $dir/index.ts" >&2
+                return 1
+            fi
+
+            [ -n "$temp_index" ] && rm -f "$temp_index"
+            return 0
+        else
+            [ -n "$temp_index" ] && mv "$temp_index" "$dir/index.ts"
+            return 1
+        fi
     fi
 }
 
+common_excludes='.*__tests__.*|(.*(fixture|template|spec|internal).*)|(.*\.d\.ts$)'
+
+src_excludes="$common_excludes|(^.*\/(react|static)\/.*$)"
+
 # Run barrelsby on the src directory if index.tsx doesn't exist
-run_barrelsby "$INIT_CWD/src" -D -l all -q -e '.*__tests__.*|(.*(fixture|template|spec|internal).*)|(^.*\/(react|static)\/.*$)'
+run_barrelsby "$INIT_CWD/src" -D -l all -q -e "$src_excludes"
 
 # Check if the src/react directory exists and run barrelsby if it does and if index.tsx doesn't exist
 if [ -d "$INIT_CWD/src/react" ]; then
-    run_barrelsby "$INIT_CWD/src/react" -D -l all -q -e '.*__tests__.*|(.*(fixture|template|spec|internal).*)'
+    run_barrelsby "$INIT_CWD/src/react" -D -l all -q -e "$common_excludes"
 fi
 
 # Check if the src/static directory exists and run barrelsby if it does and if index.tsx doesn't exist
 if [ -d "$INIT_CWD/src/static" ]; then
-    run_barrelsby "$INIT_CWD/src/static" -D -l all -q -e '.*__tests__.*|(.*(fixture|template|spec|internal).*)'
+    run_barrelsby "$INIT_CWD/src/static" -D -l all -q -e "$common_excludes"
 fi

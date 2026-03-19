@@ -10,7 +10,7 @@ on:
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'
-      - '.github/workflows/lint-typecheck.yml'
+      - '.github/workflows/**'
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
       - 'biome.jsonc'
@@ -45,6 +45,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 # Add concurrency to cancel redundant runs
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -56,10 +59,16 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.title != '[Release] Version packages') &&
-      (github.event_name != 'push' || github.event.head_commit.message != 'Version Packages')
+      (github.event_name != 'push' || (
+        github.event.head_commit.message != 'Version Packages' &&
+        !contains(github.event.head_commit.message, '[skip ci]')
+      ))
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -74,9 +83,6 @@ jobs:
       - name: 📥 Monorepo install
         uses: ./.github/actions/pnpm-install
 
-      - name: 🔬 Lint
-        run: pnpm lint
-
       - name: ♻️ Restore packages cache
         uses: actions/cache@v4
         with:
@@ -85,14 +91,40 @@ jobs:
             ${{ github.workspace }}/**/tsconfig.tsbuildinfo
           key: packages-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: 🏗 Build
-        run: pnpm build
+      - name: 🧱 Generate barrels
+        run: pnpm brl
 
-      - name: 🕵️ Typecheck
-        run: pnpm typecheck
+      - name: 🔍 Detect barrel changes
+        id: barrel-changes
+        run: |
+          if [[ -n "$(git status --porcelain --untracked-files=all -- packages)" ]]; then
+            git status --short -- packages
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: 🧪 Test
-        run: bun test
+      - name: ❌ Fail on barrel drift in PR
+        if: ${{ github.event_name == 'pull_request' && steps.barrel-changes.outputs.changed == 'true' }}
+        run: |
+          echo "pnpm brl produced changes. Commit the generated barrel updates."
+          exit 1
+
+      - name: ✅ Check
+        run: bun check
+
+      - name: 🔧 Configure git
+        if: ${{ github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: ⬆️ Push barrel updates
+        if: ${{ github.event_name == 'push' && steps.barrel-changes.outputs.changed == 'true' && github.repository == 'udecode/plate' }}
+        run: |
+          git add packages
+          git commit -m "chore: sync barrels [skip ci] [skip release]"
+          git push origin HEAD:${{ github.ref_name }}
 
       # - name: 📥 Install Playwright dependencies
       #   run: |

@@ -21,12 +21,6 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
-import {
-  BaseTableCellHeaderPlugin,
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from '@platejs/table';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
@@ -55,10 +49,6 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseCodeBlockPlugin,
       BaseCodeLinePlugin,
       BaseCodeSyntaxPlugin,
-      BaseTablePlugin,
-      BaseTableRowPlugin,
-      BaseTableCellPlugin,
-      BaseTableCellHeaderPlugin,
       // BaseColumnPlugin,
       // BaseColumnItemPlugin,
       BaseBoldPlugin,
@@ -75,4 +65,4 @@ export const createTestEditor = (plugins: any[] = []) =>
       markdownPlugin,
       ...plugins,
     ],
-  });
+  } as any);

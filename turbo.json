@@ -23,7 +23,7 @@
     "www#lint": { "dependsOn": ["prebuild"], "outputs": [] },
     "prebuild": { "outputs": [] },
     "test": { "outputs": [], "cache": false },
-    "typecheck": { "outputs": [], "cache": true },
+    "typecheck": { "dependsOn": ["^build"], "outputs": [], "cache": true },
     "www#typecheck": { "dependsOn": [], "outputs": [] }
   }
 }

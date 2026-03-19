@@ -10,12 +10,30 @@ describe('ViewPlugin', () => {
   let getSelectedDomBlocksSpy: ReturnType<typeof spyOn>;
   let getSelectedDomNodeSpy: ReturnType<typeof spyOn>;
   let isSelectOutsideSpy: ReturnType<typeof spyOn>;
+  let warnSpy: ReturnType<typeof spyOn>;
 
   afterEach(() => {
     getSelectedDomBlocksSpy?.mockRestore();
     getSelectedDomNodeSpy?.mockRestore();
     isSelectOutsideSpy?.mockRestore();
+    warnSpy?.mockRestore();
   });
+
+  const suppressSetFragmentDataOverrideWarning = () => {
+    const originalWarn = console.warn;
+
+    warnSpy = spyOn(console, 'warn').mockImplementation((message, ...args) => {
+      if (
+        typeof message === 'string' &&
+        message.includes('[OVERRIDE_MISSING]') &&
+        message.includes('editor.setFragmentData()')
+      ) {
+        return;
+      }
+
+      originalWarn(message, ...args);
+    });
+  };
 
   describe('integration with createStaticEditor', () => {
     it('is included in the static editor', () => {
@@ -26,6 +44,8 @@ describe('ViewPlugin', () => {
     });
 
     it('handles copy events without throwing', () => {
+      suppressSetFragmentDataOverrideWarning();
+
       const editor = createStaticEditor();
       editor.children = [
         {
@@ -92,6 +112,8 @@ describe('ViewPlugin', () => {
     });
 
     it('handle copy with no selection', () => {
+      suppressSetFragmentDataOverrideWarning();
+
       const editor = createStaticEditor();
 
       // Mock utilities to return null
@@ -109,6 +131,8 @@ describe('ViewPlugin', () => {
     });
 
     it('handle non-copy events', () => {
+      suppressSetFragmentDataOverrideWarning();
+
       const editor = createStaticEditor();
 
       // Should pass through for non-copy events
@@ -120,6 +144,8 @@ describe('ViewPlugin', () => {
     });
 
     it('handle copy with selection outside editor', () => {
+      suppressSetFragmentDataOverrideWarning();
+
       // Mock selection outside editor
       const mockHtml = document.createElement('div');
       const editorDiv = document.createElement('div');

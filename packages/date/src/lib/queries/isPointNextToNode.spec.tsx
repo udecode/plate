@@ -13,7 +13,7 @@ describe('isPointNextToNode', () => {
   const createTestEditor = (input: JSX.Element) =>
     createSlateEditor({
       editor: createEditor(input as any),
-    });
+    } as any);
 
   describe('when point is next to a node of specified type', () => {
     it('returns true', () => {
