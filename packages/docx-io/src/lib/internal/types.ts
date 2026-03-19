@@ -1,19 +1,21 @@
 import type { HeaderFooterType } from './constants';
 import type { DocxListStyleType } from './utils/list';
 
+type UnitValue = number | string;
+
 export type Margins = {
-  bottom?: number;
-  footer?: number;
-  gutter?: number;
-  header?: number;
-  left?: number;
-  right?: number;
-  top?: number;
+  bottom?: UnitValue;
+  footer?: UnitValue;
+  gutter?: UnitValue;
+  header?: UnitValue;
+  left?: UnitValue;
+  right?: UnitValue;
+  top?: UnitValue;
 };
 
 export type PageSize = {
-  height?: number;
-  width?: number;
+  height?: UnitValue;
+  width?: UnitValue;
 };
 
 export type TableOptions = {
