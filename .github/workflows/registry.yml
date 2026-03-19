@@ -67,6 +67,12 @@ jobs:
           TEMPLATE_SKIP_VERIFY: 'true'
         run: pnpm templates:update --local
 
+      - name: 📦 Override templates with local workspace packages
+        run: |
+          node tooling/scripts/prepare-local-template-packages.mjs \
+            templates/plate-template \
+            templates/plate-playground-template
+
       - name: ✅ Run template CI
         run: |
           cd templates/plate-template
