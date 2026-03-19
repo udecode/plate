@@ -14,7 +14,11 @@ export function shouldTrigger(event: MouseEvent, triggers: Trigger[]): boolean {
   for (const trigger of triggers) {
     // The trigger requires only a specific button to be pressed
     if (typeof trigger === 'number') {
-      return event.button === trigger;
+      if (event.button === trigger) {
+        return true;
+      }
+
+      continue;
     }
     // The trigger requires a specific button to be pressed AND some modifiers
     if (typeof trigger === 'object') {
@@ -37,7 +41,9 @@ export function shouldTrigger(event: MouseEvent, triggers: Trigger[]): boolean {
         }
       });
 
-      return reqButtonIsPressed && allReqModifiersArePressed;
+      if (reqButtonIsPressed && allReqModifiersArePressed) {
+        return true;
+      }
     }
   }
 

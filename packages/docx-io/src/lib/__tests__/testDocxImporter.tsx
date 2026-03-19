@@ -37,7 +37,7 @@ const injectConfig = {
 export const readDocxFixture = (filename: string): Buffer => {
   const docxTestDir = path.resolve(
     __dirname,
-    '../../../../docx/src/lib/__tests__'
+    '../../../../../apps/www/src/__tests__/package-integration/docx'
   );
   const filepath = path.join(docxTestDir, `${filename}.docx`);
 
@@ -76,7 +76,7 @@ export const testDocxImporter = ({
         TextAlignPlugin.extend(() => injectConfig),
         IndentPlugin.extend(() => injectConfig),
       ],
-    });
+    } as any);
 
     // Read docx file as Node Buffer
     const buffer = readDocxFixture(filename);

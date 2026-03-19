@@ -60,6 +60,16 @@ export function preprocessMammothHtml(
         a.remove();
       }
 
+      for (const element of Array.from(
+        ddClone.querySelectorAll('br, div, li, p')
+      )) {
+        if (element.tagName === 'BR') {
+          element.replaceWith(ddClone.ownerDocument.createTextNode(' '));
+        } else {
+          element.append(ddClone.ownerDocument.createTextNode(' '));
+        }
+      }
+
       let text = (ddClone.textContent ?? '').replaceAll(/\s+/g, ' ').trim();
       text = text.replace(ARROW_SUFFIX_REGEX, '').trim();
 

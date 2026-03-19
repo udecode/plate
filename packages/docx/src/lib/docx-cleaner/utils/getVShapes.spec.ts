@@ -1,12 +1,20 @@
-import { readTestFile } from '../../__tests__/readTestFile';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { getVShapes } from './getVShapes';
 
 const parser = new DOMParser();
 
+const readTestFile = (filepath: string): string => {
+  const absoluteFilepath = path.resolve(__dirname, filepath);
+
+  return fs.readFileSync(absoluteFilepath, 'utf8');
+};
+
 describe('getVShapes', () => {
   it('Extracts spids of all v:shapes', () => {
     const input = parser.parseFromString(
-      readTestFile('../docx-cleaner/__tests__/input/v-shapes.html'),
+      readTestFile('../__tests__/input/v-shapes.html'),
       'text/html'
     );
 

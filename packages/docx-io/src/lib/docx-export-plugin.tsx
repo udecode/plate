@@ -32,8 +32,13 @@
 
 'use client';
 
-import type { SlatePlugin, Value } from 'platejs';
-import { createSlateEditor, createSlatePlugin } from 'platejs';
+import type {
+  AnyPluginConfig,
+  CreateSlateEditorOptions,
+  PluginConfig,
+  Value,
+} from 'platejs';
+import { createSlateEditor, createTSlatePlugin } from 'platejs';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
 
@@ -215,7 +220,7 @@ export type DocxExportPluginOptions = {
    *
    * This should match the plugins used in your editor for accurate serialization.
    */
-  editorPlugins?: SlatePlugin[];
+  editorPlugins?: AnyPluginConfig[];
 
   /**
    * The React component to use for static rendering.
@@ -231,6 +236,13 @@ export type DocxExportPluginOptions = {
 export interface DocxExportOptions
   extends DocxExportOperationOptions,
     DocxExportPluginOptions {}
+
+export type DocxExportPluginConfig = PluginConfig<
+  'docxExport',
+  DocxExportPluginOptions,
+  { docxExport: DocxExportApiMethods },
+  { docxExport: DocxExportTransformMethods }
+>;
 
 // =============================================================================
 // Plugin Config Types
@@ -309,7 +321,7 @@ type SerializeToHtmlInternalOptions = {
   /** Component overrides by plugin key */
   components?: Record<string, React.ComponentType<any>>;
   fontFamily?: string;
-  plugins?: SlatePlugin[];
+  plugins?: AnyPluginConfig[];
   value: Value;
 };
 
@@ -328,7 +340,7 @@ async function serializeToHtml(
   const editorStatic = createSlateEditor({
     plugins: plugins ?? [],
     value,
-  });
+  } as CreateSlateEditorOptions<Value>);
 
   // Apply component overrides directly to editor.meta.components
   if (components) {
@@ -387,7 +399,7 @@ ${bodyHtml}
 interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
   /** Component overrides by plugin key */
   components?: Record<string, React.ComponentType<any>>;
-  editorPlugins?: SlatePlugin[];
+  editorPlugins?: AnyPluginConfig[];
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
   value: Value;
 }
@@ -616,55 +628,63 @@ export async function exportEditorToDocx(
  * downloadDocx(blob, 'my-document.docx');
  * ```
  */
-export const DocxExportPlugin = createSlatePlugin({
+export const DocxExportPlugin = createTSlatePlugin<DocxExportPluginConfig>({
   key: 'docxExport',
   options: {
-    editorPlugins: undefined as SlatePlugin[] | undefined,
+    editorPlugins: undefined as AnyPluginConfig[] | undefined,
     editorStaticComponent: undefined as
       | React.ComponentType<PlateStaticProps>
       | undefined,
   },
 })
-  .extendEditorApi(({ editor, getOptions }) => ({
-    docxExport: {
-      download: (blob: Blob, filename: string): void => {
-        downloadDocx(blob, filename);
-      },
-      exportToBlob: async (
-        options: DocxExportOperationOptions = {}
-      ): Promise<Blob> => {
-        const pluginOptions = getOptions();
+  .extendEditorApi((ctx) => {
+    const { editor, getOptions } = ctx;
 
-        // Get component overrides from plugin.override.components
-        const plugin = editor.getPlugin({ key: 'docxExport' }) as any;
-        const components = plugin.override?.components as
-          | Record<string, React.ComponentType<any>>
-          | undefined;
+    return {
+      docxExport: {
+        download: (blob: Blob, filename: string): void => {
+          downloadDocx(blob, filename);
+        },
+        exportToBlob: async (
+          options: DocxExportOperationOptions = {}
+        ): Promise<Blob> => {
+          const pluginOptions = getOptions();
 
-        return exportToDocxInternal({
-          ...options,
-          components,
-          editorPlugins: pluginOptions.editorPlugins,
-          editorStaticComponent: pluginOptions.editorStaticComponent,
-          value: editor.children,
-        });
+          // Get component overrides from plugin.override.components
+          const plugin = editor.getPlugin({ key: 'docxExport' }) as any;
+          const components = plugin.override?.components as
+            | Record<string, React.ComponentType<any>>
+            | undefined;
+
+          return exportToDocxInternal({
+            ...options,
+            components,
+            editorPlugins: pluginOptions.editorPlugins,
+            editorStaticComponent: pluginOptions.editorStaticComponent,
+            value: editor.children,
+          });
+        },
       },
-    },
-  }))
-  .extendEditorTransforms(({ editor }) => ({
-    docxExport: {
-      exportAndDownload: async (
-        filename: string,
-        options: DocxExportOperationOptions = {}
-      ): Promise<void> => {
-        const api = editor.api as unknown as {
-          docxExport: DocxExportApiMethods;
-        };
-        const blob = await api.docxExport.exportToBlob(options);
-        api.docxExport.download(blob, filename);
+    };
+  })
+  .extendEditorTransforms((ctx) => {
+    const { editor } = ctx;
+
+    return {
+      docxExport: {
+        exportAndDownload: async (
+          filename: string,
+          options: DocxExportOperationOptions = {}
+        ): Promise<void> => {
+          const api = editor.api as unknown as {
+            docxExport: DocxExportApiMethods;
+          };
+          const blob = await api.docxExport.exportToBlob(options);
+          api.docxExport.download(blob, filename);
+        },
       },
-    },
-  }));
+    };
+  });
 
 // =============================================================================
 // Re-exports

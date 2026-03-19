@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pluginBabel from '@rollup/plugin-babel';
+import type { Plugin } from 'rolldown';
 import { convertPathToPattern } from 'tinyglobby';
 import { defineConfig } from 'tsdown';
 
@@ -49,6 +50,54 @@ if (fs.existsSync(STATIC_INPUT_FILE_PATH)) {
 // Disable sourcemaps in CI to speed up builds
 const enableSourcemaps = !process.env.CI;
 
+const walkFiles = (dir: string, result: string[] = []) => {
+  if (!fs.existsSync(dir)) return result;
+
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      walkFiles(entryPath, result);
+      continue;
+    }
+
+    result.push(entryPath);
+  }
+
+  return result;
+};
+
+const fixBrokenDtsChunkImports = (): Plugin => ({
+  name: 'plate/fix-broken-dts-chunk-imports',
+  writeBundle(options) {
+    const outDir = options.file
+      ? path.dirname(path.resolve(PACKAGE_ROOT_PATH, options.file))
+      : path.resolve(PACKAGE_ROOT_PATH, options.dir ?? 'dist');
+    const declarationFiles = walkFiles(outDir).filter((filePath) =>
+      filePath.endsWith('.d.ts')
+    );
+
+    for (const filePath of declarationFiles) {
+      const original = fs.readFileSync(filePath, 'utf8');
+      const rewritten = original.replace(
+        /from\s+(['"])(\.[^'"]+)\.js\1/g,
+        (fullMatch, quote, importPath) => {
+          const resolvedBase = path.resolve(path.dirname(filePath), importPath);
+
+          if (fs.existsSync(`${resolvedBase}.js`)) return fullMatch;
+          if (!fs.existsSync(`${resolvedBase}.d.ts`)) return fullMatch;
+
+          return `from ${quote}${importPath}${quote}`;
+        }
+      );
+
+      if (rewritten !== original) {
+        fs.writeFileSync(filePath, rewritten);
+      }
+    }
+  },
+});
+
 export default defineConfig((opts) => [
   {
     ...opts,
@@ -72,6 +121,7 @@ export default defineConfig((opts) => [
         plugins: [['babel-plugin-react-compiler', { target: '18' }]],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       }),
+      fixBrokenDtsChunkImports(),
     ],
   },
 ]);
