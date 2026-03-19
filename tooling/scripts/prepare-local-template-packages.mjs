@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
+const baseRef = process.env.TEMPLATE_LOCAL_PACKAGE_BASE_REF?.trim();
 const templateDirArgs = process.argv.slice(2);
 
 if (templateDirArgs.includes('-h') || templateDirArgs.includes('--help')) {
@@ -47,20 +48,28 @@ const templateConfigs = await Promise.all(
     };
   })
 );
-const packagesToPrepare = new Map();
 
 for (const templateConfig of templateConfigs) {
-  for (const dependencyName of templateConfig.localDependencies) {
-    const workspacePackage = workspacePackages.get(dependencyName);
-
-    if (!workspacePackage) continue;
-
-    packagesToPrepare.set(dependencyName, workspacePackage);
-  }
+  templateConfig.relevantPackageNames = getReachableWorkspacePackageNames(
+    templateConfig.localDependencies,
+    workspacePackages
+  );
 }
 
+const packagesToPrepare = getPackagesToPrepare({
+  baseRef,
+  templateConfigs,
+  workspacePackages,
+});
+
 if (packagesToPrepare.size === 0) {
-  console.log('No local workspace packages referenced by templates.');
+  if (baseRef) {
+    console.log(
+      `No affected local workspace packages referenced by templates for ${baseRef}...HEAD.`
+    );
+  } else {
+    console.log('No local workspace packages referenced by templates.');
+  }
   process.exit(0);
 }
 
@@ -103,13 +112,74 @@ function buildWorkspacePackages(workspacePackagesToBuild) {
   }
 }
 
-function getLocalDependencies(packageJson) {
-  const dependencyNames = new Set([
-    ...Object.keys(packageJson.dependencies ?? {}),
-    ...Object.keys(packageJson.devDependencies ?? {}),
-  ]);
+function getPackagesToPrepare({ baseRef, templateConfigs, workspacePackages }) {
+  const packagesToPrepare = new Map();
+  const dependencyNames = new Set(
+    templateConfigs.flatMap(
+      (templateConfig) => templateConfig.localDependencies
+    )
+  );
 
-  return [...dependencyNames].filter((dependencyName) =>
+  if (!baseRef) {
+    for (const dependencyName of dependencyNames) {
+      const workspacePackage = workspacePackages.get(dependencyName);
+
+      if (!workspacePackage) continue;
+
+      packagesToPrepare.set(dependencyName, workspacePackage);
+    }
+
+    return packagesToPrepare;
+  }
+
+  const changedPackageNames = getChangedWorkspacePackageNames(
+    baseRef,
+    workspacePackages
+  );
+
+  if (changedPackageNames.size === 0) {
+    return packagesToPrepare;
+  }
+
+  const relevantPackageNames = new Set(
+    templateConfigs.flatMap((templateConfig) => [
+      ...templateConfig.relevantPackageNames,
+    ])
+  );
+  const selectedPackageNames = [...changedPackageNames].filter((packageName) =>
+    relevantPackageNames.has(packageName)
+  );
+
+  if (selectedPackageNames.length === 0) {
+    return packagesToPrepare;
+  }
+
+  console.log(
+    `Changed workspace packages for ${baseRef}...HEAD: ${[
+      ...changedPackageNames,
+    ]
+      .sort()
+      .join(', ')}`
+  );
+  console.log(
+    `Selected workspace packages for templates: ${selectedPackageNames
+      .toSorted()
+      .join(', ')}`
+  );
+
+  for (const packageName of selectedPackageNames) {
+    const workspacePackage = workspacePackages.get(packageName);
+
+    if (!workspacePackage) continue;
+
+    packagesToPrepare.set(packageName, workspacePackage);
+  }
+
+  return packagesToPrepare;
+}
+
+function getLocalDependencies(packageJson) {
+  return getDependencyNames(packageJson).filter((dependencyName) =>
     workspacePackages.has(dependencyName)
   );
 }
@@ -130,8 +200,16 @@ async function getWorkspacePackages() {
 
       workspacePackagesByName.set(packageJson.name, {
         directory: directoryEntry,
+        packageJson,
+        relativeDirectory: toPosixPath(path.relative(repoRoot, directoryEntry)),
       });
     }
+  }
+
+  for (const workspacePackage of workspacePackagesByName.values()) {
+    workspacePackage.localDependencyNames = getDependencyNames(
+      workspacePackage.packageJson
+    ).filter((dependencyName) => workspacePackagesByName.has(dependencyName));
   }
 
   return workspacePackagesByName;
@@ -155,6 +233,66 @@ async function listDirectories(parentDirectory) {
   }
 
   return directories;
+}
+
+function getChangedWorkspacePackageNames(baseRef, workspacePackages) {
+  const result = spawnSync(
+    'git',
+    ['diff', '--name-only', `${baseRef}...HEAD`],
+    {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    }
+  );
+
+  if (result.status !== 0) {
+    console.error(
+      `Failed to determine changed workspace packages for ${baseRef}...HEAD`
+    );
+    process.exit(result.status ?? 1);
+  }
+
+  const changedFiles = result.stdout
+    .split('\n')
+    .map((filePath) => filePath.trim())
+    .filter(Boolean);
+  const changedPackageNames = new Set();
+
+  for (const changedFile of changedFiles) {
+    for (const [packageName, workspacePackage] of workspacePackages) {
+      const packagePrefix = `${workspacePackage.relativeDirectory}/`;
+
+      if (changedFile.startsWith(packagePrefix)) {
+        changedPackageNames.add(packageName);
+      }
+    }
+  }
+
+  return changedPackageNames;
+}
+
+function getReachableWorkspacePackageNames(
+  initialPackageNames,
+  workspacePackages
+) {
+  const relevantPackageNames = new Set();
+  const pendingPackageNames = [...initialPackageNames];
+
+  while (pendingPackageNames.length > 0) {
+    const packageName = pendingPackageNames.shift();
+
+    if (!packageName || relevantPackageNames.has(packageName)) continue;
+
+    relevantPackageNames.add(packageName);
+
+    const workspacePackage = workspacePackages.get(packageName);
+
+    if (!workspacePackage) continue;
+
+    pendingPackageNames.push(...workspacePackage.localDependencyNames);
+  }
+
+  return relevantPackageNames;
 }
 
 function packWorkspacePackage(packageDirectory) {
@@ -182,9 +320,22 @@ function packWorkspacePackage(packageDirectory) {
   return tarballPath;
 }
 
+function getDependencyNames(packageJson) {
+  const dependencyNames = new Set([
+    ...Object.keys(packageJson.dependencies ?? {}),
+    ...Object.keys(packageJson.devDependencies ?? {}),
+    ...Object.keys(packageJson.optionalDependencies ?? {}),
+    ...Object.keys(packageJson.peerDependencies ?? {}),
+  ]);
+
+  return [...dependencyNames];
+}
+
 function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
-  const { packageJson, packageJsonPath, templateDir } = templateConfig;
+  const { packageJson, packageJsonPath, relevantPackageNames, templateDir } =
+    templateConfig;
   const dependencySections = ['dependencies', 'devDependencies'];
+  const rewrittenPackageNames = new Set();
 
   for (const section of dependencySections) {
     const dependencies = packageJson[section];
@@ -203,6 +354,32 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
       }
 
       dependencies[dependencyName] = `file:${toPosixPath(relativeTarballPath)}`;
+      rewrittenPackageNames.add(dependencyName);
+    }
+  }
+
+  const missingDependencyNames = [...tarballsByPackageName.keys()].filter(
+    (dependencyName) =>
+      relevantPackageNames.has(dependencyName) &&
+      !rewrittenPackageNames.has(dependencyName)
+  );
+
+  if (missingDependencyNames.length > 0) {
+    packageJson.devDependencies ??= {};
+
+    for (const dependencyName of missingDependencyNames.toSorted()) {
+      const tarballPath = tarballsByPackageName.get(dependencyName);
+
+      if (!tarballPath) continue;
+
+      let relativeTarballPath = path.relative(templateDir, tarballPath);
+
+      if (!relativeTarballPath.startsWith('.')) {
+        relativeTarballPath = `./${relativeTarballPath}`;
+      }
+
+      packageJson.devDependencies[dependencyName] =
+        `file:${toPosixPath(relativeTarballPath)}`;
     }
   }
 
