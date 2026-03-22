@@ -54,7 +54,13 @@ async function generateDeterministicClientId(
   const combinedString = `${guid}-${nodesString}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(combinedString);
-  const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+  const subtle = globalThis.crypto?.subtle ?? globalThis.window?.crypto?.subtle;
+
+  if (!subtle) {
+    throw new Error('Web Crypto API subtle.digest is unavailable');
+  }
+
+  const hashBuffer = await subtle.digest('SHA-256', data);
 
   return arrayBufferToClientId(hashBuffer);
 }

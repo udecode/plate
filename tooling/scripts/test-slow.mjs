@@ -5,9 +5,8 @@ import { spawnSync } from 'node:child_process';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
-  FAST_TEST_EXCLUDE_PATTERNS,
-  TEST_FILE_PATTERNS,
   TEST_IGNORE_PATTERNS,
+  TEST_SLOW_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
 
 const VALUE_FLAGS = new Set([
@@ -62,9 +61,9 @@ for (let i = 0; i < rawArgs.length; i++) {
   pathFilters.push(arg);
 }
 
-const allFastFiles = globSync(TEST_FILE_PATTERNS, {
+const allSlowFiles = globSync(TEST_SLOW_FILE_PATTERNS, {
   cwd: process.cwd(),
-  ignore: [...TEST_IGNORE_PATTERNS, ...FAST_TEST_EXCLUDE_PATTERNS],
+  ignore: TEST_IGNORE_PATTERNS,
   onlyFiles: true,
 }).sort();
 
@@ -95,8 +94,8 @@ for (const filter of pathFilters.map(normalizeFilter)) {
 
 const selectedFiles =
   pathFilters.length === 0
-    ? allFastFiles
-    : allFastFiles.filter((file) => {
+    ? allSlowFiles
+    : allSlowFiles.filter((file) => {
         if (dynamicMatches.has(file)) return true;
 
         return staticFilters.some(
@@ -108,15 +107,17 @@ const selectedFiles =
       });
 
 if (selectedFiles.length === 0) {
-  console.error(
-    'No fast-suite tests matched. Use `pnpm test:slow` for `*.slow.*` lanes or `bun test` for discovered slow specs.'
-  );
+  console.error('No slow tests matched.');
   process.exit(1);
 }
 
+const explicitPaths = selectedFiles.map((file) =>
+  file.startsWith('/') || file.startsWith('./') ? file : `./${file}`
+);
+
 const run = spawnSync(
   process.execPath,
-  ['test', ...bunArgs, ...selectedFiles],
+  ['test', ...bunArgs, ...explicitPaths],
   {
     stdio: 'inherit',
   }
