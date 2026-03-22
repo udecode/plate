@@ -143,12 +143,9 @@ Still worth a pass, but after the three above.
 
 ## Full Data
 
-- Package matrix:
-  - [2026-03-17-coverage-priority-packages.tsv](/Users/zbeyens/git/plate/.claude/docs/plans/2026-03-17-coverage-priority-packages.tsv)
-- File matrix:
-  - [2026-03-17-coverage-priority-files.tsv](/Users/zbeyens/git/plate/.claude/docs/plans/2026-03-17-coverage-priority-files.tsv)
+The raw package and file matrices were generated as TSV artifacts during this pass and are intentionally treated as disposable analysis output, not committed source of truth.
 
-The file matrix includes every file under `packages/*/src`, with:
+The file matrix included every file under `packages/*/src`, with:
 
 - `score`
 - `line_cov_pct`

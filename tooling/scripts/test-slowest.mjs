@@ -12,7 +12,7 @@ import {
 const rawArgs = process.argv.slice(2);
 const bunArgs = [];
 let limit = 50;
-let runAll = false;
+let profileOnly = false;
 
 for (let i = 0; i < rawArgs.length; i++) {
   const arg = rawArgs[i];
@@ -21,8 +21,8 @@ for (let i = 0; i < rawArgs.length; i++) {
     continue;
   }
 
-  if (arg === '--all') {
-    runAll = true;
+  if (arg === '--profile') {
+    profileOnly = true;
     continue;
   }
 
@@ -43,19 +43,17 @@ for (let i = 0; i < rawArgs.length; i++) {
 }
 
 const outputDir = '/tmp/plate-test-slowest';
-const junitFile = join(outputDir, runAll ? 'junit-all.xml' : 'junit-fast.xml');
+const junitFile = join(outputDir, 'junit-fast.xml');
 
 mkdirSync(outputDir, { recursive: true });
 
-const command = runAll
-  ? ['test', ...bunArgs, '--reporter=junit', '--reporter-outfile', junitFile]
-  : [
-      'tooling/scripts/test-fast.mjs',
-      ...bunArgs,
-      '--reporter=junit',
-      '--reporter-outfile',
-      junitFile,
-    ];
+const command = [
+  'tooling/scripts/test-fast.mjs',
+  ...bunArgs,
+  '--reporter=junit',
+  '--reporter-outfile',
+  junitFile,
+];
 
 const run = spawnSync(process.execPath, command, { stdio: 'inherit' });
 
@@ -108,6 +106,12 @@ if (xml) {
   const sortedFiles = [...fileRows.values()].sort(
     (a, b) => b.milliseconds - a.milliseconds
   );
+  const slowTests = rows.filter(
+    (row) => row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS
+  );
+  const slowFiles = sortedFiles.filter(
+    (row) => row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
+  );
   const averageMs =
     rows.length === 0
       ? 0
@@ -118,7 +122,7 @@ if (xml) {
       : [...rows].sort((a, b) => a.milliseconds - b.milliseconds)[
           Math.floor(rows.length / 2)
         ].milliseconds;
-  const modeLabel = runAll ? 'full suite' : 'fast suite';
+  const modeLabel = 'fast suite';
 
   console.log('');
   console.log(`Suite: ${modeLabel}`);
@@ -126,20 +130,16 @@ if (xml) {
   console.log(
     `Average: ${averageMs.toFixed(3)}ms  Median: ${medianMs.toFixed(3)}ms`
   );
-  if (!runAll) {
-    console.log(
-      `Slow-bucket thresholds: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_FILE_THRESHOLD_MS}ms/file total`
-    );
-  }
+  console.log(
+    `Slow-bucket thresholds: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_FILE_THRESHOLD_MS}ms/file total`
+  );
   console.log(`Top ${Math.min(limit, rows.length)} slowest tests`);
 
   for (const row of rows.slice(0, limit)) {
     const location = row.file ? `${row.file}  ` : '';
     const prefix = row.classname ? `${row.classname} > ` : '';
     const marker =
-      !runAll && row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS
-        ? '! '
-        : '';
+      row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS ? '! ' : '';
 
     console.log(
       `${marker}${row.milliseconds.toFixed(2).padStart(8)}ms  ${location}${prefix}${row.name}`
@@ -151,13 +151,45 @@ if (xml) {
 
   for (const row of sortedFiles.slice(0, 20)) {
     const marker =
-      !runAll && row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
-        ? '! '
-        : '';
+      row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS ? '! ' : '';
 
     console.log(
       `${marker}${row.milliseconds.toFixed(2).padStart(8)}ms  ${String(row.tests).padStart(3)} tests  ${row.file}`
     );
+  }
+
+  if (!profileOnly && (slowTests.length > 0 || slowFiles.length > 0)) {
+    console.error('');
+    console.error(
+      'Fast-suite threshold exceeded. Move the offending spec to `*.slow.ts[x]` so it runs via `pnpm test:slow` instead of the default fast loop.'
+    );
+
+    if (slowFiles.length > 0) {
+      console.error('');
+      console.error('Files over the fast-suite file threshold:');
+
+      for (const row of slowFiles) {
+        console.error(
+          `  - ${row.file} (${row.milliseconds.toFixed(2)}ms across ${row.tests} tests)`
+        );
+      }
+    }
+
+    if (slowTests.length > 0) {
+      console.error('');
+      console.error('Tests over the fast-suite case threshold:');
+
+      for (const row of slowTests) {
+        const prefix = row.classname ? `${row.classname} > ` : '';
+        const location = row.file ? `${row.file}: ` : '';
+
+        console.error(
+          `  - ${location}${prefix}${row.name} (${row.milliseconds.toFixed(2)}ms)`
+        );
+      }
+    }
+
+    process.exit(1);
   }
 }
 
