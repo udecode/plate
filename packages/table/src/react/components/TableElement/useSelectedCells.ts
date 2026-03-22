@@ -1,54 +1,70 @@
 import React from 'react';
 
-import {
-  useEditorPlugin,
-  useEditorRef,
-  useEditorSelection,
-  usePluginOption,
-  useReadOnly,
-  useSelected,
-} from 'platejs/react';
+import { useEditorPlugin, useEditorSelector, useReadOnly } from 'platejs/react';
 
-import { getTableGridAbove } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
+import { getSelectedCellIds } from '../../../lib';
+import { BaseTablePlugin } from '../../../lib/BaseTablePlugin';
 
-/**
- * Many grid cells above and diff -> set No many grid cells above and diff ->
- * unset No selection -> unset
- */
+const hasSameIds = (
+  nextValue: string[] | null | undefined,
+  prevValue: string[] | null | undefined
+) => {
+  if (nextValue === prevValue) return true;
+  if (!nextValue || !prevValue) return !nextValue && !prevValue;
+  if (nextValue.length !== prevValue.length) return false;
+
+  for (const [index, nextId] of nextValue.entries()) {
+    if (nextId !== prevValue[index]) return false;
+  }
+
+  return true;
+};
+
+const hasSameSelectionState = (
+  nextValue: {
+    selectedCellIds: string[] | null;
+    selectedContent: unknown;
+  },
+  prevValue: {
+    selectedCellIds: string[] | null;
+    selectedContent: unknown;
+  }
+) =>
+  nextValue.selectedContent === prevValue.selectedContent &&
+  hasSameIds(nextValue.selectedCellIds, prevValue.selectedCellIds);
+
 export const useSelectedCells = () => {
   const readOnly = useReadOnly();
-  const selected = useSelected();
-  const editor = useEditorRef();
-  const selection = useEditorSelection();
-
-  const { setOption } = useEditorPlugin(TablePlugin);
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
-
-  React.useEffect(() => {
-    if (!selected || readOnly) {
-      setOption('selectedCells', null);
-      setOption('selectedTables', null);
-    }
-  }, [selected, editor, readOnly, setOption]);
-
-  React.useEffect(() => {
-    if (readOnly) return;
-
-    const tableEntries = getTableGridAbove(editor, { format: 'table' });
-    const cellEntries = getTableGridAbove(editor, { format: 'cell' });
-
-    if (cellEntries?.length > 1) {
-      const cells = cellEntries.map((entry) => entry[0]);
-      const tables = tableEntries.map((entry) => entry[0]);
-
-      if (JSON.stringify(cells) !== JSON.stringify(selectedCells)) {
-        setOption('selectedCells', cells);
-        setOption('selectedTables', tables);
+  const { setOptions } = useEditorPlugin(BaseTablePlugin);
+  const selectionState = useEditorSelector(
+    (editor) => {
+      if (readOnly) {
+        return { selectedCellIds: null, selectedContent: null };
       }
-    } else if (selectedCells) {
-      setOption('selectedCells', null);
-      setOption('selectedTables', null);
-    }
-  }, [editor, selection, readOnly, selectedCells, setOption]);
+
+      const selectedCellIds = getSelectedCellIds(editor);
+
+      return {
+        selectedCellIds,
+        selectedContent: selectedCellIds ? editor.children : null,
+      };
+    },
+    [readOnly],
+    { equalityFn: hasSameSelectionState }
+  );
+
+  React.useLayoutEffect(() => {
+    const nextSelectedCellIds = selectionState.selectedCellIds;
+
+    setOptions((draft) => {
+      if (!hasSameIds(draft._selectedCellIds, nextSelectedCellIds)) {
+        draft._selectedCellIds = nextSelectedCellIds;
+      }
+      if (draft._selectedTableIds !== undefined) {
+        draft._selectedTableIds = undefined;
+      }
+
+      draft._selectionVersion = (draft._selectionVersion ?? 0) + 1;
+    });
+  }, [selectionState, setOptions]);
 };

@@ -1,19 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import React from 'react';
+
 import type { TTableCellElement } from 'platejs';
 
 import { KEYS } from 'platejs';
-import {
-  useEditorPlugin,
-  useEditorSelector,
-  usePluginOption,
-  useReadOnly,
-} from 'platejs/react';
+import { useEditorPlugin, useEditorSelector, useReadOnly } from 'platejs/react';
 
-import { getTableGridAbove, isTableRectangular } from '../../lib';
+import { getSelectedCellEntries, getSelectedCellsBoundingBox } from '../../lib';
 import { TablePlugin } from '../TablePlugin';
 
 export const useTableMergeState = () => {
-  const { api, getOptions } = useEditorPlugin(TablePlugin);
+  const { api, editor, getOptions } = useEditorPlugin(TablePlugin);
 
   const { disableMerge } = getOptions();
 
@@ -30,16 +27,29 @@ export const useTableMergeState = () => {
   );
 
   const collapsed = !readOnly && someTable && !selectionExpanded;
-  const selectedTables = usePluginOption(TablePlugin, 'selectedTables');
-  const selectedTable = selectedTables?.[0];
 
   const selectedCellEntries = useEditorSelector(
-    (editor) =>
-      getTableGridAbove(editor, {
-        format: 'cell',
-      }),
+    (editor) => getSelectedCellEntries(editor),
     []
   );
+  const isRectangularSelection = React.useMemo(() => {
+    if (selectedCellEntries.length <= 1) return false;
+
+    const selectedCells = selectedCellEntries.map(
+      ([cell]) => cell as TTableCellElement
+    );
+    const { maxCol, maxRow, minCol, minRow } = getSelectedCellsBoundingBox(
+      editor,
+      selectedCells
+    );
+    const selectedArea = selectedCells.reduce(
+      (total, cell) =>
+        total + api.table.getColSpan(cell) * api.table.getRowSpan(cell),
+      0
+    );
+
+    return selectedArea === (maxCol - minCol + 1) * (maxRow - minRow + 1);
+  }, [api.table, editor, selectedCellEntries]);
 
   if (!selectedCellEntries) return { canMerge: false, canSplit: false };
 
@@ -48,7 +58,7 @@ export const useTableMergeState = () => {
     someTable &&
     selectionExpanded &&
     selectedCellEntries.length > 1 &&
-    isTableRectangular(selectedTable);
+    isRectangularSelection;
 
   const canSplit =
     collapsed &&

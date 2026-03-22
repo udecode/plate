@@ -9,7 +9,7 @@
 - Browser: Playwright + Chromium `138.0.7204.15`
 - Page accessibility check: confirmed `/dev/table-perf` loads via `agent-browser`
 
-## Sampling Method
+## Sampling
 
 - Read `apps/www/src/app/dev/table-perf/page.tsx`, confirmed the page has two built-in tests:
   - Benchmark: `5` warmup + `20` measured remount iterations
@@ -45,15 +45,3 @@
 | Input Latency | P95 | 52.70 ms |
 | Input Latency | Min | 28.00 ms |
 | Input Latency | Max | 61.60 ms |
-
-## Conclusion
-
-- The `40 x 40` remount benchmark is still in the high-cost range, with a mean of ~`841 ms`.
-- The `40 x 40` input latency mean is ~`41 ms`, median ~`39 ms`, well below the `100+ ms` threshold where noticeable lag occurs.
-- This snapshot is better suited for tracking large-table input performance; if the focus shifts to resize/hover interactions, a separate drag/hover profiling session is recommended.
-
-## Interpretation Notes
-
-- `Initial render`, `Re-render count`, `Last render`, and `Avg render / Median / P95` come from the left-side Metrics panel.
-- `Benchmark Results` are the remount benchmark statistics.
-- `Input Latency` results do not auto-clear when switching presets or clicking `Generate Table`; re-run after changing configuration.

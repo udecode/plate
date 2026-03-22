@@ -4,6 +4,7 @@ import {
   Profiler,
   useCallback,
   useImperativeHandle,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -14,10 +15,11 @@ import type {
   TTableElement,
   TTableRowElement,
 } from 'platejs';
+import { TablePlugin } from '@platejs/table/react';
 
 import type { PlateEditor } from 'platejs/react';
 
-import { Plate, usePlateEditor } from 'platejs/react';
+import { Plate, useEditorSelector, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,13 +52,24 @@ type BenchmarkResult = {
   stdDev: number;
 };
 
-type InputLatencyResult = {
+type LatencyResult = {
   max: number;
   mean: number;
   median: number;
   min: number;
   p95: number;
   samples: number[];
+};
+
+type SelectionLatencyResult = LatencyResult & {
+  selectedCells: number;
+  simulatedDelayMs: number;
+};
+
+type SelectionSimulationConfig = {
+  cols: number;
+  delayMs: number;
+  rows: number;
 };
 
 // Presets for O(n²) analysis
@@ -92,6 +105,68 @@ function generateTableValue(rows: number, cols: number): TTableElement {
     colSizes: Array.from({ length: cols }, () => 100),
     type: 'table',
   };
+}
+
+function getCellPoint(rowIndex: number, colIndex: number) {
+  return {
+    offset: 0,
+    path: [0, rowIndex, colIndex, 0, 0],
+  };
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function waitForNextPaint() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve();
+      });
+    });
+  });
+}
+
+function blockMainThread(durationMs: number) {
+  const endTime = performance.now() + durationMs;
+
+  while (performance.now() < endTime) {
+    // Busy loop on purpose. This is a dev-only latency simulator.
+  }
+}
+
+function calculateLatencyStats(samples: number[]): LatencyResult {
+  if (samples.length === 0) {
+    return { max: 0, mean: 0, median: 0, min: 0, p95: 0, samples: [] };
+  }
+
+  const sorted = [...samples].sort((a, b) => a - b);
+  const n = sorted.length;
+
+  return {
+    max: sorted[n - 1] ?? 0,
+    mean: samples.reduce((a, b) => a + b, 0) / n,
+    median: sorted[Math.floor(n / 2)] ?? 0,
+    min: sorted[0] ?? 0,
+    p95: sorted[Math.floor(n * 0.95)] ?? sorted[n - 1] ?? 0,
+    samples,
+  };
+}
+
+function hasSameIds(
+  nextValue: string[] | null | undefined,
+  prevValue: string[] | null | undefined
+) {
+  if (nextValue === prevValue) return true;
+  if (!nextValue || !prevValue) return !nextValue && !prevValue;
+  if (nextValue.length !== prevValue.length) return false;
+
+  for (const [index, nextId] of nextValue.entries()) {
+    if (nextId !== prevValue[index]) return false;
+  }
+
+  return true;
 }
 
 // Statistics calculator
@@ -138,10 +213,12 @@ function MetricsDisplay({
   benchmarkResult,
   inputLatencyResult,
   metrics,
+  selectionLatencyResult,
 }: {
   benchmarkResult: BenchmarkResult | null;
-  inputLatencyResult: InputLatencyResult | null;
+  inputLatencyResult: LatencyResult | null;
   metrics: Metrics;
+  selectionLatencyResult: SelectionLatencyResult | null;
 }) {
   const stats = calculateStats(metrics.renderDurations);
 
@@ -256,6 +333,49 @@ function MetricsDisplay({
             </div>
           </>
         )}
+        {selectionLatencyResult && (
+          <>
+            <hr className="my-2" />
+            <div className="font-semibold">Table Selection Latency:</div>
+            <div className="flex justify-between">
+              <span>Selected cells:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.selectedCells}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Injected delay:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.simulatedDelayMs.toFixed(0)} ms
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Mean:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.mean.toFixed(2)} ms
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Median:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.median.toFixed(2)} ms
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>P95:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.p95.toFixed(2)} ms
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Min/Max:</span>
+              <span className="text-amber-600">
+                {selectionLatencyResult.min.toFixed(2)} /{' '}
+                {selectionLatencyResult.max.toFixed(2)} ms
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -275,13 +395,25 @@ export default function TablePerfPage() {
     useState<BenchmarkResult | null>(null);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
   const [inputLatencyResult, setInputLatencyResult] =
-    useState<InputLatencyResult | null>(null);
+    useState<LatencyResult | null>(null);
   const [isMeasuringLatency, setIsMeasuringLatency] = useState(false);
+  const [selectionLatencyResult, setSelectionLatencyResult] =
+    useState<SelectionLatencyResult | null>(null);
+  const [selectionSimulation, setSelectionSimulation] =
+    useState<SelectionSimulationConfig>({
+      cols: 3,
+      delayMs: 0,
+      rows: 3,
+    });
+  const [isMeasuringSelection, setIsMeasuringSelection] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const plateEditorRef = useRef<PlateEditor | null>(null);
 
   // Generate initial table value
   const tableValue = generateTableValue(config.rows, config.cols);
+
+  const selectedCols = Math.min(selectionSimulation.cols, config.cols);
+  const selectedRows = Math.min(selectionSimulation.rows, config.rows);
 
   // Use ref to collect profiler data without causing re-renders
   const profilerDataRef = useRef<{
@@ -340,13 +472,54 @@ export default function TablePerfPage() {
       renderDurations: [],
     });
     setBenchmarkResult(null);
+    setInputLatencyResult(null);
+    setSelectionLatencyResult(null);
     shouldUpdateMetricsRef.current = true; // Allow metrics update
     setEditorKey((k) => k + 1);
   }, []);
 
   const handlePreset = useCallback((preset: (typeof PRESETS)[number]) => {
     setConfig({ cols: preset.cols, rows: preset.rows });
+    setSelectionSimulation((current) => ({
+      ...current,
+      cols: Math.min(current.cols, preset.cols),
+      rows: Math.min(current.rows, preset.rows),
+    }));
   }, []);
+
+  const focusEditor = useCallback(async () => {
+    const editorElement = editorRef.current?.querySelector('[contenteditable]');
+
+    if (editorElement) {
+      (editorElement as HTMLElement).focus();
+    }
+
+    await wait(100);
+  }, []);
+
+  const collapseSelectionToFirstCell = useCallback((editor: PlateEditor) => {
+    const firstCellPoint = getCellPoint(0, 0);
+
+    editor.tf.select({
+      anchor: firstCellPoint,
+      focus: firstCellPoint,
+    });
+  }, []);
+
+  const selectCellRange = useCallback(
+    (editor: PlateEditor, rows: number, cols: number) => {
+      const endRow = Math.max(1, Math.min(config.rows, rows)) - 1;
+      const endCol = Math.max(1, Math.min(config.cols, cols)) - 1;
+
+      editor.tf.select({
+        anchor: getCellPoint(0, 0),
+        focus: getCellPoint(endRow, endCol),
+      });
+
+      return { cols: endCol + 1, rows: endRow + 1 };
+    },
+    [config.cols, config.rows]
+  );
 
   const runBenchmark = useCallback(async () => {
     setIsBenchmarking(true);
@@ -378,16 +551,10 @@ export default function TablePerfPage() {
       setEditorKey((k) => k + 1);
 
       // Wait for render to complete
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            resolve();
-          });
-        });
-      });
+      await waitForNextPaint();
 
       // Small delay to ensure state is updated
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await wait(50);
 
       const initialRender = profilerDataRef.current.initialRender;
 
@@ -401,7 +568,7 @@ export default function TablePerfPage() {
       }
 
       // Cooldown between iterations
-      await new Promise((resolve) => setTimeout(resolve, COOLDOWN_MS));
+      await wait(COOLDOWN_MS);
     }
 
     const result = calculateStats(renderTimes);
@@ -429,31 +596,18 @@ export default function TablePerfPage() {
       return;
     }
 
-    // Focus the editor and select first cell
-    const editorElement = editorRef.current?.querySelector('[contenteditable]');
-    if (editorElement) {
-      (editorElement as HTMLElement).focus();
-    }
-
-    // Wait for focus
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await focusEditor();
 
     // Select the start of the first cell using Slate API
     try {
-      // Find first text node path in the table
-      // Table structure: table > tr > td > p > text
-      const firstCellPath = [0, 0, 0, 0, 0]; // table[0]/row[0]/cell[0]/p[0]/text[0]
-      editor.tf.select({
-        anchor: { offset: 0, path: firstCellPath },
-        focus: { offset: 0, path: firstCellPath },
-      });
+      collapseSelectionToFirstCell(editor);
     } catch (e) {
       console.error('[Input Latency] Could not select first cell:', e);
       setIsMeasuringLatency(false);
       return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await wait(100);
 
     for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
       const isWarmup = i < WARMUP_SAMPLES;
@@ -465,13 +619,7 @@ export default function TablePerfPage() {
       editor.tf.insertText(char);
 
       // Wait for React to process and render the update
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            resolve();
-          });
-        });
-      });
+      await waitForNextPaint();
 
       const endTime = performance.now();
       const latency = endTime - startTime;
@@ -486,33 +634,114 @@ export default function TablePerfPage() {
       }
 
       // Small delay between inputs
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await wait(50);
     }
 
-    // Calculate stats
-    const sorted = [...samples].sort((a, b) => a - b);
-    const n = sorted.length;
-    const mean = samples.reduce((a, b) => a + b, 0) / n;
-    const median = sorted[Math.floor(n / 2)] ?? 0;
-    const p95 = sorted[Math.floor(n * 0.95)] ?? sorted[n - 1] ?? 0;
-    const min = sorted[0] ?? 0;
-    const max = sorted[n - 1] ?? 0;
-
-    const result: InputLatencyResult = {
-      max,
-      mean,
-      median,
-      min,
-      p95,
-      samples,
-    };
+    const result = calculateLatencyStats(samples);
 
     setInputLatencyResult(result);
     setIsMeasuringLatency(false);
 
     console.log('[Input Latency] Complete!');
     console.log('[Input Latency] Results:', result);
-  }, []);
+  }, [collapseSelectionToFirstCell, focusEditor]);
+
+  const simulateTableSelection = useCallback(async () => {
+    const editor = plateEditorRef.current;
+    if (!editor) {
+      console.error('[Selection] Could not find Plate editor');
+      return;
+    }
+
+    console.log(
+      `[Selection] Simulating ${selectedRows}x${selectedCols} range with ${selectionSimulation.delayMs}ms injected delay`
+    );
+
+    await focusEditor();
+    collapseSelectionToFirstCell(editor);
+    await wait(50);
+
+    shouldUpdateMetricsRef.current = true;
+    selectCellRange(editor, selectedRows, selectedCols);
+
+    await waitForNextPaint();
+    setMetrics({ ...profilerDataRef.current });
+  }, [
+    collapseSelectionToFirstCell,
+    focusEditor,
+    selectedCols,
+    selectedRows,
+    selectCellRange,
+    selectionSimulation.delayMs,
+  ]);
+
+  const measureTableSelectionLatency = useCallback(async () => {
+    setIsMeasuringSelection(true);
+    setSelectionLatencyResult(null);
+
+    const editor = plateEditorRef.current;
+    if (!editor) {
+      console.error('[Selection] Could not find Plate editor');
+      setIsMeasuringSelection(false);
+      return;
+    }
+
+    const samples: number[] = [];
+    const NUM_SAMPLES = 30;
+    const WARMUP_SAMPLES = 5;
+
+    console.log('[Selection] Starting latency measurement...');
+    console.log(
+      `[Selection] Range: ${selectedRows}x${selectedCols}, injected delay: ${selectionSimulation.delayMs}ms`
+    );
+
+    await focusEditor();
+    collapseSelectionToFirstCell(editor);
+    await wait(100);
+
+    for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
+      const isWarmup = i < WARMUP_SAMPLES;
+
+      collapseSelectionToFirstCell(editor);
+      await wait(16);
+
+      const startTime = performance.now();
+      selectCellRange(editor, selectedRows, selectedCols);
+      await waitForNextPaint();
+
+      const latency = performance.now() - startTime;
+
+      if (!isWarmup) {
+        samples.push(latency);
+        if ((i - WARMUP_SAMPLES + 1) % 10 === 0) {
+          console.log(
+            `[Selection] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
+          );
+        }
+      }
+
+      await wait(50);
+    }
+
+    const result: SelectionLatencyResult = {
+      ...calculateLatencyStats(samples),
+      selectedCells: selectedRows * selectedCols,
+      simulatedDelayMs: selectionSimulation.delayMs,
+    };
+
+    setSelectionLatencyResult(result);
+    setIsMeasuringSelection(false);
+
+    console.log('[Selection] Complete!');
+    console.log('[Selection] Results:', result);
+  }, [
+    collapseSelectionToFirstCell,
+    focusEditor,
+    selectedCols,
+    selectedRows,
+    selectCellRange,
+    selectionSimulation.delayMs,
+  ]);
 
   return (
     <main className="container mx-auto p-8">
@@ -534,12 +763,18 @@ export default function TablePerfPage() {
               min={1}
               type="number"
               value={config.rows}
-              onChange={(e) =>
-                setConfig((c) => ({
-                  ...c,
-                  rows: Math.max(1, Math.min(100, Number(e.target.value) || 1)),
-                }))
-              }
+              onChange={(e) => {
+                const nextRows = Math.max(
+                  1,
+                  Math.min(100, Number(e.target.value) || 1)
+                );
+
+                setConfig((current) => ({ ...current, rows: nextRows }));
+                setSelectionSimulation((current) => ({
+                  ...current,
+                  rows: Math.min(current.rows, nextRows),
+                }));
+              }}
             />
           </div>
           <span className="text-muted-foreground">x</span>
@@ -554,12 +789,18 @@ export default function TablePerfPage() {
               min={1}
               type="number"
               value={config.cols}
-              onChange={(e) =>
-                setConfig((c) => ({
-                  ...c,
-                  cols: Math.max(1, Math.min(100, Number(e.target.value) || 1)),
-                }))
-              }
+              onChange={(e) => {
+                const nextCols = Math.max(
+                  1,
+                  Math.min(100, Number(e.target.value) || 1)
+                );
+
+                setConfig((current) => ({ ...current, cols: nextCols }));
+                setSelectionSimulation((current) => ({
+                  ...current,
+                  cols: Math.min(current.cols, nextCols),
+                }));
+              }}
             />
           </div>
           <span className="text-muted-foreground">
@@ -585,7 +826,91 @@ export default function TablePerfPage() {
           ))}
         </div>
 
-        <div className="flex gap-2">
+        <div className="mb-4 rounded-lg border border-dashed bg-muted/30 p-4">
+          <h3 className="mb-3 font-medium text-sm">Selection Simulation</h3>
+
+          <div className="mb-3 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm" htmlFor="selection-rows">
+                Selected rows:
+              </label>
+              <Input
+                className="w-20"
+                id="selection-rows"
+                max={config.rows}
+                min={1}
+                type="number"
+                value={selectionSimulation.rows}
+                onChange={(e) =>
+                  setSelectionSimulation((current) => ({
+                    ...current,
+                    rows: Math.max(
+                      1,
+                      Math.min(config.rows, Number(e.target.value) || 1)
+                    ),
+                  }))
+                }
+              />
+            </div>
+            <span className="text-muted-foreground">x</span>
+            <div className="flex items-center gap-2">
+              <label className="text-sm" htmlFor="selection-cols">
+                Selected cols:
+              </label>
+              <Input
+                className="w-20"
+                id="selection-cols"
+                max={config.cols}
+                min={1}
+                type="number"
+                value={selectionSimulation.cols}
+                onChange={(e) =>
+                  setSelectionSimulation((current) => ({
+                    ...current,
+                    cols: Math.max(
+                      1,
+                      Math.min(config.cols, Number(e.target.value) || 1)
+                    ),
+                  }))
+                }
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm" htmlFor="selection-delay">
+                Added delay:
+              </label>
+              <Input
+                className="w-24"
+                id="selection-delay"
+                max={2000}
+                min={0}
+                step={1}
+                type="number"
+                value={selectionSimulation.delayMs}
+                onChange={(e) =>
+                  setSelectionSimulation((current) => ({
+                    ...current,
+                    delayMs: Math.max(
+                      0,
+                      Math.min(2000, Number(e.target.value) || 0)
+                    ),
+                  }))
+                }
+              />
+              <span className="text-muted-foreground text-sm">ms</span>
+            </div>
+            <span className="text-muted-foreground text-sm">
+              = {selectedRows * selectedCols} selected cells
+            </span>
+          </div>
+
+          <p className="text-muted-foreground text-sm">
+            Delay is injected only on this page, right before paint, when the
+            table&apos;s multi-cell selection changes.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
           <Button onClick={handleGenerate}>Generate Table</Button>
           <Button
             disabled={isBenchmarking}
@@ -612,6 +937,22 @@ export default function TablePerfPage() {
               ? 'Measuring...'
               : 'Test Input Latency (50 samples)'}
           </Button>
+          <Button
+            disabled={isMeasuringSelection}
+            variant="secondary"
+            onClick={simulateTableSelection}
+          >
+            Simulate Table Selection
+          </Button>
+          <Button
+            disabled={isMeasuringSelection}
+            variant="outline"
+            onClick={measureTableSelectionLatency}
+          >
+            {isMeasuringSelection
+              ? 'Measuring...'
+              : 'Test Selection Latency (30 samples)'}
+          </Button>
         </div>
       </div>
 
@@ -621,6 +962,7 @@ export default function TablePerfPage() {
           benchmarkResult={benchmarkResult}
           inputLatencyResult={inputLatencyResult}
           metrics={metrics}
+          selectionLatencyResult={selectionLatencyResult}
         />
 
         {/* Editor */}
@@ -632,6 +974,7 @@ export default function TablePerfPage() {
           >
             <TablePerfEditor
               editorRef={plateEditorRef}
+              selectionSimulationDelayMs={selectionSimulation.delayMs}
               tableValue={tableValue}
             />
           </Profiler>
@@ -644,9 +987,11 @@ export default function TablePerfPage() {
 // Editor component (separated for profiling)
 function TablePerfEditor({
   editorRef,
+  selectionSimulationDelayMs,
   tableValue,
 }: {
   editorRef?: RefObject<PlateEditor | null>;
+  selectionSimulationDelayMs: number;
   tableValue: TTableElement;
 }) {
   const editor = usePlateEditor({
@@ -658,9 +1003,28 @@ function TablePerfEditor({
 
   return (
     <Plate editor={editor}>
+      <SelectionCostSimulator delayMs={selectionSimulationDelayMs} />
       <EditorContainer className="h-[500px] overflow-auto">
         <Editor variant="none" className="p-4" />
       </EditorContainer>
     </Plate>
   );
+}
+
+function SelectionCostSimulator({ delayMs }: { delayMs: number }) {
+  const selectedCellIds = useEditorSelector(
+    (editor) => editor.getApi(TablePlugin).table.getSelectedCellIds(),
+    [],
+    {
+      equalityFn: hasSameIds,
+    }
+  );
+
+  useLayoutEffect(() => {
+    if (!selectedCellIds?.length || delayMs <= 0) return;
+
+    blockMainThread(delayMs);
+  }, [delayMs, selectedCellIds]);
+
+  return null;
 }

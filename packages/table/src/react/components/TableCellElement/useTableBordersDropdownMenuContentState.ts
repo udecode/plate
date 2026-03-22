@@ -1,11 +1,6 @@
 import type { TTableElement } from 'platejs';
 
-import {
-  useEditorPlugin,
-  useEditorSelector,
-  useElement,
-  usePluginOption,
-} from 'platejs/react';
+import { useEditorPlugin, useEditorSelector, useElement } from 'platejs/react';
 
 import {
   type TableBorderStates,
@@ -21,17 +16,13 @@ export const useTableBordersDropdownMenuContentState = ({
 } = {}) => {
   const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement() ?? el;
-  const selectedCells = usePluginOption(TablePlugin, 'selectedCells');
   const borderStates = useEditorSelector<TableBorderStates>(
-    (editor) => getSelectedCellsBorders(editor, selectedCells),
-    [selectedCells, element]
+    (editor) => getSelectedCellsBorders(editor),
+    [element]
   );
 
   return {
-    getOnSelectTableBorder: getOnSelectTableBorderFactory(
-      editor,
-      selectedCells
-    ),
+    getOnSelectTableBorder: getOnSelectTableBorderFactory(editor),
     hasBottomBorder: borderStates.bottom,
     hasLeftBorder: borderStates.left,
     hasNoBorders: borderStates.none,
