@@ -1,5 +1,7 @@
 # @udecode/plate-serializer-csv
 
+## 52.3.6
+
 ## 52.0.11
 
 ### Patch Changes
