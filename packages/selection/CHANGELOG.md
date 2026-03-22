@@ -1,5 +1,12 @@
 # @platejs/selection
 
+## 52.3.6
+
+### Patch Changes
+
+- [#4876](https://github.com/udecode/plate/pull/4876) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed selection trigger evaluation so multiple configured triggers are checked correctly instead of stopping after the first one.
+
 ## 52.0.16
 
 ### Patch Changes
