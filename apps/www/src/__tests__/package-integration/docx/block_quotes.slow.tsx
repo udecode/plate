@@ -39,7 +39,7 @@ describe(getDocxTestName(name), () => {
         <hp indent={2}>
           <htext />
         </hp>
-        <hp>And back to the normal {` `}style.</hp>
+        <hp>{'And back to the normal  style.'}</hp>
       </editor>
     ),
     filename: name,

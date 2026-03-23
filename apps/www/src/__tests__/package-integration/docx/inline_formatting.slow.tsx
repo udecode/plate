@@ -47,7 +47,7 @@ describe(getDocxTestName(name), () => {
           <htext />
         </hp>
         <hp>
-          A line{`\n`}
+          A line{'\n'}
           break.
         </hp>
         <hp>

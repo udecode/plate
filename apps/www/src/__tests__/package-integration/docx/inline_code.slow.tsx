@@ -12,12 +12,8 @@ describe(getDocxTestName(name), () => {
     expected: (
       <editor>
         <hp>
-          This is an example of{' '}
-          <htext code>
-            inline {` `}
-            {` `}code
-          </htext>{' '}
-          with three spaces.
+          This is an example of <htext code>{'inline   code'}</htext> with three
+          spaces.
         </hp>
       </editor>
     ),

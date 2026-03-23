@@ -32,7 +32,7 @@ describe(getDocxTestName(name), () => {
           Above the line is <htext superscript>superscript</htext> and below the
           line is <htext subscript>subscript</htext>.
         </hp>
-        <hp>A line{`\n`}break.</hp>
+        <hp>A line{'\n'}break.</hp>
       </editor>
     ),
     filename: name,

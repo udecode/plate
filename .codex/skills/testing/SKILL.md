@@ -14,7 +14,7 @@ Push the suite toward three layers only:
 Hard constraints:
 
 - Bun-first and speed-first. `bun run test` is the default iterative workflow.
-- Bare `bun test` is the full end-of-task and CI run. Do not use it as the default inner-loop command.
+- `pnpm test:all` is the full end-of-task and CI run. Do not use it as the default inner-loop command.
 - Keep the default iterative suite fast.
 - No browser or e2e coverage in this program.
 - Coverage is hotspot telemetry, not a vanity target. Do not chase repo-wide numbers blindly.
@@ -44,7 +44,7 @@ Hard constraints:
 
 - Assert public behavior through editor APIs, plugin APIs, hooks, transforms, or rendered output. Do not assert private state, call order, or implementation detail when public behavior already proves the contract.
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
-- Use `*.spec.ts[x]` for all tests.
+- Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
 - Keep helpers package-local. Never import a helper from another spec file.
 - No spec should import another spec.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
@@ -54,7 +54,8 @@ Hard constraints:
 - No fake smoke tests.
 - No app-registry imports in package tests.
 - Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
-- When adding tests, measure fast-suite outliers with `bun run test:slowest`. If a fast-suite spec repeatedly crosses the thresholds in `tooling/config/test-suites.mjs`, move it into a slow bucket or document why it stays fast.
+- When adding tests, inspect fast-suite outliers with `bun run test:profile`. `bun run test:slowest` is the hard gate. If a fast-suite spec crosses the thresholds in `tooling/config/test-suites.mjs`, rename it to `*.slow.ts[x]`.
+- Treat known third-party resource logs and serializer fallback warnings as test noise. Suppress them narrowly in the shared Bun setup at `tooling/config/bunTestSetup.ts`, not by changing runtime code or sprinkling per-spec console mocks.
 
 ## Seam Selection
 
@@ -114,7 +115,7 @@ Hard constraints:
   - cross-spec imports
   - placeholder titles
   - non-allowlisted `createPlateEditor` seams
-- Use `bun run test:slowest` for the fast suite and `bun run test:slowest:all` for the whole repo when deciding whether a new spec belongs in `TEST_SLOW_BUCKETS`.
+- Use `bun run test:profile` for the fast suite when deciding whether a spec belongs in the slow lane. `pnpm test:slowest` and `pnpm check` enforce those thresholds.
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
 - For plugin-composition hotspots, extract helpers before adding more inline setup.
 - Adapt upstream invariants when local runtime semantics differ. Keep the invariant, rewrite the fixture around the real public contract.
@@ -218,8 +219,8 @@ Keep `__tests__/` when it holds:
 ## Quick Reference
 
 - Start with the smallest seam that proves the contract: `createEditor` -> `createSlateEditor` -> `createPlateEditor`.
-- Use `bun run test` for the fast default loop. Use bare `bun test` for the full suite.
-- Use `bun run test:slowest` to police the fast loop. Use `bun run test:slowest:all` when you need the whole-suite outliers.
+- Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
+- Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
 - Use Bun globals. Do not import them from `bun:test`.
 - Keep specs beside the implementation. Use `__tests__/` only for helpers, fixtures, or intentional split or integration suites.
 - Use plain objects for simple state. Use JSX hyperscript only when tree or selection shape is the contract.
@@ -227,4 +228,8 @@ Keep `__tests__/` when it holds:
 - Delete skips, commented tests, dead smoke tests, and stale snapshot files after broad title renames.
 - Package tests must stay package-local. No app registries, no app kits, no cross-spec imports.
 - For package-only coverage decisions, trust `lcov`, not Bun’s broad text summary.
+- Keep exactly two lanes:
+  - fast lane: `*.spec.ts[x]`, run by `pnpm test`
+  - slow lane: `*.slow.ts[x]`, run by `pnpm test:slow`
+- Use `pnpm test:all` for the full repo test run instead of relying on bare `bun test`.
 

@@ -20,7 +20,7 @@ export const replacePlaceholders = (
     prompt?: string;
   } = {}
 ): string => {
-  let result = text.replace('{prompt}', prompt || '');
+  let result = text.split('{prompt}').join(prompt || '');
 
   const placeholders: Record<string, MarkdownType> = {
     '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
@@ -34,7 +34,7 @@ export const replacePlaceholders = (
 
   Object.entries(placeholders).forEach(([placeholder, type]) => {
     if (result.includes(placeholder)) {
-      result = result.replace(placeholder, getMarkdown(editor, { type }));
+      result = result.split(placeholder).join(getMarkdown(editor, { type }));
     }
   });
 

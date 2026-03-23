@@ -29,7 +29,9 @@ export const getSuggestionUserIdByKey = (key?: string | null) =>
   isDefined(key) ? key.split(`${KEYS.suggestion}_`)[1] : null;
 
 export const getSuggestionUserIds = (node: TNode) =>
-  getSuggestionKeys(node).map((key) => getSuggestionUserIdByKey(key) as string);
+  getSuggestionKeys(node)
+    .map((key) => (node as any)[key]?.userId)
+    .filter(isDefined);
 
 export const getSuggestionUserId = (node: TNode) =>
   getSuggestionUserIds(node)[0];

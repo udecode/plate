@@ -44,33 +44,35 @@ export const findSuggestionProps = (
         at: nextPoint,
         isText: true,
       }) as NodeEntry<TSuggestionText> | undefined;
+    }
 
-      if (!entry) {
-        const prevPoint = editor.api.before(start);
+    if (!entry) {
+      const prevPoint = editor.api.before(start);
 
-        if (prevPoint) {
-          entry = api.suggestion.node({
-            at: prevPoint,
-            isText: true,
-          }) as NodeEntry<TSuggestionText> | undefined;
-        }
-        // <p>111111<insert_break></p>
-        // <p><cursor /></p>
-        // in this case we need to find the previous parent node
-        // TODO: test
-        if (!entry && editor.api.isStart(start, at)) {
-          const _at = prevPoint ?? at;
+      if (prevPoint) {
+        entry = api.suggestion.node({
+          at: prevPoint,
+          isText: true,
+        }) as NodeEntry<TSuggestionText> | undefined;
+      }
 
-          const lineBreak = editor.api.above<TSuggestionElement>({ at: _at });
+      const blockEntry = editor.api.block({ at: start });
 
-          const lineBreakData = lineBreak?.[0].suggestion;
+      // <p>111111<insert_break></p>
+      // <p><cursor /></p>
+      // in this case we need to find the previous parent node
+      if (!entry && blockEntry && editor.api.isStart(start, blockEntry[1])) {
+        const lineBreak = editor.api.above<TSuggestionElement>({
+          at: prevPoint ?? start,
+        });
 
-          if (lineBreakData?.isLineBreak) {
-            return {
-              id: lineBreakData?.id ?? nanoid(),
-              createdAt: lineBreakData?.createdAt ?? Date.now(),
-            };
-          }
+        const lineBreakData = lineBreak?.[0].suggestion;
+
+        if (lineBreakData?.isLineBreak) {
+          return {
+            id: lineBreakData.id ?? nanoid(),
+            createdAt: lineBreakData.createdAt ?? Date.now(),
+          };
         }
       }
     }

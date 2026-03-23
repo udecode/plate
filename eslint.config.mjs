@@ -7,6 +7,7 @@ export default defineConfig([
     ignores: [
       '**/.pnpm-store/**',
       '**/*.spec.*',
+      '**/*.slow.*',
       '**/node_modules/**',
       '**/dist/**',
       '**/.next/**',

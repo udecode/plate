@@ -21,13 +21,15 @@ export const withColumn: OverrideEditor = ({
       ) {
         const node = n as TColumnGroupElement;
 
-        // If the first child is a p, unwrap it
+        // If the group only wraps a paragraph, keep the paragraph and drop the group.
         const firstChild = node.children[0];
         if (
           node.children.length === 1 &&
           firstChild.type === editor.getType(KEYS.p)
         ) {
-          editor.tf.unwrapNodes({ at: PathApi.child(path, 0) });
+          editor.tf.unwrapNodes({ at: path });
+
+          return;
         }
 
         // If no columns found, unwrap the column group
@@ -36,7 +38,7 @@ export const withColumn: OverrideEditor = ({
             (child) => ElementApi.isElement(child) && child.type === type
           )
         ) {
-          editor.tf.removeNodes({ at: path });
+          editor.tf.unwrapNodes({ at: path });
 
           return;
         }

@@ -5,7 +5,6 @@ import { spawnSync } from 'node:child_process';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
-  FAST_TEST_EXCLUDE_PATTERNS,
   TEST_FILE_PATTERNS,
   TEST_IGNORE_PATTERNS,
 } from '../config/test-suites.mjs';
@@ -64,7 +63,7 @@ for (let i = 0; i < rawArgs.length; i++) {
 
 const allFastFiles = globSync(TEST_FILE_PATTERNS, {
   cwd: process.cwd(),
-  ignore: [...TEST_IGNORE_PATTERNS, ...FAST_TEST_EXCLUDE_PATTERNS],
+  ignore: TEST_IGNORE_PATTERNS,
   onlyFiles: true,
 }).sort();
 
@@ -109,7 +108,7 @@ const selectedFiles =
 
 if (selectedFiles.length === 0) {
   console.error(
-    'No fast-suite tests matched. Use `pnpm test:slow` for `*.slow.*` lanes or `bun test` for discovered slow specs.'
+    'No fast-suite tests matched. Use `pnpm test:slow` for `*.slow.*` lanes.'
   );
   process.exit(1);
 }

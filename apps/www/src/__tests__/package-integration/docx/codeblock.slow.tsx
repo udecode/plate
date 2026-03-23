@@ -14,26 +14,8 @@ describe(getDocxTestName(name), () => {
         <hp>This is some code:</hp>
         <hcodeblock>
           <hcodeline>readDocx :: ReaderOptions</hcodeline>
-          <hcodeline>
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `} -{'>'} B.ByteString
-          </hcodeline>
-          <hcodeline>
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `}
-            {` `} -{'>'} Pandoc
-          </hcodeline>
+          <hcodeline>{'         -> B.ByteString'}</hcodeline>
+          <hcodeline>{'         -> Pandoc'}</hcodeline>
         </hcodeblock>
         <hp>from the beginning of the docx reader.</hp>
       </editor>

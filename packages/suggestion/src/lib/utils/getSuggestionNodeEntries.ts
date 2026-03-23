@@ -6,6 +6,8 @@ import {
   combineMatchOptions,
 } from 'platejs';
 
+import { getSuggestionKey } from './getSuggestionKeys';
+
 export const getSuggestionNodeEntries = <E extends SlateEditor>(
   editor: E,
   suggestionId: string,
@@ -16,7 +18,7 @@ export const getSuggestionNodeEntries = <E extends SlateEditor>(
     ...options,
     match: combineMatchOptions(
       editor,
-      (n) => n.suggestionId === suggestionId,
+      (n) => !!(n as any)[getSuggestionKey(suggestionId)],
       options
     ),
   });
