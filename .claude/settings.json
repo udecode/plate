@@ -37,7 +37,6 @@
   },
   "enabledPlugins": {
     "debug@dotai": true,
-    "dig@dotai": true,
     "dotai@dotai": true,
     "notification@dotai": true,
     "test@dotai": true,

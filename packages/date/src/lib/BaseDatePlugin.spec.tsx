@@ -11,7 +11,7 @@ describe('BaseDatePlugin', () => {
   it('configure date as void inline element', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    });
+    } as any);
 
     const plugin = editor.getPlugin({ key: KEYS.date });
 
@@ -23,7 +23,7 @@ describe('BaseDatePlugin', () => {
   it('mark date elements as not selectable', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    });
+    } as any);
 
     const plugin = editor.getPlugin({ key: KEYS.date });
 
@@ -33,9 +33,9 @@ describe('BaseDatePlugin', () => {
   it('provide insert.date transform', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    });
+    } as any);
 
-    expect(editor.tf.insert.date).toBeDefined();
-    expect(typeof editor.tf.insert.date).toBe('function');
+    expect((editor.tf as any).insert.date).toBeDefined();
+    expect(typeof (editor.tf as any).insert.date).toBe('function');
   });
 });

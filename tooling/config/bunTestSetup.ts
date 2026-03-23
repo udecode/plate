@@ -11,6 +11,23 @@ import { TextEncoder } from 'node:util';
 // Register DOM globals FIRST - this must happen before any code that uses document/window
 GlobalRegistrator.register();
 
+if (global.document && !global.document.doctype) {
+  const doctype = global.document.implementation.createDocumentType(
+    'html',
+    '',
+    ''
+  );
+
+  global.document.insertBefore(doctype, global.document.documentElement);
+}
+
+if (global.document?.compatMode !== 'CSS1Compat') {
+  Object.defineProperty(global.document, 'compatMode', {
+    configurable: true,
+    value: 'CSS1Compat',
+  });
+}
+
 // Ensure document.body exists
 if (global.document && !global.document.body) {
   const body = global.document.createElement('body');

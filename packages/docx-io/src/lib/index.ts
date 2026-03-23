@@ -7,4 +7,3 @@ export * from './html-to-docx';
 export * from './importDocx';
 export * from './preprocessMammothHtml';
 export * from './types';
-export * from './html-to-docx/index';

@@ -30,7 +30,7 @@ const plugins = [
     options: {
       trigger: ['@', '#'],
       triggerPreviousCharPattern: /^$|^[\s"']$/,
-      createComboboxInput: (trigger) => ({
+      createComboboxInput: (trigger: string) => ({
         children: [{ text: '' }],
         trigger,
         type: 'mention_input',
@@ -59,7 +59,7 @@ const createEditorWithCombobox = (chidren: any) => {
     plugins,
     selection: editor.selection,
     value: editor.children,
-  });
+  } as any);
 };
 
 jsxt;

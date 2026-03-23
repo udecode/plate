@@ -157,7 +157,7 @@ describe('decorateFindReplace', () => {
   it('is wired into FindReplacePlugin.decorate', () => {
     const editor = createSlateEditor({
       plugins: [FindReplacePlugin],
-    });
+    } as any);
 
     const plugin = editor.getPlugin(FindReplacePlugin);
 

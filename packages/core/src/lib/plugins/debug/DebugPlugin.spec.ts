@@ -83,10 +83,15 @@ describe('DebugPlugin', () => {
   });
 
   it('does not throw errors when throwErrors is false', () => {
+    const errorLogger = mock();
+
     const editor = createSlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
+            logger: {
+              error: errorLogger,
+            },
             throwErrors: false,
           },
         }),
@@ -96,6 +101,11 @@ describe('DebugPlugin', () => {
     expect(() => {
       editor.api.debug.error('Test error', 'TEST_ERROR');
     }).not.toThrow();
+    expect(errorLogger).toHaveBeenCalledWith(
+      'Test error',
+      'TEST_ERROR',
+      undefined
+    );
   });
 
   it('does not log in production mode', () => {

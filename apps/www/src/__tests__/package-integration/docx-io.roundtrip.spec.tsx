@@ -25,10 +25,7 @@ const createTestEditor = (value?: Value) =>
   });
 
 const readDocxFixture = (filename: string): Buffer => {
-  const docxTestDir = path.resolve(
-    __dirname,
-    '../../../../../packages/docx/src/lib/__tests__'
-  );
+  const docxTestDir = path.resolve(__dirname, './docx');
 
   return fs.readFileSync(path.join(docxTestDir, `${filename}.docx`));
 };

@@ -8,6 +8,28 @@ import { BaseImagePlugin } from './BaseImagePlugin';
 jsxt;
 
 describe('withImageUpload', () => {
+  let warnSpy: ReturnType<typeof spyOn>;
+
+  afterEach(() => {
+    warnSpy?.mockRestore();
+  });
+
+  const suppressInsertDataOverrideWarning = () => {
+    const originalWarn = console.warn;
+
+    warnSpy = spyOn(console, 'warn').mockImplementation((message, ...args) => {
+      if (
+        typeof message === 'string' &&
+        message.includes('[OVERRIDE_MISSING]') &&
+        message.includes('editor.insertData()')
+      ) {
+        return;
+      }
+
+      originalWarn(message, ...args);
+    });
+  };
+
   describe('when inserting a png image', () => {
     const input = (
       <editor>
@@ -22,6 +44,8 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('ignores image files without changing the editor', () => {
+      suppressInsertDataOverrideWarning();
+
       const editor = createSlateEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,
@@ -56,6 +80,8 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('falls back to the default insertData behavior', () => {
+      suppressInsertDataOverrideWarning();
+
       const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
         <fragment>image.png</fragment>
       );
@@ -91,6 +117,8 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('ignores non-image files without changing the editor', () => {
+      suppressInsertDataOverrideWarning();
+
       const editor = createSlateEditor({
         plugins: [BaseImagePlugin],
         selection: input.selection,

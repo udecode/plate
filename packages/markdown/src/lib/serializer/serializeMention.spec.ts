@@ -104,7 +104,7 @@ describe('serializeMd - mention', () => {
     const editor = createTestEditor([BaseMentionPlugin]);
 
     const originalMarkdown = 'Hello [Jane Smith](mention:jane_smith) and @bob!';
-    const value = editor.api.markdown.deserialize(originalMarkdown);
+    const value = (editor.api as any).markdown.deserialize(originalMarkdown);
     editor.children = value;
     const serializedMarkdown = serializeMd(editor);
 

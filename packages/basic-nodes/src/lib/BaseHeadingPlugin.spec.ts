@@ -7,7 +7,7 @@ describe('BaseHeadingPlugin', () => {
     it('creates plugins for all 6 heading levels', () => {
       const editor = createSlateEditor({
         plugins: [BaseHeadingPlugin],
-      });
+      } as any);
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(6);
@@ -31,7 +31,7 @@ describe('BaseHeadingPlugin', () => {
             options: { levels: [1, 3, 5] },
           }),
         ],
-      });
+      } as any);
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(3);
@@ -52,7 +52,7 @@ describe('BaseHeadingPlugin', () => {
             options: { levels: 2 },
           }),
         ],
-      });
+      } as any);
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
       expect(headingPlugin.plugins).toHaveLength(2);
@@ -63,7 +63,7 @@ describe('BaseHeadingPlugin', () => {
     it('preserves heading element metadata on nested plugins', () => {
       const editor = createSlateEditor({
         plugins: [BaseHeadingPlugin],
-      });
+      } as any);
 
       const headingPlugin = editor.getPlugin(BaseHeadingPlugin);
 

@@ -7,8 +7,10 @@
  * @packageDocumentation
  */
 
-import HTMLtoDOCX from './html-to-docx/index';
-import type { DocumentOptions, Margins } from './html-to-docx/index';
+import JSZip from 'jszip';
+
+import addFilesToContainer from './internal/html-to-docx';
+import type { DocumentOptions, Margins } from './internal/types';
 
 // Re-export types from the library
 export type {
@@ -18,7 +20,7 @@ export type {
   NumberingOptions,
   PageSize,
   TableOptions,
-} from './html-to-docx/index';
+} from './internal/types';
 
 // Backwards compatibility aliases
 export type DocumentMargins = Margins;
@@ -53,17 +55,11 @@ export async function htmlToDocxBlob(
 ): Promise<Blob> {
   // Handle empty HTML - the underlying library crashes on empty string
   const safeHtml = html.trim() === '' ? '<p></p>' : html;
+  const zip = new JSZip();
+  const resultZip = await addFilesToContainer(zip, safeHtml, options, null);
+  const buffer = await resultZip.generateAsync({ type: 'uint8array' });
 
-  const result = await HTMLtoDOCX(safeHtml, null, options, null);
-
-  // In browser environment, result is a Blob
-  if (result instanceof Blob) {
-    return result;
-  }
-
-  // In Node.js/Bun environment, result is a Buffer - convert to Blob
-  // Buffer.isBuffer is the type-safe way to check for Buffer
-  return new Blob([new Uint8Array(result)], {
+  return new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 }
