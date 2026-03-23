@@ -15,7 +15,6 @@ import {
   type PlateElementProps,
   type PlateLeafProps,
   type PlateProps,
-  createPlateEditor,
   Plate,
   PlateContent,
   PlateElement,
@@ -26,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
+import { useDebounce } from '@/registry/hooks/use-debounce';
 
 const InlinePlugin = createPlatePlugin({
   key: 'inline',
@@ -38,9 +38,9 @@ const InlineVoidPlugin = createPlatePlugin({
 });
 
 const diffOperationColors: Record<DiffOperation['type'], string> = {
-  delete: 'bg-red-200',
-  insert: 'bg-green-200',
-  update: 'bg-blue-200',
+  delete: 'bg-red-200/70 dark:bg-red-500/15',
+  insert: 'bg-green-200/70 dark:bg-green-500/15',
+  update: 'bg-sky-200/70 dark:bg-sky-500/15',
 };
 
 const describeUpdate = ({ newProperties, properties }: DiffUpdate) => {
@@ -125,24 +125,14 @@ const DiffPlugin = toPlatePlugin(
 
           const diffOperation = element.diffOperation as DiffOperation;
 
-          const label = (
-            {
-              delete: 'deletion',
-              insert: 'insertion',
-              update: 'update',
-            } as any
-          )[diffOperation.type];
+          if (diffOperation.type === 'update') return children;
 
+          const label = diffOperation.type === 'delete' ? 'deletion' : 'insertion';
           const Component = editor.api.isInline(element) ? 'span' : 'div';
 
           return (
             <Component
               className={diffOperationColors[diffOperation.type]}
-              title={
-                diffOperation.type === 'update'
-                  ? describeUpdate(diffOperation)
-                  : undefined
-              }
               aria-label={label}
             >
               {children}
@@ -234,16 +224,18 @@ type DiffProps = {
 };
 
 function Diff({ current, previous }: DiffProps) {
-  const diffValue = React.useMemo(() => {
-    const editor = createPlateEditor({
-      plugins,
-    });
+  const inlineEditor = usePlateEditor({ plugins });
 
-    return computeDiff(previous, cloneDeep(current), {
-      isInline: editor.api.isInline,
-      lineBreakChar: '¶',
-    }) as Value;
-  }, [previous, current]);
+  const diffValue = React.useMemo(() => {
+    try {
+      return computeDiff(previous, cloneDeep(current), {
+        isInline: inlineEditor.api.isInline,
+        lineBreakChar: '¶',
+      }) as Value;
+    } catch {
+      return previous;
+    }
+  }, [previous, current, inlineEditor]);
 
   const editor = usePlateEditor(
     {
@@ -253,21 +245,13 @@ function Diff({ current, previous }: DiffProps) {
     [diffValue]
   );
 
-  return (
-    <>
-      <VersionHistoryPlate
-        key={JSON.stringify(diffValue)}
-        readOnly
-        editor={editor}
-      />
-
-      {/* <pre>{JSON.stringify(diffValue, null, 2)}</pre> */}
-    </>
-  );
+  return <VersionHistoryPlate readOnly editor={editor} />;
 }
 
 export default function VersionHistoryDemo() {
-  const [revisions, setRevisions] = React.useState<Value[]>([initialValue]);
+  const [revisions, setRevisions] = React.useState<Value[]>(() => [
+    cloneDeep(initialValue),
+  ]);
   const [selectedRevisionIndex, setSelectedRevisionIndex] =
     React.useState<number>(0);
   const [value, setValue] = React.useState<Value>(initialValue);
@@ -277,8 +261,12 @@ export default function VersionHistoryDemo() {
     [revisions, selectedRevisionIndex]
   );
 
+  const debouncedValue = useDebounce(value, 300);
+
   const saveRevision = () => {
-    setRevisions([...revisions, value]);
+    const next = [...revisions, cloneDeep(value)];
+    setRevisions(next);
+    setSelectedRevisionIndex(next.length - 1);
   };
 
   const editor = usePlateEditor({
@@ -289,7 +277,7 @@ export default function VersionHistoryDemo() {
   const editorRevision = usePlateEditor(
     {
       plugins,
-      value: selectedRevisionValue,
+      value: cloneDeep(selectedRevisionValue),
     },
     [selectedRevisionValue]
   );
@@ -299,7 +287,7 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        onChange={({ value }) => setValue(value)}
+        onValueChange={({ value }) => setValue(value)}
         editor={editor}
       />
 
@@ -307,6 +295,7 @@ export default function VersionHistoryDemo() {
         Revision to compare:
         <select
           className="rounded-md border p-1"
+          value={selectedRevisionIndex}
           onChange={(e) => setSelectedRevisionIndex(Number(e.target.value))}
         >
           {revisions.map((_, i) => (
@@ -329,7 +318,7 @@ export default function VersionHistoryDemo() {
 
         <div>
           <h2>Diff</h2>
-          <Diff current={value} previous={selectedRevisionValue} />
+          <Diff current={debouncedValue} previous={selectedRevisionValue} />
         </div>
       </div>
     </div>

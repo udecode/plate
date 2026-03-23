@@ -530,7 +530,9 @@ export function ColorDropdownMenuItems({
             key={name ?? value}
             value={value}
             isBrightColor={isBrightColor}
-            isSelected={!!color && normalizeColor(color) === normalizeColor(value)}
+            isSelected={
+              !!color && normalizeColor(color) === normalizeColor(value)
+            }
             updateColor={updateColor}
           />
         ))}
