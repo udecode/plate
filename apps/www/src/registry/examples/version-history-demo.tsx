@@ -127,7 +127,8 @@ const DiffPlugin = toPlatePlugin(
 
           if (diffOperation.type === 'update') return children;
 
-          const label = diffOperation.type === 'delete' ? 'deletion' : 'insertion';
+          const label =
+            diffOperation.type === 'delete' ? 'deletion' : 'insertion';
           const Component = editor.api.isInline(element) ? 'span' : 'div';
 
           return (
