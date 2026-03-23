@@ -9,6 +9,7 @@ export * from './getLeftTableCell';
 export * from './getNextTableCell';
 export * from './getPreviousTableCell';
 export * from './getRowSpan';
+export * from './getSelectedCells';
 export * from './getSelectedCellsBorders';
 export * from './getSelectedCellsBoundingBox';
 export * from './getTableAbove';

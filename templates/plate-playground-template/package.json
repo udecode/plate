@@ -14,9 +14,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^3.0.66",
+    "@ai-sdk/gateway": "^3.0.77",
     "@ai-sdk/react": "3",
-    "@ariakit/react": "^0.4.23",
+    "@ariakit/react": "^0.4.24",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "^10.3.0",
     "@platejs/ai": "^52.3.1",
@@ -32,7 +32,7 @@
     "@platejs/date": "^52.0.11",
     "@platejs/dnd": "^52.0.11",
     "@platejs/docx": "^52.0.11",
-    "@platejs/docx-io": "^52.2.0",
+    "@platejs/docx-io": "^52.3.6",
     "@platejs/emoji": "^52.0.15",
     "@platejs/excalidraw": "^52.0.11",
     "@platejs/floating": "^52.0.11",
@@ -46,10 +46,10 @@
     "@platejs/media": "^52.0.11",
     "@platejs/mention": "^52.0.15",
     "@platejs/resizable": "^52.0.11",
-    "@platejs/selection": "^52.0.16",
+    "@platejs/selection": "^52.3.6",
     "@platejs/slash-command": "^52.0.15",
     "@platejs/suggestion": "^52.0.11",
-    "@platejs/table": "^52.0.11",
+    "@platejs/table": "^52.3.6",
     "@platejs/toc": "^52.0.11",
     "@platejs/toggle": "^52.0.11",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -75,7 +75,7 @@
     "lodash": "^4.17.23",
     "lowlight": "^3.3.0",
     "lucide-react": "^0.577.0",
-    "next": "16.1.7",
+    "next": "16.2.1",
     "pdf-lib": "^1.17.1",
     "platejs": "^52.3.4",
     "radix-ui": "^1.4.3",
@@ -99,20 +99,20 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.7",
-    "@tailwindcss/postcss": "4.2.1",
+    "@biomejs/biome": "2.4.8",
+    "@tailwindcss/postcss": "4.2.2",
     "@types/node": "^25.5.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/parser": "^8.57.1",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^10.0.3",
+    "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "7.0.1",
     "lefthook": "^2.1.4",
     "postcss": "^8.5.8",
-    "tailwindcss": "4.2.1",
+    "tailwindcss": "4.2.2",
     "typescript": "5.9.3",
-    "ultracite": "7.3.1"
+    "ultracite": "7.3.2"
   },
   "packageManager": "bun@1.3.3"
 }

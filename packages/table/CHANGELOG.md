@@ -1,5 +1,12 @@
 # @platejs/table
 
+## 52.3.6
+
+### Patch Changes
+
+- [#4872](https://github.com/udecode/plate/pull/4872) by [@felixfeng33](https://github.com/felixfeng33) –
+  - Reduce large-table selection latency by deriving reactive table selection from editor selectors, keeping selected-cell DOM sync at the table root, and avoiding plugin-store writes on every `set_selection`.
+
 ## 52.0.11
 
 ### Patch Changes

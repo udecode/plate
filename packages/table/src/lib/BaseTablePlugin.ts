@@ -18,9 +18,16 @@ import { mergeTableCells, splitTableCell } from './merge';
 import { normalizeInitialValueTable } from './normalizeInitialValueTable';
 import {
   getColSpan,
+  getSelectedCell,
+  getSelectedCellIds,
+  getSelectedCells,
+  getSelectedTableIds,
+  getSelectedTables,
   getRowSpan,
   getTableCellBorders,
   getTableCellSize,
+  isCellSelected,
+  isSelectingCell,
 } from './queries';
 import {
   deleteColumn,
@@ -114,9 +121,15 @@ export type TableConfig = PluginConfig<
   {
     /** @private Keeps Track of cell indices by id. */
     _cellIndices: Record<string, { col: number; row: number }>;
-    /** The currently selected cells. */
+    /** @private Keeps track of selected cell ids for cheap membership checks. */
+    _selectedCellIds: string[] | null | undefined;
+    /** @private Keeps track of selected table ids for cheap table checks. */
+    _selectedTableIds: string[] | null | undefined;
+    /** @private Forces selection-derived selectors to refresh. */
+    _selectionVersion: number;
+    /** Legacy selector key. Selected cells are derived from editor selection. */
     selectedCells: TElement[] | null;
-    /** The currently selected tables. */
+    /** Legacy selector key. Selected tables are derived from editor selection. */
     selectedTables: TElement[] | null;
     /** Disable expanding the table when inserting cells. */
     disableExpandOnInsert?: boolean;
@@ -156,9 +169,16 @@ export type TableConfig = PluginConfig<
     table: {
       getCellBorders: OmitFirst<typeof getTableCellBorders>;
       getCellSize: OmitFirst<typeof getTableCellSize>;
+      getSelectedCell: OmitFirst<typeof getSelectedCell>;
+      getSelectedCellIds: OmitFirst<typeof getSelectedCellIds>;
+      getSelectedCells: OmitFirst<typeof getSelectedCells>;
+      getSelectedTableIds: OmitFirst<typeof getSelectedTableIds>;
+      getSelectedTables: OmitFirst<typeof getSelectedTables>;
       getColSpan: typeof getColSpan;
       getRowSpan: typeof getRowSpan;
       getCellChildren: (cell: TTableCellElement) => Descendant[];
+      isCellSelected: OmitFirst<typeof isCellSelected>;
+      isSelectingCell: OmitFirst<typeof isSelectingCell>;
     };
   },
   {
@@ -179,6 +199,13 @@ export type TableConfig = PluginConfig<
   },
   {
     cellIndices?: (id: string) => CellIndices;
+    isCellSelected?: (id?: string | null) => boolean;
+    isSelectingCell?: () => boolean;
+    selectedCell?: (id?: string | null) => TElement | null;
+    selectedCellIds?: () => string[] | null;
+    selectedCells?: () => TElement[] | null;
+    selectedTableIds?: () => string[] | null;
+    selectedTables?: () => TElement[] | null;
   }
 >;
 
@@ -192,6 +219,9 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   normalizeInitialValue: normalizeInitialValueTable,
   options: {
     _cellIndices: {},
+    _selectedCellIds: undefined as string[] | null | undefined,
+    _selectedTableIds: undefined as string[] | null | undefined,
+    _selectionVersion: 0,
     disableMerge: false,
     minColumnWidth: 48,
     selectedCells: null as TElement[] | null,
@@ -206,8 +236,59 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   },
   plugins: [BaseTableRowPlugin, BaseTableCellPlugin, BaseTableCellHeaderPlugin],
 })
-  .extendSelectors<TableConfig['selectors']>(({ getOptions }) => ({
+  .extendSelectors<TableConfig['selectors']>(({ editor, getOptions }) => ({
     cellIndices: (id) => getOptions()._cellIndices[id],
+    isCellSelected: (id) => {
+      const selectedCellIds = getOptions()._selectedCellIds;
+
+      if (selectedCellIds !== undefined) {
+        return !!id && (selectedCellIds?.includes(id) ?? false);
+      }
+
+      return isCellSelected(editor, id);
+    },
+    isSelectingCell: () => {
+      const selectedCellIds = getOptions()._selectedCellIds;
+
+      if (selectedCellIds !== undefined) {
+        return !!selectedCellIds;
+      }
+
+      return isSelectingCell(editor);
+    },
+    selectedCell: (id) => {
+      void getOptions()._selectionVersion;
+
+      return getSelectedCell(editor, id);
+    },
+    selectedCellIds: () => {
+      const selectedCellIds = getOptions()._selectedCellIds;
+
+      if (selectedCellIds !== undefined) {
+        return selectedCellIds;
+      }
+
+      return getSelectedCellIds(editor);
+    },
+    selectedCells: () => {
+      void getOptions()._selectionVersion;
+
+      return getSelectedCells(editor);
+    },
+    selectedTableIds: () => {
+      const selectedTableIds = getOptions()._selectedTableIds;
+
+      if (selectedTableIds !== undefined) {
+        return selectedTableIds;
+      }
+
+      return getSelectedTableIds(editor);
+    },
+    selectedTables: () => {
+      void getOptions()._selectionVersion;
+
+      return getSelectedTables(editor);
+    },
   }))
   .extendEditorApi<TableConfig['api']>(({ editor }) => ({
     create: {
@@ -218,9 +299,16 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
     table: {
       getCellBorders: bindFirst(getTableCellBorders, editor),
       getCellSize: bindFirst(getTableCellSize, editor),
+      getSelectedCell: bindFirst(getSelectedCell, editor),
+      getSelectedCellIds: bindFirst(getSelectedCellIds, editor),
+      getSelectedCells: bindFirst(getSelectedCells, editor),
+      getSelectedTableIds: bindFirst(getSelectedTableIds, editor),
+      getSelectedTables: bindFirst(getSelectedTables, editor),
       getColSpan,
       getRowSpan,
       getCellChildren: (cell) => cell.children,
+      isCellSelected: bindFirst(isCellSelected, editor),
+      isSelectingCell: bindFirst(isSelectingCell, editor),
     },
   }))
   .extendEditorTransforms<TableConfig['transforms']>(({ editor }) => ({

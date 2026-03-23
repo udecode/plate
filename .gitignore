@@ -18,6 +18,7 @@ templates/my-app
 .history
 node_modules/
 report.*
+.claude/docs/plans/*coverage-priority-*.tsv
 
 # Dependency directories
 jspm_packages/
@@ -42,6 +43,7 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 .coverage-repo
+.coverage-repo*
 
 # nyc test coverage
 .nyc_output
