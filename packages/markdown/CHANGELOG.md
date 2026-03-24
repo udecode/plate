@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.3.7
+
+### Patch Changes
+
+- [#4885](https://github.com/udecode/plate/pull/4885) by [@hhhjin](https://github.com/hhhjin) – Fix extra blank lines in nested indented list serialization
+
 ## 52.3.5
 
 ### Patch Changes
