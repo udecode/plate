@@ -102,13 +102,9 @@ export function listToMdastTree(
           type: 'paragraph',
         },
       ],
+      spread: options.spread ?? false,
       type: 'listItem',
     } as any;
-
-    // Add spread property to list items when spread is true
-    if (options.spread) {
-      (listItem as any).spread = true;
-    }
 
     // Add checked property for todo lists
     if (node.listStyleType === 'todo' && node.checked !== undefined) {
@@ -182,13 +178,9 @@ function processListWithBlockIds(
           type: 'paragraph',
         },
       ],
+      spread: options.spread ?? false,
       type: 'listItem',
     } as any;
-
-    // Add spread property to list items when spread is true
-    if (options.spread) {
-      (listItem as any).spread = true;
-    }
 
     // Add checked property for todo lists
     if (node.listStyleType === 'todo' && node.checked !== undefined) {
