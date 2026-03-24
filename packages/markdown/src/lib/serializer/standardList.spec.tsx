@@ -82,6 +82,142 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
+  it('serialize nested indented list items without empty lines', () => {
+    const input = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected = '* parent\n  * child\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
+  it('serialize nested ordered indented list items without empty lines', () => {
+    const input = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected = '1. parent\n   1. child\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
+  it('serialize deeply nested indented list items without empty lines', () => {
+    const input = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'grandchild' }],
+        indent: 3,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected = '* parent\n  * child\n    * grandchild\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
+  it('serialize sibling nested indented lists when style changes at same indent', () => {
+    const input = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'ordered child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'bullet child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected = '* parent\n  1. ordered child\n  * bullet child\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
+  it('serialize nested indented list followed by sibling item without empty lines', () => {
+    const input = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'sibling' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected = '* parent\n  * child\n* sibling\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
   it('serialize lists with formatted text', () => {
     const input = (
       <fragment>

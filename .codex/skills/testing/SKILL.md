@@ -54,7 +54,7 @@ Hard constraints:
 - No fake smoke tests.
 - No app-registry imports in package tests.
 - Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
-- When adding tests, measure fast-suite outliers with `bun run test:slowest`. If a fast-suite spec repeatedly crosses the thresholds in `tooling/config/test-suites.mjs`, move it into a slow bucket or document why it stays fast.
+- When adding tests, inspect fast-suite outliers with `bun run test:profile`. `bun run test:slowest` is the hard gate. If a fast-suite spec crosses the thresholds in `tooling/config/test-suites.mjs`, move it into a slow bucket.
 
 ## Seam Selection
 
@@ -114,7 +114,7 @@ Hard constraints:
   - cross-spec imports
   - placeholder titles
   - non-allowlisted `createPlateEditor` seams
-- Use `bun run test:slowest` for the fast suite and `bun run test:slowest:all` for the whole repo when deciding whether a new spec belongs in `TEST_SLOW_BUCKETS`.
+- Use `bun run test:profile` for the fast suite when deciding whether a new spec belongs in `TEST_SLOW_BUCKETS`. `pnpm test:slowest` and `pnpm check` enforce those thresholds.
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
 - For plugin-composition hotspots, extract helpers before adding more inline setup.
 - Adapt upstream invariants when local runtime semantics differ. Keep the invariant, rewrite the fixture around the real public contract.
@@ -219,7 +219,7 @@ Keep `__tests__/` when it holds:
 
 - Start with the smallest seam that proves the contract: `createEditor` -> `createSlateEditor` -> `createPlateEditor`.
 - Use `bun run test` for the fast default loop. Use bare `bun test` for the full suite.
-- Use `bun run test:slowest` to police the fast loop. Use `bun run test:slowest:all` when you need the whole-suite outliers.
+- Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
 - Use Bun globals. Do not import them from `bun:test`.
 - Keep specs beside the implementation. Use `__tests__/` only for helpers, fixtures, or intentional split or integration suites.
 - Use plain objects for simple state. Use JSX hyperscript only when tree or selection shape is the contract.
