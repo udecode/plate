@@ -12,21 +12,21 @@
  * Tables use base version with juice CSS inlining.
  */
 
-import { CalloutElementDocx } from '@/registry/ui/callout-node-static';
+import { CalloutElementDocx } from '../../../ui/callout-node-static';
 import {
   CodeBlockElementDocx,
   CodeLineElementDocx,
   CodeSyntaxLeafDocx,
-} from '@/registry/ui/code-block-node-static';
+} from '../../../ui/code-block-node-static';
 import {
   ColumnElementDocx,
   ColumnGroupElementDocx,
-} from '@/registry/ui/column-node-static';
+} from '../../../ui/column-node-static';
 import {
   EquationElementDocx,
   InlineEquationElementDocx,
-} from '@/registry/ui/equation-node-static';
-import { TocElementDocx } from '@/registry/ui/toc-node-static';
+} from '../../../ui/equation-node-static';
+import { TocElementDocx } from '../../../ui/toc-node-static';
 import { DocxExportPlugin } from '@platejs/docx-io';
 import { KEYS } from 'platejs';
 

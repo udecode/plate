@@ -98,7 +98,7 @@
       "description": "Missing test coverage the reviewer identified",
       "items": { "type": "string" }
     }
-  },
+    },
 
   "_meta": {
     "confidence_thresholds": {

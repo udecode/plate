@@ -6,7 +6,7 @@ import type { SlateElementProps } from 'platejs/static';
 import { KEYS } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 export function MentionElementStatic(
   props: SlateElementProps<TMentionElement> & {

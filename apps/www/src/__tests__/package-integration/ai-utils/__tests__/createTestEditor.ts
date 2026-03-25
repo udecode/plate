@@ -30,7 +30,7 @@ import {
   BaseTableCellPlugin,
   BaseTableCellHeaderPlugin,
 } from '@platejs/table';
-import { MarkdownKit } from '@/registry/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '../../../../registry/components/editor/plugins/markdown-kit';
 
 const BasePlugins = [
   BaseParagraphPlugin,

@@ -11,8 +11,8 @@ import type { SlatePlugin, TNode, Value } from 'platejs';
 import { createSlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
-import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-kit';
+import { BaseEditorKit } from '../../registry/components/editor/editor-base-kit';
+import { DocxExportKit } from '../../registry/components/editor/plugins/docx-export-kit';
 
 jsx;
 

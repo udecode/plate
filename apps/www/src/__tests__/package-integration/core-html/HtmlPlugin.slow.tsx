@@ -5,6 +5,7 @@ import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { MediaEmbedPlugin } from '@platejs/media/react';
 import { jsxt } from '@platejs/test-utils';
+import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
 
 import {
   createSlateEditor,
@@ -286,7 +287,7 @@ describe('when inserting plain text', () => {
     </editor>
   ) as any;
 
-  let jsonParseSpy: ReturnType<typeof spyOn>;
+  let jsonParseSpy: Mock<typeof JSON.parse>;
 
   afterEach(() => {
     jsonParseSpy?.mockRestore();
