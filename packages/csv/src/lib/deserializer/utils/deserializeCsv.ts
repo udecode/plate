@@ -1,6 +1,6 @@
 import type { SlateEditor } from 'platejs';
 
-import { parse } from 'papaparse';
+import Papa from 'papaparse';
 import { KEYS } from 'platejs';
 
 import { type CsvParseOptions, CsvPlugin } from '../../CsvPlugin';
@@ -17,7 +17,7 @@ type CsvElementNode = {
 type CsvDescendantNode = CsvElementNode | CsvTextNode;
 
 const parseCsv = <T>(data: string, config?: CsvParseOptions) =>
-  parse<T>(data, {
+  Papa.parse<T>(data, {
     ...config,
     download: false,
     worker: false,

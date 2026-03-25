@@ -1,83 +1,191 @@
 ---
 name: document-review
-description: This skill should be used to refine brainstorm or plan documents before proceeding to the next workflow step. It applies when a brainstorm or plan document exists and the user wants to improve it.
+description: Review requirements or plan documents using parallel persona agents that surface role-specific issues. Use when a requirements document or plan document exists and the user wants to improve it.
 ---
 
 # Document Review
 
-Improve brainstorm or plan documents through structured review.
+Review requirements or plan documents through multi-persona analysis. Dispatches specialized reviewer agents in parallel, auto-fixes quality issues, and presents strategic questions for user decision.
 
-## Step 1: Get the Document
+## Phase 1: Get and Analyze Document
 
-**If a document path is provided:** Read it, then proceed to Step 2.
+**If a document path is provided:** Read it, then proceed.
 
-**If no document is specified:** Ask which document to review, or look for the most recent brainstorm/plan in `docs/brainstorms/` or `docs/plans/`.
+**If no document is specified:** Ask which document to review, or find the most recent in `docs/brainstorms/` or `docs/plans/` using a file-search/glob tool (e.g., Glob in Claude Code).
 
-## Step 2: Assess
+### Classify Document Type
 
-Read through the document and ask:
+After reading, classify the document:
+- **requirements** -- from `docs/brainstorms/`, focuses on what to build and why
+- **plan** -- from `docs/plans/`, focuses on how to build it with implementation details
 
-- What is unclear?
-- What is unnecessary?
-- What decision is being avoided?
-- What assumptions are unstated?
-- Where could scope accidentally expand?
+### Select Conditional Personas
 
-These questions surface issues. Don't fix yet—just note what you find.
+Analyze the document content to determine which conditional personas to activate. Check for these signals:
 
-## Step 3: Evaluate
+**product-lens** -- activate when the document contains:
+- User-facing features, user stories, or customer-focused language
+- Market claims, competitive positioning, or business justification
+- Scope decisions, prioritization language, or priority tiers with feature assignments
+- Requirements with user/customer/business outcome focus
 
-Score the document against these criteria:
+**design-lens** -- activate when the document contains:
+- UI/UX references, frontend components, or visual design language
+- User flows, wireframes, screen/page/view mentions
+- Interaction descriptions (forms, buttons, navigation, modals)
+- References to responsive behavior or accessibility
 
-| Criterion | What to Check |
-|-----------|---------------|
-| **Clarity** | Problem statement is clear, no vague language ("probably," "consider," "try to") |
-| **Completeness** | Required sections present, constraints stated, open questions flagged |
-| **Specificity** | Concrete enough for next step (brainstorm → can plan, plan → can implement) |
-| **YAGNI** | No hypothetical features, simplest approach chosen |
+**security-lens** -- activate when the document contains:
+- Auth/authorization mentions, login flows, session management
+- API endpoints exposed to external clients
+- Data handling, PII, payments, tokens, credentials, encryption
+- Third-party integrations with trust boundary implications
 
-If invoked within a workflow (after `/ce:brainstorm` or `/ce:plan`), also check:
-- **User intent fidelity** — Document reflects what was discussed, assumptions validated
+**scope-guardian** -- activate when the document contains:
+- Multiple priority tiers (P0/P1/P2, must-have/should-have/nice-to-have)
+- Large requirement count (>8 distinct requirements or implementation units)
+- Stretch goals, nice-to-haves, or "future work" sections
+- Scope boundary language that seems misaligned with stated goals
+- Goals that don't clearly connect to requirements
 
-## Step 4: Identify the Critical Improvement
+## Phase 2: Announce and Dispatch Personas
 
-Among everything found in Steps 2-3, does one issue stand out? If something would significantly improve the document's quality, this is the "must address" item. Highlight it prominently.
+### Announce the Review Team
 
-## Step 5: Make Changes
+Tell the user which personas will review and why. For conditional personas, include the justification:
 
-Present your findings, then:
+```
+Reviewing with:
+- coherence-reviewer (always-on)
+- feasibility-reviewer (always-on)
+- scope-guardian-reviewer -- plan has 12 requirements across 3 priority levels
+- security-lens-reviewer -- plan adds API endpoints with auth flow
+```
 
-1. **Auto-fix** minor issues (vague language, formatting) without asking
-2. **Ask approval** before substantive changes (restructuring, removing sections, changing meaning)
-3. **Update** the document inline—no separate files, no metadata sections
+### Build Agent List
 
-### Simplification Guidance
+Always include:
+- `compound-engineering:document-review:coherence-reviewer`
+- `compound-engineering:document-review:feasibility-reviewer`
 
-Simplification is purposeful removal of unnecessary complexity, not shortening for its own sake.
+Add activated conditional personas:
+- `compound-engineering:document-review:product-lens-reviewer`
+- `compound-engineering:document-review:design-lens-reviewer`
+- `compound-engineering:document-review:security-lens-reviewer`
+- `compound-engineering:document-review:scope-guardian-reviewer`
 
-**Simplify when:**
-- Content serves hypothetical future needs, not current ones
-- Sections repeat information already covered elsewhere
-- Detail exceeds what's needed to take the next step
-- Abstractions or structure add overhead without clarity
+### Dispatch
 
-**Don't simplify:**
-- Constraints or edge cases that affect implementation
-- Rationale that explains why alternatives were rejected
-- Open questions that need resolution
+Dispatch all agents in **parallel** using the platform's task/agent tool (e.g., Agent tool in Claude Code, spawn in Codex). Each agent receives the prompt built from the [subagent template](./references/subagent-template.md) with these variables filled:
 
-## Step 6: Offer Next Action
+| Variable | Value |
+|----------|-------|
+| `{persona_file}` | Full content of the agent's markdown file |
+| `{schema}` | Content of [findings-schema.json](./references/findings-schema.json) |
+| `{document_type}` | "requirements" or "plan" from Phase 1 classification |
+| `{document_path}` | Path to the document |
+| `{document_content}` | Full text of the document |
 
-After changes are complete, ask:
+Pass each agent the **full document** -- do not split into sections.
 
-1. **Refine again** - Another review pass
-2. **Review complete** - Document is ready
+**Error handling:** If an agent fails or times out, proceed with findings from agents that completed. Note the failed agent in the Coverage section. Do not block the entire review on a single agent failure.
 
-### Iteration Guidance
+**Dispatch limit:** Even at maximum (6 agents), use parallel dispatch. These are document reviewers with bounded scope reading a single document -- parallel is safe and fast.
 
-After 2 refinement passes, recommend completion—diminishing returns are likely. But if the user wants to continue, allow it.
+## Phase 3: Synthesize Findings
 
-Return control to the caller (workflow or user) after selection.
+Process findings from all agents through this pipeline. **Order matters** -- each step depends on the previous.
+
+### 3.1 Validate
+
+Check each agent's returned JSON against [findings-schema.json](./references/findings-schema.json):
+- Drop findings missing any required field defined in the schema
+- Drop findings with invalid enum values
+- Note the agent name for any malformed output in the Coverage section
+
+### 3.2 Confidence Gate
+
+Suppress findings below 0.50 confidence. Store them as residual concerns for potential promotion in step 3.4.
+
+### 3.3 Deduplicate
+
+Fingerprint each finding using `normalize(section) + normalize(title)`. Normalization: lowercase, strip punctuation, collapse whitespace.
+
+When fingerprints match across personas:
+- If the findings recommend **opposing actions** (e.g., one says cut, the other says keep), do not merge -- preserve both for contradiction resolution in 3.5
+- Otherwise merge: keep the highest severity, keep the highest confidence, union all evidence arrays, note all agreeing reviewers (e.g., "coherence, feasibility")
+
+### 3.4 Promote Residual Concerns
+
+Scan the residual concerns (findings suppressed in 3.2) for:
+- **Cross-persona corroboration**: A residual concern from Persona A overlaps with an above-threshold finding from Persona B. Promote at P2 with confidence 0.55-0.65.
+- **Concrete blocking risks**: A residual concern describes a specific, concrete risk that would block implementation. Promote at P2 with confidence 0.55.
+
+### 3.5 Resolve Contradictions
+
+When personas disagree on the same section:
+- Create a **combined finding** presenting both perspectives
+- Set `autofix_class: present`
+- Frame as a tradeoff, not a verdict
+
+Specific conflict patterns:
+- Coherence says "keep for consistency" + scope-guardian says "cut for simplicity" -> combined finding, let user decide
+- Feasibility says "this is impossible" + product-lens says "this is essential" -> P1 finding framed as a tradeoff
+- Multiple personas flag the same issue -> merge into single finding, note consensus, increase confidence
+
+### 3.6 Route by Autofix Class
+
+| Autofix Class | Route |
+|---------------|-------|
+| `auto` | Apply automatically -- local deterministic fix (terminology, formatting, cross-references) |
+| `present` | Present to user for judgment |
+
+Demote any `auto` finding that lacks a `suggested_fix` to `present` -- the orchestrator cannot apply a fix without concrete replacement text.
+
+### 3.7 Sort
+
+Sort findings for presentation: P0 -> P1 -> P2 -> P3, then by confidence (descending), then by document order (section position).
+
+## Phase 4: Apply and Present
+
+### Apply Auto-fixes
+
+Apply all `auto` findings to the document in a **single pass**:
+- Edit the document inline using the platform's edit tool
+- Track what was changed for the "Auto-fixes Applied" section
+- Do not ask for approval -- these are unambiguously correct (terminology fixes, formatting, cross-references)
+
+### Present Remaining Findings
+
+Present all other findings to the user using the format from [review-output-template.md](./references/review-output-template.md):
+- Group by severity (P0 -> P3)
+- Include the Coverage table showing which personas ran
+- Show auto-fixes that were applied
+- Include residual concerns and deferred questions if any
+
+Brief summary at the top: "Applied N auto-fixes. M findings to consider (X at P0/P1)."
+
+### Protected Artifacts
+
+During synthesis, discard any finding that recommends deleting or removing files in:
+- `docs/brainstorms/`
+- `docs/plans/`
+- `docs/solutions/`
+
+These are pipeline artifacts and must not be flagged for removal.
+
+## Phase 5: Next Action
+
+Use the platform's blocking question tool when available (AskUserQuestion in Claude Code, request_user_input in Codex, ask_user in Gemini). Otherwise present numbered options and wait for the user's reply.
+
+Offer:
+
+1. **Refine again** -- another review pass
+2. **Review complete** -- document is ready
+
+After 2 refinement passes, recommend completion -- diminishing returns are likely. But if the user wants to continue, allow it.
+
+Return "Review complete" as the terminal signal for callers.
 
 ## What NOT to Do
 
@@ -85,3 +193,8 @@ Return control to the caller (workflow or user) after selection.
 - Do not add new sections or requirements the user didn't discuss
 - Do not over-engineer or add complexity
 - Do not create separate review files or add metadata sections
+- Do not modify any of the 4 caller skills (ce-brainstorm, ce-plan, ce-plan-beta, deepen-plan-beta)
+
+## Iteration Guidance
+
+On subsequent passes, re-dispatch personas and re-synthesize. The auto-fix mechanism and confidence gating prevent the same findings from recurring once fixed. If findings are repetitive across passes, recommend completion.

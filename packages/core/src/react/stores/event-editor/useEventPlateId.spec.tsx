@@ -8,12 +8,20 @@ import { EventEditorStore } from '../../plugins/event-editor/EventEditorStore';
 import { useEventPlateId } from './useEventPlateId';
 
 describe('useEventPlateId', () => {
-  afterEach(() => {
+  const resetEventEditorStore = () => {
     act(() => {
       EventEditorStore.set('blur', null);
       EventEditorStore.set('focus', null);
       EventEditorStore.set('last', null);
     });
+  };
+
+  beforeEach(() => {
+    resetEventEditorStore();
+  });
+
+  afterEach(() => {
+    resetEventEditorStore();
   });
 
   it('prefers explicit id, then event store ids, then the provider editor id', () => {

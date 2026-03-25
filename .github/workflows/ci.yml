@@ -110,7 +110,12 @@ jobs:
           echo "pnpm brl produced changes. Commit the generated barrel updates."
           exit 1
 
-      - name: ✅ Check
+      - name: ✅ Check push
+        if: ${{ github.event_name == 'push' }}
+        run: bun run check:push
+
+      - name: ✅ Check PR
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
         run: bun check
 
       - name: 🔧 Configure git
