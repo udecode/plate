@@ -5,7 +5,7 @@ import { IndentPlugin } from '@platejs/indent/react';
 import { jsxt } from '@platejs/test-utils';
 import { ParagraphPlugin } from 'platejs/react';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
-import { MarkdownKit } from '../../../../registry/components/editor/plugins/markdown-kit';
+import { MarkdownKit } from '@/registry/components/editor/plugins/markdown-kit';
 
 // biome-ignore lint/nursery/noUnusedExpressions: required to prevent removal by compiler
 jsxt;

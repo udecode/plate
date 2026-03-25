@@ -1,7 +1,7 @@
 import type { Value } from 'platejs';
 import { createSlateEditor } from 'platejs';
 
-import { BaseEditorKit } from '../../../registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 export const createStaticEditor = (
   value: Value,

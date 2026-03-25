@@ -3,7 +3,7 @@ import React from 'react';
 import { createSlateEditor, createTSlatePlugin } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
-import { BaseEditorKit } from '../../../registry/components/editor/editor-base-kit';
+import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 import { createStaticEditor } from './create-static-editor';
 
