@@ -64,6 +64,8 @@ Hard constraints:
 - No app-registry imports in package tests.
 - Do not add package `devDependencies` just to support cross-package or app-shaped test setups. If a test needs other package kits, app aliases, or multi-package wiring, move it to `apps/www/src/__tests__/package-integration`.
 - When adding tests, inspect fast-suite outliers with `bun run test:profile`. `bun run test:slowest` is the hard gate. If a fast-suite spec crosses the thresholds in `tooling/config/test-suites.mjs`, rename it to `*.slow.ts[x]`.
+- Do not trust a fast laptop. Treat the local warning zone as real debt before CI proves you wrong: `60ms/test` or `120ms/file` is already a move candidate, especially for React-heavy specs.
+- For borderline cases, run `pnpm test:slowest -- --top 25 --rerun-each 3` and move repeat offenders before they drift over the CI line.
 - Treat known third-party resource logs and serializer fallback warnings as test noise. Suppress them narrowly in the shared Bun setup at `tooling/config/bunTestSetup.ts`, not by changing runtime code or sprinkling per-spec console mocks.
 
 ## Seam Selection
@@ -234,6 +236,7 @@ Keep `__tests__/` when it holds:
 - Work in passes: `>= 6` first, rerun coverage, then worthwhile `>= 5`, then switch to architecture-safety targets.
 - Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
 - Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
+- `pnpm test:slowest` has two bands: warning zone for local drift and hard CI failure thresholds. Fix the warning zone before it becomes a PR failure.
 - Use Bun globals. Do not import them from `bun:test`.
 - Keep specs beside the implementation. Use `__tests__/` only for helpers, fixtures, or intentional split or integration suites.
 - Use plain objects for simple state. Use JSX hyperscript only when tree or selection shape is the contract.
