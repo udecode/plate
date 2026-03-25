@@ -5,7 +5,7 @@ import {
   resetSharedTocHookMocks,
   useContentObserverMock,
   useEditorRefMock,
-} from './tocHookMocks';
+} from './__tests__/tocHookMocks';
 
 describe('useContentController', () => {
   beforeEach(() => {

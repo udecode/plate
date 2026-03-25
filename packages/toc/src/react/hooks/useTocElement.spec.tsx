@@ -7,7 +7,7 @@ import {
   useEditorPluginMock,
   useEditorSelectorMock,
   useScrollRefMock,
-} from './tocHookMocks';
+} from './__tests__/tocHookMocks';
 
 let setTimeoutSpy: ReturnType<typeof spyOn>;
 

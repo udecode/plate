@@ -1,8 +1,8 @@
 import * as actualPlatejs from 'platejs';
 import * as actualPlatejsReact from 'platejs/react';
 
-import * as actualGetHeadingListModule from '../../internal/getHeadingList';
-import * as actualUtils from '../utils';
+import * as actualGetHeadingListModule from '../../../internal/getHeadingList';
+import * as actualUtils from '../../utils';
 
 export const checkInMock = mock(() => false);
 export const getHeadingListMock = mock(() => []);
@@ -37,12 +37,12 @@ export const registerSharedTocHookMocks = () => {
     useScrollRef: useScrollRefMock,
   }));
 
-  mock.module('../../internal/getHeadingList', () => ({
+  mock.module('../../../internal/getHeadingList', () => ({
     ...actualGetHeadingListModule,
     getHeadingList: getHeadingListMock,
   }));
 
-  mock.module('../utils', () => ({
+  mock.module('../../utils', () => ({
     ...actualUtils,
     checkIn: checkInMock,
     heightToTop: heightToTopMock,

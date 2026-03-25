@@ -9,7 +9,7 @@ import {
   useEditorSelectorMock,
   useScrollRefMock,
   useTocControllerMock,
-} from './tocHookMocks';
+} from './__tests__/tocHookMocks';
 
 describe('useTocSideBar', () => {
   beforeEach(() => {

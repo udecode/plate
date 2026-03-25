@@ -5,7 +5,7 @@ import {
   resetSharedTocHookMocks,
   useEditorRefMock,
   useEditorSelectorMock,
-} from './tocHookMocks';
+} from './__tests__/tocHookMocks';
 
 const OriginalIntersectionObserver = globalThis.IntersectionObserver;
 
