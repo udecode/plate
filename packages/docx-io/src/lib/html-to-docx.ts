@@ -58,8 +58,9 @@ export async function htmlToDocxBlob(
   const zip = new JSZip();
   const resultZip = await addFilesToContainer(zip, safeHtml, options, null);
   const buffer = await resultZip.generateAsync({ type: 'uint8array' });
+  const blobBuffer = new Uint8Array(buffer);
 
-  return new Blob([buffer], {
+  return new Blob([blobBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 }

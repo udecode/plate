@@ -62,7 +62,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
           lastRequestRef.current += 1;
           const requestId = lastRequestRef.current;
 
-          if (!code || !code.trim() || !drawingType) {
+          if (!code?.trim() || !drawingType) {
             setImage('');
             setLoading(false);
             setError(null);

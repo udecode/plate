@@ -216,7 +216,7 @@
     "ts-node": "10.9.2",
     "tsx": "4.20.1",
     "tw-animate-css": "1.3.4",
-    "typescript": "5.8.3",
+    "typescript": "6.0.2",
     "unist-builder": "4.0.0",
     "unist-util-visit": "5.0.0"
   }

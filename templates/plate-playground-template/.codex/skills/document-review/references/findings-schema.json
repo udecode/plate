@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Document Review Findings",
+  "description": "Structured output schema for document review persona agents",
+  "type": "object",
+  "required": ["reviewer", "findings", "residual_risks", "deferred_questions"],
+  "properties": {
+    "reviewer": {
+      "type": "string",
+      "description": "Persona name that produced this output (e.g., 'coherence', 'feasibility', 'product-lens')"
+    },
+    "findings": {
+      "type": "array",
+      "description": "List of document review findings. Empty array if no issues found.",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "severity",
+          "section",
+          "why_it_matters",
+          "autofix_class",
+          "confidence",
+          "evidence"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Short, specific issue title. 10 words or fewer.",
+            "maxLength": 100
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3"],
+            "description": "Issue severity level"
+          },
+          "section": {
+            "type": "string",
+            "description": "Document section where the issue appears (e.g., 'Requirements Trace', 'Implementation Unit 3', 'Overview')"
+          },
+          "why_it_matters": {
+            "type": "string",
+            "description": "Impact statement -- not 'what is wrong' but 'what goes wrong if not addressed'"
+          },
+          "autofix_class": {
+            "type": "string",
+            "enum": ["auto", "present"],
+            "description": "How this issue should be handled. auto = local deterministic fix the orchestrator can apply without asking (terminology, formatting, cross-references). present = requires user judgment."
+          },
+          "suggested_fix": {
+            "type": ["string", "null"],
+            "description": "Concrete fix text. Omit or null if no good fix is obvious -- a bad suggestion is worse than none."
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Reviewer confidence in this finding, calibrated per persona",
+            "minimum": 0.0,
+            "maximum": 1.0
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Quoted text from the document that supports this finding. At least 1 item.",
+            "items": { "type": "string" },
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "description": "Risks the reviewer noticed but could not confirm as findings (below confidence threshold)",
+      "items": { "type": "string" }
+    },
+    "deferred_questions": {
+      "type": "array",
+      "description": "Questions that should be resolved in a later workflow stage (planning, implementation)",
+      "items": { "type": "string" }
+    }
+  },
+
+  "_meta": {
+    "confidence_thresholds": {
+      "suppress": "Below 0.50 -- do not report. Finding is speculative noise.",
+      "flag": "0.50-0.69 -- include only when the persona's calibration says the issue is actionable at that confidence.",
+      "report": "0.70+ -- report with full confidence."
+    },
+    "severity_definitions": {
+      "P0": "Contradictions or gaps that would cause building the wrong thing. Must fix before proceeding.",
+      "P1": "Significant gap likely hit during planning or implementation. Should fix.",
+      "P2": "Moderate issue with meaningful downside. Fix if straightforward.",
+      "P3": "Minor improvement. User's discretion."
+    },
+    "autofix_classes": {
+      "auto": "Local, deterministic document fix: terminology consistency, formatting, cross-reference correction. Must be unambiguous and not change the document's meaning.",
+      "present": "Requires user judgment -- strategic questions, tradeoffs, meaning-changing fixes, or informational findings."
+    }
+  }
+}

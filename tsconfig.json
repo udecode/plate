@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "platejs": ["./packages/plate/src/index.tsx"],
       "platejs/*": ["./packages/plate/src/*"],
@@ -23,6 +22,7 @@
     "module": "ESNext",
     "jsx": "react",
     "moduleResolution": "bundler",
+    "noUncheckedSideEffectImports": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,

@@ -21,41 +21,11 @@ Captures problem solutions while context is fresh, creating structured documenta
 /ce:compound [brief context]    # Provide additional context hint
 ```
 
-## Execution Strategy: Context-Aware Orchestration
+## Execution Strategy
 
-### Phase 0: Context Budget Check
+**Always run full mode by default.** Proceed directly to Phase 1 unless the user explicitly requests compact-safe mode (e.g., `/ce:compound --compact` or "use compact mode").
 
-<critical_requirement>
-**Run this check BEFORE launching any subagents.**
-
-The /compound command is token-heavy - it launches 5 parallel subagents that collectively consume ~10k tokens of context. Running near context limits risks compaction mid-compound, which degrades output quality significantly.
-</critical_requirement>
-
-Before proceeding, the orchestrator MUST:
-
-1. **Assess context usage**: Check how long the current conversation has been running. If there has been significant back-and-forth (many tool calls, large file reads, extensive debugging), context is likely constrained.
-
-2. **Warn the user**:
-   ```
-   ⚠️ Context Budget Check
-
-   /compound launches 5 parallel subagents (~10k tokens). Long conversations
-   risk compaction mid-compound, which degrades documentation quality.
-
-   Tip: For best results, run /compound early in a session - right after
-   verifying a fix, before continuing other work.
-   ```
-
-3. **Offer the user a choice**:
-   ```
-   How would you like to proceed?
-
-   1. Full compound (5 parallel subagents, ~10k tokens) - best quality
-   2. Compact-safe mode (single pass, ~2k tokens) - safe near context limits
-   ```
-
-4. **If the user picks option 1** (or confirms full mode): proceed to Phase 1 below.
-5. **If the user picks option 2** (or requests compact-safe): skip to the **Compact-Safe Mode** section below.
+Compact-safe mode exists as a lightweight alternative — see the **Compact-Safe Mode** section below. It's there if the user wants it, not something to push.
 
 ---
 
@@ -67,6 +37,27 @@ Before proceeding, the orchestrator MUST:
 Phase 1 subagents return TEXT DATA to the orchestrator. They must NOT use Write, Edit, or create any files. Only the orchestrator (Phase 2) writes the final documentation file.
 </critical_requirement>
 
+### Phase 0.5: Auto Memory Scan
+
+Before launching Phase 1 subagents, check the auto memory directory for notes relevant to the problem being documented.
+
+1. Read MEMORY.md from the auto memory directory (the path is known from the system prompt context)
+2. If the directory or MEMORY.md does not exist, is empty, or is unreadable, skip this step and proceed to Phase 1 unchanged
+3. Scan the entries for anything related to the problem being documented -- use semantic judgment, not keyword matching
+4. If relevant entries are found, prepare a labeled excerpt block:
+
+```
+## Supplementary notes from auto memory
+Treat as additional context, not primary evidence. Conversation history
+and codebase findings take priority over these notes.
+
+[relevant entries here]
+```
+
+5. Pass this block as additional context to the Context Analyzer and Solution Extractor task prompts in Phase 1. If any memory notes end up in the final documentation (e.g., as part of the investigation steps or root cause analysis), tag them with "(auto memory [claude])" so their origin is clear to future readers.
+
+If no relevant entries are found, proceed to Phase 1 without passing memory context.
+
 ### Phase 1: Parallel Research
 
 <parallel_tasks>
@@ -76,32 +67,84 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 #### 1. **Context Analyzer**
    - Extracts conversation history
    - Identifies problem type, component, symptoms
-   - Validates against schema
-   - Returns: YAML frontmatter skeleton
+   - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence when identifying problem type, component, and symptoms
+   - Validates all enum fields against the schema values below
+   - Maps problem_type to the `docs/solutions/` category directory
+   - Suggests a filename using the pattern `[sanitized-problem-slug]-[date].md`
+   - Returns: YAML frontmatter skeleton (must include `category:` field mapped from problem_type), category directory path, and suggested filename
+
+   **Schema enum values (validate against these exactly):**
+
+   - **problem_type**: build_error, test_failure, runtime_error, performance_issue, database_issue, security_issue, ui_bug, integration_issue, logic_error, developer_experience, workflow_issue, best_practice, documentation_gap
+   - **component**: rails_model, rails_controller, rails_view, service_object, background_job, database, frontend_stimulus, hotwire_turbo, email_processing, brief_system, assistant, authentication, payments, development_workflow, testing_framework, documentation, tooling
+   - **root_cause**: missing_association, missing_include, missing_index, wrong_api, scope_issue, thread_violation, async_timing, memory_leak, config_error, logic_error, test_isolation, missing_validation, missing_permission, missing_workflow_step, inadequate_documentation, missing_tooling, incomplete_setup
+   - **resolution_type**: code_fix, migration, config_change, test_fix, dependency_update, environment_setup, workflow_improvement, documentation_update, tooling_addition, seed_data_update
+   - **severity**: critical, high, medium, low
+
+   **Category mapping (problem_type -> directory):**
+
+   | problem_type | Directory |
+   |---|---|
+   | build_error | build-errors/ |
+   | test_failure | test-failures/ |
+   | runtime_error | runtime-errors/ |
+   | performance_issue | performance-issues/ |
+   | database_issue | database-issues/ |
+   | security_issue | security-issues/ |
+   | ui_bug | ui-bugs/ |
+   | integration_issue | integration-issues/ |
+   | logic_error | logic-errors/ |
+   | developer_experience | developer-experience/ |
+   | workflow_issue | workflow-issues/ |
+   | best_practice | best-practices/ |
+   | documentation_gap | documentation-gaps/ |
 
 #### 2. **Solution Extractor**
    - Analyzes all investigation steps
    - Identifies root cause
    - Extracts working solution with code examples
-   - Returns: Solution content block
+   - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence -- conversation history and the verified fix take priority; if memory notes contradict the conversation, note the contradiction as cautionary context
+   - Develops prevention strategies and best practices guidance
+   - Generates test cases if applicable
+   - Returns: Solution content block including prevention section
+
+   **Expected output sections (follow this structure):**
+
+   - **Problem**: 1-2 sentence description of the issue
+   - **Symptoms**: Observable symptoms (error messages, behavior)
+   - **What Didn't Work**: Failed investigation attempts and why they failed
+   - **Solution**: The actual fix with code examples (before/after when applicable)
+   - **Why This Works**: Root cause explanation and why the solution addresses it
+   - **Prevention**: Strategies to avoid recurrence, best practices, and test cases. Include concrete code examples where applicable (e.g., gem configurations, test assertions, linting rules)
 
 #### 3. **Related Docs Finder**
    - Searches `docs/solutions/` for related documentation
    - Identifies cross-references and links
    - Finds related GitHub issues
-   - Returns: Links and relationships
+   - Flags any related learning or pattern docs that may now be stale, contradicted, or overly broad
+   - **Assesses overlap** with the new doc being created across five dimensions: problem statement, root cause, solution approach, referenced files, and prevention rules. Score as:
+     - **High**: 4-5 dimensions match — essentially the same problem solved again
+     - **Moderate**: 2-3 dimensions match — same area but different angle or solution
+     - **Low**: 0-1 dimensions match — related but distinct
+   - Returns: Links, relationships, refresh candidates, and overlap assessment (score + which dimensions matched)
 
-#### 4. **Prevention Strategist**
-   - Develops prevention strategies
-   - Creates best practices guidance
-   - Generates test cases if applicable
-   - Returns: Prevention/testing content
+   **Search strategy (grep-first filtering for efficiency):**
 
-#### 5. **Category Classifier**
-   - Determines optimal `docs/solutions/` category
-   - Validates category against schema
-   - Suggests filename based on slug
-   - Returns: Final path and filename
+   1. Extract keywords from the problem context: module names, technical terms, error messages, component types
+   2. If the problem category is clear, narrow search to the matching `docs/solutions/<category>/` directory
+   3. Use the native content-search tool (e.g., Grep in Claude Code) to pre-filter candidate files BEFORE reading any content. Run multiple searches in parallel, case-insensitive, targeting frontmatter fields. These are template patterns -- substitute actual keywords:
+      - `title:.*<keyword>`
+      - `tags:.*(<keyword1>|<keyword2>)`
+      - `module:.*<module name>`
+      - `component:.*<component>`
+   4. If search returns >25 candidates, re-run with more specific patterns. If <3, broaden to full content search
+   5. Read only frontmatter (first 30 lines) of candidate files to score relevance
+   6. Fully read only strong/moderate matches
+   7. Return distilled links and relationships, not raw file contents
+
+   **GitHub issue search:**
+
+   Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keywords>" --state all --limit 5`. If `gh` is not installed, fall back to the GitHub MCP tools (e.g., `unblocked` data_retrieval) if available. If neither is available, skip GitHub issue search and note it was skipped in the output.
 
 </parallel_tasks>
 
@@ -114,12 +157,72 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 The orchestrating agent (main conversation) performs these steps:
 
 1. Collect all text results from Phase 1 subagents
-2. Assemble complete markdown file from the collected pieces
-3. Validate YAML frontmatter against schema
-4. Create directory if needed: `mkdir -p docs/solutions/[category]/`
-5. Write the SINGLE final file: `docs/solutions/[category]/[filename].md`
+2. **Check the overlap assessment** from the Related Docs Finder before deciding what to write:
+
+   | Overlap | Action |
+   |---------|--------|
+   | **High** — existing doc covers the same problem, root cause, and solution | **Update the existing doc** with fresher context (new code examples, updated references, additional prevention tips) rather than creating a duplicate. The existing doc's path and structure stay the same. |
+   | **Moderate** — same problem area but different angle, root cause, or solution | **Create the new doc** normally. Flag the overlap for Phase 2.5 to recommend consolidation review. |
+   | **Low or none** | **Create the new doc** normally. |
+
+   The reason to update rather than create: two docs describing the same problem and solution will inevitably drift apart. The newer context is fresher and more trustworthy, so fold it into the existing doc rather than creating a second one that immediately needs consolidation.
+
+   When updating an existing doc, preserve its file path and frontmatter structure. Update the solution, code examples, prevention tips, and any stale references. Add a `last_updated: YYYY-MM-DD` field to the frontmatter. Do not change the title unless the problem framing has materially shifted.
+
+3. Assemble complete markdown file from the collected pieces
+4. Validate YAML frontmatter against schema
+5. Create directory if needed: `mkdir -p docs/solutions/[category]/`
+6. Write the file: either the updated existing doc or the new `docs/solutions/[category]/[filename].md`
 
 </sequential_tasks>
+
+### Phase 2.5: Selective Refresh Check
+
+After writing the new learning, decide whether this new solution is evidence that older docs should be refreshed.
+
+`ce:compound-refresh` is **not** a default follow-up. Use it selectively when the new learning suggests an older learning or pattern doc may now be inaccurate.
+
+It makes sense to invoke `ce:compound-refresh` when one or more of these are true:
+
+1. A related learning or pattern doc recommends an approach that the new fix now contradicts
+2. The new fix clearly supersedes an older documented solution
+3. The current work involved a refactor, migration, rename, or dependency upgrade that likely invalidated references in older docs
+4. A pattern doc now looks overly broad, outdated, or no longer supported by the refreshed reality
+5. The Related Docs Finder surfaced high-confidence refresh candidates in the same problem space
+6. The Related Docs Finder reported **moderate overlap** with an existing doc — there may be consolidation opportunities that benefit from a focused review
+
+It does **not** make sense to invoke `ce:compound-refresh` when:
+
+1. No related docs were found
+2. Related docs still appear consistent with the new learning
+3. The overlap is superficial and does not change prior guidance
+4. Refresh would require a broad historical review with weak evidence
+
+Use these rules:
+
+- If there is **one obvious stale candidate**, invoke `ce:compound-refresh` with a narrow scope hint after the new learning is written
+- If there are **multiple candidates in the same area**, ask the user whether to run a targeted refresh for that module, category, or pattern set
+- If context is already tight or you are in compact-safe mode, do not expand into a broad refresh automatically; instead recommend `ce:compound-refresh` as the next step with a scope hint
+
+When invoking or recommending `ce:compound-refresh`, be explicit about the argument to pass. Prefer the narrowest useful scope:
+
+- **Specific file** when one learning or pattern doc is the likely stale artifact
+- **Module or component name** when several related docs may need review
+- **Category name** when the drift is concentrated in one solutions area
+- **Pattern filename or pattern topic** when the stale guidance lives in `docs/solutions/patterns/`
+
+Examples:
+
+- `/ce:compound-refresh plugin-versioning-requirements`
+- `/ce:compound-refresh payments`
+- `/ce:compound-refresh performance-issues`
+- `/ce:compound-refresh critical-patterns`
+
+A single scope hint may still expand to multiple related docs when the change is cross-cutting within one domain, category, or pattern area.
+
+Do not invoke `ce:compound-refresh` without an argument unless the user explicitly wants a broad sweep.
+
+Always capture the new learning first. Refresh is a targeted maintenance follow-up, not a prerequisite for documentation.
 
 ### Phase 3: Optional Enhancement
 
@@ -149,7 +252,7 @@ When context budget is tight, this mode skips parallel subagents entirely. The o
 
 The orchestrator (main conversation) performs ALL of the following in one sequential pass:
 
-1. **Extract from conversation**: Identify the problem, root cause, and solution from conversation history
+1. **Extract from conversation**: Identify the problem, root cause, and solution from conversation history. Also read MEMORY.md from the auto memory directory if it exists -- use any relevant notes as supplementary context alongside conversation history. Tag any memory-sourced content incorporated into the final doc with "(auto memory [claude])"
 2. **Classify**: Determine category and filename (same categories as full mode)
 3. **Write minimal doc**: Create `docs/solutions/[category]/[filename].md` with:
    - YAML frontmatter (title, category, date, tags)
@@ -172,6 +275,8 @@ re-run /compound in a fresh session.
 ```
 
 **No subagents are launched. No parallel tasks. One file written.**
+
+In compact-safe mode, the overlap check is skipped (no Related Docs Finder subagent). This means compact-safe mode may create a doc that overlaps with an existing one. That is acceptable — `ce:compound-refresh` will catch it later. Only suggest `ce:compound-refresh` if there is an obvious narrow refresh target. Do not broaden into a large refresh sweep from a compact-safe session.
 
 ---
 
@@ -222,19 +327,20 @@ re-run /compound in a fresh session.
 |----------|-----------|
 | Subagents write files like `context-analysis.md`, `solution-draft.md` | Subagents return text data; orchestrator writes one final file |
 | Research and assembly run in parallel | Research completes → then assembly runs |
-| Multiple files created during workflow | Single file: `docs/solutions/[category]/[filename].md` |
+| Multiple files created during workflow | One file written or updated: `docs/solutions/[category]/[filename].md` |
+| Creating a new doc when an existing doc covers the same problem | Check overlap assessment; update the existing doc when overlap is high |
 
 ## Success Output
 
 ```
 ✓ Documentation complete
 
+Auto memory: 2 relevant entries used as supplementary evidence
+
 Subagent Results:
-  ✓ Context Analyzer: Identified performance_issue in brief_system
-  ✓ Solution Extractor: 3 code fixes
+  ✓ Context Analyzer: Identified performance_issue in brief_system, category: performance-issues/
+  ✓ Solution Extractor: 3 code fixes, prevention strategies
   ✓ Related Docs Finder: 2 related issues
-  ✓ Prevention Strategist: Prevention strategies, test suggestions
-  ✓ Category Classifier: `performance-issues`
 
 Specialized Agent Reviews (Auto-Triggered):
   ✓ performance-oracle: Validated query optimization approach
@@ -254,6 +360,19 @@ What's next?
 3. Update other references
 4. View documentation
 5. Other
+```
+
+**Alternate output (when updating an existing doc due to high overlap):**
+
+```
+✓ Documentation updated (existing doc refreshed with current context)
+
+Overlap detected: docs/solutions/performance-issues/n-plus-one-queries.md
+  Matched dimensions: problem statement, root cause, solution, referenced files
+  Action: Updated existing doc with fresher code examples and prevention tips
+
+File updated:
+- docs/solutions/performance-issues/n-plus-one-queries.md (added last_updated: 2026-03-24)
 ```
 
 ## The Compounding Philosophy
