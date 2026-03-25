@@ -1,5 +1,12 @@
 # @platejs/docx-io
 
+## 52.3.8
+
+### Patch Changes
+
+- [#4891](https://github.com/udecode/plate/pull/4891) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `htmlToDocxBlob` failing TypeScript 6 `BlobPart` checks when wrapping generated `Uint8Array` output.
+
 ## 52.3.6
 
 ### Patch Changes

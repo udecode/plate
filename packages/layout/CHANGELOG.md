@@ -1,5 +1,12 @@
 # @platejs/layout
 
+## 52.3.8
+
+### Patch Changes
+
+- [#4882](https://github.com/udecode/plate/pull/4882) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix invalid column group normalization preserving wrapped paragraph content instead of dropping it
+
 ## 52.0.11
 
 ### Patch Changes
