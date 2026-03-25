@@ -2,7 +2,12 @@
 
 set -euo pipefail
 
-EXTRA_ARGS=("$@")
+SCRIPT_DIR="$(dirname "$0")"
 
-"$(dirname "$0")/update-template.sh" "${EXTRA_ARGS[@]}" basic
-"$(dirname "$0")/update-template.sh" "${EXTRA_ARGS[@]}" ai
+if (($# > 0)); then
+  "$SCRIPT_DIR/update-template.sh" "$@" basic
+  "$SCRIPT_DIR/update-template.sh" "$@" ai
+else
+  "$SCRIPT_DIR/update-template.sh" basic
+  "$SCRIPT_DIR/update-template.sh" ai
+fi

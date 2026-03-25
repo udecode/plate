@@ -1,16 +1,22 @@
 ---
 name: ce-plan
-description: Transform feature descriptions into well-structured project plans following conventions
-argument-hint: '[feature description, bug report, or improvement idea]'
+description: Transform feature descriptions or requirements into structured implementation plans grounded in repo patterns and research. Use when the user says 'plan this', 'create a plan', 'write a tech plan', 'plan the implementation', 'how should we build', 'what's the approach for', 'break this down', or when a brainstorm/requirements document is ready for technical planning. Best when requirements are at least roughly defined; for exploratory or ambiguous requests, prefer ce:brainstorm first.
+argument-hint: '[feature description, requirements doc path, or improvement idea]'
 ---
 
-# Create a plan for a new feature or bug fix
-
-## Introduction
+# Create Technical Plan
 
 **Note: The current year is 2026.** Use this when dating plans and searching for recent documentation.
 
-Transform feature descriptions, bug reports, or improvement ideas into well-structured markdown files issues that follow project conventions and best practices. This command provides flexible detail levels to match your needs.
+`ce:brainstorm` defines **WHAT** to build. `ce:plan` defines **HOW** to build it. `ce:work` executes the plan.
+
+This workflow produces a durable implementation plan. It does **not** implement code, run tests, or learn from execution-time results. If the answer depends on changing code and seeing what happens, that belongs in `ce:work`, not here.
+
+## Interaction Method
+
+Use the platform's question tool when available. When asking the user a question, prefer the platform's blocking question tool if one exists (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). Otherwise, present numbered options in chat and wait for the user's reply before proceeding.
+
+Ask one question at a time. Prefer a concise single-select choice when natural options exist.
 
 ## Feature Description
 
@@ -18,578 +24,590 @@ Transform feature descriptions, bug reports, or improvement ideas into well-stru
 
 **If the feature description above is empty, ask the user:** "What would you like to plan? Please describe the feature, bug fix, or improvement you have in mind."
 
-Do not proceed until you have a clear feature description from the user.
+Do not proceed until you have a clear planning input.
 
-### 0. Idea Refinement
+## Core Principles
 
-**Check for brainstorm output first:**
+1. **Use requirements as the source of truth** - If `ce:brainstorm` produced a requirements document, planning should build from it rather than re-inventing behavior.
+2. **Decisions, not code** - Capture approach, boundaries, files, dependencies, risks, and test scenarios. Do not pre-write implementation code or shell command choreography. Pseudo-code sketches or DSL grammars that communicate high-level technical design are welcome when they help a reviewer validate direction — but they must be explicitly framed as directional guidance, not implementation specification.
+3. **Research before structuring** - Explore the codebase, institutional learnings, and external guidance when warranted before finalizing the plan.
+4. **Right-size the artifact** - Small work gets a compact plan. Large work gets more structure. The philosophy stays the same at every depth.
+5. **Separate planning from execution discovery** - Resolve planning-time questions here. Explicitly defer execution-time unknowns to implementation.
+6. **Keep the plan portable** - The plan should work as a living document, review artifact, or issue body without embedding tool-specific executor instructions.
+7. **Carry execution posture lightly when it matters** - If the request, origin document, or repo context clearly implies test-first, characterization-first, or another non-default execution posture, reflect that in the plan as a lightweight signal. Do not turn the plan into step-by-step execution choreography.
 
-Before asking questions, look for recent brainstorm documents in `docs/brainstorms/` that match this feature:
+## Plan Quality Bar
 
-```bash
-ls -la docs/brainstorms/*.md 2>/dev/null | head -10
-```
+Every plan should contain:
+- A clear problem frame and scope boundary
+- Concrete requirements traceability back to the request or origin document
+- Exact file paths for the work being proposed
+- Explicit test file paths for feature-bearing implementation units
+- Decisions with rationale, not just tasks
+- Existing patterns or code references to follow
+- Specific test scenarios and verification outcomes
+- Clear dependencies and sequencing
 
-**Relevance criteria:** A brainstorm is relevant if:
-- The topic (from filename or YAML frontmatter) semantically matches the feature description
-- Created within the last 14 days
-- If multiple candidates match, use the most recent one
+A plan is ready when an implementer can start confidently without needing the plan to write the code for them.
 
-**If a relevant brainstorm exists:**
-1. Read the brainstorm document **thoroughly** — every section matters
-2. Announce: "Found brainstorm from [date]: [topic]. Using as foundation for planning."
-3. Extract and carry forward **ALL** of the following into the plan:
-   - Key decisions and their rationale
-   - Chosen approach and why alternatives were rejected
-   - Constraints and requirements discovered during brainstorming
-   - Open questions (flag these for resolution during planning)
-   - Success criteria and scope boundaries
-   - Any specific technical choices or patterns discussed
-4. **Skip the idea refinement questions below** — the brainstorm already answered WHAT to build
-5. Use brainstorm content as the **primary input** to research and planning phases
-6. **Critical: The brainstorm is the origin document.** Throughout the plan, reference specific decisions with `(see brainstorm: docs/brainstorms/<filename>)` when carrying forward conclusions. Do not paraphrase decisions in a way that loses their original context — link back to the source.
-7. **Do not omit brainstorm content** — if the brainstorm discussed it, the plan must address it (even if briefly). Scan each brainstorm section before finalizing the plan to verify nothing was dropped.
+## Workflow
 
-**If multiple brainstorms could match:**
-Use **AskUserQuestion tool** to ask which brainstorm to use, or whether to proceed without one.
+### Phase 0: Resume, Source, and Scope
 
-**If no brainstorm found (or not relevant), run idea refinement:**
+#### 0.1 Resume Existing Plan Work When Appropriate
 
-Refine the idea through collaborative dialogue using the **AskUserQuestion tool**:
+If the user references an existing plan file or there is an obvious recent matching plan in `docs/plans/`:
+- Read it
+- Confirm whether to update it in place or create a new plan
+- If updating, preserve completed checkboxes and revise only the still-relevant sections
 
-- Ask questions one at a time to understand the idea fully
-- Prefer multiple choice questions when natural options exist
-- Focus on understanding: purpose, constraints and success criteria
-- Continue until the idea is clear OR user says "proceed"
+#### 0.2 Find Upstream Requirements Document
 
-**Gather signals for research decision.** During refinement, note:
+Before asking planning questions, search `docs/brainstorms/` for files matching `*-requirements.md`.
 
-- **User's familiarity**: Do they know the codebase patterns? Are they pointing to examples?
-- **User's intent**: Speed vs thoroughness? Exploration vs execution?
-- **Topic risk**: Security, payments, external APIs warrant more caution
-- **Uncertainty level**: Is the approach clear or open-ended?
+**Relevance criteria:** A requirements document is relevant if:
+- The topic semantically matches the feature description
+- It was created within the last 30 days (use judgment to override if the document is clearly still relevant or clearly stale)
+- It appears to cover the same user problem or scope
 
-**Skip option:** If the feature description is already detailed, offer:
-"Your description is clear. Should I proceed with research, or would you like to refine it further?"
+If multiple source documents match, ask which one to use using the platform's blocking question tool when available (see Interaction Method). Otherwise, present numbered options in chat and wait for the user's reply before proceeding.
 
-## Main Tasks
+#### 0.3 Use the Source Document as Primary Input
 
-### 1. Local Research (Always Runs - Parallel)
+If a relevant requirements document exists:
+1. Read it thoroughly
+2. Announce that it will serve as the origin document for planning
+3. Carry forward all of the following:
+   - Problem frame
+   - Requirements and success criteria
+   - Scope boundaries
+   - Key decisions and rationale
+   - Dependencies or assumptions
+   - Outstanding questions, preserving whether they are blocking or deferred
+4. Use the source document as the primary input to planning and research
+5. Reference important carried-forward decisions in the plan with `(see origin: <source-path>)`
+6. Do not silently omit source content — if the origin document discussed it, the plan must address it even if briefly. Before finalizing, scan each section of the origin document to verify nothing was dropped.
 
-<thinking>
-First, I need to understand the project's conventions, existing patterns, and any documented learnings. This is fast and local - it informs whether external research is needed.
-</thinking>
+If no relevant requirements document exists, planning may proceed from the user's request directly.
 
-Run these agents **in parallel** to gather local context:
+#### 0.4 No-Requirements-Doc Fallback
 
-- Task repo-research-analyst(feature_description)
-- Task learnings-researcher(feature_description)
+If no relevant requirements document exists:
+- Assess whether the request is already clear enough for direct technical planning
+- If the ambiguity is mainly product framing, user behavior, or scope definition, recommend `ce:brainstorm` first
+- If the user wants to continue here anyway, run a short planning bootstrap instead of refusing
 
-**What to look for:**
-- **Repo research:** existing patterns, CLAUDE.md guidance, technology familiarity, pattern consistency
-- **Learnings:** documented solutions in `docs/solutions/` that might apply (gotchas, patterns, lessons learned)
+The planning bootstrap should establish:
+- Problem frame
+- Intended behavior
+- Scope boundaries and obvious non-goals
+- Success criteria
+- Blocking questions or assumptions
 
-These findings inform the next step.
+Keep this bootstrap brief. It exists to preserve direct-entry convenience, not to replace a full brainstorm.
 
-### 1.5. Research Decision
+If the bootstrap uncovers major unresolved product questions:
+- Recommend `ce:brainstorm` again
+- If the user still wants to continue, require explicit assumptions before proceeding
 
-Based on signals from Step 0 and findings from Step 1, decide on external research.
+#### 0.5 Classify Outstanding Questions Before Planning
 
-**High-risk topics → always research.** Security, payments, external APIs, data privacy. The cost of missing something is too high. This takes precedence over speed signals.
+If the origin document contains `Resolve Before Planning` or similar blocking questions:
+- Review each one before proceeding
+- Reclassify it into planning-owned work **only if** it is actually a technical, architectural, or research question
+- Keep it as a blocker if it would change product behavior, scope, or success criteria
 
-**Strong local context → skip external research.** Codebase has good patterns, CLAUDE.md has guidance, user knows what they want. External research adds little value.
+If true product blockers remain:
+- Surface them clearly
+- Ask the user, using the platform's blocking question tool when available (see Interaction Method), whether to:
+  1. Resume `ce:brainstorm` to resolve them
+  2. Convert them into explicit assumptions or decisions and continue
+- Do not continue planning while true blockers remain unresolved
 
-**Uncertainty or unfamiliar territory → research.** User is exploring, codebase has no examples, new technology. External perspective is valuable.
+#### 0.6 Assess Plan Depth
 
-**Announce the decision and proceed.** Brief explanation, then continue. User can redirect if needed.
+Classify the work into one of these plan depths:
 
-Examples:
-- "Your codebase has solid patterns for this. Proceeding without external research."
-- "This involves payment processing, so I'll research current best practices first."
+- **Lightweight** - small, well-bounded, low ambiguity
+- **Standard** - normal feature or bounded refactor with some technical decisions to document
+- **Deep** - cross-cutting, strategic, high-risk, or highly ambiguous implementation work
 
-### 1.5b. External Research (Conditional)
+If depth is unclear, ask one targeted question and then continue.
 
-**Only run if Step 1.5 indicates external research is valuable.**
+### Phase 1: Gather Context
+
+#### 1.1 Local Research (Always Runs)
+
+Prepare a concise planning context summary (a paragraph or two) to pass as input to the research agents:
+- If an origin document exists, summarize the problem frame, requirements, and key decisions from that document
+- Otherwise use the feature description directly
 
 Run these agents in parallel:
 
-- Task best-practices-researcher(feature_description)
-- Task framework-docs-researcher(feature_description)
+- Task compound-engineering:research:repo-research-analyst(Scope: technology, architecture, patterns. {planning context summary})
+- Task compound-engineering:research:learnings-researcher(planning context summary)
 
-### 1.6. Consolidate Research
+Collect:
+- Technology stack and versions (used in section 1.2 to make sharper external research decisions)
+- Architectural patterns and conventions to follow
+- Implementation patterns, relevant files, modules, and tests
+- AGENTS.md guidance that materially affects the plan, with CLAUDE.md used only as compatibility fallback when present
+- Institutional learnings from `docs/solutions/`
 
-After all research steps complete, consolidate findings:
+#### 1.1b Detect Execution Posture Signals
 
-- Document relevant file paths from repo research (e.g., `app/services/example_service.rb:42`)
-- **Include relevant institutional learnings** from `docs/solutions/` (key insights, gotchas to avoid)
-- Note external documentation URLs and best practices (if external research was done)
-- List related issues or PRs discovered
-- Capture CLAUDE.md conventions
+Decide whether the plan should carry a lightweight execution posture signal.
 
-**Optional validation:** Briefly summarize findings and ask if anything looks off or missing before proceeding to planning.
+Look for signals such as:
+- The user explicitly asks for TDD, test-first, or characterization-first work
+- The origin document calls for test-first implementation or exploratory hardening of legacy code
+- Local research shows the target area is legacy, weakly tested, or historically fragile, suggesting characterization coverage before changing behavior
+- The user asks for external delegation, says "use codex", "delegate mode", or mentions token conservation -- add `Execution target: external-delegate` to implementation units that are pure code writing
 
-### 2. Issue Planning & Structure
+When the signal is clear, carry it forward silently in the relevant implementation units.
 
-<thinking>
-Think like a product manager - what would make this issue clear and actionable? Consider multiple perspectives
-</thinking>
+Ask the user only if the posture would materially change sequencing or risk and cannot be responsibly inferred.
 
-**Title & Categorization:**
+#### 1.2 Decide on External Research
 
-- [ ] Draft clear, searchable issue title using conventional format (e.g., `feat: Add user authentication`, `fix: Cart total calculation`)
-- [ ] Determine issue type: enhancement, bug, refactor
-- [ ] Convert title to filename: add today's date prefix, determine daily sequence number, strip prefix colon, kebab-case, add `-plan` suffix
-  - Scan `docs/plans/` for files matching today's date pattern `YYYY-MM-DD-\d{3}-`
-  - Find the highest existing sequence number for today
-  - Increment by 1, zero-padded to 3 digits (001, 002, etc.)
-  - Example: `feat: Add User Authentication` → `2026-01-21-001-feat-add-user-authentication-plan.md`
-  - Keep it descriptive (3-5 words after prefix) so plans are findable by context
+Based on the origin document, user signals, and local findings, decide whether external research adds value.
 
-**Stakeholder Analysis:**
+**Read between the lines.** Pay attention to signals from the conversation so far:
+- **User familiarity** — Are they pointing to specific files or patterns? They likely know the codebase well.
+- **User intent** — Do they want speed or thoroughness? Exploration or execution?
+- **Topic risk** — Security, payments, external APIs warrant more caution regardless of user signals.
+- **Uncertainty level** — Is the approach clear or still open-ended?
 
-- [ ] Identify who will be affected by this issue (end users, developers, operations)
-- [ ] Consider implementation complexity and required expertise
+**Leverage repo-research-analyst's technology context:**
 
-**Content Planning:**
+The repo-research-analyst output includes a structured Technology & Infrastructure summary. Use it to make sharper external research decisions:
 
-- [ ] Choose appropriate detail level based on issue complexity and audience
-- [ ] List all necessary sections for the chosen template
-- [ ] Gather supporting materials (error logs, screenshots, design mockups)
-- [ ] Prepare code examples or reproduction steps if applicable, name the mock filenames in the lists
+- If specific frameworks and versions were detected (e.g., Rails 7.2, Next.js 14, Go 1.22), pass those exact identifiers to framework-docs-researcher so it fetches version-specific documentation
+- If the feature touches a technology layer the scan found well-established in the repo (e.g., existing Sidekiq jobs when planning a new background job), lean toward skipping external research -- local patterns are likely sufficient
+- If the feature touches a technology layer the scan found absent or thin (e.g., no existing proto files when planning a new gRPC service), lean toward external research -- there are no local patterns to follow
+- If the scan detected deployment infrastructure (Docker, K8s, serverless), note it in the planning context passed to downstream agents so they can account for deployment constraints
+- If the scan detected a monorepo and scoped to a specific service, pass that service's tech context to downstream research agents -- not the aggregate of all services. If the scan surfaced the workspace map without scoping, use the feature description to identify the relevant service before proceeding with research
 
-### 3. SpecFlow Analysis
+**Always lean toward external research when:**
+- The topic is high-risk: security, payments, privacy, external APIs, migrations, compliance
+- The codebase lacks relevant local patterns
+- The user is exploring unfamiliar territory
+- The technology scan found the relevant layer absent or thin in the codebase
 
-After planning the issue structure, run SpecFlow Analyzer to validate and refine the feature specification:
+**Skip external research when:**
+- The codebase already shows a strong local pattern
+- The user already knows the intended shape
+- Additional external context would add little practical value
+- The technology scan found the relevant layer well-established with existing examples to follow
 
-- Task compound-engineering:workflow:spec-flow-analyzer(feature_description, research_findings)
+Announce the decision briefly before continuing. Examples:
+- "Your codebase has solid patterns for this. Proceeding without external research."
+- "This involves payment processing, so I'll research current best practices first."
 
-**SpecFlow Analyzer Output:**
+#### 1.3 External Research (Conditional)
 
-- [ ] Review SpecFlow analysis results
-- [ ] Incorporate any identified gaps or edge cases into the issue
-- [ ] Update acceptance criteria based on SpecFlow findings
+If Step 1.2 indicates external research is useful, run these agents in parallel:
 
-### 4. Choose Implementation Detail Level
+- Task compound-engineering:research:best-practices-researcher(planning context summary)
+- Task compound-engineering:research:framework-docs-researcher(planning context summary)
 
-Select how comprehensive you want the issue to be, simpler is mostly better.
+#### 1.4 Consolidate Research
 
-#### 📄 MINIMAL (Quick Issue)
+Summarize:
+- Relevant codebase patterns and file paths
+- Relevant institutional learnings
+- External references and best practices, if gathered
+- Related issues, PRs, or prior art
+- Any constraints that should materially shape the plan
 
-**Best for:** Simple bugs, small improvements, clear features
+#### 1.5 Flow and Edge-Case Analysis (Conditional)
 
-**Includes:**
+For **Standard** or **Deep** plans, or when user flow completeness is still unclear, run:
 
-- Problem statement or feature description
-- Basic acceptance criteria
-- Essential context only
+- Task compound-engineering:workflow:spec-flow-analyzer(planning context summary, research findings)
 
-**Structure:**
+Use the output to:
+- Identify missing edge cases, state transitions, or handoff gaps
+- Tighten requirements trace or verification strategy
+- Add only the flow details that materially improve the plan
 
-````markdown
----
-title: [Issue Title]
-type: [feat|fix|refactor]
-status: active
-date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
----
+### Phase 2: Resolve Planning Questions
 
-# [Issue Title]
+Build a planning question list from:
+- Deferred questions in the origin document
+- Gaps discovered in repo or external research
+- Technical decisions required to produce a useful plan
 
-[Brief problem/feature description]
+For each question, decide whether it should be:
+- **Resolved during planning** - the answer is knowable from repo context, documentation, or user choice
+- **Deferred to implementation** - the answer depends on code changes, runtime behavior, or execution-time discovery
 
-## Acceptance Criteria
+Ask the user only when the answer materially affects architecture, scope, sequencing, or risk and cannot be responsibly inferred. Use the platform's blocking question tool when available (see Interaction Method).
 
-- [ ] Core requirement 1
-- [ ] Core requirement 2
+**Do not** run tests, build the app, or probe runtime behavior in this phase. The goal is a strong plan, not partial execution.
 
-## Context
+### Phase 3: Structure the Plan
 
-[Any critical information]
+#### 3.1 Title and File Naming
 
-## MVP
+- Draft a clear, searchable title using conventional format such as `feat: Add user authentication` or `fix: Prevent checkout double-submit`
+- Determine the plan type: `feat`, `fix`, or `refactor`
+- Build the filename following the repository convention: `docs/plans/YYYY-MM-DD-NNN-<type>-<descriptive-name>-plan.md`
+  - Create `docs/plans/` if it does not exist
+  - Check existing files for today's date to determine the next sequence number (zero-padded to 3 digits, starting at 001)
+  - Keep the descriptive name concise (3-5 words) and kebab-cased
+  - Examples: `2026-01-15-001-feat-user-authentication-flow-plan.md`, `2026-02-03-002-fix-checkout-race-condition-plan.md`
+  - Avoid: missing sequence numbers, vague names like "new-feature", invalid characters (colons, spaces)
 
-### test.rb
+#### 3.2 Stakeholder and Impact Awareness
 
-```ruby
-class Test
-  def initialize
-    @name = "test"
-  end
-end
-```
+For **Standard** or **Deep** plans, briefly consider who is affected by this change — end users, developers, operations, other teams — and how that should shape the plan. For cross-cutting work, note affected parties in the System-Wide Impact section.
 
-## Sources
+#### 3.3 Break Work into Implementation Units
 
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
-- Related issue: #[issue_number]
-- Documentation: [relevant_docs_url]
-````
+Break the work into logical implementation units. Each unit should represent one meaningful change that an implementer could typically land as an atomic commit.
 
-#### 📋 MORE (Standard Issue)
+Good units are:
+- Focused on one component, behavior, or integration seam
+- Usually touching a small cluster of related files
+- Ordered by dependency
+- Concrete enough for execution without pre-writing code
+- Marked with checkbox syntax for progress tracking
 
-**Best for:** Most features, complex bugs, team collaboration
+Avoid:
+- 2-5 minute micro-steps
+- Units that span multiple unrelated concerns
+- Units that are so vague an implementer still has to invent the plan
 
-**Includes everything from MINIMAL plus:**
+#### 3.4 High-Level Technical Design (Optional)
 
-- Detailed background and motivation
-- Technical considerations
-- Success metrics
-- Dependencies and risks
-- Basic implementation suggestions
+Before detailing implementation units, decide whether an overview would help a reviewer validate the intended approach. This section communicates the *shape* of the solution — how pieces fit together — without dictating implementation.
 
-**Structure:**
+**When to include it:**
+
+| Work involves... | Best overview form |
+|---|---|
+| DSL or API surface design | Pseudo-code grammar or contract sketch |
+| Multi-component integration | Mermaid sequence or component diagram |
+| Data pipeline or transformation | Data flow sketch |
+| State-heavy lifecycle | State diagram |
+| Complex branching logic | Flowchart |
+| Single-component with non-obvious shape | Pseudo-code sketch |
+
+**When to skip it:**
+- Well-patterned work where prose and file paths tell the whole story
+- Straightforward CRUD or convention-following changes
+- Lightweight plans where the approach is obvious
+
+Choose the medium that fits the work. Do not default to pseudo-code when a diagram communicates better, and vice versa.
+
+Frame every sketch with: *"This illustrates the intended approach and is directional guidance for review, not implementation specification. The implementing agent should treat it as context, not code to reproduce."*
+
+Keep sketches concise — enough to validate direction, not enough to copy-paste into production.
+
+#### 3.5 Define Each Implementation Unit
+
+For each unit, include:
+- **Goal** - what this unit accomplishes
+- **Requirements** - which requirements or success criteria it advances
+- **Dependencies** - what must exist first
+- **Files** - exact file paths to create, modify, or test
+- **Approach** - key decisions, data flow, component boundaries, or integration notes
+- **Execution note** - optional, only when the unit benefits from a non-default execution posture such as test-first, characterization-first, or external delegation
+- **Technical design** - optional pseudo-code or diagram when the unit's approach is non-obvious and prose alone would leave it ambiguous. Frame explicitly as directional guidance, not implementation specification
+- **Patterns to follow** - existing code or conventions to mirror
+- **Test scenarios** - specific behaviors, edge cases, and failure paths to cover
+- **Verification** - how an implementer should know the unit is complete, expressed as outcomes rather than shell command scripts
+
+Every feature-bearing unit should include the test file path in `**Files:**`.
+
+Use `Execution note` sparingly. Good uses include:
+- `Execution note: Start with a failing integration test for the request/response contract.`
+- `Execution note: Add characterization coverage before modifying this legacy parser.`
+- `Execution note: Implement new domain behavior test-first.`
+- `Execution note: Execution target: external-delegate`
+
+Do not expand units into literal `RED/GREEN/REFACTOR` substeps.
+
+#### 3.6 Keep Planning-Time and Implementation-Time Unknowns Separate
+
+If something is important but not knowable yet, record it explicitly under deferred implementation notes rather than pretending to resolve it in the plan.
+
+Examples:
+- Exact method or helper names
+- Final SQL or query details after touching real code
+- Runtime behavior that depends on seeing actual test failures
+- Refactors that may become unnecessary once implementation starts
+
+### Phase 4: Write the Plan
+
+Use one planning philosophy across all depths. Change the amount of detail, not the boundary between planning and execution.
+
+#### 4.1 Plan Depth Guidance
+
+**Lightweight**
+- Keep the plan compact
+- Usually 2-4 implementation units
+- Omit optional sections that add little value
+
+**Standard**
+- Use the full core template, omitting optional sections (including High-Level Technical Design) that add no value for this particular work
+- Usually 3-6 implementation units
+- Include risks, deferred questions, and system-wide impact when relevant
+
+**Deep**
+- Use the full core template plus optional analysis sections where warranted
+- Usually 4-8 implementation units
+- Group units into phases when that improves clarity
+- Include alternatives considered, documentation impacts, and deeper risk treatment when warranted
+
+#### 4.1b Optional Deep Plan Extensions
+
+For sufficiently large, risky, or cross-cutting work, add the sections that genuinely help:
+- **Alternative Approaches Considered**
+- **Success Metrics**
+- **Dependencies / Prerequisites**
+- **Risk Analysis & Mitigation**
+- **Phased Delivery**
+- **Documentation Plan**
+- **Operational / Rollout Notes**
+- **Future Considerations** only when they materially affect current design
+
+Do not add these as boilerplate. Include them only when they improve execution quality or stakeholder alignment.
+
+#### 4.2 Core Plan Template
+
+Omit clearly inapplicable optional sections, especially for Lightweight plans.
 
 ```markdown
 ---
-title: [Issue Title]
+title: [Plan Title]
 type: [feat|fix|refactor]
 status: active
 date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
+origin: docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md  # include when planning from a requirements doc
+deepened: YYYY-MM-DD  # optional, set later by deepen-plan when the plan is substantively strengthened
 ---
 
-# [Issue Title]
+# [Plan Title]
 
 ## Overview
 
-[Comprehensive description]
+[What is changing and why]
 
-## Problem Statement / Motivation
+## Problem Frame
 
-[Why this matters]
+[Summarize the user/business problem and context. Reference the origin doc when present.]
 
-## Proposed Solution
+## Requirements Trace
 
-[High-level approach]
+- R1. [Requirement or success criterion this plan must satisfy]
+- R2. [Requirement or success criterion this plan must satisfy]
 
-## Technical Considerations
+## Scope Boundaries
 
-- Architecture impacts
-- Performance implications
-- Security considerations
+- [Explicit non-goal or exclusion]
 
-## System-Wide Impact
+## Context & Research
 
-- **Interaction graph**: [What callbacks/middleware/observers fire when this runs?]
-- **Error propagation**: [How do errors flow across layers? Do retry strategies align?]
-- **State lifecycle risks**: [Can partial failure leave orphaned/inconsistent state?]
-- **API surface parity**: [What other interfaces expose similar functionality and need the same change?]
-- **Integration test scenarios**: [Cross-layer scenarios that unit tests won't catch]
+### Relevant Code and Patterns
 
-## Acceptance Criteria
+- [Existing file, class, component, or pattern to follow]
 
-- [ ] Detailed requirement 1
-- [ ] Detailed requirement 2
-- [ ] Testing requirements
+### Institutional Learnings
 
-## Success Metrics
-
-[How we measure success]
-
-## Dependencies & Risks
-
-[What could block or complicate this]
-
-## Sources & References
-
-- **Origin brainstorm:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm
-- Similar implementations: [file_path:line_number]
-- Best practices: [documentation_url]
-- Related PRs: #[pr_number]
-```
-
-#### 📚 A LOT (Comprehensive Issue)
-
-**Best for:** Major features, architectural changes, complex integrations
-
-**Includes everything from MORE plus:**
-
-- Detailed implementation plan with phases
-- Alternative approaches considered
-- Extensive technical specifications
-- Resource requirements and timeline
-- Future considerations and extensibility
-- Risk mitigation strategies
-- Documentation requirements
-
-**Structure:**
-
-```markdown
----
-title: [Issue Title]
-type: [feat|fix|refactor]
-status: active
-date: YYYY-MM-DD
-origin: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md  # if originated from brainstorm, otherwise omit
----
-
-# [Issue Title]
-
-## Overview
-
-[Executive summary]
-
-## Problem Statement
-
-[Detailed problem analysis]
-
-## Proposed Solution
-
-[Comprehensive solution design]
-
-## Technical Approach
-
-### Architecture
-
-[Detailed technical design]
-
-### Implementation Phases
-
-#### Phase 1: [Foundation]
-
-- Tasks and deliverables
-- Success criteria
-- Estimated effort
-
-#### Phase 2: [Core Implementation]
-
-- Tasks and deliverables
-- Success criteria
-- Estimated effort
-
-#### Phase 3: [Polish & Optimization]
-
-- Tasks and deliverables
-- Success criteria
-- Estimated effort
-
-## Alternative Approaches Considered
-
-[Other solutions evaluated and why rejected]
-
-## System-Wide Impact
-
-### Interaction Graph
-
-[Map the chain reaction: what callbacks, middleware, observers, and event handlers fire when this code runs? Trace at least two levels deep. Document: "Action X triggers Y, which calls Z, which persists W."]
-
-### Error & Failure Propagation
-
-[Trace errors from lowest layer up. List specific error classes and where they're handled. Identify retry conflicts, unhandled error types, and silent failure swallowing.]
-
-### State Lifecycle Risks
-
-[Walk through each step that persists state. Can partial failure orphan rows, duplicate records, or leave caches stale? Document cleanup mechanisms or their absence.]
-
-### API Surface Parity
-
-[List all interfaces (classes, DSLs, endpoints) that expose equivalent functionality. Note which need updating and which share the code path.]
-
-### Integration Test Scenarios
-
-[3-5 cross-layer test scenarios that unit tests with mocks would never catch. Include expected behavior for each.]
-
-## Acceptance Criteria
-
-### Functional Requirements
-
-- [ ] Detailed functional criteria
-
-### Non-Functional Requirements
-
-- [ ] Performance targets
-- [ ] Security requirements
-- [ ] Accessibility standards
-
-### Quality Gates
-
-- [ ] Test coverage requirements
-- [ ] Documentation completeness
-- [ ] Code review approval
-
-## Success Metrics
-
-[Detailed KPIs and measurement methods]
-
-## Dependencies & Prerequisites
-
-[Detailed dependency analysis]
-
-## Risk Analysis & Mitigation
-
-[Comprehensive risk assessment]
-
-## Resource Requirements
-
-[Team, time, infrastructure needs]
-
-## Future Considerations
-
-[Extensibility and long-term vision]
-
-## Documentation Plan
-
-[What docs need updating]
-
-## Sources & References
-
-### Origin
-
-- **Brainstorm document:** [docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md](path) — include if plan originated from a brainstorm. Key decisions carried forward: [list 2-3 major decisions from brainstorm]
-
-### Internal References
-
-- Architecture decisions: [file_path:line_number]
-- Similar features: [file_path:line_number]
-- Configuration: [file_path:line_number]
+- [Relevant `docs/solutions/` insight]
 
 ### External References
 
-- Framework documentation: [url]
-- Best practices guide: [url]
-- Industry standards: [url]
+- [Relevant external docs or best-practice source, if used]
 
-### Related Work
+## Key Technical Decisions
 
-- Previous PRs: #[pr_numbers]
-- Related issues: #[issue_numbers]
-- Design documents: [links]
+- [Decision]: [Rationale]
+
+## Open Questions
+
+### Resolved During Planning
+
+- [Question]: [Resolution]
+
+### Deferred to Implementation
+
+- [Question or unknown]: [Why it is intentionally deferred]
+
+<!-- Optional: Include this section only when the work involves DSL design, multi-component
+     integration, complex data flow, state-heavy lifecycle, or other cases where prose alone
+     would leave the approach shape ambiguous. Omit it entirely for well-patterned or
+     straightforward work. -->
+## High-Level Technical Design
+
+> *This illustrates the intended approach and is directional guidance for review, not implementation specification. The implementing agent should treat it as context, not code to reproduce.*
+
+[Pseudo-code grammar, mermaid diagram, data flow sketch, or state diagram — choose the medium that best communicates the solution shape for this work.]
+
+## Implementation Units
+
+- [ ] **Unit 1: [Name]**
+
+**Goal:** [What this unit accomplishes]
+
+**Requirements:** [R1, R2]
+
+**Dependencies:** [None / Unit 1 / external prerequisite]
+
+**Files:**
+- Create: `path/to/new_file`
+- Modify: `path/to/existing_file`
+- Test: `path/to/test_file`
+
+**Approach:**
+- [Key design or sequencing decision]
+
+**Execution note:** [Optional test-first, characterization-first, external-delegate, or other execution posture signal]
+
+**Technical design:** *(optional -- pseudo-code or diagram when the unit's approach is non-obvious. Directional guidance, not implementation specification.)*
+
+**Patterns to follow:**
+- [Existing file, class, or pattern]
+
+**Test scenarios:**
+- [Specific scenario with expected behavior]
+- [Edge case or failure path]
+
+**Verification:**
+- [Outcome that should hold when this unit is complete]
+
+## System-Wide Impact
+
+- **Interaction graph:** [What callbacks, middleware, observers, or entry points may be affected]
+- **Error propagation:** [How failures should travel across layers]
+- **State lifecycle risks:** [Partial-write, cache, duplicate, or cleanup concerns]
+- **API surface parity:** [Other interfaces that may require the same change]
+- **Integration coverage:** [Cross-layer scenarios unit tests alone will not prove]
+
+## Risks & Dependencies
+
+- [Meaningful risk, dependency, or sequencing concern]
+
+## Documentation / Operational Notes
+
+- [Docs, rollout, monitoring, or support impacts when relevant]
+
+## Sources & References
+
+- **Origin document:** [docs/brainstorms/YYYY-MM-DD-<topic>-requirements.md](path)
+- Related code: [path or symbol]
+- Related PRs/issues: #[number]
+- External docs: [url]
 ```
 
-### 5. Issue Creation & Formatting
+For larger `Deep` plans, extend the core template only when useful with sections such as:
 
-<thinking>
-Apply best practices for clarity and actionability, making the issue easy to scan and understand
-</thinking>
+```markdown
+## Alternative Approaches Considered
 
-**Content Formatting:**
+- [Approach]: [Why rejected or not chosen]
 
-- [ ] Use clear, descriptive headings with proper hierarchy (##, ###)
-- [ ] Include code examples in triple backticks with language syntax highlighting
-- [ ] Add screenshots/mockups if UI-related (drag & drop or use image hosting)
-- [ ] Use task lists (- [ ]) for trackable items that can be checked off
-- [ ] Add collapsible sections for lengthy logs or optional details using `<details>` tags
-- [ ] Apply appropriate emoji for visual scanning (🐛 bug, ✨ feature, 📚 docs, ♻️ refactor)
+## Success Metrics
 
-**Cross-Referencing:**
+- [How we will know this solved the intended problem]
 
-- [ ] Link to related issues/PRs using #number format
-- [ ] Reference specific commits with SHA hashes when relevant
-- [ ] Link to code using GitHub's permalink feature (press 'y' for permanent link)
-- [ ] Mention relevant team members with @username if needed
-- [ ] Add links to external resources with descriptive text
+## Dependencies / Prerequisites
 
-**Code & Examples:**
+- [Technical, organizational, or rollout dependency]
 
-````markdown
-# Good example with syntax highlighting and line references
+## Risk Analysis & Mitigation
 
+- [Risk]: [Mitigation]
 
-```ruby
-# app/services/user_service.rb:42
-def process_user(user)
+## Phased Delivery
 
-# Implementation here
+### Phase 1
+- [What lands first and why]
 
-end
+### Phase 2
+- [What follows and why]
+
+## Documentation Plan
+
+- [Docs or runbooks to update]
+
+## Operational / Rollout Notes
+
+- [Monitoring, migration, feature flag, or rollout considerations]
 ```
 
-# Collapsible error logs
+#### 4.3 Planning Rules
 
-<details>
-<summary>Full error stacktrace</summary>
+- Prefer path plus class/component/pattern references over brittle line numbers
+- Keep implementation units checkable with `- [ ]` syntax for progress tracking
+- Do not include implementation code — no imports, exact method signatures, or framework-specific syntax
+- Pseudo-code sketches and DSL grammars are allowed in the High-Level Technical Design section and per-unit technical design fields when they communicate design direction. Frame them explicitly as directional guidance, not implementation specification
+- Mermaid diagrams are encouraged when they clarify relationships or flows that prose alone would make hard to follow — ERDs for data model changes, sequence diagrams for multi-service interactions, state diagrams for lifecycle transitions, flowcharts for complex branching logic
+- Do not include git commands, commit messages, or exact test command recipes
+- Do not expand implementation units into micro-step `RED/GREEN/REFACTOR` instructions
+- Do not pretend an execution-time question is settled just to make the plan look complete
 
-`Error details here...`
+### Phase 5: Final Review, Write File, and Handoff
 
-</details>
-````
+#### 5.1 Review Before Writing
 
-**AI-Era Considerations:**
+Before finalizing, check:
+- The plan does not invent product behavior that should have been defined in `ce:brainstorm`
+- If there was no origin document, the bounded planning bootstrap established enough product clarity to plan responsibly
+- Every major decision is grounded in the origin document or research
+- Each implementation unit is concrete, dependency-ordered, and implementation-ready
+- If test-first or characterization-first posture was explicit or strongly implied, the relevant units carry it forward with a lightweight `Execution note`
+- Test scenarios are specific without becoming test code
+- Deferred items are explicit and not hidden as fake certainty
+- If a High-Level Technical Design section is included, it uses the right medium for the work, carries the non-prescriptive framing, and does not contain implementation code (no imports, exact signatures, or framework-specific syntax)
+- Per-unit technical design fields, if present, are concise and directional rather than copy-paste-ready
 
-- [ ] Account for accelerated development with AI pair programming
-- [ ] Include prompts or instructions that worked well during research
-- [ ] Note which AI tools were used for initial exploration (Claude, Copilot, etc.)
-- [ ] Emphasize comprehensive testing given rapid implementation
-- [ ] Document any AI-generated code that needs human review
+If the plan originated from a requirements document, re-read that document and verify:
+- The chosen approach still matches the product intent
+- Scope boundaries and success criteria are preserved
+- Blocking questions were either resolved, explicitly assumed, or sent back to `ce:brainstorm`
+- Every section of the origin document is addressed in the plan — scan each section to confirm nothing was silently dropped
 
-### 6. Final Review & Submission
-
-**Brainstorm cross-check (if plan originated from a brainstorm):**
-
-Before finalizing, re-read the brainstorm document and verify:
-- [ ] Every key decision from the brainstorm is reflected in the plan
-- [ ] The chosen approach matches what was decided in the brainstorm
-- [ ] Constraints and requirements from the brainstorm are captured in acceptance criteria
-- [ ] Open questions from the brainstorm are either resolved or flagged
-- [ ] The `origin:` frontmatter field points to the brainstorm file
-- [ ] The Sources section includes the brainstorm with a summary of carried-forward decisions
-
-**Pre-submission Checklist:**
-
-- [ ] Title is searchable and descriptive
-- [ ] Labels accurately categorize the issue
-- [ ] All template sections are complete
-- [ ] Links and references are working
-- [ ] Acceptance criteria are measurable
-- [ ] Add names of files in pseudo code examples and todo lists
-- [ ] Add an ERD mermaid diagram if applicable for new model changes
-
-## Write Plan File
+#### 5.2 Write Plan File
 
 **REQUIRED: Write the plan file to disk before presenting any options.**
 
-```bash
-mkdir -p docs/plans/
-# Determine daily sequence number
-today=$(date +%Y-%m-%d)
-last_seq=$(ls docs/plans/${today}-*-plan.md 2>/dev/null | grep -oP "${today}-\K\d{3}" | sort -n | tail -1)
-next_seq=$(printf "%03d" $(( ${last_seq:-0} + 1 )))
-```
+Use the Write tool to save the complete plan to:
 
-Use the Write tool to save the complete plan to `docs/plans/YYYY-MM-DD-NNN-<type>-<descriptive-name>-plan.md` (where NNN is `$next_seq` from the bash command above). This step is mandatory and cannot be skipped — even when running as part of LFG/SLFG or other automated pipelines.
-
-Confirm: "Plan written to docs/plans/[filename]"
-
-**Pipeline mode:** If invoked from an automated workflow (LFG, SLFG, or any `disable-model-invocation` context), skip all AskUserQuestion calls. Make decisions automatically and proceed to writing the plan without interactive prompts.
-
-## Output Format
-
-**Filename:** Use the date, daily sequence number, and kebab-case filename from Step 2 Title & Categorization.
-
-```
+```text
 docs/plans/YYYY-MM-DD-NNN-<type>-<descriptive-name>-plan.md
 ```
 
-Examples:
-- ✅ `docs/plans/2026-01-15-001-feat-user-authentication-flow-plan.md`
-- ✅ `docs/plans/2026-02-03-001-fix-checkout-race-condition-plan.md`
-- ✅ `docs/plans/2026-03-10-002-refactor-api-client-extraction-plan.md`
-- ❌ `docs/plans/2026-01-15-feat-thing-plan.md` (missing sequence number, not descriptive)
-- ❌ `docs/plans/2026-01-15-001-feat-new-feature-plan.md` (too vague - what feature?)
-- ❌ `docs/plans/2026-01-15-001-feat: user auth-plan.md` (invalid characters - colon and space)
-- ❌ `docs/plans/feat-user-auth-plan.md` (missing date prefix and sequence number)
+Confirm:
 
-## Post-Generation Options
+```text
+Plan written to docs/plans/[filename]
+```
 
-After writing the plan file, use the **AskUserQuestion tool** to present these options:
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, skip interactive questions. Make the needed choices automatically and proceed to writing the plan.
+
+#### 5.3 Post-Generation Options
+
+After writing the plan file, present the options using the platform's blocking question tool when available (see Interaction Method). Otherwise present numbered options in chat and wait for the user's reply before proceeding.
 
 **Question:** "Plan ready at `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`. What would you like to do next?"
 
 **Options:**
 1. **Open plan in editor** - Open the plan file for review
-2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (best practices, performance, UI)
-3. **Review and refine** - Improve the document through structured self-review
-4. **Share to Proof** - Upload to Proof for collaborative review and sharing
-5. **Start `/ce:work`** - Begin implementing this plan locally
-6. **Start `/ce:work` on remote** - Begin implementing in Claude Code on the web (use `&` to run in background)
-7. **Create Issue** - Create issue in project tracker (GitHub/Linear)
+2. **Run `/deepen-plan`** - Stress-test weak sections with targeted research when the plan needs more confidence
+3. **Run `document-review` skill** - Improve the plan through structured document review
+4. **Share to Proof** - Upload the plan for collaborative review and sharing
+5. **Start `/ce:work`** - Begin implementing this plan in the current environment
+6. **Start `/ce:work` in another session** - Begin implementing in a separate agent session when the current platform supports it
+7. **Create Issue** - Create an issue in the configured tracker
 
 Based on selection:
-- **Open plan in editor** → Run `open docs/plans/<plan_filename>.md` to open the file in the user's default editor
-- **`/deepen-plan`** → Call the /deepen-plan command with the plan file path to enhance with research
-- **Review and refine** → Load `document-review` skill.
-- **Share to Proof** → Upload the plan to Proof:
+- **Open plan in editor** → Open `docs/plans/<plan_filename>.md` using the current platform's file-open or editor mechanism (e.g., `open` on macOS, `xdg-open` on Linux, or the IDE's file-open API)
+- **`/deepen-plan`** → Call `/deepen-plan` with the plan path
+- **`document-review` skill** → Load the `document-review` skill with the plan path
+- **Share to Proof** → Upload the plan:
   ```bash
   CONTENT=$(cat docs/plans/<plan_filename>.md)
   TITLE="Plan: <plan title from frontmatter>"
@@ -598,44 +616,37 @@ Based on selection:
     -d "$(jq -n --arg title "$TITLE" --arg markdown "$CONTENT" --arg by "ai:compound" '{title: $title, markdown: $markdown, by: $by}')")
   PROOF_URL=$(echo "$RESPONSE" | jq -r '.tokenUrl')
   ```
-  Display: `View & collaborate in Proof: <PROOF_URL>` — skip silently if curl fails. Then return to options.
-- **`/ce:work`** → Call the /ce:work command with the plan file path
-- **`/ce:work` on remote** → Run `/ce:work docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
-- **Create Issue** → See "Issue Creation" section below
-- **Other** (automatically provided) → Accept free text for rework or specific changes
+  Display `View & collaborate in Proof: <PROOF_URL>` if successful, then return to the options
+- **`/ce:work`** → Call `/ce:work` with the plan path
+- **`/ce:work` in another session** → If the current platform supports launching a separate agent session, start `/ce:work` with the plan path there. Otherwise, explain the limitation briefly and offer to run `/ce:work` in the current session instead.
+- **Create Issue** → Follow the Issue Creation section below
+- **Other** → Accept free text for revisions and loop back to options
 
-**Note:** If running `/ce:plan` with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum depth and grounding.
-
-Loop back to options after Simplify or Other changes until user selects `/ce:work` or another action.
+If running with ultrathink enabled, or the platform's reasoning/effort level is set to max or extra-high, automatically run `/deepen-plan` only when the plan is `Standard` or `Deep`, high-risk, or still shows meaningful confidence gaps in decisions, sequencing, system-wide impact, risks, or verification.
 
 ## Issue Creation
 
-When user selects "Create Issue", detect their project tracker from CLAUDE.md:
+When the user selects "Create Issue", detect their project tracker from `AGENTS.md` or, if needed for compatibility, `CLAUDE.md`:
 
-1. **Check for tracker preference** in user's CLAUDE.md (global or project):
-   - Look for `project_tracker: github` or `project_tracker: linear`
-   - Or look for mentions of "GitHub Issues" or "Linear" in their workflow section
-
-2. **If GitHub:**
-
-   Use the title and type from Step 2 (already in context - no need to re-read the file):
+1. Look for `project_tracker: github` or `project_tracker: linear`
+2. If GitHub:
 
    ```bash
    gh issue create --title "<type>: <title>" --body-file <plan_path>
    ```
 
-3. **If Linear:**
+3. If Linear:
 
    ```bash
    linear issue create --title "<title>" --description "$(cat <plan_path>)"
    ```
 
-4. **If no tracker configured:**
-   Ask user: "Which project tracker do you use? (GitHub/Linear/Other)"
-   - Suggest adding `project_tracker: github` or `project_tracker: linear` to their CLAUDE.md
+4. If no tracker is configured:
+   - Ask which tracker they use using the platform's blocking question tool when available (see Interaction Method)
+   - Suggest adding the tracker to `AGENTS.md` for future runs
 
-5. **After creation:**
-   - Display the issue URL
-   - Ask if they want to proceed to `/ce:work`
+After issue creation:
+- Display the issue URL
+- Ask whether to proceed to `/ce:work`
 
-NEVER CODE! Just research and write the plan.
+NEVER CODE! Research, decide, and write the plan.
