@@ -21,6 +21,7 @@
       "!!**/.turbo",
       "!!**/dist",
       "!!**/public",
+      "!!**/skills",
       "!!**/.contentlayer",
       "!!**/*otf.json",
       "!!**/*.html",

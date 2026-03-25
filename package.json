@@ -9,6 +9,7 @@
     "build:tw": "pnpm --filter www build:tw",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
+    "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",
