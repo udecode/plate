@@ -5,6 +5,7 @@ import { type SlateEditor, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import * as deleteColumnExpandedModule from '../merge/deleteColumnWhenExpanded';
 import { deleteColumn } from './deleteColumn';
 
 jsxt;
@@ -251,5 +252,97 @@ describe('deleteColumn', () => {
 
       expect(editor.children).toMatchObject(output.children);
     });
+  });
+
+  it('shrinks table colSizes when deleting a column', () => {
+    const input = (
+      <editor>
+        <htable colSizes={[40, 60]}>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+            <htd>
+              <hp>22</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins({ disableMerge: true }),
+      selection: input.selection,
+      value: input.children,
+    });
+
+    deleteColumn(editor);
+
+    expect(editor.children).toMatchObject([
+      {
+        colSizes: [40],
+        type: 'table',
+      },
+    ]);
+  });
+
+  it('delegates expanded selections to deleteColumnWhenExpanded', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <anchor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>
+                12
+                <focus />
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>21</hp>
+            </htd>
+            <htd>
+              <hp>22</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins({ disableMerge: true }),
+      selection: input.selection,
+      value: input.children,
+    });
+    const spy = spyOn(
+      deleteColumnExpandedModule,
+      'deleteColumnWhenExpanded'
+    ).mockReturnValue(undefined as any);
+
+    deleteColumn(editor);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls[0]?.[1][1]).toEqual([0]);
+    spy.mockRestore();
   });
 });

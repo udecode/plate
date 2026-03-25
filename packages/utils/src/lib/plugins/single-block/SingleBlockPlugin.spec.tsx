@@ -25,6 +25,17 @@ const output = (
 ) as any;
 
 describe('SingleBlockPlugin', () => {
+  it('disables the trailing block plugin while enabled', () => {
+    const editor = createSlateEditor({
+      plugins: [SingleBlockPlugin],
+      value: [{ type: 'p', children: [{ text: 'test' }] }] as any,
+    });
+
+    expect(editor.getPlugin(SingleBlockPlugin).override.enabled).toEqual({
+      trailingBlock: false,
+    });
+  });
+
   it('merge all blocks into the first block with soft breaks', () => {
     const editor = createSlateEditor({
       plugins: [SingleBlockPlugin],

@@ -22,27 +22,36 @@ Hard constraints:
 - No one-smoke-test-per-package sweep.
 - Do not add broad smoke coverage for thin wrapper packages.
 
-## Current Priorities
+## Coverage Strategy
 
-- Phase order:
-  1. `@platejs/slate`
-  2. `@platejs/utils`, `@udecode/react-utils`, `@udecode/utils`
-  3. `@platejs/core`
-  4. `table`, `selection`, `markdown`, `code-block`, `list-classic`, `autoformat`, `link`
-  5. `media`, `docx-io`, `docx`, `ai`, `dnd`, `combobox`, `suggestion`, `resizable`, `date`, `layout`, `list`
-  6. thin wrappers only when they gain branching logic or other real logic
-- `@platejs/slate` phase 1 is complete enough. Stop once the remaining misses are mostly deferred DOM wrappers plus low-risk non-DOM dust.
-- Next up is the utility ring:
-  - `@platejs/utils`: keep plugin contract tests as the main seam and cover only real logic gaps.
-  - `@udecode/react-utils`: prioritize zero-coverage helpers and hook semantics.
-  - `@udecode/utils`: prioritize pure helper branches and composition utilities.
-- After the utility ring, deepen `@platejs/core`:
-  - expand the compile-only type lane for plugin creation, editor creation, inference, and option or API merging
-  - deepen runtime coverage for plugin resolution, override rules, editor composition, HTML or static behavior, node-id, affinity, and selector or store semantics
+- Coverage is for regression detection during breaking changes and rearchitecture, not for winning a percentage contest.
+- Rank files from fresh `lcov`. Trust file order more than package totals.
+- Work in passes:
+  1. high-value contract pass: do every honest file with score `>= 6`
+  2. medium-value follow-up: rerun coverage, then do worthwhile `>= 5` files while skipping crumbs, wrappers, and sludge
+  3. architecture-safety pass: stop following coverage blindly and harden the contracts you most refuse to break
+- File-first beats package sweeps once the obvious packages are already covered.
+- Good architecture-safety targets:
+  - plugin resolution and composition
+  - normalization contracts
+  - parser and serializer behavior
+  - structural transforms and merge helpers
+  - history, diff, and change-tracking behavior
+  - public editor invariants
+- `/react` is not permanently excluded. Exclude it only when the current pass explicitly says so.
+- React work should wait until non-React seams are exhausted only when that is the active phase goal, not because the skill hardcodes it forever.
+- Stop when the remaining misses are mostly:
+  - thin wrappers
+  - DOM-only or provider-only seams
+  - giant low-ROI sludge files
+  - tiny uncovered crumbs
+  - code likely to be deleted or rewritten soon
 
 ## Core Rules
 
 - Assert public behavior through editor APIs, plugin APIs, hooks, transforms, or rendered output. Do not assert private state, call order, or implementation detail when public behavior already proves the contract.
+- Prefer file-ranked batches over package sweeps. Package sweeps are for early broad passes, not the endgame.
+- Do not use coverage to justify testing files with no meaningful contract.
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
 - Use `*.spec.ts[x]` for the fast lane and `*.slow.ts[x]` for the slow lane.
 - Keep helpers package-local. Never import a helper from another spec file.
@@ -69,7 +78,7 @@ Hard constraints:
   - HTML `insertData`
   - DnD-style contracts
 - Use `createPlateEditor` only when the contract is genuinely Plate-specific.
-- Use rendered React tests only for hooks, providers, stores, DOM behavior, or rerender semantics.
+- Use rendered React tests only when the contract is genuinely React-specific: hooks, providers, stores, DOM behavior, or rerender semantics.
 - Remaining `createPlateEditor` usage is a reviewed allowlist, not a future cleanup queue.
 
 ## File Organization
@@ -102,6 +111,7 @@ Hard constraints:
 ## Cleanup Heuristics
 
 - Score files before cleanup waves instead of skimming randomly.
+- Use fresh `lcov` after each pass. Do not keep working from a stale hotspot map.
 - Rewrite large hotspot specs before chasing broad title debt. Bigger signal first.
 - Scan title debt across:
   - plain string titles
@@ -119,6 +129,8 @@ Hard constraints:
 - For rule-override hotspots, extract one editor helper and table-drive repeated node-type cases instead of cloning the same transform assertions.
 - For plugin-composition hotspots, extract helpers before adding more inline setup.
 - Adapt upstream invariants when local runtime semantics differ. Keep the invariant, rewrite the fixture around the real public contract.
+- Treat tiny one-branch crumbs as crumbs. Do not let a coverage number talk you into fake work.
+- Penalize giant files with poor test ROI unless they hold a central contract you actually care about during the next rewrite.
 
 ## Package Rules
 
@@ -219,6 +231,7 @@ Keep `__tests__/` when it holds:
 ## Quick Reference
 
 - Start with the smallest seam that proves the contract: `createEditor` -> `createSlateEditor` -> `createPlateEditor`.
+- Work in passes: `>= 6` first, rerun coverage, then worthwhile `>= 5`, then switch to architecture-safety targets.
 - Use `bun run test` for the fast default loop. Use `pnpm test:all` for the full suite.
 - Use `bun run test:profile` to inspect the fast loop and `bun run test:slowest` to enforce it.
 - Use Bun globals. Do not import them from `bun:test`.
@@ -232,4 +245,5 @@ Keep `__tests__/` when it holds:
   - fast lane: `*.spec.ts[x]`, run by `pnpm test`
   - slow lane: `*.slow.ts[x]`, run by `pnpm test:slow`
 - Use `pnpm test:all` for the full repo test run instead of relying on bare `bun test`.
+- Stop before 100%. When the remaining misses are wrappers, DOM/provider dust, sludge, or crumbs, you are done.
 

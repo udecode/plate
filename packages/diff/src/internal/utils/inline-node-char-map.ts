@@ -36,7 +36,7 @@ export class InlineNodeCharMap {
         ...NodeApi.extractProps(haystackNode),
       };
 
-      const nodesForTexts = splitText.map((text) => ({
+      const nodesForTexts = splitText.map((text: string) => ({
         ...haystackNode,
         text,
       }));

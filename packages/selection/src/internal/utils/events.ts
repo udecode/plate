@@ -1,18 +1,27 @@
 export type EventBindingArgs = [
-  (EventTarget | undefined) | (EventTarget | undefined)[],
+  (
+    | (EventTarget | undefined)
+    | (EventTarget | undefined)[]
+    | HTMLCollection
+    | NodeList
+  ),
   string[] | string,
   AnyFunction,
   Record<string, unknown>?,
 ];
 
-type AnyFunction = (...arg: any) => any;
+type AnyFunction = (...args: any[]) => any;
 
 type Method = 'addEventListener' | 'removeEventListener';
 
 const eventListener =
   (method: Method) =>
   (
-    items: (EventTarget | undefined) | (EventTarget | undefined)[],
+    items:
+      | (EventTarget | undefined)
+      | (EventTarget | undefined)[]
+      | HTMLCollection
+      | NodeList,
     events: string[] | string,
     fn: AnyFunction,
     options = {}

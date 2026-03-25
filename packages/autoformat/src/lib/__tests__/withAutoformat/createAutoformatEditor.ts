@@ -26,4 +26,4 @@ export const createAutoformatEditor = ({
       }),
     ],
     value,
-  });
+  } as any);

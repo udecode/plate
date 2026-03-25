@@ -49,6 +49,7 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
 
     /* Skip to matching '>' (considering quotes) ------------------------------------ */
     let inQuote: "'" | '"' | null = null;
+    let foundTagEnd = false;
     let selfClosing = false;
 
     while (i < len) {
@@ -57,6 +58,7 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
         if (ch === inQuote) inQuote = null;
       } else if (ch === '"' || ch === "'") inQuote = ch;
       else if (ch === '>') {
+        foundTagEnd = true;
         selfClosing = data[i - 1] === '/';
         i++; // Include '>'
         break;
@@ -64,7 +66,7 @@ export const splitIncompleteMdx = (data: string): string[] | string => {
       i++;
     }
 
-    if (i >= len) {
+    if (!foundTagEnd) {
       // Didn't reach '>'
       cutPos = tagStart;
       break;

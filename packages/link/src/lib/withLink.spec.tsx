@@ -11,7 +11,7 @@ jsxt;
 
 const createClipboardData = (text: string) =>
   ({
-    getData: () => text,
+    getData: (type: string) => (type === 'text/plain' ? text : ''),
   }) as any;
 
 const createLinkEditor = (input: SlateEditor, options?: Record<string, any>) =>
@@ -161,6 +161,31 @@ describe('withLink', () => {
         ).children
       );
     });
+
+    it('does not wrap again when the word before the cursor is already a link', () => {
+      const input = (
+        <editor>
+          <hp>
+            <ha url="http://google.com">http://google.com</ha>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createLinkEditor(input);
+      editor.tf.insertText(' ');
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp>
+              <htext />
+              <ha url="http://google.com">http://google.com</ha>{' '}
+            </hp>
+          </editor>
+        ).children
+      );
+    });
   });
 
   describe('insertBreak', () => {
@@ -188,6 +213,30 @@ describe('withLink', () => {
             <hp>
               <cursor />
             </hp>
+          </editor>
+        ).children
+      );
+    });
+
+    it('falls back to the normal block split when the selection is expanded', () => {
+      const input = (
+        <editor>
+          <hp>
+            before <anchor />
+            http://google.com
+            <focus /> after
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createLinkEditor(input);
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp>before </hp>
+            <hp> after</hp>
           </editor>
         ).children
       );

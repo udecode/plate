@@ -37,7 +37,7 @@ export const autoformatMark = (
 
     const matchRange: TRange = {
       anchor: afterStartMatchPoint!,
-      focus: beforeEndMatchPoint,
+      focus: beforeEndMatchPoint!,
     };
 
     if (!ignoreTrim) {

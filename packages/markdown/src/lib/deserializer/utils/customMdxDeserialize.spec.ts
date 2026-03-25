@@ -2,6 +2,10 @@ import { createTestEditor } from '../../__tests__/createTestEditor';
 import { customMdxDeserialize } from './customMdxDeserialize';
 
 describe('customMdxDeserialize', () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('uses a registered rule when the mdx tag name matches one', () => {
     const editor = createTestEditor();
 
@@ -51,6 +55,30 @@ describe('customMdxDeserialize', () => {
     );
 
     expect(result).toEqual([{ text: '<Badge>New</Badge>' }]);
+  });
+
+  it('warns and falls back when the inline mdx tag name is empty', () => {
+    const editor = createTestEditor();
+    const warn = spyOn(console, 'warn').mockImplementation(() => {});
+
+    const result = customMdxDeserialize(
+      {
+        children: [{ type: 'text', value: 'New' }],
+        name: '',
+        type: 'mdxJsxTextElement',
+      } as any,
+      {},
+      { editor }
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      'This MDX node does not have a parser for deserialization',
+      expect.objectContaining({
+        name: '',
+        type: 'mdxJsxTextElement',
+      })
+    );
+    expect(result).toEqual([{ text: '<>New</>' }]);
   });
 
   it('falls back to a paragraph wrapper for unknown block mdx tags', () => {

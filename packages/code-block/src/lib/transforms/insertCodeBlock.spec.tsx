@@ -1,8 +1,14 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  createSlateEditor,
+  KEYS,
+} from 'platejs';
 
+import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
 
@@ -130,5 +136,55 @@ describe('insert code block', () => {
 
       expect(editor.children).toEqual(output.children);
     });
+  });
+
+  it('does nothing when there is no selection', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      value: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
+    });
+    const insertBreak = spyOn(editor.tf, 'insertBreak');
+    const setNodes = spyOn(editor.tf, 'setNodes');
+    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+
+    insertCodeBlock(editor);
+
+    expect(editor.children).toEqual([
+      { type: KEYS.p, children: [{ text: 'line 1' }] },
+    ]);
+    expect(insertBreak).not.toHaveBeenCalled();
+    expect(setNodes).not.toHaveBeenCalled();
+    expect(wrapNodes).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the selection is already in a code block', () => {
+    const input = createEditor(
+      (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              before <cursor />
+              after
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any
+    );
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    const before = editor.children;
+    const insertBreak = spyOn(editor.tf, 'insertBreak');
+    const setNodes = spyOn(editor.tf, 'setNodes');
+    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+
+    insertCodeBlock(editor);
+
+    expect(editor.children).toBe(before);
+    expect(insertBreak).not.toHaveBeenCalled();
+    expect(setNodes).not.toHaveBeenCalled();
+    expect(wrapNodes).not.toHaveBeenCalled();
   });
 });

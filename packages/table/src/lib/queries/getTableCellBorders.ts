@@ -6,6 +6,8 @@ import type {
   TTableRowElement,
 } from 'platejs';
 
+import { KEYS } from 'platejs';
+
 import type { BorderDirection } from '../types';
 
 import { type CellIndices, getCellIndices } from '../utils/getCellIndices';
@@ -40,7 +42,15 @@ export const getTableCellBorders = (
       right: defaultBorder,
     };
   }
-  const [tableNode] = editor.api.parent<TTableElement>(rowPath)!;
+  const [tableNode] = editor.api.parent<TTableElement>(rowPath) ?? [];
+  const tableType = editor.getType(KEYS.table);
+
+  if (!tableNode || tableNode.type !== tableType) {
+    return {
+      bottom: defaultBorder,
+      right: defaultBorder,
+    };
+  }
 
   const { col } = cellIndices ?? getCellIndices(editor, element);
   const isFirstCell = col === 0;

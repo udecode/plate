@@ -68,4 +68,45 @@ describe('insertNodes', () => {
       { type: 'p', children: [{ text: 'two' }] },
     ]);
   });
+
+  it('inserts at the end when there is no selection or explicit target', () => {
+    const editor = createEditor({
+      children: [
+        { type: 'p', children: [{ text: 'one' }] },
+        { type: 'p', children: [{ text: 'two' }] },
+      ] as any,
+      selection: null,
+    });
+
+    editor.tf.insertNodes({ type: 'p', children: [{ text: 'new' }] } as any);
+
+    expect(editor.children).toEqual([
+      { type: 'p', children: [{ text: 'one' }] },
+      { type: 'p', children: [{ text: 'two' }] },
+      { type: 'p', children: [{ text: 'new' }] },
+    ]);
+  });
+
+  it('prefers an explicit target over the current selection', () => {
+    const editor = createEditor({
+      children: [
+        { type: 'p', children: [{ text: 'one' }] },
+        { type: 'p', children: [{ text: 'two' }] },
+      ] as any,
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+
+    editor.tf.insertNodes({ type: 'p', children: [{ text: 'new' }] } as any, {
+      at: [1],
+    });
+
+    expect(editor.children).toEqual([
+      { type: 'p', children: [{ text: 'one' }] },
+      { type: 'p', children: [{ text: 'new' }] },
+      { type: 'p', children: [{ text: 'two' }] },
+    ]);
+  });
 });

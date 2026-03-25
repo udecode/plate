@@ -5,7 +5,6 @@ import {
   withTriggerCombobox,
 } from '@platejs/combobox';
 import {
-  type Descendant,
   type PluginConfig,
   createSlatePlugin,
   createTSlatePlugin,
@@ -24,7 +23,7 @@ export type EmojiInputConfig = PluginConfig<
      *   import emojiMartData from '@emoji-mart/data';
      */
     data?: EmojiMartData;
-    createEmojiNode?: (emoji: Emoji) => Descendant;
+    createEmojiNode?: (emoji: Emoji) => any;
   } & TriggerComboboxPluginOptions
 >;
 

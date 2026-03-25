@@ -97,6 +97,34 @@ describe('select', () => {
         focus: { offset: 1, path: [0, 0] },
       });
     });
+
+    it('creates a selection from an explicit range when current selection is null', () => {
+      const editor: any = createEditor({
+        children: [
+          { type: 'p', children: [{ text: 'hello' }] },
+          { type: 'p', children: [{ text: 'world' }] },
+        ] as any,
+        selection: null,
+      });
+      const selections = [
+        {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 5, path: [1, 0] },
+        },
+      ];
+
+      editor.selections = selections;
+      editor.tf.select({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 5, path: [1, 0] },
+      });
+
+      expect(editor.selection).toEqual({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 5, path: [1, 0] },
+      });
+      expect(editor.selections).toBe(selections);
+    });
   });
 
   describe('when focus option', () => {
@@ -234,5 +262,33 @@ describe('select', () => {
 
       focusSpy.mockRestore();
     });
+  });
+
+  it('does not overwrite additive future selection fields', () => {
+    const editor: any = createEditor({
+      children: [
+        { type: 'p', children: [{ text: 'one' }] },
+        { type: 'p', children: [{ text: 'two' }] },
+      ] as any,
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+    const selections = [
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    ];
+
+    editor.selections = selections;
+    editor.tf.select([1], { edge: 'start' });
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
+    expect(editor.selections).toBe(selections);
   });
 });

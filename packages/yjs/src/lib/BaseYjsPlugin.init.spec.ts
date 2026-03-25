@@ -100,6 +100,31 @@ describe('BaseYjsPlugin init', () => {
     expect(existingProvider.connect).toHaveBeenCalledTimes(1);
   });
 
+  it('skips provider configs with null options and keeps valid provider instances', async () => {
+    const existingProvider = createMockProvider({ type: 'custom' });
+    const constructorProps: any[] = [];
+    const providerType = registerTestProviderType((props) => {
+      constructorProps.push(props);
+
+      return createMockProvider({ type: 'webrtc' });
+    });
+    const editor = createEditor({
+      providers: [{ options: null, type: providerType }, existingProvider],
+    });
+
+    await editor.api.yjs.init({
+      autoConnect: false,
+      value: [{ type: 'p', children: [{ text: 'hello' }] }] as any,
+    });
+
+    expect(constructorProps).toHaveLength(0);
+    expect(existingProvider.connect).not.toHaveBeenCalled();
+
+    editor.api.yjs.connect();
+
+    expect(existingProvider.connect).toHaveBeenCalledTimes(1);
+  });
+
   it('deserializes string values before seeding shared content', async () => {
     const editor = createEditor({
       providers: [createMockProvider({ type: 'custom' })],
@@ -289,6 +314,40 @@ describe('BaseYjsPlugin init', () => {
       'editor.api.onChange',
       'onReady',
     ]);
+  });
+
+  it('forwards auto-connect provider errors through onError and still finishes init', async () => {
+    const provider = createMockProvider({ type: 'webrtc' });
+    const onError = mockFn((_: { error: Error; type: string }) => {});
+    const setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
+      callback: TimerHandler
+    ) => {
+      queueMicrotask(() => {
+        (callback as () => void)();
+      });
+
+      return 1 as any;
+    }) as any);
+    provider.connect.mockImplementation(() => {
+      throw new Error('connect failed');
+    });
+    const editor = createEditor({
+      onError,
+      providers: [provider],
+    });
+
+    await editor.api.yjs.init({
+      autoConnect: true,
+      value: [{ type: 'p', children: [{ text: 'hello' }] }] as any,
+    });
+
+    expect(provider.connect).toHaveBeenCalledTimes(1);
+    expect(onError).toHaveBeenCalledWith({
+      error: expect.any(Error),
+      type: 'webrtc',
+    });
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    expect(YjsEditor.connect).toHaveBeenCalledTimes(1);
   });
 
   it('times out cleanly when sync never arrives', async () => {

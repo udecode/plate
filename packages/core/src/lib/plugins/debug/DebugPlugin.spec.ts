@@ -3,6 +3,10 @@ import { createSlatePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('create an editor with combined plugin APIs', () => {
     const mockLogger = mock();
     const editor = createSlateEditor({
@@ -127,5 +131,32 @@ describe('DebugPlugin', () => {
     editor.api.debug.log('This should not be logged', 'TEST');
 
     expect(mockLogger).not.toHaveBeenCalled();
+  });
+
+  it('uses the default console logger surface when throwErrors is disabled', () => {
+    const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
+    const infoSpy = spyOn(console, 'info').mockImplementation(() => {});
+    const logSpy = spyOn(console, 'log').mockImplementation(() => {});
+    const warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
+    const editor = createSlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          options: {
+            logLevel: 'log',
+            throwErrors: false,
+          },
+        }),
+      ],
+    });
+
+    editor.api.debug.error('error', 'ERR');
+    editor.api.debug.info('info', 'INFO');
+    editor.api.debug.log('log', 'LOG');
+    editor.api.debug.warn('warn', 'WARN');
+
+    expect(errorSpy).toHaveBeenCalledWith('[ERR] error', undefined);
+    expect(infoSpy).toHaveBeenCalledWith('[INFO] info', undefined);
+    expect(logSpy).toHaveBeenCalledWith('[LOG] log', undefined);
+    expect(warnSpy).toHaveBeenCalledWith('[WARN] warn', undefined);
   });
 });

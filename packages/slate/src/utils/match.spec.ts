@@ -209,4 +209,14 @@ describe('combineTransformMatchOptions', () => {
     expect(combined({ children: [], type: 'p' } as any, [0])).toBe(true);
     expect(combined({ text: 'word' } as any, [0, 0])).toBe(false);
   });
+
+  it('uses the explicit match option instead of forcing the default block match', () => {
+    const editor = createEditor();
+    const combined = combineTransformMatchOptions(editor, undefined, {
+      match: { text: 'word' },
+    }) as any;
+
+    expect(combined({ text: 'word' } as any, [0, 0])).toBe(true);
+    expect(combined({ children: [], type: 'p' } as any, [0])).toBe(false);
+  });
 });

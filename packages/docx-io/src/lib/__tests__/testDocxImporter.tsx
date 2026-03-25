@@ -3,22 +3,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { cleanDocx } from '@platejs/docx';
-import type { SlatePlugin, TNode } from 'platejs';
-import { createSlateEditor } from 'platejs';
-import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import {
-  BasicBlocksPlugin,
-  BasicMarksPlugin,
-} from '@platejs/basic-nodes/react';
-import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { IndentPlugin } from '@platejs/indent/react';
-import { LineHeightPlugin } from '@platejs/basic-styles/react';
-import { LinkPlugin } from '@platejs/link/react';
-import { ListPlugin } from '@platejs/list/react';
-import { ImagePlugin } from '@platejs/media/react';
-import { TablePlugin } from '@platejs/table/react';
+  BaseBasicBlocksPlugin,
+  BaseBasicMarksPlugin,
+} from '@platejs/basic-nodes';
+import { BaseHorizontalRulePlugin } from '@platejs/basic-nodes';
+import {
+  BaseLineHeightPlugin,
+  BaseTextAlignPlugin,
+} from '@platejs/basic-styles';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { cleanDocx } from '@platejs/docx';
+import { BaseIndentPlugin } from '@platejs/indent';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin } from '@platejs/list';
+import { BaseImagePlugin } from '@platejs/media';
+import type { Descendant, SlatePlugin } from 'platejs';
+import { createSlateEditor } from 'platejs';
+import { BaseTablePlugin } from '@platejs/table';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
 
@@ -64,17 +66,17 @@ export const testDocxImporter = ({
       },
       plugins: [
         ...plugins,
-        ImagePlugin,
-        HorizontalRulePlugin,
-        CodeBlockPlugin,
-        LinkPlugin,
-        BasicBlocksPlugin,
-        BasicMarksPlugin,
-        ListPlugin,
-        TablePlugin,
-        LineHeightPlugin.extend(() => injectConfig),
-        TextAlignPlugin.extend(() => injectConfig),
-        IndentPlugin.extend(() => injectConfig),
+        BaseImagePlugin,
+        BaseHorizontalRulePlugin,
+        BaseCodeBlockPlugin,
+        BaseLinkPlugin,
+        BaseBasicBlocksPlugin,
+        BaseBasicMarksPlugin,
+        BaseListPlugin,
+        BaseTablePlugin,
+        BaseLineHeightPlugin.extend(() => injectConfig),
+        BaseTextAlignPlugin.extend(() => injectConfig),
+        BaseIndentPlugin.extend(() => injectConfig),
       ],
     } as any);
 
@@ -95,7 +97,9 @@ export const testDocxImporter = ({
 
     // Deserialize HTML to nodes
     const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
-    const nodes = editor.api.html.deserialize({ element: doc.body }) as TNode[];
+    const nodes = editor.api.html.deserialize({
+      element: doc.body,
+    }) as Descendant[];
 
     expect(nodes).toEqual(expected.children);
   });

@@ -1,7 +1,7 @@
 import type { OverrideEditor } from 'platejs/react';
 
 import { indent } from '@platejs/indent';
-import { type SlateEditor, type TIndentElement, KEYS, NodeApi } from 'platejs';
+import { type SlateEditor, type TIndentElement, KEYS } from 'platejs';
 
 import type { ToggleConfig } from './TogglePlugin';
 
@@ -11,6 +11,9 @@ import {
   moveNextSelectableAfterCurrentBlock,
 } from './transforms';
 
+const isNode = (value: any): value is { id?: string; type?: string } =>
+  value !== null && value !== undefined;
+
 export const withToggle: OverrideEditor<ToggleConfig> = ({
   api: { isSelectable },
   editor,
@@ -18,18 +21,15 @@ export const withToggle: OverrideEditor<ToggleConfig> = ({
   tf: { deleteBackward, deleteForward, insertBreak },
 }) => ({
   api: {
-    isSelectable(element) {
-      if (
-        NodeApi.isNode(element) &&
-        isInClosedToggle(editor, element.id as string)
-      )
+    isSelectable(element: any) {
+      if (isNode(element) && isInClosedToggle(editor, element.id as string))
         return false;
 
       return isSelectable(element);
     },
   },
   transforms: {
-    deleteBackward(unit) {
+    deleteBackward(unit: any) {
       if (
         moveCurrentBlockAfterPreviousSelectable(editor as SlateEditor) === false
       )
@@ -38,7 +38,7 @@ export const withToggle: OverrideEditor<ToggleConfig> = ({
       deleteBackward(unit);
     },
 
-    deleteForward(unit) {
+    deleteForward(unit: any) {
       if (moveNextSelectableAfterCurrentBlock(editor as SlateEditor) === false)
         return;
 

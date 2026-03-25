@@ -101,6 +101,32 @@ describe('BaseYjsPlugin editor API', () => {
     expect(third.disconnect).not.toHaveBeenCalled();
   });
 
+  it('warns and keeps going when a disconnect throws', () => {
+    const first = createMockProvider({
+      connected: true,
+      type: 'webrtc',
+    });
+    const second = createMockProvider({
+      connected: true,
+      type: 'hocuspocus',
+    });
+    first.disconnect.mockImplementation(() => {
+      throw new Error('disconnect failed');
+    });
+    const editor = createEditor({
+      providers: [first, second],
+    });
+
+    expect(() => editor.api.yjs.disconnect()).not.toThrow();
+
+    expect(second.disconnect).toHaveBeenCalledTimes(1);
+    expect(first.disconnect).toHaveBeenCalledTimes(1);
+    expect(console.warn).toHaveBeenCalledWith(
+      '[yjs] Error disconnecting provider (webrtc):',
+      expect.any(Error)
+    );
+  });
+
   it('destroys connected providers in reverse order and always calls YjsEditor.disconnect', () => {
     const destroyOrder: string[] = [];
     const first = createMockProvider({

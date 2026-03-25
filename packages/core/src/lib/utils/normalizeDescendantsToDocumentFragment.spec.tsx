@@ -8,6 +8,16 @@ import { normalizeDescendantsToDocumentFragment } from './index';
 jsxt;
 
 describe('normalizeDescendantsToDocumentFragment()', () => {
+  it('returns a blank text node when descendants are empty', () => {
+    const editor = createSlateEditor();
+
+    expect(
+      normalizeDescendantsToDocumentFragment(editor, {
+        descendants: [],
+      })
+    ).toEqual([<htext />]);
+  });
+
   it.each([
     {
       input: [<hp />],

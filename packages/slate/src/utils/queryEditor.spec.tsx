@@ -63,4 +63,20 @@ describe('queryEditor', () => {
     expect(queryEditor(endEditor, { selectionAtBlockStart: true })).toBe(false);
     expect(queryEditor(endEditor, { selectionAtBlockEnd: true })).toBe(true);
   });
+
+  it('uses the explicit location instead of the current selection', () => {
+    const editor = createEditor({
+      children: [
+        { children: [{ text: 'test' }], type: 'p' },
+        { children: [{ text: 'quote' }], type: 'blockquote' },
+      ] as any,
+      selection: {
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+    });
+
+    expect(queryEditor(editor, { allow: 'blockquote', at: [1] })).toBe(true);
+    expect(queryEditor(editor, { exclude: 'blockquote', at: [1] })).toBe(false);
+  });
 });

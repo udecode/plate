@@ -92,4 +92,59 @@ describe('isPointNextToNode', () => {
       ).toBe(true);
     });
   });
+
+  describe('when the point is at both start and end of an empty text node', () => {
+    it('checks the next node as a single boundary', () => {
+      const editor = createTestEditor(
+        <editor>
+          <hp>
+            <htext>
+              <cursor />
+            </htext>
+            <hdate>
+              <htext />
+            </hdate>
+          </hp>
+        </editor>
+      );
+
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(true);
+    });
+  });
+
+  describe('when the point is in the middle of text', () => {
+    it('returns false', () => {
+      const editor = createTestEditor(
+        <editor>
+          <hp>
+            te
+            <cursor />
+            st
+            <hdate>
+              <htext />
+            </hdate>
+          </hp>
+        </editor>
+      );
+
+      expect(isPointNextToNode(editor, { nodeType: 'date' })).toBe(false);
+    });
+  });
+
+  describe('when neither selection nor at is available', () => {
+    it('throws a clear error', () => {
+      const editor = createSlateEditor({
+        value: [
+          {
+            children: [{ text: 'test' }],
+            type: 'p',
+          },
+        ],
+      } as any);
+
+      expect(() => isPointNextToNode(editor, { nodeType: 'date' })).toThrow(
+        'No valid selection point found'
+      );
+    });
+  });
 });

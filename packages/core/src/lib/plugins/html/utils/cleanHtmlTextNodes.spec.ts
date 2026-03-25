@@ -1,38 +1,53 @@
-import { NO_BREAK_SPACE } from '../constants';
 import { cleanHtmlTextNodes } from './cleanHtmlTextNodes';
 
 describe('cleanHtmlTextNodes', () => {
-  it('removes whitespace-only newline nodes between sibling elements', () => {
+  it('removes newline-only gaps and normalizes nbsp and carriage-return dust', () => {
     const root = document.createElement('div');
+    const first = document.createElement('span');
+    const second = document.createElement('span');
+    const nbsp = document.createElement('span');
+    const carriage = document.createElement('span');
 
-    root.innerHTML = '<span>one</span>\n   <span>two</span>';
+    first.textContent = 'A';
+    second.textContent = 'B';
+    nbsp.append(document.createTextNode('\u00A0'));
+    carriage.append(document.createTextNode('\r'));
+
+    root.append(
+      first,
+      document.createTextNode('\n   '),
+      second,
+      nbsp,
+      carriage
+    );
 
     cleanHtmlTextNodes(root);
 
-    expect(root.childNodes).toHaveLength(2);
-    expect(root.textContent).toBe('onetwo');
+    expect(root.childNodes).toHaveLength(4);
+    expect(root.childNodes[1]).toBe(second);
+    expect(nbsp.textContent).toBe(' ');
+    expect(carriage.textContent).toBe('');
   });
 
-  it('converts a lone non-breaking space into a regular space', () => {
+  it('removes a preceding br and keeps a single leading newline', () => {
     const root = document.createElement('div');
+    const br = document.createElement('br');
+    const text = document.createTextNode('\nhello\rworld');
 
-    root.append(document.createTextNode(NO_BREAK_SPACE));
+    root.append(br, text);
 
     cleanHtmlTextNodes(root);
-
-    expect(root.textContent).toBe(' ');
-  });
-
-  it('removes a leading br and normalizes newline text into a single leading newline', () => {
-    const root = document.createElement('div');
-
-    root.innerHTML = '<div><br>\n\rHello</div>';
-
-    cleanHtmlTextNodes(root);
-
-    const textNode = root.firstChild?.firstChild as Text | null;
 
     expect(root.querySelector('br')).toBeNull();
-    expect(textNode?.data).toBe('\nHello');
+    expect(root.textContent).toBe('\nhello world');
+  });
+
+  it('replaces line feeds and carriage returns with spaces when there is no preceding br', () => {
+    const root = document.createElement('div');
+    root.append(document.createTextNode('hello\nworld\ragain'));
+
+    cleanHtmlTextNodes(root);
+
+    expect(root.textContent).toBe('hello world again');
   });
 });

@@ -53,4 +53,24 @@ describe('legacy method sync', () => {
     expect(editor.api.point as any).toBe(point as any);
     expect(editor.tf.insertText as any).toBe(insertText as any);
   });
+
+  it('does not touch additive non-whitelisted selection fields', () => {
+    const editor: any = createEditor();
+    const selections = [
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+    ];
+
+    editor.selections = selections;
+    editor.api.selections = 'api-selections';
+    editor.tf.selections = 'tf-selections';
+
+    syncLegacyMethods(editor);
+
+    expect(editor.selections).toBe(selections);
+    expect(editor.api.selections).toBe('api-selections');
+    expect(editor.tf.selections).toBe('tf-selections');
+  });
 });

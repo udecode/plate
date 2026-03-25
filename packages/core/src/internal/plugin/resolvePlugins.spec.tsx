@@ -123,6 +123,107 @@ describe('resolvePlugins', () => {
 
     expect(editor.api.method(1)).toBe('second');
   });
+
+  it('fills plugin cache buckets for node, render, hook, rule, and handler metadata', () => {
+    const editor = createEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'cachey',
+          decorate: () => [],
+          handlers: {
+            onChange: () => {},
+            onNodeChange: () => {},
+            onTextChange: () => {},
+          },
+          node: {
+            isDecoration: false,
+            isLeaf: true,
+            leafProps: { 'data-leaf': 'x' } as any,
+            textProps: { 'data-text': 'y' } as any,
+            type: 'cachey',
+          },
+          normalizeInitialValue: () => {},
+          render: {
+            aboveEditable: () => null,
+            aboveNodes: () => null,
+            aboveSlate: () => null,
+            afterContainer: () => null,
+            afterEditable: () => null,
+            beforeContainer: () => null,
+            beforeEditable: () => null,
+            belowNodes: () => null,
+            belowRootNodes: () => null,
+          },
+          rules: {
+            match: () => true,
+          },
+        }) as any,
+      ],
+    });
+
+    (editor.plugins.cachey as any).useHooks = () => {};
+    resolvePlugins(editor, [editor.plugins.cachey as any]);
+
+    expect(editor.meta.pluginCache.decorate).toContain('cachey');
+    expect(editor.meta.pluginCache.handlers.onChange).toContain('cachey');
+    expect(editor.meta.pluginCache.handlers.onNodeChange).toContain('cachey');
+    expect(editor.meta.pluginCache.handlers.onTextChange).toContain('cachey');
+    expect(editor.meta.pluginCache.node.isText).toContain('cachey');
+    expect(editor.meta.pluginCache.node.leafProps).toContain('cachey');
+    expect(editor.meta.pluginCache.node.textProps).toContain('cachey');
+    expect(editor.meta.pluginCache.normalizeInitialValue).toContain('cachey');
+    expect(editor.meta.pluginCache.render.aboveEditable).toContain('cachey');
+    expect(editor.meta.pluginCache.render.aboveNodes).toContain('cachey');
+    expect(editor.meta.pluginCache.render.aboveSlate).toContain('cachey');
+    expect(editor.meta.pluginCache.render.afterContainer).toContain('cachey');
+    expect(editor.meta.pluginCache.render.afterEditable).toContain('cachey');
+    expect(editor.meta.pluginCache.render.beforeContainer).toContain('cachey');
+    expect(editor.meta.pluginCache.render.beforeEditable).toContain('cachey');
+    expect(editor.meta.pluginCache.render.belowNodes).toContain('cachey');
+    expect(editor.meta.pluginCache.render.belowRootNodes).toContain('cachey');
+    expect(editor.meta.pluginCache.rules.match).toContain('cachey');
+    expect(editor.meta.pluginCache.useHooks).toContain('cachey');
+  });
+
+  it('creates a shortcut handler from plugin-specific transforms', () => {
+    const toggle = mock();
+    const editor = createEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'shortcutTransforms',
+          shortcuts: {
+            toggle: { keys: 'mod+k' },
+          },
+        }).extendTransforms(() => ({
+          toggle,
+        })),
+      ],
+    });
+
+    editor.meta.shortcuts['shortcutTransforms.toggle']?.handler?.({} as any);
+
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates a shortcut handler from plugin-specific api methods', () => {
+    const toggle = mock();
+    const editor = createEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'shortcutApi',
+          shortcuts: {
+            toggle: { keys: 'mod+k' },
+          },
+        }).extendApi(() => ({
+          toggle,
+        })),
+      ],
+    });
+
+    editor.meta.shortcuts['shortcutApi.toggle']?.handler?.({} as any);
+
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('resolveAndSortPlugins', () => {
@@ -211,6 +312,33 @@ describe('resolveAndSortPlugins', () => {
     expect(pluginKeys).toContain('a');
     expect(pluginKeys).toContain('b');
     expect(pluginKeys).toHaveLength(2);
+  });
+
+  it('warns when a dependency is missing', () => {
+    const warnLogger = mock();
+    const editor = createEditor({
+      plugins: [
+        DebugPlugin.configure({
+          options: {
+            logger: { warn: warnLogger } as any,
+            throwErrors: false,
+          },
+        }),
+      ],
+    });
+
+    resolveAndSortPlugins(editor, [
+      createSlatePlugin({
+        key: 'dependent',
+        dependencies: ['missing'],
+      }),
+    ]);
+
+    expect(warnLogger).toHaveBeenCalledWith(
+      'Plugin "dependent" depends on missing plugin "missing"',
+      'PLUGIN_DEPENDENCY_MISSING',
+      undefined
+    );
   });
 });
 

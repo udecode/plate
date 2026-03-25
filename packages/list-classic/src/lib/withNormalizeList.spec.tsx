@@ -165,3 +165,128 @@ describe('clean up lists', () => {
     testNormalize(input, output);
   });
 });
+
+describe('task list normalization', () => {
+  it('adds checked=false to task-list items that are missing it', () => {
+    const input = {
+      children: [
+        {
+          children: [
+            { children: [{ text: 'a' }], type: 'lic' },
+            { children: [{ text: 'b' }], type: 'lic' },
+          ].map((child) => ({ children: [child], type: 'li' })),
+          type: 'taskList',
+        },
+      ],
+    } as any as SlateEditor;
+
+    const output = {
+      children: [
+        {
+          children: [
+            {
+              checked: false,
+              children: [{ children: [{ text: 'a' }], type: 'lic' }],
+              type: 'li',
+            },
+            {
+              checked: false,
+              children: [{ children: [{ text: 'b' }], type: 'lic' }],
+              type: 'li',
+            },
+          ],
+          type: 'taskList',
+        },
+      ],
+    } as any as SlateEditor;
+
+    testNormalize(input, output);
+  });
+
+  it('removes checked from list items outside task lists', () => {
+    const input = {
+      children: [
+        {
+          children: [
+            {
+              checked: true,
+              children: [{ children: [{ text: 'a' }], type: 'lic' }],
+              type: 'li',
+            },
+          ],
+          type: 'ul',
+        },
+      ],
+    } as any as SlateEditor;
+
+    const output = {
+      children: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'a' }], type: 'lic' }],
+              type: 'li',
+            },
+          ],
+          type: 'ul',
+        },
+      ],
+    } as any as SlateEditor;
+
+    testNormalize(input, output);
+  });
+});
+
+describe('nested list normalization', () => {
+  it('moves direct nested lists into the previous list item', () => {
+    const input = {
+      children: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'one' }], type: 'lic' }],
+              type: 'li',
+            },
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: 'two' }], type: 'lic' }],
+                  type: 'li',
+                },
+              ],
+              type: 'ul',
+            },
+          ],
+          type: 'ul',
+        },
+      ],
+    } as any as SlateEditor;
+
+    const output = {
+      children: [
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'one' }], type: 'lic' },
+                {
+                  children: [
+                    {
+                      children: [{ children: [{ text: 'two' }], type: 'lic' }],
+                      type: 'li',
+                    },
+                  ],
+                  type: 'ul',
+                },
+              ],
+              type: 'li',
+            },
+          ],
+          type: 'ul',
+        },
+      ],
+    } as any as SlateEditor;
+
+    testNormalize(input, output);
+  });
+});

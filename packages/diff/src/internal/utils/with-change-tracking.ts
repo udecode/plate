@@ -54,7 +54,7 @@ export const withChangeTracking = <E extends Editor>(
   e.recordingOperations = true;
 
   const { apply } = e;
-  e.apply = (op) => applyWithChangeTracking(e, apply, op);
+  e.apply = (op: Operation) => applyWithChangeTracking(e, apply, op);
   e.tf.apply = e.apply;
 
   e.commitChangesToDiffs = () => commitChangesToDiffs(e, options);
@@ -234,34 +234,38 @@ const commitChangesToDiffs = <E extends Editor>(
       });
     });
 
-    editor.removedTexts.forEach(({ node, pointRef }) => {
-      const point = pointRef.current;
+    editor.removedTexts.forEach(
+      ({ node, pointRef }: ChangeTrackingEditor['removedTexts'][number]) => {
+        const point = pointRef.current;
 
-      if (point) {
-        editor.tf.insertNode(
-          {
-            ...node,
-            ...getDeleteProps(node),
-          },
-          { at: point }
-        );
+        if (point) {
+          editor.tf.insertNode(
+            {
+              ...node,
+              ...getDeleteProps(node),
+            },
+            { at: point }
+          );
+        }
+
+        pointRef.unref();
       }
+    );
 
-      pointRef.unref();
-    });
+    editor.insertedTexts.forEach(
+      ({ node, rangeRef }: ChangeTrackingEditor['insertedTexts'][number]) => {
+        const range = rangeRef.current;
 
-    editor.insertedTexts.forEach(({ node, rangeRef }) => {
-      const range = rangeRef.current;
+        if (range) {
+          editor.tf.setNodes(getInsertProps(node), {
+            at: range,
+            marks: true,
+          });
+        }
 
-      if (range) {
-        editor.tf.setNodes(getInsertProps(node), {
-          at: range,
-          marks: true,
-        });
+        rangeRef.unref();
       }
-
-      rangeRef.unref();
-    });
+    );
   });
 };
 

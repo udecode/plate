@@ -85,28 +85,12 @@ export const upsertLink = (
     match: { type: editor.getType(KEYS.link) },
   });
 
-  const [linkNode, linkPath] = linkEntry ?? [];
+  const [linkNode] = linkEntry ?? [];
 
-  let shouldReplaceText = false;
-
-  if (linkPath && text?.length) {
-    const linkText = editor.api.string(linkPath);
-
-    if (text !== linkText) {
-      shouldReplaceText = true;
-    }
-  }
   if (RangeApi.isExpanded(at)) {
-    // anchor and focus in link
-    if (linkAbove) {
-      unwrapLink(editor, {
-        at: linkAbove[1],
-      });
-    } else {
-      unwrapLink(editor, {
-        split: true,
-      });
-    }
+    unwrapLink(editor, {
+      split: true,
+    });
 
     wrapLink(editor, {
       target,
@@ -116,11 +100,6 @@ export const upsertLink = (
     upsertLinkText(editor, { target, text, url });
 
     return true;
-  }
-  if (shouldReplaceText) {
-    editor.tf.removeNodes({
-      at: linkPath,
-    });
   }
 
   const props = NodeApi.extractProps(linkNode ?? ({} as any));

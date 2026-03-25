@@ -3,7 +3,10 @@ import type { DeserializeMdOptions } from './deserializeMd';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
-import { convertNodesDeserialize } from './convertNodesDeserialize';
+import {
+  buildSlateNode,
+  convertNodesDeserialize,
+} from './convertNodesDeserialize';
 
 describe('convertNodesDeserialize', () => {
   const editor = createTestEditor();
@@ -71,6 +74,20 @@ describe('convertNodesDeserialize', () => {
   ];
 
   describe('allowedNodes option', () => {
+    it('throws when allowedNodes and disallowedNodes are both configured', () => {
+      expect(() =>
+        convertNodesDeserialize(
+          mockNodes,
+          {},
+          {
+            ...baseOptions,
+            allowedNodes: ['heading'],
+            disallowedNodes: ['paragraph'],
+          }
+        )
+      ).toThrow('Cannot combine allowedNodes with disallowedNodes');
+    });
+
     it('only include nodes specified in allowedNodes', () => {
       const options: DeserializeMdOptions = {
         ...baseOptions,
@@ -185,5 +202,17 @@ describe('convertNodesDeserialize', () => {
         },
       ]);
     });
+  });
+
+  it('returns an empty array for unknown node types without a registered rule', () => {
+    expect(
+      buildSlateNode(
+        {
+          type: 'mysteryNode',
+        } as any,
+        {},
+        baseOptions
+      )
+    ).toEqual([]);
   });
 });

@@ -519,4 +519,91 @@ describe('withMergeRules', () => {
       expect(editor.selection).toEqual(output.selection);
     });
   });
+
+  describe('missing plugin fallback', () => {
+    it('removes empty previous nodes when there is no plugin definition', () => {
+      const input = (
+        <editor>
+          <element type="unknown">
+            <htext />
+          </element>
+          <element type="unknown">
+            <cursor />
+            content
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="unknown">
+            <cursor />
+            content
+          </element>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('void merge behavior', () => {
+    const VoidPlugin = createSlatePlugin({
+      key: 'void',
+      node: {
+        isElement: true,
+        isVoid: true,
+        type: 'void',
+      },
+      rules: {
+        merge: { removeEmpty: false },
+      },
+    });
+
+    it('removes the current empty node instead of the target void block', () => {
+      const input = (
+        <editor>
+          <element type="void">
+            <htext />
+          </element>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="void">
+            <htext />
+          </element>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [
+          VoidPlugin,
+          createElementPlugin({
+            key: 'p',
+            mergeRules: { removeEmpty: false },
+          }),
+        ],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      });
+    });
+  });
 });

@@ -45,7 +45,7 @@ export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
 })
   .extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
     insert: {
-      mention: ({ key, value }) => {
+      mention: ({ key, value }: { key?: any; value: any }) => {
         editor.tf.insertNodes<TMentionElement>({
           key,
           children: [{ text: '' }],

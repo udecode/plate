@@ -52,11 +52,35 @@ const plugins = [
   }),
 ];
 
-const createEditorWithCombobox = (chidren: any) => {
+const RegexComboboxPlugin =
+  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
+    key: 'regexCombobox',
+    options: {
+      trigger: /[@#]/,
+      triggerPreviousCharPattern: /^$|^[\s"']$/,
+    },
+  });
+
+const QueryComboboxPlugin =
+  ExampleComboboxPlugin.extend<TriggerComboboxPluginOptions>({
+    key: 'queryCombobox',
+    options: {
+      trigger: '@',
+      triggerPreviousCharPattern: /^$|^[\s"']$/,
+      createComboboxInput: () => ({
+        children: [{ text: '' }],
+        trigger: '@',
+        type: 'mention_input',
+      }),
+      triggerQuery: () => false,
+    },
+  });
+
+const createEditorWithCombobox = (chidren: any, editorPlugins = plugins) => {
   const editor = (<editor>{chidren}</editor>) as any;
 
   return createSlateEditor({
-    plugins,
+    plugins: editorPlugins,
     selection: editor.selection,
     value: editor.children,
   } as any);
@@ -223,5 +247,51 @@ describe('withTriggerCombobox', () => {
         <htext>"</htext>
       </hp>,
     ]);
+  });
+
+  it('insert the default combobox node and forwards userId when a regex trigger matches', () => {
+    const editor = createEditorWithCombobox(
+      <hp>
+        <cursor />
+      </hp>,
+      [ParagraphPlugin, RegexComboboxPlugin]
+    );
+
+    editor.meta.userId = 'user-1';
+    editor.tf.insertText('@');
+
+    expect(editor.children).toEqual([
+      <hp>
+        <htext />
+      </hp>,
+      {
+        children: [{ text: '' }],
+        type: 'exampleCombobox',
+        userId: 'user-1',
+      },
+    ]);
+  });
+
+  it('insert plain text when triggerQuery vetoes the combobox', () => {
+    const editor = createEditorWithCombobox(
+      <hp>
+        <cursor />
+      </hp>,
+      [ParagraphPlugin, QueryComboboxPlugin]
+    );
+
+    editor.tf.insertText('@');
+
+    expect(editor.children).toEqual([<hp>@</hp>]);
+  });
+
+  it('insert plain text when insertion uses an explicit at location', () => {
+    const editor = createEditorWithCombobox(<hp>hello</hp>);
+
+    editor.tf.insertText('@', {
+      at: { offset: 0, path: [0, 0] },
+    });
+
+    expect(editor.children).toEqual([<hp>@hello</hp>]);
   });
 });

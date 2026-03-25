@@ -1,7 +1,16 @@
-import { type TText, PathApi, TextApi } from 'platejs';
 import { toPlatePlugin } from 'platejs/react';
 
 import { BaseTagPlugin } from '../lib';
+
+type TextLike = {
+  text: string;
+};
+
+const isPathEqual = (a: number[], b: number[]) =>
+  a.length === b.length && a.every((value, index) => value === b[index]);
+
+const isTextNode = (value: any): value is TextLike =>
+  typeof value?.text === 'string';
 
 export const TagPlugin = toPlatePlugin(BaseTagPlugin);
 
@@ -14,7 +23,7 @@ export const MultiSelectPlugin = toPlatePlugin(
       type,
     }) => ({
       api: {
-        onChange(op) {
+        onChange(op: any) {
           onChange(op);
 
           const someTag = editor.api.some({
@@ -31,10 +40,10 @@ export const MultiSelectPlugin = toPlatePlugin(
           } else {
             const texts = new Set(
               Array.from(
-                editor.api.nodes<TText>({
+                editor.api.nodes<TextLike>({
                   text: true,
                 })
-              ).map(([text]) => text)
+              ).map((entry: any) => entry[0])
             );
 
             // Remove text not in selection
@@ -42,34 +51,34 @@ export const MultiSelectPlugin = toPlatePlugin(
               at: [],
               empty: false,
               text: true,
-              match: (text: TText) => !texts.has(text),
+              match: (text: TextLike) => !texts.has(text),
             });
           }
         },
       },
       transforms: {
-        deleteBackward(unit) {
+        deleteBackward(unit: any) {
           deleteBackward(unit);
 
           if (
             editor.api.some({
-              match: (n) => n.type === type,
+              match: (n: any) => n.type === type,
             })
           ) {
             editor.tf.move();
           }
         },
 
-        normalizeNode([node, path]) {
+        normalizeNode([node, path]: [any, number[]]) {
           // Duplicate tag removal
           if (
             node.type === type &&
             editor.api.some({
               at: [],
-              match: (n, p) =>
+              match: (n: any, p: number[]) =>
                 n.type === type &&
                 n.value === node.value &&
-                !PathApi.equals(p, path),
+                !isPathEqual(p, path),
             })
           ) {
             editor.tf.removeNodes({
@@ -79,7 +88,7 @@ export const MultiSelectPlugin = toPlatePlugin(
             return;
           }
           // Trim leading whitespace
-          if (TextApi.isText(node) && node.text) {
+          if (isTextNode(node) && node.text) {
             const trimmedText = node.text.trimStart();
 
             if (trimmedText !== node.text) {

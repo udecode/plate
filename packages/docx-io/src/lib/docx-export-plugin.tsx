@@ -36,8 +36,8 @@ import type {
   AnyPluginConfig,
   CreateSlateEditorOptions,
   PluginConfig,
-  Value,
 } from 'platejs';
+import type { SlateEditor } from 'platejs';
 import { createSlateEditor, createTSlatePlugin } from 'platejs';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
@@ -313,6 +313,8 @@ export const DEFAULT_DOCX_MARGINS: DocxExportMargins = {
 // Export Functions
 // =============================================================================
 
+type DocxValue = any[];
+
 /**
  * Internal options for serializing to HTML.
  */
@@ -322,7 +324,7 @@ type SerializeToHtmlInternalOptions = {
   components?: Record<string, React.ComponentType<any>>;
   fontFamily?: string;
   plugins?: AnyPluginConfig[];
-  value: Value;
+  value: DocxValue;
 };
 
 /**
@@ -340,7 +342,7 @@ async function serializeToHtml(
   const editorStatic = createSlateEditor({
     plugins: plugins ?? [],
     value,
-  } as CreateSlateEditorOptions<Value>);
+  } as CreateSlateEditorOptions<DocxValue>);
 
   // Apply component overrides directly to editor.meta.components
   if (components) {
@@ -401,7 +403,7 @@ interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
   components?: Record<string, React.ComponentType<any>>;
   editorPlugins?: AnyPluginConfig[];
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
-  value: Value;
+  value: DocxValue;
 }
 
 /**
@@ -479,7 +481,7 @@ async function exportToDocxInternal(
  * ```
  */
 export async function exportToDocx(
-  value: Value,
+  value: DocxValue,
   options: DocxExportOptions = {}
 ): Promise<Blob> {
   const { editorPlugins, editorStaticComponent, ...operationOptions } = options;
@@ -565,7 +567,7 @@ export function downloadDocx(blob: Blob, filename: string): void {
  * ```
  */
 export async function exportEditorToDocx(
-  value: Value,
+  value: DocxValue,
   filename: string,
   options: DocxExportOptions = {}
 ): Promise<void> {
@@ -637,37 +639,42 @@ export const DocxExportPlugin = createTSlatePlugin<DocxExportPluginConfig>({
       | undefined,
   },
 })
-  .extendEditorApi((ctx) => {
-    const { editor, getOptions } = ctx;
+  .extendEditorApi(
+    (ctx: {
+      editor: SlateEditor;
+      getOptions: () => DocxExportPluginOptions;
+    }) => {
+      const { editor, getOptions } = ctx;
 
-    return {
-      docxExport: {
-        download: (blob: Blob, filename: string): void => {
-          downloadDocx(blob, filename);
+      return {
+        docxExport: {
+          download: (blob: Blob, filename: string): void => {
+            downloadDocx(blob, filename);
+          },
+          exportToBlob: async (
+            options: DocxExportOperationOptions = {}
+          ): Promise<Blob> => {
+            const pluginOptions = getOptions();
+
+            // Get component overrides from plugin.override.components
+            const plugin = editor.getPlugin({ key: 'docxExport' }) as any;
+            const components = plugin.override?.components as
+              | Record<string, React.ComponentType<any>>
+              | undefined;
+
+            return exportToDocxInternal({
+              ...options,
+              components,
+              editorPlugins: pluginOptions.editorPlugins,
+              editorStaticComponent: pluginOptions.editorStaticComponent,
+              value: editor.children,
+            });
+          },
         },
-        exportToBlob: async (
-          options: DocxExportOperationOptions = {}
-        ): Promise<Blob> => {
-          const pluginOptions = getOptions();
-
-          // Get component overrides from plugin.override.components
-          const plugin = editor.getPlugin({ key: 'docxExport' }) as any;
-          const components = plugin.override?.components as
-            | Record<string, React.ComponentType<any>>
-            | undefined;
-
-          return exportToDocxInternal({
-            ...options,
-            components,
-            editorPlugins: pluginOptions.editorPlugins,
-            editorStaticComponent: pluginOptions.editorStaticComponent,
-            value: editor.children,
-          });
-        },
-      },
-    };
-  })
-  .extendEditorTransforms((ctx) => {
+      };
+    }
+  )
+  .extendEditorTransforms((ctx: { editor: SlateEditor }) => {
     const { editor } = ctx;
 
     return {

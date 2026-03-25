@@ -1,4 +1,4 @@
-import { createEditor, PointApi } from '@platejs/slate';
+import { createEditor, PointApi, type TRange } from '@platejs/slate';
 
 const editor = createEditor();
 
@@ -10,6 +10,18 @@ editor.tf.toggleMark('bold', { remove: 'italic' });
 editor.tf.reset({ children: true });
 editor.tf.insertText('text');
 editor.tf.select(editor.selection!);
+
+type FutureSelectionEditor = typeof editor & {
+  selections?: TRange[];
+};
+
+const futureEditor: FutureSelectionEditor = editor;
+
+futureEditor.selections = editor.selection ? [editor.selection] : [];
+futureEditor.api.point([0]);
+futureEditor.api.string([]);
+futureEditor.tf.insertText('future');
+futureEditor.tf.select(futureEditor.selection!);
 
 const maybePoint = PointApi.get(editor.selection);
 

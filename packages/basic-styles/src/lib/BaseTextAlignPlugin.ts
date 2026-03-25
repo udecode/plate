@@ -1,6 +1,11 @@
-import { bindFirst, createSlatePlugin, KEYS } from 'platejs';
+import {
+  type SetNodesOptions,
+  type SlateEditor,
+  createSlatePlugin,
+  KEYS,
+} from 'platejs';
 
-import { setAlign } from './transforms';
+import { type Alignment, setAlign } from './transforms';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const BaseTextAlignPlugin = createSlatePlugin({
@@ -13,11 +18,17 @@ export const BaseTextAlignPlugin = createSlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor }) => ({
+    targetPluginToInject: ({ editor }: { editor: SlateEditor }) => ({
       parsers: {
         html: {
           deserializer: {
-            parse: ({ element, node }) => {
+            parse: ({
+              element,
+              node,
+            }: {
+              element: HTMLElement;
+              node: Record<string, unknown>;
+            }) => {
               if (element.style.textAlign) {
                 node[editor.getType(KEYS.textAlign)] = element.style.textAlign;
               }
@@ -28,6 +39,7 @@ export const BaseTextAlignPlugin = createSlatePlugin({
     }),
   },
   node: { type: 'align' },
-}).extendTransforms(({ editor }) => ({
-  setNodes: bindFirst(setAlign, editor),
+}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
+  setNodes: (value: Alignment, options?: SetNodesOptions) =>
+    setAlign(editor, value, options),
 }));

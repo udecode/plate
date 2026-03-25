@@ -48,7 +48,7 @@ export const autoformatText = (
       });
     }
     if (typeof format === 'function') {
-      format(editor, matched);
+      format(editor, matched as any);
     } else {
       const formatEnd = Array.isArray(format) ? format[1] : format;
       editor.tf.insertText(formatEnd);

@@ -60,7 +60,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
   const startCell = startCellEntry[0];
   const endCell = endCellEntry[0];
 
-  const startCellPath = at.anchor.path;
+  const startCellPath = startCellEntry[1];
   const tablePath = startCellPath.slice(0, -2);
 
   const tableEntry = editor.api.node<TTableElement>({

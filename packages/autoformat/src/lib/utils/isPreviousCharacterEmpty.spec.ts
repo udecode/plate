@@ -39,4 +39,17 @@ describe('isPreviousCharacterEmpty', () => {
       false
     );
   });
+
+  it('returns true when the previous range resolves to an empty string', () => {
+    const editor = {
+      api: {
+        range: mock(() => ({ anchor: {}, focus: {} })),
+        string: mock(() => ''),
+      },
+    } as any;
+
+    expect(isPreviousCharacterEmpty(editor, { path: [0, 0], offset: 1 })).toBe(
+      true
+    );
+  });
 });
