@@ -1,65 +1,30 @@
-import fs from 'node:fs';
-import path from 'node:path';
-
 import { cleanDocx } from './cleanDocx';
 
-const readTestFile = (filepath: string): string => {
-  const absoluteFilepath = path.resolve(__dirname, filepath);
-
-  return fs.readFileSync(absoluteFilepath, 'utf8');
-};
-
 describe('cleanDocx', () => {
-  const MOCK_RTF = 'Whatever, RTF is only needed to process images';
+  it('returns the original html when there is no rtf and no docx markers', () => {
+    const html = '<p>plain html</p>';
 
-  it('Treats in-text line-feed as a space', () => {
-    const html = readTestFile(
-      '../docx-cleaner/__tests__/input/whitespaces-1.html'
-    );
-    const expected = readTestFile(
-      '../docx-cleaner/__tests__/output/whitespaces-1.html'
-    );
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result.trim()).toBe(expected.trim());
+    expect(cleanDocx(html, '')).toBe(html);
   });
 
-  it('Ignores extra space in soft breaks', () => {
-    const html = readTestFile(
-      '../docx-cleaner/__tests__/input/whitespaces-2.html'
-    );
-    const expected = readTestFile(
-      '../docx-cleaner/__tests__/output/whitespaces-2.html'
-    );
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result.trim()).toBe(expected.trim());
-  });
+  it('cleans common docx artifacts into normal html', () => {
+    const html = [
+      '<p class="MsoQuote">Quote</p>',
+      '<p><span class="MsoFootnoteReference">[4]</span></p>',
+      '<p><span style="mso-spacerun: yes">  </span><span style="mso-tab-count:2"></span></p>',
+      '<p><o:p>\u00A0</o:p></p>',
+      '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:ignore">1.</span> Item</p>',
+      '<p><br /><!--[if !supportLineBreakNewLine]--><span>drop</span><!--[endif]--></p>',
+    ].join('');
 
-  it('Ignores HTML whitespace', () => {
-    const html = readTestFile(
-      '../docx-cleaner/__tests__/input/whitespaces-3.html'
-    );
-    const expected = readTestFile(
-      '../docx-cleaner/__tests__/output/whitespaces-3.html'
-    );
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result.trim()).toBe(expected.trim());
-  });
+    const result = cleanDocx(html, '{\\rtf1}');
+    const document = new DOMParser().parseFromString(result, 'text/html');
 
-  it('Cleans empty paragraphs', () => {
-    const html = readTestFile(
-      '../docx-cleaner/__tests__/input/empty-paragraphs.html'
-    );
-    const expected = readTestFile(
-      '../docx-cleaner/__tests__/output/empty-paragraphs.html'
-    );
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result.trim()).toBe(expected.trim());
-  });
-
-  it('Replaces br with line-feed', () => {
-    const html = readTestFile('../docx-cleaner/__tests__/input/brs.html');
-    const expected = readTestFile('../docx-cleaner/__tests__/output/brs.html');
-    const result = cleanDocx(html, MOCK_RTF);
-    expect(result.trim()).toBe(expected.trim());
+    expect(result).toContain('white-space: pre-wrap');
+    expect(document.querySelector('blockquote')?.textContent).toBe('Quote');
+    expect(document.querySelector('sup')?.textContent).toBe('4');
+    expect(result).not.toContain('MsoFootnoteReference');
+    expect(result).not.toContain('[if !supportLineBreakNewLine]');
+    expect(result).toContain('mso-list:Ignore');
   });
 });

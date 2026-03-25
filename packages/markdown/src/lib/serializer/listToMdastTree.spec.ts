@@ -510,4 +510,200 @@ describe('listToMdastTree', () => {
 
     expect(resultWithSpread.spread).toBe(true);
   });
+
+  it('creates sibling nested lists when the style changes at the same indent', () => {
+    const nodes = [
+      {
+        children: [{ text: 'parent' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'unordered child' }],
+        indent: 2,
+        listStart: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'ordered child' }],
+        indent: 2,
+        listStart: 3,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ];
+
+    const result = listToMdastTree(nodes as any, { editor }) as any;
+    const nestedChildren = result.children[0].children.slice(1);
+
+    expect(nestedChildren).toEqual([
+      {
+        children: [
+          {
+            checked: null,
+            children: [
+              {
+                children: [{ type: 'text', value: 'unordered child' }],
+                type: 'paragraph',
+              },
+            ],
+            spread: false,
+            type: 'listItem',
+          },
+        ],
+        ordered: false,
+        spread: false,
+        start: 1,
+        type: 'list',
+      },
+      {
+        children: [
+          {
+            checked: null,
+            children: [
+              {
+                children: [{ type: 'text', value: 'ordered child' }],
+                type: 'paragraph',
+              },
+            ],
+            spread: false,
+            type: 'listItem',
+          },
+        ],
+        ordered: true,
+        spread: false,
+        start: 3,
+        type: 'list',
+      },
+    ]);
+  });
+
+  it('wraps block-id list items individually when block ids are enabled', () => {
+    const nodes = [
+      {
+        children: [{ text: 'first' }],
+        id: 'block-a',
+        indent: 1,
+        listStart: 7,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'second' }],
+        indent: 1,
+        listStart: 8,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        checked: true,
+        children: [{ text: 'todo' }],
+        id: 'block-c',
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'todo',
+        type: 'p',
+      },
+    ];
+
+    const result = listToMdastTree(
+      nodes as any,
+      { editor, spread: true, withBlockId: true },
+      true
+    ) as any;
+
+    expect(result).toEqual({
+      children: [
+        {
+          attributes: [
+            {
+              name: 'id',
+              type: 'mdxJsxAttribute',
+              value: 'block-a',
+            },
+          ],
+          children: [
+            {
+              children: [
+                {
+                  checked: null,
+                  children: [
+                    {
+                      children: [{ type: 'text', value: 'first' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  spread: true,
+                  type: 'listItem',
+                },
+              ],
+              ordered: true,
+              spread: true,
+              start: 1,
+              type: 'list',
+            },
+          ],
+          data: { _mdxExplicitJsx: true },
+          name: 'block',
+          type: 'mdxJsxFlowElement',
+        },
+        {
+          children: [
+            {
+              checked: null,
+              children: [
+                {
+                  children: [{ type: 'text', value: 'second' }],
+                  type: 'paragraph',
+                },
+              ],
+              spread: true,
+              type: 'listItem',
+            },
+          ],
+          ordered: true,
+          spread: true,
+          start: 2,
+          type: 'list',
+        },
+        {
+          attributes: [
+            {
+              name: 'id',
+              type: 'mdxJsxAttribute',
+              value: 'block-c',
+            },
+          ],
+          children: [
+            {
+              children: [
+                {
+                  checked: true,
+                  children: [
+                    {
+                      children: [{ type: 'text', value: 'todo' }],
+                      type: 'paragraph',
+                    },
+                  ],
+                  spread: true,
+                  type: 'listItem',
+                },
+              ],
+              ordered: false,
+              spread: true,
+              start: undefined,
+              type: 'list',
+            },
+          ],
+          data: { _mdxExplicitJsx: true },
+          name: 'block',
+          type: 'mdxJsxFlowElement',
+        },
+      ],
+      type: 'fragment',
+    });
+  });
 });

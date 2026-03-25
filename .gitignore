@@ -18,7 +18,7 @@ templates/my-app
 .history
 node_modules/
 report.*
-.claude/docs/plans/*coverage-priority-*.tsv
+*.tsv
 
 # Dependency directories
 jspm_packages/

@@ -137,6 +137,46 @@ describe('table merge behavior', () => {
       expect(editor.children).toMatchObject(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
+
+    it('inserts split cells into existing rows before later siblings', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd colSpan={2} rowSpan={2}>
+                <hp>
+                  merged
+                  <cursor />
+                </hp>
+              </htd>
+              <htd>
+                <hp>13</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>23</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      splitTableCell(editor);
+
+      const table = editor.children[0] as any;
+
+      expect(table.children[0].children).toHaveLength(3);
+      expect(table.children[0].children[2].children[0].children[0].text).toBe(
+        '13'
+      );
+      expect(table.children[1].children).toHaveLength(3);
+      expect(table.children[1].children[2].children[0].children[0].text).toBe(
+        '23'
+      );
+    });
   });
 
   describe('deleteRowWhenExpanded', () => {

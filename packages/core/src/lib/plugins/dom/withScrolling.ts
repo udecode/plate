@@ -23,16 +23,40 @@ export const withScrolling = (
   const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
 
   if (options) {
+    const scrollOptions =
+      typeof options.scrollOptions === 'object' && options.scrollOptions
+        ? {
+            ...(typeof prevOptions.scrollOptions === 'object'
+              ? prevOptions.scrollOptions
+              : {}),
+            ...omitBy(options.scrollOptions, isUndefined),
+          }
+        : (options.scrollOptions ?? prevOptions.scrollOptions);
+
     const ops = {
       ...prevOptions,
-      ...omitBy(options, isUndefined),
+      scrollOperations: {
+        ...prevOptions.scrollOperations,
+        ...omitBy(options.operations ?? {}, isUndefined),
+      },
+      scrollOptions,
+      ...omitBy(
+        {
+          scrollMode: options.mode,
+        },
+        isUndefined
+      ),
     };
 
     editor.setOptions(DOMPlugin, ops);
   }
+
   AUTO_SCROLL.set(editor, true);
-  fn();
-  // reset
-  AUTO_SCROLL.set(editor, prevAutoScroll);
-  editor.setOptions(DOMPlugin, prevOptions);
+
+  try {
+    fn();
+  } finally {
+    AUTO_SCROLL.set(editor, prevAutoScroll);
+    editor.setOptions(DOMPlugin, prevOptions);
+  }
 };

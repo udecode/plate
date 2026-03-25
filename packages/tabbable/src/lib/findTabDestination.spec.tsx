@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, NodeApi } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import type { TabbableEntry } from './types';
 
@@ -38,16 +37,16 @@ describe('findTabDestination', () => {
   });
 
   const voidPath1 = [1];
-  const voidSlateNode1 = NodeApi.get(editor, voidPath1);
+  const voidSlateNode1 = (editor.children[1] as any)!;
   const voidDOMNode1 = document.createElement('div') as HTMLElement;
 
   const voidPath2 = [4];
-  const voidSlateNode2 = NodeApi.get(editor, voidPath2);
+  const voidSlateNode2 = (editor.children[4] as any)!;
   const voidDOMNode2a = document.createElement('div') as HTMLElement;
   const voidDOMNode2b = document.createElement('div') as HTMLElement;
 
   const voidPath3 = [5];
-  const voidSlateNode3 = NodeApi.get(editor, voidPath3);
+  const voidSlateNode3 = (editor.children[5] as any)!;
   const voidDOMNode3 = document.createElement('div') as HTMLElement;
 
   const tabbableEntries = [

@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { PathApi } from 'platejs';
 import { useEditorReadOnly, useEditorRef } from 'platejs/react';
 import { tabbable } from 'tabbable';
 
@@ -8,6 +7,18 @@ import type { TabbableEntry } from '../lib/types';
 
 import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { findTabDestination } from '../lib/findTabDestination';
+
+const comparePaths = (a: number[], b: number[]) => {
+  const minLength = Math.min(a.length, b.length);
+
+  for (let index = 0; index < minLength; index++) {
+    if (a[index] !== b[index]) {
+      return a[index] - b[index];
+    }
+  }
+
+  return a.length - b.length;
+};
 
 export function TabbableEffects() {
   const editor = useEditorRef();
@@ -81,7 +92,7 @@ export function TabbableEffects() {
       const tabbableEntries = [
         ...insertedTabbableEntries,
         ...defaultTabbableEntries,
-      ].sort((a, b) => PathApi.compare(a.path, b.path));
+      ].sort((a, b) => comparePaths(a.path, b.path));
 
       /**
        * TODO: Refactor everything ABOVE this line into a util function and test

@@ -5,7 +5,7 @@ import { jsxt } from '@platejs/test-utils';
 import { type SlateEditor, KEYS, createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from '../BaseListPlugin';
-import { toggleList } from './toggleList';
+import { toggleList, toggleTaskList } from './toggleList';
 
 jsxt;
 
@@ -28,6 +28,19 @@ const runToggleList = (
 };
 
 describe('toggleList', () => {
+  it('does nothing when the editor has no selection', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
+      value: [{ children: [{ text: 'plain' }], type: KEYS.p }],
+    });
+
+    const before = JSON.stringify(editor.children);
+
+    toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
+
+    expect(JSON.stringify(editor.children)).toBe(before);
+  });
+
   describe('turning paragraphs into lists', () => {
     it('wraps a collapsed paragraph in a bulleted list', () => {
       const input = (
@@ -125,6 +138,37 @@ describe('toggleList', () => {
           </editor>
         ).children
       );
+    });
+
+    it('creates checked task-list items through the task-list wrapper', () => {
+      const input = (
+        <editor>
+          <hp>
+            task
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      toggleTaskList(editor, true);
+
+      expect(editor.children).toMatchObject([
+        {
+          children: [
+            {
+              checked: true,
+              children: [{ children: [{ text: 'task' }], type: 'lic' }],
+              type: 'li',
+            },
+          ],
+          type: 'taskList',
+        },
+      ]);
     });
   });
 
@@ -240,6 +284,42 @@ describe('toggleList', () => {
                 </hol>
               </hli>
             </hul>
+          </editor>
+        ).children
+      );
+    });
+
+    it('retypes a selected list range that stays inside the list', () => {
+      const input = (
+        <editor>
+          <hul>
+            <hli>
+              <hlic>
+                <anchor />1
+              </hlic>
+            </hli>
+            <hli>
+              <hlic>
+                2<focus />
+              </hlic>
+            </hli>
+          </hul>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = runToggleList(input, [BaseListPlugin], KEYS.olClassic);
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hol>
+              <hli>
+                <hlic>1</hlic>
+              </hli>
+              <hli>
+                <hlic>2</hlic>
+              </hli>
+            </hol>
           </editor>
         ).children
       );

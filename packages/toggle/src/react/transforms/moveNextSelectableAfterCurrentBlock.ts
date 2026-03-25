@@ -1,6 +1,9 @@
-import { type SlateEditor, ElementApi } from 'platejs';
+import type { SlateEditor } from 'platejs';
 
 import { isInClosedToggle } from '../queries';
+
+const isElement = (value: any): value is { id?: string; type?: string } =>
+  !!value && typeof value === 'object' && !Array.isArray(value);
 
 // Return false only if all next blocks are not selectable
 export const moveNextSelectableAfterCurrentBlock = (editor: SlateEditor) => {
@@ -23,9 +26,8 @@ export const moveNextSelectableAfterCurrentBlock = (editor: SlateEditor) => {
   if (!isInClosedToggle(editor, blockAfter[0].id as string)) return; // We're already before a selectable then
 
   const nextSelectableBlock = editor.api.next({
-    match: (node) =>
-      ElementApi.isElement(node) &&
-      !isInClosedToggle(editor, node.id as string),
+    match: (node: any) =>
+      isElement(node) && !isInClosedToggle(editor, node.id as string),
   });
 
   if (!nextSelectableBlock) return false;

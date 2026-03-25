@@ -107,4 +107,29 @@ describe('moveSelection', () => {
       focus: { offset: text.length, path: [0, 0] },
     });
   });
+
+  it('only updates editor.selection and leaves additive selection fields alone', () => {
+    const editor: any = createEditor({
+      children: [{ type: 'p', children: [{ text: 'word' }] }] as any,
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+    });
+    const selections = [
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+    ];
+
+    editor.selections = selections;
+    editor.move({ distance: 1 });
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 2, path: [0, 0] },
+    });
+    expect(editor.selections).toBe(selections);
+  });
 });

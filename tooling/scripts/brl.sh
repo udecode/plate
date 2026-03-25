@@ -31,7 +31,7 @@ run_barrelsby() {
     fi
 }
 
-common_excludes='.*__tests__.*|(.*(fixture|template|spec|internal).*)|(.*\.d\.ts$)'
+common_excludes='.*__tests__.*|(.*(fixture|template|spec|slow|internal).*)|(.*\.d\.ts$)'
 
 src_excludes="$common_excludes|(^.*\/(react|static)\/.*$)"
 

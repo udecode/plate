@@ -10,7 +10,7 @@ export const openNextToggles = (editor: SlateEditor) => {
       block: true,
       mode: 'lowest',
     })
-  );
+  ) as [any, number[]][];
 
   editor.getApi(TogglePlugin).toggle.toggleIds(
     nodeEntries.map(([node]) => node.id as string),

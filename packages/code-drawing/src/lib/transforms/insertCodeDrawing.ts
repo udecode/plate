@@ -8,6 +8,12 @@ export const insertCodeDrawing = (
   props: NodeProps<TCodeDrawingElement> = {},
   options: InsertNodesOptions = {}
 ): void => {
+  const safeProps: NodeProps<TCodeDrawingElement> =
+    props && typeof props === 'object'
+      ? props
+      : ({} as NodeProps<TCodeDrawingElement>);
+  const { data: propsData, ...restProps } = safeProps;
+
   editor.tf.insertNodes<TCodeDrawingElement>(
     {
       children: [{ text: '' }],
@@ -16,11 +22,11 @@ export const insertCodeDrawing = (
         drawingType: 'Mermaid',
         drawingMode: 'Both',
         code: '',
-        ...(typeof props.data === 'object' && props.data !== null
-          ? props.data
+        ...(typeof propsData === 'object' && propsData !== null
+          ? propsData
           : {}),
       },
-      ...(props && typeof props === 'object' ? props : {}),
+      ...restProps,
     },
     {
       nextBlock: true,

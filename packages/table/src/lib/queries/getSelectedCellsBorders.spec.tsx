@@ -255,6 +255,27 @@ describe('getSelectedCellsBorders', () => {
       expect(noneResult).toBe(false);
     });
 
+    it('checks the previous cell right border before reporting none', () => {
+      const cell = {
+        id: 'c22',
+        borders: {
+          bottom: { size: 0 },
+          right: { size: 0 },
+          top: { size: 0 },
+        },
+      } as unknown as TElement;
+      const cellLeft = {
+        borders: { right: { size: 1 } },
+      } as unknown as TElement;
+
+      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue([cellLeft]);
+
+      expect(getSelectedCellsBorders(editor, [cell]).none).toBe(false);
+      expect(isSelectedCellBordersNone(editor, [cell])).toBe(false);
+    });
+
     it('skip none check when select.none is false', () => {
       const cell = {
         id: 'c22',
@@ -493,6 +514,37 @@ describe('getSelectedCellsBorders', () => {
           top: true,
         })
       );
+    });
+
+    it('treats missing adjacent cells as visible for top and left edge checks', () => {
+      const cell = {
+        id: 'c22',
+        borders: {
+          bottom: { size: 1 },
+          right: { size: 1 },
+        },
+      } as unknown as TElement;
+      editor.api.findPath = mock().mockReturnValue([0]) as any;
+      getTopTableCellMock.mockReturnValue(null);
+      getLeftTableCellMock.mockReturnValue(null);
+
+      expect(isSelectedCellBorder(editor, [cell], 'top')).toBe(true);
+      expect(isSelectedCellBorder(editor, [cell], 'left')).toBe(true);
+    });
+
+    it('ignores non-boundary cells before checking the right edge', () => {
+      const cell1 = {
+        id: 'c21',
+        borders: { right: { size: 1 } },
+      } as unknown as TElement;
+      const cell2 = {
+        id: 'c22',
+        borders: { right: { size: 1 } },
+      } as unknown as TElement;
+
+      editor.api.findPath = mock().mockReturnValue([0]) as any;
+
+      expect(isSelectedCellBorder(editor, [cell1, cell2], 'right')).toBe(true);
     });
   });
 

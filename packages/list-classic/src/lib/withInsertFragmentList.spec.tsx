@@ -4,6 +4,8 @@ import { jsxt } from '@platejs/test-utils';
 import { type Descendant, type SlateEditor, createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
+import { withInsertFragmentList } from './withInsertFragmentList';
+import { KEYS } from 'platejs';
 
 jsxt;
 
@@ -863,5 +865,76 @@ describe('when pasting ul > 2 li fragment', () => {
 
       editorTest(input, fragment, expected);
     });
+  });
+});
+
+describe('withInsertFragmentList fallbacks', () => {
+  it('delegates directly when insertion does not start inside a list item', () => {
+    const insertFragment = mock();
+    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
+    const plugin = withInsertFragmentList({
+      editor: {
+        api: {
+          node: mock(() => {}),
+        },
+        getType: (key: string) => key,
+      },
+      tf: { insertFragment },
+    } as any) as any;
+
+    plugin.transforms.insertFragment(fragment);
+
+    expect(insertFragment).toHaveBeenCalledWith([{ text: '' }, ...fragment]);
+  });
+
+  it('delegates after deletion when the active list item disappears', () => {
+    const insertFragment = mock();
+    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
+    const apiNode = mock()
+      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
+      .mockReturnValueOnce(undefined);
+    const plugin = withInsertFragmentList({
+      editor: {
+        api: {
+          node: apiNode,
+        },
+        getType: (key: string) => key,
+      },
+      tf: { insertFragment },
+    } as any) as any;
+
+    plugin.transforms.insertFragment(fragment);
+
+    expect(insertFragment).toHaveBeenNthCalledWith(1, [{ text: '' }]);
+    expect(insertFragment).toHaveBeenNthCalledWith(2, [
+      { text: '' },
+      ...fragment,
+    ]);
+  });
+
+  it('delegates when the list item content entry cannot be found', () => {
+    const insertFragment = mock();
+    const fragment = [{ children: [], type: KEYS.ulClassic }] as any;
+    const apiNode = mock()
+      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
+      .mockReturnValueOnce([{ type: KEYS.li }, [0]])
+      .mockReturnValueOnce(undefined);
+    const plugin = withInsertFragmentList({
+      editor: {
+        api: {
+          node: apiNode,
+        },
+        getType: (key: string) => key,
+      },
+      tf: { insertFragment },
+    } as any) as any;
+
+    plugin.transforms.insertFragment(fragment);
+
+    expect(insertFragment).toHaveBeenNthCalledWith(1, [{ text: '' }]);
+    expect(insertFragment).toHaveBeenNthCalledWith(2, [
+      { text: '' },
+      ...fragment,
+    ]);
   });
 });

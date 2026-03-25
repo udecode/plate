@@ -8,6 +8,31 @@ import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 jsxt;
 
 describe('withNormalizeTable', () => {
+  describe('invalid table children', () => {
+    it.each([
+      { disableMerge: true },
+      { disableMerge: false },
+    ])('removes tables without row children (disableMerge: $disableMerge)', ({
+      disableMerge,
+    }) => {
+      const editor = createSlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({ disableMerge }),
+        value: (
+          <fragment>
+            <htable>
+              <hp>bad</hp>
+            </htable>
+          </fragment>
+        ) as any as Value,
+      });
+
+      editor.tf.normalize({ force: true });
+
+      expect(editor.children).toEqual([]);
+    });
+  });
+
   // https://github.com/udecode/editor-protocol/issues/65
   describe('cell child is a text', () => {
     it.each([
@@ -319,6 +344,50 @@ describe('withNormalizeTable', () => {
         force: true,
       });
       expect(editor.children).toMatchObject(output);
+    });
+  });
+
+  describe('enableUnsetSingleColSize', () => {
+    it.each([
+      { disableMerge: true },
+      { disableMerge: false },
+    ])('unsets colSizes for single-column tables (disableMerge: $disableMerge)', ({
+      disableMerge,
+    }) => {
+      const editor = createSlateEditor({
+        nodeId: true,
+        plugins: getTestTablePlugins({
+          disableMerge,
+          enableUnsetSingleColSize: true,
+        }),
+        value: (
+          <fragment>
+            <htable colSizes={[120]}>
+              <htr>
+                <htd>
+                  <hp>cell</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as Value,
+      });
+
+      editor.tf.normalize({ force: true });
+
+      expect(editor.children).toMatchObject(
+        (
+          <fragment>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>cell</hp>
+                </htd>
+              </htr>
+            </htable>
+          </fragment>
+        ) as any as Value
+      );
     });
   });
 

@@ -224,3 +224,69 @@ describe('keyboard handling', () => {
     });
   });
 });
+
+describe('apply override', () => {
+  it('coerces lower-roman inserts to lower-alpha when the previous sibling is alpha', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      value: [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listStyleType: 'lower-alpha',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.insertNodes({
+      children: [{ text: 'i' }],
+      indent: 1,
+      listStyleType: 'lower-roman',
+      type: 'p',
+    } as any);
+
+    expect((editor.children[1] as any).listStyleType).toBe('lower-alpha');
+  });
+
+  it('drops list restart props from split list items', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin, BaseIndentPlugin],
+      selection: {
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      },
+      value: [
+        {
+          children: [{ text: '12' }],
+          indent: 1,
+          listRestart: 5,
+          listRestartPolite: true,
+          listStyleType: 'decimal',
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.splitNodes({ always: true });
+
+    expect(editor.children).toEqual([
+      {
+        children: [{ text: '1' }],
+        indent: 1,
+        listRestart: 5,
+        listRestartPolite: true,
+        listStart: 5,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: '2' }],
+        indent: 1,
+        listStart: 6,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ]);
+  });
+});

@@ -1,4 +1,6 @@
-import { usePluginOption, useStableMemo } from 'platejs/react';
+import React from 'react';
+
+import { usePluginOption } from 'platejs/react';
 
 import {
   type EmojiSettingsType,
@@ -21,7 +23,7 @@ export function useEmojiDropdownMenuState({
 }: EmojiDropdownMenuOptions = {}) {
   const data = usePluginOption(EmojiPlugin, 'data')!;
 
-  const [emojiLibrary, indexSearch] = useStableMemo(() => {
+  const [emojiLibrary, indexSearch] = React.useMemo(() => {
     const frequentEmojiStorage = new FrequentEmojiStorage({
       limit: settings.showFrequent.limit,
     });
@@ -35,7 +37,7 @@ export function useEmojiDropdownMenuState({
     const indexSearch = EmojiFloatingIndexSearch.getInstance(emojiLibrary);
 
     return [emojiLibrary, indexSearch] as const;
-  }, [settings]);
+  }, [data, settings]);
 
   const { isOpen, setIsOpen, ...emojiPickerState } = useEmojiPicker({
     closeOnSelect,

@@ -259,5 +259,89 @@ describe('table sizing and selection helpers', () => {
 
       expect(editor.selection).toEqual(output.selection);
     });
+
+    it('moves forward out of the table when there is no next cell', () => {
+      const input = (
+        <editor>
+          <hp>before</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>after</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hp>before</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>
+            <cursor />
+            after
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      moveSelectionFromCell(editor);
+
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('moves backward out of the table when there is no previous cell', () => {
+      const input = (
+        <editor>
+          <hp>before</hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>after</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hp>
+            before
+            <cursor />
+          </hp>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11</hp>
+              </htd>
+            </htr>
+          </htable>
+          <hp>after</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      moveSelectionFromCell(editor, { reverse: true });
+
+      expect(editor.selection).toEqual(output.selection);
+    });
   });
 });

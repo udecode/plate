@@ -1,8 +1,20 @@
 import { KEYS, createSlateEditor } from 'platejs';
 
-import { BaseHeadingPlugin } from './BaseHeadingPlugin';
+import {
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHeadingPlugin,
+} from './BaseHeadingPlugin';
 
 describe('BaseHeadingPlugin', () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
   describe('when using default options', () => {
     it('creates plugins for all 6 heading levels', () => {
       const editor = createSlateEditor({
@@ -75,5 +87,23 @@ describe('BaseHeadingPlugin', () => {
         ]);
       });
     });
+  });
+
+  it.each([
+    ['h1', BaseH1Plugin],
+    ['h2', BaseH2Plugin],
+    ['h3', BaseH3Plugin],
+    ['h4', BaseH4Plugin],
+    ['h5', BaseH5Plugin],
+    ['h6', BaseH6Plugin],
+  ])('binds the %s toggle transform to toggleBlock', (key, plugin) => {
+    const editor = createSlateEditor({
+      plugins: [plugin as any],
+    } as any);
+    const toggleBlockSpy = spyOn(editor.tf, 'toggleBlock');
+
+    (editor.getTransforms(plugin as any) as any)[key].toggle();
+
+    expect(toggleBlockSpy).toHaveBeenCalledWith(editor.getType(key as any));
   });
 });

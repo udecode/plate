@@ -8,8 +8,58 @@ import { TextEncoder } from 'node:util';
 (globalThis as any).mock = mock;
 (globalThis as any).spyOn = spyOn;
 
+const VIMEO_UNAUTHORIZED_RE =
+  /^GET https:\/\/player\.vimeo\.com\/video\/.+ 401/;
+const UNREACHABLE_CODE_RE = /^Unreachable code: /;
+
+const shouldIgnoreHappyDomResourceError = (value: unknown): boolean => {
+  const message =
+    value instanceof Error
+      ? value.message
+      : typeof value === 'string'
+        ? value
+        : null;
+
+  if (!message) return false;
+
+  return (
+    VIMEO_UNAUTHORIZED_RE.test(message) ||
+    (message.includes('Failed to load iframe page "') &&
+      message.includes('Iframe page loading is disabled.')) ||
+    (message.includes('Failed to load script "') &&
+      message.includes('JavaScript file loading is disabled.'))
+  );
+};
+
+const originalConsoleError = globalThis.console.error.bind(globalThis.console);
+const originalConsoleWarn = globalThis.console.warn.bind(globalThis.console);
+
+globalThis.console.error = (...args: unknown[]) => {
+  if (args.some(shouldIgnoreHappyDomResourceError)) return;
+
+  originalConsoleError(...args);
+};
+
+globalThis.console.warn = (...args: unknown[]) => {
+  if (
+    args.some(
+      (value) => typeof value === 'string' && UNREACHABLE_CODE_RE.test(value)
+    )
+  ) {
+    return;
+  }
+
+  originalConsoleWarn(...args);
+};
+
 // Register DOM globals FIRST - this must happen before any code that uses document/window
-GlobalRegistrator.register();
+GlobalRegistrator.register({
+  settings: {
+    disableIframePageLoading: true,
+    disableJavaScriptFileLoading: true,
+    handleDisabledFileLoadingAsSuccess: true,
+  },
+});
 
 if (global.document && !global.document.doctype) {
   const doctype = global.document.implementation.createDocumentType(

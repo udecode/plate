@@ -9,7 +9,8 @@ export const getRtfImagesByType = (
   spidPrefix: string,
   type: string
 ): RtfImage[] => {
-  const [, ...images] = rtf.split(type);
+  const escapedType = type.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+  const [, ...images] = rtf.split(new RegExp(`${escapedType}(?![a-zA-Z])`));
 
   return images.reduce<RtfImage[]>((rtfImages, image) => {
     const [, imageData = ''] = image.split('shplid');

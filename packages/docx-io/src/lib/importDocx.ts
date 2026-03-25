@@ -1,6 +1,6 @@
 import { cleanDocx } from '@platejs/docx';
 import mammoth from 'mammoth';
-import type { SlateEditor, TNode } from 'platejs';
+import type { SlateEditor } from 'platejs';
 
 import {
   extractComments,
@@ -78,7 +78,7 @@ export async function importDocx(
   }
 
   // Deserialize HTML to Plate nodes
-  const nodes = editor.api.html.deserialize({ element }) as TNode[];
+  const nodes = editor.api.html.deserialize({ element }) as any[];
 
   // Extract comments
   const comments = extractComments(commentById, commentIds);

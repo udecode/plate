@@ -31,6 +31,34 @@ const withReadOnlyInline = (editor: Editor & LegacyEditorMethods) => {
 };
 
 describe('deleteText', () => {
+  it('deletes one character forward from a collapsed text selection', () => {
+    const editor: any = createEditor(
+      (
+        <editor>
+          <hp>
+            wo
+            <cursor />
+            rd
+          </hp>
+        </editor>
+      ) as any
+    );
+
+    editor.delete();
+
+    const output = (
+      <editor>
+        <hp>
+          wo
+          <cursor />d
+        </hp>
+      </editor>
+    ) as any;
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+
   it('removes the node at a path location', () => {
     const editor: any = createEditor(
       (
@@ -121,6 +149,37 @@ describe('deleteText', () => {
     expect(editor.selection).toEqual(output.selection);
   });
 
+  it('removes an inline void when deleting from a point inside it', () => {
+    const editor = withInlineVoid(
+      createEditor(
+        (
+          <editor>
+            <hp>
+              <himg>
+                <htext>
+                  <cursor />
+                </htext>
+              </himg>
+              <htext>after</htext>
+            </hp>
+          </editor>
+        ) as any
+      ) as Editor & LegacyEditorMethods
+    );
+
+    editor.delete();
+
+    expect(editor.children).toEqual(
+      (
+        <editor>
+          <hp>
+            <htext>after</htext>
+          </hp>
+        </editor>
+      ).children
+    );
+  });
+
   it('nudges backward around a read-only inline before deleting it', () => {
     const editor = withReadOnlyInline(
       createEditor(
@@ -172,6 +231,33 @@ describe('deleteText', () => {
       <editor>
         <hp>
           พ
+          <cursor />
+        </hp>
+      </editor>
+    ) as any;
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+
+  it('no-ops when deleting forward from the end of the document', () => {
+    const editor: any = createEditor(
+      (
+        <editor>
+          <hp>
+            word
+            <cursor />
+          </hp>
+        </editor>
+      ) as any
+    );
+
+    editor.delete();
+
+    const output = (
+      <editor>
+        <hp>
+          word
           <cursor />
         </hp>
       </editor>

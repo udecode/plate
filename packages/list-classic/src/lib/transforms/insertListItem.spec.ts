@@ -85,4 +85,62 @@ describe('insertListItem', () => {
     );
     expect(select).toHaveBeenCalledWith([1]);
   });
+
+  it('deletes an expanded selection, splits the item, and moves nested list content', () => {
+    const collapse = mock();
+    const deleteSelection = mock();
+    const moveNodes = mock();
+    const select = mock();
+    const splitNodes = mock();
+    const wrapNodes = mock();
+    const editor = {
+      api: {
+        above: mock(() => [{ type: KEYS.lic }, [0, 0]]),
+        isCollapsed: mock(() => false),
+        isEmpty: mock(() => false),
+        isStart: mock(() => false),
+        marks: mock(() => null),
+        parent: mock(() => [
+          { checked: true, children: [{}, {}], type: KEYS.li },
+          [0],
+        ]),
+      },
+      getType: (key: string) => key,
+      selection: { focus: { offset: 2, path: [0, 0] } },
+      tf: {
+        collapse,
+        delete: deleteSelection,
+        moveNodes,
+        select,
+        splitNodes,
+        withoutNormalizing: (fn: () => void) => fn(),
+        wrapNodes,
+      },
+    } as any;
+
+    expect(
+      insertListItem(editor, { inheritCheckStateOnLineEndBreak: true })
+    ).toBe(true);
+
+    expect(deleteSelection).toHaveBeenCalledTimes(1);
+    expect(splitNodes).toHaveBeenCalledTimes(1);
+    expect(wrapNodes).toHaveBeenCalledWith(
+      {
+        checked: false,
+        children: [],
+        type: KEYS.li,
+      },
+      { at: [0, 1] }
+    );
+    expect(moveNodes).toHaveBeenNthCalledWith(1, {
+      at: [0, 1],
+      to: [1],
+    });
+    expect(moveNodes).toHaveBeenNthCalledWith(2, {
+      at: [0, 1],
+      to: [1, 1],
+    });
+    expect(select).toHaveBeenCalledWith([1]);
+    expect(collapse).toHaveBeenCalledWith({ edge: 'start' });
+  });
 });

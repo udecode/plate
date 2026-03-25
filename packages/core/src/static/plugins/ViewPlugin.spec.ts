@@ -1,18 +1,21 @@
 import { createDataTransfer } from '@platejs/test-utils';
 
 import { createStaticEditor } from '../editor/withStatic';
+import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
 import * as getSelectedDomBlocksModule from '../utils/getSelectedDomBlocks';
 import * as getSelectedDomNodeModule from '../utils/getSelectedDomNode';
 import * as isSelectOutsideModule from '../utils/isSelectOutside';
 import { ViewPlugin } from './ViewPlugin';
 
 describe('ViewPlugin', () => {
+  let getSelectedDomFragmentSpy: ReturnType<typeof spyOn>;
   let getSelectedDomBlocksSpy: ReturnType<typeof spyOn>;
   let getSelectedDomNodeSpy: ReturnType<typeof spyOn>;
   let isSelectOutsideSpy: ReturnType<typeof spyOn>;
   let warnSpy: ReturnType<typeof spyOn>;
 
   afterEach(() => {
+    getSelectedDomFragmentSpy?.mockRestore();
     getSelectedDomBlocksSpy?.mockRestore();
     getSelectedDomNodeSpy?.mockRestore();
     isSelectOutsideSpy?.mockRestore();
@@ -78,6 +81,18 @@ describe('ViewPlugin', () => {
 
       // Should not throw when called
       expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
+    });
+
+    it('proxies getFragment through getSelectedDomFragment', () => {
+      const fragment = [{ children: [{ text: 'First paragraph' }], type: 'p' }];
+      const editor = createStaticEditor();
+
+      getSelectedDomFragmentSpy = spyOn(
+        getSelectedDomFragmentModule,
+        'getSelectedDomFragment'
+      ).mockReturnValue(fragment as any);
+
+      expect(editor.api.getFragment()).toEqual(fragment);
     });
   });
 
@@ -169,6 +184,41 @@ describe('ViewPlugin', () => {
 
       // Should not throw
       expect(() => editor.tf.setFragmentData(mockData, 'copy')).not.toThrow();
+    });
+
+    it('writes slate fragment, html, and plain text payloads on copy', () => {
+      suppressSetFragmentDataOverrideWarning();
+
+      const editor = createStaticEditor();
+      const fragment = [{ children: [{ text: 'Alpha' }], type: 'p' }];
+      const html = document.createElement('div');
+
+      html.innerHTML = '<p>Alpha</p>';
+
+      getSelectedDomFragmentSpy = spyOn(
+        getSelectedDomFragmentModule,
+        'getSelectedDomFragment'
+      ).mockReturnValue(fragment as any);
+      getSelectedDomNodeSpy = spyOn(
+        getSelectedDomNodeModule,
+        'getSelectedDomNode'
+      ).mockReturnValue(html);
+      isSelectOutsideSpy = spyOn(
+        isSelectOutsideModule,
+        'isSelectOutside'
+      ).mockReturnValue(false);
+
+      editor.tf.setFragmentData(mockData, 'copy');
+
+      expect(mockData.setData).toHaveBeenCalledWith(
+        'application/x-slate-fragment',
+        expect.any(String)
+      );
+      expect(mockData.setData).toHaveBeenCalledWith(
+        'text/html',
+        '<p>Alpha</p>'
+      );
+      expect(mockData.setData).toHaveBeenCalledWith('text/plain', 'Alpha');
     });
   });
 });

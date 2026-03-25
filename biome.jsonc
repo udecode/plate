@@ -122,7 +122,12 @@
       }
     },
     {
-      "includes": ["**/*.spec.*", "**/*.test.*", "**/*-value.tsx"],
+      "includes": [
+        "**/*.spec.*",
+        "**/*.test.*",
+        "**/*.slow.*",
+        "**/*-value.tsx"
+      ],
       "linter": {
         "rules": {
           "nursery": {

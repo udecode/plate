@@ -99,8 +99,9 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
       },
       tab: (options) => {
         const apply = () => {
+          const codeLineType = editor.getType('code_line');
           const _codeLines = editor.api.nodes<TElement>({
-            match: { type },
+            match: { type: codeLineType },
           });
           const codeLines = Array.from(_codeLines);
 

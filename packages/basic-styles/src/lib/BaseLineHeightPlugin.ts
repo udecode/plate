@@ -1,4 +1,9 @@
-import { bindFirst, createSlatePlugin, KEYS } from 'platejs';
+import {
+  type SetNodesOptions,
+  type SlateEditor,
+  createSlatePlugin,
+  KEYS,
+} from 'platejs';
 
 import { setLineHeight } from './transforms';
 
@@ -15,11 +20,17 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       nodeKey: 'lineHeight',
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor, plugin }) => ({
+    targetPluginToInject: ({
+      editor,
+      plugin,
+    }: {
+      editor: SlateEditor;
+      plugin: { key: string };
+    }) => ({
       parsers: {
         html: {
           deserializer: {
-            parse: ({ element }) => {
+            parse: ({ element }: { element: HTMLElement }) => {
               if (element.style.lineHeight) {
                 return {
                   [editor.getType(plugin.key)]: element.style.lineHeight,
@@ -31,6 +42,7 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       },
     }),
   },
-}).extendTransforms(({ editor }) => ({
-  setNodes: bindFirst(setLineHeight, editor),
+}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
+  setNodes: (value: number, options?: SetNodesOptions) =>
+    setLineHeight(editor, value, options),
 }));

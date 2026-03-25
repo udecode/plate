@@ -82,6 +82,50 @@ describe('setBorderSize', () => {
       expect(editor.children).toMatchObject(output.children);
     });
 
+    it('sets all borders by delegating to each side', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createEditorInstance(input);
+      setBorderSize(editor, 2, { border: 'all' });
+
+      expect(editor.children).toMatchObject(
+        (
+          <editor>
+            <htable>
+              <htr>
+                <htd
+                  borders={{
+                    bottom: { size: 2 },
+                    left: { size: 2 },
+                    right: { size: 2 },
+                    top: { size: 2 },
+                  }}
+                >
+                  <hp>
+                    11
+                    <cursor />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ).children
+      );
+    });
+
     it('set border left', () => {
       const input = (
         <editor>

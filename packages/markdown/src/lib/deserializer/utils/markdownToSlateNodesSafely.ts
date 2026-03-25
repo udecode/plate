@@ -29,10 +29,6 @@ export const markdownToSlateNodesSafely = (
 
   const completeNodes = markdownToSlateNodes(editor, completeString, options);
 
-  if (incompleteNodes.length === 0) {
-    return completeNodes;
-  }
-
   const newBlock = {
     children: incompleteNodes,
     type: getPluginType(editor, KEYS.p),

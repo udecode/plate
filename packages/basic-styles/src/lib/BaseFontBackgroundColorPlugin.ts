@@ -1,4 +1,4 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { type SlateEditor, createSlatePlugin, KEYS } from 'platejs';
 
 export const BaseFontBackgroundColorPlugin = createSlatePlugin({
   key: KEYS.backgroundColor,
@@ -18,13 +18,13 @@ export const BaseFontBackgroundColorPlugin = createSlatePlugin({
             },
           },
         ],
-        parse: ({ element, type }) => ({
+        parse: ({ element, type }: { element: HTMLElement; type: string }) => ({
           [type]: element.style.backgroundColor,
         }),
       },
     },
   },
-}).extendTransforms(({ editor }) => ({
+}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
   addMark: (value: string) => {
     editor.tf.addMarks({
       [KEYS.backgroundColor]: value,

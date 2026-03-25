@@ -360,6 +360,72 @@ describe('when delete line', () => {
   });
 });
 
+describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  it('marks the next character as a remove suggestion', () => {
+    const input = (
+      <editor>
+        <hp>
+          o<cursor />
+          ne
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.deleteForward();
+
+    const data = getInlineSuggestionData(editor.children[0].children[1] as any);
+
+    expect(editor.children[0].children[0].text).toBe('o');
+    expect(editor.children[0].children[2].text).toBe('e');
+    expect(data).toMatchObject({
+      type: 'remove',
+      userId: 'testId',
+    });
+  });
+});
+
+describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  it('turns the selected text into a remove suggestion and collapses at the start', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          one
+          <focus />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.deleteFragment();
+
+    const data = getInlineSuggestionData(editor.children[0].children[0] as any);
+
+    expect(editor.children[0].children[0].text).toBe('one');
+    expect(data).toMatchObject({
+      type: 'remove',
+      userId: 'testId',
+    });
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+});
+
 describe('normalizeNode', () => {
   describe('when there is a suggestion mark without data', () => {
     it('remove mark', () => {
@@ -392,6 +458,82 @@ describe('normalizeNode', () => {
       editor.tf.normalize({
         force: true,
       });
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('when an inline remove suggestion has no user id', () => {
+    it('unsets the suggestion metadata but keeps the text', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext
+              suggestion
+              suggestion_remove={{
+                createdAt: 1,
+                id: 'remove',
+                type: 'remove',
+                userId: null,
+              }}
+            >
+              x
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+      const output = (
+        <editor>
+          <hp>x</hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin],
+        value: input.children,
+      });
+
+      editor.tf.normalize({ force: true });
+
+      expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('when an inline insert suggestion has no user id', () => {
+    it('removes the inserted text and leaves an empty text node behind', () => {
+      const input = (
+        <editor>
+          <hp>x</hp>
+          <hp>
+            <htext
+              suggestion
+              suggestion_insert={{
+                createdAt: 1,
+                id: 'insert',
+                type: 'insert',
+                userId: null,
+              }}
+            >
+              y
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+      const output = (
+        <editor>
+          <hp>x</hp>
+          <hp>
+            <htext />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin],
+        value: input.children,
+      });
+
+      editor.tf.normalize({ force: true });
 
       expect(editor.children).toEqual(output.children);
     });
@@ -432,5 +574,161 @@ describe('insert text when cursor is expanded', () => {
     expect(removeNodeData?.id).toEqual(insertedNodeData?.id);
     expect(removeNodeData?.type).toEqual('remove');
     expect(insertedNodeData?.type).toEqual('insert');
+  });
+});
+
+describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  it('inserts a newline suggestion inside nested blocks instead of splitting structure', () => {
+    const input = (
+      <editor>
+        <hblockquote>
+          <hp>
+            <cursor />
+          </hp>
+        </hblockquote>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertBreak();
+
+    const inserted = ((editor.children[0] as any).children[0] as any)
+      .children[0] as any;
+
+    expect(inserted.text).toBe('\n');
+    expect(getInlineSuggestionData(inserted)).toMatchObject({
+      type: 'insert',
+      userId: 'testId',
+    });
+  });
+});
+
+describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  it('wraps inserted blocks with block suggestion metadata', () => {
+    const input = (
+      <editor>
+        <hp>
+          one
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertNodes({
+      children: [{ text: 'two' }],
+      type: 'p',
+    } as any);
+
+    expect((editor.children[1] as any).suggestion).toMatchObject({
+      type: 'insert',
+      userId: 'testId',
+    });
+  });
+
+  it('bypasses suggestion wrapping for slash_input nodes', () => {
+    const input = (
+      <editor>
+        <hp>
+          one
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertNodes({
+      children: [{ text: '' }],
+      type: 'slash_input',
+    } as any);
+
+    expect(editor.children[1]).toMatchObject({
+      children: [{ text: '' }],
+      type: 'slash_input',
+    });
+    expect((editor.children[1] as any).suggestion).toBeUndefined();
+  });
+});
+
+describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => {
+  it('marks every matched block with the same remove suggestion metadata', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          one
+        </hp>
+        <hp>
+          two
+          <focus />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.removeNodes({
+      at: [],
+      match: (n: any) => n.type === 'p',
+    });
+
+    const firstSuggestion = (editor.children[0] as any).suggestion;
+    const secondSuggestion = (editor.children[1] as any).suggestion;
+
+    expect(firstSuggestion).toMatchObject({ type: 'remove' });
+    expect(secondSuggestion).toMatchObject({ type: 'remove' });
+    expect(firstSuggestion.id).toBe(secondSuggestion.id);
+    expect(firstSuggestion.createdAt).toBe(secondSuggestion.createdAt);
+  });
+
+  it('bypasses suggestions when removing slash_input nodes', () => {
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      value: [
+        {
+          children: [{ text: 'one' }],
+          type: 'p',
+        },
+        {
+          children: [{ text: '' }],
+          type: 'slash_input',
+        },
+      ],
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.removeNodes({
+      at: [],
+      match: (n: any) => n.type === 'slash_input',
+    });
+
+    expect(editor.children).toHaveLength(1);
+    expect(editor.children[0]).toMatchObject({
+      children: [{ text: 'one' }],
+      type: 'p',
+    });
   });
 });

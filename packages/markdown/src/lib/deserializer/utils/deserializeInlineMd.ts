@@ -13,10 +13,15 @@ export const deserializeInlineMd = (
   text: string,
   options?: DeserializeMdOptions
 ) => {
+  const trimmedText = text.trim();
   const leadingSpaces = LEADING_SPACES_REGEX.exec(text)?.[0] || '';
   const trailingSpaces = TRAILING_SPACES_REGEX.exec(text)?.[0] || '';
 
-  const strippedText = stripMarkdownBlocks(text.trim());
+  const strippedText = stripMarkdownBlocks(trimmedText);
+
+  if (!strippedText) {
+    return text ? [{ text }] : [];
+  }
 
   const fragment: Descendant[] = [];
 
@@ -24,15 +29,13 @@ export const deserializeInlineMd = (
     fragment.push({ text: leadingSpaces });
   }
 
-  if (strippedText) {
-    const result = editor
-      .getApi(MarkdownPlugin)
-      .markdown.deserialize(strippedText, options)[0];
+  const result = editor
+    .getApi(MarkdownPlugin)
+    .markdown.deserialize(strippedText, options)[0];
 
-    if (result) {
-      const nodes = ElementApi.isElement(result) ? result.children : [result];
-      fragment.push(...nodes);
-    }
+  if (result) {
+    const nodes = ElementApi.isElement(result) ? result.children : [result];
+    fragment.push(...nodes);
   }
   if (trailingSpaces) {
     fragment.push({ text: trailingSpaces });

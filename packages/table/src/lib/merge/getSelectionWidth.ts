@@ -12,16 +12,15 @@ export const getSelectionWidth = <T extends [TTableCellElement, Path]>(
   let total = 0;
   cells.forEach(([cell, cellPath]) => {
     const currentCellRowIndex = getCellRowIndexByPath(cellPath);
+    const colSpan = cell.colSpan ?? cell.attributes?.colspan;
+    const colSpanNumbered = colSpan ? Number(colSpan) : 1;
 
     //  on the same line
     if (currentCellRowIndex === lastCellRowIndex) {
-      const colSpan = cell.colSpan ?? cell.attributes?.colspan;
-      const colSpanNumbered = colSpan ? Number(colSpan) : 1;
       total += colSpanNumbered;
     } else {
       max = Math.max(total, max);
-      // easy to error
-      total = 0;
+      total = colSpanNumbered;
     }
 
     lastCellRowIndex = currentCellRowIndex;

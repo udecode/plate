@@ -7,8 +7,14 @@ import { jsxt } from '@platejs/test-utils';
 import { createSlateEditor } from 'platejs';
 
 import { BaseListPlugin } from './BaseListPlugin';
+import * as listModule from '.';
+import * as transformsModule from './transforms/index';
 
 jsxt;
+
+afterEach(() => {
+  mock.restore();
+});
 
 const testInsertText = (
   input: any,
@@ -54,6 +60,101 @@ const testDeleteForward = (input: any, expected: any) => {
 };
 
 describe('withList', () => {
+  it('unwraps list items on resetBlock instead of delegating', () => {
+    const unwrapSpy = spyOn(listModule, 'unwrapList').mockImplementation(
+      () => {}
+    );
+    const resetBlock = mock();
+    const editor = {
+      api: {
+        block: mock(() => [{ type: 'li' }, [0]]),
+      },
+      getType: (key: string) => key,
+      selection: null,
+      tf: {},
+    } as any;
+    const transforms = (
+      listModule.withList({
+        editor,
+        getOptions: () => ({}),
+        tf: { resetBlock, tab: mock() },
+      } as any) as any
+    ).transforms;
+
+    expect(transforms.resetBlock({ at: [0] } as any)).toBeUndefined();
+    expect(unwrapSpy).toHaveBeenCalledWith(editor);
+    expect(resetBlock).not.toHaveBeenCalled();
+  });
+
+  it('delegates tab when the selection is not in a list context', () => {
+    const tab = mock(() => true);
+    const editor = {
+      api: {
+        isCollapsed: mock(() => true),
+        some: mock(() => false),
+      },
+      getType: (key: string) => key,
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      tf: {
+        select: mock(),
+      },
+    } as any;
+    const transforms = (
+      listModule.withList({
+        editor,
+        getOptions: () => ({ enableResetOnShiftTab: true }),
+        tf: { resetBlock: mock(), tab },
+      } as any) as any
+    ).transforms;
+
+    expect(transforms.tab({ reverse: false } as any)).toBe(true);
+    expect(tab).toHaveBeenCalledWith({ reverse: false });
+  });
+
+  it('unhangs expanded selections and moves list items on tab', () => {
+    const moveListItemsSpy = spyOn(
+      transformsModule,
+      'moveListItems'
+    ).mockImplementation(() => true);
+    const unhangRange = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    };
+    const editor = {
+      api: {
+        isCollapsed: mock(() => false),
+        some: mock(() => true),
+        unhangRange: mock(() => unhangRange),
+      },
+      getType: (key: string) => key,
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      tf: {
+        select: mock(),
+      },
+    } as any;
+    const transforms = (
+      listModule.withList({
+        editor,
+        getOptions: () => ({ enableResetOnShiftTab: true }),
+        tf: { resetBlock: mock(), tab: mock() },
+      } as any) as any
+    ).transforms;
+
+    expect(transforms.tab({ reverse: true } as any)).toBe(true);
+    expect(editor.tf.select).toHaveBeenCalledWith(unhangRange);
+    expect(moveListItemsSpy).toHaveBeenCalledWith(editor, {
+      at: unhangRange,
+      enableResetOnShiftTab: true,
+      increase: false,
+    });
+  });
+
   describe('normalizeList', () => {
     describe('when there is no lic in li', () => {
       it('insert lic', () => {

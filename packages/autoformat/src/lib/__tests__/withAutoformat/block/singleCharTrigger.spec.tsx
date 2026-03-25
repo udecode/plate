@@ -30,7 +30,7 @@ it('autoformats a block with a single character trigger', () => {
         options: {
           rules: [
             {
-              format: (editor) => {
+              format: (editor: any) => {
                 const linkInputRange = editor.selection!.focus.path;
                 const linkInputText = editor.api.string(linkInputRange);
                 const [, text, url] = /\[(.+)]\((.*)/.exec(linkInputText)!;
@@ -50,7 +50,7 @@ it('autoformats a block with a single character trigger', () => {
       }),
     ],
     value: input,
-  });
+  } as any);
 
   linkEditor.tf.insertText(')');
 

@@ -137,6 +137,51 @@ describe('rejectSuggestion', () => {
     expect(editor.children).toEqual(output.children);
   });
 
+  it('restores falsy removed properties from update suggestions', () => {
+    const updateData = {
+      createdAt: Date.now(),
+      id: '1',
+      properties: {
+        italic: false,
+      },
+      type: 'update',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp>
+          test
+          <htext suggestion_1={updateData} suggestion>
+            updated
+          </htext>
+          text
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      value: input.children,
+    });
+
+    rejectSuggestion(editor, {
+      keyId: 'suggestion_1',
+      suggestionId: '1',
+    } as any);
+
+    expect(editor.children).toEqual([
+      {
+        children: [
+          { text: 'test' },
+          { italic: true, text: 'updated' },
+          { text: 'text' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('reject line break suggestion', () => {
     const lineBreakData = {
       id: '1',

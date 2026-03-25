@@ -16,20 +16,13 @@ export const TEST_IGNORE_PATTERNS = [
 ];
 
 // When a fast-suite spec repeatedly crosses these thresholds, move the whole
-// spec into a slow bucket. `pnpm test:slowest` and `pnpm check` enforce these
+// spec to `*.slow.ts[x]`. `pnpm test:slowest` and `pnpm check` enforce these
 // limits. Use `pnpm test:profile` for a non-failing profile run.
 export const FAST_TEST_SLOW_CASE_THRESHOLD_MS = 75;
 export const FAST_TEST_SLOW_FILE_THRESHOLD_MS = 150;
 
-export const TEST_SLOW_BUCKETS = {
-  docx: ['packages/docx/src/**', 'packages/docx-io/src/**'],
-  integration: ['apps/www/src/__tests__/package-integration/**'],
-  reactHeavy: [
-    'packages/ai/src/react/ai-chat/streaming/streamInsertChunk.spec.tsx',
-    'packages/core/src/react/components/Plate.spec.tsx',
-    'packages/core/src/react/plugins/SlateReactExtensionPlugin.spec.tsx',
-  ],
-};
-
-export const FAST_TEST_EXCLUDE_PATTERNS =
-  Object.values(TEST_SLOW_BUCKETS).flat();
+// CI is less forgiving than a fast local machine. Treat this lower warning
+// zone as the "move it before CI humiliates you" band, especially for React-
+// heavy specs with noisy timing variance.
+export const FAST_TEST_WARN_CASE_THRESHOLD_MS = 60;
+export const FAST_TEST_WARN_FILE_THRESHOLD_MS = 120;

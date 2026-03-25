@@ -5,6 +5,8 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
 import {
+  FAST_TEST_WARN_CASE_THRESHOLD_MS,
+  FAST_TEST_WARN_FILE_THRESHOLD_MS,
   FAST_TEST_SLOW_CASE_THRESHOLD_MS,
   FAST_TEST_SLOW_FILE_THRESHOLD_MS,
 } from '../config/test-suites.mjs';
@@ -112,6 +114,12 @@ if (xml) {
   const slowFiles = sortedFiles.filter(
     (row) => row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
   );
+  const warnTests = rows.filter(
+    (row) => row.milliseconds >= FAST_TEST_WARN_CASE_THRESHOLD_MS
+  );
+  const warnFiles = sortedFiles.filter(
+    (row) => row.milliseconds >= FAST_TEST_WARN_FILE_THRESHOLD_MS
+  );
   const averageMs =
     rows.length === 0
       ? 0
@@ -133,13 +141,20 @@ if (xml) {
   console.log(
     `Slow-bucket thresholds: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_FILE_THRESHOLD_MS}ms/file total`
   );
+  console.log(
+    `Warning zone: ${FAST_TEST_WARN_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_WARN_FILE_THRESHOLD_MS}ms/file total`
+  );
   console.log(`Top ${Math.min(limit, rows.length)} slowest tests`);
 
   for (const row of rows.slice(0, limit)) {
     const location = row.file ? `${row.file}  ` : '';
     const prefix = row.classname ? `${row.classname} > ` : '';
     const marker =
-      row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS ? '! ' : '';
+      row.milliseconds >= FAST_TEST_SLOW_CASE_THRESHOLD_MS
+        ? '! '
+        : row.milliseconds >= FAST_TEST_WARN_CASE_THRESHOLD_MS
+          ? '~ '
+          : '';
 
     console.log(
       `${marker}${row.milliseconds.toFixed(2).padStart(8)}ms  ${location}${prefix}${row.name}`
@@ -151,11 +166,58 @@ if (xml) {
 
   for (const row of sortedFiles.slice(0, 20)) {
     const marker =
-      row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS ? '! ' : '';
+      row.milliseconds >= FAST_TEST_SLOW_FILE_THRESHOLD_MS
+        ? '! '
+        : row.milliseconds >= FAST_TEST_WARN_FILE_THRESHOLD_MS
+          ? '~ '
+          : '';
 
     console.log(
       `${marker}${row.milliseconds.toFixed(2).padStart(8)}ms  ${String(row.tests).padStart(3)} tests  ${row.file}`
     );
+  }
+
+  if (
+    slowTests.length === 0 &&
+    slowFiles.length === 0 &&
+    (warnTests.length > 0 || warnFiles.length > 0)
+  ) {
+    console.log('');
+    console.log(
+      'Warning-zone specs found. CI may flip these over the fast-lane limit on a slower runner.'
+    );
+    console.log(
+      'Treat repeat offenders as move candidates for `*.slow.ts[x]`, especially React-heavy specs.'
+    );
+
+    if (warnFiles.length > 0) {
+      console.log('');
+      console.log('Files in the warning zone:');
+
+      for (const row of warnFiles.filter(
+        (row) => row.milliseconds < FAST_TEST_SLOW_FILE_THRESHOLD_MS
+      )) {
+        console.log(
+          `  - ${row.file} (${row.milliseconds.toFixed(2)}ms across ${row.tests} tests)`
+        );
+      }
+    }
+
+    if (warnTests.length > 0) {
+      console.log('');
+      console.log('Tests in the warning zone:');
+
+      for (const row of warnTests.filter(
+        (row) => row.milliseconds < FAST_TEST_SLOW_CASE_THRESHOLD_MS
+      )) {
+        const prefix = row.classname ? `${row.classname} > ` : '';
+        const location = row.file ? `${row.file}: ` : '';
+
+        console.log(
+          `  - ${location}${prefix}${row.name} (${row.milliseconds.toFixed(2)}ms)`
+        );
+      }
+    }
   }
 
   if (!profileOnly && (slowTests.length > 0 || slowFiles.length > 0)) {

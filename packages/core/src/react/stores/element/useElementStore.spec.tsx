@@ -8,12 +8,22 @@ import { act, render } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
+import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { useElement } from './useElement';
 import { ElementProvider } from './useElementStore';
 
 describe('ElementProvider', () => {
   const PlateWrapper = ({ children }: { children: React.ReactNode }) => {
-    const editor = createPlateEditor();
+    const editor = createPlateEditor({
+      plugins: [
+        DebugPlugin.configure({
+          options: {
+            logger: { warn: () => {} } as any,
+            throwErrors: false,
+          },
+        }),
+      ],
+    });
 
     return <Plate editor={editor}>{children}</Plate>;
   };

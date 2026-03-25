@@ -82,4 +82,38 @@ describe('setAffinitySelection', () => {
     );
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  it('clears marks when moving forward without a previous edge node', () => {
+    const { editor, onChange, setSelection } = createAffinityEditor();
+
+    setAffinitySelection(
+      editor,
+      [null, [{ italic: true, text: 'after' }, [0, 1]]] as EdgeNodes,
+      'forward'
+    );
+
+    expect(editor.marks).toBeNull();
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(setSelection).not.toHaveBeenCalled();
+  });
+
+  it('keeps the current marks when forward affinity lands before an element node', () => {
+    const { editor, onChange, setSelection } = createAffinityEditor();
+
+    setAffinitySelection(
+      editor,
+      [
+        [{ bold: true, text: 'before' }, [0, 0]],
+        [{ children: [{ text: '' }], type: 'mention' }, [0, 1]],
+      ] as EdgeNodes,
+      'forward'
+    );
+
+    expect(setSelection).toHaveBeenCalledWith({
+      anchor: { offset: 2, path: [0, 0] },
+      focus: { offset: 2, path: [0, 0] },
+    });
+    expect(editor.marks).toEqual({ bold: true });
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

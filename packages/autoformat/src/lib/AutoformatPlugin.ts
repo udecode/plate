@@ -21,7 +21,7 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
     rules: [],
   },
 }).overrideEditor(
-  ({ editor, getOptions, tf: { deleteBackward, insertText } }) => {
+  ({ editor, getOptions, tf: { deleteBackward, insertText } }: any) => {
     return {
       transforms: {
         deleteBackward(unit = 'character') {
@@ -101,7 +101,7 @@ export const AutoformatPlugin = createTSlatePlugin<AutoformatConfig>({
 
           deleteBackward(unit);
         },
-        insertText(text, options) {
+        insertText(text: any, options: any) {
           if (!editor.api.isCollapsed()) return insertText(text, options);
 
           for (const rule of getOptions().rules!) {

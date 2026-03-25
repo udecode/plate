@@ -3,49 +3,58 @@ import type { SlateEditor, TCodeBlockElement } from 'platejs';
 import { createSlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
-import { codeBlockToDecorations } from './setCodeBlockToDecorations';
+import {
+  CODE_LINE_TO_DECORATIONS,
+  codeBlockToDecorations,
+  resetCodeBlockDecorations,
+  setCodeBlockToDecorations,
+} from './setCodeBlockToDecorations';
 
 // Mock lowlight
 const mockHighlight = mock();
 const mockHighlightAuto = mock();
+const mockListLanguages = mock();
 const mockLowlight = {
   highlight: mockHighlight,
   highlightAuto: mockHighlightAuto,
+  listLanguages: mockListLanguages,
 };
 
-describe('codeBlockToDecorations', () => {
-  let editor: SlateEditor;
+let editor: SlateEditor;
 
-  beforeEach(() => {
-    // Reset mocks
-    mockHighlight.mockReset();
-    mockHighlightAuto.mockReset();
+beforeEach(() => {
+  // Reset mocks
+  mockHighlight.mockReset();
+  mockHighlightAuto.mockReset();
+  mockListLanguages.mockReset();
+  mockListLanguages.mockReturnValue(['javascript', 'typescript']);
 
-    // Create a basic editor
-    editor = createSlateEditor({
-      plugins: [BaseCodeBlockPlugin],
-    });
-
-    // Add necessary API methods
-    editor.api = {
-      debug: {
-        error: mock(),
-      },
-      // Add other required API methods as needed
-    } as any;
-
-    // Add getOptions method
-    editor.getOptions = mock().mockImplementation((plugin: any) => {
-      if (plugin === BaseCodeBlockPlugin) {
-        return {
-          defaultLanguage: 'javascript',
-          lowlight: mockLowlight,
-        };
-      }
-      return {};
-    }) as any;
+  // Create a basic editor
+  editor = createSlateEditor({
+    plugins: [BaseCodeBlockPlugin],
   });
 
+  // Add necessary API methods
+  editor.api = {
+    debug: {
+      error: mock(),
+      warn: mock(),
+    },
+  } as any;
+
+  // Add getOptions method
+  editor.getOptions = mock().mockImplementation((plugin: any) => {
+    if (plugin === BaseCodeBlockPlugin) {
+      return {
+        defaultLanguage: 'javascript',
+        lowlight: mockLowlight,
+      };
+    }
+    return {};
+  }) as any;
+});
+
+describe('codeBlockToDecorations', () => {
   it('returns empty decorations for plaintext language', () => {
     // Create a code block with plaintext
     const codeBlock: TCodeBlockElement = {
@@ -245,5 +254,98 @@ describe('codeBlockToDecorations', () => {
     // Third line should have 1 decoration
     const line3Decorations = result.get(codeBlock.children[2] as any);
     expect(line3Decorations).toHaveLength(1);
+  });
+
+  it('logs debug errors for registered languages that fail to highlight', () => {
+    const error = new Error('boom');
+    mockHighlight.mockImplementation(() => {
+      throw error;
+    });
+
+    const codeBlock: TCodeBlockElement = {
+      children: [{ children: [{ text: 'const x = 1;' }], type: 'code_line' }],
+      lang: 'javascript',
+      type: 'code_block',
+    };
+
+    const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
+
+    expect(result.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(editor.api.debug.error).toHaveBeenCalledWith(
+      error,
+      'CODE_HIGHLIGHT'
+    );
+    expect(editor.api.debug.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns and falls back to plaintext for unregistered languages', () => {
+    const error = new Error('missing');
+    mockListLanguages.mockReturnValue(['javascript']);
+    mockHighlight.mockImplementation(() => {
+      throw error;
+    });
+
+    const codeBlock: TCodeBlockElement = {
+      children: [{ children: [{ text: 'SELECT 1' }], type: 'code_line' }],
+      lang: 'sql',
+      type: 'code_block',
+    };
+
+    const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
+
+    expect(result.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(editor.api.debug.error).not.toHaveBeenCalled();
+    expect(editor.api.debug.warn).toHaveBeenCalledWith(
+      'Language "sql" is not registered. Falling back to plaintext'
+    );
+  });
+});
+
+describe('decoration cache helpers', () => {
+  it('stores decorations for each code line in the cache', () => {
+    mockHighlight.mockReturnValue({
+      value: [
+        {
+          properties: { className: ['token', 'keyword'] },
+          value: 'const',
+        },
+      ],
+    });
+
+    const codeBlock: TCodeBlockElement = {
+      children: [{ children: [{ text: 'const' }], type: 'code_line' }],
+      lang: 'javascript',
+      type: 'code_block',
+    };
+    const codeLine = codeBlock.children[0] as any;
+
+    setCodeBlockToDecorations(editor, [codeBlock, [0]]);
+
+    expect(CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual([
+      expect.objectContaining({
+        className: 'token keyword',
+      }),
+    ]);
+  });
+
+  it('clears cached decorations for every code line in a block', () => {
+    const codeBlock: TCodeBlockElement = {
+      children: [
+        { children: [{ text: 'const' }], type: 'code_line' },
+        { children: [{ text: 'return' }], type: 'code_line' },
+      ],
+      lang: 'javascript',
+      type: 'code_block',
+    };
+    const firstLine = codeBlock.children[0] as any;
+    const secondLine = codeBlock.children[1] as any;
+
+    CODE_LINE_TO_DECORATIONS.set(firstLine, [] as any);
+    CODE_LINE_TO_DECORATIONS.set(secondLine, [] as any);
+
+    resetCodeBlockDecorations(codeBlock);
+
+    expect(CODE_LINE_TO_DECORATIONS.get(firstLine)).toBeUndefined();
+    expect(CODE_LINE_TO_DECORATIONS.get(secondLine)).toBeUndefined();
   });
 });

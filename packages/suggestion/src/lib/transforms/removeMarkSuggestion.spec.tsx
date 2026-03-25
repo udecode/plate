@@ -97,4 +97,41 @@ describe('removeMarkSuggestion', () => {
     expect(dataList[1].id !== existingData.id).toBeTruthy();
     // expect(dataList[1].createdAt !== existingData.createdAt).toBeTruthy();
   });
+
+  it('skips nodes already marked by a non-update suggestion', () => {
+    const existingData = {
+      createdAt: Date.now(),
+      id: '1',
+      type: 'insert',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp>
+          <htext bold suggestion_1={existingData as any} suggestion>
+            <anchor />
+            test
+            <focus />
+          </htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+    editor.tf.removeMark('bold');
+
+    const node = editor.children[0].children[0] as any;
+
+    expect(node.bold).toBe(true);
+    expect(
+      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node)
+    ).toEqual([existingData] as any);
+  });
 });

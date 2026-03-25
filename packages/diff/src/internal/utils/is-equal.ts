@@ -1,5 +1,3 @@
-import type { UnknownObject } from 'platejs';
-
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';
 
@@ -19,9 +17,9 @@ const without = (
     return x.map((y) => without(y, { ignoreDeep, ignoreShallow }));
 
   if (!isPlainObject(x)) return x;
-  const obj = x as UnknownObject;
+  const obj = x as Record<string, unknown>;
 
-  const result: UnknownObject = {};
+  const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
     if (ignoreShallow.includes(key) || ignoreDeep.includes(key)) continue;

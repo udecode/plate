@@ -12,10 +12,10 @@ export const BaseTextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
     nodeProps: {
       nodeKey: 'textIndent',
       styleKey: 'textIndent',
-      transformNodeValue({ getOptions, nodeValue }) {
+      transformNodeValue: ({ getOptions, nodeValue }) => {
         const { offset, unit } = getOptions();
 
-        return nodeValue * offset! + unit!;
+        return nodeValue! * offset! + unit!;
       },
     },
     targetPlugins: [KEYS.p],

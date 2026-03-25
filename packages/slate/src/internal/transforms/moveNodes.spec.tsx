@@ -221,4 +221,37 @@ describe('moveNodes', () => {
       ]);
     });
   });
+
+  it('moves the selection with the moved block', () => {
+    const editor = createEditor(
+      (
+        <editor>
+          <hp>
+            <cursor />
+            one
+          </hp>
+          <hp>two</hp>
+        </editor>
+      ) as any
+    );
+
+    editor.tf.moveNodes({
+      match: (node) =>
+        !!(node as any).children && editor.api.isBlock(node as any),
+      to: [1],
+    });
+
+    const output = (
+      <editor>
+        <hp>two</hp>
+        <hp>
+          <cursor />
+          one
+        </hp>
+      </editor>
+    ) as any;
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
 });

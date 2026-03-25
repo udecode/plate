@@ -163,5 +163,59 @@ describe('setNodes', () => {
         { type: 'blockquote', children: [{ text: 'ab' }] },
       ]);
     });
+
+    it('updates all selected blocks across an expanded selection', () => {
+      const editor = createEditor({
+        children: [
+          { type: 'p', children: [{ text: 'word' }] },
+          { type: 'p', children: [{ text: 'another' }] },
+        ] as any,
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [1, 0] },
+        },
+      });
+
+      editor.tf.setNodes({ someKey: true } as any, {
+        match: (node) =>
+          !!(node as any).children && editor.api.isBlock(node as any),
+      });
+
+      expect(editor.children).toEqual([
+        { type: 'p', someKey: true, children: [{ text: 'word' }] },
+        { type: 'p', someKey: true, children: [{ text: 'another' }] },
+      ]);
+      expect(editor.selection).toEqual({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [1, 0] },
+      });
+    });
+
+    it('does not update the hanging end block when focus is at its start', () => {
+      const editor = createEditor({
+        children: [
+          { type: 'p', children: [{ text: 'word' }] },
+          { type: 'p', children: [{ text: 'another' }] },
+        ] as any,
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [1, 0] },
+        },
+      });
+
+      editor.tf.setNodes({ someKey: true } as any, {
+        match: (node) =>
+          !!(node as any).children && editor.api.isBlock(node as any),
+      });
+
+      expect(editor.children).toEqual([
+        { type: 'p', someKey: true, children: [{ text: 'word' }] },
+        { type: 'p', children: [{ text: 'another' }] },
+      ]);
+      expect(editor.selection).toEqual({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      });
+    });
   });
 });

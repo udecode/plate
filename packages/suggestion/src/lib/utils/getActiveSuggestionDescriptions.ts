@@ -1,7 +1,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { getSuggestionKey, getSuggestionUserIds } from './getSuggestionKeys';
+import { getSuggestionKey } from './getSuggestionKeys';
 import { getSuggestionNodeEntries } from './getSuggestionNodeEntries';
 
 export type TSuggestionCommonDescription = {
@@ -52,16 +52,21 @@ export const getActiveSuggestionDescriptions = (
 
   if (!suggestionId) return [];
 
-  const userIds = getSuggestionUserIds(aboveNode);
+  const suggestionDataList = editor
+    .getApi(BaseSuggestionPlugin)
+    .suggestion.dataList(aboveNode as any);
 
-  return userIds.map((userId) => {
+  return suggestionDataList.map(({ id: activeSuggestionId, userId }) => {
+    const suggestionKey = getSuggestionKey(activeSuggestionId);
     const nodes = Array.from(
-      getSuggestionNodeEntries(editor, suggestionId, {
-        match: (n: any) => n[getSuggestionKey(userId)],
-      })
+      getSuggestionNodeEntries(editor, activeSuggestionId)
     ).map(([node]) => node);
-    const insertions = nodes.filter((node) => !node.suggestionDeletion);
-    const deletions = nodes.filter((node) => node.suggestionDeletion);
+    const insertions = nodes.filter(
+      (node: any) => node[suggestionKey]?.type === 'insert'
+    );
+    const deletions = nodes.filter(
+      (node: any) => node[suggestionKey]?.type === 'remove'
+    );
     const insertedText = insertions.map((node) => node.text).join('');
     const deletedText = deletions.map((node) => node.text).join('');
 
@@ -69,7 +74,7 @@ export const getActiveSuggestionDescriptions = (
       return {
         deletedText,
         insertedText,
-        suggestionId,
+        suggestionId: activeSuggestionId,
         type: 'replacement',
         userId,
       };
@@ -77,7 +82,7 @@ export const getActiveSuggestionDescriptions = (
     if (deletions.length > 0) {
       return {
         deletedText,
-        suggestionId,
+        suggestionId: activeSuggestionId,
         type: 'deletion',
         userId,
       };
@@ -85,7 +90,7 @@ export const getActiveSuggestionDescriptions = (
 
     return {
       insertedText,
-      suggestionId,
+      suggestionId: activeSuggestionId,
       type: 'insertion',
       userId,
     };

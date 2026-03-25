@@ -16,8 +16,13 @@ import { getTextListStyleType } from './docx-cleaner/utils/getTextListStyleType'
 import { isDocxContent } from './docx-cleaner/utils/isDocxContent';
 import { isDocxList } from './docx-cleaner/utils/isDocxList';
 
-const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
+const parse: HtmlDeserializer['parse'] = (options: any) => {
+  const { element, type } = options;
   const node: any = { type };
+
+  if (!element) {
+    return node;
+  }
 
   if (isDocxList(element)) {
     node.indent = getDocxListIndent(element);
@@ -51,7 +56,13 @@ export const DocxPlugin = createSlatePlugin({
     plugins: {
       [KEYS.html]: {
         parser: {
-          transformData: ({ data, dataTransfer }) => {
+          transformData: ({
+            data,
+            dataTransfer,
+          }: {
+            data: string;
+            dataTransfer: Pick<DataTransfer, 'getData'>;
+          }) => {
             const rtf = dataTransfer.getData('text/rtf');
 
             return cleanDocx(data, rtf);
@@ -78,7 +89,11 @@ export const DocxPlugin = createSlatePlugin({
       ),
       img: {
         parser: {
-          query: ({ dataTransfer }) => {
+          query: ({
+            dataTransfer,
+          }: {
+            dataTransfer: Pick<DataTransfer, 'getData'>;
+          }) => {
             const data = dataTransfer.getData('text/html');
             const { body } = new DOMParser().parseFromString(data, 'text/html');
 

@@ -59,4 +59,13 @@ describe('splitIncomplete', () => {
     const data = 'test<img sr';
     expect(splitIncompleteMdx(data)).toEqual(['test', '<img sr']);
   });
+
+  it('splits when the stream ends on a bare opening bracket', () => {
+    expect(splitIncompleteMdx('plain<')).toEqual(['plain', '<']);
+  });
+
+  it('keeps nested balanced tags intact', () => {
+    const data = '<a><b></b></a>';
+    expect(splitIncompleteMdx(data)).toBe(data);
+  });
 });

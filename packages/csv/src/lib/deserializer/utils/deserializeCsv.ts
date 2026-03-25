@@ -23,20 +23,37 @@ const parseCsv = <T>(data: string, config?: CsvParseOptions) =>
     worker: false,
   });
 
+type CsvArrayRow = string[];
+type CsvObjectRow = Record<string, string>;
+type CsvRow = CsvArrayRow | CsvObjectRow;
+
 const isValidCsv = (
-  data: Record<string, string>[][],
+  data: CsvRow[],
   errors: Record<string, string>[][],
-  errorTolerance: number
+  errorTolerance: number,
+  fields?: string[]
 ) => {
   const tolerance = errorTolerance < 0 ? 0 : errorTolerance;
+  const hasHeaders = !!fields;
 
-  return !(
-    !data ||
+  if (!data || data.length === 0) return false;
+
+  if (hasHeaders) {
+    if (fields.length < 2 || data.length < 1) return false;
+  } else if (
     data.length < 2 ||
+    !Array.isArray(data[0]) ||
     data[0].length < 2 ||
-    data[1].length < 2 ||
-    (errors.length > 0 && errors.length > tolerance * data.length)
-  );
+    !Array.isArray(data[1]) ||
+    data[1].length < 2
+  ) {
+    return false;
+  }
+
+  if (errors.length > 0 && errors.length > tolerance * data.length)
+    return false;
+
+  return true;
 };
 
 export const deserializeCsv = (
@@ -62,9 +79,10 @@ export const deserializeCsv = (
 
     if (
       !isValidCsv(
-        csv.data as Record<string, string>[][],
+        csv.data as CsvRow[],
         csv.errors as unknown as Record<string, string>[][],
-        errorTolerance!
+        errorTolerance!,
+        csv.meta.fields
       )
     )
       return;

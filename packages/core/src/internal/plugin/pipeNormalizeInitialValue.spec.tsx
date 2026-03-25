@@ -2,9 +2,11 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
+import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin';
 import { TestPlate as Plate } from '../../react/__tests__/TestPlate';
 import { createPlateEditor, useEditorValue } from '../../react';
+import { pipeNormalizeInitialValue } from './pipeNormalizeInitialValue';
 
 describe('pipeNormalizeInitialValue', () => {
   const createTestPlugin = (key: string) =>
@@ -162,5 +164,28 @@ describe('pipeNormalizeInitialValue', () => {
         });
       });
     });
+  });
+
+  it('skips normalizeInitialValue for read-only editOnly plugins', () => {
+    const callCount = mock();
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'skip',
+          editOnly: { normalizeInitialValue: true },
+          normalizeInitialValue: () => {
+            callCount();
+          },
+        }),
+      ],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+
+    editor.dom.readOnly = true;
+    (callCount as any).mockClear();
+
+    pipeNormalizeInitialValue(editor);
+
+    expect(callCount).not.toHaveBeenCalled();
   });
 });

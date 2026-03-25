@@ -37,13 +37,21 @@ export const getTableCellSize = (
   if (!rowSize) {
     const [rowElement] = editor.api.parent<TTableRowElement>(path) ?? [];
 
-    if (!rowElement) return { minHeight: 0, width: 0 };
+    if (!rowElement || rowElement.type !== editor.getType(KEYS.tr)) {
+      return { minHeight: 0, width: 0 };
+    }
 
-    rowSize = rowElement.size;
+    rowSize = rowElement.size ?? 0;
   }
   if (!colSizes) {
-    const [, rowPath] = editor.api.parent<TTableRowElement>(path)!;
-    const [tableNode] = editor.api.parent<TTableElement>(rowPath)!;
+    const [, rowPath] = editor.api.parent<TTableRowElement>(path) ?? [];
+
+    if (!rowPath) return { minHeight: rowSize, width: 0 };
+
+    const [tableNode] = editor.api.parent<TTableElement>(rowPath) ?? [];
+
+    if (!tableNode) return { minHeight: rowSize, width: 0 };
+
     colSizes = getTableOverriddenColSizes(tableNode);
   }
 

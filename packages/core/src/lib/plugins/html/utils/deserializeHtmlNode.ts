@@ -7,15 +7,7 @@ import { htmlBrToNewLine } from './htmlBrToNewLine';
 import { htmlElementToElement } from './htmlElementToElement';
 import { htmlElementToLeaf } from './htmlElementToLeaf';
 import { htmlTextNodeToString } from './htmlTextNodeToString';
-import { inlineTagNames } from './inlineTagNames';
 import { isHtmlElement } from './isHtmlElement';
-
-/** Check if an element is a block-level element. */
-const _isBlockElement = (element: Element | null): boolean => {
-  if (!element) return false;
-
-  return !inlineTagNames.has(element.tagName);
-};
 
 /** Check if a BR tag should be converted to an empty paragraph. */
 const shouldBrBecomeEmptyParagraph = (node: Element): boolean => {

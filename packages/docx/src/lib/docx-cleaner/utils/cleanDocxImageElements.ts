@@ -1,8 +1,17 @@
-import { hexToBase64, traverseHtmlElements } from 'platejs';
+import { traverseHtmlElements } from 'platejs';
 import validator from 'validator';
 
 import { getRtfImagesMap } from './getRtfImagesMap';
 import { getVShapeSpid } from './getVShapeSpid';
+
+const hexToBase64 = (hex: string): string => {
+  const hexPairs = hex.match(/\w{2}/g) || [];
+  const binary = hexPairs.map((hexPair) =>
+    String.fromCodePoint(Number.parseInt(hexPair, 16))
+  );
+
+  return btoa(binary.join(''));
+};
 
 /** Clean docx image elements. */
 export const cleanDocxImageElements = (

@@ -1,6 +1,21 @@
-import { type SlateEditor, PathApi } from 'platejs';
+import type { SlateEditor } from 'platejs';
 
 import type { TabbableEntry, TabDestination } from './types';
+
+const comparePaths = (a: number[], b: number[]) => {
+  const minLength = Math.min(a.length, b.length);
+
+  for (let index = 0; index < minLength; index++) {
+    if (a[index] !== b[index]) {
+      return a[index] - b[index];
+    }
+  }
+
+  return a.length - b.length;
+};
+
+const isPathBefore = (a: number[], b: number[]) => comparePaths(a, b) < 0;
+const isPathEqual = (a: number[], b: number[]) => comparePaths(a, b) === 0;
 
 export type FindTabDestinationOptions = {
   activeTabbableEntry: TabbableEntry | null;
@@ -41,7 +56,7 @@ export const findTabDestination = (
      */
     if (
       nextTabbableEntry &&
-      PathApi.equals(activeTabbableEntry.path, nextTabbableEntry.path)
+      isPathEqual(activeTabbableEntry.path, nextTabbableEntry.path)
     ) {
       return {
         domNode: nextTabbableEntry.domNode,
@@ -79,11 +94,11 @@ export const findTabDestination = (
   const nextTabbableEntry =
     direction === 'forward'
       ? tabbableEntries.find(
-          (entry) => !PathApi.isBefore(entry.path, selectionPath)
+          (entry) => !isPathBefore(entry.path, selectionPath)
         )
       : [...tabbableEntries]
           .reverse()
-          .find((entry) => PathApi.isBefore(entry.path, selectionPath));
+          .find((entry) => isPathBefore(entry.path, selectionPath));
 
   // If it exists, focus it
   if (nextTabbableEntry) {

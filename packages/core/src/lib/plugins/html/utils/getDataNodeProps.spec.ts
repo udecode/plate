@@ -80,4 +80,21 @@ describe('getDataNodeProps', () => {
       })
     ).toEqual({ custom: 'only' });
   });
+
+  it('returns undefined when no default or custom node props apply', () => {
+    const ParagraphPlugin = createSlatePlugin({
+      key: 'p',
+    });
+    const editor = createSlateEditor({
+      plugins: [ParagraphPlugin],
+    });
+
+    expect(
+      getDataNodeProps({
+        editor,
+        element: document.createElement('p'),
+        plugin: editor.getPlugin(ParagraphPlugin),
+      })
+    ).toBeUndefined();
+  });
 });

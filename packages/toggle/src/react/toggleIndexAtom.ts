@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import type { Atom } from 'jotai';
-import type { TIndentElement, Value } from 'platejs';
+import type { TIndentElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 import {
@@ -18,10 +18,10 @@ import { TogglePlugin } from './TogglePlugin';
 const ListPluginKey = 'listStyleType';
 
 // Returns, for each child, the enclosing toggle ids
-export const buildToggleIndex = (elements: Value): Map<string, string[]> => {
+export const buildToggleIndex = (elements: any[]): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
-  elements.forEach((element) => {
+  elements.forEach((element: any) => {
     const elementIndent = (element[KEYS.indent] as number) || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithListCorrection =

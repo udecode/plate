@@ -1,9 +1,9 @@
-import type { Path, TElement } from 'platejs';
+type Path = number[];
 
 export type TabbableEntry = {
   domNode: HTMLElement;
   path: Path;
-  slateNode: TElement;
+  slateNode: any;
 };
 
 export type TabDestination = TabDestinationDOMNode | TabDestinationPath;
