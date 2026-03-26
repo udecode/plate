@@ -1,5 +1,12 @@
 # @platejs/ai
 
+## 52.3.8
+
+### Patch Changes
+
+- [#4882](https://github.com/udecode/plate/pull/4882) by [@zbeyens](https://github.com/zbeyens) –
+  - Fix `replacePlaceholders` replacing only the first `{prompt}` and markdown placeholder occurrence in AI prompt templates
+
 ## 52.3.1
 
 ## 52.1.0
