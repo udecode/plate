@@ -9,6 +9,17 @@ import { createSlateEditor } from '../../editor';
 import { SlateExtensionPlugin } from './SlateExtensionPlugin';
 
 describe('SlateExtensionPlugin', () => {
+  describe('redecorate', () => {
+    it('exposes a no-op redecorate method by default', () => {
+      const editor = createSlateEditor({
+        plugins: [SlateExtensionPlugin],
+      });
+
+      expect(typeof editor.api.redecorate).toBe('function');
+      expect(() => editor.api.redecorate()).not.toThrow();
+    });
+  });
+
   describe('onNodeChange', () => {
     it('call onNodeChange callback when a node operation occurs', () => {
       const onNodeChange = mock();

@@ -37,7 +37,9 @@ export type SlateExtensionConfig = PluginConfig<
       text: string;
     }) => void;
   },
-  {},
+  {
+    redecorate: () => void;
+  },
   {
     init: OmitFirst<typeof init>;
     insertExitBreak: OmitFirst<typeof insertExitBreak>;
@@ -48,6 +50,9 @@ export type SlateExtensionConfig = PluginConfig<
 
 /** Opinionated extension of slate default behavior. */
 export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
+  api: {
+    redecorate: () => {},
+  },
   key: 'slateExtension',
   options: {
     onNodeChange: () => {},

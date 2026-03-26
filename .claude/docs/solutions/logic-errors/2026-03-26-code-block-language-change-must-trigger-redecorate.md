@@ -1,6 +1,7 @@
 ---
 module: Code Block
 date: 2026-03-26
+last_updated: 2026-03-26
 problem_type: logic_error
 component: editor_transforms
 symptoms:
@@ -40,7 +41,7 @@ Treat language changes as a two-step operation inside `withCodeBlock.apply`:
 
 1. Detect a real `lang` transition by comparing previous and next values.
 2. Clear cached line decorations before `apply(operation)`.
-3. Call `editor.api.redecorate?.()` after `apply(operation)` completes.
+3. Call `editor.api.redecorate()` after `apply(operation)` completes.
 
 That makes these transitions all behave the same way:
 
@@ -54,11 +55,17 @@ That makes these transitions all behave the same way:
 These checks passed:
 
 ```bash
-bun test packages/code-block/src/lib/withCodeBlock.spec.tsx packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts
+bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/code-block/src/lib/withCodeBlock.spec.tsx
 pnpm install
-pnpm turbo build --filter=./packages/code-block
-pnpm turbo typecheck --filter=./packages/code-block
+pnpm turbo build --filter=./packages/core --filter=./packages/code-block
+pnpm turbo typecheck --filter=./packages/core
 pnpm lint:fix
+```
+
+This broader package check still fails on existing `@platejs/code-block` type errors outside this cleanup:
+
+```bash
+pnpm turbo typecheck --filter=./packages/core --filter=./packages/code-block
 ```
 
 ## Prevention
@@ -66,3 +73,5 @@ pnpm lint:fix
 When a plugin caches decoration state outside Slate nodes, clearing the cache is not enough. Also verify what actually triggers the next decorate pass.
 
 For regressions around `decorate`, add one test that changes the underlying node data and asserts any explicit refresh hook is called. In this case, the stable seam is `withCodeBlock.apply`, not the UI combobox that calls `setNodes({ lang })`.
+
+If a shared plugin needs a helper that only some editor runtimes override, put that helper on the base extension API as a harmless default first. Then feature packages can call the real contract directly instead of papering over the gap with local type assertions.

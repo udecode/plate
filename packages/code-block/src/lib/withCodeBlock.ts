@@ -20,9 +20,6 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
   return {
     transforms: {
       apply(operation) {
-        const editorApi = editor.api as typeof editor.api & {
-          redecorate?: () => void;
-        };
         let shouldRedecorate = false;
 
         if (getOptions().lowlight && operation.type === 'set_node') {
@@ -42,7 +39,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
         apply(operation);
 
         if (shouldRedecorate) {
-          editorApi.redecorate?.();
+          editor.api.redecorate();
         }
       },
       insertBreak() {

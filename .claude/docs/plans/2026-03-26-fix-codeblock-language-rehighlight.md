@@ -14,3 +14,11 @@ Make code-block syntax highlighting refresh for the whole block immediately afte
 
 - Package-level fix only.
 - No registry UI changes.
+- Type cleanup: `redecorate` now lives on the base `SlateExtensionPlugin` API as a no-op, so shared plugins can call `editor.api.redecorate()` without local casts.
+- Verification:
+  - `bun test packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.spec.tsx packages/code-block/src/lib/withCodeBlock.spec.tsx`
+  - `pnpm install`
+  - `pnpm turbo build --filter=./packages/core --filter=./packages/code-block`
+  - `pnpm turbo typecheck --filter=./packages/core`
+  - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/code-block` failed on broader existing `@platejs/code-block` package type errors outside this cleanup
+  - `pnpm lint:fix`
