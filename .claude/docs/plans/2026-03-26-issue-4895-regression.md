@@ -29,6 +29,8 @@
 - Restoring `platejs` as a workspace devDependency of `@platejs/table` makes Turbo build `platejs` before `table`, which closes the reproducer: hiding `packages/plate/dist` no longer causes the table declarations to collapse to `any` when building through `pnpm turbo build --filter=./packages/table`.
 - All 42 workspace packages that declare `peerDependencies.platejs` also import `platejs` in source, so the right repo-wide fix is to restore `devDependencies.platejs = workspace:^` for the whole set, not just `table`.
 - A small repo-level manifest guard is enough to keep this from drifting again: fail if any workspace package declares `peerDependencies.platejs` without the matching workspace `devDependencies.platejs`.
+- `pnpm test:slowest` had a second, unrelated paper cut: CI runners were tripping the fast-suite hard-fail bucket with timings that stayed green locally.
+- The fix there is configuration, not test churn: keep the strict local fast-lane thresholds, but widen only the CI hard-fail bucket and keep the old local limits visible as CI warnings.
 
 ## Progress
 
@@ -40,3 +42,6 @@
 - 2026-03-26: `pnpm test:types` hit a TypeScript 6.0.2 internal compiler `Debug Failure` in the repo-wide type-test lane, so full-lane verification remains blocked by that compiler crash.
 - 2026-03-26: Added `platejs: workspace:^` back to every workspace package that declares a `platejs` peer dependency, then verified the full package build and typecheck lanes pass.
 - 2026-03-26: Added `tooling/scripts/check-workspace-package-manifests.mjs` and wired it into `pnpm test:all` so future manifest drift fails fast.
+- 2026-03-26: Collapsed the 42 patch changesets into one combined `.changeset/table-peer-build-edge.md` file.
+- 2026-03-26: Made `tooling/config/test-suites.mjs` CI-aware so `pnpm test:slowest` uses `90ms/test` and `180ms/file` hard-fail buckets in CI while preserving the stricter local limits and surfacing the old limits as CI warnings.
+- 2026-03-26: Verified `pnpm lint:fix`, `CI=1 pnpm test:slowest -- --top 5`, and a full `pnpm check` after the CI threshold split.
