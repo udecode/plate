@@ -14,7 +14,7 @@ docs:
 
 - **Context-aware command menu** that adapts to cursor, text selection, and block selection workflows.
 - **Streaming Markdown/MDX insertion** with table, column, and code block support powered by `streamInsertChunk`.
-- **Insert and chat review modes** with snapshot-based insert previews plus undo-safe batching via `withAIBatch` and `tf.ai.undo()`.
+- **Insert and chat review modes** with localized insert previews plus undo-safe batching via `withAIBatch` and `tf.ai.undo()`.
 - **Block selection aware transforms** to replace or append entire sections using `tf.aiChat.replaceSelection` and `tf.aiChat.insertBelow`.
 - **Direct integration with `@ai-sdk/react`** so `api.aiChat.submit` can stream responses from Vercel AI SDK helpers.
 - **Suggestion and comment utilities** that diff AI edits, accept/reject changes, and map AI feedback back to document ranges.
@@ -108,9 +108,16 @@ Use `AIPlugin.withComponent` with your own element (or [`AILeaf`](/docs/componen
 Extend `AIChatPlugin` to hook streaming and edits. The example mirrors the core logic from `AIKit` while keeping the UI headless.
 
 ```tsx
-import { AIChatPlugin, applyAISuggestions, streamInsertChunk, useChatChunk } from '@platejs/ai/react';
-import { captureAIStreamSnapshot, withAIBatch } from '@platejs/ai';
-import { getPluginType, KEYS, PathApi } from 'platejs';
+import cloneDeep from 'lodash/cloneDeep';
+import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
+import {
+  AIChatPlugin,
+  applyAISuggestions,
+  getInsertPreviewStart,
+  streamInsertChunk,
+  useChatChunk,
+} from '@platejs/ai/react';
+import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 export const aiChatPlugin = AIChatPlugin.extend({
@@ -130,24 +137,35 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     useChatChunk({
       onChunk: ({ chunk, isFirst, text }) => {
+        if (isFirst && mode === 'insert') {
+          const { startBlock, startInEmptyParagraph } =
+            getInsertPreviewStart(editor);
+
+          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
+            originalBlocks:
+              startInEmptyParagraph &&
+              startBlock &&
+              ElementApi.isElement(startBlock)
+                ? [cloneDeep(startBlock)]
+                : [],
+          });
+
+          editor.setOption(AIChatPlugin, 'streaming', true);
+
+          editor.tf.withoutSaving(() => {
+            editor.tf.insertNodes(
+              {
+                children: [{ text: '' }],
+                type: getPluginType(editor, KEYS.aiChat),
+              },
+              {
+                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+              }
+            );
+          });
+        }
+
         if (mode === 'insert') {
-          if (isFirst) {
-            captureAIStreamSnapshot(editor);
-            editor.setOption(AIChatPlugin, 'streaming', true);
-
-            editor.tf.withoutSaving(() => {
-              editor.tf.insertNodes(
-                {
-                  children: [{ text: '' }],
-                  type: getPluginType(editor, KEYS.aiChat),
-                },
-                {
-                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-                }
-              );
-            });
-          }
-
           editor.tf.withoutSaving(() => {
             if (!getOption('streaming')) return;
 
@@ -183,7 +201,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```
 
 - `useChatChunk`: Watches `UseChatHelpers` status and yields incremental chunks.
-- `captureAIStreamSnapshot`: Stores the pre-stream editor state so `tf.ai.undo()` can discard preview content without replaying every streamed chunk.
+- `tf.ai.beginPreview`: Captures the rollback slice and selection for insert-mode preview before the first streamed chunk is written.
 - `streamInsertChunk`: Streams Markdown/MDX into the document, reusing the existing block when possible.
 - `applyAISuggestions`: Converts responses into transient suggestion nodes when `toolName === 'edit'`.
 - `withAIBatch`: Marks saved AI batches so suggestion review and accepted AI changes stay undo-safe.
@@ -418,18 +436,6 @@ Streams chat responses chunk-by-chunk and gives you full control over insertion.
 
 ## Utilities
 
-### `captureAIStreamSnapshot`
-
-Captures the current editor state before insert-mode streaming so `tf.ai.undo()` can discard preview content without replaying every streamed chunk.
-
-<API name="captureAIStreamSnapshot">
-<APIParameters>
-  <APIItem name="editor" type="SlateEditor">Target editor.</APIItem>
-  <APIItem name="snapshot" type="{ children: Descendant[]; selection: TRange | null }" optional>Custom snapshot to store instead of the current editor state.</APIItem>
-</APIParameters>
-<APIReturns type="{ children: Descendant[]; selection: TRange | null }">Stored snapshot.</APIReturns>
-</API>
-
 ### `withAIBatch`
 
 Groups editor operations into a single history batch and flags it as AI-generated so `tf.ai.undo()` removes it safely.
@@ -651,9 +657,52 @@ Clears the AI mark from matching nodes.
 
 Removes text nodes that are marked as AI-generated.
 
+### `tf.ai.beginPreview(options?)`
+
+Captures the rollback slice and selection for insert-mode AI preview. Call it once before writing the first unsaved preview chunk.
+
+<API name="beginPreview">
+<APIParameters>
+  <APIItem name="options" type="{ originalBlocks?: Value }" optional>Top-level blocks that the preview will overwrite. Use `[]` when preview inserts after existing content.</APIItem>
+</APIParameters>
+<APIReturns type="boolean">Returns `true` when a new preview rollback point was stored, or `false` when preview state already exists.</APIReturns>
+</API>
+
+### `tf.ai.acceptPreview()`
+
+Commits the active preview as one fresh undoable batch, strips preview-only markers, and clears preview bookkeeping.
+
+<API name="acceptPreview">
+<APIReturns type="boolean">Returns `true` when an active preview was committed.</APIReturns>
+</API>
+
+### `tf.ai.cancelPreview()`
+
+Restores the rollback point for the active preview and clears preview bookkeeping.
+
+<API name="cancelPreview">
+<APIReturns type="boolean">Returns `true` when an active preview was restored.</APIReturns>
+</API>
+
+### `tf.ai.discardPreview()`
+
+Clears preview bookkeeping without restoring content. Use it when the previewed content should stay in place.
+
+<API name="discardPreview">
+<APIReturns type="boolean">Returns `true` when active preview bookkeeping was cleared.</APIReturns>
+</API>
+
+### `tf.ai.hasPreview()`
+
+Reports whether an insert-mode preview rollback point is currently active.
+
+<API name="hasPreview">
+<APIReturns type="boolean">Returns `true` when preview rollback state exists.</APIReturns>
+</API>
+
 ### `tf.ai.undo()`
 
-Undoes the latest AI history entry when it was created by `withAIBatch`. When insert-mode preview streaming used `captureAIStreamSnapshot`, it restores that snapshot instead of replaying every streamed chunk. In both cases it avoids re-applying AI output from redo.
+Undoes the latest AI history entry when it was created by `withAIBatch`. If an insert-mode preview is active, it cancels that preview first instead of replaying every streamed chunk. In both cases it avoids re-applying AI output from redo.
 
 ## Customization
 
