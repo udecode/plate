@@ -46,12 +46,12 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/core": "workspace:*",
-    "@platejs/slate": "workspace:*",
-    "@platejs/utils": "workspace:*",
-    "@udecode/react-hotkeys": "workspace:*",
-    "@udecode/react-utils": "workspace:*",
-    "@udecode/utils": "workspace:*",
+    "@platejs/core": "workspace:^",
+    "@platejs/slate": "workspace:^",
+    "@platejs/utils": "workspace:^",
+    "@udecode/react-hotkeys": "workspace:^",
+    "@udecode/react-utils": "workspace:^",
+    "@udecode/utils": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   },
   "peerDependencies": {

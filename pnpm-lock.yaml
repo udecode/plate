@@ -1481,22 +1481,22 @@ importers:
   packages/plate:
     dependencies:
       '@platejs/core':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../core
       '@platejs/slate':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../slate
       '@platejs/utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../utils
       '@udecode/react-hotkeys':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../udecode/react-hotkeys
       '@udecode/react-utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../udecode/react-utils
       '@udecode/utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../udecode/utils
       react-compiler-runtime:
         specifier: ^1.0.0
