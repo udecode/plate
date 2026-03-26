@@ -11,8 +11,8 @@ import {
   type TIdElement,
 } from 'platejs';
 
-import { withAIBatch } from '../../../lib';
-import { AIPlugin } from '../../ai/AIPlugin';
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { withAIBatch } from '../../../lib/transforms/withAIBatch';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from '../utils';
 import { createFormattedBlocks } from './replaceSelectionAIChat';
@@ -33,7 +33,7 @@ export const insertBelowAIChat = (
 
   const selectedIds = editor.getOptions(BlockSelectionPlugin).selectedIds;
 
-  editor.getTransforms(AIPlugin).ai.undo();
+  editor.getTransforms(BaseAIPlugin).ai.undo();
 
   const insertBlocksAndSelect =
     editor.getTransforms(BlockSelectionPlugin).blockSelection

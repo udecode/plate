@@ -16,15 +16,24 @@ mock.module('../../../lib/utils/getEditorPrompt', () => ({
   getEditorPrompt: getEditorPromptMock,
 }));
 
-mock.module('../../ai/AIPlugin', () => ({
-  AIPlugin: { key: 'ai' },
-}));
+mock.module('platejs/react', async () => {
+  const actual = await import(
+    '/Users/zbeyens/git/plate/packages/plate/dist/react/index.js'
+  );
+  const getEditorPlugin = actual.getEditorPlugin as any;
+  const useEditorPlugin = actual.useEditorPlugin as any;
+  const usePluginOption = actual.usePluginOption as any;
 
-mock.module('platejs/react', () => ({
-  getEditorPlugin: getEditorPluginMock,
-  useEditorPlugin: useEditorPluginMock,
-  usePluginOption: usePluginOptionMock,
-}));
+  return {
+    ...actual,
+    getEditorPlugin: (...args: any[]) =>
+      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
+    useEditorPlugin: (...args: any[]) =>
+      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
+    usePluginOption: (...args: any[]) =>
+      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
+  };
+});
 
 const loadModule = async () =>
   import(`./submitAIChat?test=${Math.random().toString(36).slice(2)}`);

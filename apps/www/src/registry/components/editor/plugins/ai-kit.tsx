@@ -1,14 +1,16 @@
 'use client';
 
-import { captureAIStreamSnapshot, withAIBatch } from '@platejs/ai';
+import cloneDeep from 'lodash/cloneDeep.js';
+import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
   applyAISuggestions,
+  getInsertPreviewStart,
   streamInsertChunk,
   useChatChunk,
 } from '@platejs/ai/react';
-import { getPluginType, KEYS, PathApi } from 'platejs';
+import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
@@ -39,7 +41,17 @@ export const aiChatPlugin = AIChatPlugin.extend({
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode === 'insert') {
-          captureAIStreamSnapshot(editor);
+          const { startBlock, startInEmptyParagraph } =
+            getInsertPreviewStart(editor);
+
+          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
+            originalBlocks:
+              startInEmptyParagraph &&
+              startBlock &&
+              ElementApi.isElement(startBlock)
+                ? [cloneDeep(startBlock)]
+                : [],
+          });
 
           editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(

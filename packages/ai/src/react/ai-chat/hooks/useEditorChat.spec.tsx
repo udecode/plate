@@ -4,15 +4,28 @@ const useEditorPluginMock = mock();
 const usePluginOptionMock = mock();
 const getEditorPluginMock = mock();
 
-mock.module('platejs/react', () => ({
-  getEditorPlugin: getEditorPluginMock,
-  useEditorPlugin: useEditorPluginMock,
-  usePluginOption: usePluginOptionMock,
-}));
-
 mock.module('../AIChatPlugin', () => ({
   AIChatPlugin: { key: 'aiChat' },
 }));
+
+mock.module('platejs/react', async () => {
+  const actual = await import(
+    '/Users/zbeyens/git/plate/packages/plate/dist/react/index.js'
+  );
+  const getEditorPlugin = actual.getEditorPlugin as any;
+  const useEditorPlugin = actual.useEditorPlugin as any;
+  const usePluginOption = actual.usePluginOption as any;
+
+  return {
+    ...actual,
+    getEditorPlugin: (...args: any[]) =>
+      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
+    useEditorPlugin: (...args: any[]) =>
+      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
+    usePluginOption: (...args: any[]) =>
+      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
+  };
+});
 
 mock.module('@platejs/selection/react', () => ({
   BlockSelectionPlugin: { key: 'blockSelection' },
@@ -23,6 +36,7 @@ const loadModule = async () =>
 
 describe('useEditorChat', () => {
   beforeEach(() => {
+    getEditorPluginMock.mockReset();
     useEditorPluginMock.mockReset();
     usePluginOptionMock.mockReset();
   });

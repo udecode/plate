@@ -2,9 +2,11 @@ import type { SlateEditor } from 'platejs';
 
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 
-import { restoreAIStreamSnapshot } from './aiStreamSnapshot';
+import { cancelAIPreview, hasAIPreview } from './aiStreamSnapshot';
 
 export const undoAI = (editor: SlateEditor) => {
+  if (hasAIPreview(editor) && cancelAIPreview(editor)) return;
+
   const hasAINodeOrAISuggestion =
     editor.api.some({
       at: [],
@@ -23,6 +25,6 @@ export const undoAI = (editor: SlateEditor) => {
   }
 
   if (hasAINodeOrAISuggestion) {
-    restoreAIStreamSnapshot(editor);
+    cancelAIPreview(editor);
   }
 };

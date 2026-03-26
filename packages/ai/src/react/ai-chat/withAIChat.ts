@@ -2,7 +2,7 @@ import type { OverrideEditor } from 'platejs/react';
 
 import { ElementApi, KEYS } from 'platejs';
 
-import { AIPlugin } from '../ai/AIPlugin';
+import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
 
 export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
@@ -12,7 +12,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
   tf: { insertText, normalizeNode },
   type,
 }) => {
-  const tf = editor.getTransforms(AIPlugin);
+  const ai = editor.getTransforms(BaseAIPlugin).ai;
 
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
@@ -68,7 +68,7 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
         const [node, path] = entry;
 
         if (node[KEYS.ai] && !getOptions().open) {
-          tf.ai.removeMarks({ at: path });
+          ai.removeMarks({ at: path });
 
           return;
         }

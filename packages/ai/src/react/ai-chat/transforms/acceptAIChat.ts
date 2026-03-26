@@ -1,67 +1,54 @@
-import cloneDeep from 'lodash/cloneDeep.js';
-import { ElementApi, KEYS, TextApi, getPluginType } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import { ElementApi, KEYS, type Point } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
-import { commitAIStreamValue, withAIBatch } from '../../../lib';
-import { AIPlugin } from '../../ai/AIPlugin';
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { AI_PREVIEW_KEY } from '../../../lib/transforms/aiStreamSnapshot';
+import { withAIBatch } from '../../../lib/transforms/withAIBatch';
 import { type AIChatPluginConfig, AIChatPlugin } from '../AIChatPlugin';
 import { acceptAISuggestions } from '../utils/acceptAISuggestions';
 
-const getAcceptedInsertValue = (editor: PlateEditor) => {
-  const aiChatType = getPluginType(editor, KEYS.aiChat);
-  const aiType = getPluginType(editor, KEYS.ai);
+const getAcceptedInsertFocusPoint = (editor: PlateEditor): Point | null => {
+  let endIndex: number | null = null;
 
-  const stripTracking = (node: any): any | null => {
-    if (ElementApi.isElement(node) && node.type === aiChatType) {
-      return null;
+  editor.children.forEach((node: any, index) => {
+    if (ElementApi.isElement(node) && node[AI_PREVIEW_KEY]) {
+      endIndex = index;
     }
+  });
 
-    if (TextApi.isText(node)) {
-      const { [aiType]: _ai, ...rest } = node;
+  if (endIndex === null) return null;
 
-      return rest;
-    }
-
-    if (!node.children) return node;
-
-    return {
-      ...node,
-      children: node.children
-        .map((child: any) => stripTracking(child))
-        .filter(Boolean),
-    };
-  };
-
-  return cloneDeep(editor.children)
-    .map((node) => stripTracking(node))
-    .filter(Boolean);
+  return editor.api.end([endIndex]) ?? null;
 };
 
 export const acceptAIChat = (editor: PlateEditor) => {
   const mode = editor.getOption(AIChatPlugin, 'mode');
 
   if (mode === 'insert') {
-    const { tf } = getEditorPlugin(editor, AIPlugin);
+    const ai = editor.getTransforms(BaseAIPlugin).ai;
     const api = editor.getApi<AIChatPluginConfig>({ key: KEYS.ai });
+    const focusPoint = getAcceptedInsertFocusPoint(editor);
 
-    const lastAINodePath = api.aiChat.node({ at: [], reverse: true })![1];
-
-    if (!commitAIStreamValue(editor, getAcceptedInsertValue(editor))) {
+    if (!ai.acceptPreview()) {
       withAIBatch(editor, () => {
-        tf.ai.removeMarks();
+        editor.tf.unsetNodes(AI_PREVIEW_KEY, {
+          at: [],
+          match: (node) =>
+            ElementApi.isElement(node) && !!(node as any)[AI_PREVIEW_KEY],
+        });
+        ai.removeMarks();
         editor.getTransforms(AIChatPlugin).aiChat.removeAnchor();
       });
     }
 
     api.aiChat.hide();
     editor.tf.focus();
-
-    const focusPoint = editor.api.end(lastAINodePath)!;
-
-    editor.tf.setSelection({
-      anchor: focusPoint,
-      focus: focusPoint,
-    });
+    if (focusPoint) {
+      editor.tf.select({
+        anchor: focusPoint,
+        focus: focusPoint,
+      });
+    }
   }
 
   if (mode === 'chat') {

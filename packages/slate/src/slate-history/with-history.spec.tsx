@@ -224,6 +224,99 @@ describe('withHistory', () => {
     expect(editor.children).toEqual([{ children: [{ text: '' }], type: 'p' }]);
   });
 
+  it('restores selection even when node operations leave it null', () => {
+    const editor = createHistoryEditor(
+      (
+        <editor>
+          <hp>
+            one
+            <cursor />
+          </hp>
+        </editor>
+      ) as any
+    );
+
+    editor.children = [{ children: [{ text: 'accepted' }], type: 'p' }] as any;
+    editor.history.undos.push({
+      operations: [
+        {
+          node: { children: [{ text: 'one' }], type: 'p' },
+          path: [0],
+          type: 'remove_node',
+        },
+        {
+          node: { children: [{ text: 'accepted' }], type: 'p' },
+          path: [0],
+          type: 'insert_node',
+        },
+      ],
+      selectionBefore: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    });
+    editor.selection = null;
+    expect(editor.selection).toBeNull();
+
+    editor.undo();
+
+    expect(editor.children).toEqual([
+      { children: [{ text: 'one' }], type: 'p' },
+    ]);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+  });
+
+  it('restores redo selection when undo captured a null-selection batch', () => {
+    const editor = createHistoryEditor(
+      (
+        <editor>
+          <hp>
+            one
+            <cursor />
+          </hp>
+        </editor>
+      ) as any
+    );
+
+    editor.children = [{ children: [{ text: 'accepted' }], type: 'p' }] as any;
+    editor.history.undos.push({
+      operations: [
+        {
+          node: { children: [{ text: 'one' }], type: 'p' },
+          path: [0],
+          type: 'remove_node',
+        },
+        {
+          node: { children: [{ text: 'accepted' }], type: 'p' },
+          path: [0],
+          type: 'insert_node',
+        },
+      ],
+      selectionBefore: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+    });
+    editor.selection = {
+      anchor: { offset: 8, path: [0, 0] },
+      focus: { offset: 8, path: [0, 0] },
+    };
+
+    editor.undo();
+    editor.redo();
+
+    expect(editor.children).toEqual([
+      { children: [{ text: 'accepted' }], type: 'p' },
+    ]);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 8, path: [0, 0] },
+      focus: { offset: 8, path: [0, 0] },
+    });
+  });
+
   it('does not save operations wrapped in withoutSaving', () => {
     const editor = createHistoryEditor(
       (

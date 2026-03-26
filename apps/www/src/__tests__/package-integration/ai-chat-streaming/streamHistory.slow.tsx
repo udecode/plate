@@ -1,20 +1,29 @@
 import { ElementApi, KEYS, PathApi, getPluginType } from 'platejs';
 
-import { AIPlugin } from '../../../../../../packages/ai/src/react/ai/AIPlugin';
 import { AIChatPlugin } from '../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
-import { streamInsertChunk } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
+import {
+  getInsertPreviewStart,
+  streamInsertChunk,
+} from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
 import { acceptAIChat } from '../../../../../../packages/ai/src/react/ai-chat/transforms/acceptAIChat';
-import { captureAIStreamSnapshot } from '../../../../../../packages/ai/src/lib/transforms/aiStreamSnapshot';
 import { createTestEditor } from './__tests__/createTestEditor';
 
 const streamPreview = (chunks: string[]) => {
   const { editor } = createTestEditor();
+  const initialSelection = JSON.parse(JSON.stringify(editor.selection));
   const initialValue = JSON.parse(JSON.stringify(editor.children));
 
   editor.setOption(AIChatPlugin, 'mode', 'insert');
   editor.setOption(AIChatPlugin, 'open', true);
 
-  captureAIStreamSnapshot(editor);
+  const { startBlock, startInEmptyParagraph } = getInsertPreviewStart(editor);
+
+  editor.tf.ai.beginPreview({
+    originalBlocks:
+      startInEmptyParagraph && startBlock && ElementApi.isElement(startBlock)
+        ? [structuredClone(startBlock)]
+        : [],
+  });
 
   editor.tf.withoutSaving(() => {
     editor.tf.insertNodes(
@@ -45,7 +54,7 @@ const streamPreview = (chunks: string[]) => {
   editor.setOption(AIChatPlugin, '_blockPath', null);
   editor.setOption(AIChatPlugin, '_mdxName', null);
 
-  return { editor, initialValue };
+  return { editor, initialSelection, initialValue };
 };
 
 describe('ai chat streaming history', () => {
@@ -54,7 +63,7 @@ describe('ai chat streaming history', () => {
 
     expect(editor.history.undos).toHaveLength(0);
 
-    editor.getTransforms(AIPlugin).ai.undo();
+    editor.tf.ai.undo();
 
     expect(editor.children).toEqual(initialValue);
     expect(editor.history.undos).toHaveLength(0);
@@ -62,7 +71,7 @@ describe('ai chat streaming history', () => {
 
   it('accepts streamed preview as a compact undoable batch', () => {
     const chunks = Array.from({ length: 40 }, () => 'chunk ');
-    const { editor, initialValue } = streamPreview(chunks);
+    const { editor, initialSelection, initialValue } = streamPreview(chunks);
 
     acceptAIChat(editor);
 
@@ -84,9 +93,40 @@ describe('ai chat streaming history', () => {
         match: (n: any) => !!n[getPluginType(editor, KEYS.ai)],
       })
     ).toBe(false);
+    expect(
+      editor.api.some({
+        at: [],
+        match: (n: any) => ElementApi.isElement(n) && !!n.aiPreview,
+      })
+    ).toBe(false);
 
     editor.undo();
 
     expect(editor.children).toEqual(initialValue);
+    expect(editor.selection).toEqual(initialSelection);
+  });
+
+  it('places the cursor at the end of the accepted preview', () => {
+    const { editor } = streamPreview(['hello', ' world']);
+
+    acceptAIChat(editor);
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 11, path: [0, 0] },
+      focus: { offset: 11, path: [0, 0] },
+    });
+  });
+
+  it('restores the accepted cursor on redo after undo', () => {
+    const { editor } = streamPreview(['hello', ' world']);
+
+    acceptAIChat(editor);
+    editor.undo();
+    editor.redo();
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 11, path: [0, 0] },
+      focus: { offset: 11, path: [0, 0] },
+    });
   });
 });

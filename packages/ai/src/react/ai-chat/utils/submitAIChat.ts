@@ -14,11 +14,11 @@ import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 import type { AIMode, AIToolName } from '../../../lib/types';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
+import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
 import {
   type EditorPrompt,
   getEditorPrompt,
 } from '../../../lib/utils/getEditorPrompt';
-import { AIPlugin } from '../../ai/AIPlugin';
 
 export const submitAIChat = (
   editor: PlateEditor,
@@ -56,7 +56,7 @@ export const submitAIChat = (
     mode = isSelecting(editor) ? 'chat' : 'insert';
   }
   if (mode === 'insert') {
-    editor.getTransforms(AIPlugin).ai.undo();
+    editor.getTransforms(BaseAIPlugin).ai.undo();
   }
 
   setOption('mode', mode);
