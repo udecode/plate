@@ -18,7 +18,7 @@ mock.module('../../../lib/utils/getEditorPrompt', () => ({
 
 mock.module('platejs/react', async () => {
   const actual = await import(
-    '/Users/zbeyens/git/plate/packages/plate/dist/react/index.js'
+    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
   );
   const getEditorPlugin = actual.getEditorPlugin as any;
   const useEditorPlugin = actual.useEditorPlugin as any;
