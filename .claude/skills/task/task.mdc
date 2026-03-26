@@ -12,7 +12,9 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - Prefer targeted tests and checks during iteration.
 - Keep the user updated at milestones.
 - Verify the actual result before claiming done.
-- Do not default to research swarms, review swarms, browser proof, PR creation, or compounding.
+- Do not default to research swarms, review swarms, or browser proof.
+- For verified code-changing work, default to creating or updating the PR unless the user explicitly said not to.
+- Do not default to compounding.
 
 ## Intake
 
@@ -83,7 +85,8 @@ Apply this section only when the task source is a tracker item.
 - Use `gh` for fetch and sync-back.
 - If useful, rename the thread to `<issue-number> <issue-title>`.
 - If the task is code-changing, prefer a branch name that includes the issue number.
-- If the task reaches a meaningful outcome and came from the issue, post a concise issue comment unless blocked or the user said not to.
+- If the task changed code and reached a verified meaningful outcome, create or update the PR before any issue comment unless blocked or the user said not to.
+- If the task reaches a meaningful outcome and came from the issue, post a concise issue comment after the PR exists unless blocked or the user said not to.
 
 ### Linear
 
@@ -94,7 +97,7 @@ Apply this section only when the task source is a tracker item.
 
 ### Tracked Task Non-Rules
 
-- Do not require PR creation for every tracked task.
+- Do not require PR creation for tracker tasks that did not change code, ended blocked, or were purely investigative.
 - Do not require browser screenshots for every tracked task.
 - Do not require tracker comments for investigations that ended blocked or inconclusive unless sync-back is useful.
 
@@ -122,6 +125,9 @@ Apply this section only when the task source is a tracker item.
 - `agent-browser` or `test-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
+- `git-commit-push-pr`
+  Use when verified work changed code and should ship as a PR.
+  Create or update the PR before any tracker comment.
 - `ce-compound`
   Use only after verified, non-trivial work that produced reusable knowledge.
   Never load it at the start.
@@ -188,6 +194,7 @@ Keep verification mandatory but proportional.
 - Run browser verification only for browser or UI tasks.
 - Run broader repo-wide gates only when repo instructions require them or the change scope justifies them.
 - If the repo has a standard final gate, run it last.
+- If verified work changed code, create or update the PR before tracker sync-back unless the user explicitly said not to.
 - If the task came from a tracked issue and the task reached a meaningful outcome, sync back unless the user said not to.
 - If UI changed, capture proof from the real browser surface.
 - Do not hardcode PR creation, screenshots, or tracker comments for every task.
@@ -237,6 +244,7 @@ Apply this section only when the task came from a tracker item and reached a mea
 - Keep it focused on:
   - reproduced or baselined, when relevant
   - fixed or implemented
+  - PR: <full PR URL>, when one exists
   - re-verified, with browser mention only when relevant
   - remaining caveat, if any
 - Do not mention:
@@ -244,7 +252,9 @@ Apply this section only when the task came from a tracker item and reached a mea
   - tests, typecheck, or lint
   - screenshot paths
   - branch names
-  - PR mechanics
+  - commit, push, or staging mechanics
+- Do not write the issue comment before the PR exists.
+- If writing the comment after code-changing work, include the full PR URL.
 - Start only the first sentence with `Codex ...`.
 - Italicize each paragraph separately.
 
@@ -252,6 +262,8 @@ Example:
 
 ```md
 _Codex implemented and verified this issue._
+
+_PR: https://github.com/owner/repo/pull/123._
 
 _Reproduced the bug, applied the fix, and re-verified the affected flow._
 

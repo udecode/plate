@@ -1,6 +1,6 @@
 'use client';
 
-import { withAIBatch } from '@platejs/ai';
+import { captureAIStreamSnapshot, withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
@@ -39,6 +39,8 @@ export const aiChatPlugin = AIChatPlugin.extend({
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode === 'insert') {
+          captureAIStreamSnapshot(editor);
+
           editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(
               {
@@ -54,20 +56,17 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
 
         if (mode === 'insert' && nodes.length > 0) {
-          withAIBatch(
-            editor,
-            () => {
-              if (!getOption('streaming')) return;
-              editor.tf.withScrolling(() => {
-                streamInsertChunk(editor, chunk, {
-                  textProps: {
-                    [getPluginType(editor, KEYS.ai)]: true,
-                  },
-                });
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming')) return;
+
+            editor.tf.withScrolling(() => {
+              streamInsertChunk(editor, chunk, {
+                textProps: {
+                  [getPluginType(editor, KEYS.ai)]: true,
+                },
               });
-            },
-            { split: isFirst }
-          );
+            });
+          });
         }
 
         if (toolName === 'edit' && mode === 'chat') {

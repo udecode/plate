@@ -1,6 +1,7 @@
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
+import { clearAIStreamSnapshot } from '../../../lib/transforms/aiStreamSnapshot';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 import { AIPlugin } from '../../ai/AIPlugin';
@@ -34,4 +35,6 @@ export const resetAIChat = (
   if (undo) {
     editor.getTransforms(AIPlugin).ai.undo();
   }
+
+  clearAIStreamSnapshot(editor);
 };

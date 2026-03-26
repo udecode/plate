@@ -3,6 +3,7 @@
  */
 
 export * from './insertAINodes';
+export * from './aiStreamSnapshot';
 export * from './removeAIMarks';
 export * from './removeAINodes';
 export * from './undoAI';

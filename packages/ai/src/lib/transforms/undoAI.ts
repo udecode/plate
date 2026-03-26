@@ -2,6 +2,8 @@ import type { SlateEditor } from 'platejs';
 
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 
+import { restoreAIStreamSnapshot } from './aiStreamSnapshot';
+
 export const undoAI = (editor: SlateEditor) => {
   const hasAINodeOrAISuggestion =
     editor.api.some({
@@ -16,5 +18,11 @@ export const undoAI = (editor: SlateEditor) => {
   if ((editor.history.undos.at(-1) as any)?.ai && hasAINodeOrAISuggestion) {
     editor.undo();
     editor.history.redos.pop();
+
+    return;
+  }
+
+  if (hasAINodeOrAISuggestion) {
+    restoreAIStreamSnapshot(editor);
   }
 };

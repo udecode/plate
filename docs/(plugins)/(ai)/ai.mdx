@@ -14,7 +14,7 @@ docs:
 
 - **Context-aware command menu** that adapts to cursor, text selection, and block selection workflows.
 - **Streaming Markdown/MDX insertion** with table, column, and code block support powered by `streamInsertChunk`.
-- **Insert and chat review modes** with undo-safe batching via `withAIBatch` and `tf.ai.undo()`.
+- **Insert and chat review modes** with snapshot-based insert previews plus undo-safe batching via `withAIBatch` and `tf.ai.undo()`.
 - **Block selection aware transforms** to replace or append entire sections using `tf.aiChat.replaceSelection` and `tf.aiChat.insertBelow`.
 - **Direct integration with `@ai-sdk/react`** so `api.aiChat.submit` can stream responses from Vercel AI SDK helpers.
 - **Suggestion and comment utilities** that diff AI edits, accept/reject changes, and map AI feedback back to document ranges.
@@ -109,7 +109,7 @@ Extend `AIChatPlugin` to hook streaming and edits. The example mirrors the core 
 
 ```tsx
 import { AIChatPlugin, applyAISuggestions, streamInsertChunk, useChatChunk } from '@platejs/ai/react';
-import { withAIBatch } from '@platejs/ai';
+import { captureAIStreamSnapshot, withAIBatch } from '@platejs/ai';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
@@ -132,32 +132,33 @@ export const aiChatPlugin = AIChatPlugin.extend({
       onChunk: ({ chunk, isFirst, text }) => {
         if (mode === 'insert') {
           if (isFirst) {
+            captureAIStreamSnapshot(editor);
             editor.setOption(AIChatPlugin, 'streaming', true);
 
-            editor.tf.insertNodes(
-              {
-                children: [{ text: '' }],
-                type: getPluginType(editor, KEYS.aiChat),
-              },
-              {
-                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-              }
-            );
+            editor.tf.withoutSaving(() => {
+              editor.tf.insertNodes(
+                {
+                  children: [{ text: '' }],
+                  type: getPluginType(editor, KEYS.aiChat),
+                },
+                {
+                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+                }
+              );
+            });
           }
 
-          if (!getOption('streaming')) return;
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming')) return;
 
-          withAIBatch(
-            editor,
-            () => {
+            editor.tf.withScrolling(() => {
               streamInsertChunk(editor, chunk, {
                 textProps: {
                   [getPluginType(editor, KEYS.ai)]: true,
                 },
               });
-            },
-            { split: isFirst }
-          );
+            });
+          });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
@@ -182,9 +183,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```
 
 - `useChatChunk`: Watches `UseChatHelpers` status and yields incremental chunks.
+- `captureAIStreamSnapshot`: Stores the pre-stream editor state so `tf.ai.undo()` can discard preview content without replaying every streamed chunk.
 - `streamInsertChunk`: Streams Markdown/MDX into the document, reusing the existing block when possible.
 - `applyAISuggestions`: Converts responses into transient suggestion nodes when `toolName === 'edit'`.
-- `withAIBatch`: Marks history batches so `tf.ai.undo()` only reverts the last AI-generated change.
+- `withAIBatch`: Marks saved AI batches so suggestion review and accepted AI changes stay undo-safe.
 
 Provide your own `render` components (toolbar button, floating menu, etc.) when you extend the plugin.
 
@@ -416,6 +418,18 @@ Streams chat responses chunk-by-chunk and gives you full control over insertion.
 
 ## Utilities
 
+### `captureAIStreamSnapshot`
+
+Captures the current editor state before insert-mode streaming so `tf.ai.undo()` can discard preview content without replaying every streamed chunk.
+
+<API name="captureAIStreamSnapshot">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">Target editor.</APIItem>
+  <APIItem name="snapshot" type="{ children: Descendant[]; selection: TRange | null }" optional>Custom snapshot to store instead of the current editor state.</APIItem>
+</APIParameters>
+<APIReturns type="{ children: Descendant[]; selection: TRange | null }">Stored snapshot.</APIReturns>
+</API>
+
 ### `withAIBatch`
 
 Groups editor operations into a single history batch and flags it as AI-generated so `tf.ai.undo()` removes it safely.
@@ -639,7 +653,7 @@ Removes text nodes that are marked as AI-generated.
 
 ### `tf.ai.undo()`
 
-Undoes the latest history entry if it was created by `withAIBatch` and contained AI content. Clears the paired redo entry to avoid re-applying AI output.
+Undoes the latest AI history entry when it was created by `withAIBatch`. When insert-mode preview streaming used `captureAIStreamSnapshot`, it restores that snapshot instead of replaying every streamed chunk. In both cases it avoids re-applying AI output from redo.
 
 ## Customization
 

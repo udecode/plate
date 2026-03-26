@@ -14,7 +14,7 @@ docs:
 
 - **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
 - **流式 Markdown/MDX 插入**，支持表格、列和代码块，由 `streamInsertChunk` 驱动。
-- **插入和聊天审查模式**，通过 `withAIBatch` 和 `tf.ai.undo()` 实现撤销安全批处理。
+- **插入和聊天审查模式**，通过基于快照的插入预览以及 `withAIBatch` 和 `tf.ai.undo()` 实现撤销安全批处理。
 - **块选择感知变换**，使用 `tf.aiChat.replaceSelection` 和 `tf.aiChat.insertBelow` 替换或追加整个部分。
 - **与 `@ai-sdk/react` 直接集成**，使 `api.aiChat.submit` 可以从 Vercel AI SDK 助手流式传输响应。
 - **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
@@ -109,7 +109,7 @@ export const editor = createPlateEditor({
 
 ```tsx
 import { AIChatPlugin, applyAISuggestions, streamInsertChunk, useChatChunk } from '@platejs/ai/react';
-import { withAIBatch } from '@platejs/ai';
+import { captureAIStreamSnapshot, withAIBatch } from '@platejs/ai';
 import { getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
@@ -132,32 +132,33 @@ export const aiChatPlugin = AIChatPlugin.extend({
       onChunk: ({ chunk, isFirst, text }) => {
         if (mode === 'insert') {
           if (isFirst) {
+            captureAIStreamSnapshot(editor);
             editor.setOption(AIChatPlugin, 'streaming', true);
 
-            editor.tf.insertNodes(
-              {
-                children: [{ text: '' }],
-                type: getPluginType(editor, KEYS.aiChat),
-              },
-              {
-                at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
-              }
-            );
+            editor.tf.withoutSaving(() => {
+              editor.tf.insertNodes(
+                {
+                  children: [{ text: '' }],
+                  type: getPluginType(editor, KEYS.aiChat),
+                },
+                {
+                  at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
+                }
+              );
+            });
           }
 
-          if (!getOption('streaming')) return;
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming')) return;
 
-          withAIBatch(
-            editor,
-            () => {
+            editor.tf.withScrolling(() => {
               streamInsertChunk(editor, chunk, {
                 textProps: {
                   [getPluginType(editor, KEYS.ai)]: true,
                 },
               });
-            },
-            { split: isFirst }
-          );
+            });
+          });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
@@ -182,9 +183,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```
 
 - `useChatChunk`：监视 `UseChatHelpers` 状态并生成增量块。
+- `captureAIStreamSnapshot`：保存流式开始前的编辑器状态，使 `tf.ai.undo()` 可以直接丢弃预览内容，而不必回放每个流式块。
 - `streamInsertChunk`：将 Markdown/MDX 流式传输到文档中，尽可能重用现有块。
 - `applyAISuggestions`：当 `toolName === 'edit'` 时，将响应转换为临时建议节点。
-- `withAIBatch`：标记历史批次，使 `tf.ai.undo()` 仅还原最后一次 AI 生成的更改。
+- `withAIBatch`：标记已保存的 AI 批次，使建议审查和已接受的 AI 更改保持可撤销。
 
 扩展插件时，请提供您自己的 `render` 组件（工具栏按钮、浮动菜单等）。
 
@@ -416,6 +418,18 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 ## 工具函数
 
+### `captureAIStreamSnapshot`
+
+在插入模式开始流式传输前捕获当前编辑器状态，使 `tf.ai.undo()` 可以直接丢弃预览内容，而不必回放每个流式块。
+
+<API name="captureAIStreamSnapshot">
+<APIParameters>
+  <APIItem name="editor" type="SlateEditor">目标编辑器。</APIItem>
+  <APIItem name="snapshot" type="{ children: Descendant[]; selection: TRange | null }" optional>可选，自定义要存储的快照，而不是当前编辑器状态。</APIItem>
+</APIParameters>
+<APIReturns type="{ children: Descendant[]; selection: TRange | null }">已存储的快照。</APIReturns>
+</API>
+
 ### `withAIBatch`
 
 将编辑器操作分组到单个历史批次中，并将其标记为 AI 生成，以便 `tf.ai.undo()` 安全地移除它。
@@ -639,7 +653,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 ### `tf.ai.undo()`
 
-如果最新的历史条目是由 `withAIBatch` 创建的并包含 AI 内容，则撤销它。清除配对的重做条目以避免重新应用 AI 输出。
+如果最新的 AI 历史条目由 `withAIBatch` 创建，则撤销它。若插入模式预览流使用了 `captureAIStreamSnapshot`，则直接恢复该快照，而不是回放每个流式块。两种情况下都会避免通过重做重新应用 AI 输出。
 
 ## 自定义
 
