@@ -54,3 +54,5 @@
 - 2026-03-26: Verified the crash disappears as soon as the nested stale core under `@platejs/utils` is removed.
 - 2026-03-26: Patched `packages/plate/package.json` to publish compatible internal workspace ranges, added a manifest guard for the umbrella package, and wrote release changesets for `platejs` and `@platejs/utils`.
 - 2026-03-26: Verified with `pnpm install`, `pnpm test:manifests`, `pnpm lint:fix`, packed-tarball manifest inspection, and isolated template builds against the packed local `platejs` + `@platejs/utils` manifests.
+- 2026-03-26: Confirmed the stale fallback PR remained open because `release.yml` had a failure path that created `templates/release-sync-failure` PRs, but no later-success path that closed them after `main` received a successful template sync.
+- 2026-03-26: Patched `release.yml` so successful template sync runs close any open PR whose head branch is `templates/release-sync-failure`.

@@ -147,11 +147,48 @@ jobs:
           } 2>&1 | tee "$RUNNER_TEMP/template-ci.log"
 
       - name: ⬆️ Push template updates
+        id: push-template-updates
         if: ${{ steps.template-changes.outputs.changed == 'true' && steps.update-templates.outcome == 'success' && steps.template-ci.outcome == 'success' }}
         run: |
           git add templates
           git commit -m "chore: sync templates after release [skip release]"
           git push origin HEAD:main
+
+      - name: 🧹 Close stale template fix PR
+        if: ${{ steps.update-templates.outcome == 'success' && ((steps.template-changes.outputs.changed == 'false') || (steps.template-changes.outputs.changed == 'true' && steps.template-ci.outcome == 'success' && steps.push-template-updates.outcome == 'success')) }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const head = `${context.repo.owner}:templates/release-sync-failure`;
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head,
+              state: 'open',
+            });
+
+            if (pullRequests.length === 0) {
+              core.info('No open template fix PR to close.');
+              return;
+            }
+
+            for (const pullRequest of pullRequests) {
+              await github.rest.issues.createComment({
+                body: 'Closing this stale fallback PR because a later release run synced templates successfully on `main`.',
+                issue_number: pullRequest.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                pull_number: pullRequest.number,
+                repo: context.repo.repo,
+                state: 'closed',
+              });
+
+              core.info(`Closed template fix PR #${pullRequest.number}.`);
+            }
 
       - name: ◻️ Create template fix PR
         id: template-fix-pr
