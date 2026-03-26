@@ -191,7 +191,7 @@ describe('tab', () => {
 });
 
 describe('apply', () => {
-  it('clears cached decorations when the code block language changes', () => {
+  it('clears cached decorations and redecorates when the code block language changes', () => {
     const input = (
       <editor>
         <hcodeblock>
@@ -217,6 +217,9 @@ describe('apply', () => {
       ],
     });
     const codeLine = editor.children[0].children[0] as any;
+    const redecorate = mock();
+
+    editor.api.redecorate = redecorate;
 
     CODE_LINE_TO_DECORATIONS.set(codeLine, [
       {
@@ -228,5 +231,92 @@ describe('apply', () => {
     editor.tf.setNodes({ lang: 'json' }, { at: [0] });
 
     expect(CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual([]);
+    expect(redecorate).toHaveBeenCalledTimes(1);
+  });
+
+  it('redecorates when language changes to plaintext', () => {
+    const input = (
+      <editor>
+        <hcodeblock lang="javascript">
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+    const lowlight = {
+      highlight: mock(() => ({ value: [] })),
+      highlightAuto: mock(() => ({ value: [] })),
+      listLanguages: mock(() => ['javascript']),
+    };
+
+    const editor = createEditor({
+      input,
+      plugins: [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin.configure({
+          options: {
+            lowlight: lowlight as any,
+          },
+        }),
+      ],
+    });
+    const codeLine = editor.children[0].children[0] as any;
+    const redecorate = mock();
+
+    editor.api.redecorate = redecorate;
+    CODE_LINE_TO_DECORATIONS.set(codeLine, [
+      {
+        anchor: { offset: 0, path: [0, 0, 0] },
+        className: 'token keyword',
+        focus: { offset: 2, path: [0, 0, 0] },
+      },
+    ] as any);
+
+    editor.tf.setNodes({ lang: 'plaintext' }, { at: [0] });
+
+    expect(CODE_LINE_TO_DECORATIONS.get(codeLine)).toEqual([]);
+    expect(redecorate).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not redecorate for unrelated code block set_node changes', () => {
+    const input = (
+      <editor>
+        <hcodeblock lang="javascript">
+          <hcodeline>aa</hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+    const lowlight = {
+      highlight: mock(() => ({ value: [] })),
+      highlightAuto: mock(() => ({ value: [] })),
+      listLanguages: mock(() => ['javascript']),
+    };
+
+    const editor = createEditor({
+      input,
+      plugins: [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin.configure({
+          options: {
+            lowlight: lowlight as any,
+          },
+        }),
+      ],
+    });
+    const codeLine = editor.children[0].children[0] as any;
+    const existingDecorations = [
+      {
+        anchor: { offset: 0, path: [0, 0, 0] },
+        className: 'token keyword',
+        focus: { offset: 2, path: [0, 0, 0] },
+      },
+    ] as any;
+    const redecorate = mock();
+
+    editor.api.redecorate = redecorate;
+    CODE_LINE_TO_DECORATIONS.set(codeLine, existingDecorations);
+
+    editor.tf.setNodes({ foo: 'bar' } as any, { at: [0] });
+
+    expect(redecorate).not.toHaveBeenCalled();
   });
 });
