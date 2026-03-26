@@ -1,5 +1,11 @@
 # platejs
 
+## 52.3.11
+
+### Patch Changes
+
+- [`4af5ea4`](https://github.com/udecode/plate/commit/4af5ea4298c0d15f813edd6322bb99cf0a8aaf85) by [@zbeyens](https://github.com/zbeyens) – Use compatible internal dependency ranges so `platejs` can resolve the current `@platejs/*` package graph without nested stale installs.
+
 ## 52.3.9
 
 ## 52.3.4
