@@ -1,6 +1,6 @@
 {
   "name": "@platejs/playwright",
-  "version": "52.0.11",
+  "version": "52.3.10",
   "description": "Interact with a Plate editor from inside a Playwright test",
   "keywords": [
     "plate",
