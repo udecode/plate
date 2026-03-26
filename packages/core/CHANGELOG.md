@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 52.3.9
+
+### Patch Changes
+
+- [`d5dfd21`](https://github.com/udecode/plate/commit/d5dfd21e860b4843d5b5da7a211c9c1342860b0d) by [@zbeyens](https://github.com/zbeyens) –
+  - Typed `editor.api.redecorate()` on the base slate extension API so shared plugins can call it without local casts.
+
 ## 52.3.4
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @platejs/code-block
 
+## 52.3.9
+
+### Patch Changes
+
+- [#4893](https://github.com/udecode/plate/pull/4893) by [@hhhjin](https://github.com/hhhjin) – Redecorate code blocks when the language changes to avoid stale highlighting.
+
 ## 52.0.11
 
 ### Patch Changes
