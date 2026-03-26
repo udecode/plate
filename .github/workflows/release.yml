@@ -109,7 +109,9 @@ jobs:
         continue-on-error: true
         env:
           TEMPLATE_SKIP_VERIFY: 'true'
-        run: pnpm templates:update --local
+        run: |
+          set -o pipefail
+          pnpm templates:update --local 2>&1 | tee "$RUNNER_TEMP/update-templates.log"
 
       - name: 🔍 Detect template changes
         id: template-changes
@@ -125,15 +127,24 @@ jobs:
         if: ${{ steps.template-changes.outputs.changed == 'true' && steps.update-templates.outcome == 'success' }}
         continue-on-error: true
         run: |
-          cd templates/plate-template
-          bun install --no-frozen-lockfile
-          bun lint
-          bun run build
+          set -o pipefail
+          {
+            echo "=== templates/plate-template ==="
+            (
+              cd templates/plate-template
+              bun install --no-frozen-lockfile
+              bun lint
+              bun run build
+            )
 
-          cd ../plate-playground-template
-          bun install --no-frozen-lockfile
-          bun lint
-          bun run build
+            echo "=== templates/plate-playground-template ==="
+            (
+              cd templates/plate-playground-template
+              bun install --no-frozen-lockfile
+              bun lint
+              bun run build -- --debug-prerender
+            )
+          } 2>&1 | tee "$RUNNER_TEMP/template-ci.log"
 
       - name: ⬆️ Push template updates
         if: ${{ steps.template-changes.outputs.changed == 'true' && steps.update-templates.outcome == 'success' && steps.template-ci.outcome == 'success' }}
@@ -143,6 +154,7 @@ jobs:
           git push origin HEAD:main
 
       - name: ◻️ Create template fix PR
+        id: template-fix-pr
         if: ${{ steps.template-changes.outputs.changed == 'true' && (steps.update-templates.outcome != 'success' || steps.template-ci.outcome != 'success') }}
         uses: peter-evans/create-pull-request@v7
         with:
@@ -164,4 +176,18 @@ jobs:
         if: ${{ steps.update-templates.outcome != 'success' || (steps.template-changes.outputs.changed == 'true' && steps.template-ci.outcome != 'success') }}
         run: |
           echo "Template sync automation failed."
+          echo "- update templates outcome: ${{ steps.update-templates.outcome }}"
+          echo "- template changes detected: ${{ steps.template-changes.outputs.changed || 'unknown' }}"
+          echo "- template CI outcome: ${{ steps.template-ci.outcome || 'skipped' }}"
+          echo "- template fix PR: ${{ steps.template-fix-pr.outputs.pull-request-url || 'not created' }}"
+          if [[ -f "$RUNNER_TEMP/update-templates.log" ]]; then
+            echo
+            echo "---- tail: update-templates.log ----"
+            tail -n 200 "$RUNNER_TEMP/update-templates.log"
+          fi
+          if [[ -f "$RUNNER_TEMP/template-ci.log" ]]; then
+            echo
+            echo "---- tail: template-ci.log ----"
+            tail -n 200 "$RUNNER_TEMP/template-ci.log"
+          fi
           exit 1

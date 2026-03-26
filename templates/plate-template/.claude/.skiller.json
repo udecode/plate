@@ -399,8 +399,24 @@
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",
-        "sourceRelPath": "skills/generate_command",
-        "destRelPath": "generate_command"
+        "sourceRelPath": "skills/git-clean-gone-branches",
+        "destRelPath": "git-clean-gone-branches"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/git-commit-push-pr",
+        "destRelPath": "git-commit-push-pr"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/git-commit",
+        "destRelPath": "git-commit"
       },
       {
         "sourceType": "plugin",
@@ -497,6 +513,14 @@
         "sourceKind": "agent",
         "sourceRelPath": "agents/review/maintainability-reviewer.md",
         "destRelPath": "maintainability-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/onboarding",
+        "destRelPath": "onboarding"
       },
       {
         "sourceType": "plugin",
@@ -615,8 +639,8 @@
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",
-        "sourceRelPath": "skills/resolve-pr-parallel",
-        "destRelPath": "resolve-pr-parallel"
+        "sourceRelPath": "skills/resolve-pr-feedback",
+        "destRelPath": "resolve-pr-feedback"
       },
       {
         "sourceType": "plugin",

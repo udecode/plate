@@ -9,7 +9,11 @@ import {
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
 import { KEYS } from 'platejs';
-import { useEditorPlugin, usePlateState, usePluginOption } from 'platejs/react';
+import {
+  useEditorPlugin,
+  useEditorReadOnly,
+  usePluginOption,
+} from 'platejs/react';
 
 import {
   ContextMenu,
@@ -29,7 +33,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const { api, editor } = useEditorPlugin(BlockMenuPlugin);
   const [value, setValue] = React.useState<Value>(null);
   const isTouch = useIsTouchDevice();
-  const [readOnly] = usePlateState('readOnly');
+  const readOnly = useEditorReadOnly();
   const openId = usePluginOption(BlockMenuPlugin, 'openId');
   const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 

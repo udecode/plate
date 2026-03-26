@@ -8,7 +8,11 @@ import {
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
-import { useEditorRef, usePlateState, usePluginOption } from 'platejs/react';
+import {
+  useEditorReadOnly,
+  useEditorRef,
+  usePluginOption,
+} from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -22,7 +26,7 @@ import { ToolbarButton } from './toolbar';
 
 export function ModeToolbarButton(props: DropdownMenuProps) {
   const editor = useEditorRef();
-  const [readOnly, setReadOnly] = usePlateState('readOnly');
+  const readOnly = useEditorReadOnly();
   const [open, setOpen] = React.useState(false);
 
   const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');
@@ -57,16 +61,15 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-[180px]" align="start">
+      <DropdownMenuContent align="start" className="min-w-[180px]">
         <DropdownMenuRadioGroup
-          value={value}
           onValueChange={(newValue) => {
             if (newValue === 'viewing') {
-              setReadOnly(true);
+              editor.store.setReadOnly(true);
 
               return;
             }
-            setReadOnly(false);
+            editor.store.setReadOnly(false);
 
             if (newValue === 'suggestion') {
               editor.setOption(SuggestionPlugin, 'isSuggesting', true);
@@ -81,6 +84,7 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
               return;
             }
           }}
+          value={value}
         >
           <DropdownMenuRadioItem
             className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"

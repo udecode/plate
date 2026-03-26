@@ -11,7 +11,13 @@
     }
   },
   "files": {
-    "includes": ["!!node_modules", "!!build", "!!.next", "!next-env.d.ts"]
+    "includes": [
+      "!!node_modules",
+      "!!build",
+      "!!**/skills",
+      "!!.next",
+      "!next-env.d.ts"
+    ]
   },
   "linter": {
     "rules": {

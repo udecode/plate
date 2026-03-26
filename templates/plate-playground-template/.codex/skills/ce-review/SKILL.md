@@ -73,7 +73,7 @@ Routing rules:
 
 ## Reviewers
 
-8 personas in two tiers, plus CE-specific agents. See [persona-catalog.md](./references/persona-catalog.md) for the full catalog.
+13 reviewer personas in layered conditionals, plus CE-specific agents. See [persona-catalog.md](./references/persona-catalog.md) for the full catalog.
 
 **Always-on (every review):**
 
@@ -85,7 +85,7 @@ Routing rules:
 | `compound-engineering:review:agent-native-reviewer` | Verify new features are agent-accessible |
 | `compound-engineering:research:learnings-researcher` | Search docs/solutions/ for past issues related to this PR |
 
-**Conditional (selected per diff):**
+**Cross-cutting conditional (selected per diff):**
 
 | Agent | Select when diff touches... |
 |-------|---------------------------|
@@ -94,6 +94,16 @@ Routing rules:
 | `compound-engineering:review:api-contract-reviewer` | Routes, serializers, type signatures, versioning |
 | `compound-engineering:review:data-migrations-reviewer` | Migrations, schema changes, backfills |
 | `compound-engineering:review:reliability-reviewer` | Error handling, retries, timeouts, background jobs |
+
+**Stack-specific conditional (selected per diff):**
+
+| Agent | Select when diff touches... |
+|-------|---------------------------|
+| `compound-engineering:review:dhh-rails-reviewer` | Rails architecture, service objects, session/auth choices, or Hotwire-vs-SPA boundaries |
+| `compound-engineering:review:kieran-rails-reviewer` | Rails application code where conventions, naming, and maintainability are in play |
+| `compound-engineering:review:kieran-python-reviewer` | Python modules, endpoints, scripts, or services |
+| `compound-engineering:review:kieran-typescript-reviewer` | TypeScript components, services, hooks, utilities, or shared types |
+| `compound-engineering:review:julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM events, timers, animations, or async UI flows |
 
 **CE conditional (migration-specific):**
 
@@ -104,7 +114,7 @@ Routing rules:
 
 ## Review Scope
 
-Every review spawns all 3 always-on personas plus the 2 CE always-on agents, then adds applicable conditionals. The tier model naturally right-sizes: a small config change triggers 0 conditionals = 5 reviewers. A large auth feature triggers security + maybe reliability = 7 reviewers.
+Every review spawns all 3 always-on personas plus the 2 CE always-on agents, then adds whichever cross-cutting and stack-specific conditionals fit the diff. The model naturally right-sizes: a small config change triggers 0 conditionals = 5 reviewers. A Rails auth feature might trigger security + reliability + kieran-rails + dhh-rails = 9 reviewers.
 
 ## Protected Artifacts
 
@@ -314,7 +324,9 @@ Pass this to every reviewer in their spawn prompt. Intent shapes *how hard each 
 
 ### Stage 3: Select reviewers
 
-Read the diff and file list from Stage 1. The 3 always-on personas and 2 CE always-on agents are automatic. For each conditional persona in [persona-catalog.md](./references/persona-catalog.md), decide whether the diff warrants it. This is agent judgment, not keyword matching.
+Read the diff and file list from Stage 1. The 3 always-on personas and 2 CE always-on agents are automatic. For each cross-cutting and stack-specific conditional persona in [persona-catalog.md](./references/persona-catalog.md), decide whether the diff warrants it. This is agent judgment, not keyword matching.
+
+Stack-specific personas are additive. A Rails UI change may warrant `kieran-rails` plus `julik-frontend-races`; a TypeScript API diff may warrant `kieran-typescript` plus `api-contract` and `reliability`.
 
 For CE conditional agents, check if the diff includes files matching `db/migrate/*.rb`, `db/schema.rb`, or data backfill scripts.
 
@@ -328,6 +340,8 @@ Review team:
 - agent-native-reviewer (always)
 - learnings-researcher (always)
 - security -- new endpoint in routes.rb accepts user-provided redirect URL
+- kieran-rails -- controller and Turbo flow changed in app/controllers and app/views
+- dhh-rails -- diff adds service objects around ordinary Rails CRUD
 - data-migrations -- adds migration 20260303_add_index_to_orders
 - schema-drift-detector -- migration files present
 ```
@@ -408,9 +422,11 @@ Before delivering the review, verify:
 5. **Protected artifacts are respected.** Discard any findings that recommend deleting or gitignoring files in `docs/brainstorms/`, `docs/plans/`, or `docs/solutions/`.
 6. **Findings don't duplicate linter output.** Don't flag things the project's linter/formatter would catch (missing semicolons, wrong indentation). Focus on semantic issues.
 
-## Language-Agnostic
+## Language-Aware Conditionals
 
-This skill does NOT use language-specific reviewer agents. Persona reviewers adapt their criteria to the language/framework based on project context (loaded automatically). This keeps the skill simple and avoids maintaining parallel reviewers per language.
+This skill uses stack-specific reviewer agents when the diff clearly warrants them. Keep those agents opinionated. They are not generic language checkers; they add a distinct review lens on top of the always-on and cross-cutting personas.
+
+Do not spawn them mechanically from file extensions alone. The trigger is meaningful changed behavior, architecture, or UI state in that stack.
 
 ## After Review
 

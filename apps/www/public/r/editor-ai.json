@@ -49,7 +49,7 @@
   "files": [
     {
       "path": "src/registry/blocks/editor-ai/page.tsx",
-      "content": "import { Toaster } from 'sonner';\n\nimport { PlateEditor } from '@/registry/blocks/editor-ai/components/editor/plate-editor';\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <PlateEditor />\n\n      <Toaster />\n    </div>\n  );\n}\n",
+      "content": "import dynamic from 'next/dynamic';\nimport { Toaster } from 'sonner';\n\nconst PlateEditor = dynamic(\n  () =>\n    import('@/registry/blocks/editor-ai/components/editor/plate-editor').then(\n      (mod) => mod.PlateEditor\n    ),\n  {\n    loading: () => <div className=\"h-screen w-full\" />,\n    ssr: false,\n  }\n);\n\nexport default function Page() {\n  return (\n    <div className=\"h-screen w-full\">\n      <PlateEditor />\n\n      <Toaster />\n    </div>\n  );\n}\n",
       "type": "registry:page",
       "target": "app/editor/page.tsx"
     },
