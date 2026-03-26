@@ -46,7 +46,8 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "mutative": "^1.1.0"
+    "mutative": "^1.1.0",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

@@ -44,7 +44,8 @@
     "tabbable": "^6.2.0"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",

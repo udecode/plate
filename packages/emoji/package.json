@@ -45,7 +45,8 @@
   },
   "devDependencies": {
     "@emoji-mart/data": "^1.2.1",
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@emoji-mart/data": ">=1.2.0",

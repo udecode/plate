@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^",
     "@types/katex": "0.16.7"
   },
   "peerDependencies": {

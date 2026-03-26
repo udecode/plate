@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^",
     "lowlight": "^3.3.0"
   },
   "peerDependencies": {

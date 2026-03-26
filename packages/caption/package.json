@@ -43,7 +43,8 @@
     "react-textarea-autosize": "^8.5.9"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "platejs": ">=52.0.11",
