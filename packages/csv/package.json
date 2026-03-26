@@ -1,6 +1,6 @@
 {
   "name": "@platejs/csv",
-  "version": "52.3.8",
+  "version": "52.3.10",
   "description": "CSV serializer plugin for Plate",
   "keywords": [
     "csv",

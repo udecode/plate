@@ -1,6 +1,6 @@
 {
   "name": "@platejs/slash-command",
-  "version": "52.0.15",
+  "version": "52.3.10",
   "description": "Slash commands plugin for Plate",
   "keywords": [
     "plate",
