@@ -51,6 +51,7 @@
   "devDependencies": {
     "@ai-sdk/react": "^3.0.0",
     "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^",
     "ai": "^6.0.0"
   },
   "peerDependencies": {

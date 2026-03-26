@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^",
     "@types/papaparse": "^5.3.16"
   },
   "peerDependencies": {

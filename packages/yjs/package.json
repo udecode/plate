@@ -47,7 +47,8 @@
     "yjs": "^13.6.29"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "@hocuspocus/provider": "^3.4.0",

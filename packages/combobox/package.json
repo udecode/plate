@@ -40,7 +40,8 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "devDependencies": {
-    "@plate/scripts": "workspace:*"
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
   },
   "peerDependencies": {
     "platejs": ">=52.0.15",

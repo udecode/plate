@@ -810,6 +810,9 @@ importers:
       ai:
         specifier: ^6.0.0
         version: 6.0.116(zod@4.1.12)
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/autoformat:
     dependencies:
@@ -823,6 +826,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/basic-nodes:
     dependencies:
@@ -833,6 +839,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/basic-styles:
     dependencies:
@@ -843,6 +852,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/callout:
     dependencies:
@@ -853,6 +865,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/caption:
     dependencies:
@@ -866,6 +881,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/code-block:
     dependencies:
@@ -879,6 +897,9 @@ importers:
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/code-drawing:
     dependencies:
@@ -925,6 +946,9 @@ importers:
       '@types/viz.js':
         specifier: ^2.1.5
         version: 2.1.5
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/combobox:
     dependencies:
@@ -935,6 +959,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/comment:
     dependencies:
@@ -948,6 +975,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/core:
     dependencies:
@@ -1040,6 +1070,9 @@ importers:
       '@types/papaparse':
         specifier: ^5.3.16
         version: 5.5.2
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/cursor:
     dependencies:
@@ -1050,6 +1083,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/date:
     dependencies:
@@ -1060,6 +1096,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/diff:
     dependencies:
@@ -1076,6 +1115,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/dnd:
     dependencies:
@@ -1092,6 +1134,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/docx:
     dependencies:
@@ -1105,6 +1150,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/docx-io:
     dependencies:
@@ -1151,6 +1199,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/emoji:
     dependencies:
@@ -1167,6 +1218,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/excalidraw:
     dependencies:
@@ -1186,6 +1240,9 @@ importers:
       '@types/lodash':
         specifier: ^4.17.13
         version: 4.17.17
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/find-replace:
     dependencies:
@@ -1196,6 +1253,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/floating:
     dependencies:
@@ -1212,6 +1272,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/indent:
     dependencies:
@@ -1222,6 +1285,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/juice:
     dependencies:
@@ -1235,6 +1301,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/layout:
     dependencies:
@@ -1245,6 +1314,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/link:
     dependencies:
@@ -1258,6 +1330,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/list:
     dependencies:
@@ -1277,6 +1352,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/list-classic:
     dependencies:
@@ -1290,6 +1368,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/markdown:
     dependencies:
@@ -1336,6 +1417,9 @@ importers:
       '@types/unist':
         specifier: ^3.0.3
         version: 3.0.3
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
       remark-gfm:
         specifier: 4.0.1
         version: 4.0.1
@@ -1358,6 +1442,9 @@ importers:
       '@types/katex':
         specifier: 0.16.7
         version: 0.16.7
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/media:
     dependencies:
@@ -1371,6 +1458,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/mention:
     dependencies:
@@ -1384,6 +1474,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/plate:
     dependencies:
@@ -1424,6 +1517,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/resizable:
     dependencies:
@@ -1434,6 +1530,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/selection:
     dependencies:
@@ -1447,6 +1546,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/slash-command:
     dependencies:
@@ -1460,6 +1562,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/slate:
     dependencies:
@@ -1501,6 +1606,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/tabbable:
     dependencies:
@@ -1514,6 +1622,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/table:
     dependencies:
@@ -1533,6 +1644,9 @@ importers:
       mutative:
         specifier: ^1.1.0
         version: 1.3.0
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/tag:
     dependencies:
@@ -1543,6 +1657,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/test-utils:
     dependencies:
@@ -1569,6 +1686,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/toggle:
     dependencies:
@@ -1588,6 +1708,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
   packages/udecode/cmdk:
     dependencies:
@@ -1736,6 +1859,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
 
 packages:
 
