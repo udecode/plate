@@ -19,10 +19,10 @@ import {
 import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
+import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import type { AIMode, AIToolName } from '../../lib/types';
 import type { ChatMessage } from './internal/types';
 
-import { AIPlugin } from '../ai/AIPlugin';
 import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
@@ -149,7 +149,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     reload: () => {
       const { chat, chatNodes, chatSelection } = getOptions();
 
-      editor.getTransforms(AIPlugin).ai.undo();
+      editor.getTransforms(BaseAIPlugin).ai.undo();
 
       if (chatSelection) {
         editor.tf.setSelection(chatSelection);

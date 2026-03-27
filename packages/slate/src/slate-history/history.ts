@@ -124,5 +124,6 @@ export type History = {
 
 type Batch = {
   operations: Operation[];
+  selectionAfter?: TRange | null;
   selectionBefore: TRange | null;
 };

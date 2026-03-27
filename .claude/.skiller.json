@@ -28,6 +28,22 @@
       },
       {
         "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/document-review/adversarial-document-reviewer.md",
+        "destRelPath": "adversarial-document-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/adversarial-reviewer.md",
+        "destRelPath": "adversarial-reviewer"
+      },
+      {
+        "sourceType": "plugin",
         "pluginId": "agent-browser@agent-browser",
         "pluginVersion": "99c732c18810",
         "sourceKind": "skill",
@@ -199,6 +215,14 @@
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "agent",
+        "sourceRelPath": "agents/review/cli-agent-readiness-reviewer.md",
+        "destRelPath": "cli-agent-readiness-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
         "sourceRelPath": "agents/review/code-simplicity-reviewer.md",
         "destRelPath": "code-simplicity-reviewer"
       },
@@ -209,14 +233,6 @@
         "sourceKind": "agent",
         "sourceRelPath": "agents/document-review/coherence-reviewer.md",
         "destRelPath": "coherence-reviewer"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.40.0",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/compound-docs",
-        "destRelPath": "compound-docs"
       },
       {
         "sourceType": "plugin",
@@ -281,14 +297,6 @@
         "sourceKind": "skill",
         "sourceRelPath": "skills/debug",
         "destRelPath": "debug"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "compound-engineering@every-marketplace",
-        "pluginVersion": "2.40.0",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/deepen-plan",
-        "destRelPath": "deepen-plan"
       },
       {
         "sourceType": "plugin",
@@ -625,6 +633,14 @@
         "sourceKind": "agent",
         "sourceRelPath": "agents/document-review/product-lens-reviewer.md",
         "destRelPath": "product-lens-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/project-standards-reviewer.md",
+        "destRelPath": "project-standards-reviewer"
       },
       {
         "sourceType": "plugin",

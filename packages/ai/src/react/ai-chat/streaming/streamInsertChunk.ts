@@ -9,6 +9,10 @@ import {
   PathApi,
 } from 'platejs';
 
+import {
+  AI_PREVIEW_KEY,
+  hasAIPreview,
+} from '../../../lib/transforms/aiStreamSnapshot';
 import { AIChatPlugin } from '../AIChatPlugin';
 import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
 import { streamDeserializeMd } from './streamDeserializeMd';
@@ -30,22 +34,47 @@ const getNextPath = (path: Path, length: number) => {
   return result;
 };
 
+const withPreviewElementProps = (
+  editor: PlateEditor,
+  options: SteamInsertChunkOptions
+): SteamInsertChunkOptions => {
+  if (!hasAIPreview(editor)) return options;
+
+  return {
+    ...options,
+    elementProps: {
+      ...options.elementProps,
+      [AI_PREVIEW_KEY]: true,
+    },
+  };
+};
+
+export const getInsertPreviewStart = (editor: SlateEditor) => {
+  const path = getCurrentBlockPath(editor);
+  const startBlock = editor.api.node(path)?.[0];
+
+  return {
+    path,
+    startBlock,
+    startInEmptyParagraph:
+      !!startBlock &&
+      NodeApi.string(startBlock).length === 0 &&
+      startBlock.type === getPluginType(editor, KEYS.p),
+  };
+};
+
 /** @experimental */
 export function streamInsertChunk(
   editor: PlateEditor,
   chunk: string,
   options: SteamInsertChunkOptions = {}
 ) {
+  const insertOptions = withPreviewElementProps(editor, options);
   const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
 
   if (_blockPath === null) {
     const blocks = streamDeserializeMd(editor, chunk);
-    const path = getCurrentBlockPath(editor);
-    const startBlock = editor.api.node(path)![0];
-
-    const startInEmptyParagraph =
-      NodeApi.string(startBlock).length === 0 &&
-      startBlock.type === getPluginType(editor, KEYS.p);
+    const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
 
     // if start in empty paragraph, remove it
     if (startInEmptyParagraph) {
@@ -53,11 +82,14 @@ export function streamInsertChunk(
     }
 
     if (blocks.length > 0) {
-      editor.tf.insertNodes(nodesWithProps(editor, [blocks[0]], options), {
-        at: path,
-        nextBlock: !startInEmptyParagraph,
-        select: true,
-      });
+      editor.tf.insertNodes(
+        nodesWithProps(editor, [blocks[0]], insertOptions),
+        {
+          at: path,
+          nextBlock: !startInEmptyParagraph,
+          select: true,
+        }
+      );
 
       editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
       editor.setOption(AIChatPlugin, '_blockChunks', chunk);
@@ -67,11 +99,14 @@ export function streamInsertChunk(
 
         const nextPath = getCurrentBlockPath(editor);
 
-        editor.tf.insertNodes(nodesWithProps(editor, nextBlocks, options), {
-          at: nextPath,
-          nextBlock: true,
-          select: true,
-        });
+        editor.tf.insertNodes(
+          nodesWithProps(editor, nextBlocks, insertOptions),
+          {
+            at: nextPath,
+            nextBlock: true,
+            select: true,
+          }
+        );
 
         const lastBlock = editor.api.node(
           getNextPath(nextPath, nextBlocks.length)
@@ -120,10 +155,13 @@ export function streamInsertChunk(
         const chunkNodes = streamDeserializeInlineMd(editor as any, chunk);
 
         // Deserialize the chunk and add it to the end of the current block
-        editor.tf.insertNodes(nodesWithProps(editor, chunkNodes, options), {
-          at: editor.api.end(_blockPath),
-          select: true,
-        });
+        editor.tf.insertNodes(
+          nodesWithProps(editor, chunkNodes, insertOptions),
+          {
+            at: editor.api.end(_blockPath),
+            select: true,
+          }
+        );
 
         const updatedBlock = editor.api.node(_blockPath)!;
         const serializedBlock = streamSerializeMd(
@@ -144,7 +182,7 @@ export function streamInsertChunk(
           editor.setOption(AIChatPlugin, '_blockChunks', tempBlockChunks);
         } else {
           editor.tf.replaceNodes(
-            nodesWithProps(editor, [tempBlocks[0]], options),
+            nodesWithProps(editor, [tempBlocks[0]], insertOptions),
             {
               at: _blockPath,
               select: true,
@@ -180,7 +218,7 @@ export function streamInsertChunk(
         );
 
         editor.tf.replaceNodes(
-          nodesWithProps(editor, [tempBlocks[0]], options),
+          nodesWithProps(editor, [tempBlocks[0]], insertOptions),
           {
             at: _blockPath,
             select: true,
@@ -190,16 +228,19 @@ export function streamInsertChunk(
         editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
       }
     } else {
-      editor.tf.replaceNodes(nodesWithProps(editor, [tempBlocks[0]], options), {
-        at: _blockPath,
-        select: true,
-      });
+      editor.tf.replaceNodes(
+        nodesWithProps(editor, [tempBlocks[0]], insertOptions),
+        {
+          at: _blockPath,
+          select: true,
+        }
+      );
 
       if (tempBlocks.length > 1) {
         const newEndBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
 
         editor.tf.insertNodes(
-          nodesWithProps(editor, tempBlocks.slice(1), options),
+          nodesWithProps(editor, tempBlocks.slice(1), insertOptions),
           {
             at: PathApi.next(_blockPath),
             select: true,
