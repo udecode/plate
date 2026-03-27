@@ -1,6 +1,7 @@
-import type { Editor, TCodeBlockElement } from 'platejs';
+import type { SlateEditor, TCodeBlockElement } from 'platejs';
 
 import { formatJson, isValidJson } from './jsonFormatter';
+import { setCodeBlockContent } from '../transforms/setCodeBlockContent';
 
 const supportedLanguages = new Set(['json']);
 
@@ -23,7 +24,7 @@ export const isValidSyntax = (code: string, lang?: string): boolean => {
 };
 
 export const formatCodeBlock = (
-  editor: Editor,
+  editor: SlateEditor,
   {
     element,
   }: {
@@ -40,7 +41,11 @@ export const formatCodeBlock = (
 
   if (isValidSyntax(code, lang)) {
     const formattedCode = formatCode(code, lang);
-    editor.tf.insertText(formattedCode, { at: element });
+
+    setCodeBlockContent(editor, {
+      code: formattedCode,
+      element,
+    });
   }
 };
 
