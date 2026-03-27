@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { TElement } from '@platejs/slate';
+import type { Path, TElement } from '@platejs/slate';
 
 export type RenderElementFn = (
   props: RenderElementProps
@@ -18,4 +18,6 @@ export type RenderElementProps<N extends TElement = TElement> = {
   };
   children: any;
   element: N;
+  /** Pre-computed path for static rendering (avoids expensive findPath traversal). */
+  path?: Path;
 };
