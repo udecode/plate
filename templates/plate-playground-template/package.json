@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^3.0.82",
+    "@ai-sdk/gateway": "^3.0.83",
     "@ai-sdk/react": "3",
     "@ariakit/react": "^0.4.24",
     "@emoji-mart/data": "1.2.1",
@@ -25,7 +25,7 @@
     "@platejs/basic-styles": "^52.3.10",
     "@platejs/callout": "^52.3.10",
     "@platejs/caption": "^52.3.10",
-    "@platejs/code-block": "^52.3.10",
+    "@platejs/code-block": "^52.3.14",
     "@platejs/code-drawing": "^52.3.10",
     "@platejs/combobox": "^52.3.10",
     "@platejs/comment": "^52.3.10",
