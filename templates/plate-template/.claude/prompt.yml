@@ -30,7 +30,7 @@ beforeComplete:
       - NEVER git commit unless explicitly asked
       - 'NEVER `bun dev` or `bun run build` unless explicitly asked'
     todos:
-      - 'Test Browser (IF new features, styling, visual bugs, state changes. SKIP trivial markup, non-UI): Skill(agent-browser)'
+      - 'Test Browser (IF new features, styling, visual bugs, state changes. SKIP trivial markup, non-UI): Skill(dev-browser)'
       - 'Typecheck (IF updated .ts files): Bash `bun typecheck`'
       - 'Lint: Bash `bun lint:fix`'
       - |

@@ -12,13 +12,16 @@ When using the following skills, override the default behavior.
 
 - Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-03-11-task.md`
 
-`agent-browser`:
+`dev-browser`:
 
-- Never close agent-browser
-- Use `--headed` only if you failed to test and need manual input from a human.
-- Port `3000` for the main app.
-- Use `agent-browser` instead of next-devtools browser evaluation.
-- If `agent-browser` gets blocked or loops on the same step, stop and ask the user to unblock.
+- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work.
+- If `http://127.0.0.1:9222` is unavailable, use `browser-debug-setup` first.
+- Reuse the persistent debug browser/profile. Do not spin up disposable browser instances unless the user asks.
+- Do not close or stop the user's connected debug browser. Close named pages only when needed.
+- Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
+- Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
+- If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
+  - [Add browser learning]
 
 `ce-*`:
 
@@ -76,7 +79,7 @@ When using the following skills, override the default behavior.
 • Condition YES -> in_progress -> verify -> completed
 • NEVER git commit unless explicitly asked
 • Avoid unnecessary `bun dev`
-• Use Skill(agent-browser) for browser testing instead of next-devtools browser evaluation
+• Use Skill(dev-browser) for browser testing instead of next-devtools browser evaluation
 
 **Verification Checklist:**
 

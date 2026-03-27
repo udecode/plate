@@ -55,23 +55,27 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
    - Fetch GitHub PRs with `gh pr view ... --json`.
    - If the input is ambiguous and not clearly a GitHub issue token or URL, do not guess.
 10. For any tracker source, restate for yourself:
-   - source type
-   - source id
-   - exact title
-   - task type: bug, feature, refactor, docs, review, investigation, testing, or batch work
-   - expected outcome or acceptance criteria
-   - caveats, blockers, or missing information from the tracker
-   - likely files, routes, or packages affected
-   - whether there is a real browser surface to verify
+
+- source type
+- source id
+- exact title
+- task type: bug, feature, refactor, docs, review, investigation, testing, or batch work
+- expected outcome or acceptance criteria
+- caveats, blockers, or missing information from the tracker
+- likely files, routes, or packages affected
+- whether there is a real browser surface to verify
+
 11. Read repo instructions and nearby implementation patterns before editing.
 12. If the task changes code:
-   - if already on a relevant feature branch, continue there
-   - otherwise create a repo-convention branch before editing
-   - if the task has a tracker id, prefer a branch name that includes it:
-     - GitHub issue: `codex/555-short-slug`
-     - Linear issue: `codex/LIN-123-short-slug`
-   - in this repo, otherwise prefer `codex/<slug>`
-   - run install or setup only when the repo or task actually needs it
+
+- if already on a relevant feature branch, continue there
+- otherwise create a repo-convention branch before editing
+- if the task has a tracker id, prefer a branch name that includes it:
+  - GitHub issue: `codex/555-short-slug`
+  - Linear issue: `codex/LIN-123-short-slug`
+- in this repo, otherwise prefer `codex/<slug>`
+- run install or setup only when the repo or task actually needs it
+
 13. If the task does not change code, skip branch and setup noise.
 14. If anything important is still ambiguous after the source-of-truth pass and nearby code reading, ask the user the smallest useful clarifying question.
 
@@ -122,7 +126,7 @@ Apply this section only when the task source is a tracker item.
   Use when requirements are still ambiguous after reading the source of truth and nearby code.
 - `dig` or framework-docs research
   Use when touching unfamiliar, version-sensitive, or unstable third-party APIs.
-- `agent-browser` or `test-browser`
+- `dev-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
 - `git-commit-push-pr`
@@ -210,7 +214,7 @@ Every final response must include:
 ### UI Or Browser Tasks
 
 - Include at least one real browser proof screenshot in the final response.
-- The screenshot must come from `agent-browser` or the real browser workflow used for verification.
+- The screenshot must come from `dev-browser` or the real browser workflow used for verification.
 - Put the screenshot before or immediately next to the completion summary so it is impossible to miss.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
 
