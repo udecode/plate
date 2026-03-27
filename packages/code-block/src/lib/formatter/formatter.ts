@@ -1,8 +1,7 @@
 import type { SlateEditor, TCodeBlockElement } from 'platejs';
 
-import { KEYS } from 'platejs';
-
 import { formatJson, isValidJson } from './jsonFormatter';
+import { setCodeBlockContent } from '../transforms/setCodeBlockContent';
 
 const supportedLanguages = new Set(['json']);
 
@@ -43,23 +42,12 @@ export const formatCodeBlock = (
   if (isValidSyntax(code, lang)) {
     const formattedCode = formatCode(code, lang);
 
-    editor.tf.replaceNodes(createCodeLines(editor, formattedCode), {
-      at: element,
-      children: true,
+    setCodeBlockContent(editor, {
+      code: formattedCode,
+      element,
     });
-    (
-      editor.api as SlateEditor['api'] & {
-        redecorate?: () => void;
-      }
-    ).redecorate?.();
   }
 };
-
-const createCodeLines = (editor: SlateEditor, code: string) =>
-  code.split('\n').map((line) => ({
-    children: [{ text: line }],
-    type: editor.getType(KEYS.codeLine),
-  }));
 
 const formatCode = (code: string, lang?: string): string => {
   switch (lang) {

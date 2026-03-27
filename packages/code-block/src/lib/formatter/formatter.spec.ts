@@ -5,17 +5,26 @@ import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { formatCodeBlock, isLangSupported, isValidSyntax } from './formatter';
 
-const createEditor = (code: string) =>
-  ({
+const createEditor = (code: string) => {
+  let redecorateCalls = 0;
+  const editor = {
     api: {
-      redecorate: mock() as unknown as () => void,
+      redecorate: () => {
+        redecorateCalls += 1;
+      },
       string: mock(() => code),
     },
     getType: (key: string) => key,
     tf: {
       replaceNodes: mock(),
     },
-  }) as unknown as SlateEditor;
+  } as unknown as SlateEditor;
+
+  return {
+    editor,
+    getRedecorateCalls: () => redecorateCalls,
+  };
+};
 
 describe('formatter', () => {
   it('only supports json formatting', () => {
@@ -31,7 +40,7 @@ describe('formatter', () => {
   });
 
   it('does nothing when the block language is unsupported', () => {
-    const editor = createEditor('{"name":"plate"}');
+    const { editor } = createEditor('{"name":"plate"}');
 
     formatCodeBlock(editor, {
       element: {
@@ -45,7 +54,7 @@ describe('formatter', () => {
   });
 
   it('does nothing when the code is invalid for the language', () => {
-    const editor = createEditor('{name:"plate"}');
+    const { editor } = createEditor('{name:"plate"}');
 
     formatCodeBlock(editor, {
       element: {
@@ -59,7 +68,9 @@ describe('formatter', () => {
   });
 
   it('formats valid json code blocks in place', () => {
-    const editor = createEditor('{"name":"plate","type":"editor"}');
+    const { editor, getRedecorateCalls } = createEditor(
+      '{"name":"plate","type":"editor"}'
+    );
     const element = {
       children: [],
       lang: 'json',
@@ -77,13 +88,7 @@ describe('formatter', () => {
       ],
       { at: element, children: true }
     );
-    expect(
-      (
-        editor.api as SlateEditor['api'] & {
-          redecorate: ReturnType<typeof mock>;
-        }
-      ).redecorate
-    ).toHaveBeenCalledTimes(1);
+    expect(getRedecorateCalls()).toBe(1);
   });
 
   it('formats json into separate code lines and redecorates', () => {
@@ -115,13 +120,11 @@ describe('formatter', () => {
       ],
     } as any);
     const element = editor.children[0] as TCodeBlockElement;
-    const redecorate = mock();
+    let redecorateCalls = 0;
 
-    (
-      editor.api as SlateEditor['api'] & {
-        redecorate: () => void;
-      }
-    ).redecorate = redecorate as unknown as () => void;
+    editor.api.redecorate = () => {
+      redecorateCalls += 1;
+    };
 
     formatCodeBlock(editor, { element });
 
@@ -135,6 +138,6 @@ describe('formatter', () => {
         (line: any) => line.type === 'code_line'
       )
     ).toBe(true);
-    expect(redecorate).toHaveBeenCalledTimes(1);
+    expect(redecorateCalls).toBe(1);
   });
 });

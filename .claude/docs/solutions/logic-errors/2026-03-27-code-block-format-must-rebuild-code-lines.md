@@ -34,23 +34,23 @@ That kept the code block as a single `code_line` node containing embedded `\n` c
 
 ## Fix
 
-Replace the code block children with real `code_line` nodes derived from the formatted output, then trigger a redecorate pass.
+Route formatted code through a shared code-block content transform that replaces the block children with real `code_line` nodes, then triggers a redecorate pass.
 
 ```ts
-const createCodeLines = (editor: SlateEditor, code: string) =>
-  code.split('\n').map((line) => ({
-    children: [{ text: line }],
-    type: editor.getType(KEYS.codeLine),
-  }));
+export const setCodeBlockContent = (
+  editor: SlateEditor,
+  { code, element }: { code: string; element: TCodeBlockElement }
+) => {
+  editor.tf.replaceNodes(
+    code.split('\n').map((line) => ({
+      children: [{ text: line }],
+      type: editor.getType(KEYS.codeLine),
+    })),
+    { at: element, children: true }
+  );
 
-editor.tf.replaceNodes(createCodeLines(editor, formattedCode), {
-  at: element,
-  children: true,
-});
-
-(editor.api as SlateEditor['api'] & {
-  redecorate?: () => void;
-}).redecorate?.();
+  editor.api.redecorate();
+};
 ```
 
 ## Verification

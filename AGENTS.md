@@ -41,10 +41,13 @@ When using the following skills, override the default behavior.
 
 `dev-browser`:
 
-- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work.
-- If `http://127.0.0.1:9222` is unavailable, use `browser-debug-setup` first.
-- Reuse the persistent debug browser/profile. Do not spin up disposable browser instances unless the user asks.
-- Do not close or stop the user's connected debug browser. Close named pages only when needed.
+- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work. Do not preflight `9222` first.
+- Only inspect `9222` or use `browser-debug-setup` after a direct `dev-browser --connect http://127.0.0.1:9222` attempt fails.
+- Reuse one persistent debug Chrome on `127.0.0.1:9222`. Do not spin up disposable browser instances unless the user asks.
+- Use a dedicated Chrome `--user-data-dir` for that debug browser, not the user's normal daily Chrome data dir.
+- Clone the signed-in Chrome profile into the dedicated debug dir, then launch the debug browser from that clone.
+- On macOS, launch the debug browser with `open -na "Google Chrome" --args ... --remote-debugging-port=9222` so it opens as a separate Chrome instance without hijacking the user's normal window.
+- Do not close or stop the user's connected debug browser. Leave that debug window open and reuse it. Close named pages only when needed.
 - Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
 - Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
 - If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:

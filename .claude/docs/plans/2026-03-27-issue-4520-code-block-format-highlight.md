@@ -42,6 +42,7 @@ Verify whether issue `#4520` is still reproducible on current `main`, determine 
 - Searched local learnings and found directly relevant redecorate guidance.
 - Added a failing regression test for formatting JSON into multiple code lines.
 - Updated `formatCodeBlock` to rebuild `code_line` children and call `redecorate`.
+- Extracted the code-line replacement + redecorate path into a shared `setCodeBlockContent` transform and removed the stale local `redecorate` cast.
 - Added a changeset and a solution note.
 
 ## Verification Target
@@ -57,3 +58,4 @@ Verify whether issue `#4520` is still reproducible on current `main`, determine 
 - `pnpm turbo build --filter=./packages/code-block`
 - `pnpm turbo typecheck --filter=./packages/code-block`
 - `pnpm lint:fix`
+- `pnpm check`

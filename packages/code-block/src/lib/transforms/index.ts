@@ -8,5 +8,6 @@ export * from './insertCodeBlock';
 export * from './insertCodeLine';
 export * from './insertEmptyCodeBlock';
 export * from './outdentCodeLine';
+export * from './setCodeBlockContent';
 export * from './toggleCodeBlock';
 export * from './unwrapCodeBlock';
