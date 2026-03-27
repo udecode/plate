@@ -26,6 +26,8 @@ export const updateUploadHistory = (editor: PlateEditor, node: TElement) => {
       )
   );
 
+  if (index < 0) return;
+
   const batch = editor.history.undos[index];
 
   const newOperations: any[] = [];
