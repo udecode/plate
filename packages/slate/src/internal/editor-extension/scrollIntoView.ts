@@ -9,6 +9,14 @@ const defaultOptions: ScrollIntoViewOptions = {
   scrollMode: 'if-needed',
 };
 
+const getScrollBoundary = (editor: Editor) => {
+  const store = (editor as any).store;
+
+  if (!store?.get) return;
+
+  return store.get('scrollRef')?.current ?? store.get('containerRef')?.current;
+};
+
 // TODO: move to slate
 export function scrollIntoView(
   editor: Editor,
@@ -32,10 +40,18 @@ export function scrollIntoView(
     if (!domRange) return;
 
     const leafEl = domRange.startContainer.parentElement!;
+    const boundary = getScrollBoundary(editor);
+    const resolvedOptions =
+      typeof options === 'object' && options
+        ? {
+            ...options,
+            boundary: options.boundary ?? boundary,
+          }
+        : options;
 
     leafEl.getBoundingClientRect =
       domRange.getBoundingClientRect.bind(domRange);
-    scrollIntoViewIfNeeded(leafEl, options);
+    scrollIntoViewIfNeeded(leafEl, resolvedOptions);
 
     setTimeout(() => {
       (leafEl as any).getBoundingClientRect = undefined;

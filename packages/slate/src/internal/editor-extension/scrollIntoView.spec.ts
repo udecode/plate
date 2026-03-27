@@ -117,4 +117,113 @@ describe('scrollIntoView', () => {
     });
     expect(leafEl.getBoundingClientRect).toBeUndefined();
   });
+
+  it('uses the editor scrollRef as the scrolling boundary when available', () => {
+    const leafEl: any = {};
+    const boundary = document.createElement('section');
+    const domRange = {
+      getBoundingClientRect: () => ({
+        bottom: 1,
+        height: 1,
+        left: 0,
+        right: 1,
+        top: 0,
+        width: 1,
+      }),
+      startContainer: { parentElement: leafEl },
+    };
+    const editor = {
+      api: {
+        toDOMRange: mock(() => domRange),
+      },
+      store: {
+        get: mock((key: string) =>
+          key === 'scrollRef'
+            ? { current: boundary }
+            : { current: document.createElement('div') }
+        ),
+      },
+    } as any;
+
+    scrollIntoView(editor, { offset: 0, path: [0, 0] });
+
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledWith(leafEl, {
+      boundary,
+      scrollMode: 'if-needed',
+    });
+  });
+
+  it('falls back to the editor containerRef boundary when scrollRef is empty', () => {
+    const leafEl: any = {};
+    const boundary = document.createElement('div');
+    const domRange = {
+      getBoundingClientRect: () => ({
+        bottom: 1,
+        height: 1,
+        left: 0,
+        right: 1,
+        top: 0,
+        width: 1,
+      }),
+      startContainer: { parentElement: leafEl },
+    };
+    const editor = {
+      api: {
+        toDOMRange: mock(() => domRange),
+      },
+      store: {
+        get: mock((key: string) =>
+          key === 'scrollRef' ? { current: null } : { current: boundary }
+        ),
+      },
+    } as any;
+
+    scrollIntoView(editor, { offset: 0, path: [0, 0] });
+
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledWith(leafEl, {
+      boundary,
+      scrollMode: 'if-needed',
+    });
+  });
+
+  it('does not override an explicit boundary option', () => {
+    const leafEl: any = {};
+    const explicitBoundary = document.createElement('article');
+    const storeBoundary = document.createElement('section');
+    const domRange = {
+      getBoundingClientRect: () => ({
+        bottom: 1,
+        height: 1,
+        left: 0,
+        right: 1,
+        top: 0,
+        width: 1,
+      }),
+      startContainer: { parentElement: leafEl },
+    };
+    const editor = {
+      api: {
+        toDOMRange: mock(() => domRange),
+      },
+      store: {
+        get: mock((key: string) =>
+          key === 'scrollRef'
+            ? { current: storeBoundary }
+            : { current: document.createElement('div') }
+        ),
+      },
+    } as any;
+
+    scrollIntoView(editor, { offset: 0, path: [0, 0] }, {
+      block: 'nearest',
+      boundary: explicitBoundary,
+      scrollMode: 'if-needed',
+    } as any);
+
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledWith(leafEl, {
+      block: 'nearest',
+      boundary: explicitBoundary,
+      scrollMode: 'if-needed',
+    });
+  });
 });

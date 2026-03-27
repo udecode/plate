@@ -74,6 +74,12 @@ export const useEditableProps = ({
     () => pipeRenderText(editor, storeRenderText ?? editableProps?.renderText),
     [editableProps?.renderText, editor, storeRenderText]
   );
+  const scrollSelectionIntoView = React.useCallback(
+    (_: unknown, domRange: Parameters<typeof editor.api.scrollIntoView>[0]) => {
+      editor.api.scrollIntoView(domRange);
+    },
+    [editor]
+  );
 
   const props: EditableProps = useDeepCompareMemo(() => {
     const _props: EditableProps = {
@@ -82,6 +88,8 @@ export const useEditableProps = ({
       renderElement,
       renderLeaf,
       renderText,
+      scrollSelectionIntoView:
+        editableProps.scrollSelectionIntoView ?? scrollSelectionIntoView,
     };
 
     DOM_HANDLERS.forEach((handlerKey) => {
@@ -100,6 +108,7 @@ export const useEditableProps = ({
     renderElement,
     renderLeaf,
     renderText,
+    scrollSelectionIntoView,
   ]);
 
   return useDeepCompareMemo(

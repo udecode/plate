@@ -46,5 +46,54 @@ describe('useEditableProps', () => {
       result.current.decorate!(entry);
       expect(decorate).toHaveBeenCalledTimes(2);
     });
+
+    it('uses editor.api.scrollIntoView for selection scrolling by default', () => {
+      const editor = createPlateEditor();
+      const domRange = {
+        getBoundingClientRect: mock(() => ({
+          bottom: 1,
+          height: 1,
+          left: 0,
+          right: 1,
+          top: 0,
+          width: 1,
+        })),
+        startContainer: { parentElement: document.createElement('span') },
+      } as any;
+      const scrollIntoView = mock();
+
+      editor.api.scrollIntoView = scrollIntoView as any;
+
+      const wrapper = ({ children }: any) => (
+        <Plate editor={editor}>{children}</Plate>
+      );
+      const { result } = renderHook(() => useEditableProps(), {
+        wrapper,
+      });
+
+      result.current.scrollSelectionIntoView?.(editor as any, domRange);
+
+      expect(scrollIntoView).toHaveBeenCalledWith(domRange);
+    });
+
+    it('keeps an explicit scrollSelectionIntoView override', () => {
+      const editor = createPlateEditor();
+      const override = mock();
+
+      const wrapper = ({ children }: any) => (
+        <Plate editor={editor}>{children}</Plate>
+      );
+      const { result } = renderHook(
+        () =>
+          useEditableProps({
+            scrollSelectionIntoView: override as any,
+          }),
+        {
+          wrapper,
+        }
+      );
+
+      expect(result.current.scrollSelectionIntoView).toBe(override);
+    });
   });
 });
