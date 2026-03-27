@@ -28,6 +28,7 @@ jspm_packages/
 # compiled output
 /dist
 /tmp
+/tmp*
 /out-tsc
 **/build
 

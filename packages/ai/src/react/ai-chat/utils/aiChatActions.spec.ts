@@ -37,19 +37,24 @@ mock.module('@platejs/suggestion/react', () => ({
   SuggestionPlugin: { key: 'suggestion' },
 }));
 
-mock.module('platejs/react', () => ({
-  getEditorPlugin: getEditorPluginMock,
-  useEditorPlugin: useEditorPluginMock,
-  usePluginOption: usePluginOptionMock,
-}));
+mock.module('platejs/react', async () => {
+  const actual = await import(
+    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
+  );
+  const getEditorPlugin = actual.getEditorPlugin as any;
+  const useEditorPlugin = actual.useEditorPlugin as any;
+  const usePluginOption = actual.usePluginOption as any;
 
-mock.module('../AIChatPlugin', () => ({
-  AIChatPlugin: { key: 'aiChat' },
-}));
-
-mock.module('../../ai/AIPlugin', () => ({
-  AIPlugin: { key: 'ai' },
-}));
+  return {
+    ...actual,
+    getEditorPlugin: (...args: any[]) =>
+      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
+    useEditorPlugin: (...args: any[]) =>
+      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
+    usePluginOption: (...args: any[]) =>
+      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
+  };
+});
 
 const loadApplyTableCellSuggestion = async () =>
   import(
@@ -188,6 +193,7 @@ describe('ai chat action utils', () => {
     const setMessages = mock();
     const stop = mock();
     const setOptions = mock();
+    const discardPreview = mock();
     const undo = mock();
 
     getEditorPluginMock.mockReturnValue({
@@ -205,7 +211,7 @@ describe('ai chat action utils', () => {
 
     const editor = {
       getTransforms: () => ({
-        ai: { undo },
+        ai: { discardPreview, undo },
       }),
     } as any;
 
@@ -220,6 +226,40 @@ describe('ai chat action utils', () => {
       toolName: null,
     });
     expect(undo).toHaveBeenCalled();
+    expect(discardPreview).not.toHaveBeenCalled();
+  });
+
+  it('discards preview bookkeeping instead of undoing when requested', async () => {
+    const { resetAIChat } = await loadReset();
+    const stop = mock();
+    const setOptions = mock();
+    const discardPreview = mock();
+    const undo = mock();
+
+    getEditorPluginMock.mockReturnValue({
+      api: {
+        aiChat: { stop },
+      },
+      getOptions: () => ({
+        chat: {
+          messages: [],
+          setMessages: mock(),
+        },
+      }),
+      setOptions,
+    });
+
+    const editor = {
+      getTransforms: () => ({
+        ai: { discardPreview, undo },
+      }),
+    } as any;
+
+    resetAIChat(editor, { undo: false });
+
+    expect(stop).toHaveBeenCalled();
+    expect(undo).not.toHaveBeenCalled();
+    expect(discardPreview).toHaveBeenCalled();
   });
 
   it('detects single-cell tables and extracts their cell children', async () => {

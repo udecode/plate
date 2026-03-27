@@ -4,18 +4,33 @@ const usePluginOptionMock = mock();
 const getEditorPluginMock = mock();
 const useEditorPluginMock = mock();
 
-mock.module('platejs/react', () => ({
-  getEditorPlugin: getEditorPluginMock,
-  useEditorPlugin: useEditorPluginMock,
-  usePluginOption: usePluginOptionMock,
-}));
-
 mock.module('../AIChatPlugin', () => ({
   AIChatPlugin: { key: 'aiChat' },
 }));
 
+mock.module('platejs/react', async () => {
+  const actual = await import(
+    new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
+  );
+  const getEditorPlugin = actual.getEditorPlugin as any;
+  const useEditorPlugin = actual.useEditorPlugin as any;
+  const usePluginOption = actual.usePluginOption as any;
+
+  return {
+    ...actual,
+    getEditorPlugin: (...args: any[]) =>
+      (getEditorPluginMock as any)(...args) ?? getEditorPlugin(...args),
+    useEditorPlugin: (...args: any[]) =>
+      (useEditorPluginMock as any)(...args) ?? useEditorPlugin(...args),
+    usePluginOption: (...args: any[]) =>
+      (usePluginOptionMock as any)(...args) ?? usePluginOption(...args),
+  };
+});
+
 describe('getLastAssistantMessage', () => {
   beforeEach(() => {
+    getEditorPluginMock.mockReset();
+    useEditorPluginMock.mockReset();
     usePluginOptionMock.mockReset();
   });
 
@@ -47,7 +62,7 @@ describe('getLastAssistantMessage', () => {
       `./getLastAssistantMessage?test=${Math.random().toString(36).slice(2)}`
     );
 
-    usePluginOptionMock.mockReturnValueOnce(undefined).mockReturnValueOnce({
+    usePluginOptionMock.mockReturnValueOnce(false).mockReturnValueOnce({
       messages: [
         { role: 'assistant', text: 'a' },
         { role: 'assistant', text: 'b' },

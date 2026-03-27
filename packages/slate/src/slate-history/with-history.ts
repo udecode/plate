@@ -4,8 +4,17 @@ import {
   type Operation,
   OperationApi,
   PathApi,
+  type TRange,
 } from '../interfaces/index';
 import { syncLegacyMethods } from '../utils/assignLegacyTransforms';
+
+const cloneRange = (range: TRange | null | undefined) =>
+  range
+    ? {
+        anchor: { ...range.anchor },
+        focus: { ...range.focus },
+      }
+    : null;
 
 /**
  * The `withHistory` plugin keeps track of the operation history of a Slate
@@ -23,10 +32,6 @@ export const withHistory = <T extends Editor>(editor: T) => {
     if (redos.length > 0) {
       const batch = redos.at(-1)!;
 
-      if (batch.selectionBefore) {
-        e.tf.setSelection(batch.selectionBefore);
-      }
-
       e.tf.withoutSaving(() => {
         e.tf.withoutNormalizing(() => {
           for (const op of batch.operations) {
@@ -34,6 +39,12 @@ export const withHistory = <T extends Editor>(editor: T) => {
           }
         });
       });
+
+      const selectionAfter = batch.selectionAfter ?? batch.selectionBefore;
+
+      if (selectionAfter) {
+        e.tf.select(selectionAfter);
+      }
 
       history.redos.pop();
       e.writeHistory('undos', batch);
@@ -46,6 +57,7 @@ export const withHistory = <T extends Editor>(editor: T) => {
 
     if (undos.length > 0) {
       const batch = undos.at(-1)!;
+      const selectionAfter = cloneRange(e.selection);
 
       e.tf.withoutSaving(() => {
         e.tf.withoutNormalizing(() => {
@@ -58,12 +70,15 @@ export const withHistory = <T extends Editor>(editor: T) => {
           }
 
           if (batch.selectionBefore) {
-            e.tf.setSelection(batch.selectionBefore);
+            e.tf.select(batch.selectionBefore);
           }
         });
       });
 
-      e.writeHistory('redos', batch);
+      e.writeHistory('redos', {
+        ...batch,
+        selectionAfter,
+      });
       history.undos.pop();
     }
   };
