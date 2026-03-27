@@ -1,5 +1,7 @@
 # @platejs/core
 
+## 52.3.12
+
 ## 52.3.9
 
 ### Patch Changes
