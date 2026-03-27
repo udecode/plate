@@ -4,6 +4,7 @@
 // you can wrap them with a mock or rename them in test for clarity.
 
 import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 import { render } from '@testing-library/react';
 
@@ -305,5 +306,43 @@ describe('PlateStatic Memoization', () => {
         render(<PlateStatic editor={editor} />);
       }).not.toThrow();
     });
+  });
+
+  it('renders text node injections without calling findPath when the path is already known', () => {
+    const TonePlugin = createSlatePlugin({
+      inject: {
+        nodeProps: {
+          nodeKey: 'tone',
+          styleKey: 'color',
+        },
+      },
+      key: 'tone',
+    });
+    const editor = createSlateEditor({
+      plugins: [TonePlugin],
+      value: [
+        {
+          children: [{ text: 'hi', tone: 'red' }],
+          type: 'p',
+        },
+      ],
+    });
+    const originalFindPath = editor.api.findPath.bind(editor.api);
+
+    editor.api.findPath = ((node: any) => {
+      if ('text' in node) {
+        throw new Error(
+          'text findPath should not be needed during static render'
+        );
+      }
+
+      return originalFindPath(node);
+    }) as any;
+
+    const markup = ReactDOMServer.renderToStaticMarkup(
+      <PlateStatic editor={editor} />
+    );
+
+    expect(markup).toContain('color:red');
   });
 });

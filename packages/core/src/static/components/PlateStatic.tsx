@@ -4,6 +4,7 @@ import {
   type DecoratedRange,
   type Descendant,
   type NodeEntry,
+  type Path,
   type TElement,
   type TText,
   type Value,
@@ -28,11 +29,13 @@ function BaseElementStatic({
   decorations,
   editor,
   element = { children: [], type: '' },
+  path,
 }: {
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
   element: TElement;
+  path: Path;
   style?: React.CSSProperties;
 }) {
   const renderElement = pipeRenderElementStatic(editor);
@@ -43,7 +46,12 @@ function BaseElementStatic({
   };
 
   let children: React.ReactNode = (
-    <Children decorate={decorate} decorations={decorations} editor={editor}>
+    <Children
+      decorate={decorate}
+      decorations={decorations}
+      editor={editor}
+      parentPath={path}
+    >
       {element.children}
     </Children>
   );
@@ -60,7 +68,12 @@ function BaseElementStatic({
         }}
         data-slate-spacer
       >
-        <Children decorate={decorate} decorations={decorations} editor={editor}>
+        <Children
+          decorate={decorate}
+          decorations={decorations}
+          editor={editor}
+          parentPath={path}
+        >
           {element.children}
         </Children>
       </span>
@@ -70,7 +83,7 @@ function BaseElementStatic({
     attributes['data-slate-inline'] = true;
   }
 
-  return <>{renderElement?.({ attributes, children, element })}</>;
+  return <>{renderElement?.({ attributes, children, element, path })}</>;
 }
 
 export const ElementStatic = React.memo(
@@ -85,10 +98,12 @@ export const ElementStatic = React.memo(
 function BaseLeafStatic({
   decorations,
   editor,
+  path,
   text = { text: '' },
 }: {
   decorations: DecoratedRange[];
   editor: SlateEditor;
+  path: Path;
   text: TText;
 }) {
   const renderLeaf = pipeRenderLeafStatic(editor);
@@ -106,6 +121,7 @@ function BaseLeafStatic({
       ),
       leaf: leaf as TText,
       leafPosition: position,
+      path,
       text: leaf as TText,
     });
 
@@ -115,6 +131,7 @@ function BaseLeafStatic({
   return renderText({
     attributes: { 'data-slate-node': 'text' as const, ref: null },
     children: leafElements,
+    path,
     text: text as TText,
   });
 }
@@ -134,21 +151,24 @@ function Children({
   decorate = defaultDecorate,
   decorations = [],
   editor,
+  parentPath = [],
 }: {
   children: Descendant[];
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
+  parentPath?: Path;
 }) {
   return (
     <>
       {children.map((child, i) => {
-        const p = editor.api.findPath(child);
+        const p = [...parentPath, i];
 
         let ds: DecoratedRange[] = [];
 
-        if (p) {
-          const range = editor.api.range(p)!;
+        const range = editor.api.range(p);
+
+        if (range) {
           ds = decorate([child, p]);
 
           for (const dec of decorations) {
@@ -167,9 +187,16 @@ function Children({
             decorations={ds}
             editor={editor}
             element={child}
+            path={p}
           />
         ) : (
-          <LeafStatic key={i} decorations={ds} editor={editor} text={child} />
+          <LeafStatic
+            key={i}
+            decorations={ds}
+            editor={editor}
+            path={p}
+            text={child}
+          />
         );
       })}
     </>

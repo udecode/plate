@@ -32,6 +32,7 @@ export const pluginRenderElementStatic = (
       },
       editor,
       node: element,
+      path: nodeProps.path,
       plugin,
       props: nodeProps as any,
     }) as any;

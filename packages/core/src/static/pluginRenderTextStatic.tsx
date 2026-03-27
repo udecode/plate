@@ -29,6 +29,7 @@ export const pluginRenderTextStatic = (
         attributes: { ...(text.attributes as any) },
         editor,
         node: text,
+        path: nodeProps.path,
         plugin,
         props: nodeProps as any,
       }) as any;
@@ -104,6 +105,7 @@ export const pipeRenderTextStatic = (
 
     const ctxProps = getRenderNodeStaticProps({
       editor,
+      path: props.path,
       props: { attributes, ...props } as any,
     }) as any;
 

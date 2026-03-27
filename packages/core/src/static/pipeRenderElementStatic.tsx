@@ -29,6 +29,7 @@ export const pipeRenderElementStatic = (
 
     const ctxProps = getRenderNodeStaticProps({
       editor,
+      path: props.path,
       props: { ...props } as any,
     }) as any;
 
