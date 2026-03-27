@@ -48,4 +48,44 @@ describe('placeholder upload history', () => {
       type: 'img',
     });
   });
+
+  it('is a no-op when no matching placeholder history batch exists', () => {
+    const editors = [
+      {
+        history: {
+          undos: [],
+        },
+      },
+      {
+        history: {
+          undos: [
+            {
+              [KEYS.placeholder]: true,
+              operations: [
+                {
+                  node: { id: 'other-placeholder' },
+                  type: 'insert_node',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ] as any[];
+
+    for (const editor of editors) {
+      expect(() =>
+        updateUploadHistory(editor, {
+          id: 'media-1',
+          placeholderId: 'placeholder-1',
+          type: 'img',
+        } as any)
+      ).not.toThrow();
+    }
+
+    expect(editors[0].history.undos).toEqual([]);
+    expect(editors[1].history.undos[0].operations[0].node).toEqual({
+      id: 'other-placeholder',
+    });
+  });
 });
