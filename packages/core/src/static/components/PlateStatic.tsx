@@ -98,10 +98,12 @@ export const ElementStatic = React.memo(
 function BaseLeafStatic({
   decorations,
   editor,
+  path,
   text = { text: '' },
 }: {
   decorations: DecoratedRange[];
   editor: SlateEditor;
+  path: Path;
   text: TText;
 }) {
   const renderLeaf = pipeRenderLeafStatic(editor);
@@ -119,6 +121,7 @@ function BaseLeafStatic({
       ),
       leaf: leaf as TText,
       leafPosition: position,
+      path,
       text: leaf as TText,
     });
 
@@ -128,6 +131,7 @@ function BaseLeafStatic({
   return renderText({
     attributes: { 'data-slate-node': 'text' as const, ref: null },
     children: leafElements,
+    path,
     text: text as TText,
   });
 }
@@ -186,7 +190,13 @@ function Children({
             path={p}
           />
         ) : (
-          <LeafStatic key={i} decorations={ds} editor={editor} text={child} />
+          <LeafStatic
+            key={i}
+            decorations={ds}
+            editor={editor}
+            path={p}
+            text={child}
+          />
         );
       })}
     </>
