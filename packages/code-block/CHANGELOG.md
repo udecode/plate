@@ -1,5 +1,12 @@
 # @platejs/code-block
 
+## 52.3.14
+
+### Patch Changes
+
+- [#4907](https://github.com/udecode/plate/pull/4907) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed `formatCodeBlock` to rewrite formatted code into real `code_line` nodes and trigger a redecorate pass so syntax highlighting persists after formatting.
+
 ## 52.3.10
 
 ### Patch Changes
