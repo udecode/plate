@@ -14,12 +14,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^3.0.80",
+    "@ai-sdk/gateway": "^3.0.82",
     "@ai-sdk/react": "3",
     "@ariakit/react": "^0.4.24",
     "@emoji-mart/data": "1.2.1",
     "@faker-js/faker": "^10.4.0",
-    "@platejs/ai": "^52.3.10",
+    "@platejs/ai": "^52.3.12",
     "@platejs/autoformat": "^52.3.10",
     "@platejs/basic-nodes": "^52.3.10",
     "@platejs/basic-styles": "^52.3.10",

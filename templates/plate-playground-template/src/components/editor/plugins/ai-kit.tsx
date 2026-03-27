@@ -1,14 +1,16 @@
 'use client';
 
-import { withAIBatch } from '@platejs/ai';
+import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
 import {
   AIChatPlugin,
   AIPlugin,
   applyAISuggestions,
+  getInsertPreviewStart,
   streamInsertChunk,
   useChatChunk,
 } from '@platejs/ai/react';
-import { getPluginType, KEYS, PathApi } from 'platejs';
+import cloneDeep from 'lodash/cloneDeep.js';
+import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/components/ui/ai-menu';
@@ -39,6 +41,18 @@ export const aiChatPlugin = AIChatPlugin.extend({
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode === 'insert') {
+          const { startBlock, startInEmptyParagraph } =
+            getInsertPreviewStart(editor);
+
+          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
+            originalBlocks:
+              startInEmptyParagraph &&
+              startBlock &&
+              ElementApi.isElement(startBlock)
+                ? [cloneDeep(startBlock)]
+                : [],
+          });
+
           editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(
               {
@@ -54,20 +68,17 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
 
         if (mode === 'insert' && nodes.length > 0) {
-          withAIBatch(
-            editor,
-            () => {
-              if (!getOption('streaming')) return;
-              editor.tf.withScrolling(() => {
-                streamInsertChunk(editor, chunk, {
-                  textProps: {
-                    [getPluginType(editor, KEYS.ai)]: true,
-                  },
-                });
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming')) return;
+
+            editor.tf.withScrolling(() => {
+              streamInsertChunk(editor, chunk, {
+                textProps: {
+                  [getPluginType(editor, KEYS.ai)]: true,
+                },
               });
-            },
-            { split: isFirst }
-          );
+            });
+          });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
