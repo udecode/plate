@@ -44,14 +44,6 @@
       },
       {
         "sourceType": "plugin",
-        "pluginId": "agent-browser@agent-browser",
-        "pluginVersion": "99c732c18810",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/agent-browser",
-        "destRelPath": "agent-browser-agent-browser"
-      },
-      {
-        "sourceType": "plugin",
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",
@@ -364,27 +356,11 @@
       },
       {
         "sourceType": "plugin",
-        "pluginId": "agent-browser@agent-browser",
-        "pluginVersion": "99c732c18810",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/dogfood",
-        "destRelPath": "dogfood"
-      },
-      {
-        "sourceType": "plugin",
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",
         "sourceRelPath": "skills/dspy-ruby",
         "destRelPath": "dspy-ruby"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "agent-browser@agent-browser",
-        "pluginVersion": "99c732c18810",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/electron",
-        "destRelPath": "electron"
       },
       {
         "sourceType": "plugin",
@@ -748,14 +724,6 @@
       },
       {
         "sourceType": "plugin",
-        "pluginId": "agent-browser@agent-browser",
-        "pluginVersion": "99c732c18810",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/slack",
-        "destRelPath": "slack"
-      },
-      {
-        "sourceType": "plugin",
         "pluginId": "compound-engineering@every-marketplace",
         "pluginVersion": "2.40.0",
         "sourceKind": "skill",
@@ -865,14 +833,6 @@
         "sourceKind": "command",
         "sourceRelPath": "commands/update-tech-stack.md",
         "destRelPath": "update-tech-stack"
-      },
-      {
-        "sourceType": "plugin",
-        "pluginId": "agent-browser@agent-browser",
-        "pluginVersion": "99c732c18810",
-        "sourceKind": "skill",
-        "sourceRelPath": "skills/vercel-sandbox",
-        "destRelPath": "vercel-sandbox"
       }
     ],
     ".cursor/skills": [

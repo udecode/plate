@@ -1,0 +1,74 @@
+---
+name: browser-debug-setup
+description: One-time setup for a persistent debug browser on `127.0.0.1:9222` for `dev-browser --connect`. Use when browser work is needed but no reusable debug browser is running yet.
+user-invocable: false
+---
+
+# Browser Debug Setup
+
+Use this skill when `dev-browser --connect http://127.0.0.1:9222` fails because
+no persistent debug browser is running yet.
+
+## Goal
+
+Get the user onto one persistent browser/profile that both the human and the
+agent reuse.
+
+## Rules
+
+- Prefer one permanent debug browser/profile over disposable automation
+  browsers.
+- Do not assume `~/.config/chromium-flags.conf` already exists.
+- Keep auth in that profile. Do not fall back to cookie dumps or state files
+  unless the user asks.
+- Do not keep trying to bolt debugging flags onto an already-running default
+  Chrome session. That path is flaky.
+
+## Preferred Shape
+
+Use a dedicated browser/profile with:
+
+- `--remote-debugging-address=127.0.0.1`
+- `--remote-debugging-port=9222`
+- a persistent `--user-data-dir=<debug-profile-dir>`
+
+Then verify:
+
+```bash
+dev-browser --connect http://127.0.0.1:9222 <<'EOF'
+const page = await browser.getPage("persistent-main");
+console.log(await page.title());
+EOF
+```
+
+## Chromium Path
+
+Create `~/.config/chromium-flags.conf` with:
+
+```txt
+--remote-debugging-address=127.0.0.1
+--remote-debugging-port=9222
+--user-data-dir=/Users/<user>/.config/chromium-debug-profile
+```
+
+Then launch Chromium normally and sign in once in that profile.
+
+## Google Chrome Path
+
+Launch Chrome with a dedicated debug profile directory:
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --user-data-dir="$HOME/.config/google-chrome-debug-profile" \
+  --profile-directory="Default" \
+  --remote-debugging-address=127.0.0.1 \
+  --remote-debugging-port=9222
+```
+
+Then sign in once in that browser and keep reusing it.
+
+## After Setup
+
+- Use `dev-browser --connect http://127.0.0.1:9222` for browser work.
+- Reuse named pages like `persistent-main`.
+- Do not stop the user's debug browser unless they ask.

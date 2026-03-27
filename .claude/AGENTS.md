@@ -34,13 +34,15 @@ When using the following skills, override the default behavior.
 
 - Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
 
-`agent-browser`:
+`dev-browser`:
 
-- Never close agent-browser
-- Use `--headed` only you failed to test and need manual input from human.
-- Port 3000 for main app
-- Use `agent-browser` instead of Do NOT use next-devtools `browser_eval` (overlaps with agent-browser)
-- If `agent-browser` gets blocked or loops on the same step, stop and ask the user to unblock. After the unblock works:
+- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work.
+- If `http://127.0.0.1:9222` is unavailable, use `browser-debug-setup` first.
+- Reuse the persistent debug browser/profile. Do not spin up disposable browser instances unless the user asks.
+- Do not close or stop the user's connected debug browser. Close named pages only when needed.
+- Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
+- Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
+- If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
   - [Add browser learning]
 
 `ce-*`:
@@ -149,7 +151,7 @@ pnpm --filter @platejs/core lint:fix
 - [ ] Typecheck (IF updated `.ts` files or typed test/build config): For package-scoped verification, follow the build-first sequence: `pnpm install` -> `pnpm turbo build --filter=...` -> `pnpm turbo typecheck --filter=...`. If unresolved workspace imports remain, run `pnpm build` at repo root, then rerun the package typecheck. For full repo verification, use `pnpm typecheck`. Do not default to `pnpm typecheck` for package verification.
 - [ ] Lint: Run `lint:fix`
 - [ ] PR gate (IF creating/updating a PR): Run `check`
-- [ ] Browser verification (IF a browser surface changed): verify with `agent-browser` before done
+- [ ] Browser verification (IF a browser surface changed): verify with `dev-browser` before done
 - [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: load `ce-compound` after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery
