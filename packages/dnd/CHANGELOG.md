@@ -1,5 +1,11 @@
 # @platejs/dnd
 
+## 52.3.16
+
+### Patch Changes
+
+- [`3465ee1`](https://github.com/udecode/plate/commit/3465ee17a0f2d1557f08656a8d08d3d4a332143b) by [@zbeyens](https://github.com/zbeyens) – Refresh `@platejs/dnd` release metadata.
+
 ## 52.3.15
 
 ### Patch Changes

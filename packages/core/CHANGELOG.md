@@ -1,5 +1,11 @@
 # @platejs/core
 
+## 52.3.16
+
+### Patch Changes
+
+- [#4915](https://github.com/udecode/plate/pull/4915) by [@zbeyens](https://github.com/zbeyens) – Republish `@platejs/core` to refresh the release graph for downstream packages.
+
 ## 52.3.15
 
 ### Patch Changes
