@@ -1,6 +1,7 @@
 ---
 module: Tooling
 date: 2026-03-26
+last_updated: 2026-03-28
 problem_type: workflow_issue
 component: tooling
 symptoms:
@@ -100,3 +101,5 @@ bun run build -- --debug-prerender
 ```
 
 Then remove only the suspected nested stale package and rerun once. If the build flips from red to green, fix the published manifests instead of adding defensive template hacks.
+
+5. Do not assume Changesets `linked` groups force the umbrella package to publish when only an internal package gets a direct changeset. `linked` keeps published linked packages aligned, but it does not guarantee every package in the group gets versioned. If `platejs` itself must publish, add a direct `platejs` changeset or use a `fixed` group instead.
