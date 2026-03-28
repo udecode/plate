@@ -9,31 +9,10 @@ config();
 const PR_REGEX = /^\s*(?:pr|pull|pull\s+request):\s*#?(\d+)/im;
 const COMMIT_REGEX = /^\s*commit:\s*([^\s]+)/im;
 const USER_REGEX = /^\s*(?:author|user):\s*@?([^\s]+)/gim;
-const AUTO_RUNTIME_DEPENDENTS_SUMMARY_PREFIX =
-  'Republish runtime dependents of ';
-
-function isAutoRuntimeDependentsChangeset(changeset) {
-  return changeset.summary.startsWith(AUTO_RUNTIME_DEPENDENTS_SUMMARY_PREFIX);
-}
-
-function formatDependencyReleaseLine(dependenciesUpdated) {
-  if (dependenciesUpdated.length === 0) return '';
-
-  return `Updated ${dependenciesUpdated
-    .map((dependency) => `\`${dependency.name}\``)
-    .join(', ')}.`;
-}
 
 module.exports = {
-  __test: {
-    formatDependencyReleaseLine,
-    isAutoRuntimeDependentsChangeset,
-  },
-  getDependencyReleaseLine: async (_changesets, dependenciesUpdated) =>
-    formatDependencyReleaseLine(dependenciesUpdated),
+  getDependencyReleaseLine: async () => '',
   getReleaseLine: async (changeset, _type, options) => {
-    if (isAutoRuntimeDependentsChangeset(changeset)) return '';
-
     if (!options || !options.repo) {
       throw new Error(
         'Please provide a repo to this changelog generator like this:\n"changelog": ["@changesets/changelog-github", { "repo": "org/repo" }]'

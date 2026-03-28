@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import {
   createAutoChangesetContent,
-  getAutoReleasePackageNames,
+  getAutoReleasePackages,
 } from './prepare-release-changesets.mjs';
 
 function createWorkspacePackages(entries) {
@@ -36,15 +36,24 @@ test('auto-releases transitive runtime dependents of released packages', () => {
     platejs: ['@platejs/core', '@platejs/utils'],
   });
 
-  const autoReleasePackageNames = getAutoReleasePackageNames(
+  const autoReleasePackages = getAutoReleasePackages(
     [{ name: '@platejs/core', type: 'patch' }],
     workspacePackages
   );
 
-  assert.deepEqual(autoReleasePackageNames, [
-    '@platejs/transitive',
-    '@platejs/utils',
-    'platejs',
+  assert.deepEqual(autoReleasePackages, [
+    {
+      name: '@platejs/transitive',
+      updatedDependencyNames: ['@platejs/utils'],
+    },
+    {
+      name: '@platejs/utils',
+      updatedDependencyNames: ['@platejs/core'],
+    },
+    {
+      name: 'platejs',
+      updatedDependencyNames: ['@platejs/core', '@platejs/utils'],
+    },
   ]);
 });
 
@@ -56,21 +65,29 @@ test('does not follow peer-only relationships', () => {
     platejs: ['@platejs/core', '@platejs/utils'],
   });
 
-  const autoReleasePackageNames = getAutoReleasePackageNames(
+  const autoReleasePackages = getAutoReleasePackages(
     [{ name: '@platejs/core', type: 'patch' }],
     workspacePackages
   );
 
-  assert.deepEqual(autoReleasePackageNames, ['@platejs/utils', 'platejs']);
+  assert.deepEqual(autoReleasePackages, [
+    {
+      name: '@platejs/utils',
+      updatedDependencyNames: ['@platejs/core'],
+    },
+    {
+      name: 'platejs',
+      updatedDependencyNames: ['@platejs/core', '@platejs/utils'],
+    },
+  ]);
 });
 
-test('formats a synthetic changeset covering every auto-bumped package', () => {
-  const content = createAutoChangesetContent(
-    ['@platejs/core'],
-    ['@platejs/utils', 'platejs']
-  );
+test('formats a synthetic changeset for one auto-bumped package', () => {
+  const content = createAutoChangesetContent('platejs', [
+    '@platejs/core',
+    '@platejs/utils',
+  ]);
 
-  assert.match(content, /"@platejs\/utils": patch/);
   assert.match(content, /"platejs": patch/);
-  assert.match(content, /Republish runtime dependents of `@platejs\/core`/);
+  assert.match(content, /Updated `@platejs\/core`, `@platejs\/utils`\./);
 });

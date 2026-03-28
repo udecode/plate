@@ -16,12 +16,14 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
 const changesetDir = path.join(repoRoot, '.changeset');
-const autoChangesetPath = path.join(changesetDir, 'auto-runtime-dependents.md');
+const autoChangesetFilenamePrefix = 'auto-runtime-dependent-';
+const legacyAutoChangesetFilename = 'auto-runtime-dependents.md';
 const statusOutputPath = path.join(
   repoRoot,
   '.tmp',
   'prepare-release-changesets-status.json'
 );
+const scopePrefixPattern = /^@/;
 
 if (isMainModule()) {
   await main();
@@ -34,7 +36,7 @@ async function main() {
   const manualChangesetPaths = await getManualChangesetPaths();
 
   if (manualChangesetPaths.length === 0) {
-    await cleanupAutoChangeset();
+    await cleanupAutoChangesets();
     console.log(
       'No pending manual changesets. Skipping auto release changeset.'
     );
@@ -42,36 +44,23 @@ async function main() {
   }
 
   const status = getChangesetStatus();
-  const autoReleasePackageNames = getAutoReleasePackageNames(
+  const autoReleasePackages = getAutoReleasePackages(
     status.releases,
     workspacePackages
   );
 
-  if (autoReleasePackageNames.length === 0) {
-    await cleanupAutoChangeset();
+  if (autoReleasePackages.length === 0) {
+    await cleanupAutoChangesets();
     console.log(
       'No runtime dependents require an automated release changeset.'
     );
     return;
   }
 
-  const content = createAutoChangesetContent(
-    status.releases.map((release) => release.name),
-    autoReleasePackageNames
-  );
-  const existingContent = await readOptionalFile(autoChangesetPath);
-
-  if (existingContent === content) {
-    console.log(
-      `Auto release changeset already up to date for: ${autoReleasePackageNames.join(', ')}`
-    );
-    return;
-  }
-
-  await writeFile(autoChangesetPath, content);
+  await syncAutoChangesets(autoReleasePackages);
 
   console.log(
-    `Created auto release changeset for: ${autoReleasePackageNames.join(', ')}`
+    `Created auto release changeset for: ${autoReleasePackages.map((pkg) => pkg.name).join(', ')}`
   );
 }
 
@@ -83,8 +72,12 @@ function isMainModule() {
   );
 }
 
-export function getAutoReleasePackageNames(releases, workspacePackages) {
-  const releasedPackageNames = new Set(releases.map((release) => release.name));
+export function getAutoReleasePackages(releases, workspacePackages) {
+  const releasedPackageNames = new Set(
+    releases
+      .filter((release) => release.type !== 'none')
+      .map((release) => release.name)
+  );
   const autoReleasePackageNames = new Set();
   const queue = [...releasedPackageNames];
 
@@ -105,21 +98,29 @@ export function getAutoReleasePackageNames(releases, workspacePackages) {
     }
   }
 
-  return [...autoReleasePackageNames].sort();
+  const versionedPackageNames = new Set([
+    ...releasedPackageNames,
+    ...autoReleasePackageNames,
+  ]);
+
+  return [...autoReleasePackageNames].sort().map((packageName) => ({
+    name: packageName,
+    updatedDependencyNames: workspacePackages
+      .get(packageName)
+      ?.runtimeDependencyNames.filter((dependencyName) =>
+        versionedPackageNames.has(dependencyName)
+      )
+      .sort(),
+  }));
 }
 
 export function createAutoChangesetContent(
-  releasedPackageNames,
-  autoReleasePackageNames
+  packageName,
+  updatedDependencyNames
 ) {
-  const frontmatter = autoReleasePackageNames
-    .map((packageName) => `"${packageName}": patch`)
-    .join('\n');
-
-  return `---\n${frontmatter}\n---\n\nRepublish runtime dependents of ${releasedPackageNames
-    .toSorted()
-    .map((packageName) => `\`${packageName}\``)
-    .join(', ')} so published workspace dependency graphs stay aligned.\n`;
+  return `---\n"${packageName}": patch\n---\n\nUpdated ${updatedDependencyNames
+    .map((dependencyName) => `\`${dependencyName}\``)
+    .join(', ')}.\n`;
 }
 
 async function getWorkspacePackages() {
@@ -177,7 +178,8 @@ async function getManualChangesetPaths() {
         entry.isFile() &&
         entry.name.endsWith('.md') &&
         entry.name !== 'README.md' &&
-        entry.name !== path.basename(autoChangesetPath)
+        entry.name !== legacyAutoChangesetFilename &&
+        !entry.name.startsWith(autoChangesetFilenamePrefix)
     )
     .map((entry) => path.join(changesetDir, entry.name))
     .toSorted();
@@ -225,11 +227,51 @@ async function listDirectories(parentDirectory) {
   return directories;
 }
 
-async function cleanupAutoChangeset() {
-  try {
-    await rm(autoChangesetPath);
-  } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
+async function cleanupAutoChangesets() {
+  for (const filePath of await getExistingAutoChangesetPaths()) {
+    await rm(filePath);
+  }
+}
+
+async function getExistingAutoChangesetPaths() {
+  const entries = await readdir(changesetDir, { withFileTypes: true });
+
+  return entries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        (entry.name === legacyAutoChangesetFilename ||
+          entry.name.startsWith(autoChangesetFilenamePrefix))
+    )
+    .map((entry) => path.join(changesetDir, entry.name))
+    .toSorted();
+}
+
+async function syncAutoChangesets(autoReleasePackages) {
+  const desiredEntries = autoReleasePackages.map((autoReleasePackage) => ({
+    content: createAutoChangesetContent(
+      autoReleasePackage.name,
+      autoReleasePackage.updatedDependencyNames
+    ),
+    filePath: path.join(
+      changesetDir,
+      `${autoChangesetFilenamePrefix}${sanitizePackageName(autoReleasePackage.name)}.md`
+    ),
+  }));
+  const desiredPaths = new Set(desiredEntries.map((entry) => entry.filePath));
+
+  for (const filePath of await getExistingAutoChangesetPaths()) {
+    if (!desiredPaths.has(filePath)) {
+      await rm(filePath);
+    }
+  }
+
+  for (const entry of desiredEntries) {
+    const existingContent = await readOptionalFile(entry.filePath);
+
+    if (existingContent === entry.content) continue;
+
+    await writeFile(entry.filePath, entry.content);
   }
 }
 
@@ -242,7 +284,11 @@ async function readOptionalFile(filePath) {
   }
 }
 
-export { autoChangesetPath };
+function sanitizePackageName(packageName) {
+  return packageName.replace(scopePrefixPattern, '').replaceAll('/', '-');
+}
+
+export { autoChangesetFilenamePrefix };
 
 function readFileSyncUtf8(filePath) {
   return readFileSync(filePath, 'utf8');
