@@ -7,89 +7,107 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..');
-const baseRef = process.env.TEMPLATE_LOCAL_PACKAGE_BASE_REF?.trim();
-const templateDirArgs = process.argv.slice(2);
-
-if (templateDirArgs.includes('-h') || templateDirArgs.includes('--help')) {
-  console.log(
-    'Usage: node tooling/scripts/prepare-local-template-packages.mjs <template-dir> [template-dir...]'
-  );
-  process.exit(0);
-}
-
-if (templateDirArgs.length === 0) {
-  console.error(
-    'Usage: node tooling/scripts/prepare-local-template-packages.mjs <template-dir> [template-dir...]'
-  );
-  process.exit(1);
-}
-
-const templateDirs = templateDirArgs.map((templateDir) =>
-  path.resolve(repoRoot, templateDir)
-);
 const localPackageOutputDir = path.join(
   repoRoot,
   'node_modules',
   '.cache',
   'template-local-packages'
 );
-const workspacePackages = await getWorkspacePackages();
-const templateConfigs = await Promise.all(
-  templateDirs.map(async (templateDir) => {
-    const packageJsonPath = path.join(templateDir, 'package.json');
-    const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
-    const localDependencies = getLocalDependencies(packageJson);
 
-    return {
-      localDependencies,
-      packageJson,
-      packageJsonPath,
-      templateDir,
-    };
-  })
-);
+if (isMainModule()) {
+  await main();
+}
 
-for (const templateConfig of templateConfigs) {
-  templateConfig.relevantPackageNames = getReachableWorkspacePackageNames(
-    templateConfig.localDependencies,
-    workspacePackages
+async function main() {
+  const baseRef = process.env.TEMPLATE_LOCAL_PACKAGE_BASE_REF?.trim();
+  const templateDirArgs = process.argv.slice(2);
+
+  if (templateDirArgs.includes('-h') || templateDirArgs.includes('--help')) {
+    console.log(
+      'Usage: node tooling/scripts/prepare-local-template-packages.mjs <template-dir> [template-dir...]'
+    );
+    process.exit(0);
+  }
+
+  if (templateDirArgs.length === 0) {
+    console.error(
+      'Usage: node tooling/scripts/prepare-local-template-packages.mjs <template-dir> [template-dir...]'
+    );
+    process.exit(1);
+  }
+
+  const templateDirs = templateDirArgs.map((templateDir) =>
+    path.resolve(repoRoot, templateDir)
+  );
+  const workspacePackages = await getWorkspacePackages();
+  const templateConfigs = await Promise.all(
+    templateDirs.map(async (templateDir) => {
+      const packageJsonPath = path.join(templateDir, 'package.json');
+      const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+      const localDependencies = getLocalDependencies(
+        packageJson,
+        workspacePackages
+      );
+
+      return {
+        localDependencies,
+        packageJson,
+        packageJsonPath,
+        templateDir,
+      };
+    })
+  );
+
+  for (const templateConfig of templateConfigs) {
+    templateConfig.relevantPackageNames = getReachableWorkspacePackageNames(
+      templateConfig.localDependencies,
+      workspacePackages
+    );
+  }
+
+  const packagesToPrepare = getPackagesToPrepare({
+    baseRef,
+    templateConfigs,
+    workspacePackages,
+  });
+
+  if (packagesToPrepare.size === 0) {
+    if (baseRef) {
+      console.log(
+        `No affected local workspace packages referenced by templates for ${baseRef}...HEAD.`
+      );
+    } else {
+      console.log('No local workspace packages referenced by templates.');
+    }
+    process.exit(0);
+  }
+
+  await mkdir(localPackageOutputDir, { recursive: true });
+
+  buildWorkspacePackages([...packagesToPrepare.values()]);
+
+  const tarballsByPackageName = new Map();
+
+  for (const [packageName, workspacePackage] of packagesToPrepare) {
+    const tarballPath = packWorkspacePackage(workspacePackage.directory);
+
+    tarballsByPackageName.set(packageName, tarballPath);
+  }
+
+  await Promise.all(
+    templateConfigs.map((templateConfig) =>
+      rewriteTemplatePackageJson(templateConfig, tarballsByPackageName)
+    )
   );
 }
 
-const packagesToPrepare = getPackagesToPrepare({
-  baseRef,
-  templateConfigs,
-  workspacePackages,
-});
+function isMainModule() {
+  const entrypoint = process.argv[1];
 
-if (packagesToPrepare.size === 0) {
-  if (baseRef) {
-    console.log(
-      `No affected local workspace packages referenced by templates for ${baseRef}...HEAD.`
-    );
-  } else {
-    console.log('No local workspace packages referenced by templates.');
-  }
-  process.exit(0);
+  return (
+    !!entrypoint && path.resolve(entrypoint) === fileURLToPath(import.meta.url)
+  );
 }
-
-await mkdir(localPackageOutputDir, { recursive: true });
-
-buildWorkspacePackages([...packagesToPrepare.values()]);
-
-const tarballsByPackageName = new Map();
-
-for (const [packageName, workspacePackage] of packagesToPrepare) {
-  const tarballPath = packWorkspacePackage(workspacePackage.directory);
-
-  tarballsByPackageName.set(packageName, tarballPath);
-}
-
-await Promise.all(
-  templateConfigs.map((templateConfig) =>
-    rewriteTemplatePackageJson(templateConfig, tarballsByPackageName)
-  )
-);
 
 function buildWorkspacePackages(workspacePackagesToBuild) {
   const filters = workspacePackagesToBuild
@@ -146,9 +164,13 @@ function getPackagesToPrepare({ baseRef, templateConfigs, workspacePackages }) {
       ...templateConfig.relevantPackageNames,
     ])
   );
-  const selectedPackageNames = [...changedPackageNames].filter((packageName) =>
-    relevantPackageNames.has(packageName)
-  );
+  const selectedPackageNames = [
+    ...getAffectedRelevantPackageNames(
+      changedPackageNames,
+      relevantPackageNames,
+      workspacePackages
+    ),
+  ];
 
   if (selectedPackageNames.length === 0) {
     return packagesToPrepare;
@@ -178,7 +200,7 @@ function getPackagesToPrepare({ baseRef, templateConfigs, workspacePackages }) {
   return packagesToPrepare;
 }
 
-function getLocalDependencies(packageJson) {
+function getLocalDependencies(packageJson, workspacePackages) {
   return getDependencyNames(packageJson).filter((dependencyName) =>
     workspacePackages.has(dependencyName)
   );
@@ -210,6 +232,15 @@ async function getWorkspacePackages() {
     workspacePackage.localDependencyNames = getDependencyNames(
       workspacePackage.packageJson
     ).filter((dependencyName) => workspacePackagesByName.has(dependencyName));
+    workspacePackage.localDependentNames = [];
+  }
+
+  for (const [packageName, workspacePackage] of workspacePackagesByName) {
+    for (const dependencyName of workspacePackage.localDependencyNames) {
+      workspacePackagesByName
+        .get(dependencyName)
+        ?.localDependentNames.push(packageName);
+    }
   }
 
   return workspacePackagesByName;
@@ -293,6 +324,34 @@ function getReachableWorkspacePackageNames(
   }
 
   return relevantPackageNames;
+}
+
+function getAffectedRelevantPackageNames(
+  changedPackageNames,
+  relevantPackageNames,
+  workspacePackages
+) {
+  const affectedPackageNames = new Set();
+  const pendingPackageNames = [...changedPackageNames].filter((packageName) =>
+    relevantPackageNames.has(packageName)
+  );
+
+  while (pendingPackageNames.length > 0) {
+    const packageName = pendingPackageNames.shift();
+
+    if (!packageName || affectedPackageNames.has(packageName)) continue;
+
+    affectedPackageNames.add(packageName);
+
+    for (const dependentName of workspacePackages.get(packageName)
+      ?.localDependentNames ?? []) {
+      if (!relevantPackageNames.has(dependentName)) continue;
+
+      pendingPackageNames.push(dependentName);
+    }
+  }
+
+  return affectedPackageNames;
 }
 
 function packWorkspacePackage(packageDirectory) {
@@ -383,6 +442,21 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
     }
   }
 
+  if (tarballsByPackageName.size > 0) {
+    packageJson.overrides ??= {};
+
+    for (const [dependencyName, tarballPath] of tarballsByPackageName) {
+      let relativeTarballPath = path.relative(templateDir, tarballPath);
+
+      if (!relativeTarballPath.startsWith('.')) {
+        relativeTarballPath = `./${relativeTarballPath}`;
+      }
+
+      packageJson.overrides[dependencyName] =
+        `file:${toPosixPath(relativeTarballPath)}`;
+    }
+  }
+
   return writeFile(
     packageJsonPath,
     `${JSON.stringify(packageJson, null, 2)}\n`
@@ -392,3 +466,10 @@ function rewriteTemplatePackageJson(templateConfig, tarballsByPackageName) {
 function toPosixPath(filePath) {
   return filePath.split(path.sep).join('/');
 }
+
+export {
+  getAffectedRelevantPackageNames,
+  getPackagesToPrepare,
+  getReachableWorkspacePackageNames,
+  rewriteTemplatePackageJson,
+};
