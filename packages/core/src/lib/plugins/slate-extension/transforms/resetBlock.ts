@@ -2,23 +2,25 @@ import { type Path, NodeApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
+import { NodeIdPlugin } from '../../node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 
 /**
- * Reset the current block to a paragraph, removing all properties except id and
- * type.
+ * Reset the current block to a paragraph, removing all properties except the
+ * configured node id key and type.
  */
 export const resetBlock = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
   const entry = editor.api.block({ at });
   if (!entry?.[0]) return;
 
   const [block, path] = entry;
+  const idKey = editor.getOptions(NodeIdPlugin).idKey ?? 'id';
 
   editor.tf.withoutNormalizing(() => {
-    // Extract only id and type, unset all other properties
-    const { id, type, ...otherProps } = NodeApi.extractProps(block);
+    const { type, ...otherProps } = NodeApi.extractProps(block);
 
-    // Unset all properties except id and type
+    delete otherProps[idKey];
+
     Object.keys(otherProps).forEach((key) => {
       editor.tf.unsetNodes(key, { at: path });
     });
