@@ -37,6 +37,7 @@ export const VideoElement = withHOC(
     const width = useResizableValue('width');
 
     const isEditorMounted = useEditorMounted();
+    const shouldRenderPlayer = isEditorMounted && (isUpload || !isYoutube);
 
     const isTweet = true;
 
@@ -93,7 +94,7 @@ export const VideoElement = withHOC(
                 </div>
               )}
 
-              {isUpload && isEditorMounted && (
+              {shouldRenderPlayer && (
                 <div ref={handleRef}>
                   <ReactPlayer
                     controls
