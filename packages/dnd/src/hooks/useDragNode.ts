@@ -114,6 +114,7 @@ export const useDragNode = (
   );
 
   // Reset isAboutToDrag when drag is cancelled (e.g., ESC key)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   React.useEffect(() => {
     if (!collected.isDragging && isAboutToDrag) {
       setIsAboutToDrag(false);

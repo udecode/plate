@@ -84,6 +84,7 @@ export const useDndNode = ({
     }
   );
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [{ isOver }, drop] = useDropNode(editor, {
     accept: [type, NativeTypes.FILE],
     canDropNode,
