@@ -87,6 +87,7 @@ describe('VideoElement', () => {
     useMediaStateMock.mockReturnValue({
       align: 'center',
       embed: undefined,
+      isVideo: false,
       isUpload: false,
       isYoutube: false,
       readOnly: false,
@@ -106,16 +107,18 @@ describe('VideoElement', () => {
       </VideoElement>
     );
 
-    expect(view.getByTestId('react-player').getAttribute('data-src')).toBe(
+    expect(view.container.querySelector('video')?.getAttribute('src')).toBe(
       'https://cdn.example.com/video.mp4'
     );
     expect(view.queryByTestId('youtube-embed')).toBeNull();
+    expect(view.queryByTestId('react-player')).toBeNull();
   });
 
   it('keeps the youtube embed path for youtube videos', async () => {
     useMediaStateMock.mockReturnValue({
       align: 'center',
       embed: { id: 'abc123' },
+      isVideo: true,
       isUpload: false,
       isYoutube: true,
       readOnly: false,
@@ -139,5 +142,36 @@ describe('VideoElement', () => {
       'abc123'
     );
     expect(view.queryByTestId('react-player')).toBeNull();
+  });
+
+  it('uses ReactPlayer for non-youtube video providers', async () => {
+    useMediaStateMock.mockReturnValue({
+      align: 'center',
+      embed: { id: '76979871', provider: 'vimeo' },
+      isVideo: true,
+      isUpload: false,
+      isYoutube: false,
+      readOnly: false,
+      unsafeUrl: 'https://vimeo.com/76979871',
+    });
+
+    const { VideoElement } = await import(
+      `./media-video-node?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <VideoElement
+        attributes={{}}
+        element={{ children: [{ text: '' }], type: 'video' } as any}
+      >
+        {null}
+      </VideoElement>
+    );
+
+    expect(view.getByTestId('react-player').getAttribute('data-src')).toBe(
+      'https://vimeo.com/76979871'
+    );
+    expect(view.container.querySelector('video')).toBeNull();
+    expect(view.queryByTestId('youtube-embed')).toBeNull();
   });
 });
