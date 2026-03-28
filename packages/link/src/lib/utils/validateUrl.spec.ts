@@ -15,6 +15,11 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, '/internal/path')).toBe(true);
     });
 
+    it('does not validate protocol-relative URLs starting with //', () => {
+      const editor = createTestEditor();
+      expect(validateUrl(editor, '//example.com')).toBe(false);
+    });
+
     it('validate anchor links starting with #', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '#section-name')).toBe(true);

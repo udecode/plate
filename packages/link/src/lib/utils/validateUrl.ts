@@ -10,7 +10,7 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
     editor.getOptions(BaseLinkPlugin);
 
   // Allow internal links starting with /
-  if (url.startsWith('/')) {
+  if (url.startsWith('/') && !url.startsWith('//')) {
     return true;
   }
 
