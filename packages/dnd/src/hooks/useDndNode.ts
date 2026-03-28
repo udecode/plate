@@ -7,6 +7,7 @@ import { type PlateEditor, useEditorRef } from 'platejs/react';
 import type { DragItemNode } from '../types';
 
 import { DRAG_ITEM_BLOCK } from '../DndPlugin';
+import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 import { type UseDragNodeOptions, useDragNode } from './useDragNode';
 import { type UseDropNodeOptions, useDropNode } from './useDropNode';
 
@@ -64,6 +65,16 @@ export const useDndNode = ({
 } => {
   const editor = useEditorRef();
 
+  if (!canUseDomDnd()) {
+    return {
+      dragRef: noopConnector,
+      isAboutToDrag: false,
+      isDragging: false,
+      isOver: false,
+    };
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [{ isAboutToDrag, isDragging }, dragRef, preview] = useDragNode(
     editor,
     {
@@ -73,6 +84,7 @@ export const useDndNode = ({
     }
   );
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [{ isOver }, drop] = useDropNode(editor, {
     accept: [type, NativeTypes.FILE],
     canDropNode,

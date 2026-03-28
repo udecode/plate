@@ -1,4 +1,5 @@
 import {
+  type ConnectDropTarget,
   type DropTargetHookSpec,
   type DropTargetMonitor,
   useDrop,
@@ -16,6 +17,7 @@ import type {
 import { DndPlugin } from '../DndPlugin';
 import { getDropPath, onDropNode } from '../transforms/onDropNode';
 import { onHoverNode } from '../transforms/onHoverNode';
+import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export type CanDropCallback = (args: {
   dragEntry: NodeEntry<TElement>;
@@ -86,9 +88,14 @@ export const useDropNode = (
     onDropHandler,
     ...options
   }: UseDropNodeOptions
-) => {
+): [{ isOver: boolean }, ConnectDropTarget] => {
   const id = element.id as string;
 
+  if (!canUseDomDnd()) {
+    return [{ isOver: false }, noopConnector];
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   return useDrop<DragItemNode, unknown, { isOver: boolean }>({
     collect: (monitor) => ({
       isOver: monitor.isOver({

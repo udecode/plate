@@ -1,6 +1,48 @@
 {
   "version": 1,
   "targets": {
+    ".agents/skills": [
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/document-review/adversarial-document-reviewer.md",
+        "destRelPath": "adversarial-document-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/adversarial-reviewer.md",
+        "destRelPath": "adversarial-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/cli-agent-readiness-reviewer.md",
+        "destRelPath": "cli-agent-readiness-reviewer"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "skill",
+        "sourceRelPath": "skills/every-style-editor",
+        "destRelPath": "every-style-editor"
+      },
+      {
+        "sourceType": "plugin",
+        "pluginId": "compound-engineering@every-marketplace",
+        "pluginVersion": "2.40.0",
+        "sourceKind": "agent",
+        "sourceRelPath": "agents/review/project-standards-reviewer.md",
+        "destRelPath": "project-standards-reviewer"
+      }
+    ],
     ".codex/skills": [
       {
         "sourceType": "plugin",

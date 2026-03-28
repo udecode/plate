@@ -12,6 +12,7 @@ import type { PlateEditor } from 'platejs/react';
 import type { DragItemNode } from '../types';
 
 import { DndPlugin } from '../DndPlugin';
+import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
@@ -46,6 +47,15 @@ export const useDragNode = (
   const elementId = staleElement.id as string;
   const [isAboutToDrag, setIsAboutToDrag] = React.useState(false);
 
+  if (!canUseDomDnd()) {
+    return [
+      { isAboutToDrag: false, isDragging: false },
+      noopConnector,
+      noopConnector,
+    ];
+  }
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [collected, dragRef, preview] = useDrag<
     DragItemNode,
     unknown,
@@ -104,6 +114,7 @@ export const useDragNode = (
   );
 
   // Reset isAboutToDrag when drag is cancelled (e.g., ESC key)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   React.useEffect(() => {
     if (!collected.isDragging && isAboutToDrag) {
       setIsAboutToDrag(false);

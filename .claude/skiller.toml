@@ -1,5 +1,5 @@
 # Default agents to apply when --agents flag is not specified
-default_agents = ["claude", "codex"]
+default_agents = ["claude-code", "codex"]
 
 # --- Fork Configuration ---
 
@@ -34,7 +34,7 @@ REGISTRY_URL = "http://localhost:3000/rd/registry.json"
 
 # --- Agent-Specific Configuration ---
 
-[agents.claude]
+[agents.claude-code]
 enabled = true
 
 [agents.codex]

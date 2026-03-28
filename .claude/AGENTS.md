@@ -17,6 +17,7 @@
 
 - DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
 - Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow .claude/docs/solutions/style.md for writing tone/structure.
+- Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles during package/app work. If local verification rewrites template files, restore them before handoff. Only change `templates/**` when the user explicitly asks for template work.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
 
