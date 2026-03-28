@@ -19,6 +19,37 @@ const createTestEditor = (editor: any, options?: BaseLinkConfig['options']) =>
 
 describe('upsertLink', () => {
   describe('when selection is collapsed', () => {
+    describe('when custom isUrl rejects an internal path', () => {
+      const input = createEditor(
+        (
+          <editor>
+            <hp>
+              insert link
+              <cursor />.
+            </hp>
+          </editor>
+        ) as any
+      );
+
+      const output = (
+        <editor>
+          <hp>
+            insert link
+            <cursor />.
+          </hp>
+        </editor>
+      ) as any;
+
+      it('does not insert the link', () => {
+        const editor = createTestEditor(input, {
+          isUrl: (inputUrl: string) => !inputUrl.startsWith('/'),
+        });
+
+        expect(upsertLink(editor, { url: '/internal/path' })).toBeUndefined();
+        expect(editor.children).toEqual(output.children);
+      });
+    });
+
     // https://github.com/udecode/editor-protocol/issues/46
     describe('when not in link, url only', () => {
       const input = createEditor(
