@@ -10,7 +10,7 @@ test('formats dependency-only changelog lines without versions', () => {
       { name: '@platejs/core' },
       { name: '@platejs/utils' },
     ]),
-    'Updated @platejs/core, @platejs/utils.'
+    'Updated `@platejs/core`, `@platejs/utils`.'
   );
 });
 

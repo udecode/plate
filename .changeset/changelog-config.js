@@ -20,7 +20,7 @@ function formatDependencyReleaseLine(dependenciesUpdated) {
   if (dependenciesUpdated.length === 0) return '';
 
   return `Updated ${dependenciesUpdated
-    .map((dependency) => dependency.name)
+    .map((dependency) => `\`${dependency.name}\``)
     .join(', ')}.`;
 }
 
