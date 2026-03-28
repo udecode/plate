@@ -72,8 +72,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.6",
-    "@changesets/cli": "2.29.7",
-    "@changesets/get-github-info": "0.6.0",
+    "@changesets/cli": "2.30.0",
+    "@changesets/get-github-info": "0.8.0",
     "@happy-dom/global-registrator": "20.0.10",
     "@hocuspocus/provider": "3.4.4",
     "@platejs/basic-nodes": "workspace:^",
