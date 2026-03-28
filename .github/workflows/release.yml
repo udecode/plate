@@ -33,6 +33,9 @@ jobs:
         with:
           link-workspace-packages: 'true'
 
+      - name: 🧩 Prepare release changesets
+        run: node tooling/scripts/prepare-release-changesets.mjs
+
       - name: 🦋 Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
