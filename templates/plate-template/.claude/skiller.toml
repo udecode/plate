@@ -1,5 +1,5 @@
 # Default agents to apply when --agents flag is not specified
-default_agents = ["claude", "codex"]
+default_agents = ["claude-code", "codex"]
 
 [rules]
 merge_strategy = "cursor"
@@ -21,7 +21,7 @@ merge_strategy = "merge"
 command = "npx"
 args = ["-y", "shadcn@latest", "mcp"]
 
-[agents.claude]
+[agents.claude-code]
 enabled = true
 
 [agents.codex]

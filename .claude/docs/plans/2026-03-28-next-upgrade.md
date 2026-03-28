@@ -24,6 +24,8 @@ Upgrade `apps/www` to the latest stable Next release using the official Next/Ver
 - Latest stable resolved to `next@16.2.1`.
 - The official upgrader also bumped `react` and `react-dom` in `apps/www` from `19.2.3` to `19.2.4`.
 - `pnpm -C apps/www exec next upgrade . --revision latest --verbose` updated manifests and the lockfile, but its internal `pnpm install` failed on the repo's existing root `prepare` script (`bun x skiller@latest apply` -> invalid `claude` agent config). I finished install sync with `pnpm install --ignore-scripts`.
+- Root cause for that prepare failure was stale `skiller` config in `.claude/skiller.toml`: `skiller` now requires canonical agent ids, so `claude` had to become `claude-code` in both `default_agents` and `[agents.<id>]`.
+- `.claude/.skiller.json` still uses `sourceType: "claude"` for project-managed items after a successful apply. That field is generated metadata, not the validated config surface.
 - The upgrade exposed a latent SSR issue in `@platejs/dnd`: pages that prerender client editor demos (`/cn`, `/dev`, `/blocks/editor-ai`) crashed with `Invariant Violation: Expected drag drop context`.
 - Root cause was not missing providers in `apps/www`; `react-dnd` hooks were still being called during server prerender. The fix is package-level: `@platejs/dnd` now returns inert drag/drop connectors when DOM DnD is unavailable.
 - The homepage hydration mismatch came from static demo values generating random node IDs plus unstable `createdAt` metadata across server and client.
@@ -35,6 +37,7 @@ Upgrade `apps/www` to the latest stable Next release using the official Next/Ver
 - Upgraded `apps/www` to `next@16.2.1` and `@next/third-parties@16.2.1`.
 - Kept the fix in `packages/dnd` so app routes do not need `dynamic(..., { ssr: false })` wrappers just to survive prerender.
 - Static demo normalization is being moved from `apps/www` into `@platejs/core` so docs/demo consumers can use a package API instead of app-local glue.
+- Restored the root `prepare` path by updating `.claude/skiller.toml` from `claude` to `claude-code` and rerunning `bun x skiller@latest apply`.
 
 ## Verification
 
@@ -44,3 +47,4 @@ Upgrade `apps/www` to the latest stable Next release using the official Next/Ver
 - `pnpm -C apps/www build`
 - `pnpm -C apps/www typecheck`
 - `pnpm lint:fix`
+- `bun x skiller@latest apply`
