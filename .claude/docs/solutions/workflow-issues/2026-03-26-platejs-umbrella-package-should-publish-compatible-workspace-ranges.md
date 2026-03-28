@@ -102,4 +102,5 @@ bun run build -- --debug-prerender
 
 Then remove only the suspected nested stale package and rerun once. If the build flips from red to green, fix the published manifests instead of adding defensive template hacks.
 
-5. Do not assume Changesets `linked` groups force the umbrella package to publish when only an internal package gets a direct changeset. `linked` keeps published linked packages aligned, but it does not guarantee every package in the group gets versioned. If `platejs` itself must publish, add a direct `platejs` changeset or use a `fixed` group instead.
+5. Do not assume Changesets `linked` groups force the umbrella package to publish when only an internal package gets a direct changeset. `linked` keeps published linked packages aligned, but it does not guarantee every package in the group gets versioned.
+6. Changesets also exposes `___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH.updateInternalDependents: "always"`. That adds dependents to the release even when their current range still satisfies the new version. In Plate this cascades from `@platejs/core` to `@platejs/utils`, `platejs`, and then almost every package that peers on `platejs`, so treat it as a broad release policy, not a precise umbrella-package fix.
