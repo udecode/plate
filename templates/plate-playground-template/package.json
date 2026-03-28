@@ -30,7 +30,7 @@
     "@platejs/combobox": "^52.3.10",
     "@platejs/comment": "^52.3.10",
     "@platejs/date": "^52.3.10",
-    "@platejs/dnd": "^52.3.10",
+    "@platejs/dnd": "^52.3.15",
     "@platejs/docx": "^52.3.10",
     "@platejs/docx-io": "^52.3.10",
     "@platejs/emoji": "^52.3.10",

@@ -21,7 +21,7 @@
         "@platejs/combobox": "^52.3.10",
         "@platejs/comment": "^52.3.10",
         "@platejs/date": "^52.3.10",
-        "@platejs/dnd": "^52.3.10",
+        "@platejs/dnd": "^52.3.15",
         "@platejs/docx": "^52.3.10",
         "@platejs/docx-io": "^52.3.10",
         "@platejs/emoji": "^52.3.10",
@@ -424,7 +424,7 @@
 
     "@platejs/diff": ["@platejs/diff@52.3.10", "", { "dependencies": { "diff-match-patch-ts": "^0.6.0", "lodash": "^4.17.21", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=52.0.11", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-IDRk8iV+YD8q0MsyuR30jCfXVPoMXLslacErNjMEucTVpd8Me4zaEb0txXkwIbaGt0ClzHNVeeXLoJwPJtxhsw=="],
 
-    "@platejs/dnd": ["@platejs/dnd@52.3.10", "", { "dependencies": { "lodash": "^4.17.21", "raf": "^3.4.1", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=52.0.11", "react": ">=18.0.0", "react-dnd": ">=14.0.0", "react-dnd-html5-backend": ">=14.0.0", "react-dom": ">=18.0.0" } }, "sha512-c3jGo6ilKR5xBF1ek3MlCFkL9OeBl15B13IRWLCtF4ooyVbrgrj4IXcq64NjKDiW7Dnc1oeL1CQF/bIM2JljQg=="],
+    "@platejs/dnd": ["@platejs/dnd@52.3.15", "", { "dependencies": { "lodash": "^4.17.21", "raf": "^3.4.1", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "platejs": ">=52.0.11", "react": ">=18.0.0", "react-dnd": ">=14.0.0", "react-dnd-html5-backend": ">=14.0.0", "react-dom": ">=18.0.0" } }, "sha512-a+KboIV3f2N+H6e0WqXOfoQo93DDROiYbQ35FEk+yucbq1/K6yXfUxPAN3OrB5dgX6bpDokFUkzawJ3cNRSX+A=="],
 
     "@platejs/docx": ["@platejs/docx@52.3.10", "", { "dependencies": { "react-compiler-runtime": "^1.0.0", "validator": "^13.15.15" }, "peerDependencies": { "platejs": ">=52.0.11", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-o2u5T2kuvu1dnFLd4wjhn4FiOzcLH/LfI3iEocX2Kic0LKbD5l1x2HVTWIn9tMpNUOQRM92xpANlu4XcshGu4Q=="],
 
