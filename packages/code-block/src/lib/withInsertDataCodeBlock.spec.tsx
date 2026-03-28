@@ -2,6 +2,7 @@
 
 import type { SlateEditor } from 'platejs';
 
+import { BaseLinkPlugin } from '@platejs/link';
 import { createDataTransfer, jsxt } from '@platejs/test-utils';
 import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
@@ -12,6 +13,13 @@ jsxt;
 const createEditor = (input: SlateEditor) =>
   createSlateEditor({
     plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+    selection: input.selection,
+    value: input.children,
+  });
+
+const createEditorWithLink = (input: SlateEditor) =>
+  createSlateEditor({
+    plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin, BaseLinkPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -124,6 +132,42 @@ describe('when pasting text into a code block', () => {
     ) as any as SlateEditor;
 
     const editor = createEditor(input);
+
+    editor.tf.insertData(data);
+
+    expect(editor.children).toEqual(expected.children);
+  });
+
+  it('keeps pasted // comments as plain code when link plugin is present', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const data = createDataTransfer(
+      new Map([
+        ['text/plain', '// this is a comment\nconsole.log("hello world");'],
+      ])
+    );
+
+    const expected = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>// this is a comment</hcodeline>
+          <hcodeline>
+            console.log("hello world");
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createEditorWithLink(input);
 
     editor.tf.insertData(data);
 
