@@ -76,7 +76,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 12. If the task changes code:
 
 - if already on a relevant feature branch, continue there
-- otherwise create a repo-convention branch before editing
+- otherwise check out `main`, pull the latest `main`, then create a repo-convention branch before editing
 - if the task has a tracker id, prefer a branch name that includes it:
   - GitHub issue: `codex/555-short-slug`
   - Linear issue: `codex/LIN-123-short-slug`
@@ -214,6 +214,27 @@ Keep verification mandatory but proportional.
 
 Every final response must include:
 
+- a leading markdown table in this exact format:
+  - `| Check | Result |`
+  - `| --- | --- |`
+- use these rows, in this order:
+  - `PR`
+  - `Issue`
+  - `Reproduced (Browser)`
+  - `Reproduced (Tests)`
+  - `Fixed`
+  - `Verified (Browser)`
+  - `Verified (Tests)`
+  - `Commented`
+  - `Certainty`
+  - `Proof`
+- use markdown links for `PR` and `Issue` when they exist
+- use `N/A` for rows that do not apply; do not invent a PR, issue, comment, or proof
+- use concise values such as `Yes`, `No`, or `N/A` for the reproduction and verification rows
+- `Reproduced (Tests)` and `Verified (Tests)` mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
+- if manual non-browser reproduction or verification happened, explain it in the prose below the table rather than adding extra rows
+- `Commented` means the tracker was updated with a comment
+- `Certainty` must be `100%` or lower; if it is below `100%`, explain why in the prose below the table
 - what was done
 - what verification ran
 - any blocker or caveat
@@ -222,12 +243,12 @@ Every final response must include:
 
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
-- Put the screenshot before or immediately next to the completion summary so it is impossible to miss.
+- Put the screenshot immediately after the table when `Proof` is not `N/A`, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
 
 ### Non-UI Tasks
 
-- No screenshot is required.
+- No screenshot is required; use `Proof | N/A` in the table.
 - Keep the final response concise and evidence-based.
 
 ### Testing Or Batch Work
@@ -301,6 +322,7 @@ _Remaining caveat: none._
 - Relevant local instructions and code patterns were read before editing.
 - Tracker items were fetched and summarized correctly when provided.
 - Bare GitHub issues like `#555` were resolved against the current `gh` repo instead of guessed.
+- Code-changing tasks that did not already start on a relevant feature branch checked out `main` and pulled latest before branching.
 - Non-trivial work loaded `planning-with-files` or the repo-equivalent planning workflow before implementation.
 - Testing work loaded the testing policy before implementation.
 - Only the necessary skills were loaded.

@@ -38,7 +38,9 @@ When using the following skills, override the default behavior.
 
 `planning-with-files`:
 
-- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`.
+- For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `.claude/docs/plans/4510-fix-schema.md`
+- For non-ticket work, keep the date-based format. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
 
 `dev-browser`:
 
