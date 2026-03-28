@@ -1,5 +1,12 @@
 # @platejs/dnd
 
+## 52.3.15
+
+### Patch Changes
+
+- [#4912](https://github.com/udecode/plate/pull/4912) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed server prerender crashes in **`@platejs/dnd`** by returning inert drag-and-drop connectors when DOM DnD is unavailable, preventing `Expected drag drop context` during SSR builds.
+
 ## 52.3.10
 
 ### Patch Changes
