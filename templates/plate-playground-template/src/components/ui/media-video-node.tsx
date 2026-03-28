@@ -27,6 +27,7 @@ export const VideoElement = withHOC(
     const {
       align = 'center',
       embed,
+      isVideo,
       isUpload,
       isYoutube,
       readOnly,
@@ -37,6 +38,9 @@ export const VideoElement = withHOC(
     const width = useResizableValue('width');
 
     const isEditorMounted = useEditorMounted();
+    const shouldRenderEmbedPlayer =
+      isEditorMounted && !isUpload && !isYoutube && isVideo;
+    const shouldRenderFileVideo = isEditorMounted && (isUpload || !isVideo);
 
     const isTweet = true;
 
@@ -93,7 +97,17 @@ export const VideoElement = withHOC(
                 </div>
               )}
 
-              {isUpload && isEditorMounted && (
+              {shouldRenderFileVideo && (
+                <div ref={handleRef}>
+                  <video
+                    className="w-full max-w-full rounded-sm object-cover px-0"
+                    controls
+                    src={unsafeUrl}
+                  />
+                </div>
+              )}
+
+              {shouldRenderEmbedPlayer && (
                 <div ref={handleRef}>
                   <ReactPlayer
                     controls
