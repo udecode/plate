@@ -343,5 +343,52 @@ describe('table sizing and selection helpers', () => {
 
       expect(editor.selection).toEqual(output.selection);
     });
+
+    it('handles ArrowDown through moveLine without relying on browser default movement', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>
+                  11
+                  <cursor />
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>21</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>11</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>
+                  <cursor />
+                  21
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      expect(editor.tf.moveLine({ reverse: false })).toBe(true);
+      expect(editor.selection).toEqual(output.selection);
+    });
   });
 });
