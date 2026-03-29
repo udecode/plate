@@ -1,5 +1,11 @@
 # @platejs/ai
 
+## 52.3.18
+
+### Patch Changes
+
+- Updated `@platejs/table`.
+
 ## 52.3.17
 
 ### Patch Changes
