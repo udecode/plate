@@ -267,11 +267,11 @@ Every final response must include:
   - `🟡 80-94%`
   - `🔴 below 80%`
 - after the tables, use these short sections in this order:
+  - `**🌐 Browser Check**`, only when browser verification applies
   - `**✅ Outcome**`
+  - `**⚠️ Caveat**`
   - `**🏗️ Design**`
   - `**🧪 Verified**`
-  - `**⚠️ Caveat**`
-  - `**🌐 Browser Check**`, only when browser verification applies
 - keep those sections flat, concise, and easy to scan
 - keep prose brutally short; prefer bullets over paragraphs here
 - if browser verification applies, `**🌐 Browser Check**` must include the exact human steps to verify the fix in the browser
@@ -284,7 +284,8 @@ Every final response must include:
 
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
-- Put the screenshot immediately after the two tables, before the completion summary.
+- When `**🌐 Browser Check**` is present, put the screenshot immediately after that section.
+- Otherwise, put the screenshot immediately after the two tables, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
 - If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
 - If that follow-up issue is opened, mention it in the caveat or handoff.
