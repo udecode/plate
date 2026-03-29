@@ -1,6 +1,6 @@
 'use client';
 
-import { normalizeNodeId } from 'platejs';
+import { normalizeStaticValue } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { BasicNodesKit } from '@/components/editor/plugins/basic-nodes-kit';
@@ -21,7 +21,7 @@ export function PlateEditor() {
   );
 }
 
-const value = normalizeNodeId([
+const value = normalizeStaticValue([
   {
     children: [{ text: 'Basic Editor' }],
     type: 'h1',

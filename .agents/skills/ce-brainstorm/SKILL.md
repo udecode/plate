@@ -1,7 +1,7 @@
 ---
-name: ce-brainstorm
-description: Explore requirements and approaches through collaborative dialogue before writing a right-sized requirements document and planning implementation. Use for feature ideas, problem framing, when the user says 'let's brainstorm', or when they want to think through options before deciding what to build. Also use when a user describes a vague or ambitious feature request, asks 'what should we build', 'help me think through X', presents a problem with multiple valid solutions, or seems unsure about scope or direction — even if they don't explicitly ask to brainstorm.
-argument-hint: '[feature idea or problem to explore]'
+name: ce:brainstorm
+description: 'Explore requirements and approaches through collaborative dialogue before writing a right-sized requirements document and planning implementation. Use for feature ideas, problem framing, when the user says ''let''s brainstorm'', or when they want to think through options before deciding what to build. Also use when a user describes a vague or ambitious feature request, asks ''what should we build'', ''help me think through X'', presents a problem with multiple valid solutions, or seems unsure about scope or direction — even if they don''t explicitly ask to brainstorm.'
+argument-hint: "[feature idea or problem to explore]"
 ---
 
 # Brainstorm a Feature or Improvement
@@ -186,8 +186,13 @@ topic: <kebab-case-topic>
 [Who is affected, what is changing, and why it matters]
 
 ## Requirements
-- R1. [Concrete user-facing behavior or requirement]
-- R2. [Concrete user-facing behavior or requirement]
+
+**[Group Header]**
+- R1. [Concrete requirement in this group]
+- R2. [Concrete requirement in this group]
+
+**[Group Header]**
+- R3. [Concrete requirement in this group]
 
 ## Success Criteria
 - [How we will know this solved the right problem]
@@ -221,6 +226,8 @@ For **Lightweight** brainstorms, keep the document compact. Skip document creati
 
 For very small requirements docs with only 1-3 simple requirements, plain bullet requirements are acceptable. For **Standard** and **Deep** requirements docs, use stable IDs like `R1`, `R2`, `R3` so planning and later review can refer to them unambiguously.
 
+When requirements span multiple distinct concerns, group them under bold topic headers within the Requirements section. The trigger for grouping is distinct logical areas, not item count — even four requirements benefit from headers if they cover three different topics. Group by logical theme (e.g., "Packaging", "Migration and Compatibility", "Contributor Workflow"), not by the order they were discussed. Requirements keep their original stable IDs — numbering does not restart per group. A requirement belongs to whichever group it fits best; do not duplicate it across groups. Skip grouping only when all requirements are about the same thing.
+
 When the work is simple, combine sections rather than padding them. A short requirements document is better than a bloated one.
 
 Before finalizing, check:
@@ -243,6 +250,14 @@ If a document contains outstanding questions:
 - Use tags like `[Needs research]` when the planner should likely investigate the question rather than answer it from repo context alone
 - Carry deferred questions forward explicitly rather than treating them as a failure to finish the requirements doc
 
+### Phase 3.5: Document Review
+
+When a requirements document was created or updated, run the `document-review` skill on it before presenting handoff options. Pass the document path as the argument.
+
+If document-review returns findings that were auto-applied, note them briefly when presenting handoff options. If residual P0/P1 findings were surfaced, mention them so the user can decide whether to address them before proceeding.
+
+When document-review returns "Review complete", proceed to Phase 4.
+
 ### Phase 4: Handoff
 
 #### 4.1 Present Next-Step Options
@@ -262,7 +277,7 @@ If `Resolve Before Planning` contains any items:
 Present only the options that apply:
 - **Proceed to planning (Recommended)** - Run `/ce:plan` for structured implementation planning
 - **Proceed directly to work** - Only offer this when scope is lightweight, success criteria are clear, scope boundaries are clear, and no meaningful technical or research questions remain
-- **Review and refine** - Offer this only when a requirements document exists and can be improved through structured review
+- **Run additional document review** - Offer this only when a requirements document exists. Runs another pass for further refinement
 - **Ask more questions** - Continue clarifying scope, preferences, or edge cases
 - **Share to Proof** - Offer this only when a requirements document exists
 - **Done for now** - Return later
@@ -296,9 +311,9 @@ If the curl fails, skip silently. Then return to the Phase 4 options.
 
 **If user selects "Ask more questions":** Return to Phase 1.3 (Collaborative Dialogue) and continue asking the user questions one at a time to further refine the design. Probe deeper into edge cases, constraints, preferences, or areas not yet explored. Continue until the user is satisfied, then return to Phase 4. Do not show the closing summary yet.
 
-**If user selects "Review and refine":**
+**If user selects "Run additional document review":**
 
-Load the `document-review` skill and apply it to the requirements document.
+Load the `document-review` skill and apply it to the requirements document for another pass.
 
 When document-review returns "Review complete", return to the normal Phase 4 options and present only the options that still apply. Do not show the closing summary yet.
 

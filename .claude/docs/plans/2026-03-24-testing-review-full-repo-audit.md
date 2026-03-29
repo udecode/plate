@@ -13,8 +13,8 @@ Run the next full-repo testing review after the non-React roadmap closed, publis
 
 ## Inputs
 
-- `.claude/skills/testing-review/testing-review.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing-review.mdc`
+- `.agents/rules/testing.mdc`
 - `.claude/docs/plans/2026-03-24-non-react-coverage-roadmap.md`
 - prior non-React audit outputs under `.claude/docs/plans/`
 

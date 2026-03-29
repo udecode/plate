@@ -1,6 +1,9 @@
 ---
 name: testing
 description: 'Skill: testing'
+metadata:
+  skiller:
+    source: .agents/rules/testing.mdc
 ---
 
 ## Testing Goal
@@ -47,4 +50,3 @@ Hard constraints:
 - Start with the smallest seam that proves the behavior.
 - Prefer explicit assertions.
 - Browser checks are for real UI behavior, not lazy coverage.
-

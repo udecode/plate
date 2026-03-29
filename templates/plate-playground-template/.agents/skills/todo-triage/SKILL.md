@@ -1,7 +1,7 @@
 ---
 name: todo-triage
 description: Use when reviewing pending todos for approval, prioritizing code review findings, or interactively categorizing work items
-argument-hint: '[findings list or source type]'
+argument-hint: "[findings list or source type]"
 disable-model-invocation: true
 ---
 

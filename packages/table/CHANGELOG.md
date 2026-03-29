@@ -1,5 +1,12 @@
 # @platejs/table
 
+## 52.3.17
+
+### Patch Changes
+
+- [#4922](https://github.com/udecode/plate/pull/4922) by [@zbeyens](https://github.com/zbeyens) –
+  - Fixed table border toggling so left-border updates apply to every selected row in a multi-row cell selection instead of only the topmost row.
+
 ## 52.3.10
 
 ### Patch Changes

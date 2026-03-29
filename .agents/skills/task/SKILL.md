@@ -1,8 +1,11 @@
 ---
-name: task
 description: Work a task end-to-end with lean context gathering, implementation, and verification
 argument-hint: '[task description | issue id/link]'
 disable-model-invocation: true
+name: task
+metadata:
+  skiller:
+    source: .agents/rules/task.mdc
 ---
 
 # Work Task
@@ -16,6 +19,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - Read the task source first.
 - Read local repo instructions and relevant files before editing.
 - Search for existing patterns before inventing new ones.
+- Prefer the best durable fix over the smallest local patch. If the root cause lives in an API or abstraction seam, change that seam even when it means a broader refactor or an intentional API change.
 - Prefer targeted tests and checks during iteration.
 - Keep the user updated at milestones.
 - Verify the actual result before claiming done.
@@ -71,12 +75,13 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - caveats, blockers, or missing information from the tracker
 - likely files, routes, or packages affected
 - whether there is a real browser surface to verify
+- likely root-cause layer: call site, helper, abstraction seam, or public API
 
 11. Read repo instructions and nearby implementation patterns before editing.
 12. If the task changes code:
 
 - if already on a relevant feature branch, continue there
-- otherwise create a repo-convention branch before editing
+- otherwise check out `main`, pull the latest `main`, then create a repo-convention branch before editing
 - if the task has a tracker id, prefer a branch name that includes it:
   - GitHub issue: `codex/555-short-slug`
   - Linear issue: `codex/LIN-123-short-slug`
@@ -136,9 +141,16 @@ Apply this section only when the task source is a tracker item.
 - `dev-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
+- `agent-browser-issue`
+  Use when browser automation is blocked by a likely reusable tool-side issue that should be split into its own GitHub follow-up.
+- `changeset`
+  Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
+  Do not create a package changeset for registry-only work under `apps/www/src/registry/`; update `docs/components/changelog.mdx` instead.
 - `git-commit-push-pr`
   Use when verified work changed code and should ship as a PR.
   Create or update the PR before any tracker comment.
+  The PR description should be the exact current final handoff, not a rewritten summary.
+  If the task changes again in a later iteration, update the PR description to match the latest handoff.
 - `ce-compound`
   Use only after verified, non-trivial work that produced reusable knowledge.
   Never load it at the start.
@@ -151,16 +163,19 @@ Apply this section only when the task source is a tracker item.
 
 1. Reproduce first if possible.
 2. If behavior-level coverage is sane, turn the repro into the smallest useful automated test and watch it fail for the right reason.
-3. Implement the minimal fix.
-4. Re-run targeted checks.
-5. Re-run the browser flow only if the bug lives on a browser surface.
+3. Find the real ownership boundary of the bug. Prefer fixing the abstraction, contract, or API that caused it instead of patching each caller around it.
+4. If the best fix requires an API change, make it unless the task source or repo constraints explicitly rule that out. Do not preserve a bad API just to keep the diff small.
+5. If you intentionally choose a narrower fix, state why the broader architecture fix was not worth shipping now.
+6. Re-run targeted checks.
+7. Re-run the browser flow only if the bug lives on a browser surface.
 
 ### Feature
 
 1. Reduce the task to the smallest slice that fully satisfies the acceptance criteria.
 2. Add behavior coverage when sane.
-3. Implement with existing patterns before inventing new ones.
-4. Verify the user-facing outcome.
+3. Prefer the cleanest long-term design that fits the slice, not the quickest bolt-on.
+4. If existing patterns are the reason the design is weak, improve the pattern or API instead of copying it blindly.
+5. Verify the user-facing outcome.
 
 ### Testing Or Coverage Work
 
@@ -181,7 +196,8 @@ Apply this section only when the task source is a tracker item.
 
 1. Preserve behavior.
 2. Do not do fake TDD theater.
-3. Run the narrowest regression checks plus the relevant build, typecheck, or lint path for the touched area.
+3. If the task exposes a bad API or abstraction, fix that seam instead of polishing around it.
+4. Run the narrowest regression checks plus the relevant build, typecheck, or lint path for the touched area.
 
 ### Docs Or Content
 
@@ -214,20 +230,74 @@ Keep verification mandatory but proportional.
 
 Every final response must include:
 
-- what was done
-- what verification ran
-- any blocker or caveat
+- follow repo writing style here too:
+  - be extremely concise
+  - sacrifice grammar for concision
+  - no filler, no narration, no polite padding
+- two leading markdown tables in this exact format:
+  - metadata table:
+    - `| Check | Result |`
+    - `| --- | --- |`
+  - flow table:
+    - `| Phase | 🧪 Tests | 🌐 Browser |`
+    - `| --- | --- | --- |`
+- use these metadata rows, in this order:
+  - `PR`
+  - `Issue`
+  - `Confidence`
+- use these flow rows, in this order:
+  - `Reproduced`
+  - `Verified`
+- use markdown links for `PR` and `Issue` when they exist
+- keep the `Issue` row stable; do not add issue comment links there
+- use these exact status values in the tables:
+  - `✅`
+  - `❌`
+  - `➖ N/A`
+  - prefer specific browser caveat text over vague `⚠️ Partial`, for example `⚠️ Could not automate dropdown`
+- in the `🧪 Tests` column:
+  - use `🔴` in `Reproduced` when there was a real failing test first
+  - use `🟢` in `Verified` when that test passed after the fix
+  - use `✅` when test evidence exists but did not follow a real red-green loop
+- use `➖ N/A` for rows or cells that do not apply; do not invent a PR, issue, or comment
+- flow-table test cells mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
+- if manual non-browser reproduction or verification happened, explain it in the prose below the tables rather than adding extra rows
+- `Confidence` must stay `100%` or lower and use this format:
+  - `🟢 95-100%`
+  - `🟡 80-94%`
+  - `🔴 below 80%`
+- after the tables, use these short sections in this order:
+  - `**✅ Outcome**`
+  - `**🏗️ Design**`
+  - `**🧪 Verified**`
+  - `**⚠️ Caveat**`
+  - `**🌐 Browser Check**`, only when browser verification applies
+- keep those sections flat, concise, and easy to scan
+- keep prose brutally short; prefer bullets over paragraphs here
+- if browser verification applies, `**🌐 Browser Check**` must include the exact human steps to verify the fix in the browser
+- `**🏗️ Design**` is mandatory for any non-trivial code-changing task and must include:
+  - `Chosen seam: ...`
+  - `Why not quick patch: ...`
+  - `Why not broader change: ...` only if a broader API or abstraction change was a real option
 
 ### UI Or Browser Tasks
 
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
-- Put the screenshot before or immediately next to the completion summary so it is impossible to miss.
+- Put the screenshot immediately after the two tables, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
+- If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
+- If that follow-up issue is opened, mention it in the caveat or handoff.
+- `**🌐 Browser Check**` must be a flat bullet list:
+  - keep it short and concrete
+  - prefer the exact local URL as a markdown link when one exists, for example [http://localhost:3000/...](http://localhost:3000/...)
+  - use the real page, route, and interaction names
+  - focus on how to prove the fix, not on implementation detail
 
 ### Non-UI Tasks
 
 - No screenshot is required.
+- Omit `**🌐 Browser Check**` when there is no browser surface.
 - Keep the final response concise and evidence-based.
 
 ### Testing Or Batch Work
@@ -245,40 +315,68 @@ Every final response must include:
 
 Apply this section only when the task came from a tracker item and reached a meaningful outcome.
 
+### Pull Request
+
+- When a PR exists, the PR description must match the exact current final handoff from chat:
+  - same two tables
+  - same screenshot when applicable
+  - same `**✅ Outcome**`, `**🏗️ Design**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**🌐 Browser Check**` sections when applicable
+  - same caveats
+  - same human browser verification steps when applicable
+- PR description follows the same writing style:
+  - extremely concise
+  - grammar can be sacrificed for concision
+  - no fluffy framing
+- Do not publish a PR description with a dead local proof path.
+- If screenshot proof is local, upload it first and only then write or update the final PR body with the hosted GitHub URL.
+- For a brand-new PR, if the hosted proof URL is not ready yet:
+  - create the PR with no proof image
+  - upload the image immediately
+  - replace the placeholder with the real hosted proof before handoff
+- If the PR description includes a local image path for proof, do not leave it that way on GitHub.
+- Use `dev-browser --connect http://127.0.0.1:9222` to upload the image through the PR comment file input as a staging area, then replace the local proof path in the PR body with the hosted GitHub attachment URL.
+- Use the PR comment textarea only as staging:
+  - upload image
+  - read generated markdown or URL from the textarea
+  - clear the textarea
+  - do not submit the staging comment
+- Do not spend time reloading the PR page just to verify hosted image rendering unless the user explicitly asks.
+- Do not compress, adapt, or rewrite the handoff for the PR description.
+- If a later iteration changes the fix, evidence, certainty, caveats, or verification, update the PR description again so it stays in sync.
+- Update the PR description before writing the issue comment.
+
 ### GitHub Issue
 
 - Use:
   ```bash
   gh issue comment <number-or-url> --body-file -
   ```
-- Write concise italicized paragraphs for the issue owner or QA.
-- Keep it focused on:
-  - reproduced or baselined, when relevant
-  - fixed or implemented
-  - PR: <full PR URL>, when one exists
-  - re-verified, with browser mention only when relevant
-  - remaining caveat, if any
+- Keep it user-facing and e2e-centric.
+- Keep it extremely concise. Grammar can be sacrificed for concision.
+- Start with a single plain line in this shape:
+  - `✅ Fixed in #<pr-number>.`
+- Follow with a flat bullet list only:
+  - manual verification steps for the real user flow
+  - optional final QA or caveat bullet when useful
 - Do not mention:
+  - Codex
   - file names
   - tests, typecheck, or lint
   - screenshot paths
   - branch names
   - commit, push, or staging mechanics
 - Do not write the issue comment before the PR exists.
-- If writing the comment after code-changing work, include the full PR URL.
-- Start only the first sentence with `Codex ...`.
-- Italicize each paragraph separately.
+- If writing the comment after code-changing work, use the PR number form `#123`, not the full URL.
 
 Example:
 
 ```md
-_Codex implemented and verified this issue._
+✅ Fixed in #123.
 
-_PR: https://github.com/owner/repo/pull/123._
-
-_Reproduced the bug, applied the fix, and re-verified the affected flow._
-
-_Remaining caveat: none._
+- Open the affected page.
+- Follow the real user flow that triggered the bug.
+- Confirm the fixed behavior in the browser.
+- Manual QA is still useful if browser verification was partial.
 ```
 
 ### Linear
@@ -286,9 +384,9 @@ _Remaining caveat: none._
 - Keep proof local. Do not upload screenshots or other files to Linear.
 - Post a concise issue comment using the Linear integration.
 - Match the ticket style and write for QA, not developers.
-- Keep the same italic-paragraph rule:
-  - start only the first sentence with `Codex ...`
-  - italicize each paragraph separately
+- Keep the same terse style:
+  - extremely concise
+  - grammar can be sacrificed for concision
   - avoid file names, tests, typecheck, lint, branch names, PR mechanics, and screenshot paths
 
 ### Blocked Or Inconclusive Tracker Work
@@ -301,6 +399,8 @@ _Remaining caveat: none._
 - Relevant local instructions and code patterns were read before editing.
 - Tracker items were fetched and summarized correctly when provided.
 - Bare GitHub issues like `#555` were resolved against the current `gh` repo instead of guessed.
+- The chosen implementation fixed the highest-leverage seam available, not just the nearest symptom.
+- Code-changing tasks that did not already start on a relevant feature branch checked out `main` and pulled latest before branching.
 - Non-trivial work loaded `planning-with-files` or the repo-equivalent planning workflow before implementation.
 - Testing work loaded the testing policy before implementation.
 - Only the necessary skills were loaded.
@@ -310,4 +410,3 @@ _Remaining caveat: none._
 - Final handoff matched the task type.
 - Testing or batch handoff reported the completed slice, verification, and remaining queue when relevant.
 - Any tracker, browser, review, or compound follow-up was done only if actually relevant.
-

@@ -1,6 +1,9 @@
 ---
-name: translate
 description: 'Command: translate'
+name: translate
+metadata:
+  skiller:
+    source: .agents/rules/translate.mdc
 ---
 
 You are a professional translator. Translate/Synchronize the following MDX content from English to cn.

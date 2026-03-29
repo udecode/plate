@@ -15,10 +15,31 @@ describe('validateUrl', () => {
       expect(validateUrl(editor, '/internal/path')).toBe(true);
     });
 
+    it('lets a custom isUrl reject paths starting with /', () => {
+      const editor = createTestEditor({
+        isUrl: (url: string) => !url.startsWith('/'),
+      });
+
+      expect(validateUrl(editor, '/internal/path')).toBe(false);
+    });
+
+    it('does not validate protocol-relative URLs starting with //', () => {
+      const editor = createTestEditor();
+      expect(validateUrl(editor, '//example.com')).toBe(false);
+    });
+
     it('validate anchor links starting with #', () => {
       const editor = createTestEditor();
       expect(validateUrl(editor, '#section-name')).toBe(true);
       expect(validateUrl(editor, '#top')).toBe(true);
+    });
+
+    it('lets a custom isUrl reject anchor links', () => {
+      const editor = createTestEditor({
+        isUrl: (url: string) => !url.startsWith('#'),
+      });
+
+      expect(validateUrl(editor, '#section-name')).toBe(false);
     });
   });
 

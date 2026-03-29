@@ -1,6 +1,9 @@
 ---
 description: Show current planning status at a glance - phases, progress, and any logged errors.
 name: status
+metadata:
+  skiller:
+    source: .agents/rules/status.mdc
 ---
 
 Read task_plan.md from the current project directory and display a compact status summary.

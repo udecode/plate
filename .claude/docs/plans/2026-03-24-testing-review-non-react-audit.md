@@ -13,8 +13,8 @@ Run the repo-wide testing review skill with a temporary non-React constraint, us
 
 ## Inputs
 
-- `.claude/skills/testing-review/testing-review.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing-review.mdc`
+- `.agents/rules/testing.mdc`
 - latest prior maps under `.claude/docs/plans/`
 
 ## Status

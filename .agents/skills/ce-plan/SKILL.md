@@ -1,7 +1,7 @@
 ---
-name: ce-plan
-description: Transform feature descriptions or requirements into structured implementation plans grounded in repo patterns and research. Use when the user says 'plan this', 'create a plan', 'write a tech plan', 'plan the implementation', 'how should we build', 'what's the approach for', 'break this down', or when a brainstorm/requirements document is ready for technical planning. Best when requirements are at least roughly defined; for exploratory or ambiguous requests, prefer ce:brainstorm first.
-argument-hint: '[feature description, requirements doc path, or improvement idea]'
+name: ce:plan
+description: "Transform feature descriptions or requirements into structured implementation plans grounded in repo patterns and research. Use when the user says 'plan this', 'create a plan', 'write a tech plan', 'plan the implementation', 'how should we build', 'what's the approach for', 'break this down', or when a brainstorm/requirements document is ready for technical planning. Best when requirements are at least roughly defined; for exploratory or ambiguous requests, prefer ce:brainstorm first."
+argument-hint: "[optional: feature description, requirements doc path, or improvement idea]"
 ---
 
 # Create Technical Plan
@@ -45,7 +45,7 @@ Every plan should contain:
 - Explicit test file paths for feature-bearing implementation units
 - Decisions with rationale, not just tasks
 - Existing patterns or code references to follow
-- Specific test scenarios and verification outcomes
+- Enumerated test scenarios for each feature-bearing unit, specific enough that an implementer knows exactly what to test without inventing coverage themselves
 - Clear dependencies and sequencing
 
 A plan is ready when an implementer can start confidently without needing the plan to write the code for them.
@@ -311,6 +311,7 @@ Before detailing implementation units, decide whether an overview would help a r
 | Data pipeline or transformation | Data flow sketch |
 | State-heavy lifecycle | State diagram |
 | Complex branching logic | Flowchart |
+| Mode/flag combinations or multi-input behavior | Decision matrix (inputs -> outcomes) |
 | Single-component with non-obvious shape | Pseudo-code sketch |
 
 **When to skip it:**
@@ -335,7 +336,11 @@ For each unit, include:
 - **Execution note** - optional, only when the unit benefits from a non-default execution posture such as test-first, characterization-first, or external delegation
 - **Technical design** - optional pseudo-code or diagram when the unit's approach is non-obvious and prose alone would leave it ambiguous. Frame explicitly as directional guidance, not implementation specification
 - **Patterns to follow** - existing code or conventions to mirror
-- **Test scenarios** - specific behaviors, edge cases, and failure paths to cover
+- **Test scenarios** - enumerate the specific test cases the implementer should write, right-sized to the unit's complexity and risk. Consider each category below and include scenarios from every category that applies to this unit. A simple config change may need one scenario; a payment flow may need a dozen. The quality signal is specificity — each scenario should name the input, action, and expected outcome so the implementer doesn't have to invent coverage.
+  - **Happy path behaviors** - core functionality with expected inputs and outputs
+  - **Edge cases** (when the unit has meaningful boundaries) - boundary values, empty inputs, nil/null states, concurrent access
+  - **Error and failure paths** (when the unit has failure modes) - invalid input, downstream service failures, timeout behavior, permission denials
+  - **Integration scenarios** (when the unit crosses layers) - behaviors that mocks alone will not prove, e.g., "creating X triggers callback Y which persists Z". Include these for any unit touching callbacks, middleware, or multi-layer interactions
 - **Verification** - how an implementer should know the unit is complete, expressed as outcomes rather than shell command scripts
 
 Every feature-bearing unit should include the test file path in `**Files:**`.
@@ -491,8 +496,8 @@ deepened: YYYY-MM-DD  # optional, set when the confidence check substantively st
 - [Existing file, class, or pattern]
 
 **Test scenarios:**
-- [Specific scenario with expected behavior]
-- [Edge case or failure path]
+<!-- Include only categories that apply to this unit. Omit categories that don't. -->
+- [Scenario: specific input/action -> expected outcome. Prefix with category — Happy path, Edge case, Error path, or Integration — to signal intent]
 
 **Verification:**
 - [Outcome that should hold when this unit is complete]
@@ -504,10 +509,13 @@ deepened: YYYY-MM-DD  # optional, set when the confidence check substantively st
 - **State lifecycle risks:** [Partial-write, cache, duplicate, or cleanup concerns]
 - **API surface parity:** [Other interfaces that may require the same change]
 - **Integration coverage:** [Cross-layer scenarios unit tests alone will not prove]
+- **Unchanged invariants:** [Existing APIs, interfaces, or behaviors that this plan explicitly does not change — and how the new work relates to them. Include when the change touches shared surfaces and reviewers need blast-radius assurance]
 
 ## Risks & Dependencies
 
-- [Meaningful risk, dependency, or sequencing concern]
+| Risk | Mitigation |
+|------|------------|
+| [Meaningful risk] | [How it is addressed or accepted] |
 
 ## Documentation / Operational Notes
 
@@ -538,7 +546,9 @@ For larger `Deep` plans, extend the core template only when useful with sections
 
 ## Risk Analysis & Mitigation
 
-- [Risk]: [Mitigation]
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| [Risk] | [Low/Med/High] | [Low/Med/High] | [How addressed] |
 
 ## Phased Delivery
 
@@ -578,7 +588,8 @@ Before finalizing, check:
 - Every major decision is grounded in the origin document or research
 - Each implementation unit is concrete, dependency-ordered, and implementation-ready
 - If test-first or characterization-first posture was explicit or strongly implied, the relevant units carry it forward with a lightweight `Execution note`
-- Test scenarios are specific without becoming test code
+- Each feature-bearing unit has test scenarios from every applicable category (happy path, edge cases, error paths, integration) — right-sized to the unit's complexity, not padded or skimped
+- Test scenarios name specific inputs, actions, and expected outcomes without becoming test code
 - Deferred items are explicit and not hidden as fake certainty
 - If a High-Level Technical Design section is included, it uses the right medium for the work, carries the non-prescriptive framing, and does not contain implementation code (no imports, exact signatures, or framework-specific syntax)
 - Per-unit technical design fields, if present, are concise and directional rather than copy-paste-ready
@@ -703,7 +714,8 @@ If the plan already has a `deepened:` date:
 - File paths or test file paths are missing where they should be explicit
 - Units are too large, too vague, or broken into micro-steps
 - Approach notes are thin or do not name the pattern to follow
-- Test scenarios or verification outcomes are vague
+- Test scenarios are vague (don't name inputs and expected outcomes), skip applicable categories (e.g., no error paths for a unit with failure modes, no integration scenarios for a unit crossing layers), or are disproportionate to the unit's complexity
+- Verification outcomes are vague or not expressed as observable results
 
 **System-Wide Impact**
 - Affected interfaces, callbacks, middleware, entry points, or parity surfaces are missing
@@ -850,7 +862,21 @@ If research reveals a product-level ambiguity that should change behavior or sco
 - Record it under `Open Questions`
 - Recommend `ce:brainstorm` if the gap is truly product-defining
 
-##### 5.3.8 Final Checks and Cleanup
+##### 5.3.8 Document Review
+
+After the confidence check (and any deepening), run the `document-review` skill on the plan file. Pass the plan path as the argument.
+
+The confidence check and document-review are complementary:
+- The confidence check strengthens rationale, sequencing, risk treatment, and grounding
+- Document-review checks coherence, feasibility, scope alignment, and surfaces role-specific issues
+
+If document-review returns findings that were auto-applied, note them briefly when presenting handoff options. If residual P0/P1 findings were surfaced, mention them so the user can decide whether to address them before proceeding.
+
+When document-review returns "Review complete", proceed to Final Checks.
+
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, run `document-review` with `mode:headless` and the plan path. Headless mode applies auto-fixes silently and returns structured findings without interactive prompts. Address any P0/P1 findings before returning control to the caller.
+
+##### 5.3.9 Final Checks and Cleanup
 
 Before proceeding to post-generation options:
 - Confirm the plan is stronger in specific ways, not merely longer
@@ -863,42 +889,23 @@ If artifact-backed mode was used:
 
 #### 5.4 Post-Generation Options
 
-**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, skip the interactive menu below and return control to the caller immediately. The plan file has already been written and the confidence check has already run — the caller (e.g., lfg, slfg) determines the next step.
+**Pipeline mode:** If invoked from an automated workflow such as LFG, SLFG, or any `disable-model-invocation` context, skip the interactive menu below and return control to the caller immediately. The plan file has already been written, the confidence check has already run, and document-review has already run — the caller (e.g., lfg, slfg) determines the next step.
 
-After the confidence check completes (or is skipped), present the options using the platform's blocking question tool when available (see Interaction Method). Otherwise present numbered options in chat and wait for the user's reply before proceeding.
+After document-review completes, present the options using the platform's blocking question tool when available (see Interaction Method). Otherwise present numbered options in chat and wait for the user's reply before proceeding.
 
 **Question:** "Plan ready at `docs/plans/YYYY-MM-DD-NNN-<type>-<name>-plan.md`. What would you like to do next?"
 
-**Option ordering depends on plan characteristics.** Lead with document-review when any of these conditions are met:
-
-- **Deep** plan
-- High-risk signals present
-- The confidence check deepened 3+ sections
-- **Standard** plan where Phase 1.2 triggered external research due to thin local grounding (fewer than 3 direct examples or adjacent-domain match) — when the plan was built on unfamiliar territory, the adversarial reviewer's assumption surfacing catches factual claims about system behavior that structural scoring cannot verify
-
-Include a recommendation explaining why:
-
-"This plan has [significant architectural decisions / high-risk security concerns / cross-cutting impact / thin local grounding for a key domain]. Its adversarial reviewer will stress-test the premises and decisions before implementation."
-
-**Options when document-review is recommended:**
-1. **Run `document-review` skill** - Stress-test premises and decisions through structured document review (recommended)
+**Options:**
+1. **Start `/ce:work`** - Begin implementing this plan in the current environment (recommended)
 2. **Open plan in editor** - Open the plan file for review
-3. **Share to Proof** - Upload the plan for collaborative review and sharing
-4. **Start `/ce:work`** - Begin implementing this plan in the current environment
-5. **Start `/ce:work` in another session** - Begin implementing in a separate agent session when the current platform supports it
-6. **Create Issue** - Create an issue in the configured tracker
-
-**Options for Standard or Lightweight plans:**
-1. **Open plan in editor** - Open the plan file for review
-2. **Run `document-review` skill** - Improve the plan through structured document review
-3. **Share to Proof** - Upload the plan for collaborative review and sharing
-4. **Start `/ce:work`** - Begin implementing this plan in the current environment
+3. **Run additional document review** - Another pass for further refinement
+4. **Share to Proof** - Upload the plan for collaborative review and sharing
 5. **Start `/ce:work` in another session** - Begin implementing in a separate agent session when the current platform supports it
 6. **Create Issue** - Create an issue in the configured tracker
 
 Based on selection:
 - **Open plan in editor** → Open `docs/plans/<plan_filename>.md` using the current platform's file-open or editor mechanism (e.g., `open` on macOS, `xdg-open` on Linux, or the IDE's file-open API)
-- **`document-review` skill** → Load the `document-review` skill with the plan path
+- **Run additional document review** → Load the `document-review` skill with the plan path for another pass
 - **Share to Proof** → Upload the plan:
   ```bash
   CONTENT=$(cat docs/plans/<plan_filename>.md)

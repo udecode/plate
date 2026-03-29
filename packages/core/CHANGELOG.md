@@ -1,5 +1,25 @@
 # @platejs/core
 
+## 52.3.16
+
+### Patch Changes
+
+- [#4915](https://github.com/udecode/plate/pull/4915) by [@zbeyens](https://github.com/zbeyens) – Republish `@platejs/core` to refresh the release graph for downstream packages.
+
+## 52.3.15
+
+### Patch Changes
+
+- [#4912](https://github.com/udecode/plate/pull/4912) by [@zbeyens](https://github.com/zbeyens) –
+
+  - Added `normalizeStaticValue` to **`@platejs/core`** for normalizing example editor values with deterministic node IDs and stable numeric `createdAt` metadata before SSR hydration.
+
+    ```ts
+    import { normalizeStaticValue } from "@platejs/core";
+
+    const value = normalizeStaticValue(exampleValue);
+    ```
+
 ## 52.3.13
 
 ### Patch Changes

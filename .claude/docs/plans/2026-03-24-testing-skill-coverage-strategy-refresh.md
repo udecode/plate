@@ -9,11 +9,11 @@ status: completed
 
 ## Goal
 
-Update `.claude/skills/testing/testing.mdc` so it pushes future coverage work toward value-first, file-first, multi-pass regression confidence instead of package sweeps or vanity coverage.
+Update `.agents/rules/testing.mdc` so it pushes future coverage work toward value-first, file-first, multi-pass regression confidence instead of package sweeps or vanity coverage.
 
 ## Inputs
 
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing.mdc`
 - `.claude/docs/plans/2026-03-06-test-suite-cleanup-plan.md`
 - `.claude/docs/plans/2026-03-09-test-suite-excellence-plan.md`
 
@@ -26,5 +26,5 @@ Update `.claude/skills/testing/testing.mdc` so it pushes future coverage work to
 ## Verification
 
 - `pnpm prepare`
-- verified generated pointers in `.claude/skills/testing/SKILL.md`
-- verified generated pointers in `.claude/skills/testing-review/SKILL.md`
+- verified generated pointers in `.agents/rules/testing/SKILL.md`
+- verified generated pointers in `.agents/rules/testing-review/SKILL.md`

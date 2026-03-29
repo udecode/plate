@@ -583,7 +583,7 @@ Complete
 
 ### Resources
 
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing.mdc`
 - `.claude/docs/plans/2026-03-06-test-suite-cleanup-plan.md`
 - `packages/ai/src/react/ai-chat/streaming/streamInsertChunk.spec.tsx`
 - `packages/core/src/lib/utils/mergeDeepToNodes.spec.ts`

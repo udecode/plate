@@ -7,7 +7,7 @@ Update the task skill so verified code-changing tracked work opens or updates th
 ## Checklist
 
 - [completed] Read the current `task` skill source and adjacent skill/repo rules
-- [completed] Update `.claude/skills/task/task.mdc` with PR-before-comment behavior
+- [completed] Update `.agents/rules/task.mdc` with PR-before-comment behavior
 - [completed] Run the skill sync step
 - [completed] Verify the generated task skill reflects the new rules
 

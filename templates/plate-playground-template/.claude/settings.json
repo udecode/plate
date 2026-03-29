@@ -1,6 +1,12 @@
 {
   "permissions": {
-    "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
+    "allow": [
+      "Bash",
+      "Edit",
+      "Skill",
+      "WebFetch",
+      "WebSearch"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "hooks": {
@@ -34,46 +40,5 @@
         ]
       }
     ]
-  },
-  "enabledPlugins": {
-    "debug@dotai": true,
-    "dig@dotai": true,
-    "dotai@dotai": true,
-    "notification@dotai": true,
-    "test@dotai": true,
-    "frontend-design@claude-plugins-official": true,
-    "compound-engineering@every-marketplace": true,
-    "lsp-servers@claude-lsp-servers": true,
-    "planning-with-files@planning-with-files": true
-  },
-  "extraKnownMarketplaces": {
-    "dotai": {
-      "source": {
-        "source": "github",
-        "repo": "udecode/dotai"
-      },
-      "autoUpdate": true
-    },
-    "every-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "EveryInc/compound-engineering-plugin"
-      },
-      "autoUpdate": true
-    },
-    "claude-lsp-servers": {
-      "source": {
-        "source": "github",
-        "repo": "yungweng/claude-lsp-servers"
-      },
-      "autoUpdate": true
-    },
-    "planning-with-files": {
-      "source": {
-        "source": "github",
-        "repo": "othmanadi/planning-with-files"
-      },
-      "autoUpdate": true
-    }
   }
 }

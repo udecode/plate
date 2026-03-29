@@ -1,181 +1,178 @@
 ---
-name: changeset
 description: 'Command: changeset'
+name: changeset
+metadata:
+  skiller:
+    source: .agents/rules/changeset.mdc
 ---
 
-# How to Create a Plate Project Changeset
+# Changeset
 
-This guide outlines the structure and writing style for creating changeset files in the Plate project, aiming for clarity and conciseness similar to the Radix UI changelog style.
+Changesets document package changes for release. Concise bullets, imperative voice, user impact only.
 
-## Registry Changes: Changelog Updates
+**Core principle:** one action verb + one impact statement = one bullet.
 
-**When changes are made to `apps/www/src/registry/` components**, you MUST also update `docs/components/changelog.mdx` to document component changes, additions, or removals.
+## When To Use
 
-**Changelog Standards:**
+Use when:
 
-- Update `docs/components/changelog.mdx` following the existing format and style
-- Document component changes, additions, or removals
-- Include any breaking changes or migration notes for registry components
-- Use consistent version numbering
-- Follow the existing changelog structure and writing style
+- Creating `.changeset/*.md` files
+- Documenting package changes: feat, fix, breaking
+- Updating `docs/components/changelog.mdx` for registry work
 
-**Note:** Registry component changes require changelog updates, NOT changeset files, since registry components are not published as npm packages.
+Do not use for:
 
-## Package Changes: Changeset Files
+- Internal docs
+- Commit messages
+- PR descriptions
 
-For changes to packages in the `packages/` directory, create changeset files as described below.
+## Critical Rules
 
-## File Naming Convention
+### 1. Core packages: no `minor`
 
-Changeset files should be named descriptively, indicating the affected package/area and the nature of the change.
+**Forbidden:** `minor` changesets for:
 
-`[package]-[change-type].md`
+- `@platejs/slate`
+- `@platejs/core`
+- `platejs`
 
-Examples:
-
-- `alignment-major.md`
-- `core-minor.md`
-- `core-patch.md`
-- `slate-major.md`
-- `slate-minor.md`
-
-## Changeset File Structure
-
-Each changeset `.md` file must consist of two main parts:
-
-1.  **YAML Frontmatter**: Specifies the package(s) affected and the type of change (`major`, `minor`, `patch`).
-2.  **Markdown Description**: Details the specific change(s) covered by this file.
-
-### 1. YAML Frontmatter
-
-The frontmatter is enclosed by ---` lines. It lists each affected package and its corresponding change type.
-
-**Syntax:**
+Use `patch` instead. `minor` on those explodes version bumps across dependents.
 
 ```yaml
+# Wrong
 ---
-'@udecode/package-name': <change-type>
-# ... only list packages relevant to THIS specific changeset file
+"@platejs/core": minor
+---
+
+# Correct
+---
+"@platejs/core": patch
 ---
 ```
 
-- `<change-type>` **MUST** be:
-  - `major`: For **breaking changes** ONLY. A change is breaking if users of the package need to change their code to upgrade (e.g., API renaming, function signature changes, removal of features, behavior changes that require user adaptation).
-  - `minor`: For **new features** or significant enhancements that are backward-compatible ONLY.
-  - `patch`: For **bug fixes** or very minor, backward-compatible changes ONLY.
+Only real breaking changes get `major`.
 
-**Important Note on SemVer Bumping and Multiple Changesets:**
+### 2. One package per file
 
-- Each distinct change (breaking, feature, fix) for a package **MUST** have its own changeset file.
-- A single changeset file **MUST** contain only ONE package in its frontmatter.
-- For example, if you make a breaking API change, add a new feature, and fix a bug in `@platejs/core` for an upcoming release, you will create **three separate changeset files**:
-  1.  One file marked `major` for `@platejs/core` detailing only the breaking change.
-  2.  One file marked `minor` for `@platejs/core` detailing only the new feature.
-  3.  One file marked `patch` for `@platejs/core` detailing only the bug fix.
-- The versioning tool will look at all pending changesets for a package. If there's at least one `major` file, the package gets a major version bump, and all changes (from major, minor, and patch files) are included in that release. If no `major` but at least one `minor`, it gets a minor bump, and so on.
+Never combine packages in one changeset.
 
-**Example: Multiple Changes, Multiple Packages**
-
-- If a PR adds a `minor` feature to `@platejs/core` and a `patch` fix to `@platejs/utils`, you MUST create TWO separate files:
-
-  1.  `core-minor.md` (containing only `'@platejs/core': minor`)
-  2.  `utils-patch.md` (containing only `'@platejs/utils': patch`)
-
-- If a PR adds `minor` features to both `@platejs/core` and `@platejs/utils`, you MUST create TWO separate `minor` changeset files, one for each package. DO NOT group them in a single file.
-
-**Example (Illustrating multiple files for one package):**
-
-File 1: `core-major.md`
-
-````yaml
----
-'@platejs/core': major
----
-- Renamed `oldApi()` to `newApi()`.
-  ```ts
-  // Before
-  editor.oldApi();
-  // After
-  editor.newApi();
-````
-
-File 2: `core-minor.md`
-
-```yaml
----
-'@platejs/core': minor
----
-- Added `useCoreHook()` for enhanced state management.
-```
-
-File 3: `core-patch.md`
-
-```yaml
+```bash
+# Wrong
 ---
 '@platejs/core': patch
+'@platejs/utils': patch
 ---
-- Fixed an issue where X would cause Y.
+
+# Correct
+.changeset/core-fix-types.md
+.changeset/utils-add-helper.md
 ```
 
-### 2. Markdown Description
+### 3. Registry work is changelog work
 
-This section explains **what changed for the user** and **how they should adapt** for the _specific change described in this file_. The style should be direct and action-oriented.
+If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-**General Guidelines:**
+Update `docs/components/changelog.mdx` instead.
 
-- **Focus on Public API & User Impact:** Only document changes that affect the public API or require users to take action. **DO NOT** document internal refactorings.
-- **Always use bullet points (-`)** to list out the specific change(s) pertinent to this changeset's type (major, minor, or patch).
-- **Start Directly with a Verb:** Each bullet point should begin with a past tense verb describing the change (e.g., "Renamed...", "Added...", "Fixed...", "Removed...").
-- **Be Direct and Concise:**
-  - Get straight to the point. Avoid verbose explanations or justifications.
-  - If a code snippet clearly shows the "before" and "after," **let the code snippet speak for itself.** Minimize or eliminate redundant introductory text for code blocks.
-- Use **bold text (`**text**`)** for emphasis on:
-  - Package names (e.g., `**@platejs/core**`)
-  - Plugin names (e.g., `**BlockquotePlugin**`)
-  - Important function, option, or property names being changed.
-- Use **code blocks** (```tsx) for:
-  - Illustrating API changes (using "Before" / "After" comments inside the block). Snippets should be minimal and focused.
-  - Showing configuration snippets.
-  - Displaying relevant parts of type definitions.
-- **Migration Guidance:** If a change requires user action (especially for `major` changes), provide clear, concise migration steps.
+### 4. Style
 
-**Specific Content Types (Structure within bullet points):**
+Use imperative voice:
 
-- **Breaking Changes (`major` changeset):**
+- `Add support for X`
+- `Fix Y behavior`
+- `Remove deprecated Z`
 
-  - - Renamed `EditorFragmentOptions.structuralTypes` to `EditorFragmentOptions.containerTypes` in `**@platejs/slate**`.
+Do not use:
 
-    ```ts
-    // Before
-    editor.api.fragment(editor.selection, { structuralTypes: ['div'] });
+- `Added ...`
+- `We fixed ...`
 
-    // After
-    editor.api.fragment(editor.selection, { containerTypes: ['div'] });
-    ```
+Keep simple changes to one line:
 
-  - - Removed `oldOption` from `PluginName` options. Use `newOption` instead.
+```md
+- Fix `asChild` TypeScript error
+- Add `disabled` prop to Button
+```
 
-    ```ts
-    // Before
-    createMyPlugin({ oldOption: true });
+Use code examples only when needed:
 
-    // After
-    createMyPlugin({ newOption: true });
-    ```
+```tsx
+// Before
+editor.api.foo();
 
-- **Deprecations (can be `major` if immediate removal or `minor` if still available with warnings):**
+// After
+editor.tf.foo();
+```
 
-  - If removed in this version (major): - Removed `**@platejs/old-package**`. Use `**@platejs/new-package**` instead.
-  - If only deprecated (minor): - Deprecated `**@platejs/old-package**`. It will be removed in a future version. Use `**@platejs/new-package**` instead.
-  - Provide migration steps:
-    - To migrate:
-      - Replace `**@platejs/old-package**` with `**@platejs/new-package**` in your `package.json`.
-      - Update import paths:
-        ```diff
-        - import { SomeFeature } from '@platejs/old-package';
-        + import { SomeFeature } from '@platejs/new-package';
-        ```
-        `
+Focus on user impact only. No implementation diary.
 
-- \*\*New Features / Enhancements (`
+## Template
 
+Simple:
+
+```md
+---
+"@platejs/utils": patch
+---
+
+Fix `isEmpty` not handling void elements correctly
+```
+
+API change:
+
+````md
+---
+"@platejs/core": patch
+---
+
+Rename `editor.api.foo` to `editor.tf.foo`
+
+```tsx
+// Before
+editor.api.foo();
+
+// After
+editor.tf.foo();
+```
+````
+
+Breaking change:
+
+````md
+---
+'@platejs/basic-nodes': major
+---
+
+Remove `SkipMarkPlugin`; functionality is built into core
+
+**Migration:** Remove `SkipMarkPlugin` from your plugin list. Configure marks directly:
+
+```tsx
+MyMarkPlugin.configure({
+  rules: { selection: { affinity: 'outward' } },
+});
+```
+````
+
+## Red Flags
+
+Before shipping:
+
+- [ ] Used `minor` for `@platejs/slate`, `@platejs/core`, or `platejs`? Change to `patch`
+- [ ] Multiple packages in frontmatter? Split files
+- [ ] Past tense verbs? Fix them
+- [ ] Multiple paragraphs? Condense
+- [ ] Too much explanation? Cut it
+- [ ] API change without before/after? Add one
+
+## Registry Changelog Format
+
+For `apps/www/src/registry` changes:
+
+```md
+### [Month Day] #[Version]
+- **`component-name`**: Brief description
+  - Migration note if actually needed
+```
+
+Same style rules: concise, imperative, user impact only.

@@ -1,7 +1,7 @@
 ---
 name: todo-resolve
 description: Use when batch-resolving approved todos, especially after code review or triage sessions
-argument-hint: '[optional: specific todo ID or pattern]'
+argument-hint: "[optional: specific todo ID or pattern]"
 ---
 
 Resolve approved todos using parallel processing, document lessons learned, then clean up.
