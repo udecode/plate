@@ -44,7 +44,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "4.2.2",
     "typescript": "6.0.2",
-    "ultracite": "7.3.2"
+    "ultracite": "7.4.0"
   },
   "packageManager": "bun@1.3.9"
 }

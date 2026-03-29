@@ -86,13 +86,19 @@ export function AIMenu() {
   )?.text;
 
   React.useEffect(() => {
-    if (streaming) {
-      const anchor = api.aiChat.node({ anchor: true });
-      setTimeout(() => {
-        const anchorDom = editor.api.toDOMNode(anchor![0])!;
-        setAnchorElement(anchorDom);
-      }, 0);
-    }
+    if (!streaming) return;
+
+    const timeoutId = setTimeout(() => {
+      const anchorEntry = api.aiChat.node({ anchor: true });
+      if (!anchorEntry) return;
+
+      const anchorDom = editor.api.toDOMNode(anchorEntry[0])!;
+      setAnchorElement(anchorDom);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming]);
 
