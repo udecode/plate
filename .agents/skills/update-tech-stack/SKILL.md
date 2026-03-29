@@ -2,6 +2,9 @@
 allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
 description: Update tech stack documentation based on dependency changes and technical evolution
 name: update-tech-stack
+metadata:
+  skiller:
+    source: .agents/rules/update-tech-stack.mdc
 ---
 
 # Update Tech Stack Documentation
@@ -12,8 +15,8 @@ name: update-tech-stack
 
 - Project root: !`pwd`
 - Package.json: @package.json
-- Current tech doc: @.claude/skills/2-tech-stack.mdc
-- Last modified: !`stat -f "%Sm" .claude/skills/2-tech-stack.mdc 2>/dev/null || echo "No existing document"`
+- Current tech doc: @.agents/rules/2-tech-stack.mdc
+- Last modified: !`stat -f "%Sm" .agents/rules/2-tech-stack.mdc 2>/dev/null || echo "No existing document"`
 - Recent package changes: !`git diff HEAD~10 HEAD -- package.json 2>/dev/null | grep -E "^[+-]" | head -20 || echo "No recent changes"`
 
 ## Goal
@@ -226,13 +229,13 @@ When adding major new tools:
 ```bash
 # Check current dependencies vs documented
 diff <(jq -r '.dependencies | keys[]' package.json | sort) \
-     <(grep -E '^\*\*.*:' .claude/skills/2-tech-stack.mdc | cut -d: -f1 | sed 's/\*//g' | sort)
+     <(grep -E '^\*\*.*:' .agents/rules/2-tech-stack.mdc | cut -d: -f1 | sed 's/\*//g' | sort)
 
 # Review recent dependency commits
 git log --oneline --grep="dep" --since="30 days ago"
 
 # Check for new config files
-find . -name "*.config.*" -newer .claude/skills/2-tech-stack.mdc 2>/dev/null
+find . -name "*.config.*" -newer .agents/rules/2-tech-stack.mdc 2>/dev/null
 ```
 
 **Think deeply about:** "What technical decisions drove these changes? How do version updates affect the overall architecture? What new capabilities do these tools enable?"
@@ -269,10 +272,10 @@ Follow incremental approach:
 
 ```bash
 # Optional backup
-cp .claude/skills/2-tech-stack.mdc .claude/skills/2-tech-stack.backup.md
+cp .agents/rules/2-tech-stack.mdc .agents/rules/2-tech-stack.backup.md
 
 # Save updated document
-# Overwrite .claude/skills/2-tech-stack.mdc
+# Overwrite .agents/rules/2-tech-stack.mdc
 ```
 
 ## Key Principles
@@ -296,7 +299,7 @@ cp .claude/skills/2-tech-stack.mdc .claude/skills/2-tech-stack.backup.md
 ## Output
 
 - **Format:** Markdown (`.mdc`)
-- **Location:** `.claude/skills/`
+- **Location:** `.agents/rules/`
 - **Filename:** `2-tech-stack.mdc` (overwrites)
 - **Backup:** Suggest for major changes
 

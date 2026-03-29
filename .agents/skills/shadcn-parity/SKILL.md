@@ -1,6 +1,9 @@
 ---
-name: shadcn-parity
 description: Clone shadcn implementation patterns with source-by-source parity. Use when the user says "shadcn parity", asks to mirror shadcn, copy shadcn UX/architecture/tests, or wants more than inspiration.
+name: shadcn-parity
+metadata:
+  skiller:
+    source: .agents/rules/shadcn-parity.mdc
 ---
 
 # Shadcn Parity
@@ -127,4 +130,3 @@ Stop and reassess if you are about to do any of this:
 - solve a registry issue by adding more installer logic when the data is wrong
 - patch templates by hand without checking whether the registry source is the
   real problem
-

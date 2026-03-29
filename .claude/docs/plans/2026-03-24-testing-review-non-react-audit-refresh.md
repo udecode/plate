@@ -13,8 +13,8 @@ Rerun the whole-repo testing review with the temporary non-React cut, refresh lc
 
 ## Inputs
 
-- `.claude/skills/testing-review/testing-review.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing-review.mdc`
+- `.agents/rules/testing.mdc`
 - prior non-React audit outputs under `.claude/docs/plans/`
 
 ## Status

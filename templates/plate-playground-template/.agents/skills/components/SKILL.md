@@ -1,6 +1,9 @@
 ---
 name: components
-description: React component architecture for creating composable, accessible components with data attributes. Use when creating/updating composable components, not for higher-level feature/page components.
+description: 'Skill: components'
+metadata:
+  skiller:
+    source: .agents/rules/components.mdc
 ---
 
 # Accessibility

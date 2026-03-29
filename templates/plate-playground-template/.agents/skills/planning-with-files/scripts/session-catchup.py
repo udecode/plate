@@ -13,18 +13,61 @@ import sys
 import os
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
-from datetime import datetime
 
 PLANNING_FILES = ['task_plan.md', 'progress.md', 'findings.md']
 
 
-def get_project_dir(project_path: str) -> Path:
-    """Convert project path to Claude's storage path format."""
-    sanitized = project_path.replace('/', '-')
-    if not sanitized.startswith('-'):
-        sanitized = '-' + sanitized
+def normalize_path(project_path: str) -> str:
+    """Normalize project path to match Claude Code's internal representation.
+
+    Claude Code stores session directories using the Windows-native path
+    (e.g., C:\\Users\\...) sanitized with separators replaced by dashes.
+    Git Bash passes /c/Users/... which produces a DIFFERENT sanitized
+    string. This function converts Git Bash paths to Windows paths first.
+    """
+    p = project_path
+
+    # Git Bash / MSYS2: /c/Users/... -> C:/Users/...
+    if len(p) >= 3 and p[0] == '/' and p[2] == '/':
+        p = p[1].upper() + ':' + p[2:]
+
+    # Resolve to absolute path to handle relative paths and symlinks
+    try:
+        resolved = str(Path(p).resolve())
+        # On Windows, resolve() returns C:\Users\... which is what we want
+        if os.name == 'nt' or '\\' in resolved:
+            p = resolved
+    except (OSError, ValueError):
+        pass
+
+    return p
+
+
+def get_project_dir(project_path: str) -> Tuple[Optional[Path], Optional[str]]:
+    """Resolve session storage path for the current runtime variant."""
+    normalized = normalize_path(project_path)
+
+    # Claude Code's sanitization: replace path separators and : with -
+    sanitized = normalized.replace('\\', '-').replace('/', '-').replace(':', '-')
     sanitized = sanitized.replace('_', '-')
-    return Path.home() / '.claude' / 'projects' / sanitized
+    # Strip leading dash if present (Unix absolute paths start with /)
+    if sanitized.startswith('-'):
+        sanitized = sanitized[1:]
+
+    claude_path = Path.home() / '.claude' / 'projects' / sanitized
+
+    # Codex stores sessions in ~/.codex/sessions with a different format.
+    # Avoid silently scanning Claude paths when running from Codex skill folder.
+    script_path = Path(__file__).as_posix().lower()
+    is_codex_variant = '/.codex/' in script_path
+    codex_sessions_dir = Path.home() / '.codex' / 'sessions'
+    if is_codex_variant and codex_sessions_dir.exists() and not claude_path.exists():
+        return None, (
+            "[planning-with-files] Session catchup skipped: Codex stores sessions "
+            "in ~/.codex/sessions and native Codex parsing is not implemented yet."
+        )
+
+    return claude_path, None
 
 
 def get_sessions_sorted(project_dir: Path) -> List[Path]:
@@ -37,7 +80,7 @@ def get_sessions_sorted(project_dir: Path) -> List[Path]:
 def parse_session_messages(session_file: Path) -> List[Dict]:
     """Parse all messages from a session file, preserving order."""
     messages = []
-    with open(session_file, 'r') as f:
+    with open(session_file, 'r', encoding='utf-8', errors='replace') as f:
         for line_num, line in enumerate(f):
             try:
                 data = json.loads(line)
@@ -140,7 +183,6 @@ def extract_messages_after(messages: List[Dict], after_line: int) -> List[Dict]:
 
 def main():
     project_path = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
-    project_dir = get_project_dir(project_path)
 
     # Check if planning files exist (indicates active task)
     has_planning_files = any(
@@ -148,6 +190,11 @@ def main():
     )
     if not has_planning_files:
         # No planning files in this project; skip catchup to avoid noise.
+        return
+
+    project_dir, skip_reason = get_project_dir(project_path)
+    if skip_reason:
+        print(skip_reason)
         return
 
     if not project_dir.exists():

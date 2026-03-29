@@ -2,6 +2,9 @@
 allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite, Bash
 description: Update existing app design document based on codebase changes and project evolution
 name: update-app-design
+metadata:
+  skiller:
+    source: .agents/rules/update-app-design.mdc
 ---
 
 # Sync Application Design Document
@@ -12,8 +15,8 @@ name: update-app-design
 
 - Project root: !`pwd`
 - Package.json: @package.json
-- Current design doc: @.claude/skills/1-app-design-document.mdc
-- Last modified: !`stat -f "%Sm" .claude/skills/1-app-design-document.mdc 2>/dev/null || echo "No existing document"`
+- Current design doc: @.agents/rules/1-app-design-document.mdc
+- Last modified: !`stat -f "%Sm" .agents/rules/1-app-design-document.mdc 2>/dev/null || echo "No existing document"`
 
 ## Goal
 
@@ -55,7 +58,7 @@ _Extended thinking helps identify subtle changes, understand how new features in
 
 If project stage or priorities have changed:
 
-- Update `.claude/skills/3-project-status.mdc`
+- Update `.agents/rules/status.mdc`
 - Adjust DO/DON'T lists for new priorities
 - Document any stage transitions
 
@@ -89,7 +92,7 @@ d) **Help Me Assess** - Let's review current state together
 
 Based on your current stage, are these still your priorities?
 
-[Show current DO/DON'T lists from `.claude/skills/3-project-status.mdc`]
+[Show current DO/DON'T lists from `.agents/rules/status.mdc`]
 
 a) **Same Priorities** - These still reflect our focus  
 b) **Adjusted Priorities** - Some changes needed (please specify)  
@@ -212,7 +215,7 @@ d) **Business Goal** - Partnerships, funding, market expansion
 
 ```bash
 # Check when document was last updated
-stat -f "%Sm" .claude/skills/1-app-design-document.mdc
+stat -f "%Sm" .agents/rules/1-app-design-document.mdc
 
 # Review recent commits for feature changes
 git log --oneline --since="30 days ago" | head -20
@@ -231,7 +234,7 @@ git log --oneline --since="30 days ago" | head -20
 If stage or priorities changed, update both:
 
 ```markdown
-# In `.claude/skills/3-project-status.mdc`
+# In `.agents/rules/status.mdc`
 
 ## Project Status
 
@@ -260,10 +263,10 @@ If stage or priorities changed, update both:
 
 ```bash
 # Optional: Create backup
-cp .claude/skills/1-app-design-document.mdc .claude/skills/1-app-design-document.backup.mdc
+cp .agents/rules/1-app-design-document.mdc .agents/rules/1-app-design-document.backup.mdc
 
 # Save updated document
-# Overwrite .claude/skills/1-app-design-document.mdc
+# Overwrite .agents/rules/1-app-design-document.mdc
 ```
 
 ## Key Principles
@@ -287,7 +290,7 @@ cp .claude/skills/1-app-design-document.mdc .claude/skills/1-app-design-document
 ## Output
 
 - **Format:** Markdown (`.mdc`)
-- **Location:** `.claude/skills/`
+- **Location:** `.agents/rules/`
 - **Filename:** `1-app-design-document.mdc` (overwrites)
 - **Backup:** Suggest if major changes
 
@@ -296,7 +299,7 @@ cp .claude/skills/1-app-design-document.mdc .claude/skills/1-app-design-document
 1. ✅ Read existing document completely
 2. ✅ Analyze codebase changes thoroughly
 3. ✅ Ask project stage question FIRST
-4. ✅ Update `.claude/skills/3-project-status.mdc` if stage/priorities changed
+4. ✅ Update `.agents/rules/status.mdc` if stage/priorities changed
 5. ✅ Make incremental, targeted updates
 6. ✅ Preserve document quality and tone
 7. ✅ Suggest backup for major changes
