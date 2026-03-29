@@ -225,6 +225,10 @@ Keep verification mandatory but proportional.
 
 Every final response must include:
 
+- follow repo writing style here too:
+  - be extremely concise
+  - sacrifice grammar for concision
+  - no filler, no narration, no polite padding
 - a leading markdown table in this exact format:
   - `| Check | Result |`
   - `| --- | --- |`
@@ -259,6 +263,7 @@ Every final response must include:
   - `**⚠️ Caveat**`
   - `**👀 Human Check**`, only when browser verification applies
 - keep those sections flat, concise, and easy to scan
+- keep prose brutally short; prefer bullets over paragraphs here
 - if browser verification applies, `**👀 Human Check**` must include the exact human steps to verify the fix in the browser
 
 ### UI Or Browser Tasks
@@ -301,6 +306,24 @@ Apply this section only when the task came from a tracker item and reached a mea
   - same `**✅ Outcome**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**👀 Human Check**` sections when applicable
   - same caveats
   - same human browser verification steps when applicable
+- PR description follows the same writing style:
+  - extremely concise
+  - grammar can be sacrificed for concision
+  - no fluffy framing
+- Do not publish a PR description with a dead local proof path.
+- If proof image is local, upload it first and only then write or update the final PR body with the hosted GitHub URL.
+- For a brand-new PR, if the hosted proof URL is not ready yet:
+  - create the PR with no proof image, or with `Proof | ➖ N/A`
+  - upload the image immediately
+  - replace the placeholder with the real hosted proof before handoff
+- If the PR description includes a local image path for proof, do not leave it that way on GitHub.
+- Use `dev-browser --connect http://127.0.0.1:9222` to upload the image through the PR comment file input as a staging area, then replace the local proof path in the PR body with the hosted GitHub attachment URL.
+- Use the PR comment textarea only as staging:
+  - upload image
+  - read generated markdown or URL from the textarea
+  - clear the textarea
+  - do not submit the staging comment
+- Do not spend time reloading the PR page just to verify hosted image rendering unless the user explicitly asks.
 - Do not compress, adapt, or rewrite the handoff for the PR description.
 - If a later iteration changes the fix, evidence, certainty, caveats, or verification, update the PR description again so it stays in sync.
 - Update the PR description before writing the issue comment.
@@ -312,8 +335,9 @@ Apply this section only when the task came from a tracker item and reached a mea
   gh issue comment <number-or-url> --body-file -
   ```
 - Keep it user-facing and e2e-centric.
-- Start with a single italicized line in this shape:
-  - `_✅ Fixed in #<pr-number>._`
+- Keep it extremely concise. Grammar can be sacrificed for concision.
+- Start with a single plain line in this shape:
+  - `✅ Fixed in #<pr-number>.`
 - Follow with a flat bullet list only:
   - manual verification steps for the real user flow
   - optional final QA or caveat bullet when useful
@@ -330,7 +354,7 @@ Apply this section only when the task came from a tracker item and reached a mea
 Example:
 
 ```md
-_✅ Fixed in #123._
+✅ Fixed in #123.
 
 - Open the affected page.
 - Follow the real user flow that triggered the bug.
@@ -343,9 +367,9 @@ _✅ Fixed in #123._
 - Keep proof local. Do not upload screenshots or other files to Linear.
 - Post a concise issue comment using the Linear integration.
 - Match the ticket style and write for QA, not developers.
-- Keep the same italic-paragraph rule:
-  - start only the first sentence with `Codex ...`
-  - italicize each paragraph separately
+- Keep the same terse style:
+  - extremely concise
+  - grammar can be sacrificed for concision
   - avoid file names, tests, typecheck, lint, branch names, PR mechanics, and screenshot paths
 
 ### Blocked Or Inconclusive Tracker Work
@@ -369,4 +393,3 @@ _✅ Fixed in #123._
 - Final handoff matched the task type.
 - Testing or batch handoff reported the completed slice, verification, and remaining queue when relevant.
 - Any tracker, browser, review, or compound follow-up was done only if actually relevant.
-
