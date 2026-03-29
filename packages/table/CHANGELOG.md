@@ -1,5 +1,11 @@
 # @platejs/table
 
+## 52.3.18
+
+### Patch Changes
+
+- [#4923](https://github.com/udecode/plate/pull/4923) by [@hhhjin](https://github.com/hhhjin) – Fixed `ArrowUp` and `ArrowDown` table navigation to avoid the transient caret flash when moving between table cells.
+
 ## 52.3.17
 
 ### Patch Changes
