@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "skills": {
+    "ce:brainstorm": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "fd3ee21f80858f77c107d4fb0652129fc74d3bf580fe60718fb62a70afccd840"
+    },
+    "ce:compound": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "c6e3649803f6875661d9744da95fece15bc56946092f3821231000731a5d5662"
+    },
+    "ce:compound-refresh": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "d1b15127a5994b5568d9fcca985dc3ba8259e4521ed20d3f28e94ae8df793bb9"
+    },
+    "ce:ideate": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "d2780682c4abf7255c76d1e7c9f8a398327cac1f22c15e4a7e2f5f749dc803db"
+    },
+    "ce:plan": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "85d5246c8f35c3d20742facf1c6e78ca0b9e2ae89fa7459c130656e258ecf055"
+    },
+    "ce:review": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "f83f832d1c06ce2a341f3c8e92f4a9c7fc422d735995e62b94fe2d89a724f6f6"
+    },
+    "ce:work": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "0786830917e459be293f89c99fa83c513fd7631bceef1f0f18b951f78ed1f957"
+    },
+    "coding-tutor": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "1a5018fafe7f8c3fe08ab90a32f0d5acc5ad83bbfa177799529007445b12884b"
+    },
+    "debug": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "09c9096e132640e201c4ffd592ffa144d949243ca7a71c5ef020e111927c495a"
+    },
+    "frontend-design": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "74cd07a31632a72d763b96257a8c86b5c80384770ef67e600f73ffa75b69a1e2"
+    },
+    "git-clean-gone-branches": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "5122ccc0d3c8f845cc55266bba90edb27b3bf37a9deb83fc59a646ca47202951"
+    },
+    "git-commit": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "1c76aaf68b93a16306be4d43d06ca77443c2555eff78a8d85125cc9ba4b067a1"
+    },
+    "git-commit-push-pr": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "891e11eaaf292d86bf152789bbbbb0da3ebed45ecb38350361b1bbad0544ad7f"
+    },
+    "git-worktree": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "bb0e78ae6fab6c597b232de929a34e09e65d7514e395e12dc59024ff3fecc345"
+    },
+    "planning-with-files": {
+      "source": "othmanadi/planning-with-files",
+      "sourceType": "github",
+      "computedHash": "594e6e55f82793c309cd02f94a9a5fe73326d4b8694cbfda2b484ab410e81e88"
+    },
+    "reproduce-bug": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "4ab5b5b526782ec8800515d2cd5bcc2294b3c16043122b49048ae688f39776d5"
+    },
+    "resolve-pr-feedback": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "3e8d8a6f1c7f8c970c5261569ecb1fb80d7c77df6c940bb8be9dc68b76b302ec"
+    },
+    "tdd": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
+    },
+    "test-browser": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "46ecb19a6dc4010dc10bcd7accc31154caf7215e8f6a26c01920a7477c2b9236"
+    },
+    "todo-create": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "55789b6d73677c8dabb5727de6688be02ea0593beb72641fefb2a9ef56f29547"
+    },
+    "todo-resolve": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "bbd33efa8a698d3bf82224320f4a87866cf554664a3e58227c708fbf0839e0e5"
+    },
+    "todo-triage": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "0299f567ea43a7c73466e7952120ea0814e4c692b68a1c4ef1ff1355364d7d2a"
+    },
+    "trace": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "computedHash": "a143a495d43ba5f5151eb7ef2e00b4c41af25d9603619af0fec00fcd6834716c"
+    }
+  }
+}
