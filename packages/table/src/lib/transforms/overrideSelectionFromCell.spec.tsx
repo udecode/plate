@@ -39,7 +39,7 @@ describe('overrideSelectionFromCell', () => {
     mock.restore();
   });
 
-  it('routes arrow navigation through moveSelectionFromCell when the new focus leaves the current cell', () => {
+  it('routes shift+down through moveSelectionFromCell when the new focus leaves the current cell', () => {
     const input = (
       <editor>
         <htable>
@@ -63,7 +63,7 @@ describe('overrideSelectionFromCell', () => {
     const editor = createTableEditor(input);
     editorForTimer = editor;
 
-    editor.dom.currentKeyboardEvent = { which: 40 } as any;
+    editor.dom.currentKeyboardEvent = { shiftKey: true, which: 40 } as any;
     editor.api.isAt = mock().mockReturnValue(true) as any;
 
     overrideSelectionFromCell(editor, {
@@ -72,7 +72,7 @@ describe('overrideSelectionFromCell', () => {
     });
 
     expect(editor.selection).toEqual({
-      anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
+      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
       focus: { offset: 0, path: [0, 1, 0, 0, 0] },
     });
   });
