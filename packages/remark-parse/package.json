@@ -1,0 +1,28 @@
+{
+  "name": "@platejs/remark-parse",
+  "version": "11.0.0",
+  "description": "Local Plate fork of remark-parse with minimal streaming support hooks",
+  "license": "MIT",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "exports": "./index.js",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "lib/",
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@platejs/mdast-util-from-markdown": "workspace:*",
+    "@types/mdast": "^4.0.0",
+    "micromark-util-types": "^2.0.0",
+    "unified": "^11.0.0"
+  },
+  "scripts": {
+    "build": "node -e \"\"",
+    "test": "node -e \"\"",
+    "typecheck": "node -e \"\""
+  }
+}

@@ -10,7 +10,7 @@ import {
   KEYS,
   TextApi,
 } from 'platejs';
-import remarkParse from 'remark-parse';
+import remarkParse from '@platejs/remark-parse';
 import { unified } from 'unified';
 
 import type { AllowNodeConfig } from '../MarkdownPlugin';

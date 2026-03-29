@@ -1,0 +1,38 @@
+{
+  "name": "@platejs/mdast-util-from-markdown",
+  "version": "2.0.3",
+  "description": "Local Plate fork of mdast-util-from-markdown with pending-tail metadata",
+  "license": "MIT",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "default": "./index.js"
+  },
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "files": [
+    "lib/",
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@types/mdast": "^4.0.0",
+    "@types/unist": "^3.0.0",
+    "decode-named-character-reference": "^1.0.0",
+    "devlop": "^1.0.0",
+    "mdast-util-to-string": "^4.0.0",
+    "micromark": "^4.0.0",
+    "micromark-util-decode-numeric-character-reference": "^2.0.0",
+    "micromark-util-decode-string": "^2.0.0",
+    "micromark-util-normalize-identifier": "^2.0.0",
+    "micromark-util-symbol": "^2.0.0",
+    "micromark-util-types": "^2.0.0",
+    "unist-util-stringify-position": "^4.0.0"
+  },
+  "scripts": {
+    "build": "node -e \"\"",
+    "test": "node -e \"\"",
+    "typecheck": "node -e \"\""
+  }
+}

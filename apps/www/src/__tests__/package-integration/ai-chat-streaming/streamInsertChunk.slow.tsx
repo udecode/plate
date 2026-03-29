@@ -197,6 +197,50 @@ describe('streamInsertChunk', () => {
       expect(editor.children).toEqual(output);
     });
 
+    it('keeps consecutive marked list items in the same list', () => {
+      const editor = streamChunks([
+        '- *',
+        '*Syntax Highlighting:** Improves',
+        ' readability',
+        ' by',
+        ' highlighting',
+        ' markdown',
+        ' syntax',
+        '.\n',
+        '- *',
+        '*Collaboration:** Allows multiple',
+        ' users',
+        ' to',
+        ' edit',
+        ' the',
+        ' same',
+        ' document',
+      ]);
+
+      const [firstBlock, secondBlock] = editor.children as any[];
+
+      expect(firstBlock).toEqual({
+        children: [
+          { bold: true, text: 'Syntax Highlighting:' },
+          {
+            text: ' Improves readability by highlighting markdown syntax.',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      });
+
+      expect(secondBlock?.type).toBe('p');
+      expect(secondBlock?.indent).toBe(1);
+      expect(secondBlock?.listStyleType).toBe('disc');
+      expect(secondBlock?.children?.[0]?.bold).toBe(true);
+      expect(secondBlock?.children?.[0]?.text).toBe('Collaboration:');
+      expect(secondBlock?.children?.[1]?.text).toBe(
+        ' Allows multiple users to edit the same document'
+      );
+    });
+
     it('preserves ordered list numbering after a paragraph break', () => {
       const editor = streamChunks(['1. 1', '\n\n', 'xxx\n\n', '2. 2']);
 

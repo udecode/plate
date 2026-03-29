@@ -214,6 +214,9 @@ describe('ai chat action utils', () => {
     expect(stop).toHaveBeenCalled();
     expect(setMessages).toHaveBeenCalledWith([]);
     expect(setOptions).toHaveBeenCalledWith({
+      _blockChunks: '',
+      _blockPath: null,
+      _mdxName: null,
       _replaceIds: [],
       chatNodes: [],
       mode: 'insert',

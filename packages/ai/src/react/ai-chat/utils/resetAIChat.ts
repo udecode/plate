@@ -25,6 +25,9 @@ export const resetAIChat = (
   }
 
   setOptions({
+    _blockChunks: '',
+    _blockPath: null,
+    _mdxName: null,
     _replaceIds: [],
     chatNodes: [],
     mode: 'insert',
