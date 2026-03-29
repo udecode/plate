@@ -136,6 +136,9 @@ Apply this section only when the task source is a tracker item.
 - `dev-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
+- `changeset`
+  Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
+  Do not create a package changeset for registry-only work under `apps/www/src/registry/`; update `docs/components/changelog.mdx` instead.
 - `git-commit-push-pr`
   Use when verified work changed code and should ship as a PR.
   Create or update the PR before any tracker comment.
