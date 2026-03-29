@@ -5,6 +5,8 @@
 
 - `.claude/AGENTS.md` and `.claude/skills/*/*.mdc` are source of truth. After editing them, run `install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
+- Answer in English by default. Switch languages only when the user explicitly asks for another language.
+- Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
 
 - Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
 

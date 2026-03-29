@@ -361,6 +361,66 @@ describe('withTableCellSelection', () => {
       );
     });
 
+    it('does not hijack path-targeted writes to unselected cells inside the linear Slate range', () => {
+      const input = (
+        <editor>
+          <htable>
+            <htr>
+              <htd>
+                <hp>row1col1</hp>
+              </htd>
+              <htd>
+                <hp>
+                  <anchor />
+                  row1col2
+                </hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd>
+                <hp>row2col1</hp>
+              </htd>
+              <htd>
+                <hp>
+                  row2col2
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createTableEditor(input);
+
+      editor.tf.setNodes({ background: 'red' }, { at: [0, 1, 0] });
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>row1col1</hp>
+                </htd>
+                <htd>
+                  <hp>row1col2</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd background="red">
+                  <hp>row2col1</hp>
+                </htd>
+                <htd>
+                  <hp>row2col2</hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ).children
+      );
+    });
+
     it('unsets multiple properties on every selected cell block', () => {
       const input = (
         <editor>
