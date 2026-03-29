@@ -1,8 +1,9 @@
 ---
 description: 'Command: docs-plugin'
-globs: null
-alwaysApply: false
 name: docs-plugin
+metadata:
+  skiller:
+    source: .agents/rules/docs-plugin.mdc
 ---
 
 # Plugin Documentation Guide

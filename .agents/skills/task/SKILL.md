@@ -1,8 +1,11 @@
 ---
-name: task
 description: Work a task end-to-end with lean context gathering, implementation, and verification
 argument-hint: '[task description | issue id/link]'
 disable-model-invocation: true
+name: task
+metadata:
+  skiller:
+    source: .agents/rules/task.mdc
 ---
 
 # Work Task
@@ -138,6 +141,8 @@ Apply this section only when the task source is a tracker item.
 - `dev-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
+- `agent-browser-issue`
+  Use when browser automation is blocked by a likely reusable tool-side issue that should be split into its own GitHub follow-up.
 - `changeset`
   Use when verified work changes a published package under `packages/` and the repo expects release notes before completion.
   Do not create a package changeset for registry-only work under `apps/www/src/registry/`; update `docs/components/changelog.mdx` instead.
@@ -229,58 +234,70 @@ Every final response must include:
   - be extremely concise
   - sacrifice grammar for concision
   - no filler, no narration, no polite padding
-- a leading markdown table in this exact format:
-  - `| Check | Result |`
-  - `| --- | --- |`
-- use these rows, in this order:
+- two leading markdown tables in this exact format:
+  - metadata table:
+    - `| Check | Result |`
+    - `| --- | --- |`
+  - flow table:
+    - `| Phase | 🧪 Tests | 🌐 Browser |`
+    - `| --- | --- | --- |`
+- use these metadata rows, in this order:
   - `PR`
   - `Issue`
-  - `Reproduced (Browser)`
-  - `Reproduced (Tests)`
-  - `Fixed`
-  - `Verified (Browser)`
-  - `Verified (Tests)`
-  - `Commented`
-  - `Certainty`
-  - `Proof`
-- use markdown links for `PR`, `Issue`, and `Proof` when they exist
-- use these exact status values in the table:
-  - `✅ Yes`
-  - `❌ No`
-  - `⚠️ Partial`
+  - `Confidence`
+- use these flow rows, in this order:
+  - `Reproduced`
+  - `Verified`
+- use markdown links for `PR` and `Issue` when they exist
+- keep the `Issue` row stable; do not add issue comment links there
+- use these exact status values in the tables:
+  - `✅`
+  - `❌`
   - `➖ N/A`
-- use `➖ N/A` for rows that do not apply; do not invent a PR, issue, comment, or proof
-- `Reproduced (Tests)` and `Verified (Tests)` mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
-- if manual non-browser reproduction or verification happened, explain it in the prose below the table rather than adding extra rows
-- `Commented` means the tracker was updated with a comment
-- `Certainty` must stay `100%` or lower and use this format:
+  - prefer specific browser caveat text over vague `⚠️ Partial`, for example `⚠️ Could not automate dropdown`
+- in the `🧪 Tests` column:
+  - use `🔴` in `Reproduced` when there was a real failing test first
+  - use `🟢` in `Verified` when that test passed after the fix
+  - use `✅` when test evidence exists but did not follow a real red-green loop
+- use `➖ N/A` for rows or cells that do not apply; do not invent a PR, issue, or comment
+- flow-table test cells mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
+- if manual non-browser reproduction or verification happened, explain it in the prose below the tables rather than adding extra rows
+- `Confidence` must stay `100%` or lower and use this format:
   - `🟢 95-100%`
   - `🟡 80-94%`
   - `🔴 below 80%`
-- after the table, use these short sections in this order:
+- after the tables, use these short sections in this order:
   - `**✅ Outcome**`
+  - `**🏗️ Design**`
   - `**🧪 Verified**`
   - `**⚠️ Caveat**`
-  - `**👀 Human Check**`, only when browser verification applies
+  - `**🌐 Browser Check**`, only when browser verification applies
 - keep those sections flat, concise, and easy to scan
 - keep prose brutally short; prefer bullets over paragraphs here
-- if browser verification applies, `**👀 Human Check**` must include the exact human steps to verify the fix in the browser
+- if browser verification applies, `**🌐 Browser Check**` must include the exact human steps to verify the fix in the browser
+- `**🏗️ Design**` is mandatory for any non-trivial code-changing task and must include:
+  - `Chosen seam: ...`
+  - `Why not quick patch: ...`
+  - `Why not broader change: ...` only if a broader API or abstraction change was a real option
 
 ### UI Or Browser Tasks
 
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
-- Put the screenshot immediately after the table when `Proof` is not `➖ N/A`, before the completion summary.
+- Put the screenshot immediately after the two tables, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
-- `**👀 Human Check**` must be a flat bullet list:
+- If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
+- If that follow-up issue is opened, mention it in the caveat or handoff.
+- `**🌐 Browser Check**` must be a flat bullet list:
   - keep it short and concrete
+  - prefer the exact local URL as a markdown link when one exists, for example [http://localhost:3000/...](http://localhost:3000/...)
   - use the real page, route, and interaction names
   - focus on how to prove the fix, not on implementation detail
 
 ### Non-UI Tasks
 
-- No screenshot is required; use `Proof | ➖ N/A` in the table.
-- Omit `**👀 Human Check**` when there is no browser surface.
+- No screenshot is required.
+- Omit `**🌐 Browser Check**` when there is no browser surface.
 - Keep the final response concise and evidence-based.
 
 ### Testing Or Batch Work
@@ -301,9 +318,9 @@ Apply this section only when the task came from a tracker item and reached a mea
 ### Pull Request
 
 - When a PR exists, the PR description must match the exact current final handoff from chat:
-  - same table
-  - same proof link or screenshot
-  - same `**✅ Outcome**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**👀 Human Check**` sections when applicable
+  - same two tables
+  - same screenshot when applicable
+  - same `**✅ Outcome**`, `**🏗️ Design**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**🌐 Browser Check**` sections when applicable
   - same caveats
   - same human browser verification steps when applicable
 - PR description follows the same writing style:
@@ -311,9 +328,9 @@ Apply this section only when the task came from a tracker item and reached a mea
   - grammar can be sacrificed for concision
   - no fluffy framing
 - Do not publish a PR description with a dead local proof path.
-- If proof image is local, upload it first and only then write or update the final PR body with the hosted GitHub URL.
+- If screenshot proof is local, upload it first and only then write or update the final PR body with the hosted GitHub URL.
 - For a brand-new PR, if the hosted proof URL is not ready yet:
-  - create the PR with no proof image, or with `Proof | ➖ N/A`
+  - create the PR with no proof image
   - upload the image immediately
   - replace the placeholder with the real hosted proof before handoff
 - If the PR description includes a local image path for proof, do not leave it that way on GitHub.

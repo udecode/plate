@@ -13,8 +13,8 @@ Rerun full repo coverage from the latest repo state, then regenerate package and
 
 ## Inputs
 
-- `.claude/skills/task/task.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/task.mdc`
+- `.agents/rules/testing.mdc`
 - `.claude/docs/plans/2026-03-06-test-suite-cleanup-plan.md`
 - `.claude/docs/plans/2026-03-09-test-suite-excellence-plan.md`
 - `.claude/docs/plans/2026-03-17-*`

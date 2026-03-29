@@ -1,6 +1,9 @@
 ---
-name: testing
 description: 'Skill: testing'
+name: testing
+metadata:
+  skiller:
+    source: .agents/rules/testing.mdc
 ---
 
 ## Testing Goal
@@ -249,4 +252,3 @@ Keep `__tests__/` when it holds:
   - slow lane: `*.slow.ts[x]`, run by `pnpm test:slow`
 - Use `pnpm test:all` for the full repo test run instead of relying on bare `bun test`.
 - Stop before 100%. When the remaining misses are wrappers, DOM/provider dust, sludge, or crumbs, you are done.
-

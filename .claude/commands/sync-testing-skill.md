@@ -1,4 +1,4 @@
-Scan package tests, update @.claude/skills/testing/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.
+Scan package tests, update @.agents/rules/testing.mdc with new patterns. Follow writing-skills: DRY, ultra-concise, token-efficient.
 
 **Process:**
 

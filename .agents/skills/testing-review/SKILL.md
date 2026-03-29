@@ -1,6 +1,9 @@
 ---
-name: testing-review
 description: Review whole-repo test quality, rerun coverage, score remaining worth-testing files, inspect slow-drift and stale test debt, and publish the next testing batch. Use every few weeks or before large breaking changes and rearchitecture.
+name: testing-review
+metadata:
+  skiller:
+    source: .agents/rules/testing-review.mdc
 ---
 
 # Testing Review
@@ -21,8 +24,8 @@ This workflow is audit-first. Do not implement the recommended tests unless the 
 
 ## Inputs
 
-- `@.claude/skills/task/task.mdc`
-- `@.claude/skills/testing/testing.mdc`
+- `@.agents/rules/task.mdc`
+- `@.agents/rules/testing.mdc`
 
 ## Core Rules
 

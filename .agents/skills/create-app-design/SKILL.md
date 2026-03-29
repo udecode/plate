@@ -2,6 +2,9 @@
 allowed-tools: Read, Glob, Grep, Write, MultiEdit, TodoWrite
 description: Generate comprehensive app design document with project stage assessment
 name: create-app-design
+metadata:
+  skiller:
+    source: .agents/rules/create-app-design.mdc
 ---
 
 # Generate Application Design Document
@@ -12,7 +15,7 @@ name: create-app-design
 
 - Project root: !`pwd`
 - Package.json: @package.json
-- Existing design docs: !`ls -la .claude/skills/ 2>/dev/null || echo "No .claude/skills directory yet"`
+- Existing design docs: !`ls -la .agents/rules/ 2>/dev/null || echo "No .claude/skills directory yet"`
 
 ## Goal
 
@@ -24,7 +27,7 @@ Create a comprehensive Application Design Document based on deep codebase analys
 
 - Analyze project structure and existing codebase
 - Review package.json for project name and dependencies
-- Check for existing documentation in .claude/skills/
+- Check for existing documentation in .agents/rules/
 - Identify key application features and patterns
 - **Think deeply** about the application's purpose and architecture
 
@@ -55,7 +58,7 @@ _Extended thinking helps identify non-obvious patterns, understand complex busin
 
 Based on project stage response:
 
-- Update `.claude/skills/3-project-status.mdc` with current stage
+- Update `.agents/rules/status.mdc` with current stage
 - Set appropriate DO/DON'T priorities for the stage
 - Document stage-specific development guidelines in the Cursor rule
 
@@ -65,7 +68,7 @@ Create comprehensive app design document following the standard structure
 
 ### 6. Save and Organize
 
-- Create `.claude/skills/` directory if needed
+- Create `.agents/rules/` directory if needed
 - Save as `1-app-design-document.mdc`
 - Suggest next steps (tech stack doc, PRD, etc.)
 
@@ -232,7 +235,7 @@ The language should be clear, business-focused, and avoid technical implementati
 ## Output
 
 - **Format:** Markdown (`.mdc`)
-- **Location:** `.claude/skills/`
+- **Location:** `.agents/rules/`
 - **Filename:** `1-app-design-document.mdc`
 
 ## Execution Steps
@@ -252,7 +255,7 @@ The language should be clear, business-focused, and avoid technical implementati
 
 ### 3. Update Project Status in Cursor Rule
 
-Update `.claude/skills/3-project-status.mdc` with the project stage information:
+Update `.agents/rules/status.mdc` with the project stage information:
 
 ```markdown
 ---
@@ -318,6 +321,6 @@ alwaysApply: true
 ### 5. Save and Next Steps
 
 - Create directories: `mkdir -p .claude/docs .claude/skills`
-- Save design document: `.claude/skills/1-app-design-document.mdc`
-- Update Claude rule: `.claude/skills/3-project-status.mdc`
+- Save design document: `.agents/rules/1-app-design-document.mdc`
+- Update Claude rule: `.agents/rules/status.mdc`
 - Suggest: "Would you like me to create a technical stack document next?"
