@@ -10,6 +10,9 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## March 2026 #29
 
+### March 29 #29.4
+- **`ai-menu`**: Fixed the streaming-start crash when the AI anchor is not mounted yet by re-checking the anchor inside the deferred positioning effect before calling `toDOMNode`.
+
 ### March 28 #29.3
 - `editor-ai`, `editor-basic`, `playground-demo`, `slate-to-html`: Normalized example editor values with `normalizeStaticValue` so prerendered demos keep stable node IDs and avoid hydration mismatches.
 
