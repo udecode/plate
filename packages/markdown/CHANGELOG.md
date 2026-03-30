@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 52.3.19
+
+### Patch Changes
+
+- [#4926](https://github.com/udecode/plate/pull/4926) by [@zbeyens](https://github.com/zbeyens) – Fix ordered markdown lists starting above `1` losing their numbering after `editor.tf.setValue()`
+
 ## 52.3.10
 
 ### Patch Changes
