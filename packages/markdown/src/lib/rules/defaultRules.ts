@@ -510,7 +510,7 @@ export const defaultRules: MdRules = {
           const itemNodes = Array.isArray(result) ? result : [result];
 
           // Add list properties to each node
-          itemNodes.forEach((node: any) => {
+          itemNodes.forEach((node: any, nodeIndex: number) => {
             const itemContent: TListElement = {
               ...node,
               indent,
@@ -527,6 +527,9 @@ export const defaultRules: MdRules = {
             }
             if (isOrdered) {
               itemContent.listStart = startIndex + index;
+              if (index === 0 && nodeIndex === 0 && itemContent.listStart > 1) {
+                itemContent.listRestartPolite = itemContent.listStart;
+              }
             }
 
             items.push(itemContent);

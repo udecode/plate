@@ -46,6 +46,11 @@
       "sourceType": "github",
       "computedHash": "09c9096e132640e201c4ffd592ffa144d949243ca7a71c5ef020e111927c495a"
     },
+    "dev-browser": {
+      "source": "sawyerhood/dev-browser",
+      "sourceType": "github",
+      "computedHash": "d50d11bbefdc1599d78900828dcb69d48e5091769d3f5ce10e06a60efe2405bf"
+    },
     "frontend-design": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
@@ -96,11 +101,6 @@
       "sourceType": "github",
       "computedHash": "117755128a6b66a3faf32d0bb9740837b1ab4471286dda6c4c5674d803fbbbe5"
     },
-    "test-browser": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "46ecb19a6dc4010dc10bcd7accc31154caf7215e8f6a26c01920a7477c2b9236"
-    },
     "todo-create": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
@@ -115,11 +115,6 @@
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
       "computedHash": "0299f567ea43a7c73466e7952120ea0814e4c692b68a1c4ef1ff1355364d7d2a"
-    },
-    "trace": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "a143a495d43ba5f5151eb7ef2e00b4c41af25d9603619af0fec00fcd6834716c"
     }
   }
 }
