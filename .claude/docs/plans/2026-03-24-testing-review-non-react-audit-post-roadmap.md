@@ -13,8 +13,8 @@ Rerun the repo testing review after the completed non-React roadmap, keep the te
 
 ## Inputs
 
-- `.claude/skills/testing-review/testing-review.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/testing-review.mdc`
+- `.agents/rules/testing.mdc`
 - prior non-React roadmap and audit outputs under `.claude/docs/plans/`
 
 ## Status

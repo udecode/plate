@@ -213,12 +213,15 @@ const initialValue: Value = [
   },
 ];
 
-const plugins = [
+export const createVersionSnapshot = (value: Value): Value => cloneDeep(value);
+
+const basePlugins = [
   ...BasicMarksKit,
   InlinePlugin.withComponent(InlineElement),
   InlineVoidPlugin.withComponent(InlineVoidElement),
-  DiffPlugin,
 ];
+
+const diffPlugins = [...basePlugins, DiffPlugin];
 
 function VersionHistoryPlate(props: Omit<PlateProps, 'children'>) {
   return (
@@ -236,18 +239,22 @@ type DiffProps = {
 function Diff({ current, previous }: DiffProps) {
   const diffValue = React.useMemo(() => {
     const editor = createPlateEditor({
-      plugins,
+      plugins: diffPlugins,
     });
 
-    return computeDiff(previous, cloneDeep(current), {
-      isInline: editor.api.isInline,
-      lineBreakChar: '¶',
-    }) as Value;
+    return computeDiff(
+      createVersionSnapshot(previous),
+      createVersionSnapshot(current),
+      {
+        isInline: editor.api.isInline,
+        lineBreakChar: '¶',
+      }
+    ) as Value;
   }, [previous, current]);
 
   const editor = usePlateEditor(
     {
-      plugins,
+      plugins: diffPlugins,
       value: diffValue,
     },
     [diffValue]
@@ -267,10 +274,14 @@ function Diff({ current, previous }: DiffProps) {
 }
 
 export default function VersionHistoryDemo() {
-  const [revisions, setRevisions] = React.useState<Value[]>([initialValue]);
+  const [revisions, setRevisions] = React.useState<Value[]>(() => [
+    createVersionSnapshot(initialValue),
+  ]);
   const [selectedRevisionIndex, setSelectedRevisionIndex] =
     React.useState<number>(0);
-  const [value, setValue] = React.useState<Value>(initialValue);
+  const [value, setValue] = React.useState<Value>(() =>
+    createVersionSnapshot(initialValue)
+  );
 
   const selectedRevisionValue = React.useMemo(
     () => revisions[selectedRevisionIndex],
@@ -278,17 +289,17 @@ export default function VersionHistoryDemo() {
   );
 
   const saveRevision = () => {
-    setRevisions([...revisions, value]);
+    setRevisions([...revisions, createVersionSnapshot(value)]);
   };
 
   const editor = usePlateEditor({
-    plugins,
-    value: initialValue,
+    plugins: basePlugins,
+    value: createVersionSnapshot(initialValue),
   });
 
   const editorRevision = usePlateEditor(
     {
-      plugins,
+      plugins: basePlugins,
       value: selectedRevisionValue,
     },
     [selectedRevisionValue]
@@ -299,7 +310,7 @@ export default function VersionHistoryDemo() {
       <Button onClick={saveRevision}>Save revision</Button>
 
       <VersionHistoryPlate
-        onChange={({ value }) => setValue(value)}
+        onChange={({ value }) => setValue(createVersionSnapshot(value))}
         editor={editor}
       />
 

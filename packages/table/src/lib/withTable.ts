@@ -1,4 +1,9 @@
-import type { OverrideEditor, TElement } from 'platejs';
+import {
+  PathApi,
+  type OverrideEditor,
+  type SlateEditor,
+  type TElement,
+} from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 
@@ -16,11 +21,55 @@ import { withInsertTextTable } from './withInsertTextTable';
 import { withNormalizeTable } from './withNormalizeTable';
 import { withSetFragmentDataTable } from './withSetFragmentDataTable';
 import { withTableCellSelection } from './withTableCellSelection';
+import { moveSelectionFromCell } from './transforms';
+
+const VISUAL_LINE_TOLERANCE = 1;
+
+const getRangeClientRects = (domRange?: Pick<Range, 'getClientRects'> | null) =>
+  Array.from(domRange?.getClientRects?.() ?? []).filter(
+    (rect) => rect.height > 0
+  );
+
+const shouldMoveSelectionFromCell = (
+  editor: SlateEditor,
+  {
+    blockPath,
+    point,
+    reverse,
+  }: {
+    blockPath: number[];
+    point: { offset: number; path: number[] };
+    reverse: boolean;
+  }
+) => {
+  const blockRange = editor.api.range(blockPath);
+  const isAtBlockEdge = reverse
+    ? editor.api.isStart(point, blockPath)
+    : editor.api.isEnd(point, blockPath);
+
+  if (!blockRange) return isAtBlockEdge;
+
+  const caretRects = getRangeClientRects(
+    editor.api.toDOMRange({ anchor: point, focus: point })
+  );
+  const blockRects = getRangeClientRects(editor.api.toDOMRange(blockRange));
+
+  if (caretRects.length === 0 || blockRects.length === 0) return isAtBlockEdge;
+
+  const caretRect = caretRects.at(-1)!;
+  const boundary = reverse
+    ? Math.min(...blockRects.map((rect) => rect.top))
+    : Math.max(...blockRects.map((rect) => rect.bottom));
+
+  return reverse
+    ? caretRect.top <= boundary + VISUAL_LINE_TOLERANCE
+    : caretRect.bottom >= boundary - VISUAL_LINE_TOLERANCE;
+};
 
 export const withTable: OverrideEditor<TableConfig> = (ctx) => {
   const {
     editor,
-    tf: { selectAll, tab },
+    tf: { moveLine, selectAll, tab },
     type,
   } = ctx;
   const cellSelection = withTableCellSelection(ctx);
@@ -32,6 +81,54 @@ export const withTable: OverrideEditor<TableConfig> = (ctx) => {
       ...cellSelection.api,
     },
     transforms: {
+      moveLine: (options) => {
+        const apply = () => {
+          if (!editor.api.isCollapsed()) return;
+
+          const cellEntry = editor.api.block({
+            match: { type: getCellTypes(editor) },
+          });
+
+          if (!cellEntry) return;
+
+          const point = editor.selection?.anchor;
+
+          if (!point) return;
+
+          const blockEntry = editor.api.block({ at: point });
+
+          if (!blockEntry) return;
+
+          const [, cellPath] = cellEntry;
+          const [, blockPath] = blockEntry;
+
+          const adjacentBlock = options.reverse
+            ? editor.api.previous({ at: blockPath, block: true })
+            : editor.api.next({ at: blockPath, block: true });
+
+          if (adjacentBlock && PathApi.isAncestor(cellPath, adjacentBlock[1])) {
+            return;
+          }
+
+          const shouldMoveAcrossCell = shouldMoveSelectionFromCell(editor, {
+            blockPath,
+            point,
+            reverse: options.reverse,
+          });
+
+          if (!shouldMoveAcrossCell) {
+            return;
+          }
+
+          return moveSelectionFromCell(editor, {
+            reverse: options.reverse,
+          });
+        };
+
+        if (apply()) return true;
+
+        return moveLine(options);
+      },
       selectAll: () => {
         const apply = () => {
           const table = editor.api.above<TElement>({ match: { type } });

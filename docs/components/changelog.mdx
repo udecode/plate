@@ -10,6 +10,15 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## March 2026 #29
 
+### March 29 #29.4
+- **`ai-menu`**: Fixed the streaming-start crash when the AI anchor is not mounted yet by re-checking the anchor inside the deferred positioning effect before calling `toDOMNode`.
+
+### March 28 #29.3
+- `editor-ai`, `editor-basic`, `playground-demo`, `slate-to-html`: Normalized example editor values with `normalizeStaticValue` so prerendered demos keep stable node IDs and avoid hydration mismatches.
+
+### March 26 #29.2
+- **`ai-kit`**: Fix insert-mode streaming preview so chunk updates stay out of undo history and selection survives accept, undo, and redo
+
 ### March 11 #29.1
 - `table-node`: Improved large-table editing performance by applying column widths at the table level, row heights at the row level, and keeping editable resize handles aligned with the table control column.
 

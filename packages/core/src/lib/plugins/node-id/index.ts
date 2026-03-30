@@ -3,4 +3,5 @@
  */
 
 export * from './NodeIdPlugin';
+export * from './normalizeStaticValue';
 export * from './withNodeId';

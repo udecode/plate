@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 52.3.12
+
+### Patch Changes
+
+- [#4902](https://github.com/udecode/plate/pull/4902) by [@zbeyens](https://github.com/zbeyens) – Fix redo to restore selection after undoing history batches that clear the active selection
+
 ## 52.3.4
 
 ### Patch Changes

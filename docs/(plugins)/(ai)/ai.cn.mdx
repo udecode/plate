@@ -14,7 +14,7 @@ docs:
 
 - **上下文感知命令菜单**，可适应光标、文本选择和块选择工作流。
 - **流式 Markdown/MDX 插入**，支持表格、列和代码块，由 `streamInsertChunk` 驱动。
-- **插入和聊天审查模式**，通过 `withAIBatch` 和 `tf.ai.undo()` 实现撤销安全批处理。
+- **插入和聊天审查模式**，通过局部回滚的插入预览以及 `withAIBatch` 和 `tf.ai.undo()` 实现撤销安全批处理。
 - **块选择感知变换**，使用 `tf.aiChat.replaceSelection` 和 `tf.aiChat.insertBelow` 替换或追加整个部分。
 - **与 `@ai-sdk/react` 直接集成**，使 `api.aiChat.submit` 可以从 Vercel AI SDK 助手流式传输响应。
 - **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
@@ -108,9 +108,16 @@ export const editor = createPlateEditor({
 扩展 `AIChatPlugin` 以连接流式传输和编辑。此示例镜像了 `AIKit` 的核心逻辑，同时保持 UI 无头。
 
 ```tsx
-import { AIChatPlugin, applyAISuggestions, streamInsertChunk, useChatChunk } from '@platejs/ai/react';
-import { withAIBatch } from '@platejs/ai';
-import { getPluginType, KEYS, PathApi } from 'platejs';
+import cloneDeep from 'lodash/cloneDeep';
+import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
+import {
+  AIChatPlugin,
+  applyAISuggestions,
+  getInsertPreviewStart,
+  streamInsertChunk,
+  useChatChunk,
+} from '@platejs/ai/react';
+import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
 import { usePluginOption } from 'platejs/react';
 
 export const aiChatPlugin = AIChatPlugin.extend({
@@ -130,10 +137,22 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     useChatChunk({
       onChunk: ({ chunk, isFirst, text }) => {
-        if (mode === 'insert') {
-          if (isFirst) {
-            editor.setOption(AIChatPlugin, 'streaming', true);
+        if (isFirst && mode === 'insert') {
+          const { startBlock, startInEmptyParagraph } =
+            getInsertPreviewStart(editor);
 
+          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
+            originalBlocks:
+              startInEmptyParagraph &&
+              startBlock &&
+              ElementApi.isElement(startBlock)
+                ? [cloneDeep(startBlock)]
+                : [],
+          });
+
+          editor.setOption(AIChatPlugin, 'streaming', true);
+
+          editor.tf.withoutSaving(() => {
             editor.tf.insertNodes(
               {
                 children: [{ text: '' }],
@@ -143,21 +162,21 @@ export const aiChatPlugin = AIChatPlugin.extend({
                 at: PathApi.next(editor.selection!.focus.path.slice(0, 1)),
               }
             );
-          }
+          });
+        }
 
-          if (!getOption('streaming')) return;
+        if (mode === 'insert') {
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming')) return;
 
-          withAIBatch(
-            editor,
-            () => {
+            editor.tf.withScrolling(() => {
               streamInsertChunk(editor, chunk, {
                 textProps: {
                   [getPluginType(editor, KEYS.ai)]: true,
                 },
               });
-            },
-            { split: isFirst }
-          );
+            });
+          });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
@@ -182,9 +201,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```
 
 - `useChatChunk`：监视 `UseChatHelpers` 状态并生成增量块。
+- `tf.ai.beginPreview`：在写入首个未保存的预览块之前，捕获插入模式预览的回滚块切片和选区。
 - `streamInsertChunk`：将 Markdown/MDX 流式传输到文档中，尽可能重用现有块。
 - `applyAISuggestions`：当 `toolName === 'edit'` 时，将响应转换为临时建议节点。
-- `withAIBatch`：标记历史批次，使 `tf.ai.undo()` 仅还原最后一次 AI 生成的更改。
+- `withAIBatch`：标记已保存的 AI 批次，使建议审查和已接受的 AI 更改保持可撤销。
 
 扩展插件时，请提供您自己的 `render` 组件（工具栏按钮、浮动菜单等）。
 
@@ -637,9 +657,52 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 移除标记为 AI 生成的文本节点。
 
+### `tf.ai.beginPreview(options?)`
+
+捕获插入模式 AI 预览的回滚块切片和选区。在写入首个未保存的预览块之前调用一次。
+
+<API name="beginPreview">
+<APIParameters>
+  <APIItem name="options" type="{ originalBlocks?: Value }" optional>预览将覆盖的顶层块。若预览是在现有内容之后插入，则传 `[]`。</APIItem>
+</APIParameters>
+<APIReturns type="boolean">当存储了新的预览回滚点时返回 `true`；若预览状态已存在则返回 `false`。</APIReturns>
+</API>
+
+### `tf.ai.acceptPreview()`
+
+将当前预览作为一次新的可撤销批次提交，移除仅预览使用的标记，并清除预览状态。
+
+<API name="acceptPreview">
+<APIReturns type="boolean">当活动预览被提交时返回 `true`。</APIReturns>
+</API>
+
+### `tf.ai.cancelPreview()`
+
+恢复当前预览的回滚点，并清除预览状态。
+
+<API name="cancelPreview">
+<APIReturns type="boolean">当活动预览被恢复时返回 `true`。</APIReturns>
+</API>
+
+### `tf.ai.discardPreview()`
+
+清除预览状态而不恢复内容。当预览内容应该保留在文档中时使用它。
+
+<API name="discardPreview">
+<APIReturns type="boolean">当活动预览状态被清除时返回 `true`。</APIReturns>
+</API>
+
+### `tf.ai.hasPreview()`
+
+报告当前是否存在插入模式预览的回滚点。
+
+<API name="hasPreview">
+<APIReturns type="boolean">当存在预览回滚状态时返回 `true`。</APIReturns>
+</API>
+
 ### `tf.ai.undo()`
 
-如果最新的历史条目是由 `withAIBatch` 创建的并包含 AI 内容，则撤销它。清除配对的重做条目以避免重新应用 AI 输出。
+如果最新的 AI 历史条目由 `withAIBatch` 创建，则撤销它。若当前存在插入模式预览，则优先取消该预览，而不是回放每个流式块。两种情况下都会避免通过重做重新应用 AI 输出。
 
 ## 自定义
 

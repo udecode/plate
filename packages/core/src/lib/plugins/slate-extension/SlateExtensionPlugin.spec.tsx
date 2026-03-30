@@ -6,6 +6,7 @@ import { jsxt } from '@platejs/test-utils';
 jsxt;
 
 import { createSlateEditor } from '../../editor';
+import { NodeIdPlugin } from '../node-id/NodeIdPlugin';
 import { SlateExtensionPlugin } from './SlateExtensionPlugin';
 
 describe('SlateExtensionPlugin', () => {
@@ -510,5 +511,36 @@ describe('editor.tf.setValue', () => {
     editor.tf.setValue();
 
     expect(editor.children).toEqual(output.children);
+  });
+});
+
+describe('editor.tf.resetBlock', () => {
+  it('preserves the configured node id key', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          options: {
+            idKey: 'key',
+          },
+        }),
+      ],
+      value: [
+        {
+          children: [{ text: 'test' }],
+          foo: 'bar',
+          key: 'keep-me',
+          type: 'h1',
+        },
+      ],
+    });
+
+    editor.tf.resetBlock({ at: [0] });
+
+    expect(editor.children[0]).toMatchObject({
+      children: [{ text: 'test' }],
+      key: 'keep-me',
+      type: 'p',
+    });
+    expect((editor.children[0] as any).foo).toBeUndefined();
   });
 });

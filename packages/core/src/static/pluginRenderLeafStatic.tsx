@@ -28,6 +28,7 @@ export const pluginRenderLeafStatic = (
         attributes: { ...(leaf.attributes as any) },
         editor,
         node: leaf,
+        path: props.path,
         plugin,
         props: props as any,
       }) as any;
@@ -103,6 +104,7 @@ export const pipeRenderLeafStatic = (
 
     const ctxProps = getRenderNodeStaticProps({
       editor,
+      path: props.path,
       props: { attributes, ...props } as any,
     }) as any;
 

@@ -13,8 +13,8 @@ Rerun fresh repo coverage after the completed `score >= 5` batch, then regenerat
 
 ## Inputs
 
-- `.claude/skills/task/task.mdc`
-- `.claude/skills/testing/testing.mdc`
+- `.agents/rules/task.mdc`
+- `.agents/rules/testing.mdc`
 - `.claude/docs/plans/2026-03-06-test-suite-cleanup-plan.md`
 - `.claude/docs/plans/2026-03-09-test-suite-excellence-plan.md`
 - `.claude/docs/plans/2026-03-17-*`

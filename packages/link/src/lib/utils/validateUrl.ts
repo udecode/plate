@@ -1,4 +1,4 @@
-import { type SlateEditor, sanitizeUrl } from 'platejs';
+import { type SlateEditor, isUrl as defaultIsUrl, sanitizeUrl } from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
@@ -8,10 +8,11 @@ const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
 export const validateUrl = (editor: SlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
     editor.getOptions(BaseLinkPlugin);
+  const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;
 
   // Allow internal links starting with /
-  if (url.startsWith('/')) {
-    return true;
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    return customIsUrl ? customIsUrl(url) : true;
   }
 
   // For strings starting with #, check if it's a markdown heading
@@ -19,7 +20,7 @@ export const validateUrl = (editor: SlateEditor, url: string): boolean => {
     if (MARKDOWN_HEADING_PATTERN.test(url)) {
       return false; // This is a markdown heading, not a valid link
     }
-    return true; // This is an anchor link
+    return customIsUrl ? customIsUrl(url) : true;
   }
 
   // Check custom validator first if provided

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/code-block",
-  "version": "52.3.10",
+  "version": "52.3.16",
   "description": "Code block plugin for Plate",
   "keywords": [
     "plate",
@@ -45,7 +45,7 @@
     "lowlight": "^3.3.0"
   },
   "peerDependencies": {
-    "platejs": ">=52.3.9",
+    "platejs": ">=52.3.16",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

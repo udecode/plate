@@ -12,6 +12,10 @@ import {
   type TElement,
 } from 'platejs';
 
+import {
+  AI_PREVIEW_KEY,
+  hasAIPreview,
+} from '../../../lib/transforms/aiStreamSnapshot';
 import { AIChatPlugin } from '../AIChatPlugin';
 import { remarkStreamdownPendingTail } from './remarkStreamdownPendingTail';
 import { streamDeserializeMd } from './streamDeserializeMd';
@@ -36,6 +40,18 @@ type StreamInsertRuntimeState = {
   startPath: Path;
 };
 
+type BuildReplayRuntimeStateOptions = {
+  markdownSource: string;
+  nextBlocks: TElement[];
+  previousRuntimeState?: StreamInsertRuntimeState;
+  startPath: Path;
+};
+
+type NextBlocksResult = {
+  blocks: StreamingBlock[];
+  stablePrefixLength: number;
+};
+
 const streamInsertRuntime = new WeakMap<
   SlateEditor,
   StreamInsertRuntimeState
@@ -51,12 +67,8 @@ const getNextPath = (path: Path, length: number) => {
   return result;
 };
 
-function cloneBlock<TValue>(value: TValue): TValue {
-  return JSON.parse(JSON.stringify(value)) as TValue;
-}
-
 function pushTextNode(
-  children: Array<Record<string, unknown>>,
+  children: Record<string, unknown>[],
   text: string,
   props: Record<string, unknown> = {}
 ) {
@@ -224,11 +236,12 @@ function areNodesEqual(left: unknown, right: unknown): boolean {
 
 function getSharedTopLevelPrefixLength(
   currentBlocks: TElement[],
-  nextBlocks: TElement[]
+  nextBlocks: TElement[],
+  initialLength = 0
 ) {
   const maxLength = Math.min(currentBlocks.length, nextBlocks.length);
 
-  let index = 0;
+  let index = Math.min(initialLength, maxLength);
 
   while (
     index < maxLength &&
@@ -257,6 +270,35 @@ function getNodeStartOffset(node: unknown) {
 
   return typeof startOffset === 'number' ? startOffset : 0;
 }
+
+const withPreviewElementProps = (
+  editor: PlateEditor,
+  options: SteamInsertChunkOptions
+): SteamInsertChunkOptions => {
+  if (!hasAIPreview(editor)) return options;
+
+  return {
+    ...options,
+    elementProps: {
+      ...options.elementProps,
+      [AI_PREVIEW_KEY]: true,
+    },
+  };
+};
+
+export const getInsertPreviewStart = (editor: SlateEditor) => {
+  const path = getCurrentBlockPath(editor);
+  const startBlock = editor.api.node(path)?.[0];
+
+  return {
+    path,
+    startBlock,
+    startInEmptyParagraph:
+      !!startBlock &&
+      NodeApi.string(startBlock).length === 0 &&
+      startBlock.type === getPluginType(editor, KEYS.p),
+  };
+};
 
 function isEmptyParagraphBlock(
   editor: PlateEditor,
@@ -305,11 +347,32 @@ function getStreamdownPendingMetadata(root: unknown) {
   };
 }
 
+function canReuseReplayRuntimeState(
+  markdownSource: string,
+  previousRuntimeState: StreamInsertRuntimeState | undefined
+) {
+  if (!previousRuntimeState) return false;
+  if (!markdownSource.startsWith(previousRuntimeState.source)) return false;
+
+  const appendedChunk = markdownSource.slice(
+    previousRuntimeState.source.length
+  );
+
+  if (appendedChunk.length === 0) return true;
+
+  return (
+    !previousRuntimeState.source.endsWith('\n') && !appendedChunk.includes('\n')
+  );
+}
+
 function buildReplayRuntimeState(
   editor: PlateEditor,
-  markdownSource: string,
-  nextBlocks: TElement[],
-  startPath: Path
+  {
+    markdownSource,
+    nextBlocks,
+    previousRuntimeState,
+    startPath,
+  }: BuildReplayRuntimeStateOptions
 ): StreamInsertRuntimeState {
   if (markdownSource.length === 0 || nextBlocks.length === 0) {
     return {
@@ -320,12 +383,31 @@ function buildReplayRuntimeState(
     };
   }
 
+  if (canReuseReplayRuntimeState(markdownSource, previousRuntimeState)) {
+    return {
+      replayStartOffset: previousRuntimeState!.replayStartOffset,
+      source: markdownSource,
+      stableBlockCount: previousRuntimeState!.stableBlockCount,
+      startPath,
+    };
+  }
+
   let replayStartOffset = 0;
+  const parseSource =
+    previousRuntimeState &&
+    markdownSource.startsWith(previousRuntimeState.source) &&
+    previousRuntimeState.replayStartOffset <= markdownSource.length
+      ? markdownSource.slice(previousRuntimeState.replayStartOffset)
+      : markdownSource;
+  const parseOffset =
+    parseSource === markdownSource
+      ? 0
+      : (previousRuntimeState?.replayStartOffset ?? 0);
 
   try {
     const pluginRemarkPlugins =
       editor.getOptions(MarkdownPlugin).remarkPlugins ?? [];
-    const root = markdownToAstProcessor(editor, markdownSource, {
+    const root = markdownToAstProcessor(editor, parseSource, {
       remarkPlugins: [...pluginRemarkPlugins, remarkStreamdownPendingTail],
     });
     const pending = getStreamdownPendingMetadata(root);
@@ -349,7 +431,7 @@ function buildReplayRuntimeState(
       };
     }
 
-    replayStartOffset = getNodeStartOffset(root.children.at(-1));
+    replayStartOffset = parseOffset + getNodeStartOffset(root.children.at(-1));
   } catch {
     return {
       replayStartOffset: 0,
@@ -377,6 +459,20 @@ function buildReplayRuntimeState(
     };
   }
 
+  if (
+    previousRuntimeState &&
+    markdownSource.startsWith(previousRuntimeState.source) &&
+    replayStartOffset === previousRuntimeState.replayStartOffset &&
+    previousRuntimeState.stableBlockCount <= nextBlocks.length
+  ) {
+    return {
+      replayStartOffset,
+      source: markdownSource,
+      stableBlockCount: previousRuntimeState.stableBlockCount,
+      startPath,
+    };
+  }
+
   const replayBlocks = deserializeStreamingMarkdown(
     editor,
     markdownSource.slice(replayStartOffset)
@@ -395,9 +491,12 @@ function getNextBlocks(
   markdownSource: string,
   currentBlocks: TElement[],
   runtimeState: StreamInsertRuntimeState | undefined
-) {
+): NextBlocksResult {
   if (markdownSource.length === 0) {
-    return [];
+    return {
+      blocks: [],
+      stablePrefixLength: 0,
+    };
   }
 
   if (
@@ -406,18 +505,25 @@ function getNextBlocks(
     runtimeState.replayStartOffset <= markdownSource.length &&
     runtimeState.stableBlockCount <= currentBlocks.length
   ) {
+    const stablePrefixLength = Math.min(
+      runtimeState.stableBlockCount,
+      currentBlocks.length
+    );
     const replayBlocks = deserializeStreamingMarkdown(
       editor,
       markdownSource.slice(runtimeState.replayStartOffset)
     );
 
-    return [
-      ...currentBlocks.slice(0, runtimeState.stableBlockCount),
-      ...replayBlocks,
-    ];
+    return {
+      blocks: [...currentBlocks.slice(0, stablePrefixLength), ...replayBlocks],
+      stablePrefixLength,
+    };
   }
 
-  return deserializeStreamingMarkdown(editor, markdownSource);
+  return {
+    blocks: deserializeStreamingMarkdown(editor, markdownSource),
+    stablePrefixLength: 0,
+  };
 }
 
 function removeInitialEmptyParagraph(editor: PlateEditor, path: Path) {
@@ -439,13 +545,14 @@ export function streamInsertChunk(
   chunk: string,
   options: SteamInsertChunkOptions = {}
 ) {
+  const insertOptions = withPreviewElementProps(editor, options);
   const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
   const isFreshStream = _blockPath === null || _blockChunks.length === 0;
   const previousRuntimeState = streamInsertRuntime.get(editor);
 
   const startPath =
     isFreshStream || !previousRuntimeState
-      ? getCurrentBlockPath(editor)
+      ? getInsertPreviewStart(editor).path
       : previousRuntimeState.startPath;
 
   if (isFreshStream) {
@@ -457,22 +564,24 @@ export function streamInsertChunk(
   const currentBlocks = ((editor.children as TElement[]) ?? []).slice(
     startIndex
   );
-  const nextBlocks = getNextBlocks(
+  const nextBlocksResult = getNextBlocks(
     editor,
     markdownSource,
     currentBlocks,
     isFreshStream ? undefined : previousRuntimeState
   );
+  const nextBlocks = nextBlocksResult.blocks;
   const sharedPrefixLength = getSharedTopLevelPrefixLength(
     currentBlocks,
-    nextBlocks
+    nextBlocks,
+    nextBlocksResult.stablePrefixLength
   );
-  const nextRuntimeState = buildReplayRuntimeState(
-    editor,
+  const nextRuntimeState = buildReplayRuntimeState(editor, {
     markdownSource,
     nextBlocks,
-    startPath
-  );
+    previousRuntimeState: isFreshStream ? undefined : previousRuntimeState,
+    startPath,
+  });
 
   if (
     sharedPrefixLength === currentBlocks.length &&
@@ -508,12 +617,9 @@ export function streamInsertChunk(
       index < nextBlocks.length;
       index += 1
     ) {
-      editor.tf.insertNodes(
-        nodesWithProps(editor, [cloneBlock(nextBlocks[index]) as any], options),
-        {
-          at: [startIndex + index],
-        }
-      );
+      editor.tf.insertNodes(nodesWithProps(editor, [nextBlocks[index] as any], insertOptions), {
+        at: [startIndex + index],
+      });
     }
   });
 

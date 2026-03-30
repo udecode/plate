@@ -1,5 +1,23 @@
 # @platejs/ai
 
+## 52.3.18
+
+### Patch Changes
+
+- Updated `@platejs/table`.
+
+## 52.3.17
+
+### Patch Changes
+
+- Updated `@platejs/table`.
+
+## 52.3.12
+
+### Patch Changes
+
+- [#4902](https://github.com/udecode/plate/pull/4902) by [@zbeyens](https://github.com/zbeyens) – Fix insert-mode AI preview history so streamed chunks stay out of undo history and selection survives accept, undo, and redo
+
 ## 52.3.10
 
 ### Patch Changes

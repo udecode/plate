@@ -15,15 +15,13 @@ export const overrideSelectionFromCell = (
 
   if (
     !editor.dom.currentKeyboardEvent ||
-    !['up', 'down', 'shift+up', 'shift+right', 'shift+down', 'shift+left'].some(
-      (key) => {
-        const valid = isHotkey(key, editor.dom.currentKeyboardEvent!);
+    !['shift+up', 'shift+right', 'shift+down', 'shift+left'].some((key) => {
+      const valid = isHotkey(key, editor.dom.currentKeyboardEvent!);
 
-        if (valid) hotkey = key;
+      if (valid) hotkey = key;
 
-        return valid;
-      }
-    ) ||
+      return valid;
+    }) ||
     !editor.selection?.focus ||
     !newSelection?.focus ||
     !editor.api.isAt({
@@ -50,7 +48,7 @@ export const overrideSelectionFromCell = (
   }
 
   const prevSelection = editor.selection;
-  const reverse = ['shift+up', 'up'].includes(hotkey);
+  const reverse = hotkey === 'shift+up';
 
   setTimeout(() => {
     moveSelectionFromCell(editor, {
