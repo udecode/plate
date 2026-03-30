@@ -10,6 +10,77 @@ jsxt;
 describe('deserializeMdList - comprehensive coverage', () => {
   const editor = createTestEditor([BaseListPlugin]);
 
+  it('preserves ordered-list starts after setValue normalizes the value', () => {
+    const editor = createTestEditor([BaseListPlugin]);
+    const input = `
+1. First list item
+
+Break between lists.
+
+2. Second list item
+3. Third list item
+`.trim();
+
+    const value = deserializeMd(editor, input);
+
+    expect(value).toMatchObject([
+      {
+        children: [{ text: 'First list item' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Break between lists.' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Second list item' }],
+        indent: 1,
+        listStart: 2,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Third list item' }],
+        indent: 1,
+        listStart: 3,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ]);
+
+    editor.tf.setValue(value);
+
+    expect(editor.children).toMatchObject([
+      {
+        children: [{ text: 'First list item' }],
+        indent: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Break between lists.' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Second list item' }],
+        indent: 1,
+        listStart: 2,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Third list item' }],
+        indent: 1,
+        listStart: 3,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ]);
+  });
+
   it('deserializes a single Markdown string containing all list edge cases', () => {
     /**
      * Explanation of this Markdown:
