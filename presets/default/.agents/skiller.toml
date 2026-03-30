@@ -1,4 +1,5 @@
-default_agents = [ "claude-code", "codex" ]
+# Default agents to apply when --agents flag is not specified
+default_agents = ["claude-code", "codex"]
 
 [rules]
 merge_strategy = "cursor"
@@ -18,7 +19,7 @@ merge_strategy = "merge"
 
 [mcp_servers.plate]
 command = "npx"
-args = [ "-y", "shadcn@latest", "mcp" ]
+args = ["-y", "shadcn@latest", "mcp"]
 
 [agents.claude-code]
 enabled = true
