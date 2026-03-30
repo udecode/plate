@@ -42,22 +42,29 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
    - Testing or coverage work: triggered by coverage, regressions, test-suite phases, hotspots, package testing, or similar language.
    - Program or batch work: triggered by multiple packages, phases, buckets, or ordered slices.
    - Ordinary one-shot work: bug, feature, refactor, docs, review, or investigation that can be finished as a single slice.
-5. Classify task complexity before implementation:
+5. Classify whether this is heavyweight framework or library work:
+   - Heavyweight work: architecture or public API redesign, breaking changes, major cross-package refactors, benchmarking, profiling strategy, performance comparison, scalability work, framework comparison, migration analysis, RFCs, proposals, or spec-first major changes.
+   - Non-heavyweight work: ordinary bugs, one-package features, docs-only edits, routine test work, small refactors, or normal issue execution even when non-trivial.
+6. If the task is heavyweight work:
+   - load `major-task` immediately
+   - treat `major-task` as the source of truth for workflow and helper selection
+   - do not quietly inflate this task flow into a research swarm
+7. If the task is not heavyweight work, classify task complexity before implementation:
    - Non-trivial task: multi-step work, research-heavy work, phased execution, or anything likely to take more than a handful of tool calls.
    - Trivial task: quick question, small edit, or other work that does not need persistent working memory.
-6. If the task is non-trivial:
+8. If the task is non-trivial:
    - load `planning-with-files` before implementation
    - use persistent planning files or the repo's equivalent planning structure so progress survives context loss
    - follow local repo overrides for where planning files live
-7. If the task is testing or coverage work:
+9. If the task is testing or coverage work:
    - restate it as test work, not generic feature work
    - load `testing` first and use that testing policy as the source of truth
    - choose the smallest honest seam before loading `tdd`
-8. If the task is program or batch work:
+10. If the task is program or batch work:
    - restate the ordered scope and hard constraints
    - do not treat the whole batch as one implementation unit
    - default to completing the first slice cleanly unless the user explicitly asks for a broader sweep
-9. GitHub issue rules:
+11. GitHub issue rules:
    - Resolve bare issue numbers like `#555` against the current repo with `gh repo view --json nameWithOwner -q '.nameWithOwner'`.
    - Fetch GitHub issues with:
      ```bash
@@ -65,7 +72,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
      ```
    - Fetch GitHub PRs with `gh pr view ... --json`.
    - If the input is ambiguous and not clearly a GitHub issue token or URL, do not guess.
-10. For any tracker source, restate for yourself:
+12. For any tracker source, restate for yourself:
 
 - source type
 - source id
@@ -77,8 +84,8 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - whether there is a real browser surface to verify
 - likely root-cause layer: call site, helper, abstraction seam, or public API
 
-11. Read repo instructions and nearby implementation patterns before editing.
-12. If the task changes code:
+13. Read repo instructions and nearby implementation patterns before editing.
+14. If the task changes code:
 
 - if already on a relevant feature branch, continue there
 - otherwise check out `main`, pull the latest `main`, then create a repo-convention branch before editing
@@ -88,8 +95,8 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - in this repo, otherwise prefer `codex/<slug>`
 - run install or setup only when the repo or task actually needs it
 
-13. If the task does not change code, skip branch and setup noise.
-14. If anything important is still ambiguous after the source-of-truth pass and nearby code reading, ask the user the smallest useful clarifying question.
+15. If the task does not change code, skip branch and setup noise.
+16. If anything important is still ambiguous after the source-of-truth pass and nearby code reading, ask the user the smallest useful clarifying question.
 
 ## Tracked Task Rules
 
@@ -122,6 +129,9 @@ Apply this section only when the task source is a tracker item.
 - `planning-with-files`
   Use for any non-trivial task that needs persistent working memory, phased execution, or likely more than a handful of tool calls.
   Follow repo-specific overrides for where planning artifacts should live.
+- `major-task`
+  Use for architecture or public API redesign, benchmarking or scalability work, framework comparison or migration analysis, major cross-package refactors, or RFC and proposal work.
+  When it triggers during intake, it becomes the source of truth instead of this file.
 - `testing`
   Use when the task is primarily about tests, coverage, regression gaps, or phase-based suite work.
   Load it before `tdd` for testing programs.
@@ -134,10 +144,10 @@ Apply this section only when the task source is a tracker item.
   Do not load it for tiny isolated edits.
 - `debug`
   Use when the failure mode is still fuzzy after the first repro pass or first failing test.
-- `brainstorm`
+- `ce:brainstorm`
   Use when requirements are still ambiguous after reading the source of truth and nearby code.
-- `dig` or framework-docs research
-  Use when touching unfamiliar, version-sensitive, or unstable third-party APIs.
+- `framework-docs-researcher`
+  Use when touching unfamiliar, version-sensitive, or unstable third-party APIs after checking local clones and docs per AGENTS.
 - `dev-browser`
   Use only when there is a real browser surface to verify.
   Require real browser proof only for browser or UI tasks.
@@ -154,8 +164,10 @@ Apply this section only when the task source is a tracker item.
 - `ce-compound`
   Use only after verified, non-trivial work that produced reusable knowledge.
   Never load it at the start.
-- `ce-review`, `kieran-typescript-reviewer`, `code-simplicity-reviewer`
+- `ce-review`, `correctness-reviewer`, `maintainability-reviewer`, `project-standards-reviewer`, `code-simplicity-reviewer`
   Use only for risky, large, user-facing, or architecture-sensitive changes.
+- `agent-native-reviewer`
+  Use only when the change touches `.agents/**`, `.claude/**`, AI/tooling surfaces, commands, or user actions that an agent should also be able to perform.
 
 ## Execution Path
 
