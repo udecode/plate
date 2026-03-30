@@ -100,6 +100,9 @@ describe('getTopTableCell', () => {
     ) as any as SlateEditor;
     const editor = createEditorInstance(mergedInput);
 
-    expect(getTopTableCell(editor)?.[0].id).toBe('c11');
+    expect(getTopTableCell(editor)).toEqual([
+      expect.objectContaining({ id: 'c11' }),
+      [0, 0, 0],
+    ]);
   });
 });
