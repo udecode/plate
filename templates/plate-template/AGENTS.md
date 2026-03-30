@@ -3,9 +3,11 @@
 
 <!-- Source: .agents/AGENTS.md -->
 
+- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `bun install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - ALWAYS read and understand relevant files before proposing edits. Do not speculate about code you have not inspected.
-- Never browse GitHub, use `gh` instead. Use `dig` skill when the user asks a question about a library, needs to understand a library's API, or when you need information about a library that you don't know about.
+- Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
+- For repo research, use `spawn_agent(... agent_type=\"explorer\")` and return file-backed findings from docs, structure, exports, examples, and tests only.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Proactively use Skill(tdd) when it adds value; skip TDD for high-friction tests like slow React or browser flows.
 
@@ -32,7 +34,7 @@ When using the following skills, override the default behavior.
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run the local verification that actually matters here. At minimum: `bun run typecheck`, `bun run lint:fix`, and `bun run build` if the task touched app behavior or build config.
-- **plan:** Include test-browser in acceptance criteria for browser features.
+- **plan:** Include `dev-browser` in acceptance criteria for browser features.
 - **deepen-plan:** Context7 only when not covered by skills.
 - **work:** UI tasks require browser verification before marking complete. Never guess.
 

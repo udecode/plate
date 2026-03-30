@@ -338,6 +338,8 @@ If a plan is found, read its **Requirements Trace** (R1, R2, etc.) and **Impleme
 
 Read the diff and file list from Stage 1. The 4 always-on personas and 2 CE always-on agents are automatic. For each cross-cutting and stack-specific conditional persona in the persona catalog included below, decide whether the diff warrants it. This is agent judgment, not keyword matching.
 
+**`previous-comments` is PR-only.** Only select this persona when Stage 1 gathered PR metadata (PR number or URL was provided as an argument, or `gh pr view` returned metadata for the current branch). Skip it entirely for standalone branch reviews with no associated PR -- there are no prior comments to check.
+
 Stack-specific personas are additive. A Rails UI change may warrant `kieran-rails` plus `julik-frontend-races`; a TypeScript API diff may warrant `kieran-typescript` plus `api-contract` and `reliability`.
 
 For CE conditional agents, check if the diff includes files matching `db/migrate/*.rb`, `db/schema.rb`, or data backfill scripts.
@@ -376,11 +378,7 @@ Pass the resulting path list to the `project-standards` persona inside a `<stand
 
 Persona sub-agents do focused, scoped work and should use cheaper/faster models to reduce cost and latency. The orchestrator itself stays on the default (most capable) model.
 
-| Platform | Persona agent model | How to set |
-|----------|-------------------|------------|
-| **Claude Code** | Haiku | Pass `model: "haiku"` in the Agent tool call |
-| **Codex** | GPT-4o mini | Set the model parameter to `gpt-4o-mini` in the agent spawn config |
-| **Other platforms** | Cheapest capable model available | Use the platform's equivalent of a fast/cheap tier |
+Use the platform's cheapest capable model for all persona and CE sub-agents. In Claude Code, pass `model: "haiku"` in the Agent tool call. On other platforms, use the equivalent fast/cheap tier (e.g., `gpt-4o-mini` in Codex). If the platform has no model override mechanism or the available model names are unknown, omit the model parameter and let agents inherit the default -- a working review on the parent model is better than a broken dispatch from an unrecognized model name.
 
 CE always-on agents (agent-native-reviewer, learnings-researcher) and CE conditional agents (schema-drift-detector, deployment-verification-agent) also use the cheaper model tier since they perform scoped, focused work.
 
@@ -437,10 +435,10 @@ Convert multiple reviewer JSON payloads into one deduplicated, confidence-gated 
 
 ### Stage 6: Synthesize and present
 
-Assemble the final report using the review output template included below:
+Assemble the final report using **pipe-delimited markdown tables for findings** from the review output template included below. The table format is mandatory for finding rows in interactive mode — do not render findings as freeform text blocks or horizontal-rule-separated prose. Other report sections (Applied Fixes, Learnings, Coverage, etc.) use bullet lists and the `---` separator before the verdict, as shown in the template.
 
 1. **Header.** Scope, intent, mode, reviewer team with per-conditional justifications.
-2. **Findings.** Grouped by severity (P0, P1, P2, P3). Each finding shows file, issue, reviewer(s), confidence, and synthesized route.
+2. **Findings.** Rendered as pipe-delimited tables grouped by severity (`### P0 -- Critical`, `### P1 -- High`, `### P2 -- Moderate`, `### P3 -- Low`). Each finding row shows `#`, file, issue, reviewer(s), confidence, and synthesized route. Omit empty severity levels. Never render findings as freeform text blocks or numbered lists.
 3. **Requirements Completeness.** Include only when a plan was found in Stage 2b. For each requirement (R1, R2, etc.) and implementation unit in the plan, report whether corresponding work appears in the diff. Use a simple checklist: met / not addressed / partially addressed. Routing depends on `plan_source`:
    - **`explicit`** (caller-provided or PR body): Flag unaddressed requirements as P1 findings with `autofix_class: manual`, `owner: downstream-resolver`. These enter the residual actionable queue and can become todos.
    - **`inferred`** (auto-discovered): Flag unaddressed requirements as P3 findings with `autofix_class: advisory`, `owner: human`. These stay in the report only — no todos, no autonomous follow-up. An inferred plan match is a hint, not a contract.
@@ -456,6 +454,8 @@ Assemble the final report using the review output template included below:
 12. **Verdict.** Ready to merge / Ready with fixes / Not ready. Fix order if applicable. When an `explicit` plan has unaddressed requirements, the verdict must reflect it — a PR that's code-clean but missing planned requirements is "Not ready" unless the omission is intentional. When an `inferred` plan has unaddressed requirements, note it in the verdict reasoning but do not block on it alone.
 
 Do not include time estimates.
+
+**Format verification:** Before delivering the report, verify the findings sections use pipe-delimited table rows (`| # | File | Issue | ... |`) not freeform text. If you catch yourself rendering findings as prose blocks separated by horizontal rules or bullet points, stop and reformat into tables.
 
 ### Headless output format
 
@@ -567,8 +567,9 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
 **Interactive mode**
 
 - Apply `safe_auto -> review-fixer` findings automatically without asking. These are safe by definition.
-- Ask a policy question only when `gated_auto` or `manual` findings remain after safe fixes:
+- Ask a policy question **using the platform's blocking question tool** (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini) only when `gated_auto` or `manual` findings remain after safe fixes. Do not replace with a conversational open-ended question. Adapt the options to match what actually remains:
 
+  **When `gated_auto` findings are present** (with or without `manual`):
   ```
   Safe fixes have been applied. What should I do with the remaining findings?
   1. Review and approve specific gated fixes (Recommended)
@@ -576,6 +577,14 @@ After presenting findings and verdict (Stage 6), route the next steps by mode. R
   3. Report only -- no further action
   ```
 
+  **When only `manual` findings remain** (no `gated_auto`):
+  ```
+  Safe fixes have been applied. The remaining findings need manual resolution. What should I do?
+  1. Leave as residual work (Recommended)
+  2. Report only -- no further action
+  ```
+
+  If no blocking question tool is available, present the applicable numbered options as text and wait for the user's selection before proceeding.
 - If no `gated_auto` or `manual` findings remain after safe fixes, skip the policy question entirely — report what was fixed and proceed to next steps.
 - Only include `gated_auto` findings in the fixer queue after the user explicitly approves the specific items. Do not widen the queue based on severity alone.
 
@@ -689,7 +698,7 @@ Spawned when the orchestrator identifies relevant patterns in the diff. The orch
 | `data-migrations` | `compound-engineering:review:data-migrations-reviewer` | Migration files, schema changes, backfill scripts, data transformations |
 | `reliability` | `compound-engineering:review:reliability-reviewer` | Error handling, retry logic, circuit breakers, timeouts, background jobs, async handlers, health checks |
 | `adversarial` | `compound-engineering:review:adversarial-reviewer` | Diff has >=50 changed non-test, non-generated, non-lockfile lines, OR touches auth, payments, data mutations, external API integrations, or other high-risk domains |
-| `previous-comments` | `compound-engineering:review:previous-comments-reviewer` | Reviewing a PR that has existing review comments or review threads from prior review rounds |
+| `previous-comments` | `compound-engineering:review:previous-comments-reviewer` | **PR-only.** Reviewing a PR that has existing review comments or review threads from prior review rounds. Skip entirely when no PR metadata was gathered in Stage 1. |
 
 ## Stack-Specific Conditional (5 personas)
 
@@ -768,7 +777,12 @@ Rules:
 - Every finding MUST include at least one evidence item grounded in the actual code.
 - Set pre_existing to true ONLY for issues in unchanged code that are unrelated to this diff. If the diff makes the issue newly relevant, it is NOT pre-existing.
 - You are operationally read-only. You may use non-mutating inspection commands, including read-oriented `git` / `gh` commands, to gather evidence. Do not edit files, change branches, commit, push, create PRs, or otherwise mutate the checkout or repository state.
-- Set `autofix_class` conservatively. Use `safe_auto` only when the fix is local, deterministic, and low-risk. Use `gated_auto` when a concrete fix exists but changes behavior/contracts/permissions. Use `manual` for actionable residual work. Use `advisory` for report-only items that should not become code-fix work.
+- Set `autofix_class` accurately -- not every finding is `advisory`. Use this decision guide:
+  - `safe_auto`: The fix is local and deterministic — the fixer can apply it mechanically without design judgment. Examples: extracting a duplicated helper, adding a missing nil/null check, fixing an off-by-one, adding a missing test for an untested code path, removing dead code.
+  - `gated_auto`: A concrete fix exists but it changes contracts, permissions, or crosses a module boundary in a way that deserves explicit approval. Examples: adding authentication to an unprotected endpoint, changing a public API response shape, switching from soft-delete to hard-delete.
+  - `manual`: Actionable work that requires design decisions or cross-cutting changes. Examples: redesigning a data model, choosing between two valid architectural approaches, adding pagination to an unbounded query.
+  - `advisory`: Report-only items that should not become code-fix work. Examples: noting a design asymmetry the PR improves but doesn't fully resolve, flagging a residual risk, deployment notes.
+  Do not default to `advisory` when uncertain -- if a concrete fix is obvious, classify it as `safe_auto` or `gated_auto`.
 - Set `owner` to the default next actor for this finding: `review-fixer`, `downstream-resolver`, `human`, or `release`.
 - Set `requires_verification` to true whenever the likely fix needs targeted tests, a focused re-review, or operational validation before it should be trusted.
 - suggested_fix is optional. Only include it when the fix is obvious and correct. A bad suggestion is worse than none.
@@ -954,10 +968,10 @@ Issues in unchanged code that the diff didn't touch and doesn't interact with. M
       "P3": "Low-impact, narrow scope, minor improvement. User's discretion."
     },
     "autofix_classes": {
-      "safe_auto": "Local, deterministic code or test fix suitable for the in-skill fixer in autonomous mode.",
-      "gated_auto": "Concrete fix exists, but it changes behavior, permissions, contracts, or other sensitive areas that deserve explicit approval.",
-      "manual": "Actionable issue that should become residual work rather than an in-skill autofix.",
-      "advisory": "Informational or operational item that should be surfaced in the report only."
+      "safe_auto": "Local, deterministic code or test fix suitable for the in-skill fixer. Examples: extract duplicated helper, add missing nil check, fix off-by-one, add missing test, remove dead code. Do not default to advisory when a concrete safe fix exists.",
+      "gated_auto": "Concrete fix exists, but it changes behavior, permissions, contracts, or other sensitive areas that deserve explicit approval. Examples: add auth to unprotected endpoint, change API response shape.",
+      "manual": "Actionable issue that requires design decisions or cross-cutting changes. Examples: redesign data model, add pagination strategy, choose between architectural approaches.",
+      "advisory": "Informational or operational item that should be surfaced in the report only. Examples: design asymmetry the PR improves but does not fully resolve, residual risk notes, deployment considerations."
     },
     "owners": {
       "review-fixer": "The in-skill fixer can own this when policy allows.",
@@ -1064,9 +1078,30 @@ Use this **exact format** when presenting synthesized review findings. Findings 
 > **Fix order:** P0 auth bypass -> P1 memory/pagination -> P2 error handling if straightforward
 ```
 
+## Anti-patterns
+
+Do NOT produce output like this. The following is wrong:
+
+```markdown
+Findings
+
+Sev: P1
+File: foo.go:42
+Issue: Some problem description
+Reviewer(s): adversarial
+Confidence: 0.85
+Route: advisory -> human
+────────────────────────────────────────
+Sev: P2
+File: bar.go:99
+Issue: Another problem
+```
+
+This fails because: no pipe-delimited tables, no severity-grouped `###` headers, uses box-drawing horizontal rules, no numbered findings, no `## Code Review Results` title, and the verdict is not in a blockquote. Always use the table format from the example above.
+
 ## Formatting Rules
 
-- **Pipe-delimited markdown tables** -- never ASCII box-drawing characters
+- **Pipe-delimited markdown tables** for findings -- never ASCII box-drawing characters or per-finding horizontal-rule separators between entries (the report-level `---` before the verdict is still required)
 - **Severity-grouped sections** -- `### P0 -- Critical`, `### P1 -- High`, `### P2 -- Moderate`, `### P3 -- Low`. Omit empty severity levels.
 - **Always include file:line location** for code review issues
 - **Reviewer column** shows which persona(s) flagged the issue. Multiple reviewers = cross-reviewer agreement.

@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes - four-phase framework (root cause investigation, pattern analysis, hypothesis testing, implementation) that ensures understanding before attempting solutions
+description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes - four-phase framework with built-in backward tracing for deep-stack failures, ensuring root-cause understanding before implementation
 ---
 
 # Systematic Debugging
@@ -119,14 +119,60 @@ You MUST complete each phase before proceeding to the next.
 
    **WHEN error is deep in call stack:**
 
-   **REQUIRED SUB-SKILL:** Use trace skill for backward tracing technique
-
-   **Quick version:**
+   Use built-in backward tracing:
 
    - Where does bad value originate?
    - What called this with bad value?
    - Keep tracing up until you find the source
    - Fix at source, not at symptom
+
+### Built-In Deep-Stack Tracing
+
+Use this when the bug appears far away from the real trigger.
+
+**Typical signals:**
+
+- Error happens deep in execution, not at the entry point
+- Stack trace is long
+- You can see the failure site but not where the bad value came from
+- The tempting fix is at the symptom point
+
+**Tracing process:**
+
+1. Observe the symptom.
+2. Find the immediate cause.
+3. Ask what called it.
+4. Keep tracing up until you find the first bad input, invalid assumption, or wrong trigger.
+5. Fix there, then add defense-in-depth at lower layers if useful.
+
+**Mini example:**
+
+```typescript
+await execFileAsync("git", ["init"], { cwd: projectDir });
+```
+
+- Immediate cause: `git init` runs in the wrong directory
+- Next question: who passed `projectDir`?
+- Next question: where did that bad `projectDir` come from?
+- Root cause might be much higher up than the failing line
+
+**When manual tracing stalls, add instrumentation before the dangerous operation:**
+
+```typescript
+async function gitInit(directory: string) {
+  const stack = new Error().stack;
+  console.error("DEBUG git init:", {
+    directory,
+    cwd: process.cwd(),
+    nodeEnv: process.env.NODE_ENV,
+    stack,
+  });
+
+  await execFileAsync("git", ["init"], { cwd: directory });
+}
+```
+
+**Tracing rule:** never stop at "this line crashed." Keep going until you can say which caller, input, or state transition created the bad value.
 
 ### Phase 2: Pattern Analysis
 
@@ -323,10 +369,6 @@ If systematic investigation reveals issue is truly environmental, timing-depende
 **But:** 95% of "no root cause" cases are incomplete investigation.
 
 ## Integration with Other Skills
-
-**This skill requires using:**
-
-- **trace** - REQUIRED when error is deep in call stack (see Phase 1, Step 5)
 
 **Testing skills (when needed):**
 

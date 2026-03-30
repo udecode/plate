@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "source": "/Users/zbeyens/git/dotai/presets/default",
+  "mode": "preset",
+  "files": {
+    ".agents/AGENTS.md": "fe7b8075fa3874d5f886d0a2461240259d8ae55d5592a4ae51785b67b3200712",
+    ".agents/rules/1-app-design-document.mdc": "f81c9a88fd027677e9adcbd4b855fef08eaf473401838283ac7fc2b6dbe0193f",
+    ".agents/rules/2-tech-stack.mdc": "f81c9a88fd027677e9adcbd4b855fef08eaf473401838283ac7fc2b6dbe0193f",
+    ".agents/rules/3-project-status.mdc": "830d60ac9b625ee6c26464cb5d307290a5baee7c2a08e04f3b136c866a89b099",
+    ".agents/rules/agent-browser-issue.mdc": "0dc22e22ff370354892436fc177b77468d35428eb16a5f9143958f571e71f448",
+    ".agents/rules/browser-debug-setup.mdc": "3a76ebbfede0ac228b0ac59c337848284440f16b56ac2429d3203200e586eeb0",
+    ".agents/rules/components.mdc": "aa52c49733c5a8fb611138c5bb047ce75175aaffd9f6215e2e1d2582300b946f",
+    ".agents/rules/react.mdc": "a63e70815a32058ded147bc04d22383b9f5513ae47fa4301723e7843b4b9718e",
+    ".agents/rules/testing.mdc": "3d47bb757fc6abb7a1aac6620dd3f5c87f140d7ec2d742feb96b9a253d656260",
+    ".claude/prompt.yml": "615158b9361530784aa2065869e44647d0ae5bbe4ca9d2c80e0a3e5493e8dfed",
+    ".claude/scripts/post-compact.sh": "39de9c210476a996330b1c8424598e26cd81cc9972bf02b5d506305490c5f02a",
+    ".claude/scripts/session-start.sh": "50cdda399a1e9a88f63d3a16a604e2c1aa8f46c14faf0546d1da438ba993cf58",
+    ".claude/scripts/user-prompt-submit.sh": "0b08ada7ae9e42ec99e92ccdc9f647f456c056d1e0e6aef046dfd22a1762c785",
+    ".claude/settings.json": "528ea8aaa1deda1fca448804005a8befa3e67e5a5ff81ca08c56b1cc703d9fcf",
+    ".codex/config.toml": "ecbc1c6882b84e1bbad57070ef5f11cc062945361428705ee5f27d3166a70cf8",
+    "skills-lock.json": "0013f105a654f1a9b3ef93c50986e7336801f15ad68fc943d54a51ca2d8e729a"
+  },
+  "mergedConfigSourceHash": "e351618c1c2da4fefb9c7838c7cc16de8ecdbc9925b4d54d538c01cb95cd64e4"
+}
