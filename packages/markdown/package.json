@@ -1,6 +1,6 @@
 {
   "name": "@platejs/markdown",
-  "version": "52.3.10",
+  "version": "52.3.19",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "markdown",
