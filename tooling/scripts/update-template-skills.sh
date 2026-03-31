@@ -4,13 +4,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PRESET_SOURCE="$BASE_DIR"
+PRESET_SOURCE="$BASE_DIR/tooling"
 
 sync_template_skills() {
   local template_dir="$1"
 
   bun x skiller@latest install "$PRESET_SOURCE" \
-    --preset default \
+    --preset preset \
     --project-root "$template_dir" \
     -y
 

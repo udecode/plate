@@ -76,6 +76,11 @@
       "sourceType": "github",
       "computedHash": "bb0e78ae6fab6c597b232de929a34e09e65d7514e395e12dc59024ff3fecc345"
     },
+    "onboarding": {
+      "source": "EveryInc/compound-engineering-plugin",
+      "sourceType": "github",
+      "computedHash": "d65934cd2dd7f6b1c2391668328cf5b5da9968db742d8268ea1e46aa87dbb6c5"
+    },
     "planning-with-files": {
       "source": "othmanadi/planning-with-files",
       "sourceType": "github",

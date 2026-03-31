@@ -78,6 +78,8 @@ Do not default to `pnpm typecheck` for package work in this repo. Package type c
 
 If filtered package builds still leave unresolved workspace-package imports during typecheck, run `pnpm build` at the repo root before treating the failure as real package debt.
 
+If a local-only build/runtime failure points at corrupted files under `node_modules/.bun` or other non-versioned env state while CI is green, clean local env before changing repo code: remove `node_modules`, relevant app caches like `apps/www/.next` and `apps/www/.contentlayer`, remove `.turbo`, then rerun `pnpm install`.
+
 **CLOSEOUT GATE**: If a task edits code, tests, package manifests, or build/type/lint config, do not post a final handoff until the relevant verification ran in this same turn. If you skip a required check or it fails, say that plainly and do not present the task as done.
 
 If package work changed exports or file layout, run `pnpm brl` before the final verification pass. If `pnpm brl` writes files, keep those barrel updates in the change.
