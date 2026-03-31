@@ -11,7 +11,6 @@ import {
 
 import type { TableConfig } from './BaseTablePlugin';
 
-import { overrideSelectionFromCell } from './transforms/overrideSelectionFromCell';
 import { computeCellIndices, getCellTypes } from './utils';
 
 // TODO: tests
@@ -87,8 +86,6 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
             }
           }
         }
-
-        overrideSelectionFromCell(editor, newSelection);
       }
 
       const opType =
