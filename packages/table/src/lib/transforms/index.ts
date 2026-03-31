@@ -14,3 +14,4 @@ export * from './setCellBackground';
 export * from './setTableColSize';
 export * from './setTableMarginLeft';
 export * from './setTableRowSize';
+export * from './shouldMoveSelectionFromCell';
