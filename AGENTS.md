@@ -33,9 +33,16 @@
 
 Use those skills when relevant:
 
+- `task` for normal repo task execution
+- `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
 - `tdd`
 - `ce-review` when doing a code review
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
+
+Plate-specific CE exclusions:
+
+- Do not install or reference these by default in this repo unless the user explicitly asks: `data-integrity-guardian`, `data-migration-expert`, `data-migrations-reviewer`, `schema-drift-detector`, `deployment-verification-agent`, `dhh-rails-reviewer`, `kieran-rails-reviewer`, `kieran-python-reviewer`, `previous-comments-reviewer`, `pr-comment-resolver`, `figma-design-sync`.
+- Reason: Plate is a framework/editor repo. Data migration, Rails, deployment, PR-thread, and Figma workflow agents are mostly overkill or the wrong shape here.
 
 When using the following skills, override the default behavior.
 
@@ -61,9 +68,9 @@ When using the following skills, override the default behavior.
 
 `ce-*`:
 
-- **plan:** Include test-browser in acceptance criteria for browser features
+- **plan:** Include `dev-browser` in acceptance criteria for browser features
 - **deepen-plan:** Context7 only when not covered by skills
-- **work:** UI tasks require test-browser BEFORE marking complete. Never guess.
+- **work:** UI tasks require `dev-browser` BEFORE marking complete. Never guess.
 
 ## Commands
 
