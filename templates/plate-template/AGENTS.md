@@ -17,7 +17,7 @@ When using the following skills, override the default behavior.
 
 `planning-with-files`:
 
-- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `docs/plans/`. Example: `docs/plans/2026-03-11-task.md`
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-03-11-task.md`
 
 `dev-browser`:
 

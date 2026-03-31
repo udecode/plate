@@ -4,17 +4,17 @@
     "ce:brainstorm": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "fd3ee21f80858f77c107d4fb0652129fc74d3bf580fe60718fb62a70afccd840"
+      "computedHash": "887c791672710af8002ec515d09b2c0de3495f2ca04834fc69be63a1ab097b82"
     },
     "ce:compound": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "c6e3649803f6875661d9744da95fece15bc56946092f3821231000731a5d5662"
+      "computedHash": "969b848c0e304a8d91c4caf8e01c1d5c71c51b52d6656696b73ae1b7d319e3cb"
     },
     "ce:compound-refresh": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "d1b15127a5994b5568d9fcca985dc3ba8259e4521ed20d3f28e94ae8df793bb9"
+      "computedHash": "83dcbe6d666e2c2dab65da3b9798ead8a3dd1bcb0c41dbd326601c2ee65163da"
     },
     "ce:ideate": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -24,7 +24,7 @@
     "ce:plan": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "3bf6680515cc720208783d93e6c8fa1a03b7016d8bcc34b758352ab2c5fc8a1f"
+      "computedHash": "e889cb762457c5d3280137b29beb3ba9cfc4f12b25ad2a11fc6ec8bddfb9287e"
     },
     "ce:review": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -34,7 +34,7 @@
     "ce:work": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "15298df61684fad587c7832db0a51224e870b9ca30ca41748a8ff91978d70a82"
+      "computedHash": "9d506291d5c9f302a6746df90b2c1d7737ba339a6f692e4a6d7e4ae1288dddce"
     },
     "coding-tutor": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -69,7 +69,7 @@
     "git-commit-push-pr": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "891e11eaaf292d86bf152789bbbbb0da3ebed45ecb38350361b1bbad0544ad7f"
+      "computedHash": "08485868a3586a4f2ced521a98b427a110b4979089cd3fad215974c589863eca"
     },
     "git-worktree": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -94,7 +94,7 @@
     "resolve-pr-feedback": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "3e8d8a6f1c7f8c970c5261569ecb1fb80d7c77df6c940bb8be9dc68b76b302ec"
+      "computedHash": "8970f59fe140185d3b9b0422b69d82cb2279262cd3d927ee78a4fc5c2f70eb26"
     },
     "tdd": {
       "source": "udecode/dotai",
