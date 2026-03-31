@@ -286,7 +286,7 @@ The language should be technical, precise, and include specific version numbers 
 
 ```bash
 # Create directory and save
-mkdir -p .claude/docs
+mkdir -p docs
 # Save to .agents/rules/2-tech-stack.mdc
 ```
 
