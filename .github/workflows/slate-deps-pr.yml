@@ -161,5 +161,5 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: update Slate deps"
+          git commit -m "chore: update"
           git push origin HEAD:main
