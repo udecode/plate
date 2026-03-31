@@ -6,7 +6,7 @@
   "description": "Documentation for Collaboration Demo",
   "files": [
     {
-      "path": "../../docs/examples/collaboration-example.mdx",
+      "path": "../../content/examples/collaboration-example.mdx",
       "content": "---\ntitle: Collaboration Demo\n---\n\n<ComponentPreview name=\"collaboration-demo\" />\n\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/collaboration-example.mdx"

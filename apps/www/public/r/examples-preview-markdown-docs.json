@@ -6,7 +6,7 @@
   "description": "Documentation for Preview Markdown",
   "files": [
     {
-      "path": "../../docs/examples/preview-markdown.mdx",
+      "path": "../../content/examples/preview-markdown.mdx",
       "content": "---\ntitle: Preview Markdown\n---\n\n<ComponentPreview name=\"preview-markdown-demo\" />\n",
       "type": "registry:file",
       "target": "content/docs/plate/examples/preview-markdown.mdx"

@@ -3,7 +3,7 @@
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
 
-- Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
+- Internal agent docs live under `docs/`, not `docs/`. Put solution docs in `docs/solutions/` and plans in `docs/plans/`.
 
 ## Git
 
@@ -19,7 +19,7 @@
 ## Packages
 
 - DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
-- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow .claude/docs/solutions/style.md for writing tone/structure.
+- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow docs/solutions/style.md for writing tone/structure.
 - Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles during package/app work. If local verification rewrites template files, restore them before handoff. Only change `templates/**` when the user explicitly asks for template work.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
@@ -43,9 +43,9 @@ When using the following skills, override the default behavior.
 
 `planning-with-files`:
 
-- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`.
-- For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `.claude/docs/plans/4510-fix-schema.md`
-- For non-ticket work, keep the date-based format. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `docs/plans/`.
+- For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `docs/plans/4510-fix-schema.md`
+- For non-ticket work, keep the date-based format. Example: `docs/plans/2026-02-07-fix-schema.md`
 
 `dev-browser`:
 

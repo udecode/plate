@@ -102,7 +102,7 @@ export const Doc = defineDocumentType(() => ({
 }));
 
 export default makeSource({
-  contentDirInclude: ['docs'],
+  contentDirInclude: ['content'],
   contentDirPath: '../..',
   documentTypes: [Doc],
   mdx: {
