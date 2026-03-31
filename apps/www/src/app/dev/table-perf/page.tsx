@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Profiler,
   useCallback,
@@ -745,7 +746,20 @@ export default function TablePerfPage() {
 
   return (
     <main className="container mx-auto p-8">
-      <h1 className="mb-6 font-bold text-2xl">Table Performance Test</h1>
+      <section className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-bold text-2xl">Table Performance Test</h1>
+
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/dev">Back to Dev</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/dev/markdown-stream-perf">
+              Open Markdown Stream Perf
+            </Link>
+          </Button>
+        </div>
+      </section>
 
       {/* Configuration */}
       <div className="mb-6 rounded-lg border p-4">
