@@ -4,14 +4,6 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  is-hotkey@0.2.0:
-    hash: wny6qemv7gyplkmkid2zcj6wlm
-    path: patches/is-hotkey@0.2.0.patch
-  react-dnd@16.0.1:
-    hash: ribknqslr5k7q2atjegsd7fvdq
-    path: patches/react-dnd@16.0.1.patch
-
 importers:
 
   .:
@@ -204,7 +196,7 @@ importers:
         version: 19.2.4
       react-dnd:
         specifier: 16.0.1
-        version: 16.0.1(patch_hash=ribknqslr5k7q2atjegsd7fvdq)(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4)
+        version: 16.0.1(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4)
       react-dnd-html5-backend:
         specifier: 16.0.1
         version: 16.0.1
@@ -597,7 +589,7 @@ importers:
         version: 8.10.1(date-fns@4.1.0)(react@19.2.4)
       react-dnd:
         specifier: 16.0.1
-        version: 16.0.1(patch_hash=ribknqslr5k7q2atjegsd7fvdq)(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4)
+        version: 16.0.1(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4)
       react-dnd-html5-backend:
         specifier: 16.0.1
         version: 16.0.1
@@ -998,7 +990,7 @@ importers:
         version: 2.6.0
       is-hotkey:
         specifier: ^0.2.0
-        version: 0.2.0(patch_hash=wny6qemv7gyplkmkid2zcj6wlm)
+        version: 0.2.0
       jotai:
         specifier: ~2.8.4
         version: 2.8.4(@types/react@19.2.7)(react@19.2.4)
@@ -16531,7 +16523,7 @@ snapshots:
 
   is-hexadecimal@2.0.1: {}
 
-  is-hotkey@0.2.0(patch_hash=wny6qemv7gyplkmkid2zcj6wlm): {}
+  is-hotkey@0.2.0: {}
 
   is-interactive@2.0.0: {}
 
@@ -18568,7 +18560,7 @@ snapshots:
     dependencies:
       dnd-core: 16.0.1
 
-  react-dnd@16.0.1(patch_hash=ribknqslr5k7q2atjegsd7fvdq)(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4):
+  react-dnd@16.0.1(@types/node@24.12.0)(@types/react@19.2.7)(react@19.2.4):
     dependencies:
       '@react-dnd/invariant': 4.0.2
       '@react-dnd/shallowequal': 4.0.2
@@ -19375,7 +19367,7 @@ snapshots:
     dependencies:
       '@juggle/resize-observer': 3.4.0
       direction: 1.0.4
-      is-hotkey: 0.2.0(patch_hash=wny6qemv7gyplkmkid2zcj6wlm)
+      is-hotkey: 0.2.0
       is-plain-object: 5.0.0
       lodash: 4.17.23
       scroll-into-view-if-needed: 3.1.0
@@ -19391,7 +19383,7 @@ snapshots:
     dependencies:
       '@juggle/resize-observer': 3.4.0
       direction: 1.0.4
-      is-hotkey: 0.2.0(patch_hash=wny6qemv7gyplkmkid2zcj6wlm)
+      is-hotkey: 0.2.0
       lodash: 4.17.23
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
@@ -19404,7 +19396,7 @@ snapshots:
     dependencies:
       '@testing-library/jest-dom': 6.6.3
       '@testing-library/react': 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      is-hotkey: 0.2.0(patch_hash=wny6qemv7gyplkmkid2zcj6wlm)
+      is-hotkey: 0.2.0
       jest-useragent-mock: 0.1.1
       lodash.clonedeep: 4.5.0
       react: 19.2.4

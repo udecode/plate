@@ -298,4 +298,74 @@ describe('setSelectedCellsBorder integration', () => {
       ).children
     );
   });
+
+  it('toggles the top border on the spanning cell above a merged column selection', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd colSpan={2} id="c11">
+              <hp>11</hp>
+            </htd>
+            <htd id="c13">
+              <hp>13</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd id="c21">
+              <hp>21</hp>
+            </htd>
+            <htd id="c22">
+              <hp>
+                22
+                <cursor />
+              </hp>
+            </htd>
+            <htd id="c23">
+              <hp>23</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createTableEditor(input);
+    const table = editor.children[0] as any;
+    const target = table.children[1].children[1] as TTableCellElement;
+
+    expect(target.id).toBe('c22');
+
+    setSelectedCellsBorder(editor, { border: 'top', cells: [target] });
+
+    expect(editor.children).toMatchObject(
+      (
+        <editor>
+          <htable>
+            <htr>
+              <htd borders={{ bottom: { size: 0 } }} colSpan={2} id="c11">
+                <hp>11</hp>
+              </htd>
+              <htd id="c13">
+                <hp>13</hp>
+              </htd>
+            </htr>
+            <htr>
+              <htd id="c21">
+                <hp>21</hp>
+              </htd>
+              <htd id="c22">
+                <hp>
+                  22
+                  <cursor />
+                </hp>
+              </htd>
+              <htd id="c23">
+                <hp>23</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ).children
+    );
+  });
 });

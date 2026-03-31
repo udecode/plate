@@ -1,0 +1,11 @@
+version = 1
+
+include = [
+  "../../.agents/rules/agent-browser-issue.mdc",
+  "../../.agents/rules/browser-debug-setup.mdc",
+  "../../.agents/rules/components.mdc",
+  "../../.agents/rules/grill-me.mdc",
+  "../../.agents/rules/hard-cut.mdc",
+  "../../.agents/rules/react.mdc",
+  "../../skills-lock.json",
+]
