@@ -8,6 +8,46 @@ import {
   KEY_SHIFT_EDGES,
   moveSelectionFromCell,
 } from '../lib';
+import {
+  getTableMoveSelectionContext,
+  hasAdjacentBlockInCell,
+  shouldMoveSelectionFromCell,
+} from '../lib/transforms/shouldMoveSelectionFromCell';
+
+const shouldMoveSingleCellSelection = (
+  editor: Parameters<KeyboardHandler<TableConfig>>[0]['editor'],
+  key: keyof typeof KEY_SHIFT_EDGES
+) => {
+  const context = getTableMoveSelectionContext(editor, editor.selection?.focus);
+
+  if (!context) return false;
+
+  const { blockPath, cellPath, point } = context;
+
+  if (key === 'shift+left') {
+    return editor.api.isStart(point, cellPath);
+  }
+
+  if (key === 'shift+right') {
+    return editor.api.isEnd(point, cellPath);
+  }
+
+  if (
+    hasAdjacentBlockInCell(editor, {
+      blockPath,
+      cellPath,
+      reverse: key === 'shift+up',
+    })
+  ) {
+    return false;
+  }
+
+  return shouldMoveSelectionFromCell(editor, {
+    blockPath,
+    point,
+    reverse: key === 'shift+up',
+  });
+};
 
 export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   editor,
@@ -48,13 +88,25 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
   };
 
   Object.keys(isKeyDown).forEach((key) => {
-    if (
-      isKeyDown[key] && // if many cells are selected
+    if (!isKeyDown[key]) return;
+
+    const handled =
       moveSelectionFromCell(editor, {
         edge: (KEY_SHIFT_EDGES as any)[key],
         reverse: key === 'shift+up',
-      })
-    ) {
+      }) ||
+      (shouldMoveSingleCellSelection(
+        editor,
+        key as keyof typeof KEY_SHIFT_EDGES
+      ) &&
+        moveSelectionFromCell(editor, {
+          at: editor.selection!,
+          edge: (KEY_SHIFT_EDGES as any)[key],
+          fromOneCell: true,
+          reverse: key === 'shift+up',
+        }));
+
+    if (handled) {
       event.preventDefault();
       event.stopPropagation();
     }
