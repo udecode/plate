@@ -1,4 +1,4 @@
-import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
+import { transformMarkdownStreamingChunks } from '@/registry/lib/markdown-streaming-chunks';
 
 export type PerfStats = {
   count: number;
@@ -28,28 +28,12 @@ export type StreamingPerfDataset = {
 export function buildStreamingPerfDataset(
   rawChunks: readonly string[]
 ): StreamingPerfDataset {
-  const transformedChunks: StreamingPerfChunk[] = [];
-  const joiner = new MarkdownJoiner();
-
-  for (const chunk of rawChunks) {
-    const processed = joiner.processText(chunk);
-
-    if (processed) {
-      transformedChunks.push({
-        chunk: processed,
-        delayInMs: joiner.delayInMs,
-      });
-    }
-  }
-
-  const remaining = joiner.flush();
-
-  if (remaining) {
-    transformedChunks.push({
-      chunk: remaining,
-      delayInMs: joiner.delayInMs,
-    });
-  }
+  const transformedChunks = transformMarkdownStreamingChunks(rawChunks).map(
+    ({ chunk, delayInMs }) => ({
+      chunk,
+      delayInMs,
+    })
+  );
 
   return {
     delayedChunkCount: transformedChunks.filter((chunk) => chunk.delayInMs > 0)
