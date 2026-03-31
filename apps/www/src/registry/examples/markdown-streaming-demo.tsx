@@ -4,6 +4,7 @@ import {
   Component,
   type ErrorInfo,
   type ReactNode,
+  startTransition,
   useEffect,
   useMemo,
   useRef,
@@ -19,7 +20,14 @@ import { cn } from '@/lib/utils';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { models } from '@/registry/components/editor/settings-dialog';
 import { CopilotKit } from '@/registry/components/editor/plugins/copilot-kit';
-import { MarkdownJoiner } from '@/registry/lib/markdown-joiner-transform';
+import {
+  appendMarkdownStreamingChunks,
+  createMarkdownStreamingChunkAccumulator,
+  flushMarkdownStreamingChunks,
+  type MarkdownStreamingChunk,
+  type MarkdownStreamingChunkAccumulator,
+  transformMarkdownStreamingChunks,
+} from '@/registry/lib/markdown-streaming-chunks';
 import {
   DEFAULT_PLAYBACK_BURST_SIZE,
   DEFAULT_PLAYBACK_DELAY_IN_MS,
@@ -33,6 +41,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const CAPITALIZE_REGEX = /([A-Z])/g;
 const FIRST_CHAR_REGEX = /^./;
+const TRAILING_LINEBREAK_REGEX = /(\n+)$/;
 const COPY_FEEDBACK_DURATION_MS = 1800;
 const DEFAULT_AI_MODEL = 'openai/gpt-4.1-mini';
 const DEFAULT_AI_PROMPT =
@@ -314,7 +323,7 @@ const testScenarios = {
 type ScenarioId = keyof typeof testScenarios;
 type SourceMode = 'preset' | 'ai' | 'pasted';
 type AiStreamStatus = 'idle' | 'loading' | 'streaming' | 'done' | 'error';
-type TChunk = { chunk: string; delayInMs: number; rawEndIndex: number };
+type TChunk = MarkdownStreamingChunk;
 type AppliedStreamingState = {
   appliedCount: number;
   sourceIdentity: string;
@@ -441,15 +450,10 @@ function applyChunk(editor: any, chunk: string) {
 
 function replayChunks(editor: any, chunks: string[], count: number) {
   resetStreamingState(editor);
+  const chunkBatch = chunks.slice(0, count).join('');
 
-  for (let index = 0; index < count; index += 1) {
-    const chunk = chunks[index];
-
-    if (!chunk) {
-      break;
-    }
-
-    applyChunk(editor, chunk);
+  if (chunkBatch.length > 0) {
+    applyChunk(editor, chunkBatch);
   }
 }
 
@@ -472,7 +476,7 @@ function splitChunksByLinebreak(chunks: readonly string[]) {
     const chunk = chunks[index];
     current.push({ index, text: chunk });
 
-    const match = /(\n+)$/.exec(chunk);
+    const match = TRAILING_LINEBREAK_REGEX.exec(chunk);
 
     if (match) {
       result.push({
@@ -494,32 +498,7 @@ function splitChunksByLinebreak(chunks: readonly string[]) {
 }
 
 function transformChunks(chunks: readonly string[]): TChunk[] {
-  const result: TChunk[] = [];
-  const joiner = new MarkdownJoiner();
-
-  for (const [index, chunk] of chunks.entries()) {
-    const processed = joiner.processText(chunk);
-
-    if (processed) {
-      result.push({
-        chunk: processed,
-        delayInMs: joiner.delayInMs,
-        rawEndIndex: index,
-      });
-    }
-  }
-
-  const remaining = joiner.flush();
-
-  if (remaining) {
-    result.push({
-      chunk: remaining,
-      delayInMs: joiner.delayInMs,
-      rawEndIndex: Math.max(chunks.length - 1, 0),
-    });
-  }
-
-  return result;
+  return transformMarkdownStreamingChunks(chunks);
 }
 
 function encodeEditorTree(editorChildren: unknown) {
@@ -603,6 +582,7 @@ export default function MarkdownStreamingDemo() {
   const [aiPrompt, setAiPrompt] = useState(DEFAULT_AI_PROMPT);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AI_MODEL);
   const [aiRawChunks, setAiRawChunks] = useState<string[]>([]);
+  const [aiTransformedChunks, setAiTransformedChunks] = useState<TChunk[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiStatus, setAiStatus] = useState<AiStreamStatus>('idle');
   const [aiProvider, setAiProvider] = useState<string | null>(null);
@@ -614,6 +594,12 @@ export default function MarkdownStreamingDemo() {
   >('idle');
   const [pastedChunks, setPastedChunks] = useState<string[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const aiChunkAccumulatorRef = useRef<MarkdownStreamingChunkAccumulator>(
+    createMarkdownStreamingChunkAccumulator()
+  );
+  const aiFlushFrameRef = useRef<number | null>(null);
+  const aiPendingRawChunksRef = useRef<string[]>([]);
+  const aiTransformedChunkCountRef = useRef(0);
   const copyStatusTimerRef = useRef<number | null>(null);
   const pasteStatusTimerRef = useRef<number | null>(null);
   const appliedStreamingStateRef = useRef<AppliedStreamingState>({
@@ -648,8 +634,9 @@ export default function MarkdownStreamingDemo() {
   }, [aiRawChunks, currentScenarioChunks, sourceMode]);
 
   const transformedCurrentChunks = useMemo(
-    () => transformChunks(rawChunks),
-    [rawChunks]
+    () =>
+      sourceMode === 'ai' ? aiTransformedChunks : transformChunks(rawChunks),
+    [aiTransformedChunks, rawChunks, sourceMode]
   );
 
   const currentMarkdown = useMemo(
@@ -697,6 +684,86 @@ export default function MarkdownStreamingDemo() {
     abortControllerRef.current = null;
   }
 
+  function clearAiChunkFlushFrame() {
+    if (aiFlushFrameRef.current != null) {
+      window.cancelAnimationFrame(aiFlushFrameRef.current);
+      aiFlushFrameRef.current = null;
+    }
+  }
+
+  function resetAiStreamingChunks() {
+    clearAiChunkFlushFrame();
+    aiChunkAccumulatorRef.current = createMarkdownStreamingChunkAccumulator();
+    aiPendingRawChunksRef.current = [];
+    aiTransformedChunkCountRef.current = 0;
+    setAiRawChunks([]);
+    setAiTransformedChunks([]);
+  }
+
+  function flushAiChunkQueue(options?: { final?: boolean }) {
+    clearAiChunkFlushFrame();
+
+    const pendingRawChunks = aiPendingRawChunksRef.current;
+    aiPendingRawChunksRef.current = [];
+
+    const nextTransformedChunks = appendMarkdownStreamingChunks(
+      aiChunkAccumulatorRef.current,
+      pendingRawChunks
+    );
+
+    if (options?.final) {
+      nextTransformedChunks.push(
+        ...flushMarkdownStreamingChunks(aiChunkAccumulatorRef.current)
+      );
+    }
+
+    if (pendingRawChunks.length === 0 && nextTransformedChunks.length === 0) {
+      return;
+    }
+
+    const nextTransformedChunkCount =
+      aiTransformedChunkCountRef.current + nextTransformedChunks.length;
+
+    aiTransformedChunkCountRef.current = nextTransformedChunkCount;
+
+    startTransition(() => {
+      if (pendingRawChunks.length > 0) {
+        setAiRawChunks((previous) => [...previous, ...pendingRawChunks]);
+      }
+
+      if (nextTransformedChunks.length > 0) {
+        setAiTransformedChunks((previous) => [
+          ...previous,
+          ...nextTransformedChunks,
+        ]);
+        setActiveIndex(nextTransformedChunkCount);
+      }
+    });
+  }
+
+  function scheduleAiChunkFlush() {
+    if (aiFlushFrameRef.current != null) {
+      return;
+    }
+
+    aiFlushFrameRef.current = window.requestAnimationFrame(() => {
+      aiFlushFrameRef.current = null;
+      flushAiChunkQueue();
+    });
+  }
+
+  function enqueueAiRawChunk(chunk: string) {
+    aiPendingRawChunksRef.current.push(chunk);
+    scheduleAiChunkFlush();
+  }
+
+  function hasQueuedOrAppliedAiChunks() {
+    return (
+      aiPendingRawChunksRef.current.length > 0 ||
+      aiChunkAccumulatorRef.current.rawChunkCount > 0
+    );
+  }
+
   async function handleCopyChunks() {
     try {
       await navigator.clipboard.writeText(
@@ -715,6 +782,7 @@ export default function MarkdownStreamingDemo() {
       initialValue = await navigator.clipboard.readText();
     } catch {}
 
+    // biome-ignore lint/suspicious/noAlert: dev-only chunk import helper for local debugging.
     const pastedValue = window.prompt(
       'Paste the chunk array exported from Copy chunks.',
       initialValue
@@ -728,6 +796,7 @@ export default function MarkdownStreamingDemo() {
       const parsedChunks = parseSerializedChunks(pastedValue);
 
       stopAiStream();
+      resetAiStreamingChunks();
       setSourceMode('pasted');
       setPastedChunks(parsedChunks);
       setAiStatus('idle');
@@ -748,6 +817,7 @@ export default function MarkdownStreamingDemo() {
 
   function switchToPresetMode(nextScenario?: ScenarioId) {
     stopAiStream();
+    resetAiStreamingChunks();
     setSourceMode('preset');
     setPastedChunks([]);
     setAiStatus('idle');
@@ -774,9 +844,9 @@ export default function MarkdownStreamingDemo() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    resetAiStreamingChunks();
     setSourceMode('ai');
     setAiError(null);
-    setAiRawChunks([]);
     setAiStatus('loading');
     setAiProvider(null);
     setIsPlaying(false);
@@ -844,7 +914,7 @@ export default function MarkdownStreamingDemo() {
           };
 
           if (event.type === 'chunk' && typeof event.chunk === 'string') {
-            setAiRawChunks((previous) => [...previous, event.chunk!]);
+            enqueueAiRawChunk(event.chunk);
           }
 
           if (typeof event.provider === 'string') {
@@ -870,7 +940,7 @@ export default function MarkdownStreamingDemo() {
         };
 
         if (event.type === 'chunk' && typeof event.chunk === 'string') {
-          setAiRawChunks((previous) => [...previous, event.chunk!]);
+          enqueueAiRawChunk(event.chunk);
         }
 
         if (typeof event.provider === 'string') {
@@ -882,15 +952,17 @@ export default function MarkdownStreamingDemo() {
         }
       }
 
+      flushAiChunkQueue({ final: true });
       setAiStatus((previous) =>
         previous === 'error' || previous === 'idle' ? previous : 'done'
       );
     } catch (error) {
       if (controller.signal.aborted) {
+        flushAiChunkQueue({ final: true });
         setAiStatus((previous) =>
           previous === 'done'
             ? previous
-            : aiRawChunks.length > 0
+            : hasQueuedOrAppliedAiChunks()
               ? 'done'
               : 'idle'
         );
@@ -909,6 +981,7 @@ export default function MarkdownStreamingDemo() {
   useEffect(
     () => () => {
       stopAiStream();
+      clearAiChunkFlushFrame();
 
       if (copyStatusTimerRef.current != null) {
         window.clearTimeout(copyStatusTimerRef.current);
@@ -996,18 +1069,12 @@ export default function MarkdownStreamingDemo() {
     }
 
     if (activeIndex > appliedState.appliedCount) {
-      for (
-        let index = appliedState.appliedCount;
-        index < activeIndex;
-        index += 1
-      ) {
-        const chunk = chunks[index];
+      const chunkBatch = chunks
+        .slice(appliedState.appliedCount, activeIndex)
+        .join('');
 
-        if (!chunk) {
-          break;
-        }
-
-        applyChunk(editor, chunk);
+      if (chunkBatch.length > 0) {
+        applyChunk(editor, chunkBatch);
       }
 
       appliedStreamingStateRef.current = {
@@ -1019,13 +1086,6 @@ export default function MarkdownStreamingDemo() {
 
     setTreeJson(encodeEditorTree(editor.children));
   }, [activeIndex, editor, sourceIdentity, transformedCurrentChunks]);
-
-  useEffect(() => {
-    if (sourceMode !== 'ai') return;
-    if (aiStatus === 'idle' || aiStatus === 'error') return;
-
-    setActiveIndex(transformedCurrentChunks.length);
-  }, [aiStatus, sourceMode, transformedCurrentChunks.length]);
 
   useEffect(() => {
     if (!isPlaying) return;

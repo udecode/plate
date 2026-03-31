@@ -312,13 +312,14 @@ export default function MarkdownStreamPerfPage() {
       index += benchmarkBurstSize
     ) {
       const stepStart = performance.now();
+      const chunkBatch = dataset.transformedChunks
+        .slice(index, index + benchmarkBurstSize)
+        .map((item) => item.chunk)
+        .join('');
 
-      for (const item of dataset.transformedChunks.slice(
-        index,
-        index + benchmarkBurstSize
-      )) {
+      if (chunkBatch.length > 0) {
         const applyStart = performance.now();
-        applyChunk(editor, item.chunk);
+        applyChunk(editor, chunkBatch);
         applyChunkSamples.push(performance.now() - applyStart);
       }
 

@@ -24,6 +24,18 @@ const getStreamedMarkdown = (chunks: string[]) => {
   return { editor, expected: deserializeMd(editor, chunks.join('')) };
 };
 
+const getChunkRegroupingState = (groupings: string[][]) => {
+  const fullSource = groupings[0]?.join('');
+  const expected = streamChunks(groupings[0] ?? []).children;
+
+  return {
+    expected,
+    fullSource,
+    outputs: groupings.map((chunks) => streamChunks(chunks).children),
+    sameSource: groupings.every((chunks) => chunks.join('') === fullSource),
+  };
+};
+
 describe('streamInsertChunk', () => {
   describe('paragraph boundaries', () => {
     it('starts a new paragraph after a trailing blank line', () => {
@@ -349,6 +361,63 @@ describe('streamInsertChunk', () => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
       expect(editor.children).toEqual(expected);
+    });
+  });
+
+  describe('chunk regrouping invariance', () => {
+    it.each([
+      [
+        'mixed inline formatting and paragraph boundaries',
+        [
+          [
+            'Intro',
+            '\n\nThis has **bo',
+            'ld** and <u>',
+            'underline',
+            '</u>',
+            '\n\ntail',
+          ],
+          ['Intro\n\nThis has **bold** ', 'and <u>underline</u>\n\n', 'tail'],
+          ['Intro\n\nThis has **bold** and <u>underline</u>\n\ntail'],
+        ],
+      ],
+      [
+        'ordered list restarts after a paragraph break',
+        [
+          ['1', '. First', '\n\nbridge', '\n\n2', '. Second'],
+          ['1. First\n\n', 'bridge\n\n2. Second'],
+          ['1. First\n\nbridge\n\n2. Second'],
+        ],
+      ],
+      [
+        'inline math and fenced code blocks',
+        [
+          [
+            'Equation ',
+            '$$a^2 ',
+            '+ b^2 ',
+            '= c^2$$',
+            '\n\n```ts',
+            '\nconst x = 1;\n',
+            '```\n\nafter',
+          ],
+          [
+            'Equation $$a^2 + b^2 = c^2$$\n\n',
+            '```ts\nconst x = 1;\n```\n\n',
+            'after',
+          ],
+          ['Equation $$a^2 + b^2 = c^2$$\n\n```ts\nconst x = 1;\n```\n\nafter'],
+        ],
+      ],
+    ])('keeps the final editor state stable for %s', (_label, groupings) => {
+      const { expected, outputs, sameSource } =
+        getChunkRegroupingState(groupings);
+
+      expect(sameSource).toBe(true);
+
+      for (const output of outputs) {
+        expect(output).toEqual(expected);
+      }
     });
   });
 });
