@@ -3,8 +3,6 @@
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
 
-- Internal agent docs live under `docs/`, not `docs/`. Put solution docs in `docs/solutions/` and plans in `docs/plans/`.
-
 ## Git
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
