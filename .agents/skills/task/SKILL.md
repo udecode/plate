@@ -26,6 +26,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - Do not default to research swarms, review swarms, or browser proof.
 - For verified code-changing work, default to creating or updating the PR unless the user explicitly said not to.
 - Do not default to compounding.
+- Before calling a task blocked on a repo-wide gate, rule out local install corruption once when the failure smells wrong for the diff.
 
 ## Intake
 
@@ -282,6 +283,12 @@ Keep verification mandatory but proportional.
 - Run lint when code changed and the repo expects it.
 - Run browser verification only for browser or UI tasks.
 - Run broader repo-wide gates only when repo instructions require them or the change scope justifies them.
+- If a failing `pnpm test`, `bun test`, or `pnpm check` shows local-corruption signals unrelated to the current diff, run `pnpm run reinstall` once and rerun the exact failing command before declaring the task blocked. Treat these as local-corruption signals:
+  - `Invalid hook call`
+  - `resolveDispatcher()` / null dispatcher crashes
+  - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
+  - mixed `.bun` and `.pnpm` React paths in the same failing stack
+  - missing-module or package-resolution garbage that does not match the diff
 - If the repo has a standard final gate, run it last.
 - If verified work changes a published package under `packages/`, ensure the required changeset exists before PR or final handoff.
 - If the work is registry-only under `apps/www/src/registry/`, update `docs/components/changelog.mdx` instead of creating a package changeset.
