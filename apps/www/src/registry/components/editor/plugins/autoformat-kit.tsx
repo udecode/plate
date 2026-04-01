@@ -120,6 +120,10 @@ const autoformatBlocks: AutoformatRule[] = [
     type: KEYS.h6,
   },
   {
+    allowSameTypeAbove: true,
+    format: (editor) => {
+      editor.tf.wrapNodes({ children: [], type: KEYS.blockquote });
+    },
     match: '> ',
     mode: 'block',
     type: KEYS.blockquote,
