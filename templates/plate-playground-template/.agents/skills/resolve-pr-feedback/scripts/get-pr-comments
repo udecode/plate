@@ -25,16 +25,19 @@ if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
 fi
 
 # Fetch review threads, regular PR comments, and review bodies in one query.
-# Output is a JSON object with three keys:
-#   review_threads - unresolved, non-outdated inline code review threads
-#   pr_comments    - top-level PR conversation comments (excludes PR author)
-#   review_bodies  - review submissions with non-empty body text (excludes PR author)
+# Output is a JSON object with four keys:
+#   review_threads   - unresolved, non-outdated inline code review threads
+#   pr_comments      - top-level PR conversation comments (excludes PR author)
+#   review_bodies    - review submissions with non-empty body text (excludes PR author)
+#   cross_invocation - cross-invocation awareness envelope:
+#     signal: true when both resolved and unresolved threads exist (multi-round review)
+#     resolved_threads: last N resolved threads by recency, for cluster analysis input
 gh api graphql -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" -f query='
 query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $pr) {
       author { login }
-      reviewThreads(first: 100) {
+      reviewThreads(first: 50) {
         edges {
           node {
             id
@@ -42,7 +45,7 @@ query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
             isOutdated
             path
             line
-            comments(first: 50) {
+            comments(first: 10) {
               nodes {
                 id
                 author { login }
@@ -75,13 +78,27 @@ query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
       }
     }
   }
-}' | jq '.data.repository.pullRequest as $pr | {
-  review_threads: [$pr.reviewThreads.edges[]
-    | select(.node.isResolved == false and .node.isOutdated == false)],
+}' | jq '.data.repository.pullRequest as $pr |
+  # Unresolved threads (existing behavior, unchanged)
+  [$pr.reviewThreads.edges[]
+    | select(.node.isResolved == false and .node.isOutdated == false)] as $unresolved |
+  # Resolved threads for cross-invocation awareness (last 10 by most recent comment)
+  [$pr.reviewThreads.edges[]
+    | select(.node.isResolved == true)
+    | { thread_id: .node.id, path: .node.path, line: .node.line,
+        first_comment_body: .node.comments.nodes[0].body,
+        last_comment_at: ([.node.comments.nodes[].createdAt] | sort | last) }]
+    | sort_by(.last_comment_at) | .[-10:] | reverse as $resolved |
+{
+  review_threads: $unresolved,
   pr_comments: [$pr.comments.nodes[]
     | select(.author.login != $pr.author.login)
     | select(.body | test("^\\s*$") | not)],
   review_bodies: [$pr.reviews.nodes[]
     | select(.body != null and .body != "")
-    | select(.author.login != $pr.author.login)]
+    | select(.author.login != $pr.author.login)],
+  cross_invocation: {
+    signal: (($resolved | length) > 0 and ($unresolved | length) > 0),
+    resolved_threads: $resolved
+  }
 }'

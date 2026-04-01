@@ -78,15 +78,15 @@ Before planning and dispatching fixes, check whether feedback patterns suggest a
 | Gate signal | Check |
 |---|---|
 | **Volume** | 3+ new items from triage |
-| **Verify-loop re-entry** | This is the 2nd+ pass through the workflow (new feedback appeared after a previous fix round) |
+| **Cross-invocation** | `cross_invocation.signal == true` in the script output (resolved threads exist alongside new ones — evidence of multi-round review) |
 
-If the gate does not fire, proceed to step 4. The common case (1-2 unrelated comments) skips this step entirely with zero overhead.
+If the gate does not fire, proceed to step 4. The common case (first review round with 1-2 comments) skips this step entirely with zero overhead.
 
-**If the gate fires**, analyze feedback for thematic clusters:
+**If the gate fires**, analyze feedback for thematic clusters. When the cross-invocation signal fired, include resolved threads from `cross_invocation.resolved_threads` alongside new threads in the analysis — these are previously-resolved threads from earlier review rounds that provide pattern context. Mark them as `previously_resolved` so dispatch (step 5) knows not to individually re-resolve them.
 
-1. **Assign concern categories** from this fixed list: `error-handling`, `validation`, `type-safety`, `naming`, `performance`, `testing`, `security`, `documentation`, `style`, `architecture`, `other`. Each new item gets exactly one category based on what the feedback is about.
+1. **Assign concern categories** from this fixed list: `error-handling`, `validation`, `type-safety`, `naming`, `performance`, `testing`, `security`, `documentation`, `style`, `architecture`, `other`. Each item (new and previously-resolved) gets exactly one category based on what the feedback is about.
 
-2. **Group by category + spatial proximity**. Two items form a potential cluster when they share a concern category AND are spatially proximate (same file, or files in the same directory subtree).
+2. **Group by category + spatial proximity**. Two items form a potential cluster when they share a concern category AND are spatially proximate (same file, or files in the same directory subtree). Clusters can span new and previously-resolved threads.
 
    | Thematic match | Spatial proximity | Action |
    |---|---|---|
@@ -102,20 +102,17 @@ If the gate does not fire, proceed to step 4. The common case (1-2 unrelated com
      <theme>[concern category]</theme>
      <area>[common directory path]</area>
      <files>[comma-separated file paths]</files>
-     <threads>[comma-separated thread/comment IDs]</threads>
+     <threads>[comma-separated new thread/comment IDs]</threads>
      <hypothesis>[one sentence: what the individual comments collectively suggest about a deeper issue]</hypothesis>
+     <prior-resolutions>
+       <thread id="PRRT_..." path="..." category="..."/>
+     </prior-resolutions>
    </cluster-brief>
    ```
 
-   On verify-loop re-entry, add context about the previous cycle:
-   ```xml
-   <cluster-brief>
-     ...
-     <just-fixed-files>[files modified in the previous fix cycle]</just-fixed-files>
-   </cluster-brief>
-   ```
+   The `<prior-resolutions>` element lists previously-resolved threads that clustered with the new threads — their IDs, file paths, and assigned concern categories. This gives the resolver agent the full cross-round picture. When no previously-resolved threads are in the cluster, omit the element.
 
-4. **Items not in any cluster** remain as individual items and are dispatched normally in step 5.
+4. **Items not in any cluster** remain as individual items and are dispatched normally in step 5. Previously-resolved threads that don't cluster with any new thread are dropped — they provided context but no pattern was found.
 
 5. **If no clusters are found** after analysis (the gate fired but items don't form thematic+spatial groups), proceed with all items as individual. The gate was a false positive -- the only cost was the analysis itself.
 
@@ -133,9 +130,13 @@ If step 3 produced clusters, include them in the task list as cluster items alon
 
 Process all three feedback types. Review threads are the primary type; PR comments and review bodies are secondary but should not be ignored.
 
+#### Dispatch boundary for previously-resolved threads
+
+Previously-resolved threads (from `cross_invocation.resolved_threads`) participate in clustering and appear in cluster briefs as `<prior-resolutions>` context. They are NEVER individually dispatched — they were already resolved in prior rounds. Only new threads get individual or cluster dispatch.
+
 #### Individual dispatch (default)
 
-**For review threads** (`review_threads`): Spawn a `compound-engineering:workflow:pr-comment-resolver` agent for each thread that is NOT already assigned to a cluster from step 3. Clustered threads are handled by cluster dispatch below -- do not dispatch them individually.
+**For review threads** (`review_threads`): Spawn a `compound-engineering:workflow:pr-comment-resolver` agent for each new thread that is NOT already assigned to a cluster from step 3. Clustered threads are handled by cluster dispatch below -- do not dispatch them individually.
 
 Each agent receives:
 - The thread ID
@@ -264,7 +265,7 @@ The `review_threads` array should be empty (except `needs-human` items).
 
 **If new threads remain**, check the iteration count for this run:
 
-- **First or second fix-verify cycle**: Record which files were modified and which concern categories were addressed in this cycle. Then repeat from step 2 for the remaining threads. The cluster analysis gate (step 3) will fire on re-entry because verify-loop re-entry is a gate signal, enabling broader investigation of recurring patterns.
+- **First or second fix-verify cycle**: Repeat from step 2 for the remaining threads. The re-fetch in step 1 will pick up threads resolved in earlier cycles as resolved threads in `cross_invocation`, so the cross-invocation gate (step 3) will fire naturally if patterns emerge across cycles.
 
 - **After the second fix-verify cycle** (3rd pass would begin): Stop looping. Surface remaining issues to the user with context about the recurring pattern: "Multiple rounds of feedback on [area/theme] suggest a deeper issue. Here's what we've fixed so far and what keeps appearing." Use the same `needs-human` escalation pattern -- leave threads open and present the pattern for the user to decide.
 
