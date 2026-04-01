@@ -14,9 +14,7 @@ export const softBreakValue: any = (
     <hp indent={1} listStyleType="disc">
       查询 – 定义自定义规则以将软换行限制在特定的块类型中。
     </hp>
-    <hblockquote>
-      <hp>在这里试试 ⏎</hp>
-    </hblockquote>
+    <hblockquote>在这里试试 ⏎</hblockquote>
     <hcodeblock>
       <hcodeline>这里也可以试试 ⏎</hcodeline>
     </hcodeblock>

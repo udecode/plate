@@ -35,12 +35,7 @@ const value = normalizeStaticValue([
     type: 'h3',
   },
   {
-    children: [
-      {
-        children: [{ text: 'This is a blockquote element' }],
-        type: 'p',
-      },
-    ],
+    children: [{ text: 'This is a blockquote element' }],
     type: 'blockquote',
   },
   {

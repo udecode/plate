@@ -22,10 +22,8 @@ export const basicBlocksValue: any = (
       Third-level headings provide further content structure and hierarchy.
     </hp>
     <hblockquote>
-      <hp>
-        "Blockquotes are perfect for highlighting important information, quotes
-        from external sources, or emphasizing key points in your content."
-      </hp>
+      "Blockquotes are perfect for highlighting important information, quotes
+      from external sources, or emphasizing key points in your content."
     </hblockquote>
     <hp>
       Use headings to create a clear document structure that helps readers

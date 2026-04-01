@@ -201,12 +201,7 @@ Break between lists.
       // If your logic doesn't treat blockquotes as separate paragraphs inside the list,
       // you'll see them in a single paragraph. Tweak as needed.
       {
-        children: [
-          {
-            children: [{ text: 'This is inside blockquote\nAnd so on' }],
-            type: 'p',
-          },
-        ],
+        children: [{ text: 'This is inside blockquote\nAnd so on' }],
         // Might become indent: 2, or remain indent: 1, depending on how your parser merges them.
         // We'll guess indent: 2 for demonstration.
         indent: 2,

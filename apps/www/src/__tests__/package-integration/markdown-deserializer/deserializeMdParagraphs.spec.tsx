@@ -141,7 +141,7 @@ Paragaph followed by two empty paragraphts
     const output = (
       <fragment>
         <hblockquote>
-          <hp>Blockquote followed by emtpy lines</hp>
+          <htext>Blockquote followed by emtpy lines</htext>
         </hblockquote>
       </fragment>
     );

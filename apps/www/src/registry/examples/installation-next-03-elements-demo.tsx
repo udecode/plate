@@ -28,12 +28,7 @@ const initialValue: Value = [
     type: 'h3',
   },
   {
-    children: [
-      {
-        children: [{ text: 'This is a quote.' }],
-        type: 'p',
-      },
-    ],
+    children: [{ text: 'This is a quote.' }],
     type: 'blockquote',
   },
   {

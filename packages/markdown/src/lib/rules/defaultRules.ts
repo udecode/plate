@@ -1,6 +1,5 @@
 import {
   type Descendant,
-  ElementApi,
   type SlateEditor,
   type TElement,
   type TListElement,
@@ -12,7 +11,6 @@ import {
 } from 'platejs';
 
 import type {
-  MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
@@ -31,7 +29,6 @@ import type { MdRules } from '../types';
 import {
   buildSlateNode,
   convertChildrenDeserialize,
-  convertNodesDeserialize,
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
@@ -86,53 +83,6 @@ const deserializeClassicListItemChildren = (
   return children;
 };
 
-const groupInlineChildrenIntoParagraphs = (
-  editor: SlateEditor,
-  children: Descendant[] = []
-) => {
-  const paragraphType = getPluginType(editor, KEYS.p);
-  const elements: Descendant[] = [];
-  let inlineNodes: Descendant[] = [];
-
-  const flushInlineNodes = () => {
-    if (inlineNodes.length === 0) return;
-
-    elements.push({
-      children: inlineNodes as any,
-      type: paragraphType,
-    } as TElement);
-    inlineNodes = [];
-  };
-
-  children.forEach((child) => {
-    const isBlock =
-      ElementApi.isElement(child) &&
-      !editor.api.isInline(child) &&
-      editor.api.isBlock(child);
-
-    if (isBlock) {
-      flushInlineNodes();
-      elements.push(child);
-      return;
-    }
-
-    inlineNodes.push(child);
-  });
-
-  flushInlineNodes();
-
-  if (elements.length > 0) {
-    return elements;
-  }
-
-  return [
-    {
-      children: [{ text: '' }],
-      type: paragraphType,
-    } as TElement,
-  ];
-};
-
 export const defaultRules: MdRules = {
   a: {
     deserialize: (mdastNode, deco, options) => ({
@@ -150,20 +100,88 @@ export const defaultRules: MdRules = {
     }),
   },
   blockquote: {
-    deserialize: (mdastNode, deco, options) => ({
-      children: groupInlineChildrenIntoParagraphs(
-        options.editor!,
-        convertNodesDeserialize(mdastNode.children, deco, options)
-      ),
-      type: getPluginType(options.editor!, KEYS.blockquote),
-    }),
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
-        groupInlineChildrenIntoParagraphs(options.editor!, node.children),
+    deserialize: (mdastNode, deco, options) => {
+      const children =
+        mdastNode.children.length > 0
+          ? mdastNode.children.flatMap((paragraph, index, children) => {
+              if (paragraph.type === 'paragraph') {
+                if (children.length > 1 && children.length - 1 !== index) {
+                  // add a line break between the paragraphs
+                  const paragraphChildren = convertChildrenDeserialize(
+                    paragraph.children,
+                    deco,
+                    options
+                  );
+                  paragraphChildren.push({ text: '\n' }, { text: '\n' });
+                  return paragraphChildren;
+                }
+                return convertChildrenDeserialize(
+                  paragraph.children,
+                  deco,
+                  options
+                );
+              }
+
+              if ('children' in paragraph) {
+                return convertChildrenDeserialize(
+                  paragraph.children,
+                  deco,
+                  options
+                );
+              }
+
+              return [{ text: '' }];
+            })
+          : [{ text: '' }];
+
+      const flattenedChildren = children.flatMap((child: any) =>
+        child.type === 'blockquote' ? child.children : [child]
+      );
+
+      return {
+        children: flattenedChildren,
+        type: getPluginType(options.editor!, KEYS.blockquote),
+      };
+    },
+    serialize: (node, options) => {
+      const nodes = [] as any;
+
+      for (const child of node.children) {
+        if (child.text === '\n') {
+          nodes.push({
+            type: 'break',
+          });
+        } else {
+          nodes.push(child);
+        }
+      }
+
+      const paragraphChildren = convertNodesSerialize(
+        nodes,
         options
-      ) as MdBlockquote['children'],
-      type: 'blockquote',
-    }),
+      ) as MdParagraph['children'];
+
+      if (
+        paragraphChildren.length > 0 &&
+        paragraphChildren.at(-1)!.type === 'break'
+      ) {
+        // if the last child of the paragraph is a line break add an additional one
+
+        paragraphChildren.at(-1)!.type = 'html';
+        // @ts-expect-error -- value is ok
+        paragraphChildren.at(-1)!.value = '\n<br />';
+      }
+
+      return {
+        children: [
+          {
+            children: paragraphChildren,
+            type: 'paragraph',
+          },
+        ],
+        type: 'blockquote',
+      };
+    },
   },
   bold: {
     mark: true,

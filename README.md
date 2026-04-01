@@ -6,7 +6,7 @@ Plate
 <div align="center">
   <a href="https://www.npmjs.com/package/@platejs/core"><img src="https://img.shields.io/npm/dm/@platejs/core.svg" alt="Total Downloads"></a>
   <a target="_blank" href="https://github.com/udecode/plate/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/plate" /></a>
-  <a target="_blank" href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+  <a target="_blank" href="tooling/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
@@ -35,7 +35,7 @@ You can learn more about Plate by checking out our [documentation](https://plate
 
 ## Contributing
 
-To get started, check out our [contributing guide](CONTRIBUTING.md).
+To get started, check out our [contributing guide](tooling/CONTRIBUTING.md).
 
 ### Contributors
 
