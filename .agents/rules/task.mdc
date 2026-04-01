@@ -96,6 +96,8 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
    - load `planning-with-files` before implementation
    - use persistent planning files or the repo's equivalent planning structure so progress survives context loss
    - follow local repo overrides for where planning files live
+   - if the task touches published package code under `packages/`, record in the plan whether a changeset will be required before completion
+   - if the task is registry-only work under `apps/www/src/registry/`, record in the plan whether `docs/components/changelog.mdx` must be updated instead of creating a package changeset
 11. If the task is testing or coverage work:
    - restate it as test work, not generic feature work
    - load `testing` first and use that testing policy as the source of truth
@@ -277,6 +279,8 @@ Keep verification mandatory but proportional.
 - Run browser verification only for browser or UI tasks.
 - Run broader repo-wide gates only when repo instructions require them or the change scope justifies them.
 - If the repo has a standard final gate, run it last.
+- If verified work changes a published package under `packages/`, ensure the required changeset exists before PR or final handoff.
+- If the work is registry-only under `apps/www/src/registry/`, update `docs/components/changelog.mdx` instead of creating a package changeset.
 - If verified work changed code, create or update the PR before tracker sync-back unless the user explicitly said not to.
 - If the task came from a tracked issue and the task reached a meaningful outcome, sync back unless the user said not to.
 - If UI changed, capture proof from the real browser surface.
@@ -460,6 +464,7 @@ Example:
 - The chosen implementation fixed the highest-leverage seam available, not just the nearest symptom.
 - Code-changing tasks that did not already start on a branch clearly dedicated to the same task checked out `main` and pulled latest before branching.
 - Non-trivial work loaded `planning-with-files` or the repo-equivalent planning workflow before implementation.
+- Non-trivial package or registry work recorded release-artifact requirements in the plan early: changeset for published package work, `docs/components/changelog.mdx` for registry-only work.
 - Testing work loaded the testing policy before implementation.
 - Only the necessary skills were loaded.
 - The implementation matched the task type instead of following a one-size-fits-all ritual.
