@@ -20,7 +20,13 @@ export const useChatChunk = ({
     nodes: TText[];
     text: string;
   }) => void;
-  onFinish?: ({ content }: { content: string }) => void;
+  onFinish?: ({
+    content,
+    interrupted,
+  }: {
+    content: string;
+    interrupted?: boolean;
+  }) => void;
 }) => {
   const chat = usePluginOption(
     { key: KEYS.aiChat } as AIChatPluginConfig,
@@ -58,8 +64,8 @@ export const useChatChunk = ({
     }
   );
 
-  const handleFinish = useEffectEvent((text: string) => {
-    onFinish?.({ content: text });
+  const handleFinish = useEffectEvent((text: string, interrupted?: boolean) => {
+    onFinish?.({ content: text, interrupted });
   });
 
   useEffect(() => {
@@ -88,7 +94,7 @@ export const useChatChunk = ({
       }
 
       receivedTextEndRef.current = true;
-      handleFinish(streamedTextRef.current);
+      handleFinish(streamedTextRef.current, false);
     });
   }, [textStreamChannelId]);
 
@@ -96,10 +102,10 @@ export const useChatChunk = ({
     if (prevIsLoadingRef.current && !isLoading) {
       if (textStreamChannelId) {
         if (!receivedTextEndRef.current) {
-          handleFinish(streamedTextRef.current);
+          handleFinish(streamedTextRef.current, true);
         }
       } else {
-        handleFinish(content ?? '');
+        handleFinish(content ?? '', false);
       }
     }
 

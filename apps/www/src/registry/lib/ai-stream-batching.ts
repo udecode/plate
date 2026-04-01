@@ -3,6 +3,9 @@ const SLOW_BATCH_WINDOW_IN_MS = 32;
 const SLOW_FLUSH_THRESHOLD_IN_MS = 24;
 
 type AIStreamBatchTimer = ReturnType<typeof setTimeout>;
+type AIStreamBatchFlushOptions = {
+  force?: boolean;
+};
 
 export type AIStreamBatcher = ReturnType<typeof createAIStreamBatcher>;
 
@@ -16,7 +19,7 @@ export function createAIStreamBatcher({
   getNow = () => performance.now(),
   schedule = setTimeout,
 }: {
-  applyChunk: (chunk: string) => void;
+  applyChunk: (chunk: string, options?: AIStreamBatchFlushOptions) => void;
   cancel?: (timer: AIStreamBatchTimer) => void;
   getNow?: () => number;
   schedule?: (callback: () => void, delayInMs: number) => AIStreamBatchTimer;
@@ -32,7 +35,7 @@ export function createAIStreamBatcher({
     }
   };
 
-  const flush = () => {
+  const flush = (options?: AIStreamBatchFlushOptions) => {
     if (!pendingChunk) return false;
 
     const chunk = pendingChunk;
@@ -42,7 +45,7 @@ export function createAIStreamBatcher({
 
     const startedAt = getNow();
 
-    applyChunk(chunk);
+    applyChunk(chunk, options);
 
     batchWindowInMs =
       getNow() - startedAt > SLOW_FLUSH_THRESHOLD_IN_MS

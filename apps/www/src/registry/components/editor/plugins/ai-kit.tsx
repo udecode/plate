@@ -48,9 +48,9 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     if (!insertStreamBatcherRef.current) {
       insertStreamBatcherRef.current = createAIStreamBatcher({
-        applyChunk: (chunk) => {
+        applyChunk: (chunk, options) => {
           editor.tf.withoutSaving(() => {
-            if (!getOption('streaming')) return;
+            if (!getOption('streaming') && !options?.force) return;
 
             editor.tf.withScrolling(() => {
               streamInsertChunk(editor, chunk, {
@@ -117,7 +117,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
       },
       onFinish: () => {
-        insertStreamBatcherRef.current?.flush();
+        insertStreamBatcherRef.current?.flush({ force: true });
         editor.setOption(AIChatPlugin, 'streaming', false);
         resetStreamInsertChunk(editor);
         insertStreamBatcherRef.current?.reset();

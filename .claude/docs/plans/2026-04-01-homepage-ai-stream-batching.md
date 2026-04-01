@@ -42,8 +42,9 @@ Make the homepage AI editor consume the burst-batching win without copying the d
 | Add a small tested batching controller | complete | Added first-chunk immediate flush plus 16/32ms adaptive batching |
 | Wire the controller into `ai-kit.tsx` insert-mode streaming | complete | Homepage/editor-kit path now consumes the batching controller |
 | Fix homepage regression in streamed insert range tracking | complete | `streamInsertChunk` now scopes itself to the preview range instead of `editor.children.slice(startIndex)` |
+| Fix stop-time buffered tail loss | complete | Interrupted streams now mark `onFinish` as interrupted and force-flush the batcher before reset |
 | Run tests and required workspace verification | complete | `bun test ./apps/www/src/__tests__/package-integration/ai-chat-streaming/streamHistory.slow.tsx`, `pnpm turbo build --filter=./packages/ai --filter=./apps/www`, `pnpm turbo typecheck --filter=./packages/ai --filter=./apps/www`, `pnpm lint:fix` |
-| Verify the homepage AI editor with `dev-browser` | complete | Reused persistent Chrome and confirmed homepage blocks are preserved after AI execution |
+| Verify the homepage AI editor with `dev-browser` | complete | Reused persistent Chrome and confirmed stop does not shrink streamed output on the real `editor-ai` surface |
 
 ## Design Direction
 
@@ -52,6 +53,7 @@ Make the homepage AI editor consume the burst-batching win without copying the d
 - Window starts at `16ms` and stretches to `32ms` after slow flushes.
 - Finish always flushes buffered text before `resetStreamInsertChunk`.
 - Immediate flush for structural boundaries if the chunk contains line breaks or likely heavy markdown delimiters.
+- Interrupted stop must still flush the buffered tail even after `streaming` flips false.
 
 ## Progress Log
 
@@ -60,3 +62,6 @@ Make the homepage AI editor consume the burst-batching win without copying the d
 - 2026-04-01: Added a regression test proving insert-mode streaming must preserve trailing top-level blocks after the insertion point.
 - 2026-04-01: Root cause was not the batch timer. The new `streamInsertChunk` implementation used the current selection block as `startPath` and sliced `editor.children` from that index to the end, so accepted preview updates could consume unrelated trailing blocks.
 - 2026-04-01: Fixed `streamInsertChunk` to use the true streamed insertion start path and only diff the existing preview-owned range.
+- 2026-04-01: Found a second regression on stop. `AIChatPlugin.stop()` sets `streaming=false` before the app batcher drains, so a pending 16/32ms buffer could be dropped unless the interrupted finish path forces one last flush.
+- 2026-04-01: Fixed the stop path by letting `useChatChunk` mark interrupted finishes and letting `ai-kit.tsx` force-flush the final buffered chunk before reset.
+- 2026-04-01: Browser proof on `http://localhost:3002/blocks/editor-ai` used the real page editor instance to run `aiChat.submit()` plus mid-stream `aiChat.stop()`. Three stop runs showed no shrink after stop (`deltaAfterStop`: `+1`, `0`, `+24`), which matches the intended “flush or preserve the buffered tail” behavior.

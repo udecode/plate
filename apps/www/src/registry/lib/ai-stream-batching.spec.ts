@@ -129,6 +129,26 @@ describe('createAIStreamBatcher', () => {
     expect(batcher.getBatchWindowInMs()).toBe(16);
   });
 
+  it('forwards force flush requests to the apply callback', () => {
+    const applied: Array<{ chunk: string; force: boolean | undefined }> = [];
+    const batcher = createAIStreamBatcher({
+      applyChunk: (chunk, options) => {
+        applied.push({ chunk, force: options?.force });
+      },
+      schedule: () => createTimer(1),
+    });
+
+    batcher.queue({ chunk: 'hello', isFirst: true });
+    batcher.queue({ chunk: ' world', isFirst: false });
+
+    batcher.flush({ force: true });
+
+    expect(applied).toEqual([
+      { chunk: 'hello', force: undefined },
+      { chunk: ' world', force: true },
+    ]);
+  });
+
   it('uses a longer batch window after a slow flush', () => {
     const applied: string[] = [];
     const scheduled: number[] = [];
