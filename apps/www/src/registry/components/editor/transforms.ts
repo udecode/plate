@@ -39,6 +39,19 @@ const insertList = (editor: PlateEditor, type: string) => {
   );
 };
 
+const createBlockquote = (editor: PlateEditor) => ({
+  children: [editor.api.create.block({ type: KEYS.p })],
+  type: KEYS.blockquote,
+});
+
+const selectBlockquoteStart = (editor: PlateEditor, path: Path) => {
+  const start = editor.api.start(path.concat([0]));
+
+  if (start) {
+    editor.tf.select(start);
+  }
+};
+
 const insertBlockMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
@@ -108,6 +121,24 @@ export const insertBlock = (
       return;
     }
 
+    if (type === KEYS.blockquote) {
+      const insertPath = PathApi.next(path);
+
+      editor.tf.insertNodes(createBlockquote(editor), { at: insertPath });
+
+      if (!isSameBlockType && isCurrentBlockEmpty) {
+        editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
+          editor.tf.removeNodes({ at: path });
+        });
+      }
+
+      selectBlockquoteStart(
+        editor,
+        isCurrentBlockEmpty && !isSameBlockType ? path : insertPath
+      );
+
+      return;
+    }
     if (type in insertBlockMap) {
       insertBlockMap[type](editor, type);
     } else {
@@ -164,6 +195,21 @@ export const setBlockType = (
   { at }: { at?: Path } = {}
 ) => {
   editor.tf.withoutNormalizing(() => {
+    if (type === KEYS.blockquote) {
+      const target = at ?? editor.selection;
+
+      if (!target || editor.api.some({ at: target, match: { type } })) {
+        return;
+      }
+
+      editor.tf.toggleBlock(type, {
+        ...(at ? { at } : {}),
+        wrap: true,
+      });
+
+      return;
+    }
+
     const setEntry = (entry: NodeEntry<TElement>) => {
       const [node, path] = entry;
 
