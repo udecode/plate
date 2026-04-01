@@ -49,6 +49,7 @@
     "r": "pnpm --filter www r",
     "rc": "turbo --filter=www rc",
     "rd": "pnpm --filter www rd",
+    "reinstall": "bash tooling/scripts/reinstall.sh",
     "release": "pnpm build && pnpm changeset publish",
     "shadcn:build": "pnpm --filter www shadcn:build",
     "templates:ai": "./tooling/scripts/update-template.sh ai",
