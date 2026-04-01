@@ -28,6 +28,12 @@
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
 
+## Tooling
+
+- If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
+- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
+- Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
+
 ## Skill
 
 Use those skills when relevant:
