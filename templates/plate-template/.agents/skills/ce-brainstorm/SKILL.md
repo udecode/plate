@@ -14,6 +14,8 @@ The durable output of this workflow is a **requirements document**. In other wor
 
 This skill does not implement code. It explores, clarifies, and documents decisions for later planning or execution.
 
+**IMPORTANT: All file references in generated documents must use repo-relative paths (e.g., `src/models/user.rb`), never absolute paths. Absolute paths break portability across machines, worktrees, and teammates.**
+
 ## Core Principles
 
 1. **Assess scope first** - Match the amount of ceremony to the size and ambiguity of the work.
@@ -33,6 +35,7 @@ This skill does not implement code. It explores, clarifies, and documents decisi
 ## Output Guidance
 
 - **Keep outputs concise** - Prefer short sections, brief bullets, and only enough detail to support the next decision.
+- **Use repo-relative paths** - When referencing files, use paths relative to the repo root (e.g., `src/models/user.rb`), never absolute paths. Absolute paths make documents non-portable across machines and teammates.
 
 ## Feature Description
 

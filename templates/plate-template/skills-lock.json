@@ -4,7 +4,7 @@
     "ce:brainstorm": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "887c791672710af8002ec515d09b2c0de3495f2ca04834fc69be63a1ab097b82"
+      "computedHash": "0939a3fa61ba55192ad77dfd80219ca51949b513d94b27cd5a32db8b091c3024"
     },
     "ce:compound": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -24,12 +24,12 @@
     "ce:plan": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "e889cb762457c5d3280137b29beb3ba9cfc4f12b25ad2a11fc6ec8bddfb9287e"
+      "computedHash": "b0f4481bedad14008ab49b201700258a05c7065f3d29240ea807fa50ccbffd7b"
     },
     "ce:review": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "adbc927278fed8b9a2c2ff27b13b36d3ff082bd536a947399d6ab41a85577add"
+      "computedHash": "d3355a67360f1a8c666ec2c394a962959cd7f9d03df78338b129bbf31b9bf566"
     },
     "ce:work": {
       "source": "EveryInc/compound-engineering-plugin",

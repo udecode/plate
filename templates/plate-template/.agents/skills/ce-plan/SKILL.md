@@ -26,6 +26,8 @@ Ask one question at a time. Prefer a concise single-select choice when natural o
 
 Do not proceed until you have a clear planning input.
 
+**IMPORTANT: All file references in the plan document must use repo-relative paths (e.g., `src/models/user.rb`), never absolute paths (e.g., `/Users/name/Code/project/src/models/user.rb`). This applies everywhere — implementation unit file lists, pattern references, origin document links, and prose mentions. Absolute paths break portability across machines, worktrees, and teammates.**
+
 ## Core Principles
 
 1. **Use requirements as the source of truth** - If `ce:brainstorm` produced a requirements document, planning should build from it rather than re-inventing behavior.
@@ -41,7 +43,7 @@ Do not proceed until you have a clear planning input.
 Every plan should contain:
 - A clear problem frame and scope boundary
 - Concrete requirements traceability back to the request or origin document
-- Exact file paths for the work being proposed
+- Repo-relative file paths for the work being proposed (never absolute paths — see Planning Rules)
 - Explicit test file paths for feature-bearing implementation units
 - Decisions with rationale, not just tasks
 - Existing patterns or code references to follow
@@ -335,7 +337,7 @@ For each unit, include:
 - **Goal** - what this unit accomplishes
 - **Requirements** - which requirements or success criteria it advances
 - **Dependencies** - what must exist first
-- **Files** - exact file paths to create, modify, or test
+- **Files** - repo-relative file paths to create, modify, or test (never absolute paths)
 - **Approach** - key decisions, data flow, component boundaries, or integration notes
 - **Execution note** - optional, only when the unit benefits from a non-default execution posture such as test-first, characterization-first, or external delegation
 - **Technical design** - optional pseudo-code or diagram when the unit's approach is non-obvious and prose alone would leave it ambiguous. Frame explicitly as directional guidance, not implementation specification
@@ -573,6 +575,7 @@ For larger `Deep` plans, extend the core template only when useful with sections
 
 #### 4.3 Planning Rules
 
+- **All file paths must be repo-relative** — never use absolute paths like `/Users/name/Code/project/src/file.ts`. Use `src/file.ts` instead. Absolute paths make plans non-portable across machines, worktrees, and teammates. When a plan targets a different repo than the document's home, state the target repo once at the top of the plan (e.g., `**Target repo:** my-other-project`) and use repo-relative paths throughout
 - Prefer path plus class/component/pattern references over brittle line numbers
 - Keep implementation units checkable with `- [ ]` syntax for progress tracking
 - Do not include implementation code — no imports, exact method signatures, or framework-specific syntax
