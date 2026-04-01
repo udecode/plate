@@ -119,7 +119,9 @@ describe('deserializeMd', () => {
         output: (
           <fragment>
             <hblockquote>
-              <htext />
+              <hp>
+                <htext />
+              </hp>
             </hblockquote>
           </fragment>
         ),
@@ -129,7 +131,9 @@ describe('deserializeMd', () => {
         name: 'deserializes a single blockquote line',
         output: (
           <fragment>
-            <hblockquote>Blockquote content</hblockquote>
+            <hblockquote>
+              <hp>Blockquote content</hp>
+            </hblockquote>
           </fragment>
         ),
       },
@@ -141,10 +145,8 @@ describe('deserializeMd', () => {
         output: (
           <fragment>
             <hblockquote>
-              <htext>Blockquote paragraph1</htext>
-              <htext>{'\n'}</htext>
-              <htext>{'\n'}</htext>
-              <htext>Blockquote paragraph2</htext>
+              <hp>Blockquote paragraph1</hp>
+              <hp>Blockquote paragraph2</hp>
             </hblockquote>
           </fragment>
         ),
@@ -157,9 +159,11 @@ describe('deserializeMd', () => {
         output: (
           <fragment>
             <hblockquote>
-              <htext>Blockquote line1</htext>
-              <htext>{'\n'}</htext>
-              <htext>Blockquote line2</htext>
+              <hp>
+                <htext>Blockquote line1</htext>
+                <htext>{'\n'}</htext>
+                <htext>Blockquote line2</htext>
+              </hp>
             </hblockquote>
           </fragment>
         ),
@@ -170,7 +174,28 @@ describe('deserializeMd', () => {
         output: (
           <fragment>
             <hblockquote>
-              <ha url="https://example.com">Example link</ha>
+              <hp>
+                <ha url="https://example.com">Example link</ha>
+              </hp>
+            </hblockquote>
+          </fragment>
+        ),
+      },
+      {
+        input: `> some thing is reference
+> - aaa
+> - bbb`,
+        name: 'deserializes lists inside blockquotes as nested block content',
+        output: (
+          <fragment>
+            <hblockquote>
+              <hp>some thing is reference</hp>
+              <hp indent={1} listStyleType="disc">
+                aaa
+              </hp>
+              <hp indent={1} listStyleType="disc">
+                bbb
+              </hp>
             </hblockquote>
           </fragment>
         ),
@@ -452,7 +477,12 @@ Paragraph 2 line 1`,
         },
         {
           _memo: '> Quote',
-          children: [{ text: 'Quote' }],
+          children: [
+            {
+              children: [{ text: 'Quote' }],
+              type: 'p',
+            },
+          ],
           type: 'blockquote',
         },
         {

@@ -217,7 +217,12 @@ export const playgroundValue: Value = [
   {
     children: [
       {
-        text: '引用块非常适合突出显示重要信息。',
+        children: [
+          {
+            text: '引用块非常适合突出显示重要信息。',
+          },
+        ],
+        type: 'p',
       },
     ],
     type: 'blockquote',
