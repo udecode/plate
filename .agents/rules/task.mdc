@@ -127,8 +127,10 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 15. Read repo instructions and nearby implementation patterns before editing.
 16. If the task changes code:
 
-- if already on a relevant feature branch, continue there
-- otherwise check out `main`, pull the latest `main`, then create a repo-convention branch before editing
+- if already on a branch clearly dedicated to this exact task, continue there
+- treat a branch as "clearly dedicated" only when the branch name, tracker id, or existing PR obviously matches the current task
+- do not reuse an unrelated non-`main` branch just because you are already on it
+- if the current branch is not clearly dedicated to this task, check out `main`, pull the latest `main`, then create a fresh repo-convention branch before editing
 - if the task has a tracker id, prefer a branch name that includes it:
   - GitHub issue: `codex/555-short-slug`
   - Linear issue: `codex/LIN-123-short-slug`
@@ -456,7 +458,7 @@ Example:
 - Video attachments or screen recordings were turned into normalized `<video-transcripts>` evidence before implementation when tracker evidence required it.
 - Bare GitHub issues like `#555` were resolved against the current `gh` repo instead of guessed.
 - The chosen implementation fixed the highest-leverage seam available, not just the nearest symptom.
-- Code-changing tasks that did not already start on a relevant feature branch checked out `main` and pulled latest before branching.
+- Code-changing tasks that did not already start on a branch clearly dedicated to the same task checked out `main` and pulled latest before branching.
 - Non-trivial work loaded `planning-with-files` or the repo-equivalent planning workflow before implementation.
 - Testing work loaded the testing policy before implementation.
 - Only the necessary skills were loaded.
