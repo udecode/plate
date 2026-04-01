@@ -1,5 +1,13 @@
 # @platejs/table
 
+## 52.3.20
+
+### Patch Changes
+
+- [#4931](https://github.com/udecode/plate/pull/4931) by [@hhhjin](https://github.com/hhhjin) – Fix `Shift+Arrow` table selection to switch cells without showing a transient native range
+
+- [#4930](https://github.com/udecode/plate/pull/4930) by [@zbeyens](https://github.com/zbeyens) – Fix merged table border toggles targeting the wrong adjacent cell
+
 ## 52.3.18
 
 ### Patch Changes

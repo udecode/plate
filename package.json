@@ -49,11 +49,13 @@
     "r": "pnpm --filter www r",
     "rc": "turbo --filter=www rc",
     "rd": "pnpm --filter www rd",
+    "reinstall": "bash tooling/scripts/reinstall.sh",
     "release": "pnpm build && pnpm changeset publish",
     "shadcn:build": "pnpm --filter www shadcn:build",
     "templates:ai": "./tooling/scripts/update-template.sh ai",
     "templates:basic": "./tooling/scripts/update-template.sh basic",
     "templates:check": "cd templates/plate-template && pnpm lint && pnpm typecheck && cd ../plate-playground-template && pnpm lint && pnpm typecheck",
+    "templates:skills": "./tooling/scripts/update-template-skills.sh",
     "templates:push": "./tooling/scripts/push-template.sh \"templates/*\"",
     "templates:test": "cd templates/plate-template && npx shadcn@latest add http://localhost:3000/rd/editor-ai -o && pnpm lint && pnpm typecheck",
     "templates:update": "./tooling/scripts/update-templates.sh",
@@ -157,10 +159,13 @@
     "node": ">=18.12.0",
     "pnpm": ">=9.15.0"
   },
-  "pnpm": {
-    "patchedDependencies": {
-      "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
-      "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
-    }
-  }
+  "patchedDependencies": {
+    "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch",
+    "react-dnd@16.0.1": "patches/react-dnd@16.0.1.patch"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/udecode/*"
+  ]
 }

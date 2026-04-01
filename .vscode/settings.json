@@ -1,7 +1,7 @@
 {
   "files.exclude": {
     ".pnpm-store": true,
-    "docs/**/*cn.mdx": true
+    "content/**/*cn.mdx": true
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript]": {

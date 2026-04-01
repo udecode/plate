@@ -140,7 +140,7 @@ Direct CE references in `.agents/rules/major-task.mdc`:
 
 `major-task` also points editor-framework analysis at:
 
-- `.claude/docs/analysis/editor-architecture-candidates.md`
+- `docs/analysis/editor-architecture-candidates.md`
 
 That keeps comparison work bounded instead of widening into random framework tourism.
 

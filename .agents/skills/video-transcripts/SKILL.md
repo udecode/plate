@@ -1,0 +1,130 @@
+---
+description: Generate structured video transcripts from local files or video URLs using Gemini Files API. Use when a GitHub or Linear tracker item, comment, or attachment includes a screen recording, .mov, .mp4, or tracker-hosted video and you need a <video-transcripts> block instead of hand-written notes.
+disable-model-invocation: true
+name: video-transcripts
+metadata:
+  skiller:
+    source: .agents/rules/video-transcripts.mdc
+---
+
+# Video Transcripts
+
+## Quick Start
+
+Run the helper once per relevant video:
+
+```bash
+bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh \
+  "https://uploads.linear.app/.../screen-recording.mov" \
+  --title "PDF preview hyperlinks trigger leave-page modal"
+```
+
+Or for a GitHub attachment:
+
+```bash
+bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh \
+  "https://github.com/user-attachments/assets/..." \
+  --title "Slash menu loses selection after confirm"
+```
+
+Or for a local file:
+
+```bash
+bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh \
+  "/absolute/path/to/video.mov" \
+  --title "Preview hyperlink exits workflow"
+```
+
+For auth-gated Linear uploads, the helper automatically retries with cookies from the local Linear desktop app on macOS. For private GitHub asset URLs, it retries with `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token` when available.
+
+## Use This When
+
+- A GitHub or Linear issue, PR, or comment includes a screen recording.
+- An attachment URL points to `uploads.linear.app`.
+- An attachment URL points to a GitHub attachment or private GitHub asset host.
+- You need timeline-style transcript lines, not a vague summary.
+- You want the result in this exact XML shape:
+
+```xml
+<video-transcripts>
+<video-transcript title="...">
+[00:00] (...)
+</video-transcript>
+</video-transcripts>
+```
+
+## Workflow
+
+1. Run the helper once for each relevant video.
+2. Give each run a short, bug-focused `--title`.
+3. For tracked work, the canonical shared cache should live in the tracker next to the evidence it describes.
+4. If the video is in the issue or PR body, use a top-level tracker comment.
+5. If the video is in a Linear comment, post the transcript cache as a reply to that specific comment.
+6. If the video is in a GitHub issue or PR comment, use one dedicated top-level cache comment for that source comment's video set. GitHub has no replies, so keep cache comments separated by source container instead of merging unrelated comment videos together.
+7. Cache comment or reply body should be XML only:
+
+````md
+```xml
+<video-transcripts>
+<video-transcript
+  source-key="https://tracker-hosted-video/<stable-path-without-query>"
+>
+[00:00] (...)
+</video-transcript>
+</video-transcripts>
+```
+````
+
+8. Keep the raw XML exactly as returned if it already matches the XML contract.
+9. If there are multiple videos in the same source container, combine the returned `<video-transcript ...>` blocks under a single `<video-transcripts>` wrapper in that cache comment or reply.
+10. Do not hand-write or paraphrase video behavior when the helper can run. Use the actual transcript output.
+11. `source-key` is the normalized stable identifier for the media. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry.
+12. Do not add decorative metadata like `title` to cached `<video-transcript>` entries unless a later workflow truly needs it.
+13. Keep the cache body pure XML. Do not prepend markers, prose, or YAML.
+14. Before re-transcribing for tracked work, match cache entries by source container first:
+    - one cache comment for issue or PR body videos
+    - one Linear reply per comment containing video(s)
+    - one dedicated GitHub cache comment per issue or PR comment containing video(s)
+15. If the matching cache already covers the current normalized video keys for that source container, reuse it. Only transcribe missing or new video evidence.
+16. Do not use `docs/` for raw tracker transcript cache. That is durable repo knowledge space, not raw issue evidence.
+17. If you invoke this through `codex exec`, prefer `-o <file>` so the final XML is captured without CLI progress chatter.
+
+## Output Contract
+
+- Return XML, not Markdown.
+- Use one `[MM:SS] (...)` line per observed action or system response.
+- Quote visible UI text when legible.
+- Describe only visible actions, screen changes, and audible speech if present.
+- Do not invent hidden state, motives, or implementation details.
+- Prefer concise, high-signal lines over per-keystroke sludge.
+
+## Model Strategy
+
+The helper defaults to `gemini-3.1-flash-lite-preview` for cost efficiency.
+
+If that output is malformed, too thin, or obviously noisy, it retries with `gemini-3-flash-preview`.
+
+For Gemini 3 models, the helper forces minimal thinking so output budget goes to the transcript instead of hidden reasoning.
+
+Override with:
+
+```bash
+VIDEO_TRANSCRIPTS_MODEL=gemini-3-flash-preview bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh ...
+```
+
+Or:
+
+```bash
+bash .agents/skills/video-transcripts/scripts/generate_video_transcript.sh ... \
+  --model gemini-2.5-flash
+```
+
+## Notes
+
+- The helper accepts a local file path or remote URL.
+- For `uploads.linear.app` URLs, it first tries `LINEAR_COOKIE_HEADER`, then `LINEAR_COOKIES_DB`, then falls back to the local Linear desktop cookie store at `~/Library/Application Support/Linear/Cookies`.
+- For GitHub asset URLs, it first tries `GITHUB_TOKEN`, then `GH_TOKEN`, then `gh auth token`, then falls back to an unauthenticated download.
+- It looks for `GEMINI_API_KEY`, then `GOOGLE_API_KEY`.
+- If neither is set, it tries `~/.bash_profile` before failing.
+- Use `--debug-dir <dir>` when you want request and response artifacts saved.
+- Quality gate rejects obvious low-signal transcripts such as repeated partial typing runs and falls back automatically.

@@ -13,7 +13,7 @@ const NAME = 'plate';
 
 const isDev = process.env.NODE_ENV === 'development';
 const REGISTRY_URL = isDev ? 'http://localhost:3000/rd' : `${HOMEPAGE}/r`;
-const RELATIVE_SOURCE_DIR = '../../docs';
+const RELATIVE_SOURCE_DIR = '../../content';
 const SOURCE_DIR = path.join(process.cwd(), RELATIVE_SOURCE_DIR);
 const TARGET_FILE = 'registry-docs.json';
 const TARGET_DIR = isDev ? 'public/rd' : 'public/r';
@@ -88,7 +88,7 @@ export async function buildDocsRegistry() {
   //   files: [
   // {
   //   content: JSON.stringify(metaContent, null, 2),
-  //   path: `../../docs/${NAME}/meta.json`,
+  //   path: `../../content/${NAME}/meta.json`,
   //   target: `content/docs/${NAME}/meta.json`,
   //   type: 'registry:file' as const,
   // },

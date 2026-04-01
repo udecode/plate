@@ -1,8 +1,6 @@
-import type { Path, SlateEditor, TTableCellElement } from 'platejs';
+import type { Path, SlateEditor } from 'platejs';
 
-import { PathApi } from 'platejs';
-
-import { getCellTypes } from '../utils';
+import { getAdjacentTableCell } from './getAdjacentTableCell';
 
 // Get cell to the left of the current cell
 export const getLeftTableCell = (
@@ -12,20 +10,8 @@ export const getLeftTableCell = (
   }: {
     at?: Path;
   } = {}
-) => {
-  if (!cellPath) {
-    cellPath = editor.api.node<TTableCellElement>({
-      match: { type: getCellTypes(editor) },
-    })?.[1];
-
-    if (!cellPath) return;
-  }
-
-  const cellIndex = cellPath.at(-1);
-
-  if (!cellIndex) return;
-
-  const prevCellPath = PathApi.previous(cellPath)!;
-
-  return editor.api.node<TTableCellElement>(prevCellPath);
-};
+) =>
+  getAdjacentTableCell(editor, {
+    at: cellPath,
+    deltaCol: -1,
+  });

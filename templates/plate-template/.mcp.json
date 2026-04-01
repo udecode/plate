@@ -2,7 +2,11 @@
   "mcpServers": {
     "plate": {
       "command": "npx",
-      "args": ["-y", "shadcn@latest", "mcp"],
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ],
       "type": "stdio"
     }
   }

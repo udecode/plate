@@ -72,7 +72,7 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 7. Load `planning-with-files` immediately.
 8. Load `ce:plan` when the work needs a real implementation plan, phased rollout, or a plan artifact.
 9. Load `learnings-researcher` early when the domain smells repeated or the repo has prior decisions worth mining.
-10. If the work is editor-framework-facing, start from `@.claude/docs/analysis/editor-architecture-candidates.md` as the candidate map instead of widening the field randomly.
+10. If the work is editor-framework-facing, start from `@docs/analysis/editor-architecture-candidates.md` as the candidate map instead of widening the field randomly.
 11. For library or framework questions, inspect the local clone in `..` first per AGENTS. If missing, clone it. Only then reach for official docs.
 12. Pick the smallest justified helper stack for the lane.
 13. For any tracker source, restate for yourself:
@@ -207,7 +207,7 @@ Apply this section only when the task source is a tracker item.
    - intuition
 7. If the question is comparative, compare equivalent workloads, not vibes or marketing claims.
 8. For editor-framework performance comparisons:
-   - start from `@.claude/docs/analysis/editor-architecture-candidates.md`
+   - start from `@docs/analysis/editor-architecture-candidates.md`
    - prefer `Plate vs Slate` first for direct inheritance pressure
    - use `ProseMirror` and `Lexical` when questioning deeper runtime or architecture direction
    - use `Tiptap` more for product-layer or packaging cost than raw engine performance
@@ -216,7 +216,7 @@ Apply this section only when the task source is a tracker item.
 
 ### Framework Comparison Or Migration
 
-1. For editor-framework comparisons, begin with `@.claude/docs/analysis/editor-architecture-candidates.md`.
+1. For editor-framework comparisons, begin with `@docs/analysis/editor-architecture-candidates.md`.
 2. Narrow the candidate set based on the actual decision, not curiosity.
 3. Read local clone/source first, then official docs if the clone does not settle the question.
 4. Read official docs before blogs or random benchmark posts.

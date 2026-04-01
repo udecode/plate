@@ -3,9 +3,11 @@
 
 <!-- Source: .agents/AGENTS.md -->
 
+- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `bun install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - ALWAYS read and understand relevant files before proposing edits. Do not speculate about code you have not inspected.
-- Never browse GitHub, use `gh` instead. Use `dig` skill when the user asks a question about a library, needs to understand a library's API, or when you need information about a library that you don't know about.
+- Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
+- For repo research, use `spawn_agent(... agent_type=\"explorer\")` and return file-backed findings from docs, structure, exports, examples, and tests only.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Proactively use Skill(tdd) when it adds value; skip TDD for high-friction tests like slow React or browser flows.
 
@@ -32,7 +34,7 @@ When using the following skills, override the default behavior.
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run the local verification that actually matters here. At minimum: `bun run typecheck`, `bun run lint:fix`, and `bun run build` if the task touched app behavior or build config.
-- **plan:** Include test-browser in acceptance criteria for browser features.
+- **plan:** Include `dev-browser` in acceptance criteria for browser features.
 - **deepen-plan:** Context7 only when not covered by skills.
 - **work:** UI tasks require browser verification before marking complete. Never guess.
 
@@ -105,45 +107,3 @@ When using the following skills, override the default behavior.
 
 **Skill Reload Checklist:**
 ☐ Skill reload (MANDATORY): (1) Check current task tracking (TodoWrite if available, otherwise inline) (2) List ALL available skills (3) For EACH: 'always apply' or 'Does task involve [topic]?' -> YES/MIGHT/MAYBE = ✓ (4) Skill(...) for ALL ✓ IN ONE PARALLEL CALL - do NOT load one then wait (5) ONLY after reload, resume task CRITICAL: ALL skills GONE. MUST reload. 'Might apply' = MUST load.
-
-
-
-<!-- Source: .agents/rules/1-app-design-document.mdc -->
-
-
-
-
-
-<!-- Source: .agents/rules/2-tech-stack.mdc -->
-
-
-
-
-
-<!-- Source: .agents/rules/3-project-status.mdc -->
-
-## Project Status
-
-**Current Stage**: App template and product foundation
-
-### Do Care About
-
-- Clear app structure and naming
-- Fast local iteration
-- Simple, composable React components
-- Strong TypeScript defaults
-- Good docs and comments where they actually help
-- Performance and accessibility on the paths users touch
-
-### Do Not Care About
-
-- Monorepo release process
-- Package publishing rules
-- Backward compatibility theater
-- Clever abstractions with no payoff
-
-### Development Approach
-
-- Ship readable code first.
-- Keep the app easy to extend.
-- Prefer small seams and direct behavior over framework magic.
