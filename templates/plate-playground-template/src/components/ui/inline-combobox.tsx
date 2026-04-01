@@ -20,7 +20,7 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
-import type { Point, TElement } from 'platejs';
+import type { PointRef, TElement } from 'platejs';
 import { useComposedRef, useEditorRef } from 'platejs/react';
 import * as React from 'react';
 
@@ -113,9 +113,12 @@ const InlineCombobox = ({
    * Track the point just before the input element so we know where to
    * insertText if the combobox closes due to a selection change.
    */
-  const insertPoint = React.useRef<Point | null>(null);
+  const insertPointRef = React.useRef<PointRef | null>(null);
 
   React.useEffect(() => {
+    insertPointRef.current?.unref();
+    insertPointRef.current = null;
+
     const path = editor.api.findPath(element);
 
     if (!path) return;
@@ -125,9 +128,12 @@ const InlineCombobox = ({
     if (!point) return;
 
     const pointRef = editor.api.pointRef(point);
-    insertPoint.current = pointRef.current;
+    insertPointRef.current = pointRef;
 
     return () => {
+      if (insertPointRef.current === pointRef) {
+        insertPointRef.current = null;
+      }
       pointRef.unref();
     };
   }, [editor, element]);
@@ -140,7 +146,7 @@ const InlineCombobox = ({
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
         editor.tf.insertText(trigger + value, {
-          at: insertPoint?.current ?? undefined,
+          at: insertPointRef.current?.current ?? undefined,
         });
       }
       if (cause === 'arrowLeft' || cause === 'arrowRight') {
