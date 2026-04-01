@@ -298,23 +298,20 @@ Every final response must include:
   - be extremely concise
   - sacrifice grammar for concision
   - no filler, no narration, no polite padding
-- two leading markdown tables in this exact format:
-  - metadata table:
-    - `| Check | Result |`
-    - `| --- | --- |`
-  - flow table:
-    - `| Phase | 🧪 Tests | 🌐 Browser |`
-    - `| --- | --- | --- |`
-- use these metadata rows, in this order:
-  - `PR`
-  - `Issue`
-  - `Confidence`
+- a leading flat metadata bullet list in this exact order:
+  - `- 🔀 PR ...`
+  - `- 🐛 Fixes ...` for bug issues, otherwise use a generic issue bullet
+  - `- 🟢 95-100% confidence`
+- then the flow table in this exact format:
+  - `| Phase | 🧪 Tests | 🌐 Browser |`
+  - `| --- | --- | --- |`
 - use these flow rows, in this order:
   - `Reproduced`
   - `Verified`
 - use markdown links for `PR` and `Issue` when they exist
-- keep the `Issue` row stable; do not add issue comment links there
-- use these exact status values in the tables:
+- for non-bug tracked work, do not fake a bug label; use a neutral issue bullet instead
+- keep the issue bullet stable; do not add issue comment links there
+- use these exact status values in the flow table:
   - `✅`
   - `❌`
   - `➖ N/A`
@@ -325,12 +322,12 @@ Every final response must include:
   - use `✅` when test evidence exists but did not follow a real red-green loop
 - use `➖ N/A` for rows or cells that do not apply; do not invent a PR, issue, or comment
 - flow-table test cells mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
-- if manual non-browser reproduction or verification happened, explain it in the prose below the tables rather than adding extra rows
-- `Confidence` must stay `100%` or lower and use this format:
-  - `🟢 95-100%`
-  - `🟡 80-94%`
-  - `🔴 below 80%`
-- after the tables, use these short sections in this order:
+- if manual non-browser reproduction or verification happened, explain it in the prose below the metadata bullets + flow table rather than adding extra rows
+- `Confidence` must stay `100%` or lower and use this bullet format:
+  - `- 🟢 95-100% confidence`
+  - `- 🟡 80-94% confidence`
+  - `- 🔴 below 80% confidence`
+- after the metadata bullets + flow table, use these short sections in this order:
   - `**🌐 Browser Check**`, only when browser verification applies
   - `**✅ Outcome**`
   - `**⚠️ Caveat**`
@@ -349,7 +346,7 @@ Every final response must include:
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
 - When `**🌐 Browser Check**` is present, put the screenshot immediately after that section.
-- Otherwise, put the screenshot immediately after the two tables, before the completion summary.
+- Otherwise, put the screenshot immediately after the metadata bullets + flow table, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
 - If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
 - If that follow-up issue is opened, mention it in the caveat or handoff.
@@ -383,7 +380,8 @@ Apply this section only when the task came from a tracker item and reached a mea
 ### Pull Request
 
 - When a PR exists, the PR description must match the exact current final handoff from chat:
-  - same two tables
+  - same flow table
+  - same metadata bullets, except omit the leading `🔀 PR ...` bullet because the PR page already identifies itself
   - same screenshot when applicable
   - same `**✅ Outcome**`, `**🏗️ Design**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**🌐 Browser Check**` sections when applicable
   - same caveats
