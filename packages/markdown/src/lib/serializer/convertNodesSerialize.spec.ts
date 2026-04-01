@@ -198,12 +198,32 @@ describe('convertNodesSerialize', () => {
         {
           children: [
             {
-              children: [
-                {
-                  children: [{ type: 'text', value: 'Nested' }],
-                  type: 'paragraph',
-                },
-              ],
+              children: [{ type: 'text', value: 'Nested' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'blockquote',
+        },
+      ] as any);
+    });
+
+    it('wraps legacy inline blockquote children into a paragraph when serializing', () => {
+      const result = convertNodesSerialize(
+        [
+          {
+            children: [{ text: 'Legacy quote' }],
+            type: 'blockquote',
+          } as any,
+        ],
+        baseOptions,
+        true
+      );
+
+      expect(result).toEqual([
+        {
+          children: [
+            {
+              children: [{ type: 'text', value: 'Legacy quote' }],
               type: 'paragraph',
             },
           ],

@@ -56,6 +56,46 @@ describe('deserializeMd', () => {
     expect((onError as any).mock.calls[0]?.[0]).toBeInstanceOf(Error);
     expect((onError as any).mock.calls[0]?.[0].message).toBe('boom');
   });
+
+  it('deserializes blockquotes as container blocks with nested list content', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        `Hello!
+> some thing is reference
+> - aaa
+> - bbb`
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'Hello!' }],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [{ text: 'some thing is reference' }],
+            type: 'p',
+          },
+          {
+            children: [{ text: 'aaa' }],
+            indent: 1,
+            listStyleType: 'disc',
+            type: 'p',
+          },
+          {
+            children: [{ text: 'bbb' }],
+            indent: 1,
+            listStyleType: 'disc',
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
+      },
+    ]);
+  });
 });
 
 describe('markdownToAstProcessor', () => {

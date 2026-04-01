@@ -223,7 +223,12 @@ export const playgroundValue: Value = [
   {
     children: [
       {
-        text: 'Blockquotes are great for highlighting important information.',
+        children: [
+          {
+            text: 'Blockquotes are great for highlighting important information.',
+          },
+        ],
+        type: 'p',
       },
     ],
     type: 'blockquote',
