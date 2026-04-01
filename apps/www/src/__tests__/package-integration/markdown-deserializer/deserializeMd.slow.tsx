@@ -335,6 +335,23 @@ Paragraph 2 line 1`,
           </fragment>
         ),
       },
+      {
+        input: 'foo\n\n*\n\nbar',
+        name: 'deserializes empty list items with list item content',
+        output: (
+          <fragment>
+            <hp>foo</hp>
+            <hul>
+              <hli>
+                <hlic>
+                  <htext />
+                </hlic>
+              </hli>
+            </hul>
+            <hp>bar</hp>
+          </fragment>
+        ),
+      },
     ])('$name', ({ input, output }) => {
       expect(parseMarkdown(input, listEditor as any)).toEqual(output);
     });
