@@ -4,6 +4,7 @@
 
 export * from './streamDeserializeInlineMd';
 export * from './streamDeserializeMd';
+export * from './chatTextStreamTransport';
 export * from './streamInsertChunk';
 export * from './streamSerializeMd';
 export * from './utils/index';

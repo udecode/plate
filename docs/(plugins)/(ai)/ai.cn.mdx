@@ -114,6 +114,7 @@ import {
   AIChatPlugin,
   applyAISuggestions,
   getInsertPreviewStart,
+  resetStreamInsertChunk,
   streamInsertChunk,
   useChatChunk,
 } from '@platejs/ai/react';
@@ -191,9 +192,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
       },
       onFinish: () => {
         editor.setOption(AIChatPlugin, 'streaming', false);
-        editor.setOption(AIChatPlugin, '_blockChunks', '');
-        editor.setOption(AIChatPlugin, '_blockPath', null);
-        editor.setOption(AIChatPlugin, '_mdxName', null);
+        resetStreamInsertChunk(editor);
       },
     });
   },
@@ -255,32 +254,44 @@ export async function POST(req: Request) {
 使用 `@ai-sdk/react` 桥接编辑器和您的模型端点。将助手存储在插件上，以便变换可以重新加载、停止或显示聊天状态。
 
 ```tsx
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
-import { type UIMessage, DefaultChatTransport } from 'ai';
+import { type UIMessage } from 'ai';
 import { type UseChatHelpers, useChat } from '@ai-sdk/react';
-import { AIChatPlugin } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  createAIChatTextStreamTransport,
+  withAIChatTextStream,
+} from '@platejs/ai/react';
 import { useEditorPlugin } from 'platejs/react';
 
 type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
 
 export const useEditorAIChat = () => {
   const { editor, setOption } = useEditorPlugin(AIChatPlugin);
+  const transport = useMemo(
+    () =>
+      createAIChatTextStreamTransport<ChatMessage>({
+        api: '/api/ai/command',
+        chatId: 'editor',
+      }),
+    []
+  );
 
-  const chat = useChat<ChatMessage>({
+  const baseChat = useChat<ChatMessage>({
     id: 'editor',
-    api: '/api/ai/command',
-    transport: new DefaultChatTransport(),
+    transport,
     onData(data) {
       if (data.type === 'data-toolName') {
         editor.setOption(AIChatPlugin, 'toolName', data.data);
       }
     },
   });
+  const chat = withAIChatTextStream(baseChat, transport);
 
   useEffect(() => {
     setOption('chat', chat as UseChatHelpers<ChatMessage>);
-  }, [chat, setOption]);
+  }, [chat.__plateTextStreamChannelId, chat.error, chat.messages, chat.status, setOption]);
 
   return chat;
 };
@@ -356,6 +367,9 @@ editor.setOption(aiChatPlugin, 'chatOptions', {
 
 `chatOptions.body` 下的所有内容都会到达路由处理程序，让您可以交换提供商、传递用户特定的元数据或分支到不同的提示模板。
 
+- `createAIChatTextStreamTransport`：把 AI SDK transport 里的原始 `text-start` / `text-delta` / `text-end` 事件向前透传。
+- `withAIChatTextStream`：给返回的 chat helpers 加上 transport 元数据，让 `useChatChunk` 订阅 transport 的实例级文本流，而不是回退到“assistant 全文 diff”。
+
 ## 键盘快捷键
 
 <KeyTable>
@@ -371,8 +385,7 @@ editor.setOption(aiChatPlugin, 'chatOptions', {
 - `streamInsertChunk(editor, chunk, options)` 反序列化 Markdown 块，就地更新当前块，并根据需要追加新块。使用 `textProps`/`elementProps` 标记流式节点（例如，标记 AI 文本）。
 - `streamDeserializeMd` 和 `streamDeserializeInlineMd` 提供更低级别的访问，如果您需要控制自定义节点类型的流式传输。
 - `streamSerializeMd` 镜像编辑器状态，以便您可以检测流式内容与响应缓冲区之间的漂移。
-
-流式传输完成时重置内部 `_blockChunks`、`_blockPath` 和 `_mdxName` 选项，以从干净的状态开始下一个响应。
+- `resetStreamInsertChunk(editor)` 会在流式传输结束时，或在您想从头开始一个新流时，清理当前插入流会话。
 
 ## 流式传输示例
 

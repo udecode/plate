@@ -16,6 +16,16 @@ import {
   AI_PREVIEW_KEY,
   hasAIPreview,
 } from '../../../lib/transforms/aiStreamSnapshot';
+import {
+  clearMarkdownStreamSession,
+  getMarkdownStreamCurrentPath,
+  getMarkdownStreamRuntimeState,
+  getMarkdownStreamSource,
+  setMarkdownStreamCurrentPath,
+  setMarkdownStreamRuntimeState,
+  setMarkdownStreamSource,
+  type StreamInsertRuntimeState,
+} from './markdownStreamSession';
 import { AIChatPlugin } from '../AIChatPlugin';
 import { remarkStreamdownPendingTail } from './remarkStreamdownPendingTail';
 import { streamDeserializeMd } from './streamDeserializeMd';
@@ -33,13 +43,6 @@ type StreamingBlock = TElement & {
   listStyleType?: string;
 };
 
-type StreamInsertRuntimeState = {
-  replayStartOffset: number;
-  source: string;
-  stableBlockCount: number;
-  startPath: Path;
-};
-
 type BuildReplayRuntimeStateOptions = {
   markdownSource: string;
   nextBlocks: TElement[];
@@ -51,11 +54,6 @@ type NextBlocksResult = {
   blocks: StreamingBlock[];
   stablePrefixLength: number;
 };
-
-const streamInsertRuntime = new WeakMap<
-  SlateEditor,
-  StreamInsertRuntimeState
->();
 
 const getNextPath = (path: Path, length: number) => {
   let result = path;
@@ -539,6 +537,54 @@ function removeInitialEmptyParagraph(editor: PlateEditor, path: Path) {
   }
 }
 
+function getInsertStreamStartPath(editor: SlateEditor) {
+  const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
+
+  return startInEmptyParagraph ? path : PathApi.next(path);
+}
+
+function getCurrentStreamBlocks(
+  editor: PlateEditor,
+  startPath: Path,
+  currentPath: Path | null
+) {
+  const children = (editor.children as TElement[]) ?? [];
+  const startIndex = startPath[0] ?? 0;
+  const currentIndex = currentPath?.[0];
+
+  if (
+    typeof currentIndex === 'number' &&
+    currentIndex >= startIndex &&
+    currentIndex < children.length
+  ) {
+    return children.slice(startIndex, currentIndex + 1);
+  }
+
+  if (!hasAIPreview(editor)) {
+    return [];
+  }
+
+  let endIndex = startIndex - 1;
+
+  while (endIndex + 1 < children.length) {
+    if (!(children[endIndex + 1] as any)?.[AI_PREVIEW_KEY]) {
+      break;
+    }
+
+    endIndex += 1;
+  }
+
+  if (endIndex < startIndex) {
+    return [];
+  }
+
+  return children.slice(startIndex, endIndex + 1);
+}
+
+export const resetStreamInsertChunk = (editor: SlateEditor) => {
+  clearMarkdownStreamSession(editor);
+};
+
 /** @experimental */
 export function streamInsertChunk(
   editor: PlateEditor,
@@ -546,23 +592,31 @@ export function streamInsertChunk(
   options: SteamInsertChunkOptions = {}
 ) {
   const insertOptions = withPreviewElementProps(editor, options);
-  const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
-  const isFreshStream = _blockPath === null || _blockChunks.length === 0;
-  const previousRuntimeState = streamInsertRuntime.get(editor);
+  const previousCurrentPath = getMarkdownStreamCurrentPath(editor);
+  const previousSource = getMarkdownStreamSource(editor);
+  const isFreshStream =
+    previousCurrentPath === null || previousSource.length === 0;
+  const previousRuntimeState = getMarkdownStreamRuntimeState(editor);
 
   const startPath =
     isFreshStream || !previousRuntimeState
-      ? getInsertPreviewStart(editor).path
+      ? getInsertStreamStartPath(editor)
       : previousRuntimeState.startPath;
 
   if (isFreshStream) {
-    removeInitialEmptyParagraph(editor, startPath);
+    const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
+
+    if (startInEmptyParagraph) {
+      removeInitialEmptyParagraph(editor, path);
+    }
   }
 
-  const markdownSource = _blockChunks + chunk;
+  const markdownSource = previousSource + chunk;
   const startIndex = startPath[0] ?? 0;
-  const currentBlocks = ((editor.children as TElement[]) ?? []).slice(
-    startIndex
+  const currentBlocks = getCurrentStreamBlocks(
+    editor,
+    startPath,
+    previousCurrentPath
   );
   const nextBlocksResult = getNextBlocks(
     editor,
@@ -587,11 +641,10 @@ export function streamInsertChunk(
     sharedPrefixLength === currentBlocks.length &&
     sharedPrefixLength === nextBlocks.length
   ) {
-    streamInsertRuntime.set(editor, nextRuntimeState);
-    editor.setOption(AIChatPlugin, '_blockChunks', markdownSource);
-    editor.setOption(
-      AIChatPlugin,
-      '_blockPath',
+    setMarkdownStreamSource(editor, markdownSource);
+    setMarkdownStreamRuntimeState(editor, nextRuntimeState);
+    setMarkdownStreamCurrentPath(
+      editor,
       nextBlocks.length > 0
         ? getNextPath(startPath, nextBlocks.length - 1)
         : startPath
@@ -617,17 +670,19 @@ export function streamInsertChunk(
       index < nextBlocks.length;
       index += 1
     ) {
-      editor.tf.insertNodes(nodesWithProps(editor, [nextBlocks[index] as any], insertOptions), {
-        at: [startIndex + index],
-      });
+      editor.tf.insertNodes(
+        nodesWithProps(editor, [nextBlocks[index] as any], insertOptions),
+        {
+          at: [startIndex + index],
+        }
+      );
     }
   });
 
-  streamInsertRuntime.set(editor, nextRuntimeState);
-  editor.setOption(AIChatPlugin, '_blockChunks', markdownSource);
-  editor.setOption(
-    AIChatPlugin,
-    '_blockPath',
+  setMarkdownStreamSource(editor, markdownSource);
+  setMarkdownStreamRuntimeState(editor, nextRuntimeState);
+  setMarkdownStreamCurrentPath(
+    editor,
     nextBlocks.length > 0
       ? getNextPath(startPath, nextBlocks.length - 1)
       : startPath

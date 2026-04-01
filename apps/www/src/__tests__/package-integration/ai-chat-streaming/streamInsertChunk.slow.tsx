@@ -2,6 +2,7 @@
 
 import { deserializeMd } from '@platejs/markdown';
 import { jsxt } from '@platejs/test-utils';
+import { NodeApi } from 'platejs';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 import { streamInsertChunk } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
@@ -184,6 +185,49 @@ describe('streamInsertChunk', () => {
           ],
           type: 'p',
         },
+      ]);
+    });
+
+    it('keeps completed markdown and mdx structured before a later incomplete mdx tail', () => {
+      const editor = streamChunks([
+        '<callout>one</callout>\n\n',
+        '**after**\n\n',
+        '<callout type="note">',
+      ]);
+
+      expect(editor.children).toEqual([
+        {
+          children: [
+            {
+              children: [{ text: 'one' }],
+              type: 'callout',
+            },
+          ],
+          type: 'p',
+        },
+        {
+          children: [{ bold: true, text: 'after' }],
+          type: 'p',
+        },
+        {
+          children: [{ text: '<callout type="note">' }],
+          type: 'p',
+        },
+      ]);
+    });
+
+    it('keeps newly streamed text visible inside an incomplete column tail', () => {
+      const editor = streamChunks([
+        '## MDX callout props\n\n',
+        '<callout type="info" title="Chunky props">i</callout>\n\n',
+        '<column_group layout="[60,40]">\n',
+        '<column width="60%">\n\n- Keep the editor aliv',
+      ]);
+
+      expect(editor.children.map((node: any) => NodeApi.string(node))).toEqual([
+        'MDX callout props',
+        'i',
+        '<column_group layout="[60,40]">\n<column width="60%">\n\n- Keep the editor aliv',
       ]);
     });
   });

@@ -1,5 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
+import { emitChatTextStreamChunk } from '../streaming/chatTextStreamTransport';
+
 const usePluginOptionMock = mock();
 const useLastAssistantMessageMock = mock();
 const getEditorPluginMock = mock();
@@ -72,5 +74,74 @@ describe('useChatChunk', () => {
       text: 'hello',
     });
     expect(onFinish).toHaveBeenCalledWith({ content: 'hello' });
+  });
+
+  it('prefers raw text stream events when the chat transport provides them', async () => {
+    const onChunk = mock();
+    const onFinish = mock();
+    const statuses = [
+      {
+        __plateTextStreamChannelId: 'channel-a',
+        id: 'editor',
+        status: 'streaming',
+      },
+      {
+        __plateTextStreamChannelId: 'channel-a',
+        id: 'editor',
+        status: 'ready',
+      },
+    ];
+    let index = 0;
+
+    usePluginOptionMock.mockImplementation(() => statuses[index]);
+    useLastAssistantMessageMock.mockReturnValue(undefined);
+
+    const { useChatChunk } = await loadModule();
+    const hook = renderHook(() => useChatChunk({ onChunk, onFinish }));
+
+    await act(async () => {
+      emitChatTextStreamChunk('channel-b', {
+        delta: 'ignore-me',
+        id: 'text-2',
+        type: 'text-delta',
+      });
+      emitChatTextStreamChunk('channel-a', {
+        id: 'text-1',
+        type: 'text-start',
+      });
+      emitChatTextStreamChunk('channel-a', {
+        delta: 'he',
+        id: 'text-1',
+        type: 'text-delta',
+      });
+      emitChatTextStreamChunk('channel-a', {
+        delta: 'llo',
+        id: 'text-1',
+        type: 'text-delta',
+      });
+      emitChatTextStreamChunk('channel-a', {
+        id: 'text-1',
+        type: 'text-end',
+      });
+    });
+
+    await act(async () => {
+      index = 1;
+      hook.rerender();
+    });
+
+    expect(onChunk).toHaveBeenNthCalledWith(1, {
+      chunk: 'he',
+      isFirst: true,
+      nodes: [{ text: 'he' }],
+      text: 'he',
+    });
+    expect(onChunk).toHaveBeenNthCalledWith(2, {
+      chunk: 'llo',
+      isFirst: false,
+      nodes: [{ text: 'llo' }],
+      text: 'hello',
+    });
+    expect(onFinish).toHaveBeenNthCalledWith(1, { content: 'hello' });
   });
 });

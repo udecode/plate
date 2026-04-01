@@ -11,11 +11,24 @@ import {
   useState,
 } from 'react';
 
-import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  resetStreamInsertChunk,
+  streamInsertChunk,
+} from '@platejs/ai/react';
 import { getPluginType, KEYS } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { EditorKit } from '@/registry/components/editor/editor-kit';
 import { models } from '@/registry/components/editor/settings-dialog';
@@ -29,23 +42,34 @@ import {
   transformMarkdownStreamingChunks,
 } from '@/registry/lib/markdown-streaming-chunks';
 import {
+  DEFAULT_MARKDOWN_STREAMING_DEMO_SCENARIO_ID,
   DEFAULT_PLAYBACK_BURST_SIZE,
   DEFAULT_PLAYBACK_DELAY_IN_MS,
+  type MarkdownStreamingDemoScenarioId,
   getNextPlaybackIndex,
   getPlaybackDelayInMs,
-  liveMarkdownEditorsArticleChunks,
+  markdownStreamingDemoScenarios,
   playbackBurstSizeOptions,
   playbackDelayOptions,
 } from '@/registry/lib/markdown-streaming-demo-data';
+import {
+  MARKDOWN_STREAMING_DEMO_GATEWAY_KEY_STORAGE_KEY,
+  normalizeMarkdownStreamingDemoGatewayApiKey,
+  shouldPromptForMarkdownStreamingDemoGatewayKey,
+} from '@/registry/lib/markdown-streaming-demo-ai';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
-const CAPITALIZE_REGEX = /([A-Z])/g;
-const FIRST_CHAR_REGEX = /^./;
 const TRAILING_LINEBREAK_REGEX = /(\n+)$/;
 const COPY_FEEDBACK_DURATION_MS = 1800;
 const DEFAULT_AI_MODEL = 'openai/gpt-4.1-mini';
 const DEFAULT_AI_PROMPT =
   'Write a markdown article about streaming markdown editors with headings, bullet lists, a table, one blockquote, one link, and one fenced code block.';
+const HOSTED_AI_KEY_DIALOG_INTENTS = {
+  generate: 'generate',
+  save: 'save',
+} as const;
+type HostedAiKeyDialogIntent =
+  (typeof HOSTED_AI_KEY_DIALOG_INTENTS)[keyof typeof HOSTED_AI_KEY_DIALOG_INTENTS];
 const EMPTY_EDITOR_VALUE = [
   {
     children: [{ text: '' }],
@@ -53,274 +77,6 @@ const EMPTY_EDITOR_VALUE = [
   },
 ] as const;
 
-const testScenarios = {
-  columns: [
-    'paragraph\n\n<column',
-    '_group',
-    '>\n',
-    ' ',
-    ' <',
-    'column',
-    ' width',
-    '="',
-    '33',
-    '.',
-    '333',
-    '333',
-    '333',
-    '333',
-    '336',
-    '%">\n',
-    '   ',
-    ' ',
-    '1',
-    '\n',
-    ' ',
-    ' </',
-    'column',
-    '>\n',
-    ' ',
-    ' <',
-    'column',
-    ' width',
-    '="',
-    '33',
-    '.',
-    '333',
-    '333',
-    '333',
-    '333',
-    '336',
-    '%">\n',
-    '   ',
-    ' ',
-    '2',
-    '\n',
-    ' ',
-    ' </',
-    'column',
-    '>\n',
-    ' ',
-    ' <',
-    'column',
-    ' width',
-    '="',
-    '33',
-    '.',
-    '333',
-    '333',
-    '333',
-    '333',
-    '336',
-    '%">\n',
-    '   ',
-    ' ',
-    '3',
-    '\n',
-    ' ',
-    ' </',
-    'column',
-    '>\n',
-    '</',
-    'column',
-    '_group',
-    '>\n\nparagraph',
-  ],
-  links: [
-    '[Link ',
-    'to OpenA',
-    'I](https://www.openai.com)\n\n',
-    '[Link ',
-    'to Google',
-    'I](https://ww',
-    'w.google.com/1',
-    '11',
-    '22',
-    'xx',
-    'yy',
-    'zz',
-    'aa',
-    'bb',
-    'cc',
-    'dd',
-    'ee',
-    '33)\n\n',
-    '[False Positive',
-    '11',
-    '22',
-    '33',
-    '44',
-    '55',
-    '66',
-    '77',
-    '88',
-    '99',
-    '100',
-  ],
-  lists: ['1.', ' number 1\n', '- ', 'List B\n', '-', ' [x] ', 'Task C'],
-  listWithImage: [
-    '## ',
-    'Links ',
-    'and ',
-    'Images\n\n',
-    '- [Link ',
-    'to OpenA',
-    'I](https://www.openai.com)\n',
-    '- ![Sample Image](https://via.placeholder.com/150)\n\n',
-  ],
-  nestedStructureBlock: [
-    '```',
-    'javascript',
-    '\n',
-    'import',
-    ' React',
-    ' from',
-    " '",
-    'react',
-    "';\n",
-    'import',
-    ' {',
-    ' Plate',
-    ' }',
-    ' from',
-    " '@",
-    'ud',
-    'ecode',
-    '/',
-    'plate',
-    "';\n\n",
-    'const',
-    ' Basic',
-    'Editor',
-    ' =',
-    ' ()',
-    ' =>',
-    ' {\n',
-    ' ',
-    ' return',
-    ' (\n',
-    '   ',
-    ' <',
-    'Plate',
-    '>\n',
-    '     ',
-    ' {/*',
-    ' Add',
-    ' your',
-    ' plugins',
-    ' and',
-    ' components',
-    ' here',
-    ' */}\n',
-    '   ',
-    ' </',
-    'Plate',
-    '>\n',
-    ' ',
-    ' );\n',
-    '};\n\n',
-    'export',
-    ' default',
-    ' Basic',
-    'Editor',
-    ';\n',
-    '```',
-  ],
-  table: [
-    '| Feature          |',
-    ' Plate',
-    '.js',
-    '                                     ',
-    ' ',
-    '| Slate.js                                     ',
-    ' ',
-    '|\n|------------------',
-    '|--------------------------------',
-    '---------------',
-    '|--------------------------------',
-    '---------------',
-    '|\n| Purpose         ',
-    ' ',
-    '| Rich text editor framework',
-    '                   ',
-    ' ',
-    '| Rich text editor framework',
-    '                   ',
-    ' ',
-    '|\n| Flexibility     ',
-    ' ',
-    '| Highly customizable',
-    ' with',
-    ' plugins',
-    '             ',
-    ' ',
-    '| Highly customizable',
-    ' with',
-    ' plugins',
-    '             ',
-    ' ',
-    '|\n| Community       ',
-    ' ',
-    '| Growing community support',
-    '                    ',
-    ' ',
-    '| Established community',
-    ' support',
-    '                ',
-    ' ',
-    '|\n| Documentation   ',
-    ' ',
-    '| Comprehensive documentation',
-    ' available',
-    '        ',
-    ' ',
-    '| Comprehensive documentation',
-    ' available',
-    '        ',
-    ' ',
-    '|\n| Performance     ',
-    ' ',
-    '| Optimized for performance',
-    ' with',
-    ' large',
-    ' documents',
-    '| Good performance, but',
-    ' may',
-    ' require',
-    ' optimization',
-    '|\n| Integration     ',
-    ' ',
-    '| Easy integration with',
-    ' React',
-    '                  ',
-    ' ',
-    '| Easy integration with',
-    ' React',
-    '                  ',
-    ' ',
-    '|\n| Use Cases       ',
-    ' ',
-    '| Suitable for complex',
-    ' editing',
-    ' needs',
-    '           ',
-    ' ',
-    '| Suitable for complex',
-    ' editing',
-    ' needs',
-    '           ',
-    ' ',
-    '\n\n',
-    'Paragraph ',
-    'should ',
-    'exist ',
-    'from ',
-    'table',
-  ],
-  liveMarkdownEditorsArticle: liveMarkdownEditorsArticleChunks,
-} as const;
-
-type ScenarioId = keyof typeof testScenarios;
 type SourceMode = 'preset' | 'ai' | 'pasted';
 type AiStreamStatus = 'idle' | 'loading' | 'streaming' | 'done' | 'error';
 type TChunk = MarkdownStreamingChunk;
@@ -400,12 +156,6 @@ class EditorRenderBoundary extends Component<
   }
 }
 
-function formatScenarioLabel(value: string) {
-  return value
-    .replace(CAPITALIZE_REGEX, ' $1')
-    .replace(FIRST_CHAR_REGEX, (character) => character.toUpperCase());
-}
-
 function serializeChunksForClipboard(chunks: readonly string[]) {
   return JSON.stringify(chunks, null, 2);
 }
@@ -429,9 +179,7 @@ function cloneEditorValue() {
 
 function resetStreamingState(editor: any) {
   editor.setOption(AIChatPlugin, 'streaming', false);
-  editor.setOption(AIChatPlugin, '_blockChunks', '');
-  editor.setOption(AIChatPlugin, '_blockPath', null);
-  editor.setOption(AIChatPlugin, '_mdxName', null);
+  resetStreamInsertChunk(editor);
 
   if (editor.selection) {
     editor.tf.deselect();
@@ -564,9 +312,89 @@ function Tokens({
   );
 }
 
+function MarkdownStreamingDemoGatewayKeyDialog({
+  apiKeyDraft,
+  error,
+  onApiKeyDraftChange,
+  onOpenChange,
+  onSubmit,
+  open,
+  submitLabel,
+}: {
+  apiKeyDraft: string;
+  error: string | null;
+  onApiKeyDraftChange: (nextApiKey: string) => void;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: () => void;
+  open: boolean;
+  submitLabel: string;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-xl">Add AI Gateway API key</DialogTitle>
+          <DialogDescription>
+            This hosted demo does not ship with a server-side key. Add an AI
+            Gateway API key to stream a live markdown response from this
+            browser.
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        >
+          <div className="space-y-2">
+            <label
+              className="block font-medium text-slate-800 text-sm"
+              htmlFor="markdown-streaming-demo-gateway-key"
+            >
+              AI Gateway API key
+            </label>
+            <Input
+              id="markdown-streaming-demo-gateway-key"
+              value={apiKeyDraft}
+              onChange={(event) => onApiKeyDraftChange(event.target.value)}
+              placeholder="vck_..."
+              autoComplete="off"
+              data-1p-ignore
+              type="password"
+            />
+          </div>
+
+          <p
+            className={cn('text-sm', error ? 'text-red-600' : 'text-slate-500')}
+          >
+            {error
+              ? error
+              : 'The key is stored in this browser tab only and is sent with demo requests.'}
+          </p>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">{submitLabel}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function MarkdownStreamingDemo() {
   const [selectedScenario, setSelectedScenario] =
-    useState<ScenarioId>('columns');
+    useState<MarkdownStreamingDemoScenarioId>(
+      DEFAULT_MARKDOWN_STREAMING_DEMO_SCENARIO_ID
+    );
   const [sourceMode, setSourceMode] = useState<SourceMode>('preset');
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -586,6 +414,16 @@ export default function MarkdownStreamingDemo() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiStatus, setAiStatus] = useState<AiStreamStatus>('idle');
   const [aiProvider, setAiProvider] = useState<string | null>(null);
+  const [hostedGatewayApiKey, setHostedGatewayApiKey] = useState('');
+  const [hostedGatewayApiKeyDraft, setHostedGatewayApiKeyDraft] = useState('');
+  const [hostedGatewayApiKeyDialogError, setHostedGatewayApiKeyDialogError] =
+    useState<string | null>(null);
+  const [hostedGatewayApiKeyDialogIntent, setHostedGatewayApiKeyDialogIntent] =
+    useState<HostedAiKeyDialogIntent>(HOSTED_AI_KEY_DIALOG_INTENTS.save);
+  const [isHostedGatewayApiKeyDialogOpen, setIsHostedGatewayApiKeyDialogOpen] =
+    useState(false);
+  const [requiresHostedGatewayApiKey, setRequiresHostedGatewayApiKey] =
+    useState(false);
   const [copyChunksStatus, setCopyChunksStatus] = useState<
     'idle' | 'copied' | 'error'
   >('idle');
@@ -616,10 +454,13 @@ export default function MarkdownStreamingDemo() {
     []
   );
 
-  const currentScenarioChunks = useMemo(
-    () => testScenarios[selectedScenario],
-    [selectedScenario]
-  );
+  const selectedScenarioDefinition =
+    markdownStreamingDemoScenarios[selectedScenario];
+  const scenarioEntries = Object.entries(markdownStreamingDemoScenarios) as [
+    MarkdownStreamingDemoScenarioId,
+    (typeof markdownStreamingDemoScenarios)[MarkdownStreamingDemoScenarioId],
+  ][];
+  const currentScenarioChunks = selectedScenarioDefinition.chunks;
 
   const rawChunks = useMemo(() => {
     if (sourceMode === 'ai') {
@@ -631,7 +472,7 @@ export default function MarkdownStreamingDemo() {
     }
 
     return currentScenarioChunks;
-  }, [aiRawChunks, currentScenarioChunks, sourceMode]);
+  }, [aiRawChunks, currentScenarioChunks, pastedChunks, sourceMode]);
 
   const transformedCurrentChunks = useMemo(
     () =>
@@ -672,12 +513,58 @@ export default function MarkdownStreamingDemo() {
         : 'Live AI stream'
       : sourceMode === 'pasted'
         ? 'Pasted chunks'
-        : formatScenarioLabel(selectedScenario);
+        : selectedScenarioDefinition.label;
   const sourceIdentity =
     sourceMode === 'preset' ? `preset:${selectedScenario}` : sourceMode;
   const currentChunkLabel =
     activeIndex === 0 ? 'before first chunk' : `#${activeIndex}`;
   const editorBoundaryResetKey = `${sourceIdentity}:${activeIndex}`;
+  const hasHostedGatewayApiKey = hostedGatewayApiKey.length > 0;
+
+  function openHostedGatewayApiKeyDialog(intent: HostedAiKeyDialogIntent) {
+    setHostedGatewayApiKeyDialogIntent(intent);
+    setHostedGatewayApiKeyDialogError(null);
+    setHostedGatewayApiKeyDraft(hostedGatewayApiKey);
+    setIsHostedGatewayApiKeyDialogOpen(true);
+  }
+
+  async function saveHostedGatewayApiKey() {
+    const gatewayApiKey = normalizeMarkdownStreamingDemoGatewayApiKey(
+      hostedGatewayApiKeyDraft
+    );
+
+    if (!gatewayApiKey) {
+      setHostedGatewayApiKeyDialogError('AI Gateway API key is required.');
+      return;
+    }
+
+    try {
+      window.sessionStorage.setItem(
+        MARKDOWN_STREAMING_DEMO_GATEWAY_KEY_STORAGE_KEY,
+        gatewayApiKey
+      );
+    } catch {}
+
+    setHostedGatewayApiKey(gatewayApiKey);
+    setHostedGatewayApiKeyDraft(gatewayApiKey);
+    setHostedGatewayApiKeyDialogError(null);
+    setIsHostedGatewayApiKeyDialogOpen(false);
+
+    if (
+      hostedGatewayApiKeyDialogIntent === HOSTED_AI_KEY_DIALOG_INTENTS.generate
+    ) {
+      await handleGenerateAiStream({ gatewayApiKey });
+    }
+  }
+
+  function handleGenerateAiButtonClick() {
+    if (requiresHostedGatewayApiKey && !hasHostedGatewayApiKey) {
+      openHostedGatewayApiKeyDialog(HOSTED_AI_KEY_DIALOG_INTENTS.generate);
+      return;
+    }
+
+    void handleGenerateAiStream({ gatewayApiKey: hostedGatewayApiKey });
+  }
 
   function stopAiStream() {
     abortControllerRef.current?.abort();
@@ -757,6 +644,32 @@ export default function MarkdownStreamingDemo() {
     scheduleAiChunkFlush();
   }
 
+  useEffect(() => {
+    const shouldPromptForGatewayKey =
+      shouldPromptForMarkdownStreamingDemoGatewayKey(window.location.hostname);
+
+    if (!shouldPromptForGatewayKey) {
+      return;
+    }
+
+    setRequiresHostedGatewayApiKey(true);
+
+    try {
+      const storedGatewayApiKey = normalizeMarkdownStreamingDemoGatewayApiKey(
+        window.sessionStorage.getItem(
+          MARKDOWN_STREAMING_DEMO_GATEWAY_KEY_STORAGE_KEY
+        ) ?? undefined
+      );
+
+      if (!storedGatewayApiKey) {
+        return;
+      }
+
+      setHostedGatewayApiKey(storedGatewayApiKey);
+      setHostedGatewayApiKeyDraft(storedGatewayApiKey);
+    } catch {}
+  }, []);
+
   function hasQueuedOrAppliedAiChunks() {
     return (
       aiPendingRawChunksRef.current.length > 0 ||
@@ -815,7 +728,7 @@ export default function MarkdownStreamingDemo() {
     }
   }
 
-  function switchToPresetMode(nextScenario?: ScenarioId) {
+  function switchToPresetMode(nextScenario?: MarkdownStreamingDemoScenarioId) {
     stopAiStream();
     resetAiStreamingChunks();
     setSourceMode('preset');
@@ -831,13 +744,17 @@ export default function MarkdownStreamingDemo() {
     }
   }
 
-  async function handleGenerateAiStream() {
+  async function handleGenerateAiStream(options?: { gatewayApiKey?: string }) {
     const prompt = aiPrompt.trim();
 
     if (!prompt) {
       setAiError('Prompt is required.');
       return;
     }
+
+    const gatewayApiKey = normalizeMarkdownStreamingDemoGatewayApiKey(
+      options?.gatewayApiKey
+    );
 
     stopAiStream();
 
@@ -860,7 +777,11 @@ export default function MarkdownStreamingDemo() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ model: selectedModel, prompt }),
+        body: JSON.stringify({
+          gatewayApiKey,
+          model: selectedModel,
+          prompt,
+        }),
         signal: controller.signal,
       });
 
@@ -1120,389 +1041,431 @@ export default function MarkdownStreamingDemo() {
   ]);
 
   return (
-    <section className="h-full overflow-y-auto p-8 md:p-12">
-      <div className="space-y-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-4">
-              <div>
-                <p className="font-semibold text-slate-500 text-xs uppercase tracking-[0.2em]">
-                  Plate / Blocks
-                </p>
-                <h1 className="mt-2 font-semibold text-4xl text-slate-950">
-                  Markdown streaming demo
-                </h1>
-                <p className="mt-3 max-w-3xl text-slate-600 text-sm">
-                  This registry example now includes the same richer debugging
-                  workflow from the local dev demo, while still using
-                  Plate&apos;s real
-                  <code className="mx-1 rounded bg-slate-100 px-1.5 py-0.5">
-                    streamInsertChunk
-                  </code>
-                  path only.
-                </p>
+    <>
+      <section className="h-full overflow-y-auto p-8 md:p-12">
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-4">
+                <div>
+                  <p className="font-semibold text-slate-500 text-xs uppercase tracking-[0.2em]">
+                    Plate / Blocks
+                  </p>
+                  <h1 className="mt-2 font-semibold text-4xl text-slate-950">
+                    Markdown streaming demo
+                  </h1>
+                  <p className="mt-3 max-w-3xl text-slate-600 text-sm">
+                    This registry example now includes the same richer debugging
+                    workflow from the local dev demo, while still using
+                    Plate&apos;s real
+                    <code className="mx-1 rounded bg-slate-100 px-1.5 py-0.5">
+                      streamInsertChunk
+                    </code>
+                    path only.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Scenario
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      {selectedScenarioDefinition.label}
+                    </strong>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Source
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      {currentSourceLabel}
+                    </strong>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Progress
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      {activeIndex}/{transformedCurrentChunks.length}
+                    </strong>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Adapter
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      Plate streamInsertChunk
+                    </strong>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Preset Delay
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      {playbackDelayInMs} ms
+                    </strong>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="block text-slate-500 text-xs uppercase tracking-wide">
+                      Burst Size
+                    </span>
+                    <strong className="mt-1 block text-slate-900">
+                      {playbackBurstSize}
+                    </strong>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Scenario
+              <div className="flex flex-wrap gap-3">
+                <label className="flex min-w-72 flex-col gap-2 text-slate-600 text-sm">
+                  <span className="font-medium text-slate-800">Scenario</span>
+                  <select
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+                    value={selectedScenario}
+                    onChange={(event) => {
+                      switchToPresetMode(
+                        event.target.value as MarkdownStreamingDemoScenarioId
+                      );
+                    }}
+                  >
+                    {scenarioEntries.map(([scenarioId, scenario]) => (
+                      <option key={scenarioId} value={scenarioId}>
+                        {scenario.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex min-w-48 flex-col gap-2 text-slate-600 text-sm">
+                  <span className="font-medium text-slate-800">
+                    Preset delay
                   </span>
-                  <strong className="mt-1 block text-slate-900">
-                    {formatScenarioLabel(selectedScenario)}
-                  </strong>
-                </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Source
-                  </span>
-                  <strong className="mt-1 block text-slate-900">
-                    {currentSourceLabel}
-                  </strong>
-                </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Progress
-                  </span>
-                  <strong className="mt-1 block text-slate-900">
-                    {activeIndex}/{transformedCurrentChunks.length}
-                  </strong>
-                </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Adapter
-                  </span>
-                  <strong className="mt-1 block text-slate-900">
-                    Plate streamInsertChunk
-                  </strong>
-                </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Preset Delay
-                  </span>
-                  <strong className="mt-1 block text-slate-900">
-                    {playbackDelayInMs} ms
-                  </strong>
-                </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <span className="block text-slate-500 text-xs uppercase tracking-wide">
-                    Burst Size
-                  </span>
-                  <strong className="mt-1 block text-slate-900">
-                    {playbackBurstSize}
-                  </strong>
+                  <select
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+                    value={playbackDelayInMs}
+                    onChange={(event) => {
+                      setPlaybackDelayInMs(Number(event.target.value));
+                    }}
+                  >
+                    {playbackDelayOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="flex min-w-48 flex-col gap-2 text-slate-600 text-sm">
+                  <span className="font-medium text-slate-800">Burst size</span>
+                  <select
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+                    value={playbackBurstSize}
+                    onChange={(event) => {
+                      setPlaybackBurstSize(Number(event.target.value));
+                    }}
+                  >
+                    {playbackBurstSizeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="flex flex-wrap items-end gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setActiveIndex(0);
+                    }}
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={activeIndex === 0}
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setActiveIndex((previous) => Math.max(0, previous - 1));
+                    }}
+                  >
+                    Prev
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={activeIndex >= transformedCurrentChunks.length}
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setActiveIndex((previous) =>
+                        Math.min(transformedCurrentChunks.length, previous + 1)
+                      );
+                    }}
+                  >
+                    Next
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => setIsPlaying((previous) => !previous)}
+                  >
+                    {isPlaying ? 'Pause' : 'Play'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setActiveIndex(transformedCurrentChunks.length);
+                    }}
+                  >
+                    Jump to end
+                  </Button>
                 </div>
               </div>
             </div>
+          </section>
 
-            <div className="flex flex-wrap gap-3">
-              <label className="flex min-w-72 flex-col gap-2 text-slate-600 text-sm">
-                <span className="font-medium text-slate-800">Scenario</span>
-                <select
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
-                  value={selectedScenario}
-                  onChange={(event) => {
-                    switchToPresetMode(event.target.value as ScenarioId);
-                  }}
-                >
-                  {Object.keys(testScenarios).map((scenario) => (
-                    <option key={scenario} value={scenario}>
-                      {formatScenarioLabel(scenario)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex min-w-48 flex-col gap-2 text-slate-600 text-sm">
-                <span className="font-medium text-slate-800">Preset delay</span>
-                <select
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
-                  value={playbackDelayInMs}
-                  onChange={(event) => {
-                    setPlaybackDelayInMs(Number(event.target.value));
-                  }}
-                >
-                  {playbackDelayOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex min-w-48 flex-col gap-2 text-slate-600 text-sm">
-                <span className="font-medium text-slate-800">Burst size</span>
-                <select
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
-                  value={playbackBurstSize}
-                  onChange={(event) => {
-                    setPlaybackBurstSize(Number(event.target.value));
-                  }}
-                >
-                  {playbackBurstSizeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="flex flex-wrap items-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsPlaying(false);
-                    setActiveIndex(0);
-                  }}
-                >
-                  Reset
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={activeIndex === 0}
-                  onClick={() => {
-                    setIsPlaying(false);
-                    setActiveIndex((previous) => Math.max(0, previous - 1));
-                  }}
-                >
-                  Prev
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={activeIndex >= transformedCurrentChunks.length}
-                  onClick={() => {
-                    setIsPlaying(false);
-                    setActiveIndex((previous) =>
-                      Math.min(transformedCurrentChunks.length, previous + 1)
-                    );
-                  }}
-                >
-                  Next
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setIsPlaying((previous) => !previous)}
-                >
-                  {isPlaying ? 'Pause' : 'Play'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsPlaying(false);
-                    setActiveIndex(transformedCurrentChunks.length);
-                  }}
-                >
-                  Jump to end
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="space-y-1">
-            <h2 className="font-semibold text-2xl text-slate-900">AI Prompt</h2>
-            <p className="text-slate-500 text-sm">
-              Stream a real AI markdown response into the registry example to
-              catch chunk-boundary bugs that preset cases might miss.
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-            <label className="flex min-h-0 flex-col gap-2 text-slate-600 text-sm">
-              <span className="font-medium text-slate-800">Prompt</span>
-              <textarea
-                className="min-h-40 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
-                value={aiPrompt}
-                onChange={(event) => setAiPrompt(event.target.value)}
-                placeholder="Describe the markdown response you want to stream..."
-              />
-            </label>
-
-            <label className="flex min-h-0 flex-col gap-2 text-slate-600 text-sm">
-              <span className="font-medium text-slate-800">Model</span>
-              <select
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
-                value={selectedModel}
-                onChange={(event) => setSelectedModel(event.target.value)}
-              >
-                {models.map((model) => (
-                  <option key={model.value} value={model.value}>
-                    {model.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-3">
-              <Button
-                type="button"
-                disabled={aiStatus === 'loading' || aiStatus === 'streaming'}
-                onClick={() => {
-                  void handleGenerateAiStream();
-                }}
-              >
-                Generate with AI
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={aiStatus !== 'loading' && aiStatus !== 'streaming'}
-                onClick={() => stopAiStream()}
-              >
-                Stop AI
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={sourceMode === 'preset'}
-                onClick={() => switchToPresetMode()}
-              >
-                Use preset scenario
-              </Button>
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="space-y-1">
+              <h2 className="font-semibold text-2xl text-slate-900">
+                AI Prompt
+              </h2>
+              <p className="text-slate-500 text-sm">
+                Stream a real AI markdown response into the registry example to
+                catch chunk-boundary bugs that preset cases might miss.
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-slate-600 text-sm">
-              <span>Status: {aiStatus}</span>
-              <span>Model: {selectedModel}</span>
-              <span>Provider path: {aiProvider ?? 'pending'}</span>
-              <span>Raw AI chunks: {aiRawChunks.length}</span>
-              <span>Joined chunks: {transformedCurrentChunks.length}</span>
-            </div>
-          </div>
-
-          <p
-            className={cn(
-              'mt-4 text-sm',
-              aiError ? 'text-red-600' : 'text-slate-500'
-            )}
-          >
-            {aiError
-              ? aiError
-              : 'Prefer AI_GATEWAY_API_KEY if you want to switch across OpenAI, Google, Anthropic, and other providers. If that is missing, the demo falls back to OPENAI_API_KEY for OpenAI models only.'}
-          </p>
-        </section>
-
-        <div className="grid gap-6 xl:grid-cols-2">
-          <InfoCard
-            title="Chunks"
-            description={
-              <>
-                These are the original chunks before the local MarkdownJoiner
-                pass. Joined chunks: {transformedCurrentChunks.length}
-              </>
-            }
-          >
-            <div className="flex h-full min-h-0 flex-col">
-              <div className="mb-4 flex flex-wrap justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={rawChunks.length === 0}
-                  onClick={() => {
-                    void handleCopyChunks();
-                  }}
-                >
-                  {copyChunksStatus === 'copied'
-                    ? 'Copied'
-                    : copyChunksStatus === 'error'
-                      ? 'Copy failed'
-                      : 'Copy raw chunks'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    void handlePasteChunks();
-                  }}
-                >
-                  {pasteChunksStatus === 'loaded'
-                    ? 'Loaded'
-                    : pasteChunksStatus === 'error'
-                      ? 'Paste failed'
-                      : 'Paste raw chunks'}
-                </Button>
-              </div>
-
-              <div className="min-h-0 flex-1">
-                <Tokens
-                  activeIndex={rawActiveIndex}
-                  chunks={rawChunksByLine}
-                  chunkClick={(index) => {
-                    const joinedIndex = transformedCurrentChunks.findIndex(
-                      (chunk) => chunk.rawEndIndex >= index - 1
-                    );
-
-                    setIsPlaying(false);
-                    setActiveIndex(
-                      joinedIndex === -1
-                        ? transformedCurrentChunks.length
-                        : joinedIndex + 1
-                    );
-                  }}
+            <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
+              <label className="flex min-h-0 flex-col gap-2 text-slate-600 text-sm">
+                <span className="font-medium text-slate-800">Prompt</span>
+                <textarea
+                  className="min-h-40 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+                  value={aiPrompt}
+                  onChange={(event) => setAiPrompt(event.target.value)}
+                  placeholder="Describe the markdown response you want to stream..."
                 />
+              </label>
+
+              <label className="flex min-h-0 flex-col gap-2 text-slate-600 text-sm">
+                <span className="font-medium text-slate-800">Model</span>
+                <select
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+                  value={selectedModel}
+                  onChange={(event) => setSelectedModel(event.target.value)}
+                >
+                  {models.map((model) => (
+                    <option key={model.value} value={model.value}>
+                      {model.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  type="button"
+                  disabled={aiStatus === 'loading' || aiStatus === 'streaming'}
+                  onClick={handleGenerateAiButtonClick}
+                >
+                  Generate with AI
+                </Button>
+                {requiresHostedGatewayApiKey ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={
+                      aiStatus === 'loading' || aiStatus === 'streaming'
+                    }
+                    onClick={() =>
+                      openHostedGatewayApiKeyDialog(
+                        HOSTED_AI_KEY_DIALOG_INTENTS.save
+                      )
+                    }
+                  >
+                    {hasHostedGatewayApiKey ? 'Change key' : 'Set key'}
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={aiStatus !== 'loading' && aiStatus !== 'streaming'}
+                  onClick={() => stopAiStream()}
+                >
+                  Stop AI
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={sourceMode === 'preset'}
+                  onClick={() => switchToPresetMode()}
+                >
+                  Use preset scenario
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-x-4 gap-y-2 text-slate-600 text-sm">
+                <span>Status: {aiStatus}</span>
+                <span>Model: {selectedModel}</span>
+                <span>Provider path: {aiProvider ?? 'pending'}</span>
+                <span>Raw AI chunks: {aiRawChunks.length}</span>
+                <span>Joined chunks: {transformedCurrentChunks.length}</span>
               </div>
             </div>
-          </InfoCard>
 
-          <InfoCard
-            title="Editor output"
-            description="Real Plate streamInsertChunk running against the current joined chunks."
-          >
-            <EditorRenderBoundary
-              currentChunkLabel={currentChunkLabel}
-              onReset={() => {
-                setIsPlaying(false);
-                resetStreamingState(editor);
-                appliedStreamingStateRef.current = {
-                  appliedCount: 0,
-                  sourceIdentity,
-                  streamedChunks: [],
-                };
-                setTreeJson(encodeEditorTree(editor.children));
-              }}
-              resetKey={editorBoundaryResetKey}
+            <p
+              className={cn(
+                'mt-4 text-sm',
+                aiError ? 'text-red-600' : 'text-slate-500'
+              )}
             >
-              <Plate editor={editor}>
-                <EditorContainer className="h-full overflow-y-auto rounded-2xl border border-slate-200 bg-white">
-                  <Editor
-                    variant="demo"
-                    className="min-h-full pb-[20vh]"
-                    placeholder="Streaming output will appear here..."
-                    spellCheck={false}
+              {aiError
+                ? aiError
+                : requiresHostedGatewayApiKey
+                  ? hasHostedGatewayApiKey
+                    ? 'Hosted demo uses the AI Gateway API key stored in this browser tab for live AI streaming.'
+                    : 'Hosted demo does not ship with a server-side key. Add an AI Gateway API key to test live AI streaming.'
+                  : 'Prefer AI_GATEWAY_API_KEY if you want to switch across OpenAI, Google, Anthropic, and other providers. If that is missing, the demo falls back to OPENAI_API_KEY for OpenAI models only.'}
+            </p>
+          </section>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <InfoCard
+              title="Chunks"
+              description={
+                <>
+                  These are the original chunks before the local MarkdownJoiner
+                  pass. Joined chunks: {transformedCurrentChunks.length}
+                </>
+              }
+            >
+              <div className="flex h-full min-h-0 flex-col">
+                <div className="mb-4 flex flex-wrap justify-end gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={rawChunks.length === 0}
+                    onClick={() => {
+                      void handleCopyChunks();
+                    }}
+                  >
+                    {copyChunksStatus === 'copied'
+                      ? 'Copied'
+                      : copyChunksStatus === 'error'
+                        ? 'Copy failed'
+                        : 'Copy raw chunks'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      void handlePasteChunks();
+                    }}
+                  >
+                    {pasteChunksStatus === 'loaded'
+                      ? 'Loaded'
+                      : pasteChunksStatus === 'error'
+                        ? 'Paste failed'
+                        : 'Paste raw chunks'}
+                  </Button>
+                </div>
+
+                <div className="min-h-0 flex-1">
+                  <Tokens
+                    activeIndex={rawActiveIndex}
+                    chunks={rawChunksByLine}
+                    chunkClick={(index) => {
+                      const joinedIndex = transformedCurrentChunks.findIndex(
+                        (chunk) => chunk.rawEndIndex >= index - 1
+                      );
+
+                      setIsPlaying(false);
+                      setActiveIndex(
+                        joinedIndex === -1
+                          ? transformedCurrentChunks.length
+                          : joinedIndex + 1
+                      );
+                    }}
                   />
-                </EditorContainer>
-              </Plate>
-            </EditorRenderBoundary>
-          </InfoCard>
+                </div>
+              </div>
+            </InfoCard>
 
-          <InfoCard
-            title="Raw markdown"
-            description="The currently streamed prefix concatenated as markdown text."
-          >
-            <textarea
-              className="h-full w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 font-mono text-slate-900 text-sm shadow-sm"
-              readOnly
-              value={currentMarkdown}
-            />
-          </InfoCard>
+            <InfoCard
+              title="Editor output"
+              description="Real Plate streamInsertChunk running against the current joined chunks."
+            >
+              <EditorRenderBoundary
+                currentChunkLabel={currentChunkLabel}
+                onReset={() => {
+                  setIsPlaying(false);
+                  resetStreamingState(editor);
+                  appliedStreamingStateRef.current = {
+                    appliedCount: 0,
+                    sourceIdentity,
+                    streamedChunks: [],
+                  };
+                  setTreeJson(encodeEditorTree(editor.children));
+                }}
+                resetKey={editorBoundaryResetKey}
+              >
+                <Plate editor={editor}>
+                  <EditorContainer className="h-full overflow-y-auto rounded-2xl border border-slate-200 bg-white">
+                    <Editor
+                      variant="demo"
+                      className="min-h-full pb-[20vh]"
+                      placeholder="Streaming output will appear here..."
+                      spellCheck={false}
+                    />
+                  </EditorContainer>
+                </Plate>
+              </EditorRenderBoundary>
+            </InfoCard>
 
-          <InfoCard
-            title="Editor tree"
-            description="The raw Slate tree after the current streaming step."
-          >
-            <pre className="h-full overflow-auto whitespace-pre-wrap break-words rounded-2xl bg-slate-900 p-4 font-mono text-slate-100 text-sm">
-              {treeJson}
-            </pre>
-          </InfoCard>
+            <InfoCard
+              title="Raw markdown"
+              description="The currently streamed prefix concatenated as markdown text."
+            >
+              <textarea
+                className="h-full w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 font-mono text-slate-900 text-sm shadow-sm"
+                readOnly
+                value={currentMarkdown}
+              />
+            </InfoCard>
+
+            <InfoCard
+              title="Editor tree"
+              description="The raw Slate tree after the current streaming step."
+            >
+              <pre className="h-full overflow-auto whitespace-pre-wrap break-words rounded-2xl bg-slate-900 p-4 font-mono text-slate-100 text-sm">
+                {treeJson}
+              </pre>
+            </InfoCard>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <MarkdownStreamingDemoGatewayKeyDialog
+        apiKeyDraft={hostedGatewayApiKeyDraft}
+        error={hostedGatewayApiKeyDialogError}
+        onApiKeyDraftChange={setHostedGatewayApiKeyDraft}
+        onOpenChange={setIsHostedGatewayApiKeyDialogOpen}
+        onSubmit={() => {
+          void saveHostedGatewayApiKey();
+        }}
+        open={isHostedGatewayApiKeyDialogOpen}
+        submitLabel={
+          hostedGatewayApiKeyDialogIntent ===
+          HOSTED_AI_KEY_DIALOG_INTENTS.generate
+            ? 'Save and generate'
+            : 'Save key'
+        }
+      />
+    </>
   );
 }

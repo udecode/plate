@@ -2,6 +2,8 @@ import { createGateway } from '@ai-sdk/gateway';
 import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
 
+import { normalizeMarkdownStreamingDemoGatewayApiKey } from '@/registry/lib/markdown-streaming-demo-ai';
+
 export const runtime = 'nodejs';
 
 const OPENAI_CHAT_COMPLETIONS_URL =
@@ -11,6 +13,7 @@ const DEFAULT_GATEWAY_MODEL =
 const DEFAULT_OPENAI_MODEL = process.env.OPENAI_MODEL ?? 'gpt-4.1-mini';
 
 type MarkdownStreamRequest = {
+  gatewayApiKey?: string;
   model?: string;
   prompt?: string;
 };
@@ -106,8 +109,12 @@ function createNdjsonStream(
   });
 }
 
-async function streamThroughGateway(prompt: string, model: string) {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
+async function streamThroughGateway(
+  prompt: string,
+  model: string,
+  apiKeyOverride?: string
+) {
+  const apiKey = apiKeyOverride ?? process.env.AI_GATEWAY_API_KEY;
 
   if (!apiKey) {
     return null;
@@ -294,7 +301,14 @@ export async function POST(request: Request) {
   }
 
   const model = normalizeRequestedModel(body.model);
-  const gatewayStream = await streamThroughGateway(prompt, model);
+  const gatewayApiKey = normalizeMarkdownStreamingDemoGatewayApiKey(
+    body.gatewayApiKey
+  );
+  const gatewayStream = await streamThroughGateway(
+    prompt,
+    model,
+    gatewayApiKey
+  );
 
   if (gatewayStream) {
     return new Response(gatewayStream, {

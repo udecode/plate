@@ -9,6 +9,7 @@ const getTransientSuggestionKeyMock = mock(() => '__transient');
 const getEditorPluginMock = mock();
 const useEditorPluginMock = mock();
 const usePluginOptionMock = mock();
+const clearMarkdownStreamSessionMock = mock();
 
 mock.module('@platejs/markdown', () => ({
   MarkdownPlugin: { key: 'markdown' },
@@ -35,6 +36,10 @@ mock.module('@platejs/suggestion', () => ({
 
 mock.module('@platejs/suggestion/react', () => ({
   SuggestionPlugin: { key: 'suggestion' },
+}));
+
+mock.module('../streaming/markdownStreamSession', () => ({
+  clearMarkdownStreamSession: clearMarkdownStreamSessionMock,
 }));
 
 mock.module('platejs/react', async () => {
@@ -80,6 +85,7 @@ describe('ai chat action utils', () => {
     getTransientSuggestionKeyMock.mockReset();
     getTransientSuggestionKeyMock.mockReturnValue('__transient');
     getEditorPluginMock.mockReset();
+    clearMarkdownStreamSessionMock.mockReset();
   });
 
   afterAll(() => {
@@ -219,10 +225,8 @@ describe('ai chat action utils', () => {
 
     expect(stop).toHaveBeenCalled();
     expect(setMessages).toHaveBeenCalledWith([]);
+    expect(clearMarkdownStreamSessionMock).toHaveBeenCalledWith(editor);
     expect(setOptions).toHaveBeenCalledWith({
-      _blockChunks: '',
-      _blockPath: null,
-      _mdxName: null,
       _replaceIds: [],
       chatNodes: [],
       mode: 'insert',

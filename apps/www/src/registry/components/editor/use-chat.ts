@@ -6,13 +6,15 @@ import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
 import {
   AIChatPlugin,
+  createAIChatTextStreamTransport,
   aiCommentToRange,
   applyTableCellSuggestion,
+  withAIChatTextStream,
 } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type UIMessage, DefaultChatTransport } from 'ai';
+import type { ChatTransport, UIMessage } from 'ai';
 import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 
@@ -50,116 +52,160 @@ export type Chat = UseChatHelpers<ChatMessage>;
 
 export type ChatMessage = UIMessage<{}, MessageDataPart>;
 
+type PluginChatOptions = {
+  api?: string;
+  body?: Record<string, unknown>;
+  transport?: ChatTransport<ChatMessage>;
+} & Record<string, unknown>;
+
+const aiChatTransportFetchers = new Map<string, typeof fetch>();
+
+const createProxyTransportFetch = (chatId: string): typeof fetch =>
+  (async (input, init) => {
+    const fetcher = aiChatTransportFetchers.get(chatId);
+
+    if (!fetcher) {
+      throw new Error(`Missing AI chat transport fetcher for "${chatId}"`);
+    }
+
+    return fetcher(input, init);
+  }) as typeof fetch;
+
 export const useChat = () => {
   const editor = useEditorRef();
-  const options = usePluginOption(aiChatPlugin, 'chatOptions');
+  const options: PluginChatOptions =
+    usePluginOption(aiChatPlugin, 'chatOptions') ?? {};
+  const {
+    api = '/api/ai/command',
+    transport: providedTransport,
+    ...chatOptions
+  } = options;
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
-  const _abortFakeStream = () => {
+  const syncedChatStateRef = React.useRef<{
+    error: Chat['error'];
+    messages: Chat['messages'];
+    status: Chat['status'];
+    textStreamChannelId?: string;
+  } | null>(null);
+  const abortFakeStream = React.useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-  };
+  }, []);
 
-  const baseChat = useBaseChat<ChatMessage>({
-    id: 'editor',
-    transport: new DefaultChatTransport({
-      api: options.api || '/api/ai/command',
-      // Mock the API response. Remove it when you implement the route /api/ai/command
-      fetch: (async (input, init) => {
-        const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
+  const transportFetch = React.useCallback(
+    async (input: RequestInfo | URL, init?: RequestInit) => {
+      const bodyOptions = editor.getOptions(aiChatPlugin).chatOptions?.body;
 
-        const initBody = JSON.parse(init?.body as string);
+      const initBody = JSON.parse(init?.body as string);
 
-        const body = {
-          ...initBody,
-          ...bodyOptions,
-        };
+      const body = {
+        ...initBody,
+        ...bodyOptions,
+      };
 
-        const res = await fetch(input, {
-          ...init,
-          body: JSON.stringify(body),
-        });
+      const res = await fetch(input, {
+        ...init,
+        body: JSON.stringify(body),
+      });
 
-        if (!res.ok) {
-          let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
+      if (!res.ok) {
+        let sample: 'comment' | 'markdown' | 'mdx' | 'table' | null = null;
 
-          try {
-            const body = JSON.parse(init?.body as string);
-            const content = body.messages
-              .at(-1)
-              .parts.find((p: any) => p.type === 'text')?.text;
+        try {
+          const body = JSON.parse(init?.body as string);
+          const content = body.messages
+            .at(-1)
+            .parts.find((p: any) => p.type === 'text')?.text;
 
-            if (content.includes('Generate a markdown sample')) {
-              sample = 'markdown';
-            } else if (content.includes('Generate a mdx sample')) {
-              sample = 'mdx';
-            } else if (content.includes('comment')) {
-              sample = 'comment';
+          if (content.includes('Generate a markdown sample')) {
+            sample = 'markdown';
+          } else if (content.includes('Generate a mdx sample')) {
+            sample = 'mdx';
+          } else if (content.includes('comment')) {
+            sample = 'comment';
+          }
+
+          // Detect table editing by checking if multiple table cells are selected
+          // Single cell selection should use normal edit flow, only multi-cell uses table tool
+          if (!sample) {
+            // First check: selectedCells from TablePlugin (cell selection mode)
+            const selectedCells =
+              editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+
+            if (selectedCells.length > 1) {
+              sample = 'table';
             }
+            // Second check: selection range spans multiple cells
+            else if (body.ctx?.children && body.ctx?.selection) {
+              const { selection, children } = body.ctx;
+              const anchorPath = selection.anchor?.path;
+              const focusPath = selection.focus?.path;
 
-            // Detect table editing by checking if multiple table cells are selected
-            // Single cell selection should use normal edit flow, only multi-cell uses table tool
-            if (!sample) {
-              // First check: selectedCells from TablePlugin (cell selection mode)
-              const selectedCells =
-                editor.getOption({ key: KEYS.table }, 'selectedCells') || [];
+              if (anchorPath && anchorPath.length >= 3) {
+                const rootIndex = anchorPath[0];
+                const rootNode = children[rootIndex];
 
-              if (selectedCells.length > 1) {
-                sample = 'table';
-              }
-              // Second check: selection range spans multiple cells
-              else if (body.ctx?.children && body.ctx?.selection) {
-                const { selection, children } = body.ctx;
-                const anchorPath = selection.anchor?.path;
-                const focusPath = selection.focus?.path;
+                if (rootNode?.type === 'table') {
+                  // Cell path is at index 2 (table -> row -> cell)
+                  const anchorCellPath = anchorPath.slice(0, 3).join(',');
+                  const focusCellPath = focusPath?.slice(0, 3).join(',');
 
-                if (anchorPath && anchorPath.length >= 3) {
-                  const rootIndex = anchorPath[0];
-                  const rootNode = children[rootIndex];
-
-                  if (rootNode?.type === 'table') {
-                    // Cell path is at index 2 (table -> row -> cell)
-                    const anchorCellPath = anchorPath.slice(0, 3).join(',');
-                    const focusCellPath = focusPath?.slice(0, 3).join(',');
-
-                    // Only use table mock if anchor and focus are in different cells
-                    if (focusCellPath && anchorCellPath !== focusCellPath) {
-                      sample = 'table';
-                    }
+                  // Only use table mock if anchor and focus are in different cells
+                  if (focusCellPath && anchorCellPath !== focusCellPath) {
+                    sample = 'table';
                   }
                 }
               }
             }
-          } catch {
-            sample = null;
           }
-
-          abortControllerRef.current = new AbortController();
-
-          await new Promise((resolve) => setTimeout(resolve, 400));
-
-          const stream = fakeStreamText({
-            editor,
-            sample,
-            signal: abortControllerRef.current.signal,
-          });
-
-          const response = new Response(stream, {
-            headers: {
-              Connection: 'keep-alive',
-              'Content-Type': 'text/plain',
-            },
-          });
-
-          return response;
+        } catch {
+          sample = null;
         }
 
-        return res;
-      }) as typeof fetch,
-    }),
+        abortControllerRef.current = new AbortController();
+
+        await new Promise((resolve) => setTimeout(resolve, 400));
+
+        const stream = fakeStreamText({
+          editor,
+          sample,
+          signal: abortControllerRef.current.signal,
+        });
+
+        const response = new Response(stream, {
+          headers: {
+            Connection: 'keep-alive',
+            'Content-Type': 'text/plain',
+          },
+        });
+
+        return response;
+      }
+
+      return res;
+    },
+    [editor]
+  );
+
+  const transport = React.useMemo(
+    () =>
+      providedTransport ??
+      createAIChatTextStreamTransport<ChatMessage>({
+        api,
+        chatId: 'editor',
+        // Mock the API response. Remove it when you implement the route /api/ai/command
+        fetch: createProxyTransportFetch('editor'),
+      }),
+    [api, providedTransport]
+  );
+
+  const baseChat = useBaseChat<ChatMessage>({
+    id: 'editor',
+    transport,
     onData(data) {
       if (data.type === 'data-toolName') {
         editor.setOption(AIChatPlugin, 'toolName', data.data as ToolName);
@@ -249,18 +295,54 @@ export const useChat = () => {
       }
     },
 
-    ...options,
+    ...chatOptions,
   });
 
-  const chat = {
-    ...baseChat,
-    _abortFakeStream,
-  };
+  const chat = React.useMemo(
+    () => withAIChatTextStream(baseChat, transport),
+    [baseChat, transport]
+  );
 
   React.useEffect(() => {
-    editor.setOption(AIChatPlugin, 'chat', chat as any);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chat.status, chat.messages, chat.error]);
+    if (providedTransport) {
+      return;
+    }
+
+    aiChatTransportFetchers.set('editor', transportFetch as typeof fetch);
+
+    return () => {
+      if (aiChatTransportFetchers.get('editor') === transportFetch) {
+        aiChatTransportFetchers.delete('editor');
+      }
+    };
+  }, [providedTransport, transportFetch]);
+
+  React.useEffect(() => {
+    const nextChatState = {
+      error: chat.error,
+      messages: chat.messages,
+      status: chat.status,
+      textStreamChannelId: chat.__plateTextStreamChannelId,
+    };
+    const previousChatState = syncedChatStateRef.current;
+
+    if (
+      previousChatState &&
+      previousChatState.error === nextChatState.error &&
+      previousChatState.messages === nextChatState.messages &&
+      previousChatState.status === nextChatState.status &&
+      previousChatState.textStreamChannelId ===
+        nextChatState.textStreamChannelId
+    ) {
+      return;
+    }
+
+    syncedChatStateRef.current = nextChatState;
+    editor.setOption(AIChatPlugin, 'chat', {
+      ...chat,
+      _abortFakeStream: abortFakeStream,
+    } as any);
+  }, [abortFakeStream, chat, editor]);
 
   return chat;
 };

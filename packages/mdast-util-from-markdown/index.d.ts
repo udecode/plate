@@ -13,11 +13,11 @@ export type {
 export { fromMarkdown } from './lib/index.js';
 
 declare module 'micromark-util-types' {
-  interface TokenTypeMap {
+  type TokenTypeMap = {
     listItem: 'listItem';
-  }
+  };
 
-  interface Token {
+  type Token = {
     _spread?: boolean;
-  }
+  };
 }

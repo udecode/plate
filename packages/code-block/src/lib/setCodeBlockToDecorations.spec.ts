@@ -256,7 +256,7 @@ describe('codeBlockToDecorations', () => {
     expect(line3Decorations).toHaveLength(1);
   });
 
-  it('logs debug errors for registered languages that fail to highlight', () => {
+  it('warns and falls back to plaintext for registered languages that fail to highlight', () => {
     const error = new Error('boom');
     mockHighlight.mockImplementation(() => {
       throw error;
@@ -271,11 +271,12 @@ describe('codeBlockToDecorations', () => {
     const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
     expect(result.get(codeBlock.children[0] as any)).toEqual([]);
-    expect(editor.api.debug.error).toHaveBeenCalledWith(
-      error,
-      'CODE_HIGHLIGHT'
+    expect(editor.api.debug.error).not.toHaveBeenCalled();
+    expect(editor.api.debug.warn).toHaveBeenCalledWith(
+      'Failed to highlight language "javascript". Falling back to plaintext',
+      'CODE_HIGHLIGHT',
+      error
     );
-    expect(editor.api.debug.warn).not.toHaveBeenCalled();
   });
 
   it('warns and falls back to plaintext for unregistered languages', () => {

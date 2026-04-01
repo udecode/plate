@@ -39,7 +39,7 @@
  * } from './types.js'
  */
 
-import { toString } from 'mdast-util-to-string';
+import { toString as mdastToString } from 'mdast-util-to-string';
 import { parse, postprocess, preprocess } from 'micromark';
 import { decodeNumericCharacterReference } from 'micromark-util-decode-numeric-character-reference';
 import { decodeString } from 'micromark-util-decode-string';
@@ -47,6 +47,16 @@ import { normalizeIdentifier } from 'micromark-util-normalize-identifier';
 import { decodeNamedCharacterReference } from 'decode-named-character-reference';
 import { stringifyPosition } from 'unist-util-stringify-position';
 const own = {}.hasOwnProperty;
+const SOURCE_LINE_REGEX = /.*?(?:\r\n|\r|\n|$)/g;
+const TRAILING_LINE_ENDING_REGEX = /(?:\r\n|\r|\n)$/;
+const FENCED_CODE_CLOSE_REGEX = /^( {0,3})([`~]{3,})[ \t]*$/;
+const FENCED_CODE_OPEN_REGEX = /^( {0,3})([`~]{3,})(.*)$/;
+const TRAILING_WHITESPACE_REGEX = /[ \t]+$/;
+const LINE_TRAILING_WHITESPACE_BEFORE_BLANK_LINE_REGEX =
+  /[ \t]+(?=(?:\r\n|\r|\n)(?:\r\n|\r|\n))/;
+const LAST_TRAILING_BLOCK_REGEX =
+  /(?:\r\n|\r|\n){2,}(?![\s\S]*(?:\r\n|\r|\n){2,})/;
+const DANGLING_HTML_START_REGEX = /^<(?:!|\/)?[A-Za-z-]*$/;
 
 /**
  * Turn markdown into a syntax tree.
@@ -72,18 +82,23 @@ const own = {}.hasOwnProperty;
  *   mdast tree.
  */
 export function fromMarkdown(value, encoding, options) {
-  if (encoding && typeof encoding === 'object') {
-    options = encoding;
-    encoding = undefined;
-  }
-  const tree = compiler(options)(
+  const resolvedEncoding =
+    encoding && typeof encoding === 'object' ? undefined : encoding;
+  const resolvedOptions =
+    encoding && typeof encoding === 'object' ? encoding : options;
+  const tree = compiler(resolvedOptions)(
     postprocess(
-      parse(options)
+      parse(resolvedOptions)
         .document()
-        .write(preprocess()(value, encoding, true))
+        .write(preprocess()(value, resolvedEncoding, true))
     )
   );
-  return applyStreamdownMetadata(tree, value, encoding, options);
+  return applyStreamdownMetadata(
+    tree,
+    value,
+    resolvedEncoding,
+    resolvedOptions
+  );
 }
 
 /**
@@ -191,7 +206,7 @@ function compiler(options) {
       thematicBreak: closer(),
     },
   };
-  configure(config, (options || {}).mdastExtensions || []);
+  configure(config, options?.mdastExtensions || []);
 
   /** @type {CompileData} */
   const data = {};
@@ -256,7 +271,7 @@ function compiler(options) {
 
     // Handle tokens still being open.
     if (context.tokenStack.length > 0) {
-      const tail = context.tokenStack[context.tokenStack.length - 1];
+      const tail = context.tokenStack.at(-1);
       const handler = tail[1] || defaultOnError;
       handler.call(context, undefined, tail[0]);
     }
@@ -274,7 +289,7 @@ function compiler(options) {
       ),
       end: point(
         events.length > 0
-          ? events[events.length - 2][1].end
+          ? events.at(-2)[1].end
           : {
               line: 1,
               column: 1,
@@ -298,6 +313,7 @@ function compiler(options) {
    * @returns {number}
    */
   function prepareList(events, start, length) {
+    let end = length;
     let index = start - 1;
     let containerBalance = -1;
     let listSpread = false;
@@ -309,7 +325,7 @@ function compiler(options) {
     let firstBlankLineIndex;
     /** @type {boolean | undefined} */
     let atMarker;
-    while (++index <= length) {
+    while (++index <= end) {
       const event = events[index];
       switch (event[1].type) {
         case 'listUnordered':
@@ -400,7 +416,7 @@ function compiler(options) {
           };
           events.splice(lineIndex || index, 0, ['exit', listItem, event[2]]);
           index++;
-          length++;
+          end++;
         }
 
         // Create a new list item.
@@ -416,14 +432,14 @@ function compiler(options) {
           listItem = item;
           events.splice(index, 0, ['enter', item, event[2]]);
           index++;
-          length++;
+          end++;
           firstBlankLineIndex = undefined;
           atMarker = true;
         }
       }
     }
     events[start][1]._spread = listSpread;
-    return length;
+    return end;
   }
 
   /**
@@ -464,7 +480,7 @@ function compiler(options) {
    * @type {CompileContext['enter']}
    */
   function enter(node, token, errorHandler) {
-    const parent = this.stack[this.stack.length - 1];
+    const parent = this.stack.at(-1);
     /** @type {Array<Nodes>} */
     const siblings = parent.children;
     siblings.push(node);
@@ -532,7 +548,7 @@ function compiler(options) {
    * @type {CompileContext['resume']}
    */
   function resume() {
-    return toString(this.stack.pop());
+    return mdastToString(this.stack.pop());
   }
 
   //
@@ -553,7 +569,7 @@ function compiler(options) {
    */
   function onenterlistitemvalue(token) {
     if (this.data.expectingFirstListItemValue) {
-      const ancestor = this.stack[this.stack.length - 2];
+      const ancestor = this.stack.at(-2);
       ancestor.start = Number.parseInt(this.sliceSerialize(token), 10);
       this.data.expectingFirstListItemValue = undefined;
     }
@@ -565,7 +581,7 @@ function compiler(options) {
    */
   function onexitcodefencedfenceinfo() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.lang = data;
   }
 
@@ -575,7 +591,7 @@ function compiler(options) {
    */
   function onexitcodefencedfencemeta() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.meta = data;
   }
 
@@ -596,7 +612,7 @@ function compiler(options) {
    */
   function onexitcodefenced() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.value = data.replace(/^(\r?\n|\r)|(\r?\n|\r)$/g, '');
     this.data.flowCodeInside = undefined;
   }
@@ -607,7 +623,7 @@ function compiler(options) {
    */
   function onexitcodeindented() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.value = data.replace(/(\r?\n|\r)$/g, '');
   }
 
@@ -617,7 +633,7 @@ function compiler(options) {
    */
   function onexitdefinitionlabelstring(token) {
     const label = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.label = label;
     node.identifier = normalizeIdentifier(
       this.sliceSerialize(token)
@@ -630,7 +646,7 @@ function compiler(options) {
    */
   function onexitdefinitiontitlestring() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.title = data;
   }
 
@@ -640,7 +656,7 @@ function compiler(options) {
    */
   function onexitdefinitiondestinationstring() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.url = data;
   }
 
@@ -649,7 +665,7 @@ function compiler(options) {
    * @type {Handle}
    */
   function onexitatxheadingsequence(token) {
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     if (!node.depth) {
       const depth = this.sliceSerialize(token).length;
       node.depth = depth;
@@ -669,7 +685,7 @@ function compiler(options) {
    * @type {Handle}
    */
   function onexitsetextheadinglinesequence(token) {
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.depth = this.sliceSerialize(token).codePointAt(0) === 61 ? 1 : 2;
   }
 
@@ -687,10 +703,10 @@ function compiler(options) {
    */
 
   function onenterdata(token) {
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     /** @type {Array<Nodes>} */
     const siblings = node.children;
-    let tail = siblings[siblings.length - 1];
+    let tail = siblings.at(-1);
     if (!tail || tail.type !== 'text') {
       // Add a new text node.
       tail = text();
@@ -721,10 +737,10 @@ function compiler(options) {
    */
 
   function onexitlineending(token) {
-    const context = this.stack[this.stack.length - 1];
+    const context = this.stack.at(-1);
     // If we’re at a hard break, include the line ending in there.
     if (this.data.atHardBreak) {
-      const tail = context.children[context.children.length - 1];
+      const tail = context.children.at(-1);
       tail.position.end = point(token.end);
       this.data.atHardBreak = undefined;
       return;
@@ -754,7 +770,7 @@ function compiler(options) {
 
   function onexithtmlflow() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.value = data;
   }
 
@@ -765,7 +781,7 @@ function compiler(options) {
 
   function onexithtmltext() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.value = data;
   }
 
@@ -776,7 +792,7 @@ function compiler(options) {
 
   function onexitcodetext() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.value = data;
   }
 
@@ -786,7 +802,7 @@ function compiler(options) {
    */
 
   function onexitlink() {
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     // Note: there are also `identifier` and `label` fields on this link node!
     // These are used / cleaned here.
 
@@ -798,13 +814,13 @@ function compiler(options) {
       // @ts-expect-error: mutate.
       node.referenceType = referenceType;
       // @ts-expect-error: mutate.
-      delete node.url;
-      delete node.title;
+      node.url = undefined;
+      node.title = undefined;
     } else {
       // @ts-expect-error: mutate.
-      delete node.identifier;
+      node.identifier = undefined;
       // @ts-expect-error: mutate.
-      delete node.label;
+      node.label = undefined;
     }
     this.data.referenceType = undefined;
   }
@@ -815,7 +831,7 @@ function compiler(options) {
    */
 
   function onexitimage() {
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     // Note: there are also `identifier` and `label` fields on this link node!
     // These are used / cleaned here.
 
@@ -827,13 +843,13 @@ function compiler(options) {
       // @ts-expect-error: mutate.
       node.referenceType = referenceType;
       // @ts-expect-error: mutate.
-      delete node.url;
-      delete node.title;
+      node.url = undefined;
+      node.title = undefined;
     } else {
       // @ts-expect-error: mutate.
-      delete node.identifier;
+      node.identifier = undefined;
       // @ts-expect-error: mutate.
-      delete node.label;
+      node.label = undefined;
     }
     this.data.referenceType = undefined;
   }
@@ -845,7 +861,7 @@ function compiler(options) {
 
   function onexitlabeltext(token) {
     const string = this.sliceSerialize(token);
-    const ancestor = this.stack[this.stack.length - 2];
+    const ancestor = this.stack.at(-2);
     // @ts-expect-error: stash this on the node, as it might become a reference
     // later.
     ancestor.label = decodeString(string);
@@ -859,9 +875,9 @@ function compiler(options) {
    */
 
   function onexitlabel() {
-    const fragment = this.stack[this.stack.length - 1];
+    const fragment = this.stack.at(-1);
     const value = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     // Assume a reference.
     this.data.inReference = true;
     if (node.type === 'link') {
@@ -880,7 +896,7 @@ function compiler(options) {
 
   function onexitresourcedestinationstring() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.url = data;
   }
 
@@ -891,7 +907,7 @@ function compiler(options) {
 
   function onexitresourcetitlestring() {
     const data = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.title = data;
   }
 
@@ -920,7 +936,7 @@ function compiler(options) {
 
   function onexitreferencestring(token) {
     const label = this.resume();
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     // @ts-expect-error: stash this on the node, as it might become a reference
     // later.
     node.label = label;
@@ -959,7 +975,7 @@ function compiler(options) {
       const result = decodeNamedCharacterReference(data);
       value = result;
     }
-    const tail = this.stack[this.stack.length - 1];
+    const tail = this.stack.at(-1);
     tail.value += value;
   }
 
@@ -978,7 +994,7 @@ function compiler(options) {
    */
   function onexitautolinkprotocol(token) {
     onexitdata.call(this, token);
-    const node = this.stack[this.stack.length - 1];
+    const node = this.stack.at(-1);
     node.url = this.sliceSerialize(token);
   }
 
@@ -988,8 +1004,8 @@ function compiler(options) {
    */
   function onexitautolinkemail(token) {
     onexitdata.call(this, token);
-    const node = this.stack[this.stack.length - 1];
-    node.url = 'mailto:' + this.sliceSerialize(token);
+    const node = this.stack.at(-1);
+    node.url = `mailto:${this.sliceSerialize(token)}`;
   }
 
   //
@@ -1258,7 +1274,7 @@ function defaultOnError(left, right) {
  * @returns {Root}
  */
 function applyStreamdownMetadata(tree, value, encoding, options) {
-  const streamdown = options && options.streamdown;
+  const streamdown = options?.streamdown;
   if (!streamdown || streamdown.preservePendingTail === false) {
     return tree;
   }
@@ -1289,7 +1305,7 @@ function applyStreamdownMetadata(tree, value, encoding, options) {
  * @returns {undefined}
  */
 function applyStreamdownPendingTail(tree, source, pending) {
-  const lastBlock = tree.children[tree.children.length - 1];
+  const lastBlock = tree.children.at(-1);
   if (!lastBlock || lastBlock.type === 'code' || lastBlock.type === 'table') {
     return;
   }
@@ -1302,7 +1318,7 @@ function applyStreamdownPendingTail(tree, source, pending) {
           value: '',
         },
       ],
-      position: createCollapsedPosition(tree.position && tree.position.end),
+      position: createCollapsedPosition(tree.position?.end),
     });
     return;
   }
@@ -1314,9 +1330,7 @@ function applyStreamdownPendingTail(tree, source, pending) {
     return;
   }
   const textEnd =
-    lastText.position &&
-    lastText.position.end &&
-    typeof lastText.position.end.offset === 'number'
+    lastText.position?.end && typeof lastText.position.end.offset === 'number'
       ? lastText.position.end.offset
       : undefined;
   if (typeof textEnd !== 'number') {
@@ -1327,7 +1341,7 @@ function applyStreamdownPendingTail(tree, source, pending) {
     return;
   }
   lastText.value += suffix;
-  const treeEnd = tree.position && tree.position.end;
+  const treeEnd = tree.position?.end;
   if (lastText.position && treeEnd) {
     lastText.position.end = point(treeEnd);
   }
@@ -1431,14 +1445,14 @@ function detectOpenFencedCode(source) {
   /** @type {{char: string, size: number, start: number} | undefined} */
   let openFence;
   let offset = 0;
-  for (const match of source.matchAll(/.*?(?:\r\n|\r|\n|$)/g)) {
+  for (const match of source.matchAll(SOURCE_LINE_REGEX)) {
     const line = match[0];
     if (!line) {
       continue;
     }
-    const content = line.replace(/(?:\r\n|\r|\n)$/, '');
+    const content = line.replace(TRAILING_LINE_ENDING_REGEX, '');
     if (openFence) {
-      const close = /^( {0,3})([`~]{3,})[ \t]*$/.exec(content);
+      const close = FENCED_CODE_CLOSE_REGEX.exec(content);
       if (
         close &&
         close[2].charAt(0) === openFence.char &&
@@ -1447,7 +1461,7 @@ function detectOpenFencedCode(source) {
         openFence = undefined;
       }
     } else {
-      const open = /^( {0,3})([`~]{3,})(.*)$/.exec(content);
+      const open = FENCED_CODE_OPEN_REGEX.exec(content);
       if (open) {
         openFence = {
           char: open[2].charAt(0),
@@ -1524,7 +1538,7 @@ function previousLineEndingStart(source, end) {
  * @returns {{reason: string, start: number} | undefined}
  */
 function detectTrailingWhitespace(source) {
-  const match = /[ \t]+$/.exec(source);
+  const match = TRAILING_WHITESPACE_REGEX.exec(source);
   if (!match) {
     return;
   }
@@ -1539,7 +1553,7 @@ function detectTrailingWhitespace(source) {
  * @returns {{reason: string, start: number} | undefined}
  */
 function detectLineTrailingWhitespaceBeforeBlankLine(source) {
-  const match = /[ \t]+(?=(?:\r\n|\r|\n)(?:\r\n|\r|\n))/.exec(source);
+  const match = LINE_TRAILING_WHITESPACE_BEFORE_BLANK_LINE_REGEX.exec(source);
   return match
     ? {
         reason: 'line-trailing-whitespace-before-blank-line',
@@ -1553,7 +1567,7 @@ function detectLineTrailingWhitespaceBeforeBlankLine(source) {
  * @returns {number}
  */
 function findTrailingBlockStart(source) {
-  const match = /(?:\r\n|\r|\n){2,}(?![\s\S]*(?:\r\n|\r|\n){2,})/.exec(source);
+  const match = LAST_TRAILING_BLOCK_REGEX.exec(source);
   return match ? match.index + match[0].length : 0;
 }
 
@@ -1595,7 +1609,7 @@ function detectDanglingHtmlStart(tail, blockStart) {
     return;
   }
   const after = tail.slice(open);
-  if (!/^<(?:!|\/)?[A-Za-z-]*$/.test(after)) {
+  if (!DANGLING_HTML_START_REGEX.test(after)) {
     return;
   }
   return {

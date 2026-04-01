@@ -92,7 +92,11 @@ export function codeBlockToDecorations(
     const isLanguageRegistered =
       effectiveLanguage && availableLanguages.includes(effectiveLanguage);
     if (isLanguageRegistered) {
-      editor.api.debug.error(error, 'CODE_HIGHLIGHT');
+      editor.api.debug.warn(
+        `Failed to highlight language "${effectiveLanguage}". Falling back to plaintext`,
+        'CODE_HIGHLIGHT',
+        error
+      );
       highlighted = { value: [] }; // Empty result on error
     } else {
       editor.api.debug.warn(

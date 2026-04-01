@@ -1,3 +1,5 @@
+import { NodeApi } from 'platejs';
+
 import { createTestEditor } from '../../__tests__/createTestEditor';
 import { markdownToSlateNodesSafely } from './markdownToSlateNodesSafely';
 
@@ -55,6 +57,20 @@ describe('markdownToSlateNodesSafely', () => {
         children: [{ text: '<u>' }],
         type: 'p',
       },
+    ]);
+  });
+
+  it('keeps the full multiline incomplete MDX tail visible after a complete prefix', () => {
+    const editor = createTestEditor();
+
+    const result = markdownToSlateNodesSafely(
+      editor,
+      'before\n\n<column_group layout="[60,40]">\n<column width="60%">\n\n- Keep the editor aliv'
+    );
+
+    expect(result.map((node: any) => NodeApi.string(node))).toEqual([
+      'before',
+      '<column_group layout="[60,40]">\n<column width="60%">\n\n- Keep the editor aliv',
     ]);
   });
 });

@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { Profiler, useImperativeHandle, useRef, useState } from 'react';
 import type { ProfilerOnRenderCallback, RefObject } from 'react';
 
-import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
+import {
+  AIChatPlugin,
+  resetStreamInsertChunk,
+  streamInsertChunk,
+} from '@platejs/ai/react';
 import { getPluginType, KEYS } from 'platejs';
 import { Plate, type PlateEditor, usePlateEditor } from 'platejs/react';
 
@@ -100,9 +104,7 @@ function snapshotEditorMetrics(metrics: EditorMetrics): EditorMetrics {
 
 function resetStreamingState(editor: PlateEditor) {
   editor.setOption(AIChatPlugin, 'streaming', false);
-  editor.setOption(AIChatPlugin, '_blockChunks', '');
-  editor.setOption(AIChatPlugin, '_blockPath', null);
-  editor.setOption(AIChatPlugin, '_mdxName', null);
+  resetStreamInsertChunk(editor);
 
   if (editor.selection) {
     editor.tf.deselect();

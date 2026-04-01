@@ -4,7 +4,7 @@ import type { ParseOptions, Token } from 'micromark-util-types';
 /**
  * Compiler context.
  */
-export interface CompileContext {
+export type CompileContext = {
   /**
    * Configuration.
    */
@@ -21,7 +21,7 @@ export interface CompileContext {
   /**
    * Stack of tokens.
    */
-  tokenStack: Array<TokenTuple>;
+  tokenStack: TokenTuple[];
 
   /**
    * Capture some of the output data.
@@ -96,7 +96,7 @@ export interface CompileContext {
     token: Pick<Token, 'end' | 'start'>,
     expandTabs?: boolean | undefined
   ): string;
-}
+};
 
 /**
  * Interface of tracked data.
@@ -113,7 +113,7 @@ export interface CompileContext {
  * }
  * ```
  */
-export interface CompileData {
+export type CompileData = {
   /**
    * Whether we’re inside a hard break.
    */
@@ -151,18 +151,18 @@ export interface CompileData {
    * Current reference.
    */
   referenceType?: 'collapsed' | 'full' | undefined;
-}
+};
 
 /**
  * Configuration.
  *
  * We have our defaults, but extensions will add more.
  */
-export interface Config {
+export type Config = {
   /**
    * Token types where line endings are used.
    */
-  canContainEols: Array<string>;
+  canContainEols: string[];
   /**
    * Opening handles.
    */
@@ -174,17 +174,17 @@ export interface Config {
   /**
    * Tree transforms.
    */
-  transforms: Array<Transform>;
-}
+  transforms: Transform[];
+};
 
 /**
  * Change how markdown tokens from micromark are turned into mdast.
  */
-export interface Extension {
+export type Extension = {
   /**
    * Token types where line endings are used.
    */
-  canContainEols?: Array<string> | null | undefined;
+  canContainEols?: string[] | null | undefined;
   /**
    * Opening handles.
    */
@@ -196,8 +196,8 @@ export interface Extension {
   /**
    * Tree transforms.
    */
-  transforms?: Array<Transform> | null | undefined;
-}
+  transforms?: Transform[] | null | undefined;
+};
 
 /**
  * Internal fragment.
@@ -210,7 +210,7 @@ export interface Fragment extends Parent {
   /**
    * Children.
    */
-  children: Array<PhrasingContent>;
+  children: PhrasingContent[];
 }
 
 /**
@@ -275,7 +275,7 @@ export interface Options extends ParseOptions {
   /**
    * Extensions for this utility to change how tokens are turned into a tree.
    */
-  mdastExtensions?: Array<Extension | Array<Extension>> | null | undefined;
+  mdastExtensions?: Array<Extension | Extension[]> | null | undefined;
   /**
    * Streamdown-specific parsing hints for preserving incomplete source suffixes.
    */
@@ -285,12 +285,12 @@ export interface Options extends ParseOptions {
 /**
  * Streamdown-specific parsing hints.
  */
-export interface StreamdownOptions {
+export type StreamdownOptions = {
   /**
    * Whether to annotate parsed trees with pending source suffix metadata.
    */
   preservePendingTail?: boolean | null | undefined;
-}
+};
 
 /**
  * Open token on the stack,

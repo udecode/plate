@@ -27,7 +27,7 @@ export default remarkParse;
 declare module 'unified' {
   interface Settings extends Options {}
 
-  interface Data {
+  type Data = {
     /**
      * List of `micromark` extensions to use.
      *
@@ -51,5 +51,5 @@ declare module 'unified' {
     fromMarkdownExtensions?: Array<
       FromMarkdownExtension[] | FromMarkdownExtension
     >;
-  }
+  };
 }
