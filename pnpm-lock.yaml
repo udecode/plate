@@ -1374,9 +1374,12 @@ importers:
 
   packages/markdown:
     dependencies:
-      '@platejs/remark-parse':
-        specifier: workspace:*
-        version: link:../remark-parse
+      decode-named-character-reference:
+        specifier: ^1.0.0
+        version: 1.3.0
+      devlop:
+        specifier: ^1.0.0
+        version: 1.1.0
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1389,6 +1392,27 @@ importers:
       mdast-util-mdx:
         specifier: 3.0.0
         version: 3.0.0
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
+      micromark:
+        specifier: ^4.0.0
+        version: 4.0.2
+      micromark-util-decode-numeric-character-reference:
+        specifier: ^2.0.0
+        version: 2.0.2
+      micromark-util-decode-string:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-normalize-identifier:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-symbol:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-types:
+        specifier: ^2.0.0
+        version: 2.0.2
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1404,6 +1428,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      unist-util-stringify-position:
+        specifier: ^4.0.0
+        version: 4.0.0
       unist-util-visit:
         specifier: 5.0.0
         version: 5.0.0
@@ -1445,45 +1472,6 @@ importers:
       platejs:
         specifier: workspace:^
         version: link:../plate
-
-  packages/mdast-util-from-markdown:
-    dependencies:
-      '@types/mdast':
-        specifier: ^4.0.0
-        version: 4.0.4
-      '@types/unist':
-        specifier: ^3.0.0
-        version: 3.0.3
-      decode-named-character-reference:
-        specifier: ^1.0.0
-        version: 1.3.0
-      devlop:
-        specifier: ^1.0.0
-        version: 1.1.0
-      mdast-util-to-string:
-        specifier: ^4.0.0
-        version: 4.0.0
-      micromark:
-        specifier: ^4.0.0
-        version: 4.0.2
-      micromark-util-decode-numeric-character-reference:
-        specifier: ^2.0.0
-        version: 2.0.2
-      micromark-util-decode-string:
-        specifier: ^2.0.0
-        version: 2.0.1
-      micromark-util-normalize-identifier:
-        specifier: ^2.0.0
-        version: 2.0.1
-      micromark-util-symbol:
-        specifier: ^2.0.0
-        version: 2.0.1
-      micromark-util-types:
-        specifier: ^2.0.0
-        version: 2.0.2
-      unist-util-stringify-position:
-        specifier: ^4.0.0
-        version: 4.0.0
 
   packages/media:
     dependencies:
@@ -1559,21 +1547,6 @@ importers:
       platejs:
         specifier: workspace:^
         version: link:../plate
-
-  packages/remark-parse:
-    dependencies:
-      '@platejs/mdast-util-from-markdown':
-        specifier: workspace:*
-        version: link:../mdast-util-from-markdown
-      '@types/mdast':
-        specifier: ^4.0.0
-        version: 4.0.4
-      micromark-util-types:
-        specifier: ^2.0.0
-        version: 2.0.2
-      unified:
-        specifier: ^11.0.0
-        version: 11.0.5
 
   packages/resizable:
     dependencies:
@@ -5711,7 +5684,6 @@ packages:
 
   bun@1.3.9:
     resolution: {integrity: sha512-v5hkh1us7sMNjfimWE70flYbD5I1/qWQaqmJ45q2qk5H/7muQVa478LSVRSFyGTBUBog2LsPQnfIRdjyWJRY+A==}
-    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 

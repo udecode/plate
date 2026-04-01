@@ -105,7 +105,7 @@ export type CompileContext = {
  * interface to register their types:
  *
  * ```ts
- * declare module '@platejs/mdast-util-from-markdown' {
+ * declare module '../mdast-util-from-markdown/index.js' {
  *   interface CompileData {
  *     // Register a new field.
  *     mathFlowInside?: boolean | undefined

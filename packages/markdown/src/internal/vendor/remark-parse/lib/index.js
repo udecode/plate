@@ -1,6 +1,6 @@
 /**
  * @typedef {import('mdast').Root} Root
- * @typedef {import('@platejs/mdast-util-from-markdown').Options} FromMarkdownOptions
+ * @typedef {import('../../mdast-util-from-markdown/index.js').Options} FromMarkdownOptions
  * @typedef {import('unified').Parser<Root>} Parser
  * @typedef {import('unified').Processor<Root>} Processor
  */
@@ -9,7 +9,7 @@
  * @typedef {Omit<FromMarkdownOptions, 'extensions' | 'mdastExtensions'>} Options
  */
 
-import { fromMarkdown } from '@platejs/mdast-util-from-markdown';
+import { fromMarkdown } from '../../mdast-util-from-markdown/index.js';
 
 /**
  * Aadd support for parsing from markdown.

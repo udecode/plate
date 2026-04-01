@@ -10,12 +10,12 @@ import {
   KEYS,
   TextApi,
 } from 'platejs';
-import remarkParse from '@platejs/remark-parse';
 import { unified } from 'unified';
 
 import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
+import remarkParse from '../../internal/vendor/remark-parse/index.js';
 import { mdastToSlate } from './mdastToSlate';
 import {
   type ParseMarkdownBlocksOptions,

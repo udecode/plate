@@ -1,7 +1,7 @@
 import type { Root } from 'mdast';
-import type { Extension as FromMarkdownExtension } from '@platejs/mdast-util-from-markdown';
 import type { Extension as MicromarkExtension } from 'micromark-util-types';
 import type { Plugin } from 'unified';
+import type { Extension as FromMarkdownExtension } from '../mdast-util-from-markdown/index.js';
 import type { Options } from './lib/index.js';
 
 export type { Options } from './lib/index.js';
