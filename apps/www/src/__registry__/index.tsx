@@ -3364,7 +3364,7 @@ export const Index: Record<string, any> = {
     name: "markdown-streaming-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/copilot-kit.json","https://platejs.org/r/editor-kit.json","https://platejs.org/r/markdown-joiner-transform.json"],
+    registryDependencies: ["https://platejs.org/r/editor-kit.json","https://platejs.org/r/markdown-joiner-transform.json"],
     files: [{
       path: "src/registry/examples/markdown-streaming-demo.tsx",
       type: "registry:example",

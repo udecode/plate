@@ -1,8 +1,8 @@
-# Plate AI 下一阶段架构决策
+# Plate AI Next-Stage Architecture Decision
 
 ## Source Of Truth
 
-- 用户请求：为 Plate 下一阶段 AI 重构确定正确的架构方向
+- User request: determine the right architectural direction for Plate's next AI refactor stage
 - `/.agents/skills/major-task/SKILL.md`
 - `/.claude/docs/analysis/compound-engineering-tree.md`
 - `/.claude/docs/analysis/editor-architecture-candidates.md`
@@ -19,16 +19,16 @@
 
 ## Decision Frame
 
-### 要做的决策
+### Decision To Make
 
-为 Plate 下一阶段 AI 重构确定正确的主线架构，而不是直接进入实现。
+Determine the right primary architecture for Plate's next AI refactor stage instead of jumping straight into implementation.
 
-这次要回答的不是“怎么修一个具体 bug”，而是：
+This decision does not answer "how do we fix one bug." It answers:
 
-1. 下一阶段 AI 重构的真正中心 seam 是什么
-2. 哪些现有方向应当保留
-3. 哪些 boundary 应当重构
-4. 哪些方向现在明确不该做
+1. What the real central seam is for the next AI refactor stage
+2. Which existing directions should stay
+3. Which boundaries should be reworked
+4. Which directions should explicitly not be pursued now
 
 ### Major-Work Lane
 
@@ -38,202 +38,200 @@
 
 ### Expected Outcome
 
-产出一份可以直接指导下一阶段实现的架构决策文档，明确：
+Produce an architecture decision memo that can directly guide the next implementation stage, including:
 
-- 推荐方向
-- 备选方向为何不选
-- 决策依据
-- 受影响边界
-- 分阶段 rollout 顺序
+- recommended direction
+- why the alternatives are not selected
+- supporting evidence
+- affected boundaries
+- phased rollout order
 
 ### Decision Criteria
 
-本次架构方向必须同时满足：
+This architecture direction must satisfy all of the following:
 
-1. 让 insert-mode AI streaming 更稳定
-2. 让长文档 streaming 更快
-3. 降低 hot path hacks 和跨层状态耦合
-4. 尽量复用 Plate 现有正确方向，而不是推翻重来
-5. 让 package path 和 demo/perf path 能逐步收敛
-6. 不把复杂度重新转移到 markdown strict round-trip 上
+1. Make insert-mode AI streaming more stable
+2. Make long-document streaming faster
+3. Reduce hot-path hacks and cross-layer state coupling
+4. Reuse Plate's existing good direction instead of resetting from scratch
+5. Let the package path and demo/perf path converge over time
+6. Avoid pushing complexity back into strict markdown round-trip concerns
 
 ### Browser Surface
 
-- 这次没有必须先验证的真实 browser surface
-- 浏览器页可以作为后续 perf 验证工具，但不是本次决策产物本身
+- No real browser surface must be validated first for this decision
+- Browser pages may serve as later perf validation tools, but they are not the primary artifact of this decision
 
 ### Likely Highest-Leverage Seam
 
-insert-mode streaming runtime boundary。
+The insert-mode streaming runtime boundary.
 
-更具体地说，是：
+More concretely, the boundary between:
 
-- transport event
+- transport events
 - markdown shaping
 - streaming session state
 - preview lifecycle
-- plugin UI/workflow state
-
-这几层之间的边界。
+- plugin UI and workflow state
 
 ## Repo Constraints
 
-### 已有明确约束
+### Clear Existing Constraints
 
-1. 当前主 contract 仍然是：
+1. The current main contract is still:
    - raw chunks
-   - joiner / shaping
+   - joiner or shaping
    - `streamInsertChunk`
    - correct Plate editor state
-2. 当前主目标不是 strict markdown round-trip
-3. parse-side local fork 可以存在，但要最小化
-4. preview 相关行为已经明确应走 localized rollback，而不是 full-document snapshot restore
-5. 最近的 perf 结果已经证明：
-   - 主要瓶颈不是 `joiner`
-   - 更重要的是 `streamInsertChunk` 调用次数和 editor update count
+2. The current main goal is not strict markdown round-trip
+3. A parse-side local fork may exist, but it should stay minimal
+4. Preview behavior should use localized rollback, not full-document snapshot restore
+5. Recent perf results already show:
+   - the main bottleneck is not the `joiner`
+   - the bigger issue is `streamInsertChunk` call count and editor update count
 
-### 编辑器候选图对当前决策的约束
+### Constraint From The Editor Candidate Analysis
 
-`major-task` 明确要求 editor-framework-facing work 先从 `/.claude/docs/analysis/editor-architecture-candidates.md` 出发，而不是随机扩展比较范围。
+`major-task` explicitly requires editor-framework-facing work to start from `/.claude/docs/analysis/editor-architecture-candidates.md` instead of widening the comparison arbitrarily.
 
-这意味着当前如果要讨论“是否应该换 editor substrate”，优先比较也应是：
+That means if we discuss changing the editor substrate, the first meaningful comparison is still:
 
-- Plate / Slate inheritance pressure
-- ProseMirror / Lexical 作为更深层 runtime reference
+- Plate and Slate inheritance pressure
+- ProseMirror or Lexical as deeper runtime references
 
-但现有 repo 证据并没有显示“必须更换 editor substrate”。
+Current repo evidence does not show that we must replace the editor substrate now.
 
 ## Facts
 
-### F1. 当前 streaming core 的正确方向已经基本出现
+### F1. The Right Streaming Core Direction Is Already Emerging
 
-从 `streamInsertChunk.ts`、handoff 文档和测试可以确认：
+From `streamInsertChunk.ts`, the handoff doc, and the tests:
 
-- 当前核心不再依赖重 serialize / compare / retry
-- 当前方向是 replay unstable tail + patch changed suffix
-- 这条线已经比 full-prefix 重算更接近正确方向
+- the current core no longer depends on serialize or compare or retry loops
+- the direction is replay unstable tail plus patch changed suffix
+- this is already closer to the right model than reprocessing the full prefix
 
-### F2. preview lifecycle 目前的边界是合理的
+### F2. The Preview Lifecycle Boundary Is Reasonable
 
-从 `aiStreamSnapshot.ts` 和相关 solution 可以确认：
+From `aiStreamSnapshot.ts` and related solution docs:
 
-- preview begin / accept / cancel / discard 已经是局部块级别语义
-- accept / cancel 不再以 full-document `setValue` 为核心
-- 这部分已经是 workflow-oriented API，而不是 parser hack
+- preview begin or accept or cancel or discard already has local block-level semantics
+- accept and cancel no longer depend on full-document `setValue`
+- this area is already workflow-oriented API, not parser-oriented hackery
 
-### F3. runtime internals 仍然泄漏在 `AIChatPlugin` option state 中
+### F3. Runtime Internals Still Leak Through `AIChatPlugin` Option State
 
-从 `AIChatPlugin.ts` 可以确认，当前 option state 还保存：
+From `AIChatPlugin.ts`, option state still stores:
 
 - `_blockChunks`
 - `_blockPath`
 - `_mdxName`
 
-这些都是 insert streaming runtime bookkeeping，不是用户层 workflow state。
+These are insert-stream runtime bookkeeping details, not user-facing workflow state.
 
-### F4. package path 和 demo/perf path 尚未真正共享同一条主线
+### F4. The Package Path And Demo Or Perf Path Still Do Not Share One True Pipeline
 
-从 `apps/www` demo/perf 文件和 package path 对照可以确认：
+Comparing the `apps/www` demo or perf files with the package path shows:
 
-- demo/perf 已经有 raw chunks、joiner、burst shaping、measured batching
-- package 插入路径仍然主要经由 `useChatChunk`
-- `useChatChunk` 不是在吃 provider-native stream events，而是在吃 accumulated assistant text 的 diff
+- demo or perf already has raw chunks, joiner, burst shaping, and measured batching
+- the package insert path still mainly runs through `useChatChunk`
+- `useChatChunk` does not consume provider-native stream events; it consumes diffs from accumulated assistant text
 
-### F5. 当前 transport contract 过弱
+### F5. The Current Transport Contract Is Too Weak
 
-`useChatChunk.ts` 当前逻辑是：
+`useChatChunk.ts` currently does the following:
 
-1. 读取最后一个 assistant message
-2. 找到 text part
-3. 用之前已插入文本长度切 suffix
-4. 把 suffix 当 chunk
+1. Reads the last assistant message
+2. Finds the text part
+3. Slices the suffix using previously inserted text length
+4. Treats that suffix as the chunk
 
-这说明 package 核心当前仍然部分依赖 “message accumulation semantics”，而不是清晰的 transport event contract。
+That means the package core still partly depends on message accumulation semantics instead of a clear transport event contract.
 
-### F6. 最近 perf 结果说明 update count 才是关键
+### F6. Recent Perf Results Show Update Count Is The Main Lever
 
-从 burst batching 结果可确认：
+The burst batching results show:
 
-- 单次 `streamInsertChunk` 平均时长略增不是主要问题
-- 真正的收益来自总调用数显著下降
-- 这说明下一阶段该优化的是 pipeline boundary，而不是重新把精力放回 serializer purity
+- a slightly slower single `streamInsertChunk` call is not the main issue
+- the real win comes from a much lower total call count
+- this means the next optimization target should be the pipeline boundary, not serializer purity
 
-### F7. 现有测试锚点已经足够支持一轮边界重构
+### F7. The Existing Test Anchors Already Support One Round Of Boundary Refactor
 
-当前已有的高价值锚点：
+The current high-value anchors are:
 
 - `streamInsertChunk.slow.tsx`
 - `streamHistory.slow.tsx`
 
-它们已经覆盖了：
+They already cover:
 
 - regrouping invariance
 - preview history contract
-- accept / undo / redo 行为
+- accept or undo or redo behavior
 
-这意味着下一阶段可以围绕 boundary 重构，而不用先把整个测试体系推倒重建。
+That means the next step can refactor boundaries without first rebuilding the whole test system.
 
 ## Inference
 
-### I1. 当前主要问题不是 editor substrate 错了
+### I1. The Main Problem Is Not The Editor Substrate
 
-如果 editor substrate 已经错到必须换平台，那最近的两个关键收益本不该这么直接出现：
+If the editor substrate were wrong enough to require replacement, the last two important wins would not have landed this directly:
 
 - localized rollback
 - burst batching
 
-它们都说明当前 substrate 仍有明显 headroom，真正的问题更像 boundary 设计而不是 engine 选型。
+Both indicate the current substrate still has meaningful headroom. The main problem is boundary design, not engine choice.
 
-### I2. 当前最该收敛的是 insert streaming session，而不是 parser surface
+### I2. The Highest-Leverage Cleanup Is The Insert Streaming Session, Not The Parser Surface
 
-parse-side fork 已经承担了它该承担的那一小块：
+The parse-side fork already carries the small set of responsibilities it should carry:
 
 - pending tail
 - incomplete suffix parse hints
 
-再往下压更多 editor-specific behavior，收益会开始变差，fork fragility 会上升。
+Pushing more editor-specific behavior down into that layer would increase fork fragility while yielding diminishing returns.
 
-### I3. `AIChatPlugin` 现在承担了不该承担的 runtime ownership
+### I3. `AIChatPlugin` Currently Owns Runtime State It Should Not Own
 
-plugin option state 当前混杂了：
+The plugin option state currently mixes:
 
-- UI/workflow state
+- UI or workflow state
 - transport-derived streaming internals
 
-这会让 reset、finish、reuse、future API 设计都继续围绕 internals 组织，而不是围绕 workflow 组织。
+That will keep reset, finish, reuse, and future public API design centered around internals instead of workflow semantics.
 
-### I4. package path 不能继续把“消息全文 diff”当作主 streaming contract
+### I4. The Package Path Cannot Keep Using Full-Message Diff As The Primary Streaming Contract
 
-这条线可以作为兼容层，但不该继续作为 architecture center。
+That path can remain as a compatibility layer, but it should not stay the architectural center.
 
-否则：
+Otherwise:
 
-- provider cadence 无法正确建模
-- raw event visibility 会继续只存在于 demo
-- package path 和 demo path 会长期分叉
+- provider cadence cannot be modeled accurately
+- raw event visibility stays trapped in the demo
+- the package path and demo path keep diverging
 
-### I5. 下一阶段最对的单位不是“更大的 AI engine”，而是“更清晰的 insert-mode session”
+### I5. The Right Unit For The Next Stage Is Not A Bigger AI Engine But A Clearer Insert-Mode Session
 
-现在 comment、table、edit、insert 这些 mode 还不值得立刻被硬并进一个 super-engine。
+It is still too early to force insert, edit, comment, and table modes into one large unified engine.
 
-当前最值得先做成 clean core 的，是 insert-mode markdown streaming。
+The clean core worth building first is insert-mode markdown streaming.
 
 ## Recommendation
 
-### 主推荐
+### Primary Recommendation
 
-下一阶段应围绕一个 package-private 的 `MarkdownStreamSession` 来重组 insert-mode streaming。
+The next stage should reorganize insert-mode streaming around a package-private `MarkdownStreamSession`.
 
-这个 session 应负责：
+That session should own:
 
-- 累积 markdown source
-- 接收经过规范化的 stream events
-- 执行 joiner / batching / finish flush 这类 shaping 结果
-- 管理 replay runtime state
-- 调用 `streamInsertChunk`
-- 统一 reset / finish bookkeeping
+- accumulated markdown source
+- normalized stream events
+- joiner or batching or finish-flush shaping results
+- replay runtime state
+- calls into `streamInsertChunk`
+- unified reset and finish bookkeeping
 
-### 推荐后的分层
+### Recommended Layering
 
 ```text
 Provider / AI SDK / demo fetch stream
@@ -245,16 +243,16 @@ Provider / AI SDK / demo fetch stream
   -> Plate editor state
 ```
 
-### 每层该负责什么
+### Responsibility By Layer
 
 #### 1. Transport Adapter
 
-职责：
+Responsibilities:
 
-- 规范 provider-specific events
-- 输出 text delta / finish / abort / non-text part
+- normalize provider-specific events
+- emit text delta or finish or abort or non-text part
 
-不负责：
+Does not own:
 
 - editor mutation
 - preview
@@ -262,28 +260,28 @@ Provider / AI SDK / demo fetch stream
 
 #### 2. Markdown Stream Shaper
 
-职责：
+Responsibilities:
 
-- split markdown syntax joiner
-- cadence / burst batching
-- finish 前 flush
+- markdown syntax join decisions
+- cadence or burst batching
+- pre-finish flush behavior
 
-这一层适合承接将来可能下沉的纯 `MarkdownJoiner`。
+This layer is the right future home for any package-private `MarkdownJoiner`.
 
 #### 3. `MarkdownStreamSession`
 
-职责：
+Responsibilities:
 
-- 维护 source accumulation
-- 维护 replay runtime state
-- 向 `streamInsertChunk` 提交 shaped markdown batch
-- 承担 insert-mode runtime ownership
+- maintain source accumulation
+- maintain replay runtime state
+- submit shaped markdown batches into `streamInsertChunk`
+- own insert-mode runtime state
 
-这一层应把 `_blockChunks`、`_blockPath`、`_mdxName` 从 `AIChatPlugin` 中拿走。
+This layer should remove `_blockChunks`, `_blockPath`, and `_mdxName` from `AIChatPlugin`.
 
 #### 4. `tf.ai.*` Preview Lifecycle
 
-职责：
+Responsibilities:
 
 - `beginPreview`
 - `acceptPreview`
@@ -291,11 +289,11 @@ Provider / AI SDK / demo fetch stream
 - `discardPreview`
 - `undo`
 
-这层继续保留当前 local、history-safe、workflow-oriented 语义。
+This layer should keep the current local, history-safe, workflow-oriented semantics.
 
 #### 5. `AIChatPlugin`
 
-保留真正的 workflow state：
+Keep only real workflow state:
 
 - `open`
 - `mode`
@@ -305,139 +303,139 @@ Provider / AI SDK / demo fetch stream
 - `chatNodes`
 - `chatSelection`
 
-不再持有 insert-stream runtime internals。
+It should not keep insert-stream runtime internals.
 
 ## Alternatives Considered
 
-### A. 在当前 Plate substrate 上做 sessionized streaming pipeline
+### A. Build A Sessionized Streaming Pipeline On The Current Plate Substrate
 
-结论：选这个
+Decision: choose this
 
-为什么现在最优：
+Why it is best now:
 
-- 直接命中当前真实问题
-- 符合最近已验证的性能与稳定性方向
-- 可以用最小 blast radius 推进
-- 不要求重写整套 AI 或重选 editor
+- it directly targets the real current problem
+- it matches the recently validated perf and stability direction
+- it can move forward with the smallest blast radius
+- it does not require rewriting the whole AI layer or reselecting the editor
 
-### B. 重新围绕 strict markdown round-trip 设计 streaming architecture
+### B. Redesign Streaming Around Strict Markdown Round-Trip
 
-结论：不选
+Decision: do not choose
 
-原因：
+Why:
 
-- 它优化的是文本保真，不是当前最重要的用户体验 contract
-- 会再次把复杂度压回 serializer / markdown-preserving IR
-- 会把当前已经收敛的方向重新拉回高成本路径
+- it optimizes text fidelity rather than the most important current UX contract
+- it pushes complexity back into serializer or markdown-preserving IR work
+- it pulls the codebase back toward a high-cost path that has already been de-emphasized
 
-### C. 直接以 ProseMirror / Lexical 等为参照重做 editor substrate 决策
+### C. Reopen The Editor Substrate Decision Around ProseMirror Or Lexical
 
-结论：现在不选
+Decision: do not choose now
 
-原因：
+Why:
 
-- `major-task` 要求 editor comparison 从 candidate map 出发，而不是泛化旅游
-- 当前 repo 证据不足以支持“现在必须做平台迁移”
-- 这阶段真正需要的是 boundary cleanup，不是 substrate replacement
+- `major-task` requires editor comparison to start from the candidate map, not generic platform tourism
+- current repo evidence is not strong enough to justify a platform migration now
+- this stage needs boundary cleanup, not substrate replacement
 
 ## Why This Wins Now
 
-当前存在两个都“看起来合理”的方向：
+There are currently two directions that both look plausible:
 
-1. 小范围 seam 改造
-2. 更大的 AI/runtime reset
+1. a targeted seam refactor
+2. a broader AI or runtime reset
 
-现在应该选前者。
+The first should win now.
 
-原因是：
+Why:
 
-- seam 改造已经被最近的 perf 和 preview work 证明有效
-- 当前最大的 architectural debt 是 boundary ownership，不是 engine capability
-- 如果现在直接做 broader reset，很容易把问题重新描述一遍，但不能更快落地
+- recent perf and preview work already proved the seam refactor direction has leverage
+- the largest architectural debt is boundary ownership, not engine capability
+- a broader reset would likely reframe the problem without landing value faster
 
 ## Blast Radius
 
-### 直接受影响边界
+### Directly Affected Boundaries
 
 - `packages/ai/src/react/ai-chat/streaming/*`
 - `packages/ai/src/react/ai-chat/hooks/useChatChunk.ts`
 - `packages/ai/src/react/ai-chat/AIChatPlugin.ts`
 - `packages/ai/src/react/ai-chat/utils/resetAIChat.ts`
 - `apps/www/src/registry/components/editor/plugins/ai-kit.tsx`
-- template mirror 中对应 AI kit / use-chat 路径
+- the matching AI kit or use-chat paths in the template mirror
 
-### 不应在第一刀大动的边界
+### Boundaries That Should Not Move Much In The First Cut
 
-- `packages/markdown` 的整体 public API
+- the overall public API of `packages/markdown`
 - stringify-side fork strategy
-- comment / table / suggestion flows 的完整统一抽象
-- editor substrate 选型
+- a fully unified abstraction across comment, table, and suggestion flows
+- editor substrate selection
 
 ## Phased Rollout
 
-### Phase 1. 私有化 insert streaming session
+### Phase 1. Privatize The Insert Streaming Session
 
-目标：
+Goals:
 
-- 引入 package-private `MarkdownStreamSession`
-- 把 insert runtime state 从 `AIChatPlugin` options 中移走
+- introduce a package-private `MarkdownStreamSession`
+- move insert runtime state out of `AIChatPlugin` options
 
-成功标准：
+Success criteria:
 
-- `_blockChunks`、`_blockPath`、`_mdxName` 不再留在 `AIChatPlugin`
-- 现有 insert streaming tests 保持通过
+- `_blockChunks`, `_blockPath`, and `_mdxName` no longer live in `AIChatPlugin`
+- existing insert streaming tests still pass
 
-### Phase 2. 规范 transport events
+### Phase 2. Normalize Transport Events
 
-目标：
+Goals:
 
-- 让 insert-mode path 能消费明确 stream events
-- “assistant 全文 diff” 退化为兼容层，而不是主 contract
+- let the insert-mode path consume explicit stream events
+- demote assistant full-message diffing into a compatibility layer instead of the primary contract
 
-成功标准：
+Success criteria:
 
-- package path 不再以 accumulated message diff 为唯一 streaming source
-- finish/reset 语义保持不变
+- the package path no longer depends on accumulated message diff as its only streaming source
+- finish and reset semantics remain unchanged
 
-### Phase 3. 收敛 package 与 demo 的 shaping rules
+### Phase 3. Converge Package And Demo Shaping Rules
 
-目标：
+Goals:
 
-- 让 joiner / batching contract 不再只存在于 app/demo 侧
+- move joiner or batching rules out of app-only or demo-only territory
 
-成功标准：
+Success criteria:
 
-- demo 与 package path 共享同一套 authoritative shaping 规则
-- perf 收益可以从真实 package path 复现
+- demo and package path share one authoritative shaping contract
+- perf gains can be reproduced through the real package path
 
-### Phase 4. 再决定 public surface
+### Phase 4. Decide The Public Surface Later
 
-目标：
+Goals:
 
-- 在 internal session 稳定后，再决定是否公开 `tf.ai.stream.*`
+- once the internal session is stable, decide whether `tf.ai.stream.*` should become public
 
-成功标准：
+Success criteria:
 
-- 公共 API 面向 workflow，而不是 internals
+- the public API is workflow-oriented instead of internals-oriented
 
 ## Acceptance Criteria For This Decision
 
-如果后续实现遵循这份决策，至少应达到：
+If later implementation follows this decision, it should achieve at least:
 
-1. insert-mode streaming 有唯一清晰的 package-level runtime path
-2. plugin state 只描述 workflow state
-3. preview lifecycle 保持 local 且 history-safe
-4. demo/perf 与 package behavior 不再长期漂移
-5. 下一轮性能优化能在 package path 上体现，而不只是 demo 中体现
+1. insert-mode streaming has one clear package-level runtime path
+2. plugin state only describes workflow state
+3. preview lifecycle remains local and history-safe
+4. demo or perf behavior no longer drifts away from package behavior over time
+5. the next performance round shows up in the package path, not only in the demo
 
 ## Open Questions
 
-这些问题当前不阻塞决策，但会影响后续设计细节：
+These do not block the decision, but they do affect later design details:
 
-1. `MarkdownJoiner` 是否应在下一阶段就下沉到 package-private 层
-2. transport event 统一时，comment / table non-text parts 是否要立刻纳入同一 event model
-3. `streamInsertChunk` 是否保留现名对外暴露，还是内部收敛后再重新命名
+1. Should `MarkdownJoiner` move into a package-private layer in the next stage
+2. When transport events are unified, should comment or table non-text parts enter the same event model immediately
+3. Should `streamInsertChunk` keep its current public name, or be renamed after internal convergence
 
 ## One-Sentence Call
 
-下一阶段正确的架构方向不是“重写 Plate AI”，也不是“追求 markdown round-trip”，而是“在当前 Plate substrate 上收敛出一条 package-private 的 insert streaming session pipeline，把 transport、shaping、runtime ownership、preview lifecycle 的边界理顺”。 
+The right next architecture move is not to rewrite Plate AI and not to chase strict markdown round-trip. It is to converge on a package-private insert streaming session pipeline on the current Plate substrate, with clearer boundaries for transport, shaping, runtime ownership, and preview lifecycle.

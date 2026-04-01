@@ -4653,7 +4653,6 @@
       "type": "registry:example",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-kit.json",
         "https://platejs.org/r/editor-kit.json",
         "https://platejs.org/r/markdown-joiner-transform.json"
       ],
