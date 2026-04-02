@@ -2,7 +2,7 @@ import type { EditorTransforms, TSelection, Value } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
-import { pipeNormalizeInitialValue } from '../../../../internal/plugin/pipeNormalizeInitialValue';
+import { pipeTransformInitialValue } from '../../../../internal/plugin/pipeTransformInitialValue';
 
 export type InitOptions = {
   autoSelect?: boolean | 'end' | 'start';
@@ -35,7 +35,7 @@ export const init = (
       editor.tf.select(target!);
     }
     if (editor.children.length > 0) {
-      pipeNormalizeInitialValue(editor);
+      pipeTransformInitialValue(editor);
     }
     if (shouldNormalizeEditor) {
       (editor.tf as EditorTransforms).normalize({ force: true });

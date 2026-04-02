@@ -8,6 +8,77 @@ import { ElementProvider } from './useElementStore';
 import { useElementSelector } from './useElementSelector';
 
 describe('useElementSelector', () => {
+  it('prefers the nearest matching scoped provider and otherwise falls back to the nearest provider', () => {
+    const editor = createPlateEditor();
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => {
+      const nameEntry = React.useMemo(
+        () =>
+          [
+            {
+              children: [{ text: 'name' }],
+              label: 'outer',
+              type: 'name',
+            },
+            [0],
+          ] as const,
+        []
+      );
+      const ageEntry = React.useMemo(
+        () =>
+          [
+            {
+              children: [{ text: 'age' }],
+              label: 'inner',
+              type: 'age',
+            },
+            [0, 0],
+          ] as const,
+        []
+      );
+
+      return (
+        <Plate editor={editor}>
+          <ElementProvider
+            element={nameEntry[0]}
+            entry={nameEntry as any}
+            path={nameEntry[1]}
+            scope="name"
+          >
+            <ElementProvider
+              element={ageEntry[0]}
+              entry={ageEntry as any}
+              path={ageEntry[1]}
+              scope="age"
+            >
+              {children}
+            </ElementProvider>
+          </ElementProvider>
+        </Plate>
+      );
+    };
+
+    const exactScope = renderHook(
+      () =>
+        useElementSelector(([element]) => element.type, [], {
+          key: 'name',
+        }),
+      { wrapper }
+    );
+
+    expect(exactScope.result.current).toBe('name');
+
+    const fallbackScope = renderHook(
+      () =>
+        useElementSelector(([element]) => element.type, [], {
+          key: 'missing',
+        }),
+      { wrapper }
+    );
+
+    expect(fallbackScope.result.current).toBe('age');
+  });
+
   it('skips rerenders when equalityFn treats the derived value as unchanged', () => {
     const editor = createPlateEditor();
     const renderValues: number[] = [];

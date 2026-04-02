@@ -50,7 +50,7 @@ export const resolvePlugins = (
       textProps: [],
       types: {},
     },
-    normalizeInitialValue: [],
+    transformInitialValue: [],
     render: {
       aboveEditable: [],
       aboveNodes: [],
@@ -154,8 +154,8 @@ export const resolvePlugins = (
       editor.meta.pluginCache.render.belowRootNodes.push(plugin.key);
     }
 
-    if (plugin.normalizeInitialValue) {
-      editor.meta.pluginCache.normalizeInitialValue.push(plugin.key);
+    if (plugin.transformInitialValue || plugin.normalizeInitialValue) {
+      editor.meta.pluginCache.transformInitialValue.push(plugin.key);
     }
 
     if (plugin.decorate) {

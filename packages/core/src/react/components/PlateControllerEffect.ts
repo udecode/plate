@@ -66,17 +66,21 @@ export const PlateControllerEffect = ({
      */
     return () => {
       setCurrentStore(null);
-      setActiveId((activeId) => (activeId === id ? null : activeId));
+      setActiveId((activeId: string | null) =>
+        activeId === id ? null : activeId
+      );
     };
   }, [store, setCurrentStore, setActiveId, id]);
 
   // If the editor is primary, register it in the list of primary editors
   React.useEffect(() => {
     if (primary) {
-      setPrimaryEditorIds((ids) => [...ids, id]);
+      setPrimaryEditorIds((ids: string[]) => [...ids, id]);
 
       return () => {
-        setPrimaryEditorIds((ids) => ids.filter((i) => i !== id));
+        setPrimaryEditorIds((ids: string[]) =>
+          ids.filter((i: string) => i !== id)
+        );
       };
     }
   }, [id, primary, setPrimaryEditorIds]);

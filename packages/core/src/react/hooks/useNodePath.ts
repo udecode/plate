@@ -1,5 +1,6 @@
-import { type TNode, PathApi } from '@platejs/slate';
-import { useMemoizedSelector } from '@udecode/react-utils';
+import React from 'react';
+
+import type { TNode } from '@platejs/slate';
 
 import { useEditorRef } from '../stores';
 
@@ -11,9 +12,5 @@ import { useEditorRef } from '../stores';
 export const useNodePath = (node: TNode) => {
   const editor = useEditorRef();
 
-  return useMemoizedSelector(
-    () => editor.api.findPath(node),
-    [editor, node],
-    (a, b) => !!a && !!b && PathApi.equals(a, b)
-  );
+  return React.useMemo(() => editor.api.findPath(node), [editor, node]);
 };

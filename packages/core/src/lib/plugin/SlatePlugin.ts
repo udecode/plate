@@ -190,9 +190,14 @@ export type NodeStaticWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
 > = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
 
+export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C> & { value: Value }
+) => Value;
+
+/** @deprecated Use {@link TransformInitialValue} instead. */
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C> & { value: Value }
-) => void;
+) => Value | void;
 
 export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C>
@@ -275,6 +280,8 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
     Nullable<{
       decorate?: Decorate<WithAnyKey<C>>;
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
+      /** @deprecated Use `transformInitialValue` instead. */
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
     }> &
     SlatePluginMethods<C> & {

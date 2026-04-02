@@ -221,7 +221,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
    *       always be active.
    *   - `inject` (for `inject.nodeProps`): Edit-only by default (true if not
    *       specified). Set to `false` to always be active.
-   *   - `normalizeInitialValue`: NOT edit-only by default (false if not specified).
+   *   - `transformInitialValue`: NOT edit-only by default (false if not specified).
    *       Set to `true` to make it edit-only.
    */
   editOnly?: EditOnlyConfig | boolean;
@@ -479,10 +479,14 @@ export type EditOnlyConfig = {
    */
   inject?: boolean;
   /**
-   * If true, `normalizeInitialValue` is only called when the editor is not
+   * If true, `transformInitialValue` is only called when the editor is not
    * read-only.
    *
    * @default false (This is an exception. It's not edit-only by default, even if `editOnly` is true or an object, unless explicitly set to true here).
+   */
+  transformInitialValue?: boolean;
+  /**
+   * @deprecated Use `transformInitialValue` instead.
    */
   normalizeInitialValue?: boolean;
   /**

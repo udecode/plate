@@ -1,9 +1,7 @@
 import type { TElement } from '@platejs/slate';
 
-import { useAtomStoreValue } from 'jotai-x';
-
 import { useEditorRef } from '../plate';
-import { SCOPE_ELEMENT, useElementStore } from './useElementStore';
+import { SCOPE_ELEMENT, useElementContext } from './useElementStore';
 
 /**
  * Get the element by plugin key. If no element is found in the context, it will
@@ -13,7 +11,7 @@ export const useElement = <T extends TElement = TElement>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
   const editor = useEditorRef();
-  const value = useAtomStoreValue(useElementStore(pluginKey), 'element');
+  const value = useElementContext(pluginKey)?.element;
 
   if (!value) {
     editor.api.debug.warn(

@@ -10,7 +10,8 @@ import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
 import { DebugPlugin } from '../../../lib/plugins/debug/DebugPlugin';
 import { useElement } from './useElement';
-import { ElementProvider } from './useElementStore';
+import { ElementProvider, useElementStore } from './useElementStore';
+import { usePath } from './usePath';
 
 describe('ElementProvider', () => {
   const PlateWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -58,9 +59,10 @@ describe('ElementProvider', () => {
     name: string;
   }) => {
     const element = React.useMemo(() => makeNameElement(name), [name]);
+    const entry = React.useMemo(() => [element, [0]] as any, [element]);
 
     return (
-      <ElementProvider element={element} scope="name">
+      <ElementProvider element={element} entry={entry} path={[0]} scope="name">
         {children}
       </ElementProvider>
     );
@@ -74,9 +76,10 @@ describe('ElementProvider', () => {
     children: React.ReactNode;
   }) => {
     const element = React.useMemo(() => makeAgeElement(age), [age]);
+    const entry = React.useMemo(() => [element, [1]] as any, [element]);
 
     return (
-      <ElementProvider element={element} scope="age">
+      <ElementProvider element={element} entry={entry} path={[1]} scope="age">
         {children}
       </ElementProvider>
     );
@@ -139,6 +142,26 @@ describe('ElementProvider', () => {
     return <div>{label + JSON.stringify(element)}</div>;
   };
 
+  const PathConsumer = ({
+    label = '',
+    type,
+  }: ConsumerProps & { type?: string }) => {
+    const path = usePath(type);
+
+    return <div>{label + JSON.stringify(path)}</div>;
+  };
+
+  const AgeStoreConsumer = ({ label = '' }: ConsumerProps) => {
+    const store = useElementStore('age');
+    const age = store.useValue(
+      'element',
+      (element: TAgeElement | null) => element?.age ?? null,
+      []
+    );
+
+    return <div>{label + age}</div>;
+  };
+
   it('returns the first ancestor matching the element type', () => {
     const { getByText } = render(
       <PlateWrapper>
@@ -173,6 +196,26 @@ describe('ElementProvider', () => {
     );
 
     (expect(getByText('Type: name')) as any).toBeInTheDocument();
+  });
+
+  it('returns the nearest matching scoped path and otherwise falls back to the nearest provider path', () => {
+    const { getByText } = render(
+      <PlateWrapper>
+        <NameElementProvider name="John">
+          <AgeElementProvider age={20}>
+            <NameElementProvider name="Jane">
+              <PathConsumer label="Name path: " type="name" />
+              <PathConsumer label="Age path: " type="age" />
+              <PathConsumer label="Fallback path: " type="missing" />
+            </NameElementProvider>
+          </AgeElementProvider>
+        </NameElementProvider>
+      </PlateWrapper>
+    );
+
+    (expect(getByText('Name path: [0]')) as any).toBeInTheDocument();
+    (expect(getByText('Age path: [1]')) as any).toBeInTheDocument();
+    (expect(getByText('Fallback path: [0]')) as any).toBeInTheDocument();
   });
 
   it('propagates updated elements to consumers', () => {
@@ -212,6 +255,26 @@ describe('ElementProvider', () => {
 
     (expect(getByText('Age 1: 40')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
+  });
+
+  it('lazily bridges useElementStore consumers and propagates updates', () => {
+    const { getByText } = render(
+      <PlateWrapper>
+        <UpdatingAgeElementProvider
+          buttonLabel="updateAgeStore"
+          increment={10}
+          initialAge={20}
+        >
+          <AgeStoreConsumer label="Age store: " />
+        </UpdatingAgeElementProvider>
+      </PlateWrapper>
+    );
+
+    (expect(getByText('Age store: 20')) as any).toBeInTheDocument();
+
+    void act(() => getByText('updateAgeStore').click());
+
+    (expect(getByText('Age store: 30')) as any).toBeInTheDocument();
   });
 
   it('returns empty object if no ancestor exists', () => {

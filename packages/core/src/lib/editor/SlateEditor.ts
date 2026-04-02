@@ -77,7 +77,7 @@ export type BaseEditor = EditorBase & {
         /** Node types to plugin keys. */
         types: Record<string, string>;
       };
-      normalizeInitialValue: string[];
+      transformInitialValue: string[];
       render: {
         aboveEditable: string[];
         aboveNodes: string[];

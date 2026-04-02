@@ -1200,14 +1200,14 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       - `484.80 ms` -> `453.39 ms`
       - delta: `-31.41 ms` (`-6.48%`)
       - artifact:
-        `.claude/docs/plans/editor-perf-5000-plugin-render-element-lazy-store-seq.json`
+        `tmp/editor-perf-5000-plugin-render-element-lazy-store-seq.json`
     - provider-only lane:
       - baseline from `.claude/docs/plans/editor-perf-5000-store-tech-split.json`:
         `351.46 ms`
       - clean rerun:
         `353.56 ms`
       - artifact:
-        `.claude/docs/plans/editor-perf-5000-element-provider-lazy-store-seq.json`
+        `tmp/editor-perf-5000-element-provider-lazy-store-seq.json`
   - interpretation:
     - keep the lazy-store fix
     - this was a real hot-path bug in `jotai-x`
@@ -1289,24 +1289,24 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
   - that fixed the selector correctness failures, but the first benchmark rerun
     proved it was not the perf win by itself:
     - before:
-      `.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-before.json`
+      `tmp/editable-element-plugin-render-node-selector-5000-blockquote-before.json`
       `459.72 ms`
     - after the store-ownership fix only:
-      `.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-after.json`
+      `tmp/editable-element-plugin-render-node-selector-5000-blockquote-after.json`
       `469.84 ms`
   - the real selector perf cut was the next one:
     - `useElementSelector(...)` stopped building an extra
       `selectAtom(...) + useStoreAtomValue(...)` layer
     - it now calls `useEntryValue(...)` directly on the resolved store
     - rerun after that cut:
-      `.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json`
+      `tmp/editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json`
       `449.81 ms`
   - lower-bound reruns in the same phase:
     - plain context:
-      `.claude/docs/plans/editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json`
+      `tmp/editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json`
       `326.85 ms`
     - raw Jotai:
-      `.claude/docs/plans/editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json`
+      `tmp/editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json`
       `383.86 ms`
   - interpretation:
     - the store-ownership rewrite was the right correctness fix and had to
@@ -1323,7 +1323,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       `ElementStoreProvider` layer even though it already owned the per-node
       store directly
     - removing that layer was a real cut:
-      `.claude/docs/plans/editor-perf-5000-selector-provider-after-provider-cut.json`
+      `tmp/editor-perf-5000-selector-provider-after-provider-cut.json`
       `384.33 ms`
     - that moves the provider-backed selector lane from:
       `449.81 ms -> 384.33 ms`
@@ -1334,7 +1334,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - replacing the Jotai atom subscription in `useElementSelector(...)` with
       a custom per-provider entry subscription
     - rejected rerun:
-      `.claude/docs/plans/editor-perf-5000-selector-provider-after-entry-store-cut.json`
+      `tmp/editor-perf-5000-selector-provider-after-entry-store-cut.json`
       `397.81 ms`
     - do not ship that path; it regresses mount cost
   - revised take:
@@ -1351,10 +1351,10 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       only materializes a Jotai store when a caller asks for it
   - focused reruns after that change:
     - selector lane:
-      `.claude/docs/plans/editor-perf-5000-selector-provider-after-runtime-store.json`
+      `tmp/editor-perf-5000-selector-provider-after-runtime-store.json`
       `385.05 ms`
     - per-node provider/store lane:
-      `.claude/docs/plans/editor-perf-5000-element-provider-only-after-runtime-store.json`
+      `tmp/editor-perf-5000-element-provider-only-after-runtime-store.json`
       `317.90 ms`
   - interpretation:
     - the selector lane stayed effectively flat against the already-good
@@ -1383,9 +1383,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - this matters beyond the benchmark page because basic block and mark
       plugins include many `render.as`-only surfaces
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-render-as-provider.json`
-    - `.claude/docs/plans/editor-perf-5000-render-as-no-provider.json`
-    - `.claude/docs/plans/editor-perf-5000-render-as-pipe.json`
+    - `tmp/editor-perf-5000-render-as-provider.json`
+    - `tmp/editor-perf-5000-render-as-no-provider.json`
+    - `tmp/editor-perf-5000-render-as-pipe.json`
     - `.claude/docs/plans/editor-perf-5000-render-as-summary.json`
 - The next split moved into the mark path and asked where the remaining
   `render.as`-only mark tax actually lives:
@@ -1416,15 +1416,15 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - trimming unused mark-plugin fan-out helps only a little, so the next fix
       should target the active bold path before chasing plugin-count theory
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-bold-direct-renderers.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-plugin-leaf-direct.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-plateleaf-direct.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-node-props.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-pipe.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-pipe-bold-only.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-text-pipe.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-pipe.json`
+    - `tmp/editor-perf-5000-bold-direct-renderers.json`
+    - `tmp/editor-perf-5000-bold-plugin-leaf-direct.json`
+    - `tmp/editor-perf-5000-bold-plateleaf-direct.json`
+    - `tmp/editor-perf-5000-bold-leaf-node-props.json`
+    - `tmp/editor-perf-5000-bold-leaf-pipe.json`
+    - `tmp/editor-perf-5000-bold-leaf-pipe-bold-only.json`
+    - `tmp/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
+    - `tmp/editor-perf-5000-bold-text-pipe.json`
+    - `tmp/editor-perf-5000-bold-pipe.json`
     - `.claude/docs/plans/editor-perf-5000-bold-summary.json`
 - The next split proved the remaining bold-mark wall was mostly the outer
   fallback wrapper in `pipeRenderLeaf(...)`, not the inner active bold plugin
@@ -1456,8 +1456,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - after the fix, the bold-only leaf-pipe lane lands only `9.77 ms` above
       the plain-outer lower bound, so the wrapper theater is mostly gone
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-bold-plugin-leaf-direct.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
+    - `tmp/editor-perf-5000-bold-plugin-leaf-direct.json`
+    - `tmp/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
     - `.claude/docs/plans/editor-perf-5000-bold-leaf-wrapper-summary.json`
 - The next bold cut was on the text side, not the leaf side:
   - `pipeRenderText(...)` still always paid the outer `PlateText` path even
@@ -1478,9 +1478,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       `+30.06 ms` to `+26.01 ms`
     - that is a real win, but the active bold lane is still red
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-bold-text-pipe-after-text-fast-path.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-pipe-after-text-fast-path.json`
-    - `.claude/docs/plans/editor-perf-layer1-bold-only-after-text-fast-path.json`
+    - `tmp/editor-perf-5000-bold-text-pipe-after-text-fast-path.json`
+    - `tmp/editor-perf-5000-bold-pipe-after-text-fast-path.json`
+    - `tmp/editor-perf-layer1-bold-only-after-text-fast-path.json`
 - The next kept bold cut stayed inside the inner mark renderers, not the outer
   pipe shell:
   - problem:
@@ -1508,8 +1508,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - this is the first bold-only Layer 1 cut that moved the activated lane by
       a double-digit amount without changing the outer leaf/text DOM shape
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-bold-plugin-leaf-direct-plain-inner.json`
-    - `.claude/docs/plans/editor-perf-layer1-bold-only-plain-inner.json`
+    - `tmp/editor-perf-5000-bold-plugin-leaf-direct-plain-inner.json`
+    - `tmp/editor-perf-layer1-bold-only-plain-inner.json`
 - One more bold idea got tested and rejected immediately after:
   - idea:
     - once the inner plain mark element existed, hoist Slate's outer
@@ -1526,8 +1526,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - revert the outer-wrapper hoist
     - keep the safer inner plain-mark fast path only
   - rejected artifacts:
-    - `.claude/docs/plans/editor-perf-5000-bold-pipe-hoisted-outer.json`
-    - `.claude/docs/plans/editor-perf-layer1-bold-only-hoisted-outer.json`
+    - `tmp/editor-perf-5000-bold-pipe-hoisted-outer.json`
+    - `tmp/editor-perf-layer1-bold-only-hoisted-outer.json`
 - The next Layer 1 move was not more bold-only surgery. It was widening the
   cheap-mark census to the sibling plain `render.as` marks:
   - harness additions:
@@ -1552,8 +1552,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       on `localhost:3001` in this session, so these sibling-mark numbers are
       directional one-off probes, not a fresh frozen batch summary yet
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-layer1-italic-only.json`
-    - `.claude/docs/plans/editor-perf-layer1-underline-only.json`
+    - `tmp/editor-perf-layer1-italic-only.json`
+    - `tmp/editor-perf-layer1-underline-only.json`
 - The next kept cheap-mark cut stayed in `pipeRenderText(...)`, not in
   underline-specific code:
   - implementation:
@@ -1579,9 +1579,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       text-pipe tax, not a unique underline path
   - durable artifacts:
     - `.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json`
-    - `.claude/docs/plans/editor-perf-layer1-bold-only-after-simple-text-fast-path.json`
-    - `.claude/docs/plans/editor-perf-layer1-italic-only-after-simple-text-fast-path.json`
-    - `.claude/docs/plans/editor-perf-layer1-underline-only-after-simple-text-fast-path.json`
+    - `tmp/editor-perf-layer1-bold-only-after-simple-text-fast-path.json`
+    - `tmp/editor-perf-layer1-italic-only-after-simple-text-fast-path.json`
+    - `tmp/editor-perf-layer1-underline-only-after-simple-text-fast-path.json`
 - Before touching `UnderlinePlugin` itself, the right move was to dissect the
   underline lane the same way bold had been dissected:
   - targeted `5k` chunked `huge-underline` runs:
@@ -1596,9 +1596,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       the direct `<u>` lower bound and `16.40 ms` above the isolated
       `pluginRenderLeaf(underline)` lane
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-underline-direct-renderers.json`
-    - `.claude/docs/plans/editor-perf-5000-underline-plugin-leaf-direct.json`
-    - `.claude/docs/plans/editor-perf-5000-underline-pipe.json`
+    - `tmp/editor-perf-5000-underline-direct-renderers.json`
+    - `tmp/editor-perf-5000-underline-plugin-leaf-direct.json`
+    - `tmp/editor-perf-5000-underline-pipe.json`
     - `.claude/docs/plans/editor-perf-5000-underline-dissection-summary.json`
 - Widening to the next sibling mark proved the cheap-mark family had already
   told us what it could:
@@ -1618,10 +1618,10 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - so the next cut should target code-mark-specific leaf composition /
       affinity-related props, not more generic `pipeRenderText(...)` cleanup
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-layer1-code-only.json`
-    - `.claude/docs/plans/editor-perf-5000-code-direct-renderers-core-mount.json`
-    - `.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount.json`
-    - `.claude/docs/plans/editor-perf-5000-code-leaf-text-pipe-core-mount.json`
+    - `tmp/editor-perf-layer1-code-only.json`
+    - `tmp/editor-perf-5000-code-direct-renderers-core-mount.json`
+    - `tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount.json`
+    - `tmp/editor-perf-5000-code-leaf-text-pipe-core-mount.json`
     - `.claude/docs/plans/editor-perf-5000-code-dissection-summary.json`
 - The next safe cut on the active code lane was to keep the hard-affinity
   semantics but skip `getRenderNodeProps(...)` for the simple `render.as`
@@ -1644,8 +1644,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       `pluginRenderLeaf(...)`; it is whether the hard-edge DOM shape is worth a
       deeper redesign at all
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-code-plateleaf-direct-core-mount.json`
-    - `.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json`
+    - `tmp/editor-perf-5000-code-plateleaf-direct-core-mount.json`
+    - `tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json`
     - `.claude/docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json`
 - The next split came back to the core paragraph path and proved the remaining
   “plain element” wall was still living inside the fast branch itself:
@@ -1680,11 +1680,11 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - Plate core + `nodeId`: `317.83 ms`
     - Plate basic plugins: `237.07 ms`
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-editable-element-pipe-post-fast-branch.json`
-    - `.claude/docs/plans/editor-perf-5000-render-pipes-post-element-fast-branch.json`
-    - `.claude/docs/plans/editor-perf-5000-minimal-editable-post-element-fast-branch.json`
-    - `.claude/docs/plans/editor-perf-5000-plate-content-post-element-fast-branch.json`
-    - `.claude/docs/plans/editor-perf-5000-chunk-post-element-fast-branch.json`
+    - `tmp/editor-perf-5000-editable-element-pipe-post-fast-branch.json`
+    - `tmp/editor-perf-5000-render-pipes-post-element-fast-branch.json`
+    - `tmp/editor-perf-5000-minimal-editable-post-element-fast-branch.json`
+    - `tmp/editor-perf-5000-plate-content-post-element-fast-branch.json`
+    - `tmp/editor-perf-5000-chunk-post-element-fast-branch.json`
     - `.claude/docs/plans/editor-perf-5000-element-fast-branch-summary.json`
 - The next seeded `nodeId` split showed the remaining mount gap was the mounted
   block-id gate itself:
@@ -1718,9 +1718,9 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       - Plate core + `nodeId`: `246.85 ms`
       - Plate basic plugins: `236.66 ms`
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-5000-nodeid-mounted-block-element-seeded.json`
-    - `.claude/docs/plans/editor-perf-5000-nodeid-element-pipe-post-mounted-gate-removal.json`
-    - `.claude/docs/plans/editor-perf-5000-chunk-post-mounted-gate-removal.json`
+    - `tmp/editor-perf-5000-nodeid-mounted-block-element-seeded.json`
+    - `tmp/editor-perf-5000-nodeid-element-pipe-post-mounted-gate-removal.json`
+    - `tmp/editor-perf-5000-chunk-post-mounted-gate-removal.json`
     - `.claude/docs/plans/editor-perf-5000-nodeid-mounted-gate-summary.json`
 
 ## Prevention
@@ -1818,8 +1818,8 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
   - `.claude/docs/plans/editor-perf-1000-core-mount.json`
   - `.claude/docs/plans/editor-perf-5000-core-mount.json`
   - `.claude/docs/plans/editor-perf-5000-core-mount-targeted-summary.json`
-  - `.claude/docs/plans/editor-perf-5000-plugin-render-element-plugin-context.json`
-  - `.claude/docs/plans/editor-perf-5000-plugin-render-element-precomputed-wrappers.json`
+  - `tmp/editor-perf-5000-plugin-render-element-plugin-context.json`
+  - `tmp/editor-perf-5000-plugin-render-element-precomputed-wrappers.json`
   - `.claude/docs/plans/editor-perf-5000-jotai-provider-split.json`
   - `.claude/docs/plans/editor-perf-5000-store-tech-split.json`
   - `.claude/docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`

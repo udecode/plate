@@ -120,16 +120,16 @@ not generic rich rendering in the abstract.
 Fresh `5,000` blockquote `core-mount` numbers before the context-first hook fix:
 
 - no-hook control:
-  [editable-element-plugin-precomputed-no-element-hook-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-precomputed-no-element-hook-5000-blockquote-fresh.json)
+  [editable-element-plugin-precomputed-no-element-hook-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-precomputed-no-element-hook-5000-blockquote-fresh.json)
   `434.65 ms`
 - provider-backed hook lane:
-  [editable-element-plugin-render-node-hooks-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-hooks-5000-blockquote-fresh.json)
+  [editable-element-plugin-render-node-hooks-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-hooks-5000-blockquote-fresh.json)
   `485.81 ms`
 - same hook body on plain context:
-  [editable-element-plugin-render-node-hooks-plain-context-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-hooks-plain-context-5000-blockquote-fresh.json)
+  [editable-element-plugin-render-node-hooks-plain-context-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-hooks-plain-context-5000-blockquote-fresh.json)
   `317.58 ms`
 - same hook body on raw Jotai:
-  [editable-element-plugin-render-node-hooks-jotai-provider-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-hooks-jotai-provider-5000-blockquote-fresh.json)
+  [editable-element-plugin-render-node-hooks-jotai-provider-5000-blockquote-fresh.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-hooks-jotai-provider-5000-blockquote-fresh.json)
   `367.46 ms`
 
 Take:
@@ -145,10 +145,10 @@ context first.
 Same-batch rerun after that fix:
 
 - no-hook control:
-  [editable-element-plugin-precomputed-no-element-hook-5000-blockquote-after-context-fix.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-precomputed-no-element-hook-5000-blockquote-after-context-fix.json)
+  [editable-element-plugin-precomputed-no-element-hook-5000-blockquote-after-context-fix.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-precomputed-no-element-hook-5000-blockquote-after-context-fix.json)
   `472.92 ms`
 - provider-backed hook lane:
-  [editable-element-plugin-render-node-hooks-5000-blockquote-after-context-fix.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-hooks-5000-blockquote-after-context-fix.json)
+  [editable-element-plugin-render-node-hooks-5000-blockquote-after-context-fix.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-hooks-5000-blockquote-after-context-fix.json)
   `490.41 ms`
 
 That shrank the within-batch hook-consumer gap from `51.16 ms` to `17.49 ms`.
@@ -190,19 +190,19 @@ The second fix was the real selector perf cut:
 Fresh `5,000` blockquote selector numbers:
 
 - before:
-  [editable-element-plugin-render-node-selector-5000-blockquote-before.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-before.json)
+  [editable-element-plugin-render-node-selector-5000-blockquote-before.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-selector-5000-blockquote-before.json)
   `459.72 ms`
 - after the store-ownership correctness fix only:
-  [editable-element-plugin-render-node-selector-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-after.json)
+  [editable-element-plugin-render-node-selector-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-selector-5000-blockquote-after.json)
   `469.84 ms`
 - after the direct `useEntryValue(...)` rewrite:
-  [editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json)
+  [editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-selector-5000-blockquote-after-direct-entry.json)
   `449.81 ms`
 - same selector body on plain context:
-  [editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json)
+  [editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-selector-plain-context-5000-blockquote-after.json)
   `326.85 ms`
 - same selector body on raw Jotai:
-  [editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json)
+  [editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json](/Users/zbeyens/git/plate-2/tmp/editable-element-plugin-render-node-selector-jotai-provider-5000-blockquote-after.json)
   `383.86 ms`
 
 Take:
@@ -221,7 +221,7 @@ The next follow-up finally killed the fake extra provider tax:
 - `ElementProvider` no longer wraps every node in the redundant
   `ElementStoreProvider` layer
 - focused rerun:
-  [editor-perf-5000-selector-provider-after-provider-cut.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-selector-provider-after-provider-cut.json)
+  [editor-perf-5000-selector-provider-after-provider-cut.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-selector-provider-after-provider-cut.json)
   `384.33 ms`
 - that moves the provider-backed selector lane from:
   `449.81 ms -> 384.33 ms`
@@ -240,7 +240,7 @@ One more idea got tested and rejected:
 - replacing the selector’s Jotai atom subscription with a custom per-provider
   entry subscription looked elegant and benchmarked worse
 - rejected artifact:
-  [editor-perf-5000-selector-provider-after-entry-store-cut.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-selector-provider-after-entry-store-cut.json)
+  [editor-perf-5000-selector-provider-after-entry-store-cut.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-selector-provider-after-entry-store-cut.json)
   `397.81 ms`
 - keep the provider-cut win; do not ship the custom selector store
 
@@ -316,10 +316,10 @@ Take:
 Focused artifacts:
 
 - selector lane after runtime-store opt-out:
-  [editor-perf-5000-selector-provider-after-runtime-store.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-selector-provider-after-runtime-store.json)
+  [editor-perf-5000-selector-provider-after-runtime-store.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-selector-provider-after-runtime-store.json)
   `385.05 ms`
 - per-node provider/store lane after runtime-store opt-out:
-  [editor-perf-5000-element-provider-only-after-runtime-store.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-element-provider-only-after-runtime-store.json)
+  [editor-perf-5000-element-provider-only-after-runtime-store.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-element-provider-only-after-runtime-store.json)
   `317.90 ms`
 
 Interpretation:
@@ -532,8 +532,8 @@ Current full-run artifacts:
 
 - [editor-perf-layer0-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer0-summary.json)
 - raw full dump: `tmp/editor-perf-layer0.json` (local, gitignored)
-- [editor-perf-5000-plugin-render-element-plugin-context.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-plugin-render-element-plugin-context.json)
-- [editor-perf-5000-plugin-render-element-precomputed-wrappers.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-plugin-render-element-precomputed-wrappers.json)
+- [editor-perf-5000-plugin-render-element-plugin-context.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-plugin-render-element-plugin-context.json)
+- [editor-perf-5000-plugin-render-element-precomputed-wrappers.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-plugin-render-element-precomputed-wrappers.json)
 
 #### Latest smoke numbers
 
@@ -662,19 +662,19 @@ Current artifacts:
 
 - [editor-perf-layer1-core-plugins-smoke-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-smoke-summary.json)
 - [editor-perf-layer1-core-plugins-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json)
-- [editor-perf-layer1-bold-only-after-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-bold-only-after-text-fast-path.json)
-- [editor-perf-layer1-bold-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-bold-only-after-simple-text-fast-path.json)
-- [editor-perf-layer1-italic-only.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-italic-only.json)
-- [editor-perf-layer1-italic-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-italic-only-after-simple-text-fast-path.json)
-- [editor-perf-layer1-underline-only.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-underline-only.json)
-- [editor-perf-layer1-underline-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-underline-only-after-simple-text-fast-path.json)
-- [editor-perf-layer1-code-only.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-code-only.json)
-- [editor-perf-5000-code-direct-renderers-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-direct-renderers-core-mount.json)
-- [editor-perf-5000-code-plugin-leaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount.json)
-- [editor-perf-5000-code-leaf-text-pipe-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-leaf-text-pipe-core-mount.json)
+- [editor-perf-layer1-bold-only-after-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-bold-only-after-text-fast-path.json)
+- [editor-perf-layer1-bold-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-bold-only-after-simple-text-fast-path.json)
+- [editor-perf-layer1-italic-only.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-italic-only.json)
+- [editor-perf-layer1-italic-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-italic-only-after-simple-text-fast-path.json)
+- [editor-perf-layer1-underline-only.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-underline-only.json)
+- [editor-perf-layer1-underline-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-underline-only-after-simple-text-fast-path.json)
+- [editor-perf-layer1-code-only.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-code-only.json)
+- [editor-perf-5000-code-direct-renderers-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-direct-renderers-core-mount.json)
+- [editor-perf-5000-code-plugin-leaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount.json)
+- [editor-perf-5000-code-leaf-text-pipe-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-leaf-text-pipe-core-mount.json)
 - [editor-perf-5000-code-dissection-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-dissection-summary.json)
-- [editor-perf-5000-code-plateleaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plateleaf-direct-core-mount.json)
-- [editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json)
+- [editor-perf-5000-code-plateleaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plateleaf-direct-core-mount.json)
+- [editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json)
 - [editor-perf-5000-code-hard-affinity-fast-path-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json)
 
 Every shipped plugin gets:
@@ -751,9 +751,9 @@ The class decides:
       mid-teens activated tax instead of mid/high twenties
     - underline is still the worst sibling in the clean batch
   - durable artifacts:
-    - [editor-perf-layer1-bold-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-bold-only-after-simple-text-fast-path.json)
-    - [editor-perf-layer1-italic-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-italic-only-after-simple-text-fast-path.json)
-    - [editor-perf-layer1-underline-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-underline-only-after-simple-text-fast-path.json)
+    - [editor-perf-layer1-bold-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-bold-only-after-simple-text-fast-path.json)
+    - [editor-perf-layer1-italic-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-italic-only-after-simple-text-fast-path.json)
+    - [editor-perf-layer1-underline-only-after-simple-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-underline-only-after-simple-text-fast-path.json)
 - Underline got its own `5k` dissection before any more underline-specific
   surgery:
   - direct lower bound on `huge-underline`:
@@ -769,9 +769,9 @@ The class decides:
       above the direct `<u>` lower bound and `16.40 ms` above the isolated
       plugin-leaf lane
   - durable artifacts:
-    - [editor-perf-5000-underline-direct-renderers.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-underline-direct-renderers.json)
-    - [editor-perf-5000-underline-plugin-leaf-direct.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-underline-plugin-leaf-direct.json)
-    - [editor-perf-5000-underline-pipe.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-underline-pipe.json)
+    - [editor-perf-5000-underline-direct-renderers.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-underline-direct-renderers.json)
+    - [editor-perf-5000-underline-plugin-leaf-direct.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-underline-plugin-leaf-direct.json)
+    - [editor-perf-5000-underline-pipe.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-underline-pipe.json)
     - [editor-perf-5000-underline-dissection-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-underline-dissection-summary.json)
   - widening check on the next sibling mark says the cheap-mark story is done:
     - targeted `5k` Layer 1 `CodePlugin` rerun:
@@ -791,10 +791,10 @@ The class decides:
         leaf composition / affinity-related props, not another generic
         `pipeRenderText(...)` cleanup
   - durable artifacts:
-    - [editor-perf-layer1-code-only.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-code-only.json)
-    - [editor-perf-5000-code-direct-renderers-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-direct-renderers-core-mount.json)
-    - [editor-perf-5000-code-plugin-leaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount.json)
-    - [editor-perf-5000-code-leaf-text-pipe-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-leaf-text-pipe-core-mount.json)
+    - [editor-perf-layer1-code-only.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-layer1-code-only.json)
+    - [editor-perf-5000-code-direct-renderers-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-direct-renderers-core-mount.json)
+    - [editor-perf-5000-code-plugin-leaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount.json)
+    - [editor-perf-5000-code-leaf-text-pipe-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-leaf-text-pipe-core-mount.json)
     - [editor-perf-5000-code-dissection-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-dissection-summary.json)
   - the next safe cut shipped in `pluginRenderLeaf(...)`:
     - simple `render.as` leaves with `affinity: 'hard'` now skip
@@ -812,7 +812,7 @@ The class decides:
       - given the current no-breakage bias, the next move is not more
         `pluginRenderLeaf(...)` surgery; it is deciding whether the hard-edge
         DOM shape is worth redesigning at all
-  - durable artifacts: - [editor-perf-5000-code-plateleaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plateleaf-direct-core-mount.json) - [editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json) - [editor-perf-5000-code-hard-affinity-fast-path-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json)
+  - durable artifacts: - [editor-perf-5000-code-plateleaf-direct-core-mount.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plateleaf-direct-core-mount.json) - [editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json) - [editor-perf-5000-code-hard-affinity-fast-path-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json)
     That changes the next move. Stop treating `UnderlinePlugin` as a unique target.
     The next cheap-mark cut is no longer generic `pluginRenderLeaf(...)`. That part
     of the active `CodePlugin` path is basically green. The remaining question is
@@ -920,15 +920,15 @@ The main artifacts that matter right now:
 - [editor-perf-10000-init-dissection.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-10000-init-dissection.json)
 - [editor-perf-5000-core-mount-targeted-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-core-mount-targeted-summary.json)
 - [editor-perf-5000-store-tech-split.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-store-tech-split.json)
-- [editor-perf-5000-plugin-render-element-lazy-store-seq.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-plugin-render-element-lazy-store-seq.json)
-- [editor-perf-5000-element-provider-lazy-store-seq.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-element-provider-lazy-store-seq.json)
+- [editor-perf-5000-plugin-render-element-lazy-store-seq.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-plugin-render-element-lazy-store-seq.json)
+- [editor-perf-5000-element-provider-lazy-store-seq.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-element-provider-lazy-store-seq.json)
 - [editor-perf-5000-render-as-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-render-as-summary.json)
 - [editor-perf-5000-bold-leaf-wrapper-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-bold-leaf-wrapper-summary.json)
-- [editor-perf-5000-bold-text-pipe-after-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-bold-text-pipe-after-text-fast-path.json)
-- [editor-perf-5000-bold-pipe-after-text-fast-path.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-bold-pipe-after-text-fast-path.json)
+- [editor-perf-5000-bold-text-pipe-after-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-bold-text-pipe-after-text-fast-path.json)
+- [editor-perf-5000-bold-pipe-after-text-fast-path.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-bold-pipe-after-text-fast-path.json)
 - [editor-perf-5000-nodeid-mounted-gate-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-nodeid-mounted-gate-summary.json)
 - [editor-perf-layer0-smoke-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer0-smoke-summary.json)
-- [editor-perf-5000-blockquote-after-path-cut.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-5000-blockquote-after-path-cut.json)
+- [editor-perf-5000-blockquote-after-path-cut.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-5000-blockquote-after-path-cut.json)
 - [editor-perf-layer1-core-plugins-smoke-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-smoke-summary.json)
 - [editor-perf-layer1-core-plugins-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json)
 

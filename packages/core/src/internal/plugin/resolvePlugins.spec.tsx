@@ -142,7 +142,7 @@ describe('resolvePlugins', () => {
             textProps: { 'data-text': 'y' } as any,
             type: 'cachey',
           },
-          normalizeInitialValue: () => {},
+          transformInitialValue: () => [],
           render: {
             aboveEditable: () => null,
             aboveNodes: () => null,
@@ -171,7 +171,7 @@ describe('resolvePlugins', () => {
     expect(editor.meta.pluginCache.node.isText).toContain('cachey');
     expect(editor.meta.pluginCache.node.leafProps).toContain('cachey');
     expect(editor.meta.pluginCache.node.textProps).toContain('cachey');
-    expect(editor.meta.pluginCache.normalizeInitialValue).toContain('cachey');
+    expect(editor.meta.pluginCache.transformInitialValue).toContain('cachey');
     expect(editor.meta.pluginCache.render.aboveEditable).toContain('cachey');
     expect(editor.meta.pluginCache.render.aboveNodes).toContain('cachey');
     expect(editor.meta.pluginCache.render.aboveSlate).toContain('cachey');

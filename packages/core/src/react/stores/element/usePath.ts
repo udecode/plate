@@ -1,14 +1,12 @@
 import type { Path } from '@platejs/slate';
 
-import { useAtomStoreValue } from 'jotai-x';
-
 import { useEditorRef } from '../plate';
-import { useElementStore } from './useElementStore';
+import { useElementContext } from './useElementStore';
 
 /** Get the memoized path of the closest element. */
 export const usePath = (pluginKey?: string): Path => {
   const editor = useEditorRef();
-  const value = useAtomStoreValue(useElementStore(pluginKey), 'path');
+  const value = useElementContext(pluginKey)?.path;
 
   if (!value) {
     editor.api.debug.warn(
