@@ -2,6 +2,7 @@
 title: Streaming code-highlight crashes can reproduce on the fenced language opener
 type: solution
 date: 2026-04-01
+last_updated: 2026-04-02
 status: completed
 category: developer-experience
 module: apps/www markdown streaming demo
@@ -27,10 +28,11 @@ The open question was whether the crash came from incomplete streamed code synta
 - The homepage and demo could both surface a `Runtime PlateError` tagged as `CODE_HIGHLIGHT`.
 - Earlier reports made it look like an incomplete streamed code block might be the trigger.
 - The markdown streaming demo did not have a built-in preset for this exact stream, so the repro path was noisy.
+- In dev mode, repeated streaming replays could still flood the server/browser log bridge with large `CODE_HIGHLIGHT` warnings even after the fatal overlay was removed.
 
 # Solution
 
-Normalize the SSE transcript into the demo's raw chunk format, replay it on the markdown streaming demo as a dedicated preset scenario, then make registered-language highlight failures fall back to plaintext without throwing.
+Normalize the SSE transcript into the demo's raw chunk format, replay it on the markdown streaming demo as a dedicated preset scenario, then make registered-language highlight failures fall back to plaintext without throwing, retrying, or logging the full regex payload on every chunk.
 
 The useful part of the transcript is only the ordered `text-delta` payloads. The demo's paste helper accepts `JSON.stringify(string[])`, not raw `data: {...}` lines, so the transcript first had to be converted into a plain string array.
 
@@ -50,7 +52,7 @@ Once the failing boundary was clear, the actual fix lived in [setCodeBlockToDeco
 
 That helper already tries to fall back to plaintext when highlighting fails. The problem was that the registered-language branch called `editor.api.debug.error(...)` before returning the empty highlight result. In development, `debug.error(...)` throws a `PlateError`, so the fallback never executes.
 
-The fix is to log this case with `debug.warn(...)` instead:
+The first fix is to log this case with `debug.warn(...)` instead:
 
 ```ts
 editor.api.debug.warn(
@@ -62,6 +64,14 @@ highlighted = { value: [] };
 ```
 
 This keeps the code block editable and lets the render path continue with plaintext decorations.
+
+The follow-up fix is to treat the failing registered language as disabled for the current `lowlight` instance after the first failure. That prevents every later streaming normalization pass from calling `lowlight.highlight(...)` again for the same broken language.
+
+We also sanitize the warning detail. Some runtimes include the full invalid regex source in `error.message`, which makes the warning payload enormous. Instead of logging the whole regex, collapse it to a short reason such as:
+
+```txt
+Invalid regular expression (Range out of order in character class)
+```
 
 # Why This Works
 
@@ -83,7 +93,7 @@ Instead, the failing boundary is the moment the block becomes a syntax-highlight
 
 That points investigation toward the code-highlight path itself, not toward markdown body incompleteness.
 
-After the fix, the same stream still reaches the `python` opener, but the editor stays alive because highlight failures no longer escalate into a fatal dev overlay.
+After the fix, the same stream still reaches the `python` opener, but the editor stays alive because highlight failures no longer escalate into a fatal dev overlay, repeated streaming passes stop retrying the same broken language, and the warning payload stays small enough for Turbopack dev logging to tolerate.
 
 # Verification
 
@@ -111,6 +121,17 @@ bun test packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts
 
 All five commands passed.
 
+Additional follow-up verification on `2026-04-02`:
+
+- `corepack pnpm turbo build --filter=./packages/code-block --filter=./apps/www`
+- `corepack pnpm turbo typecheck --filter=./packages/code-block --filter=./apps/www`
+- `corepack pnpm lint:fix`
+- `bun test packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts`
+- replayed `http://localhost:3010/blocks/markdown-streaming-demo` and `http://localhost:3010/dev/markdown-stream-perf`
+- confirmed the dev server warning shrank to:
+  `Invalid regular expression (Range out of order in character class)`
+- refreshed `/dev/markdown-stream-perf` five times without another `RangeError: Map maximum size exceeded`
+
 # Working Rule
 
 When a streamed markdown repro seems to implicate incomplete code syntax, do not trust the final rendered output alone.
@@ -118,3 +139,5 @@ When a streamed markdown repro seems to implicate incomplete code syntax, do not
 First replay the stream step by step in the markdown streaming demo. If the crash starts on the fenced language opener itself, focus on the code-highlight path before debugging incomplete code-body syntax.
 
 For highlight failures in a registered language, prefer a non-fatal warning plus plaintext fallback over a thrown dev-time error. The editor should keep streaming even when syntax highlighting cannot.
+
+If a registered language is known to fail in the current runtime, stop retrying that language for the same `lowlight` instance and keep the warning detail compact. Replaying the same broken highlight on every streamed chunk can turn a recoverable syntax-highlighting issue into a dev-server stability problem.

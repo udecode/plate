@@ -73,6 +73,7 @@ const createProxyTransportFetch = (chatId: string): typeof fetch =>
 
 export const useChat = () => {
   const editor = useEditorRef();
+  const chatInstanceIdRef = React.useRef<string | undefined>(undefined);
   const options: PluginChatOptions =
     usePluginOption(aiChatPlugin, 'chatOptions') ?? {};
   const {
@@ -80,6 +81,10 @@ export const useChat = () => {
     transport: providedTransport,
     ...chatOptions
   } = options;
+  if (!chatInstanceIdRef.current) {
+    chatInstanceIdRef.current = `editor:${nanoid()}`;
+  }
+  const chatInstanceId = chatInstanceIdRef.current;
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -196,15 +201,15 @@ export const useChat = () => {
       providedTransport ??
       createAIChatTextStreamTransport<ChatMessage>({
         api,
-        chatId: 'editor',
+        chatId: chatInstanceId,
         // Mock the API response. Remove it when you implement the route /api/ai/command
-        fetch: createProxyTransportFetch('editor'),
+        fetch: createProxyTransportFetch(chatInstanceId),
       }),
-    [api, providedTransport]
+    [api, chatInstanceId, providedTransport]
   );
 
   const baseChat = useBaseChat<ChatMessage>({
-    id: 'editor',
+    id: chatInstanceId,
     transport,
     onData(data) {
       if (data.type === 'data-toolName') {
@@ -308,14 +313,14 @@ export const useChat = () => {
       return;
     }
 
-    aiChatTransportFetchers.set('editor', transportFetch as typeof fetch);
+    aiChatTransportFetchers.set(chatInstanceId, transportFetch as typeof fetch);
 
     return () => {
-      if (aiChatTransportFetchers.get('editor') === transportFetch) {
-        aiChatTransportFetchers.delete('editor');
+      if (aiChatTransportFetchers.get(chatInstanceId) === transportFetch) {
+        aiChatTransportFetchers.delete(chatInstanceId);
       }
     };
-  }, [providedTransport, transportFetch]);
+  }, [chatInstanceId, providedTransport, transportFetch]);
 
   React.useEffect(() => {
     const nextChatState = {

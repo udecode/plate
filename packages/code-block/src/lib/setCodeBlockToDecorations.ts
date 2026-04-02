@@ -14,6 +14,35 @@ import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 export const CODE_LINE_TO_DECORATIONS: WeakMap<TElement, DecoratedRange[]> =
   new WeakMap();
 
+const FAILED_HIGHLIGHT_LANGUAGES = new WeakMap<object, Set<string>>();
+
+function getFailedHighlightLanguages(lowlight: object) {
+  let failedLanguages = FAILED_HIGHLIGHT_LANGUAGES.get(lowlight);
+
+  if (!failedLanguages) {
+    failedLanguages = new Set<string>();
+    FAILED_HIGHLIGHT_LANGUAGES.set(lowlight, failedLanguages);
+  }
+
+  return failedLanguages;
+}
+
+function getHighlightErrorDetail(error: unknown) {
+  if (error instanceof Error) {
+    if (error.message.startsWith('Invalid regular expression:')) {
+      const reason = error.message.split(': ').at(-1);
+
+      return reason
+        ? `Invalid regular expression (${reason})`
+        : 'Invalid regular expression';
+    }
+
+    return error.message;
+  }
+
+  return String(error);
+}
+
 // Helper function to get highlight nodes from Lowlight result
 function getHighlightNodes(result: any) {
   return result.value || result.children || [];
@@ -70,6 +99,7 @@ export function codeBlockToDecorations(
   const { defaultLanguage, ...options } =
     editor.getOptions(BaseCodeBlockPlugin);
   const lowlight = options.lowlight!;
+  const failedHighlightLanguages = getFailedHighlightLanguages(lowlight);
 
   // Get all code lines and combine their text
   const text = block.children.map((line) => NodeApi.string(line)).join('\n');
@@ -81,6 +111,8 @@ export function codeBlockToDecorations(
     // Skip highlighting for plaintext or when no language is specified
     if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
       highlighted = { value: [] }; // Empty result for plaintext
+    } else if (failedHighlightLanguages.has(effectiveLanguage)) {
+      highlighted = { value: [] };
     } else if (effectiveLanguage === 'auto') {
       highlighted = lowlight.highlightAuto(text);
     } else {
@@ -92,10 +124,11 @@ export function codeBlockToDecorations(
     const isLanguageRegistered =
       effectiveLanguage && availableLanguages.includes(effectiveLanguage);
     if (isLanguageRegistered) {
+      failedHighlightLanguages.add(effectiveLanguage);
       editor.api.debug.warn(
         `Failed to highlight language "${effectiveLanguage}". Falling back to plaintext`,
         'CODE_HIGHLIGHT',
-        error
+        getHighlightErrorDetail(error)
       );
       highlighted = { value: [] }; // Empty result on error
     } else {
