@@ -1,0 +1,1259 @@
+{
+  "fetched_at": "2026-04-02T10:44:34+00:00",
+  "source_url": "https://support.typora.io/store/",
+  "source_last_modified": "Sun, 29 Mar 2026 13:17:49 GMT",
+  "entry_count": 123,
+  "language_counts": {
+    "ja": 7,
+    "root": 112,
+    "zh": 4
+  },
+  "category_counts": {
+    "": 11,
+    "announcement": 2,
+    "basic": 21,
+    "how-to": 48,
+    "new": 27,
+    "new-draft": 1,
+    "purchase": 3,
+    "reference": 6,
+    "tips": 4
+  },
+  "notes": [
+    "This repo artifact intentionally excludes page body text.",
+    "Use the local cache under $HOME/.cache/plate/editor-behavior/typora/ for raw page content.",
+    "Use the catalog and hashes to track coverage and detect upstream drift."
+  ],
+  "entries": [
+    {
+      "key": "about-themes",
+      "lang": "root",
+      "category": "basic",
+      "title": "About Themes",
+      "url": "/About-Themes/",
+      "content_chars": 2631,
+      "content_words": 415,
+      "content_sha256": "827d6cd9a08a23967da9e4d10c78adf3b4c12d773c3382da1d8d512fae44d285"
+    },
+    {
+      "key": "acknowledgement",
+      "lang": "root",
+      "category": "reference",
+      "title": "Acknowledgement",
+      "url": "/Acknowledgement/",
+      "content_chars": 10536,
+      "content_words": 1319,
+      "content_sha256": "f17d4a6968218b2b69fdb6f239db2ae837d19198a3e7f7b5fd4632b9e6bbf224"
+    },
+    {
+      "key": "add-custom-css",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Add Custom CSS",
+      "url": "/Add-Custom-CSS/",
+      "content_chars": 2667,
+      "content_words": 425,
+      "content_sha256": "e4c3225702a05ac16d2440e401ef8a7bc5d2ea0c07aba1e7162fd406efe7f627"
+    },
+    {
+      "key": "add-search-service",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Add Search Service",
+      "url": "/Add-Search-Service/",
+      "content_chars": 1018,
+      "content_words": 116,
+      "content_sha256": "e01dda4a87e9f0d625d9302cfb3370f692657b27e561929db9b7b88ccfd0b5f9"
+    },
+    {
+      "key": "advance-config",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Advanced Settings File for Windows / Linux",
+      "url": "/Advance-Config/",
+      "content_chars": 2505,
+      "content_words": 371,
+      "content_sha256": "8c153be82190c8b172775ca8785ad893822f5a50dc09c3cb5587f34c43727b13"
+    },
+    {
+      "key": "auto-numbering",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Auto Numbering for Headings",
+      "url": "/Auto-Numbering/",
+      "content_chars": 2339,
+      "content_words": 277,
+      "content_sha256": "e7038a119f713f6051a3eb0e90799701ab1c01f08890977a4a43a9a8ea8cd730"
+    },
+    {
+      "key": "auto-pair",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Auto Pair",
+      "url": "/Auto-Pair/",
+      "content_chars": 672,
+      "content_words": 120,
+      "content_sha256": "fca3331e378f6e8ed6bddc5b0f50b2419415f50aba3e5c25513d9e2158707e8b"
+    },
+    {
+      "key": "auto-save",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Auto Save",
+      "url": "/Auto-Save/",
+      "content_chars": 1748,
+      "content_words": 268,
+      "content_sha256": "04b63a352389862e0eca5e62afc34fecbb0b3540ba2d7aa8cce2ee20d465bafd"
+    },
+    {
+      "key": "backgound",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Change Background",
+      "url": "/Backgound/",
+      "content_chars": 1450,
+      "content_words": 198,
+      "content_sha256": "f094d2104b4b8a814323a7fa0f00def361d759b6e18f3c35f93e76c1bf2ac3de"
+    },
+    {
+      "key": "change-styles-in-focus-mode",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Change Styles in Focus Mode",
+      "url": "/Change-Styles-in-Focus-Mode/",
+      "content_chars": 1801,
+      "content_words": 224,
+      "content_sha256": "2ad7f8ba1128aa39bb8c4d609ae586d3cf751145a2abc7573108acae7500d573"
+    },
+    {
+      "key": "code-block-styles",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Code Block Styles/Themes",
+      "url": "/Code-Block-Styles/",
+      "content_chars": 3624,
+      "content_words": 452,
+      "content_sha256": "2ca6ae078c6db559829b4e74a09ed498ee4228badee1f23ebee2e561cc4fd7a8"
+    },
+    {
+      "key": "code-fences-language-support",
+      "lang": "root",
+      "category": "reference",
+      "title": "Language Support in Code Fences",
+      "url": "/Code-Fences-Language-Support/",
+      "content_chars": 2305,
+      "content_words": 305,
+      "content_sha256": "a5d0e7738bc73e2e4d5b4ed7d2d6e63a8d50f9f29f232fc6677e660befded780"
+    },
+    {
+      "key": "code-fences",
+      "lang": "root",
+      "category": "basic",
+      "title": "Code Fences",
+      "url": "/Code-Fences/",
+      "content_chars": 3658,
+      "content_words": 572,
+      "content_sha256": "f26e5b4471aed4f48751364bcde095bb0c488e1c2677f6576c17afab8002f436"
+    },
+    {
+      "key": "copy-and-paste",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Copy and Paste",
+      "url": "/Copy-and-Paste/",
+      "content_chars": 3397,
+      "content_words": 541,
+      "content_sha256": "2d229d0350c866f72d65062fb3bab6cad2a32d9df9ff5bb261dab11ff16643d6"
+    },
+    {
+      "key": "custom-font",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Custom Fonts",
+      "url": "/Custom-Font/",
+      "content_chars": 2126,
+      "content_words": 317,
+      "content_sha256": "a1930b29ffc0a25ce23fd72817f1054cc97016d18c9372a16634c430e5020605"
+    },
+    {
+      "key": "dark-mode",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Dark Mode",
+      "url": "/Dark-Mode/",
+      "content_chars": 540,
+      "content_words": 93,
+      "content_sha256": "116a58b26c351873c9171cb61992584058f6f829e720c4975dad2261d6489fb5"
+    },
+    {
+      "key": "debug-themes",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Debug Themes / CSS",
+      "url": "/Debug-Themes/",
+      "content_chars": 630,
+      "content_words": 107,
+      "content_sha256": "f334befa56bbe8e19cc5de11ba7e10467c5d4c69c9aa06a6c05346539e2de24e"
+    },
+    {
+      "key": "delete-range",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Delete Range",
+      "url": "/Delete-Range/",
+      "content_chars": 844,
+      "content_words": 135,
+      "content_sha256": "d6c6532466c9097ff79e0f367f1784b5bf1441a0bd8c069cf7e50c684cbc7482"
+    },
+    {
+      "key": "diagram-options",
+      "lang": "root",
+      "category": "tips",
+      "title": "Diagram Options",
+      "url": "/Diagram-Options/",
+      "content_chars": 2908,
+      "content_words": 301,
+      "content_sha256": "e7c0a1fa9e20b92d9fcf38e9f4bea4f07063e0118d2fefb17ae7e76dea412184"
+    },
+    {
+      "key": "draw-diagrams-with-markdown",
+      "lang": "root",
+      "category": "basic",
+      "title": "Draw Diagrams With Markdown",
+      "url": "/Draw-Diagrams-With-Markdown/",
+      "content_chars": 10181,
+      "content_words": 1204,
+      "content_sha256": "55e2e2d25750cab6405fc7c77a2d1b8f2268675679885c5a7d3300d35d505c8e"
+    },
+    {
+      "key": "export",
+      "lang": "root",
+      "category": "basic",
+      "title": "Export",
+      "url": "/Export/",
+      "content_chars": 31381,
+      "content_words": 4713,
+      "content_sha256": "bb1b2aad0e2af0de12ab57ec964d83a16d15fc6b953ad5bf0135dffc57d7eaf7"
+    },
+    {
+      "key": "file-management",
+      "lang": "root",
+      "category": "basic",
+      "title": "File Management",
+      "url": "/File-Management/",
+      "content_chars": 7311,
+      "content_words": 1209,
+      "content_sha256": "3d701ef0223a935ad6c3010e23a41a16ea17d9b29b2251ba3a4f8c515c49f0ef"
+    },
+    {
+      "key": "focus-and-typewriter-mode",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Focus Mode and Typewriter Mode",
+      "url": "/Focus-and-Typewriter-Mode/",
+      "content_chars": 746,
+      "content_words": 112,
+      "content_sha256": "78eeff3e8f8710004091f1a9a8174bb72408452863a759914e2d69f79503a37d"
+    },
+    {
+      "key": "get-logs",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Get Typora Logs",
+      "url": "/Get-Logs/",
+      "content_chars": 2069,
+      "content_words": 330,
+      "content_sha256": "f4236454162c0c5f0359e53eba2b92cc08f97ae00c39c0eb4324441abaf6a55c"
+    },
+    {
+      "key": "html",
+      "lang": "root",
+      "category": "basic",
+      "title": "HTML Support in Typora",
+      "url": "/HTML/",
+      "content_chars": 7120,
+      "content_words": 905,
+      "content_sha256": "00fc6d51bd907f99eaad1c7f8d468f1ee051a5473adf90b7c08c10814e4b1932"
+    },
+    {
+      "key": "images",
+      "lang": "root",
+      "category": "basic",
+      "title": "Images in Typora",
+      "url": "/Images/",
+      "content_chars": 10205,
+      "content_words": 1637,
+      "content_sha256": "c50696b326716c6e7fbce63480fa14db9b898d5e706b448078fda6ee875efb1b"
+    },
+    {
+      "key": "install-and-use-pandoc",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Install and Use Pandoc",
+      "url": "/Install-and-Use-Pandoc/",
+      "content_chars": 5572,
+      "content_words": 890,
+      "content_sha256": "7204c3b46294badab60c93a6245562d7dafca98677926230244bbdc4362bb63a"
+    },
+    {
+      "key": "install-and-use-vlook",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Install and Use VLOOK™ Themes and Plugins",
+      "url": "/Install-and-Use-VLOOK/",
+      "content_chars": 3408,
+      "content_words": 517,
+      "content_sha256": "f6b3e719d65351f73699619151cfa8bc34cff815978239c6bc23433501b12b1f"
+    },
+    {
+      "key": "languages-support",
+      "lang": "root",
+      "category": "reference",
+      "title": "Translations and Languages Support",
+      "url": "/Languages-Support/",
+      "content_chars": 3020,
+      "content_words": 414,
+      "content_sha256": "29cf9eb2f168e404704fca77d4e271ba50181c3e281ad5a56162a5dde867e35a"
+    },
+    {
+      "key": "launch-arguments",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Launch Arguments (Windows / Linux)",
+      "url": "/Launch-Arguments/",
+      "content_chars": 1920,
+      "content_words": 233,
+      "content_sha256": "3096c5d340a171f18ea23456427570031c1ec5744b9eeaa003295ab90aaf620f"
+    },
+    {
+      "key": "launch-options",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Launch Options",
+      "url": "/Launch-Options/",
+      "content_chars": 426,
+      "content_words": 68,
+      "content_sha256": "4a96a28b9515a595065a9bcf661cffaa4851ce6bc4646b827f59a3fbac77428e"
+    },
+    {
+      "key": "license-agreement",
+      "lang": "root",
+      "category": "reference",
+      "title": "End User License Agreement",
+      "url": "/License-Agreement/",
+      "content_chars": 13042,
+      "content_words": 2112,
+      "content_sha256": "9f1b1acd71e3b625f575dbe0ed5c8191e9bb8ba0514a888c078740a59a6b6463"
+    },
+    {
+      "key": "line-break",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Whitespace and Line Breaks",
+      "url": "/Line-Break/",
+      "content_chars": 2455,
+      "content_words": 390,
+      "content_sha256": "263fc96f24d17ed0d67a6b508a2dadd9ece5c61fa55d4c7ab4cce7d26cc36d55"
+    },
+    {
+      "key": "line-spacing",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Line Spacing and Paragraph Spacing",
+      "url": "/Line-Spacing/",
+      "content_chars": 4116,
+      "content_words": 604,
+      "content_sha256": "11ff9ea8e74ebb8200febd9432dea0d6476fc2b49d089639be5ad2bc9f27e4f0"
+    },
+    {
+      "key": "links",
+      "lang": "root",
+      "category": "basic",
+      "title": "Links",
+      "url": "/Links/",
+      "content_chars": 4069,
+      "content_words": 591,
+      "content_sha256": "5299ed68a8b47cdcd5c87261e0960eb1cf9fef3d1dbf462e7d824b9325c2e88e"
+    },
+    {
+      "key": "list-style",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Customize List Styles",
+      "url": "/List-Style/",
+      "content_chars": 1734,
+      "content_words": 153,
+      "content_sha256": "34439444cf6b8b3b81ac1ae0309b434885200bbbc4b2fa7f1e776e715f1afd10"
+    },
+    {
+      "key": "markdown-export",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Convert &amp; Reformat Markdown",
+      "url": "/Markdown-Export/",
+      "content_chars": 2913,
+      "content_words": 436,
+      "content_sha256": "414bc63d5836150148a0cccc3e9142cbf503d07389e373495d834f31fe760ce9"
+    },
+    {
+      "key": "markdown-reference",
+      "lang": "root",
+      "category": "basic",
+      "title": "Markdown Reference",
+      "url": "/Markdown-Reference/",
+      "content_chars": 14281,
+      "content_words": 2174,
+      "content_sha256": "3acae0553860a6f5a50cbea4a6fca603710a4b9a60e80523e45b4e25425c783a"
+    },
+    {
+      "key": "math",
+      "lang": "root",
+      "category": "basic",
+      "title": "Math and Academic Functions",
+      "url": "/Math/",
+      "content_chars": 4822,
+      "content_words": 730,
+      "content_sha256": "7a6a0a9d035bfc20af67b45da1c3d5713568f5863c7ba323ca07416a3bc8ef03"
+    },
+    {
+      "key": "media",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Embed Video, Media or Web Contents",
+      "url": "/Media/",
+      "content_chars": 2883,
+      "content_words": 292,
+      "content_sha256": "b3afc3495765516bce07404171ad151fcede9d8ec9d5a645d749bd6e89d1de63"
+    },
+    {
+      "key": "my-license",
+      "lang": "root",
+      "category": "purchase",
+      "title": "Manage My License",
+      "url": "/My-License/",
+      "content_chars": 1079,
+      "content_words": 177,
+      "content_sha256": "4992f983cceb7ae6565178be42bd86684f767a60c56ba1527adf391ae1cdfcf6"
+    },
+    {
+      "key": "new-file-in-context",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Add New “Markdown” Item in Context Menu",
+      "url": "/New-File-in-Context/",
+      "content_chars": 543,
+      "content_words": 79,
+      "content_sha256": "69ae94bc1fc795907d764ea6c02de8826003a9131aa37538568ff1d41fdb2c9d"
+    },
+    {
+      "key": "news-cn",
+      "lang": "root",
+      "category": "announcement",
+      "title": "Typora Chinese Site is Now Live",
+      "url": "/News-CN/",
+      "content_chars": 86,
+      "content_words": 13,
+      "content_sha256": "2375c6c083ed6f5396a4234327a1282cb1590f004b6003a7b827b37ce9190872"
+    },
+    {
+      "key": "offline-activation",
+      "lang": "root",
+      "category": "tips",
+      "title": "Offline Activation",
+      "url": "/Offline-Activation/",
+      "content_chars": 2713,
+      "content_words": 426,
+      "content_sha256": "59e4beb10f467df9cc0698ac3569d1f169066b1fb13f59374468955da87fea14"
+    },
+    {
+      "key": "older-windows-support",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Older Windows Support",
+      "url": "/Older-Windows-Support/",
+      "content_chars": 139,
+      "content_words": 21,
+      "content_sha256": "ce918640a7a64422820bfaad15748356e0e6b8996813aba61652072a05b649dd"
+    },
+    {
+      "key": "older-macos-support",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Older macOS Support",
+      "url": "/Older-macOS-Support/",
+      "content_chars": 375,
+      "content_words": 52,
+      "content_sha256": "b9a2906b7addc42abcc80296bdc32473c676b3ad13a9209c3b9f6f6e9ac1c99c"
+    },
+    {
+      "key": "open-in-typora-vs-code-extension",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Open in Typora — VS Code Extension",
+      "url": "/Open-in-Typora-VS-Code-Extension/",
+      "content_chars": 1553,
+      "content_words": 236,
+      "content_sha256": "e763719d4854bb22f6c153e1b807aacbaa71cb11be543361ba47896bd32dc890"
+    },
+    {
+      "key": "outline",
+      "lang": "root",
+      "category": "basic",
+      "title": "Outline / Catalog",
+      "url": "/Outline/",
+      "content_chars": 2593,
+      "content_words": 403,
+      "content_sha256": "a66161cbdcd3991c1aa801f126ce895f38d18698319095996e82fbd693966541"
+    },
+    {
+      "key": "page-breaks",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Page Breaks",
+      "url": "/Page-Breaks/",
+      "content_chars": 5251,
+      "content_words": 698,
+      "content_sha256": "7fe455cd268699a18f10186ec1ee8e90f631571ac5982f845e09eb4dc7899e57"
+    },
+    {
+      "key": "privacy-policy",
+      "lang": "root",
+      "category": "reference",
+      "title": "Privacy Policy",
+      "url": "/Privacy-Policy/",
+      "content_chars": 6570,
+      "content_words": 1075,
+      "content_sha256": "964196b5547982f33c5eec9fa2531000d785ddd664a3a87fd6fa9d4117a161cc"
+    },
+    {
+      "key": "quick-start",
+      "lang": "root",
+      "category": "basic",
+      "title": "Quick Start",
+      "url": "/Quick-Start/",
+      "content_chars": 4999,
+      "content_words": 805,
+      "content_sha256": "f8ba4093ca9d02e560f83858a9f7e5a8f044825495790b008cb27bba5bd7f346"
+    },
+    {
+      "key": "rtl",
+      "lang": "root",
+      "category": "how-to",
+      "title": "RTL (Right-to-Left) Support (experimental)",
+      "url": "/RTL/",
+      "content_chars": 233,
+      "content_words": 40,
+      "content_sha256": "ef7f607450ee8a8e46d65661bfccf4168f2dd97de80e2ec2201a535b71a5587d"
+    },
+    {
+      "key": "report-bugs",
+      "lang": "root",
+      "category": "basic",
+      "title": "Report Bugs",
+      "url": "/Report-Bugs/",
+      "content_chars": 1333,
+      "content_words": 211,
+      "content_sha256": "7d8ff6a8d7dfa4b518a39e2db2b7aa53f55bc88964fb79ba6566392ab3a52b79"
+    },
+    {
+      "key": "resize-image",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Resize Images",
+      "url": "/Resize-Image/",
+      "content_chars": 895,
+      "content_words": 119,
+      "content_sha256": "95e146429fa3d8e606e457dc5383ca5433788248aa6b49f25d078fb79be94a0a"
+    },
+    {
+      "key": "search",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Search",
+      "url": "/Search/",
+      "content_chars": 1136,
+      "content_words": 199,
+      "content_sha256": "7ccd7dda46c4e87c3d54cfcd55a176215a64c30dee8ed848b21f51e9e5eb754d"
+    },
+    {
+      "key": "set-proxy",
+      "lang": "root",
+      "category": "tips",
+      "title": "Set Proxy",
+      "url": "/Set-Proxy/",
+      "content_chars": 663,
+      "content_words": 84,
+      "content_sha256": "bf33d038cd0a72cba03ea89bd9d32b6f88f8a110674ef5b8f1d21ac125d26ab5"
+    },
+    {
+      "key": "shortcut-keys",
+      "lang": "root",
+      "category": "basic",
+      "title": "Shortcut Keys",
+      "url": "/Shortcut-Keys/",
+      "content_chars": 6967,
+      "content_words": 930,
+      "content_sha256": "1b6d554922abec60d7d043b63db5eaf3a4b57fd019abd476dfe84e81d7d5ce70"
+    },
+    {
+      "key": "smartypants",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Smart Punctuation (SmartyPants)",
+      "url": "/SmartyPants/",
+      "content_chars": 3239,
+      "content_words": 527,
+      "content_sha256": "b08ae76ce2e6aa6f88f08554be0efc7d4d25a033520707f2e016c3f34fcc4adb"
+    },
+    {
+      "key": "snap",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Install via Snap",
+      "url": "/Snap/",
+      "content_chars": 968,
+      "content_words": 148,
+      "content_sha256": "32938385c273b4f9b7f472b56ee4922d7c7554e50bb0e1cbe297be5f0826fadc"
+    },
+    {
+      "key": "spellcheck",
+      "lang": "root",
+      "category": "basic",
+      "title": "Spellcheck",
+      "url": "/Spellcheck/",
+      "content_chars": 3100,
+      "content_words": 469,
+      "content_sha256": "30a3df66a081d255abcef9877335f7747af99dcafc18730d1a2655018e1acf41"
+    },
+    {
+      "key": "strict-mode",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Strict Mode",
+      "url": "/Strict-Mode/",
+      "content_chars": 1229,
+      "content_words": 187,
+      "content_sha256": "a5dc4dfc326276b167fa813e82f3995c4ec805fb1989e18c84a43c25c9ed3330"
+    },
+    {
+      "key": "sublime",
+      "lang": "root",
+      "category": "how-to",
+      "title": "“Open in Typora” from Sublime (macOS)",
+      "url": "/Sublime/",
+      "content_chars": 563,
+      "content_words": 78,
+      "content_sha256": "c5807d9338245bb84b97c8b56f2ce0c419e55c6c164f249f195107c44e3287fc"
+    },
+    {
+      "key": "support-mathjax",
+      "lang": "root",
+      "category": "announcement",
+      "title": "Typora becomes a MathJax Supporter",
+      "url": "/Support-MathJax/",
+      "content_chars": 432,
+      "content_words": 63,
+      "content_sha256": "bfd5d96e75630cc4bc84e67315a584f2f8958350b1d9f3adf783c158d69ccc16"
+    },
+    {
+      "key": "sync",
+      "lang": "root",
+      "category": "basic",
+      "title": "Work with Mobile and other Devices",
+      "url": "/Sync/",
+      "content_chars": 643,
+      "content_words": 109,
+      "content_sha256": "8d072f9e8b87686d1735e4612f0af5c118d0bd6637426293219fb1409440fe51"
+    },
+    {
+      "key": "system-requirements",
+      "lang": "root",
+      "category": "reference",
+      "title": "System Requirements",
+      "url": "/System-Requirements/",
+      "content_chars": 381,
+      "content_words": 62,
+      "content_sha256": "1154c1d7856c5c5ed3e89a6c2f2ba38d9133a924b30075f6b66cc9aad9f7f356"
+    },
+    {
+      "key": "toc-levels",
+      "lang": "root",
+      "category": "tips",
+      "title": "Control TOC Levels",
+      "url": "/TOC-levels/",
+      "content_chars": 287,
+      "content_words": 50,
+      "content_sha256": "47f9b7d54aa4a128611cd1cb54fe2795b430a2b39d4bfef639eb816d20316a7e"
+    },
+    {
+      "key": "toc",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Table Of Contents (TOC)",
+      "url": "/TOC/",
+      "content_chars": 1212,
+      "content_words": 201,
+      "content_sha256": "0b1bae704d2fd33fb1910c30324d08e2bf1d17896a9791c86e20be39fc932791"
+    },
+    {
+      "key": "table-editing",
+      "lang": "root",
+      "category": "basic",
+      "title": "Table Editing",
+      "url": "/Table-Editing/",
+      "content_chars": 2834,
+      "content_words": 477,
+      "content_sha256": "63aa7b97c622ace8a951834024176b646d6d21cb7da615da27fc86d2bc59afc4"
+    },
+    {
+      "key": "task-list",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Task List — Easy Way to Record Todos",
+      "url": "/Task-List/",
+      "content_chars": 924,
+      "content_words": 149,
+      "content_sha256": "686c23a928f0d22460cd90f9e19571207453367e19174674a5ef2a934b314565"
+    },
+    {
+      "key": "text-snippet",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Text Snippets",
+      "url": "/Text-Snippet/",
+      "content_chars": 600,
+      "content_words": 95,
+      "content_sha256": "a93c5739247ecf83edc92ccc7104e4371639c923913812677ee4900647506bc6"
+    },
+    {
+      "key": "trouble-shooting",
+      "lang": "root",
+      "category": "basic",
+      "title": "Trouble Shooting",
+      "url": "/Trouble-Shooting/",
+      "content_chars": 2667,
+      "content_words": 313,
+      "content_sha256": "f3c3af438e1b41d6b0bfa9c5afe88d61312c83039b240a9e72a1968ee500535c"
+    },
+    {
+      "key": "typeset",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Typesetting with CSS",
+      "url": "/Typeset/",
+      "content_chars": 5320,
+      "content_words": 567,
+      "content_sha256": "cbae58c7eae858f75b60ce216cfd959e2b99aa727f9dd4b84d7ac459cdbf0849"
+    },
+    {
+      "key": "typora-on-linux",
+      "lang": "root",
+      "category": "basic",
+      "title": "Install Typora on Linux",
+      "url": "/Typora-on-Linux/",
+      "content_chars": 6579,
+      "content_words": 798,
+      "content_sha256": "ddf22bcb44ecc544b296e286ffa125b7081ad73c926b6e8342e123ee989f2fd3"
+    },
+    {
+      "key": "typora-on-windows",
+      "lang": "root",
+      "category": "basic",
+      "title": "Typora on Windows",
+      "url": "/Typora-on-Windows/",
+      "content_chars": 2770,
+      "content_words": 442,
+      "content_sha256": "1ca93c895e09d298926c3af067e65847d644b30e799dc38ad8e1ffff0d0602ac"
+    },
+    {
+      "key": "typora-on-macos",
+      "lang": "root",
+      "category": "basic",
+      "title": "Typora on macOS",
+      "url": "/Typora-on-macOS/",
+      "content_chars": 3904,
+      "content_words": 604,
+      "content_sha256": "7cb5c33520b5a55b39d2fee5c2ee7e723b3f27edd8cca72d21d9ccdb193fba57"
+    },
+    {
+      "key": "upload-image",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Upload Images",
+      "url": "/Upload-Image/",
+      "content_chars": 15659,
+      "content_words": 2357,
+      "content_sha256": "72e8f049619328a7ac8aba1593d0fd66595306c54501b72995932170e0db698b"
+    },
+    {
+      "key": "use-typora-from-shell-or-cmd",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Use Typora from Shell or Cmd",
+      "url": "/Use-Typora-From-Shell-or-cmd/",
+      "content_chars": 1655,
+      "content_words": 274,
+      "content_sha256": "05a445bdd815a501e1b21044e7e8aa9400d8a5ce03308312c11378a29a8bd4b4"
+    },
+    {
+      "key": "version-control",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Version Control and Recovery",
+      "url": "/Version-Control/",
+      "content_chars": 1239,
+      "content_words": 192,
+      "content_sha256": "b3c317aaf66d104d6435970d4061ac5af34aa00bb7dc100ebad3487615ae713e"
+    },
+    {
+      "key": "what-s-new-0-10",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.10 beta",
+      "url": "/What's-New-0.10/",
+      "content_chars": 4326,
+      "content_words": 562,
+      "content_sha256": "f6401761bfb8001740c559c44006014b549fb0a8f862888a95095816ee4963bc"
+    },
+    {
+      "key": "what-s-new-0-11",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.11 beta",
+      "url": "/What's-New-0.11/",
+      "content_chars": 6430,
+      "content_words": 960,
+      "content_sha256": "5eecf0b42af50e8d5313392d3eae0982867500f120b44e65d3369e379a39f1b2"
+    },
+    {
+      "key": "what-s-new-0-9-54",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.17 (0.9.54) beta",
+      "url": "/What's-New-0.9.54/",
+      "content_chars": 4329,
+      "content_words": 577,
+      "content_sha256": "d9c1a00dc4b9a29175eab11a8f9059428193e5e205b16fff7c32e7d4e1747939"
+    },
+    {
+      "key": "what-s-new-0-9-58",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.18 (0.9.58) beta",
+      "url": "/What's-New-0.9.58/",
+      "content_chars": 1605,
+      "content_words": 265,
+      "content_sha256": "7fbf5e03c9a475ffc4e1a3097f442dbe6aeca0bcef309588882194febb1f93ba"
+    },
+    {
+      "key": "what-s-new-0-9-59",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.19 (0.9.59) beta",
+      "url": "/What's-New-0.9.59/",
+      "content_chars": 2457,
+      "content_words": 386,
+      "content_sha256": "c448e8294c50140cce9a9ca7269b282ae5eb5e2545f133d47f5d4eea854f8d11"
+    },
+    {
+      "key": "what-s-new-0-9-61",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.20 (0.9.61) beta",
+      "url": "/What's-New-0.9.61/",
+      "content_chars": 2684,
+      "content_words": 407,
+      "content_sha256": "6d0d211fbdc6cc0f539c2dc1f9a6f8d347a5e51f6f7be85c420509bd3894b55d"
+    },
+    {
+      "key": "what-s-new-0-9-63",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.21 (0.9.63) beta",
+      "url": "/What's-New-0.9.63/",
+      "content_chars": 1732,
+      "content_words": 274,
+      "content_sha256": "6eb991bac08199f59ec41fbddb4f12389b9d76979c2cc1ce1d46efda97e5e5b3"
+    },
+    {
+      "key": "what-s-new-0-9-66",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.23 (0.9.66) beta",
+      "url": "/What's-New-0.9.66/",
+      "content_chars": 1237,
+      "content_words": 185,
+      "content_sha256": "409232a7e59e0fd90ea83fac8e9791716a5a267ec16c8f000da2ec8774d3a331"
+    },
+    {
+      "key": "what-s-new-0-9-71",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.25 (0.9.71) beta",
+      "url": "/What's-New-0.9.71/",
+      "content_chars": 1759,
+      "content_words": 274,
+      "content_sha256": "f1b79104d3cd7fe5341fc12e871f2245e15cef7f1f1f7f6b7d4895cd8da8c892"
+    },
+    {
+      "key": "what-s-new-0-9-73",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.27 (0.9.73) beta",
+      "url": "/What's-New-0.9.73/",
+      "content_chars": 3616,
+      "content_words": 584,
+      "content_sha256": "479fa429078c6733b979896061b93d8f9e466d7c30f5c5dbf0c211a63bc82671"
+    },
+    {
+      "key": "what-s-new-0-9-80",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.30 (0.9.80) beta",
+      "url": "/What's-New-0.9.80/",
+      "content_chars": 2561,
+      "content_words": 358,
+      "content_sha256": "a642e2e3734af1623a8f1d5203d26156cacebf0d57103418abbd6b90d2ed3378"
+    },
+    {
+      "key": "what-s-new-0-9-84",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.32 (0.9.84) beta",
+      "url": "/What's-New-0.9.84/",
+      "content_chars": 2196,
+      "content_words": 336,
+      "content_sha256": "2f983df82cf785f678097bd3e25620fd473082f2555be20fdd3d4933549e8a01"
+    },
+    {
+      "key": "what-s-new-0-9-90",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.34 (0.9.90) beta",
+      "url": "/What's-New-0.9.90/",
+      "content_chars": 2500,
+      "content_words": 323,
+      "content_sha256": "eb499f4fc2c1982a0aac3d5a3835420481b65468430d803c65e26b154a555e52"
+    },
+    {
+      "key": "what-s-new-0-9-98",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 0.9.9.36 (0.9.98) beta",
+      "url": "/What's-New-0.9.98/",
+      "content_chars": 2275,
+      "content_words": 339,
+      "content_sha256": "07edd029aa6b26725b94eab9eafac9bd23313daa88f2b6501112812ea322653d"
+    },
+    {
+      "key": "what-s-new-1-0",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.0",
+      "url": "/What's-New-1.0/",
+      "content_chars": 3767,
+      "content_words": 545,
+      "content_sha256": "44231a6b444fd77c204d414ad58cf6fb379ad216cb4228bb1511ec99676274b5"
+    },
+    {
+      "key": "what-s-new-1-1",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.1",
+      "url": "/What's-New-1.1/",
+      "content_chars": 4862,
+      "content_words": 719,
+      "content_sha256": "b7b39f42b14e732a1185ca2a3e6fe7b9b79a9abbc340428687f7c5b9d5a32cb1"
+    },
+    {
+      "key": "what-s-new-1-10",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.10",
+      "url": "/What's-New-1.10/",
+      "content_chars": 3595,
+      "content_words": 490,
+      "content_sha256": "68d086103e7b360c3578197e0317ded1e301bf03f9947b7cd4329ffa08700575"
+    },
+    {
+      "key": "what-s-new-1-11",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.11",
+      "url": "/What's-New-1.11/",
+      "content_chars": 4994,
+      "content_words": 690,
+      "content_sha256": "ae1434f7e1ac2d81d96016630d873d25a23f3fb44aceb6adaabc34422c8ef195"
+    },
+    {
+      "key": "what-s-new-1-12",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.12",
+      "url": "/What's-New-1.12/",
+      "content_chars": 533,
+      "content_words": 93,
+      "content_sha256": "bc2f0b660ee1e610e5bc6938d4cafd911299850e8b22f94af3cfc68cefd81611"
+    },
+    {
+      "key": "what-s-new-1-13",
+      "lang": "root",
+      "category": "new-draft",
+      "title": "Typora 1.13",
+      "url": "/What's-New-1.13/",
+      "content_chars": 2374,
+      "content_words": 342,
+      "content_sha256": "0483b1c379d9fffe27d94e30751f27fe36ead90934a53a2603015c86af9a56fb"
+    },
+    {
+      "key": "what-s-new-1-2",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.2",
+      "url": "/What's-New-1.2/",
+      "content_chars": 3935,
+      "content_words": 587,
+      "content_sha256": "e2891b9c870f0ef966d3f2eadaaa5f17dae8d3ae30722377eda04407d4c70429"
+    },
+    {
+      "key": "what-s-new-1-3",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.3",
+      "url": "/What's-New-1.3/",
+      "content_chars": 5532,
+      "content_words": 908,
+      "content_sha256": "7433bfe8ef506b3d3cea18a23f228285031844fae97f095ae5ccc57b48347be7"
+    },
+    {
+      "key": "what-s-new-1-4",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.4",
+      "url": "/What's-New-1.4/",
+      "content_chars": 4453,
+      "content_words": 616,
+      "content_sha256": "cc46296d4b6115eff66538493f5e044e4f15b1b45567c72fbf0fb728b996f7eb"
+    },
+    {
+      "key": "what-s-new-1-5",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.5",
+      "url": "/What's-New-1.5/",
+      "content_chars": 4003,
+      "content_words": 584,
+      "content_sha256": "c2d4a2131889540787124834b43dd37910d9bc7eee2cf0331c4608238eab6a1b"
+    },
+    {
+      "key": "what-s-new-1-6",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.6",
+      "url": "/What's-New-1.6/",
+      "content_chars": 3586,
+      "content_words": 525,
+      "content_sha256": "6e6e0aa87fe488adf10fa0fae2d2c9dc4474dd5683a3f8725391b7d247c00d2e"
+    },
+    {
+      "key": "what-s-new-1-7",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.7",
+      "url": "/What's-New-1.7/",
+      "content_chars": 3382,
+      "content_words": 485,
+      "content_sha256": "b7cc071202e2995b8c23cfcf0f1f9e417d33b3cb8a253c34325591e276f04e23"
+    },
+    {
+      "key": "what-s-new-1-8",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.8",
+      "url": "/What's-New-1.8/",
+      "content_chars": 3652,
+      "content_words": 531,
+      "content_sha256": "12d5096ac4d60fd31f1d4349eddfd67710b84ed9e177f1e17436f23ebfdf5506"
+    },
+    {
+      "key": "what-s-new-1-9",
+      "lang": "root",
+      "category": "new",
+      "title": "Typora 1.9",
+      "url": "/What's-New-1.9/",
+      "content_chars": 2666,
+      "content_words": 422,
+      "content_sha256": "97f10f9d3576f8f3d18d0636820156abc1b6bc9798efd57bc7aa2ea3cbbf1100"
+    },
+    {
+      "key": "width-of-writing-area",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Change Width of Writing Area",
+      "url": "/Width-of-Writing-Area/",
+      "content_chars": 557,
+      "content_words": 76,
+      "content_sha256": "b366e93aa9e7bee70fd072fcce144e1e83ceff07cc719d319c8defeed1cad8bb"
+    },
+    {
+      "key": "word-count",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Word Count",
+      "url": "/Word-Count/",
+      "content_chars": 1274,
+      "content_words": 217,
+      "content_sha256": "ac6216e09b839b3aaec97944a7b5926d2a1d25738b5dca9be259d8fa59ed5a5b"
+    },
+    {
+      "key": "yaml",
+      "lang": "root",
+      "category": "how-to",
+      "title": "YAML Front Matter",
+      "url": "/YAML/",
+      "content_chars": 6227,
+      "content_words": 841,
+      "content_sha256": "d95ddf7644862cda77e9d3bef1465ba3afefdd99aed8162e0c1bd9ab6fba9b06"
+    },
+    {
+      "key": "zoom",
+      "lang": "root",
+      "category": "how-to",
+      "title": "Zoom",
+      "url": "/Zoom/",
+      "content_chars": 855,
+      "content_words": 153,
+      "content_sha256": "829ef071c1bf0e14cdc094f3346451f9689c6bac9cdd66a8c49c45d7ded20fb8"
+    },
+    {
+      "key": "activation",
+      "lang": "root",
+      "category": "purchase",
+      "title": "Activate Typora",
+      "url": "/activation/",
+      "content_chars": 11297,
+      "content_words": 1786,
+      "content_sha256": "f23761722fe5ef44c899c8312005be148da6e575a783f34b14fd39847c8af69c"
+    },
+    {
+      "key": "ja-about-themes",
+      "lang": "ja",
+      "category": "",
+      "title": "テーマについて",
+      "url": "/ja/About-Themes/",
+      "content_chars": 1719,
+      "content_words": 127,
+      "content_sha256": "ca9f16ec8ca4b2fabd0078ca5ce29f7173a8dc7e49e2dff4958908e014e172b2"
+    },
+    {
+      "key": "ja-add-custom-css",
+      "lang": "ja",
+      "category": "",
+      "title": "カスタム CSS を追加する",
+      "url": "/ja/Add-Custom-CSS/",
+      "content_chars": 1639,
+      "content_words": 128,
+      "content_sha256": "103f0e77fafc923796b1473ee852c1d10a032122bc31310003960eddc160110f"
+    },
+    {
+      "key": "ja-code-block-styles",
+      "lang": "ja",
+      "category": "",
+      "title": "コードブロックのスタイル/テーマ",
+      "url": "/ja/Code-Block-Styles/",
+      "content_chars": 3436,
+      "content_words": 359,
+      "content_sha256": "ca24f84ce921b73d3bbf37fcac725a00d62213001450c41f991bd99b0c87d07b"
+    },
+    {
+      "key": "ja-code-fences-language-support",
+      "lang": "ja",
+      "category": "",
+      "title": "コードフェンスのサポート言語",
+      "url": "/ja/Code-Fences-Language-Support/",
+      "content_chars": 2179,
+      "content_words": 231,
+      "content_sha256": "6544edb0b75e188d1e8e7a895efd21c1e5b6476363cd2d89fda156924cdef09e"
+    },
+    {
+      "key": "ja-custom-font",
+      "lang": "ja",
+      "category": "",
+      "title": "カスタムフォント",
+      "url": "/ja/Custom-Font/",
+      "content_chars": 1706,
+      "content_words": 143,
+      "content_sha256": "709f9e556c08773c64e5407d7f50c7a6bb440e2f88d8a59fab61d010646fac08"
+    },
+    {
+      "key": "ja-resize-image",
+      "lang": "ja",
+      "category": "",
+      "title": "画像のサイズを変更する",
+      "url": "/ja/Resize-Image/",
+      "content_chars": 735,
+      "content_words": 54,
+      "content_sha256": "380b31c8ea654aafff6cdbd0e50a7254e2dfa03b8a33ee0d42978bb133bc9232"
+    },
+    {
+      "key": "ja-typeset",
+      "lang": "ja",
+      "category": "",
+      "title": "CSS による組版",
+      "url": "/ja/Typeset/",
+      "content_chars": 4262,
+      "content_words": 298,
+      "content_sha256": "4ca1d2465764ce22555cf8ff5fb839599a70783cf35ed280781ba2bce8a97995"
+    },
+    {
+      "key": "purchase",
+      "lang": "root",
+      "category": "purchase",
+      "title": "Purchase Typora",
+      "url": "/purchase/",
+      "content_chars": 8619,
+      "content_words": 1352,
+      "content_sha256": "76bcb4d73733d218d4803ff047f90463b68c0da033d94e913270e7a1960ab39e"
+    },
+    {
+      "key": "zh-install-and-use-vlook",
+      "lang": "zh",
+      "category": "",
+      "title": "安装与使用 VLOOK",
+      "url": "/zh/Install-and-Use-VLOOK/",
+      "content_chars": 1625,
+      "content_words": 195,
+      "content_sha256": "4e2ac0f34339ae0149dcab7f174d32b4f53b989835f6abd074501812cb3da777"
+    },
+    {
+      "key": "zh-markdown-reference",
+      "lang": "zh",
+      "category": "",
+      "title": "Typora 的 Markdown 语法",
+      "url": "/zh/Markdown-Reference/",
+      "content_chars": 7083,
+      "content_words": 727,
+      "content_sha256": "aed6eabe60f82029fe9283bb8add1160a4ec4676a56ae4ab1b5cd29ab5624e89"
+    },
+    {
+      "key": "zh-what-s-new-1-0",
+      "lang": "zh",
+      "category": "",
+      "title": "Typora 1.0 更新",
+      "url": "/zh/What's-New-1.0/",
+      "content_chars": 2225,
+      "content_words": 87,
+      "content_sha256": "7bcc5b2279270d9c0072448f1bb037a0b5ffd83a0090d78ed914c04511927bd4"
+    },
+    {
+      "key": "zh-what-s-new-1-1",
+      "lang": "zh",
+      "category": "",
+      "title": "Typora 1.1 更新",
+      "url": "/zh/What's-New-1.1/",
+      "content_chars": 2365,
+      "content_words": 148,
+      "content_sha256": "661916a842fcee5c3b2c11f2fde10527128524501750b75e3ece48855adfd30f"
+    }
+  ]
+}
