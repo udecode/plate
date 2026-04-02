@@ -117,11 +117,19 @@ const Heading = ({
   style: styleProp,
   ...props
 }: React.ComponentProps<'h1'> & { showSelectedHeadings: boolean }) => {
-  const selected = showSelectedHeadings ? useSelected() : false;
-  const style = { ...styleProp, color: selected ? 'green' : undefined };
+  const selected = useSelected();
+  const highlightSelected = showSelectedHeadings && selected;
+  const style = {
+    ...styleProp,
+    color: highlightSelected ? 'green' : undefined,
+  };
 
   return (
-    <h1 {...props} data-selected={selected ? '' : undefined} style={style} />
+    <h1
+      {...props}
+      data-selected={highlightSelected ? '' : undefined}
+      style={style}
+    />
   );
 };
 
@@ -256,6 +264,7 @@ function EnginePane({
     const apply = editor.apply;
     let afterOperation = false;
 
+    // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally monkeypatches editor.apply to measure long animation frames
     editor.apply = (operation) => {
       apply(operation);
       afterOperation = true;

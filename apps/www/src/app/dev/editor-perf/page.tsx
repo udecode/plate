@@ -6,7 +6,6 @@ import {
   Provider as JotaiProvider,
   atom as createJotaiAtom,
   useAtomValue,
-  useSetAtom,
 } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
 import { createStore as createJotaiStore } from 'jotai/vanilla';
@@ -528,12 +527,12 @@ function BenchFirstBlockEffect() {
   const composing = useComposing();
   const readOnly = useReadOnly();
 
-  editor.dom.readOnly = readOnly;
-  editor.dom.composing = composing;
-
   React.useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/immutability -- Benchmark helper intentionally syncs editor.dom flags to mirror PlateContent behavior
+    editor.dom.readOnly = readOnly;
+    editor.dom.composing = composing;
     store.set('composing', composing);
-  }, [composing, store]);
+  }, [composing, editor, readOnly, store]);
 
   return null;
 }
@@ -570,10 +569,17 @@ function BenchJotaiStoreProvider({
   entry,
   path,
 }: React.PropsWithChildren<BenchElementStoreState>) {
-  const [store] = React.useState(() => createJotaiStore());
-  const hydratedStoreRef = React.useRef<typeof store | null>(null);
+  const [store] = React.useState(() => {
+    const nextStore = createJotaiStore();
 
-  if (hydratedStoreRef.current !== store) {
+    nextStore.set(benchJotaiElementAtom, element);
+    nextStore.set(benchJotaiEntryAtom, entry);
+    nextStore.set(benchJotaiPathAtom, path);
+
+    return nextStore;
+  });
+
+  React.useLayoutEffect(() => {
     if (store.get(benchJotaiElementAtom) !== element) {
       store.set(benchJotaiElementAtom, element);
     }
@@ -583,9 +589,7 @@ function BenchJotaiStoreProvider({
     if (store.get(benchJotaiPathAtom) !== path) {
       store.set(benchJotaiPathAtom, path);
     }
-
-    hydratedStoreRef.current = store;
-  }
+  }, [element, entry, path, store]);
 
   return <JotaiProvider store={store}>{children}</JotaiProvider>;
 }
@@ -618,40 +622,40 @@ function BenchHydrateOnlyAtoms({
 function BenchHydrateSyncAtoms({
   atoms,
   children,
+  element,
+  entry,
+  path,
   store,
-  ...props
 }: React.PropsWithChildren<
   BenchElementStoreState & {
     atoms: typeof benchJotaiAtoms;
     store: ReturnType<typeof createJotaiStore>;
   }
 >) {
-  const hydrateValues: any[] = [];
+  const hydrateValues = React.useMemo(() => {
+    const values: any[] = [];
+    const state = { element, entry, path };
 
-  for (const key of Object.keys(atoms) as Array<keyof typeof atoms>) {
-    const value = props[key];
+    for (const key of Object.keys(atoms) as Array<keyof typeof atoms>) {
+      const value = state[key];
 
-    if (value !== undefined) {
-      hydrateValues.push([atoms[key], value]);
+      if (value !== undefined) {
+        values.push([atoms[key], value]);
+      }
     }
-  }
+
+    return values;
+  }, [atoms, element, entry, path]);
 
   useHydrateAtoms(hydrateValues, { store });
 
-  for (const key of Object.keys(atoms) as Array<keyof typeof atoms>) {
-    const value = props[key];
-    const atom = atoms[key];
-
-    // eslint-disable-next-line react-compiler/react-compiler
-    const set = useSetAtom(atom as any, { store });
-
-    // eslint-disable-next-line react-compiler/react-compiler
-    React.useEffect(() => {
+  React.useLayoutEffect(() => {
+    for (const [atom, value] of hydrateValues) {
       if (value !== undefined && value !== null) {
-        set(value as any);
+        store.set(atom as any, value as any);
       }
-    }, [set, value]);
-  }
+    }
+  }, [hydrateValues, store]);
 
   return <>{children}</>;
 }
@@ -718,9 +722,8 @@ function BenchZustandStoreProvider({
       }
     )
   );
-  const hydratedStoreRef = React.useRef<typeof store | null>(null);
 
-  if (hydratedStoreRef.current !== store) {
+  React.useLayoutEffect(() => {
     const state = store.get('state');
 
     if (
@@ -730,9 +733,7 @@ function BenchZustandStoreProvider({
     ) {
       store.set('state', { element, entry, path });
     }
-
-    hydratedStoreRef.current = store;
-  }
+  }, [element, entry, path, store]);
 
   return (
     <BenchZustandContext.Provider value={store}>
@@ -3622,7 +3623,7 @@ function BenchmarkEditableMount({
         </PlateElement>
       );
     };
-  }, [editor, elementBenchmarkMode, pathMap]);
+  }, [editor, elementBenchmarkMode, pathMap, renderElement]);
   const precomputedElementRender = React.useMemo(() => {
     if (
       !precomputedElementPluginPath ||
@@ -4755,7 +4756,7 @@ export default function EditorPerfPage() {
         scenario: activeScenario,
         workloadId: config.scenarioWorkload,
       }),
-    [activeScenario, config.blocks, config.scenarioWorkload, mountVersion]
+    [activeScenario, config.blocks, config.scenarioWorkload]
   );
   const exportData = React.useMemo(
     () => ({
