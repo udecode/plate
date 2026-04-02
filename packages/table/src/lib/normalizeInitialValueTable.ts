@@ -1,12 +1,13 @@
-import type { NormalizeInitialValue, TTableElement } from 'platejs';
+import type { TTableElement, TransformInitialValue } from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 
 import { computeCellIndices } from './utils';
 
-export const normalizeInitialValueTable: NormalizeInitialValue<TableConfig> = ({
+export const normalizeInitialValueTable: TransformInitialValue<TableConfig> = ({
   editor,
   type,
+  value,
 }) => {
   const tables = editor.api.nodes<TTableElement>({
     at: [],
@@ -18,4 +19,6 @@ export const normalizeInitialValueTable: NormalizeInitialValue<TableConfig> = ({
       tableNode: table,
     });
   }
+
+  return value;
 };

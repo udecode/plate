@@ -4520,18 +4520,14 @@
       ]
     },
     {
-      "name": "hundreds-blocks-demo",
+      "name": "huge-document-demo",
       "type": "registry:example",
       "dependencies": [
-        "@platejs/basic-nodes",
-        "@platejs/basic-nodes"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/editor.json"
+        "@faker-js/faker"
       ],
       "files": [
         {
-          "path": "src/registry/examples/hundreds-blocks-demo.tsx",
+          "path": "src/registry/examples/huge-document-demo.tsx",
           "type": "registry:example"
         },
         {
@@ -4839,7 +4835,6 @@
         "https://platejs.org/r/examples-collaboration-example-docs",
         "https://platejs.org/r/examples-editable-voids-docs",
         "https://platejs.org/r/examples-export-docs",
-        "https://platejs.org/r/examples-hundreds-blocks-docs",
         "https://platejs.org/r/examples-hundreds-editors-docs",
         "https://platejs.org/r/examples-preview-markdown-docs",
         "https://platejs.org/r/examples-version-history-docs",
@@ -6283,19 +6278,6 @@
       ],
       "name": "examples-export-docs",
       "title": "Export",
-      "type": "registry:file"
-    },
-    {
-      "description": "Documentation for Hundreds Blocks",
-      "files": [
-        {
-          "path": "../../docs/examples/hundreds-blocks.mdx",
-          "target": "content/docs/plate/examples/hundreds-blocks.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "examples-hundreds-blocks-docs",
-      "title": "Hundreds Blocks",
       "type": "registry:file"
     },
     {

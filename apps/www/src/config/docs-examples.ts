@@ -39,10 +39,11 @@ export const docsExamples: SidebarNavItem[] = [
     titleCn: '可编辑的空节点',
   },
   {
-    description: 'Rendering hundreds of blocks.',
-    href: '/docs/examples/hundreds-blocks',
-    title: 'Hundreds Blocks',
-    titleCn: '数百个块',
+    description:
+      'Slate huge-document controls with isolated Plate and Slate panes.',
+    href: '/docs/examples/huge-document',
+    title: 'Huge Document',
+    titleCn: '大型文档',
   },
   {
     description: 'Render hundreds of editors.',

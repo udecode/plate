@@ -1,42 +1,66 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-import type { Descendant, Value } from 'platejs';
+import { faker } from '@faker-js/faker';
+import type { Value } from 'platejs';
 
-import { jsx } from '@platejs/test-utils';
+import { DEFAULT_HUGE_DOCUMENT_BLOCKS } from '@/lib/huge-document-config';
 
-jsx;
+type HugeDocumentBlock = {
+  text: string;
+  type: 'heading-one' | 'paragraph';
+};
 
-const HEADINGS = 300;
-const PARAGRAPHS = 10;
+type HugeDocumentEngine = 'plate' | 'slate';
 
-export const createHugeDocumentValue = () => {
-  const hugeDocument: Descendant[] = [];
+const HEADING_INTERVAL = 100;
+const cachedHugeDocumentBlocks: HugeDocumentBlock[] = [];
 
-  for (let h = 0; h < HEADINGS; h++) {
-    hugeDocument.push(
-      (
-        <hh1>Do voluptate enim commodo quis ad aliqua dolore enim eu nisi.</hh1>
-      ) as any
-    );
+const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
+  blocks.map(({ text, type }) => ({
+    children: [{ text }],
+    type: type === 'heading-one' ? 'h1' : 'p',
+  })) as Value;
 
-    for (let p = 0; p < PARAGRAPHS; p++) {
-      hugeDocument.push(
-        (
-          <hp>
-            Ex est consequat anim ad deserunt sint. Ea excepteur consequat amet
-            amet excepteur culpa nulla. Voluptate exercitation pariatur enim.
-            Excepteur ea nulla nostrud est ex sunt anim. Sunt laborum et et ea
-            aliquip excepteur sint nulla amet. Sunt sit cillum amet. Anim esse
-            ut irure ipsum irure proident consectetur eu velit esse. Laborum
-            minim laborum laborum sunt eiusmod aliqua fugiat adipisicing. Cillum
-            aliqua exercitation ex aliquip aliquip amet aliquip est eiusmod
-            tempor pariatur veniam adipisicing ad. Officia sunt ipsum
-            adipisicing eu quis laborum do cupidatat officia dolor.
-          </hp>
-        ) as any
-      );
+const toSlateValue = (blocks: HugeDocumentBlock[]): Value =>
+  blocks.map(({ text, type }) => ({
+    children: [{ text }],
+    type,
+  })) as Value;
+
+export const getHugeDocumentBlocks = (
+  blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS
+): HugeDocumentBlock[] => {
+  if (cachedHugeDocumentBlocks.length >= blocks) {
+    return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
+  }
+
+  faker.seed(1);
+
+  for (let index = cachedHugeDocumentBlocks.length; index < blocks; index++) {
+    if (index % HEADING_INTERVAL === 0) {
+      cachedHugeDocumentBlocks.push({
+        text: faker.lorem.sentence(),
+        type: 'heading-one',
+      });
+    } else {
+      cachedHugeDocumentBlocks.push({
+        text: faker.lorem.paragraph(),
+        type: 'paragraph',
+      });
     }
   }
 
-  return hugeDocument as Value;
+  return structuredClone(cachedHugeDocumentBlocks.slice(0, blocks));
+};
+
+export const createHugeDocumentValue = ({
+  blocks = DEFAULT_HUGE_DOCUMENT_BLOCKS,
+  engine = 'plate',
+}: {
+  blocks?: number;
+  engine?: HugeDocumentEngine;
+} = {}): Value => {
+  const hugeDocumentBlocks = getHugeDocumentBlocks(blocks);
+
+  return engine === 'slate'
+    ? toSlateValue(hugeDocumentBlocks)
+    : toPlateValue(hugeDocumentBlocks);
 };

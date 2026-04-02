@@ -30,6 +30,7 @@ export type WithPlateOptions<
     | 'extendEditor'
     | 'handlers'
     | 'inject'
+    | 'transformInitialValue'
     | 'normalizeInitialValue'
     | 'options'
     | 'override'

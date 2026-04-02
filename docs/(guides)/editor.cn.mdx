@@ -149,9 +149,9 @@ const editor = usePlateEditor({
     // 设置为true可使ID在这些操作中保持稳定
     reuseId: false,
 
-    // 规范化初始值中的所有节点（默认：false - 仅检查首尾）
-    // 设置为true确保所有初始节点在缺失时获取ID
-    normalizeInitialValue: false, 
+    // 控制初始值中的 ID 分配（默认：'if-needed'）
+    // 使用 'always' 为初始值中的所有缺失 ID 补齐
+    initialValueIds: 'always',
     
     // 禁止覆盖插入节点的现有ID（默认：false）
     disableInsertOverrides: false,

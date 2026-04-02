@@ -230,9 +230,13 @@ export type NodeWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
 > = React.FC<PlateElementProps<TElement, C>> | undefined;
 
-export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
+export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
-) => void;
+) => Value;
+
+/** @deprecated Use {@link TransformInitialValue} instead. */
+export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> =
+  TransformInitialValue<C>;
 
 // -----------------------------------------------------------------------------
 
@@ -345,7 +349,10 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       decorate?: Decorate<WithAnyKey<C>>;
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      /** Transform the initial value before the editor is ready. */
+      transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
       /** Normalize initial value before passing it into the editor. */
+      /** @deprecated Use `transformInitialValue` instead. */
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
       /** @see {@link UseHooks} */
       useHooks?: UseHooks<WithAnyKey<C>>;

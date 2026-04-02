@@ -3,6 +3,7 @@ import {
   type SlateEditor,
   type TElement,
   type TRange,
+  type TTableCellElement,
   type TTableElement,
   KEYS,
   NodeApi,
@@ -10,6 +11,19 @@ import {
 
 import { type TableConfig, BaseTablePlugin } from '../../lib/BaseTablePlugin';
 import { getTableMergeGridByRange } from '../merge/getTableGridByRange';
+import { getColSpan } from './getColSpan';
+import { getRowSpan } from './getRowSpan';
+
+const hasMergedCells = (table?: TTableElement) =>
+  !!table?.children.some((row) =>
+    (row as TElement & { children: TTableCellElement[] }).children.some(
+      (cell: TTableCellElement) => {
+        const tableCell = cell as TTableCellElement;
+
+        return getColSpan(tableCell) > 1 || getRowSpan(tableCell) > 1;
+      }
+    )
+  );
 
 export type GetTableGridByRangeOptions = {
   at: TRange;
@@ -30,13 +44,14 @@ export const getTableGridByRange = (
 ): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
   const { disableMerge } = editor.getOptions(BaseTablePlugin);
-
-  if (!disableMerge) {
-    return getTableMergeGridByRange(editor, { at, format });
-  }
-
   const startCellPath = at.anchor.path;
   const endCellPath = at.focus.path;
+  const tablePath = startCellPath.slice(0, -2);
+  const tableNode = NodeApi.get<TTableElement>(editor, tablePath);
+
+  if (!disableMerge && hasMergedCells(tableNode)) {
+    return getTableMergeGridByRange(editor, { at, format });
+  }
 
   const _startRowIndex = startCellPath.at(-2)!;
   const _endRowIndex = endCellPath.at(-2)!;
@@ -47,8 +62,6 @@ export const getTableGridByRange = (
   const endRowIndex = Math.max(_startRowIndex, _endRowIndex);
   const startColIndex = Math.min(_startColIndex, _endColIndex);
   const endColIndex = Math.max(_startColIndex, _endColIndex);
-
-  const tablePath = startCellPath.slice(0, -2);
 
   const relativeRowIndex = endRowIndex - startRowIndex;
   const relativeColIndex = endColIndex - startColIndex;

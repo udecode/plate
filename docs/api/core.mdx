@@ -64,11 +64,18 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
         Property key used to store node IDs.
         - **Default:** `'id'`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean" optional>
-        Whether to normalize all nodes in initial value.
-        - When `false`: Only checks first and last nodes
-        - When `true`: Normalizes all nodes
-        - **Default:** `false`
+      <APISubListItem parent="nodeId" name="initialValueIds" type="false | 'always' | 'if-needed'" optional>
+        Controls how missing IDs are assigned in the initial value.
+        - When `'if-needed'`: Only checks the first and last top-level nodes
+        - When `'always'`: Walks the whole initial value and fills missing IDs
+        - When `false`: Skips initial-value ID assignment
+        - **Default:** `'if-needed'`
+      </APISubListItem>
+      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean | null" optional>
+        Deprecated alias for `initialValueIds`.
+        - When `false`: Same as `'if-needed'`
+        - When `true`: Same as `'always'`
+        - When `null`: Same as `false`
       </APISubListItem>
       <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
         Reuse IDs on undo/redo and copy/paste.
@@ -130,8 +137,12 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="inject" type="object" optional>
     Injection configuration for the editor.
   </APIItem>
+  <APIItem name="transformInitialValue" type="function" optional>
+    Function to transform the initial value before the editor is ready.
+  </APIItem>
   <APIItem name="normalizeInitialValue" type="function" optional>
-    Function to normalize the initial value.
+    Deprecated alias for `transformInitialValue`. Legacy hooks may either
+    mutate `value` in place or return the next value.
   </APIItem>
   <APIItem name="options" type="object" optional>
     Additional options for the editor.

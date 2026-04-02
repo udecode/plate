@@ -24,6 +24,6 @@
     "prebuild": { "outputs": [] },
     "test": { "outputs": [], "cache": false },
     "typecheck": { "dependsOn": ["^build"], "outputs": [], "cache": true },
-    "www#typecheck": { "dependsOn": [], "outputs": [] }
+    "www#typecheck": { "dependsOn": ["^build"], "outputs": [] }
   }
 }

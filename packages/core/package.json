@@ -56,7 +56,7 @@
     "is-hotkey": "^0.2.0",
     "jotai": "~2.8.4",
     "jotai-optics": "0.4.0",
-    "jotai-x": "2.3.3",
+    "jotai-x": "2.3.4",
     "lodash": "^4.17.21",
     "nanoid": "^5.1.5",
     "optics-ts": "2.4.1",

@@ -3,6 +3,7 @@
 import {
   Profiler,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useRef,
@@ -70,6 +71,42 @@ type SelectionSimulationConfig = {
   cols: number;
   delayMs: number;
   rows: number;
+};
+
+type TablePerfHarnessBenchmark = 'input' | 'mount' | 'selection';
+
+type TablePerfHarnessConfig = {
+  cols: number;
+  rows: number;
+  selectionCols?: number;
+  selectionDelayMs?: number;
+  selectionRows?: number;
+};
+
+type TablePerfHarnessSnapshot = {
+  benchmarkResult: BenchmarkResult | null;
+  config: TableConfig;
+  inputLatencyResult: LatencyResult | null;
+  metrics: Metrics;
+  selectionLatencyResult: SelectionLatencyResult | null;
+  selectionSimulation: SelectionSimulationConfig;
+};
+
+type TablePerfRunnerHarness = {
+  configure: (
+    config: TablePerfHarnessConfig
+  ) => Promise<TablePerfHarnessSnapshot>;
+  readSnapshot: () => TablePerfHarnessSnapshot;
+  runBenchmark: (
+    benchmark: TablePerfHarnessBenchmark
+  ) => Promise<TablePerfHarnessSnapshot>;
+};
+
+const EMPTY_METRICS: Metrics = {
+  initialRender: null,
+  lastRenderDuration: null,
+  renderCount: 0,
+  renderDurations: [],
 };
 
 // Presets for O(n²) analysis
@@ -385,12 +422,7 @@ function MetricsDisplay({
 export default function TablePerfPage() {
   const [config, setConfig] = useState<TableConfig>({ cols: 10, rows: 10 });
   const [editorKey, setEditorKey] = useState(0);
-  const [metrics, setMetrics] = useState<Metrics>({
-    initialRender: null,
-    lastRenderDuration: null,
-    renderCount: 0,
-    renderDurations: [],
-  });
+  const [metrics, setMetrics] = useState<Metrics>(EMPTY_METRICS);
   const [benchmarkResult, setBenchmarkResult] =
     useState<BenchmarkResult | null>(null);
   const [isBenchmarking, setIsBenchmarking] = useState(false);
@@ -408,6 +440,11 @@ export default function TablePerfPage() {
   const [isMeasuringSelection, setIsMeasuringSelection] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const plateEditorRef = useRef<PlateEditor | null>(null);
+  const benchmarkResultRef = useRef<BenchmarkResult | null>(null);
+  const inputLatencyResultRef = useRef<LatencyResult | null>(null);
+  const metricsRef = useRef<Metrics>(EMPTY_METRICS);
+  const mountResolveRef = useRef<(() => void) | null>(null);
+  const selectionLatencyResultRef = useRef<SelectionLatencyResult | null>(null);
 
   // Generate initial table value
   const tableValue = generateTableValue(config.rows, config.cols);
@@ -421,15 +458,68 @@ export default function TablePerfPage() {
     lastRenderDuration: number | null;
     renderCount: number;
     renderDurations: number[];
-  }>({
-    initialRender: null,
-    lastRenderDuration: null,
-    renderCount: 0,
-    renderDurations: [],
-  });
+  }>({ ...EMPTY_METRICS });
 
   // Track if we should update metrics (only after user actions)
   const shouldUpdateMetricsRef = useRef(true);
+
+  useEffect(() => {
+    metricsRef.current = metrics;
+  }, [metrics]);
+
+  useEffect(() => {
+    benchmarkResultRef.current = benchmarkResult;
+  }, [benchmarkResult]);
+
+  useEffect(() => {
+    inputLatencyResultRef.current = inputLatencyResult;
+  }, [inputLatencyResult]);
+
+  useEffect(() => {
+    selectionLatencyResultRef.current = selectionLatencyResult;
+  }, [selectionLatencyResult]);
+
+  const resetMeasurements = useCallback(() => {
+    profilerDataRef.current = { ...EMPTY_METRICS };
+    metricsRef.current = EMPTY_METRICS;
+    benchmarkResultRef.current = null;
+    inputLatencyResultRef.current = null;
+    selectionLatencyResultRef.current = null;
+    setMetrics(EMPTY_METRICS);
+    setBenchmarkResult(null);
+    setInputLatencyResult(null);
+    setSelectionLatencyResult(null);
+    shouldUpdateMetricsRef.current = true;
+  }, []);
+
+  const readRunnerSnapshot = useCallback(
+    (): TablePerfHarnessSnapshot => ({
+      benchmarkResult: benchmarkResultRef.current,
+      config,
+      inputLatencyResult: inputLatencyResultRef.current,
+      metrics: metricsRef.current,
+      selectionLatencyResult: selectionLatencyResultRef.current,
+      selectionSimulation,
+    }),
+    [config, selectionSimulation]
+  );
+
+  const waitForEditorMount = useCallback(async (timeoutMs = 10_000) => {
+    await new Promise<void>((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        if (mountResolveRef.current) {
+          mountResolveRef.current = null;
+          reject(new Error('Table perf editor mount timed out'));
+        }
+      }, timeoutMs);
+
+      mountResolveRef.current = () => {
+        mountResolveRef.current = null;
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+    });
+  }, []);
 
   const onRenderCallback: ProfilerOnRenderCallback = useCallback(
     (id, phase, actualDuration, baseDuration) => {
@@ -444,6 +534,7 @@ export default function TablePerfPage() {
 
       if (phase === 'mount') {
         profilerDataRef.current.initialRender = actualDuration;
+        mountResolveRef.current?.();
       }
 
       // Only sync to state if triggered by user action (not by metrics update)
@@ -458,25 +549,9 @@ export default function TablePerfPage() {
   );
 
   const handleGenerate = useCallback(() => {
-    // Reset metrics and force editor remount
-    profilerDataRef.current = {
-      initialRender: null,
-      lastRenderDuration: null,
-      renderCount: 0,
-      renderDurations: [],
-    };
-    setMetrics({
-      initialRender: null,
-      lastRenderDuration: null,
-      renderCount: 0,
-      renderDurations: [],
-    });
-    setBenchmarkResult(null);
-    setInputLatencyResult(null);
-    setSelectionLatencyResult(null);
-    shouldUpdateMetricsRef.current = true; // Allow metrics update
+    resetMeasurements();
     setEditorKey((k) => k + 1);
-  }, []);
+  }, [resetMeasurements]);
 
   const handlePreset = useCallback((preset: (typeof PRESETS)[number]) => {
     setConfig({ cols: preset.cols, rows: preset.rows });
@@ -486,6 +561,58 @@ export default function TablePerfPage() {
       rows: Math.min(current.rows, preset.rows),
     }));
   }, []);
+
+  const configureRunner = useCallback(
+    async ({
+      cols,
+      rows,
+      selectionCols,
+      selectionDelayMs,
+      selectionRows,
+    }: TablePerfHarnessConfig) => {
+      const nextCols = Math.max(1, Math.min(100, cols));
+      const nextRows = Math.max(1, Math.min(100, rows));
+      const nextSelectionCols = Math.max(
+        1,
+        Math.min(nextCols, selectionCols ?? nextCols)
+      );
+      const nextSelectionRows = Math.max(
+        1,
+        Math.min(nextRows, selectionRows ?? nextRows)
+      );
+      const nextSelectionDelayMs = Math.max(
+        0,
+        Math.min(2000, selectionDelayMs ?? 0)
+      );
+
+      resetMeasurements();
+      setConfig({ cols: nextCols, rows: nextRows });
+      setSelectionSimulation({
+        cols: nextSelectionCols,
+        delayMs: nextSelectionDelayMs,
+        rows: nextSelectionRows,
+      });
+      setEditorKey((current) => current + 1);
+
+      await waitForEditorMount();
+      await waitForNextPaint();
+      await wait(50);
+
+      return {
+        benchmarkResult: null,
+        config: { cols: nextCols, rows: nextRows },
+        inputLatencyResult: null,
+        metrics: metricsRef.current,
+        selectionLatencyResult: null,
+        selectionSimulation: {
+          cols: nextSelectionCols,
+          delayMs: nextSelectionDelayMs,
+          rows: nextSelectionRows,
+        },
+      } satisfies TablePerfHarnessSnapshot;
+    },
+    [resetMeasurements, waitForEditorMount]
+  );
 
   const focusEditor = useCallback(async () => {
     const editorElement = editorRef.current?.querySelector('[contenteditable]');
@@ -521,130 +648,134 @@ export default function TablePerfPage() {
     [config.cols, config.rows]
   );
 
-  const runBenchmark = useCallback(async () => {
-    setIsBenchmarking(true);
-    setBenchmarkResult(null);
+  const runBenchmark =
+    useCallback(async (): Promise<BenchmarkResult | null> => {
+      setIsBenchmarking(true);
+      setBenchmarkResult(null);
 
-    const WARMUP_RUNS = 5;
-    const MEASURED_RUNS = 20;
-    const COOLDOWN_MS = 100;
-    const renderTimes: number[] = [];
+      const WARMUP_RUNS = 5;
+      const MEASURED_RUNS = 20;
+      const COOLDOWN_MS = 100;
+      const renderTimes: number[] = [];
 
-    console.log('[Benchmark] Starting benchmark...');
-    console.log(`[Benchmark] Config: ${config.rows}x${config.cols} cells`);
-    console.log(
-      `[Benchmark] ${WARMUP_RUNS} warmup runs, ${MEASURED_RUNS} measured runs`
-    );
+      console.log('[Benchmark] Starting benchmark...');
+      console.log(`[Benchmark] Config: ${config.rows}x${config.cols} cells`);
+      console.log(
+        `[Benchmark] ${WARMUP_RUNS} warmup runs, ${MEASURED_RUNS} measured runs`
+      );
 
-    for (let i = 0; i < WARMUP_RUNS + MEASURED_RUNS; i++) {
-      const isWarmup = i < WARMUP_RUNS;
+      for (let i = 0; i < WARMUP_RUNS + MEASURED_RUNS; i++) {
+        const isWarmup = i < WARMUP_RUNS;
 
-      // Reset profiler data ref
-      profilerDataRef.current = {
-        initialRender: null,
-        lastRenderDuration: null,
-        renderCount: 0,
-        renderDurations: [],
-      };
+        // Reset profiler data ref
+        profilerDataRef.current = {
+          initialRender: null,
+          lastRenderDuration: null,
+          renderCount: 0,
+          renderDurations: [],
+        };
 
-      // Force remount
-      setEditorKey((k) => k + 1);
+        // Force remount
+        setEditorKey((k) => k + 1);
 
-      // Wait for render to complete
-      await waitForNextPaint();
+        // Wait for render to complete
+        await waitForNextPaint();
 
-      // Small delay to ensure state is updated
-      await wait(50);
+        // Small delay to ensure state is updated
+        await wait(50);
 
-      const initialRender = profilerDataRef.current.initialRender;
+        const initialRender = profilerDataRef.current.initialRender;
 
-      if (initialRender !== null && !isWarmup) {
-        renderTimes.push(initialRender);
-        console.log(
-          `[Benchmark] Run ${i - WARMUP_RUNS + 1}/${MEASURED_RUNS}: ${initialRender.toFixed(2)}ms`
-        );
-      } else if (isWarmup) {
-        console.log(`[Benchmark] Warmup ${i + 1}/${WARMUP_RUNS}`);
-      }
-
-      // Cooldown between iterations
-      await wait(COOLDOWN_MS);
-    }
-
-    const result = calculateStats(renderTimes);
-    setBenchmarkResult(result);
-    setIsBenchmarking(false);
-
-    console.log('[Benchmark] Complete!');
-    console.log('[Benchmark] Results:', result);
-  }, [config.cols, config.rows]);
-
-  const measureInputLatency = useCallback(async () => {
-    setIsMeasuringLatency(true);
-    setInputLatencyResult(null);
-
-    const samples: number[] = [];
-    const NUM_SAMPLES = 50;
-    const WARMUP_SAMPLES = 10;
-
-    console.log('[Input Latency] Starting measurement...');
-
-    const editor = plateEditorRef.current;
-    if (!editor) {
-      console.error('[Input Latency] Could not find Plate editor');
-      setIsMeasuringLatency(false);
-      return;
-    }
-
-    await focusEditor();
-
-    // Select the start of the first cell using Slate API
-    try {
-      collapseSelectionToFirstCell(editor);
-    } catch (e) {
-      console.error('[Input Latency] Could not select first cell:', e);
-      setIsMeasuringLatency(false);
-      return;
-    }
-
-    await wait(100);
-
-    for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
-      const isWarmup = i < WARMUP_SAMPLES;
-      const char = String.fromCharCode(97 + (i % 26)); // a-z
-
-      const startTime = performance.now();
-
-      // Use Slate API to insert text - this triggers the full React update cycle
-      editor.tf.insertText(char);
-
-      // Wait for React to process and render the update
-      await waitForNextPaint();
-
-      const endTime = performance.now();
-      const latency = endTime - startTime;
-
-      if (!isWarmup) {
-        samples.push(latency);
-        if (i % 10 === 0) {
+        if (initialRender !== null && !isWarmup) {
+          renderTimes.push(initialRender);
           console.log(
-            `[Input Latency] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
+            `[Benchmark] Run ${i - WARMUP_RUNS + 1}/${MEASURED_RUNS}: ${initialRender.toFixed(2)}ms`
           );
+        } else if (isWarmup) {
+          console.log(`[Benchmark] Warmup ${i + 1}/${WARMUP_RUNS}`);
         }
+
+        // Cooldown between iterations
+        await wait(COOLDOWN_MS);
       }
 
-      // Small delay between inputs
-      await wait(50);
-    }
+      const result = calculateStats(renderTimes);
+      setBenchmarkResult(result);
+      setIsBenchmarking(false);
 
-    const result = calculateLatencyStats(samples);
+      console.log('[Benchmark] Complete!');
+      console.log('[Benchmark] Results:', result);
+      return result;
+    }, [config.cols, config.rows]);
 
-    setInputLatencyResult(result);
-    setIsMeasuringLatency(false);
+  const measureInputLatency =
+    useCallback(async (): Promise<LatencyResult | null> => {
+      setIsMeasuringLatency(true);
+      setInputLatencyResult(null);
 
-    console.log('[Input Latency] Complete!');
-    console.log('[Input Latency] Results:', result);
-  }, [collapseSelectionToFirstCell, focusEditor]);
+      const samples: number[] = [];
+      const NUM_SAMPLES = 50;
+      const WARMUP_SAMPLES = 10;
+
+      console.log('[Input Latency] Starting measurement...');
+
+      const editor = plateEditorRef.current;
+      if (!editor) {
+        console.error('[Input Latency] Could not find Plate editor');
+        setIsMeasuringLatency(false);
+        return null;
+      }
+
+      await focusEditor();
+
+      // Select the start of the first cell using Slate API
+      try {
+        collapseSelectionToFirstCell(editor);
+      } catch (e) {
+        console.error('[Input Latency] Could not select first cell:', e);
+        setIsMeasuringLatency(false);
+        return null;
+      }
+
+      await wait(100);
+
+      for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
+        const isWarmup = i < WARMUP_SAMPLES;
+        const char = String.fromCharCode(97 + (i % 26)); // a-z
+
+        const startTime = performance.now();
+
+        // Use Slate API to insert text - this triggers the full React update cycle
+        editor.tf.insertText(char);
+
+        // Wait for React to process and render the update
+        await waitForNextPaint();
+
+        const endTime = performance.now();
+        const latency = endTime - startTime;
+
+        if (!isWarmup) {
+          samples.push(latency);
+          if (i % 10 === 0) {
+            console.log(
+              `[Input Latency] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
+            );
+          }
+        }
+
+        // Small delay between inputs
+        await wait(50);
+      }
+
+      const result = calculateLatencyStats(samples);
+
+      setInputLatencyResult(result);
+      setIsMeasuringLatency(false);
+
+      console.log('[Input Latency] Complete!');
+      console.log('[Input Latency] Results:', result);
+      return result;
+    }, [collapseSelectionToFirstCell, focusEditor]);
 
   const simulateTableSelection = useCallback(async () => {
     const editor = plateEditorRef.current;
@@ -675,73 +806,114 @@ export default function TablePerfPage() {
     selectionSimulation.delayMs,
   ]);
 
-  const measureTableSelectionLatency = useCallback(async () => {
-    setIsMeasuringSelection(true);
-    setSelectionLatencyResult(null);
+  const measureTableSelectionLatency =
+    useCallback(async (): Promise<SelectionLatencyResult | null> => {
+      setIsMeasuringSelection(true);
+      setSelectionLatencyResult(null);
 
-    const editor = plateEditorRef.current;
-    if (!editor) {
-      console.error('[Selection] Could not find Plate editor');
-      setIsMeasuringSelection(false);
-      return;
-    }
-
-    const samples: number[] = [];
-    const NUM_SAMPLES = 30;
-    const WARMUP_SAMPLES = 5;
-
-    console.log('[Selection] Starting latency measurement...');
-    console.log(
-      `[Selection] Range: ${selectedRows}x${selectedCols}, injected delay: ${selectionSimulation.delayMs}ms`
-    );
-
-    await focusEditor();
-    collapseSelectionToFirstCell(editor);
-    await wait(100);
-
-    for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
-      const isWarmup = i < WARMUP_SAMPLES;
-
-      collapseSelectionToFirstCell(editor);
-      await wait(16);
-
-      const startTime = performance.now();
-      selectCellRange(editor, selectedRows, selectedCols);
-      await waitForNextPaint();
-
-      const latency = performance.now() - startTime;
-
-      if (!isWarmup) {
-        samples.push(latency);
-        if ((i - WARMUP_SAMPLES + 1) % 10 === 0) {
-          console.log(
-            `[Selection] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
-          );
-        }
+      const editor = plateEditorRef.current;
+      if (!editor) {
+        console.error('[Selection] Could not find Plate editor');
+        setIsMeasuringSelection(false);
+        return null;
       }
 
-      await wait(50);
-    }
+      const samples: number[] = [];
+      const NUM_SAMPLES = 30;
+      const WARMUP_SAMPLES = 5;
 
-    const result: SelectionLatencyResult = {
-      ...calculateLatencyStats(samples),
-      selectedCells: selectedRows * selectedCols,
-      simulatedDelayMs: selectionSimulation.delayMs,
+      console.log('[Selection] Starting latency measurement...');
+      console.log(
+        `[Selection] Range: ${selectedRows}x${selectedCols}, injected delay: ${selectionSimulation.delayMs}ms`
+      );
+
+      await focusEditor();
+      collapseSelectionToFirstCell(editor);
+      await wait(100);
+
+      for (let i = 0; i < NUM_SAMPLES + WARMUP_SAMPLES; i++) {
+        const isWarmup = i < WARMUP_SAMPLES;
+
+        collapseSelectionToFirstCell(editor);
+        await wait(16);
+
+        const startTime = performance.now();
+        selectCellRange(editor, selectedRows, selectedCols);
+        await waitForNextPaint();
+
+        const latency = performance.now() - startTime;
+
+        if (!isWarmup) {
+          samples.push(latency);
+          if ((i - WARMUP_SAMPLES + 1) % 10 === 0) {
+            console.log(
+              `[Selection] Sample ${i - WARMUP_SAMPLES + 1}/${NUM_SAMPLES}: ${latency.toFixed(2)}ms`
+            );
+          }
+        }
+
+        await wait(50);
+      }
+
+      const result: SelectionLatencyResult = {
+        ...calculateLatencyStats(samples),
+        selectedCells: selectedRows * selectedCols,
+        simulatedDelayMs: selectionSimulation.delayMs,
+      };
+
+      setSelectionLatencyResult(result);
+      setIsMeasuringSelection(false);
+
+      console.log('[Selection] Complete!');
+      console.log('[Selection] Results:', result);
+      return result;
+    }, [
+      collapseSelectionToFirstCell,
+      focusEditor,
+      selectedCols,
+      selectedRows,
+      selectCellRange,
+      selectionSimulation.delayMs,
+    ]);
+
+  const runHarnessBenchmark = useCallback(
+    async (benchmark: TablePerfHarnessBenchmark) => {
+      if (benchmark === 'mount') {
+        await runBenchmark();
+      } else if (benchmark === 'input') {
+        await measureInputLatency();
+      } else {
+        await measureTableSelectionLatency();
+      }
+
+      await waitForNextPaint();
+      await wait(50);
+
+      return readRunnerSnapshot();
+    },
+    [
+      measureInputLatency,
+      measureTableSelectionLatency,
+      readRunnerSnapshot,
+      runBenchmark,
+    ]
+  );
+
+  useEffect(() => {
+    const runnerWindow = window as Window & {
+      __tablePerfHarness?: TablePerfRunnerHarness;
     };
 
-    setSelectionLatencyResult(result);
-    setIsMeasuringSelection(false);
+    runnerWindow.__tablePerfHarness = {
+      configure: configureRunner,
+      readSnapshot: readRunnerSnapshot,
+      runBenchmark: runHarnessBenchmark,
+    };
 
-    console.log('[Selection] Complete!');
-    console.log('[Selection] Results:', result);
-  }, [
-    collapseSelectionToFirstCell,
-    focusEditor,
-    selectedCols,
-    selectedRows,
-    selectCellRange,
-    selectionSimulation.delayMs,
-  ]);
+    return () => {
+      runnerWindow.__tablePerfHarness = undefined;
+    };
+  }, [configureRunner, readRunnerSnapshot, runHarnessBenchmark]);
 
   return (
     <main className="container mx-auto p-8">

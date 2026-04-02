@@ -372,27 +372,27 @@ type EditOnlyConfig = {
   render?: boolean;      // 默认: true
   handlers?: boolean;    // 默认: true
   inject?: boolean;      // 默认: true
-  normalizeInitialValue?: boolean;  // 默认: false
+  transformInitialValue?: boolean;  // 默认: false
 }
 ```
 
 当设置为 `true`（布尔值）时：
 - `render`、`handlers` 和 `inject.nodeProps` 仅在编辑器非只读时激活
-- `normalizeInitialValue` 无论只读状态如何都保持激活
+- `transformInitialValue` 无论只读状态如何都保持激活
 
 当设置为对象时：
 - 每个属性可以单独配置
-- 属性默认是仅编辑的（`true`），除了 `normalizeInitialValue` 默认始终激活（`false`）
+- 属性默认是仅编辑的（`true`），除了 `transformInitialValue` 默认始终激活（`false`）
 - 将属性设置为 `false` 使其始终激活，无论只读状态如何
-- 对于 `normalizeInitialValue`，设置为 `true` 使其仅在编辑时激活
+- 对于 `transformInitialValue`，设置为 `true` 使其仅在编辑时激活
 
 示例：
 ```ts
-// 所有功能（除 normalizeInitialValue 外）都是仅编辑的
+// 所有功能（除 transformInitialValue 外）都是仅编辑的
 editOnly: true
 
-// normalizeInitialValue 是仅编辑的，其他保持默认行为
-editOnly: { normalizeInitialValue: true }
+// transformInitialValue 是仅编辑的，其他保持默认行为
+editOnly: { transformInitialValue: true }
 
 // render 始终激活，其他遵循默认行为
 editOnly: { render: false }

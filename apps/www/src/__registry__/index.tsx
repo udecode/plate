@@ -3234,13 +3234,13 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
-  "hundreds-blocks-demo": {
-    name: "hundreds-blocks-demo",
+  "huge-document-demo": {
+    name: "huge-document-demo",
     description: "",
     type: "registry:example",
-    registryDependencies: ["https://platejs.org/r/editor.json"],
+    registryDependencies: undefined,
     files: [{
-      path: "src/registry/examples/hundreds-blocks-demo.tsx",
+      path: "src/registry/examples/huge-document-demo.tsx",
       type: "registry:example",
       target: ""
     },{
@@ -3249,7 +3249,7 @@ export const Index: Record<string, any> = {
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/examples/hundreds-blocks-demo.tsx")
+      const mod = await import("@/registry/examples/huge-document-demo.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

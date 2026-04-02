@@ -135,9 +135,9 @@ const editor = usePlateEditor({
     // Set to true if IDs should be stable across such operations.
     reuseId: false,
 
-    // Normalize all nodes in initial value (default: false - only checks first/last)
-    // Set to true to ensure all initial nodes get IDs if missing.
-    normalizeInitialValue: false, 
+    // Control initial-value ID assignment (default: 'if-needed')
+    // Use 'always' to fill every missing ID in the initial value.
+    initialValueIds: 'always',
     
     // Prevent overriding IDs when inserting nodes with an existing id (default: false)
     disableInsertOverrides: false,
@@ -353,4 +353,3 @@ const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof Li
   value,
 });
 ```
-

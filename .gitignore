@@ -27,7 +27,7 @@ jspm_packages/
 
 # compiled output
 /dist
-/tmp
+**/tmp
 /tmp*
 /out-tsc
 **/build
@@ -127,3 +127,6 @@ packages/plate/docs/
 .vercel
 
 *.local*
+
+# Local agent state and generated benchmark artifacts
+.omx/

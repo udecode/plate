@@ -1006,8 +1006,8 @@ importers:
         specifier: 0.4.0
         version: 0.4.0(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(optics-ts@2.4.1)
       jotai-x:
-        specifier: 2.3.3
-        version: 2.3.3(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4)
+        specifier: 2.3.4
+        version: 2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4)
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -7492,8 +7492,8 @@ packages:
       jotai: '>=2.9.2'
       react: '>=17.0.0'
 
-  jotai-x@2.3.3:
-    resolution: {integrity: sha512-ZeSPjf77VINlJ0HyMfYcPv/9psjB0CtJIZP6S+s/eefaO/9+U37M9Jx5dWmILgTe8hAol99EbAv6DDrHobOucA==}
+  jotai-x@2.3.4:
+    resolution: {integrity: sha512-FirSJ2ZwJtWXpg1EP5iTZdXZE4ilXUvHnMR6DqvSfUuDADl2LNEvFBjdenyxmUdE5Fqru6qLrArw2MMRAFFIdA==}
     peerDependencies:
       '@types/react': '>=17.0.0'
       jotai: '>=2.0.0'
@@ -16643,7 +16643,7 @@ snapshots:
       jotai: 2.11.0(@types/react@19.2.7)(react@19.2.4)
       react: 19.2.4
 
-  jotai-x@2.3.3(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4):
+  jotai-x@2.3.4(@types/react@19.2.7)(jotai@2.8.4(@types/react@19.2.7)(react@19.2.4))(react@19.2.4):
     dependencies:
       jotai: 2.8.4(@types/react@19.2.7)(react@19.2.4)
     optionalDependencies:

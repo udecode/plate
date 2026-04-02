@@ -115,6 +115,7 @@ import { moveSelection } from './internal/transforms/moveSelection';
 import { removeNodes } from './internal/transforms/removeNodes';
 import { select } from './internal/transforms/select';
 import { setNodes } from './internal/transforms/setNodes';
+import { setNodesBatch } from './internal/transforms/setNodesBatch';
 import { setPoint } from './internal/transforms/setPoint';
 import { setSelection } from './internal/transforms/setSelection';
 import { splitNodes } from './internal/transforms/splitNodes';
@@ -239,6 +240,7 @@ export const createEditor = <V extends Value>({
     removeNodes: bindFirst(removeNodes, editor),
     select: bindFirst(select, editor),
     setNodes: bindFirst(setNodes, editor),
+    setNodesBatch: bindFirst(setNodesBatch, editor),
     setNormalizing: bindFirst(setNormalizing, editor as any),
     setPoint: bindFirst(setPoint, editor),
     setSelection: bindFirst(setSelection, editor),

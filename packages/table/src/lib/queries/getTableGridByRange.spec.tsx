@@ -32,9 +32,7 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>1</hp>
-            </htd>
+            <htd>1</htd>
           </htr>
         </htable>
       ) as any as TElement[];
@@ -83,14 +81,10 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>12</hp>
-            </htd>
+            <htd>12</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -139,12 +133,8 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>21</htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -194,14 +184,10 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>11</hp>
-            </htd>
+            <htd>11</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
+            <htd>21</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -250,20 +236,12 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>11</hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
+            <htd>11</htd>
+            <htd>12</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>21</htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -312,20 +290,12 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>11</hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
+            <htd>11</htd>
+            <htd>12</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>21</htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -374,20 +344,12 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>11</hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
+            <htd>11</htd>
+            <htd>12</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>21</htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;
@@ -436,20 +398,12 @@ describe('getTableGridByRange', () => {
       const output = (
         <htable>
           <htr>
-            <htd>
-              <hp>11</hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
+            <htd>11</htd>
+            <htd>12</htd>
           </htr>
           <htr>
-            <htd>
-              <hp>21</hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
+            <htd>21</htd>
+            <htd>22</htd>
           </htr>
         </htable>
       ) as any as TElement;

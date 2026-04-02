@@ -372,27 +372,27 @@ type EditOnlyConfig = {
   render?: boolean;      // default: true
   handlers?: boolean;    // default: true
   inject?: boolean;      // default: true
-  normalizeInitialValue?: boolean;  // default: false
+  transformInitialValue?: boolean;  // default: false
 }
 ```
 
 When set to `true` (boolean):
 - `render`, `handlers`, and `inject.nodeProps` are only active when editor is not read-only
-- `normalizeInitialValue` remains active regardless of read-only state
+- `transformInitialValue` remains active regardless of read-only state
 
 When set to an object:
 - Each property can be individually configured
-- Properties default to being edit-only (`true`) except `normalizeInitialValue` which defaults to always active (`false`)
+- Properties default to being edit-only (`true`) except `transformInitialValue` which defaults to always active (`false`)
 - Set a property to `false` to make it always active regardless of read-only state
-- For `normalizeInitialValue`, set to `true` to make it edit-only
+- For `transformInitialValue`, set to `true` to make it edit-only
 
 Examples:
 ```ts
-// All features (except normalizeInitialValue) are edit-only
+// All features (except transformInitialValue) are edit-only
 editOnly: true
 
-// normalizeInitialValue is edit-only, others remain edit-only by default
-editOnly: { normalizeInitialValue: true }
+// transformInitialValue is edit-only, others remain edit-only by default
+editOnly: { transformInitialValue: true }
 
 // render is always active, others follow default behavior
 editOnly: { render: false }

@@ -86,6 +86,11 @@
       "sourceType": "github",
       "computedHash": "594e6e55f82793c309cd02f94a9a5fe73326d4b8694cbfda2b484ab410e81e88"
     },
+    "react-useeffect": {
+      "source": "softaworks/agent-toolkit",
+      "sourceType": "github",
+      "computedHash": "8c24990b50f431a570f3ad1f60632dee154431861547103047f6ce80092ca734"
+    },
     "reproduce-bug": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",

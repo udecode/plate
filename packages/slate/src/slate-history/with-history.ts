@@ -1,11 +1,16 @@
 import {
   type Editor,
   type LegacyEditorMethods,
+  type NodeBatchUpdate,
   type Operation,
   OperationApi,
   PathApi,
   type TRange,
 } from '../interfaces/index';
+import {
+  applySetNodeBatchOperations,
+  buildSetNodeBatchOperations,
+} from '../internal/transforms/setNodesBatch';
 import { syncLegacyMethods } from '../utils/assignLegacyTransforms';
 
 const cloneRange = (range: TRange | null | undefined) =>
@@ -126,6 +131,56 @@ export const withHistory = <T extends Editor>(editor: T) => {
     }
 
     apply(op);
+  };
+
+  e.setNodesBatch = (updates: NodeBatchUpdate[]) => {
+    const ops = buildSetNodeBatchOperations(e, updates as any);
+
+    if (ops.length === 0) return;
+
+    const { history, operations } = e;
+    const { undos } = history;
+    const lastBatch = undos.at(-1);
+    let save = e.api.isSaving();
+    let merge = e.api.isMerging();
+
+    if (save == null) {
+      save = true;
+    }
+
+    if (save) {
+      if (merge == null) {
+        if (lastBatch == null) {
+          merge = false;
+        } else if (operations.length > 0) {
+          merge = true;
+        } else {
+          merge = false;
+        }
+      }
+
+      if (e.api.isSplittingOnce()) {
+        merge = false;
+        e.tf.setSplittingOnce(undefined);
+      }
+
+      if (lastBatch && merge) {
+        lastBatch.operations.push(...ops);
+      } else {
+        e.writeHistory('undos', {
+          operations: [...ops],
+          selectionBefore: e.selection,
+        });
+      }
+
+      while (undos.length > 100) {
+        undos.shift();
+      }
+
+      history.redos = [];
+    }
+
+    applySetNodeBatchOperations(e, ops as any);
   };
 
   e.writeHistory = (stack: 'redos' | 'undos', batch: any) => {

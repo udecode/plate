@@ -50,4 +50,4 @@ export type LegacyEditorTransforms<V extends Value = Value> = {
     EditorTransforms<V>,
     'insertData' | 'insertFragmentData' | 'insertTextData' | 'setFragmentData'
   > &
-  Pick<EditorTransforms<V>, 'writeHistory'>;
+  Pick<EditorTransforms<V>, 'setNodesBatch' | 'writeHistory'>;
