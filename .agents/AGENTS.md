@@ -26,6 +26,12 @@
 ## Tooling
 
 - If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
+- Treat local-only React runtime weirdness as install corruption first, not product code:
+  - `Invalid hook call`
+  - `resolveDispatcher()` / null dispatcher crashes
+  - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
+  - mixed `.bun` and `.pnpm` React paths in the same failing stack
+- If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
 - `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
 
@@ -82,7 +88,7 @@ Do not default to `pnpm typecheck` for package work in this repo. Package type c
 
 If filtered package builds still leave unresolved workspace-package imports during typecheck, run `pnpm build` at the repo root before treating the failure as real package debt.
 
-If a local-only build/runtime failure points at corrupted files under `node_modules/.bun` or other non-versioned env state while CI is green, clean local env before changing repo code: remove `node_modules`, relevant app caches like `apps/www/.next` and `apps/www/.contentlayer`, remove `.turbo`, then rerun `pnpm install`.
+If a local-only build/runtime/test failure points at corrupted files under `node_modules/.bun`, mixed `.bun` / `.pnpm` React installs, package-local `node_modules/react*` symlinks, `Invalid hook call`, or other non-versioned env state while CI is green, clean local env before changing repo code: run `pnpm run reinstall` once, then rerun the exact failing command. If the failure shape changes or disappears, it was local env rot. If not, go back to normal debugging.
 
 **CLOSEOUT GATE**: If a task edits code, tests, package manifests, or build/type/lint config, do not post a final handoff until the relevant verification ran in this same turn. If you skip a required check or it fails, say that plainly and do not present the task as done.
 
