@@ -23,9 +23,16 @@ export const basicBlocksValue: any = (
     </hp>
     <hblockquote>
       <hp>
-        "Blockquotes are perfect for highlighting important information, quotes
-        from external sources, or emphasizing key points in your content."
+        Blockquotes can group multiple paragraphs, quoted lists, and replies in
+        one container.
       </hp>
+      <hp>
+        Use nested blockquotes when you need to keep the quote hierarchy
+        explicit.
+      </hp>
+      <hblockquote>
+        <hp>Nested blockquotes keep reply chains readable.</hp>
+      </hblockquote>
     </hblockquote>
     <hp>
       Use headings to create a clear document structure that helps readers

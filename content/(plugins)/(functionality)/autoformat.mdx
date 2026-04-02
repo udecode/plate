@@ -94,6 +94,10 @@ AutoformatPlugin.configure({
         type: 'h1',
       },
       {
+        allowSameTypeAbove: true,
+        format: (editor) => {
+          editor.tf.wrapNodes({ children: [], type: 'blockquote' });
+        },
         match: '> ',
         mode: 'block',
         type: 'blockquote',

@@ -12,8 +12,10 @@ export const previewMdValue: any = (
       **Markdown** 预览装饰功能，使得创建一个具有内置 `Markdown`
       预览功能的编辑器 变得_非常_简单。
     </hp>
-    <hp>- 列表。</hp>
-    <hp> 引用块。</hp>
+    <hp>- 列表项。</hp>
+    <hp>&gt; 引用段落。</hp>
+    <hp>&gt; &gt; 嵌套引用块。</hp>
+    <hp>&gt; - 引用列表项。</hp>
     <hp>---</hp>
     <hp>## 快来试试！</hp>
     <hp>亲自体验一下吧！</hp>

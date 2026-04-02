@@ -37,8 +37,29 @@ const value = normalizeStaticValue([
   {
     children: [
       {
-        children: [{ text: 'This is a blockquote element' }],
+        children: [{ text: 'This blockquote contains more than one block.' }],
         type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'It can also wrap nested quotes instead of flattening them.',
+          },
+        ],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [
+              {
+                text: 'Nested blockquotes keep the quote hierarchy intact.',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
       },
     ],
     type: 'blockquote',

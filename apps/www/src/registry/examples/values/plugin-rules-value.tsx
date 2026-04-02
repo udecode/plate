@@ -29,6 +29,12 @@ export const pluginRulesValue: any = (
         Blockquotes are containers now. Split this paragraph or add nested
         blocks inside the quote.
       </hp>
+      <hp indent={1} listStyleType="disc">
+        Quoted list items stay inside the same blockquote container.
+      </hp>
+      <hblockquote>
+        <hp>Nested blockquotes keep reply chains explicit.</hp>
+      </hblockquote>
     </hblockquote>
 
     <hh3>Delete Rules</hh3>
