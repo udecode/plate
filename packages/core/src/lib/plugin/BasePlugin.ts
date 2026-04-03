@@ -183,6 +183,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      *
      * - `'default'`: Default behavior
      * - `'exit'`: Exit the current block
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
      * - `'reset'`: Reset block to default paragraph type
      * - `'lineBreak'`: Insert newline character
      * - `'deleteExit'`: Delete backward then exit
@@ -192,6 +193,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
      * Defines actions on delete based on block state.
      *
      * - `'default'`: Default behavior
+     * - `'lift'`: Lift the current block out of the nearest matching ancestor
      * - `'reset'`: Reset block to default paragraph type
      */
     delete?: DeleteRules;
@@ -389,7 +391,7 @@ export type BaseTransformOptions = GetInjectNodePropsOptions & {
 
 export type BreakRules = {
   /** Action when Enter is pressed in an empty block. */
-  empty?: 'default' | 'deleteExit' | 'exit' | 'reset';
+  empty?: 'default' | 'deleteExit' | 'exit' | 'lift' | 'reset';
   /**
    * Action when Enter is pressed at the end of an empty line. This is typically
    * used with `default: 'lineBreak'`.
@@ -433,7 +435,7 @@ export type DeleteRules = {
    *     </blockquote>
    * ```
    */
-  start?: 'default' | 'reset';
+  start?: 'default' | 'lift' | 'reset';
   /** Action when Backspace is pressed and the block is empty. */
   empty?: 'default' | 'reset';
 };

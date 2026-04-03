@@ -31,7 +31,12 @@ export const BaseMentionInputPlugin = createSlatePlugin({
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
   key: KEYS.mention,
-  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
+  node: {
+    isElement: true,
+    isInline: true,
+    isMarkableVoid: true,
+    isVoid: true,
+  },
   options: {
     trigger: '@',
     triggerPreviousCharPattern: /^\s?$/,

@@ -544,3 +544,11 @@ describe('editor.tf.resetBlock', () => {
     expect((editor.children[0] as any).foo).toBeUndefined();
   });
 });
+
+describe('editor.tf.liftBlock', () => {
+  it('is available on the editor transform surface', () => {
+    const editor = createSlateEditor();
+
+    expect(typeof editor.tf.liftBlock).toBe('function');
+  });
+});

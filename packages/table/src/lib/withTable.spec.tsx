@@ -47,6 +47,96 @@ const createTableEditor = (input: SlateEditor) =>
   });
 
 describe('withTable', () => {
+  it('keeps Enter inside the current cell by splitting the current paragraph', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                11
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+              <hp>
+                <cursor />
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createTableEditor(input);
+
+    editor.tf.insertBreak();
+
+    expect(editor.children).toMatchObject(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+
+  it('keeps Backspace at the start of a cell inside the current cell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />
+                11
+              </hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createTableEditor(input);
+
+    editor.tf.deleteBackward();
+
+    expect(editor.children).toMatchObject(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+
   it('selectAll selects the whole table when the cursor is inside it', () => {
     const input = (
       <editor>
@@ -69,6 +159,33 @@ describe('withTable', () => {
     expect(editor.tf.selectAll()).toBe(true);
     if (!tableRange) throw new Error('Expected table range');
     expect(editor.selection).toEqual(tableRange);
+  });
+
+  it('second selectAll escalates from the table to the whole document', () => {
+    const input = (
+      <editor>
+        <hp>before</hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                11
+                <cursor />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+        <hp>after</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createTableEditor(input);
+    const documentRange = editor.api.range([]);
+
+    expect(editor.tf.selectAll()).toBe(true);
+    expect(editor.tf.selectAll()).toBe(true);
+    if (!documentRange) throw new Error('Expected document range');
+    expect(editor.selection).toEqual(documentRange);
   });
 
   it('collapses a multi-cell selection before tabbing', () => {

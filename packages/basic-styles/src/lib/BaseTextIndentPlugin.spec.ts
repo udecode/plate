@@ -45,4 +45,23 @@ describe('BaseTextIndentPlugin', () => {
       } as any)
     ).toBe('30em');
   });
+
+  it('applies and clears text indent through node updates', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
+      value: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    } as any);
+    const nodeKey = editor.getType(KEYS.textIndent);
+
+    editor.tf.setNodes({ [nodeKey]: 2 }, { at: [0] });
+    expect((editor.children[0] as any)[nodeKey]).toBe(2);
+
+    editor.tf.unsetNodes(nodeKey, { at: [0] });
+    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+  });
 });

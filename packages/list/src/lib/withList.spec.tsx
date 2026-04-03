@@ -161,6 +161,37 @@ describe('normalizeList', () => {
 });
 
 describe('keyboard handling', () => {
+  describe('when Enter on root list and empty', () => {
+    it('exits the list to a plain paragraph', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
   describe('when Enter on indented list and empty', () => {
     it('outdent', () => {
       const input = (
@@ -221,6 +252,101 @@ describe('keyboard handling', () => {
       editor.tf.insertBreak();
 
       expect(editor.children).toEqual(output.children);
+    });
+  });
+
+  describe('when Backspace at start of a root list item', () => {
+    it('removes the list layer before touching content', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      editor.tf.deleteBackward();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('when tabbing list items', () => {
+    it('indents a list item one level on Tab', () => {
+      const input = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      expect(editor.tf.tab({ reverse: false })).toBe(true);
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('outdents a nested list item one level on Shift+Tab', () => {
+      const input = (
+        <editor>
+          <hp indent={2} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp indent={1} listStyleType="disc">
+            <cursor />
+            One
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = createSlateEditor({
+        plugins: [BaseListPlugin, BaseIndentPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      expect(editor.tf.tab({ reverse: true })).toBe(true);
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
     });
   });
 });

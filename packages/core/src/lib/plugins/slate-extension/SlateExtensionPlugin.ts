@@ -17,6 +17,7 @@ import { pipeOnNodeChange } from '../../utils/pipeOnNodeChange';
 import { pipeOnTextChange } from '../../utils/pipeOnTextChange';
 import { init } from './transforms/init';
 import { insertExitBreak } from './transforms/insertExitBreak';
+import { liftBlock } from './transforms/liftBlock';
 import { resetBlock } from './transforms/resetBlock';
 import { setValue } from './transforms/setValue';
 
@@ -43,6 +44,7 @@ export type SlateExtensionConfig = PluginConfig<
   {
     init: OmitFirst<typeof init>;
     insertExitBreak: OmitFirst<typeof insertExitBreak>;
+    liftBlock: OmitFirst<typeof liftBlock>;
     resetBlock: OmitFirst<typeof resetBlock>;
     setValue: OmitFirst<typeof setValue>;
   }
@@ -68,6 +70,7 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
      */
     init: bindFirst(init, editor),
     insertExitBreak: bindFirst(insertExitBreak, editor),
+    liftBlock: bindFirst(liftBlock, editor),
     resetBlock: bindFirst(resetBlock, editor),
     setValue: bindFirst(setValue, editor),
     apply(operation) {

@@ -21,6 +21,7 @@ const node = {
 
 const rules = {
   break: { splitReset: true },
+  delete: { start: 'reset' as const },
   merge: { removeEmpty: true },
 };
 

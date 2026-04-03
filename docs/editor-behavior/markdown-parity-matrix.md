@@ -1,163 +1,183 @@
-# Markdown Coverage Matrix for Plate
+# Existing Feature Coverage Matrix for Plate
 
-This is the coverage gate for Plate's markdown-first work.
+This is the major-release coverage gate for Plate's existing editor features.
 
-Use this before TDD or major editor work. The point is not to describe what we
-wish Plate supported. The point is to describe what Plate currently covers,
-which tests prove it, and where the real gaps still are.
+Despite the filename, this file is no longer only about markdown-native
+constructs. The major can break any existing content-affecting feature, so the
+matrix needs to track:
+
+- markdown-native behavior
+- markdown extensions
+- block-editor-native elements
+- document styling and layout behavior
+- collaboration and editor-only content surfaces
 
 Use this with:
 
 - [markdown-standards.md](./markdown-standards.md)
 - [markdown-editing-spec.md](./markdown-editing-spec.md)
+- [editor-protocol-matrix.md](./editor-protocol-matrix.md)
 - [markdown-editing-reference-audit.md](./markdown-editing-reference-audit.md)
+
+This file is not the exhaustive scenario matrix. It answers:
+
+- which feature families exist
+- which ones are covered enough for release
+- which ones are deferred
+
+## Authority Model
+
+Use the strongest external precedent available for each feature family.
+
+| Family | Parse / Serialize Authority | Primary UX Reference | Secondary Reference | Fallback |
+| --- | --- | --- | --- | --- |
+| Markdown-native syntax | CommonMark / GFM / GitHub Docs for GFM-only constructs / LaTeX-style math / MDX when applicable | Typora | Milkdown | explicit repo decision only if refs disagree or are silent |
+| Block-editor-native elements | feature's current serialized shape or explicit non-markdown contract | Notion | Milkdown, then the strongest adjacent mainstream precedent | fallback only when no clear external standard exists |
+| Tables and document-style editing | GFM / HTML table rules when applicable | Google Docs | Notion, Milkdown | fallback only after stronger table precedent runs out |
+| Collaboration and reviewing | current serialized shape or editor-only contract | Google Docs | Notion | fallback only after stronger collaboration precedent runs out |
+| Styling and layout | current serialized shape plus HTML / CSS expectations where relevant | Google Docs | Notion | fallback only after stronger styling precedent runs out |
 
 ## Status Meaning
 
-- `locked`: current support and test coverage are good enough to build on
-- `partial`: support exists, but the contract or test coverage is incomplete
-- `gap`: support is missing, lossy, or too weak to trust yet
-- `profile-divergence`: Plate supports it, but not as part of the Typora-first
-  markdown profile
-- `out-of-scope`: not part of the markdown-first profile for now
+- `locked`: strong enough to build on without blocking the major
+- `partial`: existing feature works, but the contract or coverage is still thin
+- `gap`: existing feature is under-specified, lossy, or weakly covered
+- `profile-divergence`: existing feature works, but it is outside the strict markdown-first profile and still needs explicit behavior policy
+- `deferred-minor`: not part of this major even though the parser or docs mention it
 
-## Cell Meaning
+## Scope Rule
 
-- `yes`: explicit support with real repo evidence
-- `partial`: support exists but is incomplete, lossy, or thinly tested
-- `no`: not supported in the current lane
-- `n/a`: not relevant for this construct
+This file tracks existing content-affecting surfaces only.
 
-## Coverage Rules
+It does not try to gate:
 
-- `Current Evidence` lists representative seams, not every test file.
-- Rows that rely on rule files or parser wiring instead of direct tests should
-  not be treated as locked just because some evidence exists.
-- `Missing coverage` is the worklist. If it is non-trivial, do not pretend the
-  row is done.
-- `Editing spec IDs` points to ownership and key behavior in
-  [markdown-editing-spec.md](./markdown-editing-spec.md).
-- `Typora` and `Milkdown` columns are shorthand reference signals. For the full
-  evidence, use [markdown-editing-reference-audit.md](./markdown-editing-reference-audit.md).
-- During the major, do not treat uncovered feature rows as invitations to add
-  new syntax just because they are nearby. Fix broken existing rows first.
+- AI workflows
+- slash menu / toolbar UI
+- docx / html / csv export quality unless it changes editor behavior
+- browser-only chrome around the editor
 
-## CommonMark Core
+## How To Read A Row
 
-| Construct | Syntax Source | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Autoformat | Streaming | Editing Spec IDs | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Paragraph | CommonMark | yes | yes | yes | yes | yes | n/a | yes | `EDIT-P-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | explicit root-empty behavior; start-`Backspace`; plain-paragraph `Tab` policy | `locked` |
-| Heading | CommonMark | yes | yes | yes | yes | partial | yes | partial | `EDIT-H-*` | `packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`packages/autoformat/src/lib/__tests__/withAutoformat/block/heading.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx` | direct H4-H6 coverage; middle-split behavior; start-`Backspace` behavior | `partial` |
-| Blockquote | CommonMark | yes | yes | yes | yes | yes | yes | partial | `EDIT-BQ-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`apps/www/src/__tests__/package-integration/autoformat/blockquote.slow.tsx` | empty-exit; nested exit; start-`Backspace`; streaming-specific quote cases | `partial` |
-| Unordered list | CommonMark | yes | yes | yes | yes | yes | yes | yes | `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/autoformat/list.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | root empty-item exit; start-`Backspace`; quote/list interaction | `partial` |
-| Ordered list | CommonMark | yes | yes | yes | yes | yes | yes | yes | `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`packages/markdown/src/lib/serializer/standardList.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | editing ownership around exits and `Backspace`; more restart edge coverage in rich markdown lane | `partial` |
-| Link | CommonMark | yes | yes | yes | yes | partial | no | partial | `EDIT-AFF-LINK-001` | `packages/markdown/src/lib/deserializer/deserializeMentionLink.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | dedicated plain-link round-trip tests; link streaming; boundary affinity tests | `partial` |
-| Image | CommonMark | yes | yes | partial | partial | partial | no | no | `n/a` | `apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts` | direct markdown image round-trip tests; streaming behavior; richer serializer coverage | `partial` |
-| Emphasis | CommonMark | yes | yes | yes | yes | yes | yes | partial | `EDIT-AFF-MARK-001` | `packages/markdown/src/lib/mdx.spec.tsx`<br/>`packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | direct markdown deserialize/serialize fixture lane; boundary affinity tests | `partial` |
-| Strong | CommonMark | yes | yes | yes | yes | yes | yes | yes | `EDIT-AFF-MARK-001` | `packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | explicit markdown-rich round-trip without snapshot indirection; boundary affinity tests | `partial` |
-| Inline code | CommonMark | yes | yes | yes | yes | partial | partial | partial | `EDIT-AFF-MARK-001` | `apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx` | direct deserialize tests; chunked inline-code streaming; boundary affinity tests | `partial` |
-| Fenced code block | CommonMark | yes | yes | yes | yes | yes | yes | yes | `EDIT-CB-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx` | direct markdown deserialize fixture outside list edge case; key ownership for `Enter`/`Tab`/`Shift+Tab` | `partial` |
-| Thematic break | CommonMark | yes | yes | yes | yes | yes | yes | partial | `EDIT-HR-ENTER-001` | `packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx` | direct deserialize tests from raw markdown; adjacency editing behavior | `partial` |
-| Hard line break | CommonMark + HTML fallback | yes | yes | partial | yes | partial | n/a | partial | `n/a` | `packages/markdown/src/lib/deserializer/splitLineBreaks.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx` | tighter deserialize/serialize parity for trailing breaks and mixed blockquote cases | `partial` |
-| Inline / block HTML fallback | HTML passthrough | partial | partial | partial | partial | partial | no | partial | `n/a` | `packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx` | dedicated serializer expectations; richer inline/block HTML fallback matrix | `partial` |
+- `Behavior Scope` is the user-facing behavior that must be spec'd
+- `Current Evidence` lists representative seams, not every test
+- `Next Work` is the concrete remaining work for the major lane
+- `Editing Spec IDs` should point to concrete spec IDs or the pending family ID
 
-## GFM And Common Extensions
+## Markdown-Native Core
 
-| Construct | Syntax Source | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Autoformat | Streaming | Editing Spec IDs | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Task list | GFM | yes | yes | yes | yes | partial | yes | partial | `EDIT-LIST-*` | `apps/www/src/__tests__/package-integration/autoformat/list.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | direct deserialize/serialize task-list fixture tests; checked-state round-trip lane | `partial` |
-| Table | GFM | yes | yes | yes | yes | partial | no | partial | `EDIT-TABLE-*` | `apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | dedicated markdown package table round-trip tests; reverse cell navigation; streaming-specific table chunks | `partial` |
-| Strikethrough | GFM | yes | yes | yes | yes | yes | partial | no | `EDIT-AFF-MARK-001` | `packages/markdown/src/lib/mdx.spec.tsx`<br/>`packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts` | direct markdown deserialize/serialize tests; streaming lane; affinity tests | `partial` |
-| Autolink literal | GFM | yes | yes | partial | partial | partial | n/a | no | `EDIT-AFF-LINK-001` | parser stack includes `remark-gfm`; no direct Plate spec yet | explicit deserialize/serialize tests for bare URLs; round-trip contract | `gap` |
-| Footnote | GFM | yes | partial | partial | no | no | no | no | `n/a` | `apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts` | native footnote model or explicit non-support decision; serializer behavior; round-trip | `gap` |
+| Feature | Family | Parse Authority | Primary UX Ref | Secondary Ref | Behavior Scope | Editing Spec IDs | Current Evidence | Next Work | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Paragraph | markdown-native | CommonMark | Typora | Milkdown | `↵`, `⌫`, `⇥`, `⇤`, root-empty behavior | `EDIT-P-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/indent/src/lib/withIndent.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | finish explicit non-empty root `⌫` fallback | `locked` |
+| Heading | markdown-native | CommonMark | Typora | Milkdown | split, reset, depth-specific behavior | `EDIT-H-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`packages/core/src/lib/plugins/override/withBreakRules.spec.tsx`<br/>`packages/core/src/lib/plugins/override/withDeleteRules.spec.tsx` | no active major blocker | `locked` |
+| Blockquote | markdown-native | CommonMark | Typora | Milkdown | nested blocks, empty exit, `⌫`, `⇤`, quoted list interaction | `EDIT-BQ-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/core/src/lib/plugins/override/withBreakRules.spec.tsx`<br/>`packages/core/src/lib/plugins/override/withDeleteRules.spec.tsx` | no active major blocker | `locked` |
+| Unordered list | markdown-native | CommonMark | Typora | Milkdown | split, exit, outdent, quoted-list interaction | `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`packages/list/src/lib/withList.spec.tsx`<br/>`packages/core/src/lib/plugins/override/withDeleteRules.spec.tsx` | richer mixed-document editing matrices | `locked` |
+| Ordered list | markdown-native | CommonMark | Typora | Milkdown | restart numbering, split, exit, outdent | `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`packages/markdown/src/lib/serializer/standardList.spec.tsx`<br/>`packages/list/src/lib/withList.spec.tsx` | no active major blocker | `locked` |
+| Link | markdown-native | CommonMark | Typora | Milkdown | round-trip, directional affinity, plain-link paragraphs | `EDIT-AFF-LINK-001` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/deserializer/deserializeMentionLink.spec.tsx`<br/>`packages/core/src/lib/plugins/affinity/AffinityPlugin.spec.tsx` | no active major blocker | `locked` |
+| Image | markdown-native | CommonMark | Typora | Milkdown | alt vs title, attribute precedence, plain-image paragraphs | `EDIT-IMG-*` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/defaultRules.spec.ts`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | plain markdown image output is limited to alt, src, and optional title; width/height remain HTML/MDX-only | `locked` |
+| Emphasis / italic | markdown-native | CommonMark | Typora | Milkdown | round-trip and markdown-native parse/serialize behavior | `—` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/autoformat/src/lib/__tests__/withAutoformat/mark/basic-marks.spec.tsx` | no active major blocker | `locked` |
+| Strong / bold | markdown-native | CommonMark | Typora | Milkdown | round-trip and markdown-native parse/serialize behavior | `—` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts` | no active major blocker | `locked` |
+| Inline code | markdown-native | CommonMark | Typora | Milkdown | round-trip, hard-edge typing, mixed-mark behavior | `EDIT-AFF-HARD-001` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/core/src/lib/plugins/affinity/AffinityPlugin.spec.tsx`<br/>`packages/markdown/src/lib/serializer/convertTextsSerialize.spec.ts` | no active major blocker | `locked` |
+| Fenced code block | markdown-native | CommonMark | Typora | Milkdown | direct raw markdown, `↵`, `⌫`, `⇥`, `⇤`, language preservation | `EDIT-CB-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/code-block/src/lib/withCodeBlock.spec.tsx`<br/>`packages/code-block/src/react/CodeBlockPlugin.spec.tsx` | no active major blocker | `locked` |
+| Thematic break | markdown-native | CommonMark | Typora | Milkdown | creation and adjacent block behavior | `EDIT-HR-*` | `packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts`<br/>`packages/markdown/src/lib/deserializer/convertNodesDeserialize.spec.ts` | no active major blocker | `locked` |
+| Hard line break | markdown-native | CommonMark + HTML fallback | Typora | Milkdown | paragraph and blockquote parity, html fallback, trailing breaks | `EDIT-HARD-*` | `packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/deserializer/splitLineBreaks.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | no active major blocker | `locked` |
 
-## Math
+## Markdown Extensions
 
-| Construct | Syntax Source | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Autoformat | Streaming | Editing Spec IDs | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Inline math | `\$...\$` / `remark-math` | yes | yes | yes | yes | partial | no | yes | `EDIT-MATH-ENTER-001` | `apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx` | direct standalone round-trip tests; boundary editing tests; more serializer coverage | `partial` |
-| Block math | `$$...$$` / `remark-math` | yes | yes | yes | yes | partial | no | yes | `EDIT-MATH-*` | `packages/math/src/lib/transforms/insertEquation.spec.ts`<br/>`packages/math/src/lib/transforms/insertInlineEquation.spec.ts`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx` | direct markdown package round-trip tests; empty-block exit behavior; `Tab` ownership | `partial` |
-| Math inside tables | GFM + math extension | partial | partial | yes | partial | partial | no | no | `EDIT-TABLE-*`, `EDIT-MATH-*` | `apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts` | serializer and round-trip tests for table-contained math | `partial` |
+| Feature | Family | Parse Authority | Primary UX Ref | Secondary Ref | Behavior Scope | Editing Spec IDs | Current Evidence | Next Work | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Task list | markdown extension | GFM / GitHub Docs | Typora | Milkdown | checked-state round-trip, list editing rules | `EDIT-LIST-*` | `packages/markdown/src/lib/taskList.spec.ts`<br/>`packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`packages/markdown/src/lib/serializer/listToMdastTree.spec.ts`<br/>`packages/list/src/lib/normalizers/withInsertBreakList.spec.tsx`<br/>`packages/list/src/lib/withList.spec.tsx` | no active major blocker | `locked` |
+| Table | markdown extension | GFM | Google Docs | Notion, Milkdown | cell nav, `↵`, `⇥`/`⇤`, `⌫`, multi-cell selection, copy/paste, merge/split, row/column insert/delete, deserialize/serialize | `EDIT-TABLE-*` | `packages/markdown/src/lib/table.spec.ts`<br/>`packages/table/src/lib/withTable.spec.tsx`<br/>`packages/table/src/lib/withApplyTable.spec.tsx`<br/>`packages/table/src/lib/withDeleteTable.spec.tsx`<br/>`packages/table/src/lib/withTableCellSelection.spec.tsx`<br/>`packages/table/src/lib/withInsertFragmentTable.spec.tsx`<br/>`packages/table/src/lib/transforms/*.spec.tsx`<br/>`packages/table/src/lib/merge/*.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | no active major blocker | `locked` |
+| Strikethrough | markdown extension | GFM / GitHub Docs | Typora | Milkdown | round-trip, directional affinity | `EDIT-AFF-MARK-001` | `packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts`<br/>`packages/basic-nodes/src/lib/BaseMarkPlugins.spec.ts`<br/>`packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/serializer/serializeInlineMd.spec.ts` | no active major blocker | `locked` |
+| Inline math | markdown extension | LaTeX-style math / KaTeX conventions | Typora | Milkdown | round-trip, boundary behavior, inline/table interaction | `EDIT-MATH-*` | `packages/markdown/src/lib/mathSurface.spec.ts`<br/>`packages/math/src/lib/BaseInlineEquationPlugin.spec.ts`<br/>`packages/math/src/lib/transforms/insertInlineEquation.spec.ts`<br/>`packages/math/src/react/hooks/useEquationInput.spec.tsx` | no active major blocker | `locked` |
+| Block math | markdown extension | LaTeX-style math / KaTeX conventions | Typora | Milkdown | round-trip, empty exit, block selection behavior | `EDIT-MATH-*` | `packages/markdown/src/lib/mathSurface.spec.ts`<br/>`packages/math/src/lib/BaseEquationPlugin.spec.ts`<br/>`packages/math/src/lib/transforms/insertEquation.spec.ts`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx` | no active major blocker | `locked` |
+| Autolink literal | markdown extension | GFM / GitHub Docs | Typora | Milkdown | bare URL parse/serialize and editing | `EDIT-AFF-LINK-001` | `packages/link/src/lib/withLink.spec.tsx`<br/>`packages/markdown/src/lib/gfmSurface.spec.ts` | no active major blocker | `locked` |
+| Footnote | markdown extension | GFM / GitHub Docs | Typora | Milkdown | reference/definition model and editing | `EDIT-FOOTNOTE-*` | `packages/markdown/src/lib/gfmSurface.spec.ts`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/defaultRule.spec.ts`<br/>`packages/markdown/src/lib/rules/defaultRules.ts` | current fallback is covered; a first-class footnote model is still future work, not a hidden gap | `locked` |
 
-## Plate Markdown Extensions And MDX-Backed Constructs
+## Block-Editor-Native Existing Elements
 
-| Construct | Syntax Source | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Autoformat | Streaming | Editing Spec IDs | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mention extension | `@user` and `[label](mention:id)` | no | partial | yes | yes | yes | no | no | `EDIT-AFF-LINK-001` | `packages/markdown/src/lib/deserializer/deserializeMentionLink.spec.tsx`<br/>`packages/markdown/src/lib/serializer/serializeMention.spec.ts` | streaming behavior; richer affinity / cursor boundary tests | `partial` |
-| Inline semantic MDX marks (`<u>`, `<mark>`, `<kbd>`, `<sub>`, `<sup>`) | HTML / MDX inline elements | partial | partial | yes | yes | partial | no | partial | `EDIT-AFF-MARK-001` | `packages/markdown/src/lib/mdx.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-deserializer/deserializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | direct round-trip matrix by mark type; Typora/Milkdown parity call on which of these belong in the markdown-first profile | `partial` |
-| Styled span marks (`<span style=\"...\">`) | MDX-backed inline style span | partial | partial | yes | yes | partial | no | no | `EDIT-AFF-MARK-001` | `packages/markdown/src/lib/rules/fontRules.ts`<br/>`packages/markdown/src/lib/deserializer/utils/getStyleValue.spec.ts`<br/>`packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.spec.ts` | direct markdown deserialize/serialize tests; explicit profile decision on keeping style spans in markdown-first mode | `profile-divergence` |
-| Date inline MDX | `<date>...</date>` | no | no | yes | yes | partial | no | no | `n/a` | rule exists in `packages/markdown/src/lib/rules/defaultRules.ts`; example values in `packages/markdown/src/lib/__tests__/testValue.ts` | direct deserialize/serialize/round-trip tests | `gap` |
-| Comment / suggestion marks | MDX-backed inline annotations | no | no | yes | yes | partial | no | no | `n/a` | `apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx`<br/>`packages/markdown/src/lib/serializer/utils/getCustomMark.spec.ts`<br/>`packages/markdown/src/lib/rules/defaultRules.ts` | explicit markdown-first policy; dedicated deserialize/serialize tests for `<comment>` and `<suggestion>` | `out-of-scope` |
-| Callout block | MDX-backed Plate syntax | partial | no | yes | yes | partial | no | partial | `n/a` | `packages/markdown/src/lib/mdx.spec.tsx`<br/>`packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx` | direct non-MDX markdown parity decision; streaming rules; editor profile ownership | `profile-divergence` |
-| TOC block | MDX-backed Plate syntax | partial | no | partial | partial | partial | no | no | `n/a` | `packages/markdown/src/lib/mdx.spec.tsx` | dedicated rule tests and explicit markdown-first support decision | `profile-divergence` |
-| Column / column group | MDX-backed Plate syntax | no | no | yes | yes | partial | no | partial | `n/a` | `packages/markdown/src/lib/rules/columnRules.spec.ts`<br/>`packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.spec.ts` | richer round-trip tests; streaming behavior; markdown-first profile decision | `profile-divergence` |
-| Media / embed blocks | MDX-backed Plate syntax | partial | no | partial | partial | partial | no | no | `n/a` | rules in `packages/markdown/src/lib/rules/mediaRules.ts` | direct tests for deserialize/serialize/round-trip | `gap` |
-| Unknown MDX fallback | safe fallback lane | n/a | partial | yes | n/a | partial | n/a | yes | `n/a` | `packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.spec.ts`<br/>`packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts`<br/>`packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx`<br/>`packages/markdown/src/lib/deserializer/deserializeMd.spec.ts` | serializer-side explicit guarantees; more mixed-document fallback tests | `locked` |
+| Feature | Family | Parse Authority | Primary UX Ref | Secondary Ref | Behavior Scope | Editing Spec IDs | Current Evidence | Next Work | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mention | block-editor-native | local mention markdown contract | Notion | Milkdown | inline insertion, spacing, keyboard access, markdown mention link round-trip | `EDIT-MENTION-*` | `packages/mention/src/lib/BaseMentionPlugin.spec.tsx`<br/>`packages/mention/src/lib/getMentionOnSelectItem.spec.tsx`<br/>`packages/markdown/src/lib/deserializer/deserializeMentionLink.spec.tsx`<br/>`packages/markdown/src/lib/serializer/serializeMention.spec.ts` | explicit local contract informed by mainstream mention-chip behavior | `locked` |
+| Callout | block-editor-native | local MDX callout contract | Notion | Milkdown | insert, nested content, keyboard behavior, markdown round-trip | `EDIT-CALLOUT-*` | `packages/callout/src/lib/BaseCalloutPlugin.spec.ts`<br/>`packages/callout/src/lib/transforms/insertCallout.spec.ts`<br/>`packages/core/src/lib/plugins/override/withBreakRules.spec.tsx`<br/>`packages/core/src/lib/plugins/override/withDeleteRules.spec.tsx`<br/>`packages/markdown/src/lib/mdx.spec.tsx` | explicit local contract; not claimed as a stronger external standard than the evidence supports | `locked` |
+| Toggle | block-editor-native | current toggle node contract | Notion | Milkdown | open/close, nested blocks, `↵`, `⌫`, `⇥`, `⇤` | `EDIT-TOGGLE-*` | `packages/toggle/src/lib/BaseTogglePlugin.spec.ts`<br/>`packages/toggle/src/lib/queries/someToggle.spec.ts`<br/>`packages/toggle/src/react/hooks/toggleHooks.spec.tsx`<br/>`packages/toggle/src/react/queries/toggleQueries.spec.ts`<br/>`packages/toggle/src/react/withToggle.spec.tsx` | defer to the planned toggle rewrite instead of incremental patching in this lane | `deferred-minor` |
+| Date | block-editor-native | local MDX date contract | Notion | Google Docs | inline insertion, adjacency checks, keyboard access, markdown round-trip | `EDIT-DATE-*` | `packages/date/src/lib/BaseDatePlugin.spec.tsx`<br/>`packages/date/src/lib/transforms/insertDate.spec.tsx`<br/>`packages/date/src/lib/queries/isPointNextToNode.spec.tsx`<br/>`packages/markdown/src/lib/dateElement.spec.ts` | explicit local contract informed by mainstream inline-chip behavior | `locked` |
+| TOC | block-editor-native | local MDX TOC contract | Notion | docs reference | insert, selection, scrolling hooks, serialization policy | `EDIT-TOC-*` | `packages/toc/src/lib/BaseTocPlugin.spec.ts`<br/>`packages/toc/src/lib/transforms/insertToc.spec.ts`<br/>`packages/toc/src/react/hooks/*.spec.tsx`<br/>`packages/markdown/src/lib/mdx.spec.tsx` | explicit local contract; not sold as a strong public standard | `locked` |
+| Column group / column item | block-editor-native | local MDX column contract | Notion | docs reference | insert, split, move, select-all, nested editing, serialization | `EDIT-COLUMN-*` | `packages/layout/src/lib/withColumn.spec.ts`<br/>`packages/layout/src/lib/transforms/insertColumnGroup.spec.ts`<br/>`packages/layout/src/lib/transforms/insertColumn.spec.ts`<br/>`packages/layout/src/lib/transforms/toggleColumnGroup.spec.tsx`<br/>`packages/layout/src/lib/transforms/setColumns.spec.tsx`<br/>`packages/markdown/src/lib/columnSurface.spec.ts` | explicit local contract; not sold as a strong public standard | `locked` |
+| Media embed | block-editor-native | local media MDX contract | Notion | docs reference | embed insertion, editing, serialization | `EDIT-MEDIA-*` | `packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.spec.ts`<br/>`packages/media/src/lib/media-embed/transforms/insertMediaEmbed.spec.ts`<br/>`packages/media/src/lib/BaseMediaPluginContracts.spec.ts` | explicit local contract; not sold as a stronger public standard than the evidence supports | `locked` |
+| Image / file / audio / video blocks | block-editor-native | local media contracts | Notion | Google Docs for file-ish behavior | insert, caption/title, selection, serialization | `EDIT-MEDIA-*` | `packages/media/src/lib/BaseMediaPluginContracts.spec.ts`<br/>`packages/media/src/lib/image/withImageEmbed.spec.tsx`<br/>`packages/media/src/lib/image/withImageUpload.spec.tsx`<br/>`packages/media/src/lib/media/insertMedia.spec.ts`<br/>`packages/markdown/src/lib/commonmarkSurface.spec.ts`<br/>`packages/markdown/src/lib/mediaSurface.spec.ts`<br/>`packages/markdown/src/lib/rules/utils/parseAttributes.spec.ts` | explicit local contract informed by Notion-style media blocks and file-ish Docs behavior | `locked` |
+| Code drawing / Excalidraw | block-editor-native | local non-markdown contract | Notion-like board tools | docs reference | insertion, selection, serialization policy | `EDIT-DRAWING-*` | `packages/code-drawing/src/lib/transforms/insertCodeDrawing.spec.ts`<br/>`packages/code-drawing/src/lib/BaseCodeDrawingPlugin.spec.ts`<br/>`packages/excalidraw/src/lib/transforms/insertExcalidraw.spec.ts`<br/>`packages/excalidraw/src/lib/BaseExcalidrawPlugin.spec.ts` | deferred from this major instead of locking a shallow policy lane | `deferred-minor` |
+| Caption | block-editor-native helper | local caption contract | Notion | Google Docs | movement into/out of captions, media integration | `EDIT-CAPTION-*` | `packages/caption/src/lib/withCaption.spec.tsx` | explicit local contract informed by media-caption behavior in block editors and docs tools | `locked` |
 
-## Structural Edge Cases
+## Document Styling And Layout
 
-| Construct | Syntax Source | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Autoformat | Streaming | Editing Spec IDs | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Quote containing list | CommonMark | yes | partial | yes | yes | yes | partial | no | `EDIT-BQ-*`, `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMd.spec.ts`<br/>`packages/markdown/src/lib/serializer/convertNodesSerialize.spec.ts` | streaming; editing exits and ownership | `partial` |
-| Nested blockquote | CommonMark | yes | partial | yes | yes | yes | yes | no | `EDIT-BQ-*` | `apps/www/src/__tests__/package-integration/autoformat/blockquote.slow.tsx` | direct raw markdown deserialize tests; nested exit and `Backspace` tests | `partial` |
-| List containing quote | CommonMark | partial | partial | partial | partial | partial | no | no | `EDIT-BQ-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx` | serializer tests; editing ownership; richer fixture coverage | `gap` |
-| Ordered list restarts | CommonMark | partial | partial | yes | yes | yes | n/a | yes | `EDIT-LIST-*` | `packages/markdown/src/lib/deserializer/deserializeMdList.spec.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | richer serializer regression lane across mixed list + paragraph documents | `partial` |
-| Multi-paragraph table cells | GFM + Plate serializer convention | no | no | partial | yes | partial | no | no | `EDIT-TABLE-*` | `apps/www/src/__tests__/package-integration/markdown-rich/serializeMd.spec.tsx` | deserialize parity; explicit round-trip policy decision | `partial` |
+| Feature | Family | Parse Authority | Primary UX Ref | Secondary Ref | Behavior Scope | Editing Spec IDs | Current Evidence | Next Work | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Indent | styling/layout | local block style contract | Google Docs | Notion | paragraph indent, interaction with quote/list owners | `EDIT-INDENT-*` | `packages/indent/src/lib/withIndent.spec.tsx`<br/>`packages/indent/src/lib/transforms/setIndent.spec.ts`<br/>`packages/list/src/lib/withList.spec.tsx`<br/>`content/(plugins)/(styles)/indent.mdx` | explicit local style contract informed by Docs-style paragraph indentation | `locked` |
+| Text align | styling/layout | local block style contract | Google Docs | Notion | align transform, affected blocks, serialization policy | `EDIT-ALIGN-*` | `packages/basic-styles/src/lib/BaseTextAlignPlugin.spec.ts`<br/>`content/(plugins)/(styles)/text-align.mdx` | explicit local style contract informed by Docs-style alignment controls | `locked` |
+| Text indent | styling/layout | local block style contract | Google Docs | Notion | indent transform, interaction with paragraph/list/quote | `EDIT-TEXT-INDENT-*` | `packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts` | explicit local style contract informed by Docs-style indentation controls | `locked` |
+| Line height | styling/layout | local style contract | Google Docs | Notion | application/removal, affected blocks, serialization policy | `EDIT-LINE-HEIGHT-*` | `packages/basic-styles/src/lib/BaseLineHeightPlugin.spec.ts` | explicit local style contract informed by document-style spacing controls | `locked` |
+| Font family / size / weight / color / background | styling/layout | local style span contract | Google Docs | Notion | mark boundaries, serialization policy, mixed markdown behavior | `EDIT-STYLE-*` | `packages/basic-styles/src/lib/BaseFontFamilyPlugin.spec.ts`<br/>`packages/basic-styles/src/lib/BaseFontSizePlugin.spec.ts`<br/>`packages/basic-styles/src/lib/BaseFontWeightPlugin.spec.ts`<br/>`packages/basic-styles/src/lib/BaseFontColorPlugin.spec.ts`<br/>`packages/basic-styles/src/lib/BaseFontBackgroundColorPlugin.spec.ts`<br/>`packages/markdown/src/lib/rules/fontRules.ts` | explicit local style contract informed by document-style formatting controls | `locked` |
 
-## Streaming And Incremental Markdown
+## Collaboration And Editor-Only Existing Features
 
-| Lane | Typora | Milkdown | Plate Deserialize | Plate Serialize | Round-trip | Current Evidence | Missing Coverage | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Paragraph boundaries | n/a | n/a | yes | yes | yes | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx` | none worth blocking on | `locked` |
-| Inline marks across chunks | n/a | n/a | yes | partial | partial | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | link, strike, inline-code, and mixed mark closures | `partial` |
-| Lists across chunks | n/a | n/a | yes | partial | partial | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | nested list streaming; task-list-specific chunk cases | `partial` |
-| Blockquote across chunks | n/a | n/a | partial | partial | partial | mixed-document chunk test only | dedicated quote chunk tests; nested quote chunks | `gap` |
-| Incomplete code fence | n/a | n/a | yes | yes | yes | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx` | multi-language and nested-neighbor cases | `locked` |
-| Incomplete math block | n/a | n/a | yes | yes | yes | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamDeserializeMd.slow.tsx`<br/>`apps/www/src/__tests__/package-integration/ai-chat-streaming/streamSerializeMd.slow.tsx` | richer inline-vs-block mixed cases | `locked` |
-| Incomplete MDX tail | n/a | n/a | yes | partial | partial | `packages/markdown/src/lib/deserializer/{deserializeMd.spec.ts,utils/splitIncompleteMdx.spec.ts,utils/markdownToSlateNodesSafely.spec.tsx}` | serializer-side fallback guarantees for more constructs | `locked` |
-| Mixed document chunks | n/a | n/a | yes | partial | partial | `apps/www/src/__tests__/package-integration/ai-chat-streaming/streamInsertChunk.slow.tsx` | dedicated table, task-list, and blockquote chunk lanes instead of one broad fixture | `partial` |
+| Feature | Family | Parse Authority | Primary UX Ref | Secondary Ref | Behavior Scope | Editing Spec IDs | Current Evidence | Next Work | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Comment | collaboration | editor-only contract | Google Docs | Notion | mark boundaries, creation/removal, serialization exclusion | `EDIT-COMMENT-*` | `packages/comment/src/lib/BaseCommentPlugin.spec.ts`<br/>`packages/comment/src/lib/utils/getCommentKeys.spec.ts`<br/>`packages/comment/src/lib/utils/getCommentCount.spec.ts`<br/>`packages/markdown/src/lib/rules/defaultRules.ts` | deferred with the collaboration lane for a later release | `deferred-minor` |
+| Suggestion | collaboration | editor-only contract | Google Docs | Notion | suggestion ranges, insertion/deletion behavior, serialization exclusion | `EDIT-SUGGESTION-*` | `packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts`<br/>`packages/suggestion/src/lib/withSuggestion.spec.tsx`<br/>`packages/suggestion/src/lib/transforms/acceptSuggestion.spec.tsx`<br/>`packages/suggestion/src/lib/transforms/rejectSuggestion.spec.tsx`<br/>`packages/suggestion/src/lib/insertBreakSuggestion.spec.tsx`<br/>`packages/suggestion/src/lib/transforms/deleteSuggestion.spec.ts`<br/>`packages/markdown/src/lib/rules/defaultRules.ts` | deferred with the collaboration lane for a later release | `deferred-minor` |
+| Discussion | collaboration | editor-only contract | Google Docs | Notion | anchor behavior, selection coupling, serialization exclusion | `EDIT-DISCUSSION-*` | docs surface only | deferred with the collaboration lane for a later release | `deferred-minor` |
+| Yjs cursor / collaboration overlays | collaboration | editor-only contract | Google Docs | Figma/Notion | concurrent cursor and presence behavior | `EDIT-COLLAB-*` | docs and package surfaces | deferred with the collaboration lane for a later release | `deferred-minor` |
 
-## Non-Markdown Plate Blocks
+## Current Major Gate
 
-These matter for architecture, but they are not part of the markdown-first
-profile contract yet.
+The active major-release gate is now closed.
 
-| Construct | Markdown Strategy | Editing Spec IDs | Current State | Status |
-| --- | --- | --- | --- | --- |
-| Toggle | hide or map through a separate profile policy | `EDIT-TOGGLE-*` | no markdown-first commitment yet | `out-of-scope` |
-| Comment | keep editor-only or MDX-backed | `n/a` | plain-marks exclusions exist; no markdown-first contract | `out-of-scope` |
-| Suggestion | keep editor-only | `n/a` | excluded from plain mark serialization by policy | `out-of-scope` |
-| Discussion / comment threads | keep editor-only | `n/a` | no markdown-first contract | `out-of-scope` |
+What is considered closed for this major:
 
-## Current Gate
+1. markdown-native release-critical behavior
+2. the main existing-feature editor behavior seams that were actually changing
+   or clearly under-specified:
+   - blockquote
+   - list
+   - heading
+   - code block
+   - table core behavior
+   - indentation ownership
+   - callout reset/soft-break behavior
+   - mention/date/TOC boundary behavior
+   - column package-surface round-trip
+   - media/caption package-surface behavior
 
-Do not start major markdown-first implementation from the rows below without
-adding tests first:
+What remains non-blocking after this major cleanup:
 
-1. `Autolink literal`
-2. `Footnote`
-3. `Date inline MDX`
-4. `Media / embed blocks`
-5. `List containing quote`
-6. `Blockquote across chunks`
+1. broader write-up polish only:
+   - table multi-paragraph policy wording
+   - html-fallback explanation depth
+2. explicitly deferred non-markdown lanes:
+   - toggle rewrite
+   - code-drawing / Excalidraw
 
-Do not expand the major with minor new feature rows until the gate above stops
-bleeding.
+What is explicitly deferred:
 
-## Best Next TDD Order
+1. `toggle` rewrite lane
+2. collaboration/editor-only lane:
+   - comment
+   - suggestion
+   - discussion
+   - yjs
+3. feature-gap rows:
+   - date MDX expansion beyond current behavior
+   - media/embed expansion beyond current behavior
+4. streaming improvements unless a current-feature change regresses them
 
-1. quote and list destructive-edge tests from the editing spec
-2. code-block ownership tests from the editing spec
-3. table reverse-nav and cell-edge tests
-4. autolink and footnote truth
-5. blockquote and table streaming gaps
+## Best Next Order
 
-Batch 1 editing ownership rows are resolved enough to start TDD without more
-broad reference scanning.
+1. release prep and final verification
+2. optional post-major cleanup on non-blocking partial rows
+3. toggle rewrite in a later release
+4. collaboration/editor-only lane in a later release
 
 ## Related Learnings
 
 - [markdown-blockquotes-must-round-trip-as-container-blocks.md](../solutions/logic-errors/2026-04-01-markdown-blockquotes-must-round-trip-as-container-blocks.md)
 - [markdown-ordered-list-restarts-must-emit-listrestartpolite.md](../solutions/logic-errors/2026-03-30-markdown-ordered-list-restarts-must-emit-listrestartpolite.md)
-- [markdown-split-incomplete-mdx-must-not-treat-a-final-closing-angle-as-incomplete.md](../solutions/logic-errors/2026-03-25-markdown-split-incomplete-mdx-must-not-treat-a-final-closing-angle-as-incomplete.md)
-- [markdown-incomplete-mdx-fallback-drops-void-blocks.md](../solutions/logic-errors/2026-03-14-markdown-incomplete-mdx-fallback-drops-void-blocks.md)
+- [markdown-images-must-not-synthesize-title-from-caption.md](../solutions/logic-errors/2026-04-02-markdown-images-must-not-synthesize-title-from-caption.md)

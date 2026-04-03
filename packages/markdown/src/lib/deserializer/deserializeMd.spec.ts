@@ -96,6 +96,85 @@ describe('deserializeMd', () => {
       },
     ]);
   });
+
+  it('deserializes nested blockquotes as nested container blocks', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        `> outer
+> > inner
+> > tail`
+      )
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'outer' }],
+            type: 'p',
+          },
+          {
+            children: [
+              {
+                children: [{ text: 'inner\ntail' }],
+                type: 'p',
+              },
+            ],
+            type: 'blockquote',
+          },
+        ],
+        type: 'blockquote',
+      },
+    ]);
+  });
+
+  it('deserializes fenced code blocks directly from raw markdown', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(editor, '```ts\nconst x = 1;\nconsole.log(x)\n```')
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'const x = 1;' }],
+            type: 'code_line',
+          },
+          {
+            children: [{ text: 'console.log(x)' }],
+            type: 'code_line',
+          },
+        ],
+        lang: 'ts',
+        type: 'code_block',
+      },
+    ]);
+  });
+
+  it('deserializes raw markdown headings across multiple depths', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        '# Title\n\n#### Deep title\n\n###### Deepest title'
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'Title' }],
+        type: 'h1',
+      },
+      {
+        children: [{ text: 'Deep title' }],
+        type: 'h4',
+      },
+      {
+        children: [{ text: 'Deepest title' }],
+        type: 'h6',
+      },
+    ]);
+  });
 });
 
 describe('markdownToAstProcessor', () => {

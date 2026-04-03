@@ -38,6 +38,8 @@ import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
+
+const BARE_AUTOLINK_PROTOCOL_REGEX = /^https?:\/\//i;
 import { parseAttributes, propsToAttributes } from './utils';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
@@ -140,14 +142,30 @@ export const defaultRules: MdRules = {
       type: getPluginType(options.editor!, KEYS.a),
       url: mdastNode.url,
     }),
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
+    serialize: (node, options): any => {
+      const children = convertNodesSerialize(
         node.children,
         options
-      ) as MdLink['children'],
-      type: 'link',
-      url: node.url,
-    }),
+      ) as MdLink['children'];
+      const isBareAutolinkLiteral =
+        children.length === 1 &&
+        children[0]?.type === 'text' &&
+        children[0].value === node.url &&
+        BARE_AUTOLINK_PROTOCOL_REGEX.test(node.url ?? '');
+
+      if (isBareAutolinkLiteral) {
+        return {
+          type: 'html',
+          value: node.url,
+        };
+      }
+
+      return {
+        children,
+        type: 'link',
+        url: node.url,
+      };
+    },
   },
   blockquote: {
     deserialize: (mdastNode, deco, options) => ({
@@ -299,24 +317,46 @@ export const defaultRules: MdRules = {
   // so we need to convert them to p for now
   footnoteDefinition: {
     deserialize: (mdastNode, deco, options) => {
-      const children = convertChildrenDeserialize(
+      const paragraphType = getPluginType(options.editor!, KEYS.p);
+      const children = convertNodesDeserialize(
         mdastNode.children,
         deco,
         options
       );
-
-      // Flatten nested paragraphs similar to blockquote implementation
-      const flattenedChildren = children.flatMap((child: any) =>
-        child.type === 'p' ? child.children : [child]
+      const blocks = children.map((child: any) =>
+        child.type === paragraphType
+          ? child
+          : {
+              children: [child],
+              type: paragraphType,
+            }
       );
 
-      return {
-        children: flattenedChildren,
-        type: getPluginType(options.editor!, KEYS.p),
-      };
+      const identifier = (mdastNode as any).identifier;
+      const labelPrefix = identifier ? `[^${identifier}]: ` : '';
+
+      if (blocks.length === 0) {
+        return {
+          children: [{ text: labelPrefix }],
+          type: paragraphType,
+        };
+      }
+
+      return blocks.map((block: any, index: number) =>
+        index === 0
+          ? {
+              ...block,
+              children: [{ text: labelPrefix }, ...block.children],
+            }
+          : block
+      );
     },
   },
-  footnoteReference: {},
+  footnoteReference: {
+    deserialize: (mdastNode) => ({
+      text: `[^${(mdastNode as any).identifier ?? ''}]`,
+    }),
+  },
   heading: {
     deserialize: (mdastNode, deco, options) => {
       const headingType = {
@@ -405,12 +445,10 @@ export const defaultRules: MdRules = {
         ...rest,
       };
     },
-    serialize: ({ caption, url }) => {
+    serialize: ({ caption, title, url }) => {
       const image: MdImage = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
-        title: caption
-          ? caption.map((c) => (c as any).text).join('')
-          : undefined,
+        title: typeof title === 'string' ? title : undefined,
         type: 'image',
         url,
       };

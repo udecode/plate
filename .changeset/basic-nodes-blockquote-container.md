@@ -2,14 +2,17 @@
 "@platejs/basic-nodes": major
 ---
 
-Wrap `blockquote` blocks instead of converting them into flat text blocks
+Store blockquotes as container blocks with block children.
+Lift every selected nested quoted block one level on `Shift+Tab`.
+Reset headings to paragraphs on `Backspace` at block start before any merge.
 
 **Migration:**
 
-1. Update seeded blockquote values, fixtures, and tests to use block children instead of direct text children.
-2. Expect `editor.tf.blockquote.toggle()` to wrap and unwrap blocks instead of converting one text block in place.
-3. Stop relying on `BlockquotePlugin` text-block `break` rules such as `default: 'lineBreak'`; blockquote now delegates Enter behavior to its inner blocks.
-4. Legacy flat blockquote values loaded into an editor with `BlockquotePlugin` normalize to paragraph children automatically, but persisted snapshots and fixtures should still be updated to the new shape.
+1. Update persisted values, fixtures, and tests to use block children instead of direct text children.
+2. Expect `editor.tf.blockquote.toggle()` to wrap or unwrap blocks instead of retagging one text block in place.
+3. Empty later quoted paragraphs delete in place on `Backspace` instead of jumping out of the quote.
+4. `Backspace` at the start of a heading now resets the heading to a paragraph before any merge.
+5. Legacy flat blockquote values still normalize on load, but persisted snapshots and fixtures should move to the new shape.
 
 ```tsx
 // Before
@@ -20,20 +23,4 @@ Wrap `blockquote` blocks instead of converting them into flat text blocks
   type: 'blockquote',
   children: [{ type: 'p', children: [{ text: 'Quote' }] }],
 }
-```
-
-If you serialize or hydrate editor values manually, treat blockquote like other container elements:
-
-```tsx
-// Before
-editor.tf.blockquote.toggle();
-
-// selection inside one paragraph
-// => paragraph became { type: 'blockquote', children: [{ text: ... }] }
-
-// After
-editor.tf.blockquote.toggle();
-
-// selection inside one paragraph
-// => paragraph is wrapped by { type: 'blockquote', children: [{ type: 'p', ... }] }
 ```

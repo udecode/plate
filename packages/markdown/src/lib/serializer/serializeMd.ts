@@ -41,6 +41,7 @@ export const serializeMd = (
     .use(remarkPlugins ?? [])
     .use(remarkStringify, {
       emphasis: '_',
+      resourceLink: false,
       ...mergedOptions?.remarkStringifyOptions,
     });
 

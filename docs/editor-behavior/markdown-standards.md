@@ -24,76 +24,133 @@ Define the standards process for Plate's markdown-first profile so we can:
 
 ### Typora
 
-Typora is the primary behavioral north star for the markdown-first profile.
+Typora is the primary behavioral north star for markdown-native editing.
 
-Why:
+Use it for:
 
-- markdown-first product, not rich text with markdown on the side
-- cohesive editing model
-- broad Markdown feature surface
+- paragraph
+- heading
+- list
+- blockquote
+- link
+- markdown-native marks
+- code
+- hard breaks
+
+### Notion
+
+Notion is the primary behavioral north star for block-editor-native elements.
+
+Use it for:
+
+- toggle
+- callout
+- mention
+- date mentions
+- TOC-like blocks
+- columns
+- media / file blocks
+
+### Google Docs
+
+Google Docs is the primary behavioral north star for document-style editing.
+
+Use it for:
+
+- table cell behavior
+- selection and multi-cell expectations
+- indentation and alignment feel
+- comment / suggestion / review behavior
+
+### GitHub
+
+GitHub is the primary product authority for GFM-only syntax and rendered
+semantics.
+
+Use it for:
+
+- task list semantics
+- autolink literal semantics
+- footnote semantics
+- GFM table syntax and rendered rules
+
+Do not use GitHub as the main WYSIWYG editing authority for generic text
+behavior. That still belongs to Typora for markdown-native editing and Google
+Docs for table-feel and document-feel.
 
 ### Milkdown
 
-Milkdown is the open-source companion reference.
+Milkdown is the open-source companion reference and architecture cross-check.
 
-Why:
+Use it to inspect:
 
-- markdown-first intent
-- editor-engine architecture we can inspect directly
-- useful counterweight when Typora's public docs or observed behavior are thin
+- markdown-first editing choices
+- editor-engine tradeoffs
+- cases where Typora or Notion behavior is hard to inspect directly
 
 ## Authority Order
 
 Use this order when deciding Plate behavior.
 
 1. syntax spec
-2. Typora
-3. Milkdown
-4. Plate-owned decision
+2. strongest feature-family UX authority
+3. Milkdown as inspectable cross-check
+4. explicit fallback only when the others are silent or incompatible
 
 ### 1. Syntax spec
 
 For parse and serialize semantics, prefer the syntax spec first:
 
 - CommonMark
-- GFM where explicitly supported
-- math syntax conventions where explicitly adopted
+- GFM spec plus GitHub Docs for GFM-only constructs
+- LaTeX / KaTeX-style math delimiter conventions where explicitly adopted
 - MDX where Plate intentionally uses MDX for custom round-trip support
 
-### 2. Typora
+### 2. Strongest feature-family UX authority
 
-For editing behavior, Typora is the primary product reference.
+Pick the most standard or popular reference for the feature family:
+
+- Typora for markdown-native editing
+- Notion for block-editor-native elements
+- Google Docs for tables, styling, and review-like collaboration
+- GitHub for GFM-only syntax and rendered behavior where Typora is not the
+  product authority
 
 ### 3. Milkdown
 
-Use Milkdown as the open-source companion reference for markdown-first
-behavior, especially when validating architecture or inspectable decisions.
+Use Milkdown as the open-source companion reference for inspectable markdown
+behavior and engine-level cross-checking.
 
-### 4. Plate-owned decision
+### 4. Explicit fallback
 
-If the specs are silent or the references disagree, Plate must choose
-explicitly and own that choice in the spec and tests.
+If the specs are silent or the references disagree, first look for the
+strongest adjacent mainstream precedent instead of inheriting legacy Plate
+behavior.
+
+Only when that still fails should Plate choose explicitly and record that
+choice in the spec and tests.
 
 ## Decision Rules
 
-### When Typora and Milkdown agree
+### When the primary and secondary references agree
 
 Default to that behavior unless it directly conflicts with syntax correctness or
 Plate's document model.
 
-### When they disagree
+### When the primary and secondary references disagree
 
 Document:
 
 - the scenario
-- what Typora does
-- what Milkdown does
+- what the primary reference does
+- what the secondary reference does
 - the Plate choice
 - why the Plate choice wins
 
 ### When both are silent
 
-Make a Plate decision and tag it as a repo-owned rule, not an implied standard.
+Only then make an explicit fallback decision. Do not smuggle it in as if it
+were a standard.
 
 ### When current Plate behavior differs
 
@@ -106,10 +163,13 @@ This standards lane covers:
 
 - markdown-first editing behavior
 - markdown parse and serialize parity
+- existing block-editor-native behavior that the major may break
 - markdown-aware autoformat
 - markdown streaming and partial syntax handling
 
-It does not claim that every Plate block is native markdown.
+It does not claim that every Plate block is native markdown. It does claim that
+every existing content-affecting feature should have an explicit authority and
+coverage status.
 
 ## Major Release Bias
 
@@ -120,8 +180,11 @@ Spend the major budget on:
 
 - breaking wrong behavior cleanly
 - normalizing existing constructs
-- aligning parse, serialize, editing, and streaming semantics
+- aligning parse, serialize, and editing semantics for current features
 - removing accidental behavior drift between plugins
+
+Treat streaming as regression coverage for this major, not as a proactive work
+queue, unless an active current-feature change breaks it.
 
 Do not dilute the release with "nice to have" syntax or extension work while
 core existing behavior is still inconsistent.
@@ -156,29 +219,33 @@ Examples:
 - autolink literal
 - math
 
-### MDX-backed custom constructs
+### Block-editor-native constructs
 
 Examples:
 
 - mention
+- callout
+- toggle
 - date
-- custom JSX-backed elements
+- TOC
+- columns
+- media / file blocks
 
-### Non-markdown Plate constructs
+### Collaboration and editor-only constructs
 
 Examples:
 
 - suggestion
 - comment marker
 - discussion marker
-- editor-only helper blocks
+- editor-only collaboration helpers
 
-These still need explicit parity decisions:
+These still need explicit behavior decisions:
 
-- unsupported
-- lossy
-- MDX-backed
-- profile-specific extension
+- supported in the markdown-first release gate
+- supported but non-blocking for the major
+- deferred to a later minor
+- intentionally editor-only
 
 ## Spec ID Scheme
 
@@ -226,7 +293,7 @@ Use these labels in the spec docs and parity matrix:
 
 Deviations are allowed. Hidden deviations are not.
 
-When Plate differs from Typora or Milkdown, record:
+When Plate differs from Typora, Google Docs, Notion, or Milkdown, record:
 
 - spec ID
 - scenario
@@ -241,12 +308,14 @@ Good reasons:
 - better multi-block consistency
 - better streaming stability
 - better profile composability
+- stronger mainstream editor precedent
 
 Bad reasons:
 
 - "the plugin already did this"
 - "changing it is annoying"
 - "we have tests for it already"
+- "it was Plate's old default"
 
 ## Research Methodology
 

@@ -159,7 +159,7 @@ describe('defaultRules', () => {
     expect(inlineEquation.texExpression).toBe('a=b');
   });
 
-  it('flattens footnote definitions to paragraph children', () => {
+  it('converts footnote definitions into fallback paragraphs with the label on the first block', () => {
     const editor = createTestEditor();
 
     const result = buildRules(editor).footnoteDefinition.deserialize!(
@@ -179,10 +179,16 @@ describe('defaultRules', () => {
       { editor }
     );
 
-    expect(result).toEqual({
-      children: [{ text: 'First note' }, { text: 'Second note' }],
-      type: 'p',
-    });
+    expect(result).toEqual([
+      {
+        children: [{ text: '' }, { text: 'First note' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Second note' }],
+        type: 'p',
+      },
+    ]);
   });
 
   it('prefers image attributes over mdast url and alt fields', () => {

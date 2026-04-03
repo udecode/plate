@@ -249,6 +249,26 @@ describe('convertNodesSerialize', () => {
         type: 'heading',
       });
     });
+
+    it.each([
+      ['h4', 4],
+      ['h5', 5],
+      ['h6', 6],
+    ])('normalizes %s plugin keys before selecting the serializer', (type, depth) => {
+      expect(
+        buildMdastNode(
+          {
+            children: [{ text: `Heading ${depth}` }],
+            type,
+          },
+          baseOptions
+        )
+      ).toEqual({
+        children: [{ type: 'text', value: `Heading ${depth}` }],
+        depth,
+        type: 'heading',
+      });
+    });
   });
 
   describe('disallowedNodes option', () => {

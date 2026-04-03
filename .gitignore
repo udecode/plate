@@ -127,3 +127,5 @@ packages/plate/docs/
 .vercel
 
 *.local*
+
+.omx/

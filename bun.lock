@@ -269,7 +269,7 @@
     },
     "packages/ai": {
       "name": "@platejs/ai",
-      "version": "52.3.20",
+      "version": "52.3.22",
       "dependencies": {
         "@platejs/markdown": "workspace:^",
         "@platejs/selection": "workspace:^",
@@ -797,7 +797,7 @@
     },
     "packages/markdown": {
       "name": "@platejs/markdown",
-      "version": "52.3.19",
+      "version": "52.3.22",
       "dependencies": {
         "lodash": "^4.17.23",
         "marked": "^15.0.12",

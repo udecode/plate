@@ -104,4 +104,3 @@ likely to bake folklore into core behavior.
 
 - [markdown-editing-spec.md](../../markdown-editing-spec.md)
 - [markdown-editing-reference-audit.md](../../markdown-editing-reference-audit.md)
-- [2026-04-02-markdown-editing-reference-audit.md](../../plans/2026-04-02-markdown-editing-reference-audit.md)

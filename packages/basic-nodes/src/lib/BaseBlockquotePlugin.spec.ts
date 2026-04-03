@@ -11,11 +11,13 @@ describe('BaseBlockquotePlugin', () => {
     const toggleBlockSpy = spyOn(editor.tf, 'toggleBlock');
 
     expect(plugin.rules).toMatchObject({
+      break: {
+        empty: 'lift',
+      },
       delete: {
-        start: 'reset',
+        start: 'lift',
       },
     });
-    expect(plugin.rules?.break).toBeUndefined();
 
     (editor.getTransforms(BaseBlockquotePlugin) as any).blockquote.toggle();
 

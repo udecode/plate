@@ -44,4 +44,23 @@ describe('BaseTextAlignPlugin', () => {
       [editor.getType(KEYS.textAlign)]: 'center',
     });
   });
+
+  it('applies and clears text alignment through the shared transform', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
+      value: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    } as any);
+    const nodeKey = editor.getType(KEYS.textAlign);
+
+    (editor as any).tf.textAlign.setNodes('center', { at: [] });
+    expect((editor.children[0] as any)[nodeKey]).toBe('center');
+
+    (editor as any).tf.textAlign.setNodes('start', { at: [] });
+    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+  });
 });

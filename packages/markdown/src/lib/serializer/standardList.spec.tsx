@@ -242,6 +242,41 @@ describe('serializeMd list', () => {
     expect(serializeMd(editor, { value: input })).toBe(expected);
   });
 
+  it('serialize restarted ordered lists separated by a paragraph', () => {
+    const input = [
+      {
+        children: [{ text: 'First list item' }],
+        indent: 1,
+        listStart: 1,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Break between lists.' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Second list item' }],
+        indent: 1,
+        listStart: 2,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+      {
+        children: [{ text: 'Third list item' }],
+        indent: 1,
+        listStart: 3,
+        listStyleType: 'decimal',
+        type: 'p',
+      },
+    ] as any;
+
+    const expected =
+      '1. First list item\n\nBreak between lists.\n\n2. Second list item\n3. Third list item\n';
+
+    expect(serializeMd(editor, { value: input })).toBe(expected);
+  });
+
   it('serialize lists with links', () => {
     const input = (
       <fragment>
