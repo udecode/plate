@@ -5,8 +5,8 @@
   },
   "content": [
     {
-      "source": "docs/*.mdx",
-      "target": "docs/*.cn.mdx"
+      "source": "content/*.mdx",
+      "target": "content/*.cn.mdx"
     }
   ]
 }

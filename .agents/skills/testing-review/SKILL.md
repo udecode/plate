@@ -109,7 +109,7 @@ When recommending the next batch:
 
 Write:
 
-- a markdown map under `.claude/docs/plans/`
+- a markdown map under `docs/plans/`
 - a package TSV
 - a file TSV
 - a locked roadmap markdown file when this is the first meaningful pass for the current phase, or update that roadmap if it already exists

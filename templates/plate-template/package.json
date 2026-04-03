@@ -22,8 +22,8 @@
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "1.7.0",
-    "next": "16.2.1",
-    "platejs": "^52.3.16",
+    "next": "16.2.2",
+    "platejs": "^52.3.21",
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -31,12 +31,12 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.9",
+    "@biomejs/biome": "2.4.10",
     "@tailwindcss/postcss": "4.2.2",
     "@types/node": "^25.5.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@typescript-eslint/parser": "^8.57.2",
+    "@typescript-eslint/parser": "^8.58.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "7.0.1",
@@ -44,7 +44,7 @@
     "postcss": "^8.5.8",
     "tailwindcss": "4.2.2",
     "typescript": "6.0.2",
-    "ultracite": "7.4.0"
+    "ultracite": "7.4.2"
   },
   "packageManager": "bun@1.3.9"
 }

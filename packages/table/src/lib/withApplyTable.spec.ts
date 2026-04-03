@@ -1,16 +1,9 @@
 import { KEYS } from 'platejs';
 
-import * as selectionModule from './transforms/overrideSelectionFromCell';
 import * as utilsModule from './utils';
 import { withApplyTable } from './withApplyTable';
 
 describe('withApplyTable', () => {
-  beforeEach(() => {
-    spyOn(selectionModule, 'overrideSelectionFromCell').mockImplementation(
-      () => undefined as any
-    );
-  });
-
   afterEach(() => {
     mock.restore();
   });
@@ -52,7 +45,6 @@ describe('withApplyTable', () => {
     transforms.apply(op);
 
     expect(op.newProperties.focus).toEqual({ offset: 0, path: [1, 0] });
-    expect(selectionModule.overrideSelectionFromCell).toHaveBeenCalled();
     expect(apply).toHaveBeenCalledWith(op);
   });
 

@@ -1,0 +1,165 @@
+name: SlateDepsSync
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: slate-deps-sync
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update Slate deps
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'udecode/plate' }}
+
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.9
+
+      - name: ⚙️ Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: ♻️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: ⬆️ Update Slate manifests
+        run: >
+          npx npm-check-updates@latest
+          '/^(slate|slate-dom|slate-react|slate-hyperscript)$/'
+          --configFileName .ncurc.yml
+          --configFilePath tooling/config
+          --mergeConfig
+          --packageManager pnpm
+          --root
+          --upgrade
+          --workspaces
+
+      - name: 📦 Install updated deps
+        run: pnpm install --no-frozen-lockfile
+        env:
+          HUSKY: '0'
+
+      - name: 🔍 Detect Slate update changes
+        id: slate-changes
+        run: |
+          node <<'EOF'
+          const { execFileSync } = require('node:child_process');
+          const { appendFileSync, readFileSync } = require('node:fs');
+
+          const files = [
+            'apps/www/package.json',
+            'packages/core/package.json',
+            'packages/slate/package.json',
+            'packages/test-utils/package.json',
+          ];
+          const sections = [
+            'dependencies',
+            'devDependencies',
+            'peerDependencies',
+            'optionalDependencies',
+          ];
+          const targets = [
+            'slate',
+            'slate-dom',
+            'slate-react',
+            'slate-hyperscript',
+          ];
+          const changed = new Set();
+
+          const readHeadPackageJson = (file) => {
+            try {
+              return JSON.parse(
+                execFileSync('git', ['show', `HEAD:${file}`], {
+                  encoding: 'utf8',
+                })
+              );
+            } catch {
+              return {};
+            }
+          };
+
+          for (const file of files) {
+            const current = JSON.parse(readFileSync(file, 'utf8'));
+            const previous = readHeadPackageJson(file);
+
+            for (const section of sections) {
+              for (const dependency of targets) {
+                const currentVersion = current[section]?.[dependency];
+                const previousVersion = previous[section]?.[dependency];
+
+                if (currentVersion !== previousVersion) {
+                  changed.add(dependency);
+                }
+              }
+            }
+          }
+
+          const packages = [...changed];
+          appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `changed=${packages.length > 0}\n`
+          );
+          appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `packages_json<<EOF\n${JSON.stringify(packages)}\nEOF\n`
+          );
+          EOF
+
+      - name: 📝 Sync Slate changeset
+        if: ${{ steps.slate-changes.outputs.changed == 'true' }}
+        env:
+          CHANGED_PACKAGES_JSON: ${{ steps.slate-changes.outputs.packages_json }}
+        run: |
+          if [ -f .changeset/slate.md ]; then
+            echo "Updating existing .changeset/slate.md"
+          else
+            echo "Creating .changeset/slate.md"
+          fi
+
+          node <<'EOF'
+          const { writeFileSync } = require('node:fs');
+
+          const packages = JSON.parse(process.env.CHANGED_PACKAGES_JSON);
+          const message = `Updated ${packages.map((name) => `\`${name}\``).join(', ')}.`;
+
+          writeFileSync(
+            '.changeset/slate.md',
+            `---\n"@platejs/slate": patch\n---\n\n${message}\n`
+          );
+          EOF
+
+      - name: 🔧 Configure git
+        if: ${{ steps.slate-changes.outputs.changed == 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: ⬆️ Push Slate update
+        if: ${{ steps.slate-changes.outputs.changed == 'true' }}
+        run: |
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No staged changes."
+            exit 0
+          fi
+
+          git commit -m "chore: update"
+          git push origin HEAD:main

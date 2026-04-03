@@ -11,3 +11,5 @@ else
   "$SCRIPT_DIR/update-template.sh" basic
   "$SCRIPT_DIR/update-template.sh" ai
 fi
+
+"$SCRIPT_DIR/update-template-skills.sh"

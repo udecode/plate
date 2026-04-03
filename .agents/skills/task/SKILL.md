@@ -26,6 +26,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - Do not default to research swarms, review swarms, or browser proof.
 - For verified code-changing work, default to creating or updating the PR unless the user explicitly said not to.
 - Do not default to compounding.
+- Before calling a task blocked on a repo-wide gate, rule out local install corruption once when the failure smells wrong for the diff.
 
 ## Intake
 
@@ -38,33 +39,79 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
    - Linear issue link/id: fetch it with the Linear integration first.
 2. Read the full source-of-truth context before doing anything else.
 3. If the task comes from a ticket or issue, also read the comments and attachments when available.
-4. Classify the task shape before choosing a workflow:
+4. If the task comes from a tracker item and any attachment or linked media is a video or screen recording, you must have transcript output with `video-transcripts` before implementation.
+   - The canonical shared cache lives in the tracker next to the evidence it describes.
+   - Cache comment body should be XML only:
+
+````md
+```xml
+<video-transcripts>
+<video-transcript
+  source-key="https://tracker-hosted-video/<stable-path-without-query>"
+>
+[00:00] (...)
+</video-transcript>
+</video-transcripts>
+```
+````
+
+   - `source-key` must be the normalized stable identifier for the media. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so rotating signatures do not bust the cache.
+   - Do not add decorative metadata like `title` to cached `<video-transcript>` entries unless a later workflow truly needs it.
+   - Group videos by source container before transcribing:
+     - one cache comment for issue or PR body videos
+     - GitHub: one dedicated top-level cache comment for each issue or PR comment that contains video(s)
+     - Linear: one cache reply for each comment that contains video(s)
+   - Keep the cache body pure XML. Do not prepend markers, prose, or YAML.
+   - Before running the helper, scan existing tracker comments and, when relevant, Linear replies. Match by source container first, then check whether the cached `<video-transcript ... source-key="...">` entries cover every current video URL for that container after the same normalization.
+   - If the matching cache fully covers the current normalized video keys for that source container, reuse the cached XML block and do not re-transcribe.
+   - If the cache is missing any current video, or that source container has new video evidence, transcribe only the missing videos and create or update the matching cache comment or reply.
+   - Use the helper in [$video-transcripts](/Users/zbeyens/git/plate/.agents/skills/video-transcripts/SKILL.md).
+   - Run it once per relevant video attachment or URL.
+   - For auth-gated tracker media like `uploads.linear.app` or private GitHub asset URLs, use the helper directly before declaring the video blocked. It can reuse local tracker auth when available.
+   - Convert the video evidence into a normalized block in this exact shape before continuing:
+
+```xml
+<video-transcripts>
+<video-transcript source-key="...">
+[00:00] (...)
+</video-transcript>
+</video-transcripts>
+```
+
+   - Use the generated or cached transcript output as part of the tracker context.
+   - Do not hand-write, paraphrase, or skip video evidence when the skill can run.
+   - If the helper still cannot fetch or transcribe the media after a real attempt, hard stop and report the exact blocker you hit.
+   - Do not continue implementation without the transcript when a real video is present.
+5. If there are multiple videos, preserve each as its own `<video-transcript ...>` block under one `<video-transcripts>` wrapper.
+6. Classify the task shape before choosing a workflow:
    - Testing or coverage work: triggered by coverage, regressions, test-suite phases, hotspots, package testing, or similar language.
    - Program or batch work: triggered by multiple packages, phases, buckets, or ordered slices.
    - Ordinary one-shot work: bug, feature, refactor, docs, review, or investigation that can be finished as a single slice.
-5. Classify whether this is heavyweight framework or library work:
+7. Classify whether this is heavyweight framework or library work:
    - Heavyweight work: architecture or public API redesign, breaking changes, major cross-package refactors, benchmarking, profiling strategy, performance comparison, scalability work, framework comparison, migration analysis, RFCs, proposals, or spec-first major changes.
    - Non-heavyweight work: ordinary bugs, one-package features, docs-only edits, routine test work, small refactors, or normal issue execution even when non-trivial.
-6. If the task is heavyweight work:
+8. If the task is heavyweight work:
    - load `major-task` immediately
    - treat `major-task` as the source of truth for workflow and helper selection
    - do not quietly inflate this task flow into a research swarm
-7. If the task is not heavyweight work, classify task complexity before implementation:
+9. If the task is not heavyweight work, classify task complexity before implementation:
    - Non-trivial task: multi-step work, research-heavy work, phased execution, or anything likely to take more than a handful of tool calls.
    - Trivial task: quick question, small edit, or other work that does not need persistent working memory.
-8. If the task is non-trivial:
+10. If the task is non-trivial:
    - load `planning-with-files` before implementation
    - use persistent planning files or the repo's equivalent planning structure so progress survives context loss
    - follow local repo overrides for where planning files live
-9. If the task is testing or coverage work:
+   - if the task touches published package code under `packages/`, record in the plan whether a changeset will be required before completion
+   - if the task is registry-only work under `apps/www/src/registry/`, record in the plan whether `docs/components/changelog.mdx` must be updated instead of creating a package changeset
+11. If the task is testing or coverage work:
    - restate it as test work, not generic feature work
    - load `testing` first and use that testing policy as the source of truth
    - choose the smallest honest seam before loading `tdd`
-10. If the task is program or batch work:
+12. If the task is program or batch work:
    - restate the ordered scope and hard constraints
    - do not treat the whole batch as one implementation unit
    - default to completing the first slice cleanly unless the user explicitly asks for a broader sweep
-11. GitHub issue rules:
+13. GitHub issue rules:
    - Resolve bare issue numbers like `#555` against the current repo with `gh repo view --json nameWithOwner -q '.nameWithOwner'`.
    - Fetch GitHub issues with:
      ```bash
@@ -72,7 +119,7 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
      ```
    - Fetch GitHub PRs with `gh pr view ... --json`.
    - If the input is ambiguous and not clearly a GitHub issue token or URL, do not guess.
-12. For any tracker source, restate for yourself:
+14. For any tracker source, restate for yourself:
 
 - source type
 - source id
@@ -84,19 +131,21 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 - whether there is a real browser surface to verify
 - likely root-cause layer: call site, helper, abstraction seam, or public API
 
-13. Read repo instructions and nearby implementation patterns before editing.
-14. If the task changes code:
+15. Read repo instructions and nearby implementation patterns before editing.
+16. If the task changes code:
 
-- if already on a relevant feature branch, continue there
-- otherwise check out `main`, pull the latest `main`, then create a repo-convention branch before editing
+- if already on a branch clearly dedicated to this exact task, continue there
+- treat a branch as "clearly dedicated" only when the branch name, tracker id, or existing PR obviously matches the current task
+- do not reuse an unrelated non-`main` branch just because you are already on it
+- if the current branch is not clearly dedicated to this task, check out `main`, pull the latest `main`, then create a fresh repo-convention branch before editing
 - if the task has a tracker id, prefer a branch name that includes it:
   - GitHub issue: `codex/555-short-slug`
   - Linear issue: `codex/LIN-123-short-slug`
 - in this repo, otherwise prefer `codex/<slug>`
 - run install or setup only when the repo or task actually needs it
 
-15. If the task does not change code, skip branch and setup noise.
-16. If anything important is still ambiguous after the source-of-truth pass and nearby code reading, ask the user the smallest useful clarifying question.
+17. If the task does not change code, skip branch and setup noise.
+18. If anything important is still ambiguous after the source-of-truth pass and nearby code reading, ask the user the smallest useful clarifying question.
 
 ## Tracked Task Rules
 
@@ -144,6 +193,8 @@ Apply this section only when the task source is a tracker item.
   Do not load it for tiny isolated edits.
 - `debug`
   Use when the failure mode is still fuzzy after the first repro pass or first failing test.
+- `video-transcripts`
+  Use when a tracker issue, PR, comment thread, or attachment set includes any video or screen recording that should become structured transcript evidence before implementation.
 - `ce:brainstorm`
   Use when requirements are still ambiguous after reading the source of truth and nearby code.
 - `framework-docs-researcher`
@@ -232,7 +283,15 @@ Keep verification mandatory but proportional.
 - Run lint when code changed and the repo expects it.
 - Run browser verification only for browser or UI tasks.
 - Run broader repo-wide gates only when repo instructions require them or the change scope justifies them.
+- If a failing `pnpm test`, `bun test`, or `pnpm check` shows local-corruption signals unrelated to the current diff, run `pnpm run reinstall` once and rerun the exact failing command before declaring the task blocked. Treat these as local-corruption signals:
+  - `Invalid hook call`
+  - `resolveDispatcher()` / null dispatcher crashes
+  - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
+  - mixed `.bun` and `.pnpm` React paths in the same failing stack
+  - missing-module or package-resolution garbage that does not match the diff
 - If the repo has a standard final gate, run it last.
+- If verified work changes a published package under `packages/`, ensure the required changeset exists before PR or final handoff.
+- If the work is registry-only under `apps/www/src/registry/`, update `docs/components/changelog.mdx` instead of creating a package changeset.
 - If verified work changed code, create or update the PR before tracker sync-back unless the user explicitly said not to.
 - If the task came from a tracked issue and the task reached a meaningful outcome, sync back unless the user said not to.
 - If UI changed, capture proof from the real browser surface.
@@ -246,23 +305,20 @@ Every final response must include:
   - be extremely concise
   - sacrifice grammar for concision
   - no filler, no narration, no polite padding
-- two leading markdown tables in this exact format:
-  - metadata table:
-    - `| Check | Result |`
-    - `| --- | --- |`
-  - flow table:
-    - `| Phase | 🧪 Tests | 🌐 Browser |`
-    - `| --- | --- | --- |`
-- use these metadata rows, in this order:
-  - `PR`
-  - `Issue`
-  - `Confidence`
+- leading flat metadata lines in this exact order:
+  - `🔀 PR ...`
+  - `🐛 Fixes ...` for bug issues, otherwise use a generic issue line
+  - `🟢 95-100% confidence`
+- then the flow table in this exact format:
+  - `| Phase | 🧪 Tests | 🌐 Browser |`
+  - `| --- | --- | --- |`
 - use these flow rows, in this order:
   - `Reproduced`
   - `Verified`
 - use markdown links for `PR` and `Issue` when they exist
-- keep the `Issue` row stable; do not add issue comment links there
-- use these exact status values in the tables:
+- for non-bug tracked work, do not fake a bug label; use a neutral issue line instead
+- keep the issue line stable; do not add issue comment links there
+- use these exact status values in the flow table:
   - `✅`
   - `❌`
   - `➖ N/A`
@@ -273,12 +329,12 @@ Every final response must include:
   - use `✅` when test evidence exists but did not follow a real red-green loop
 - use `➖ N/A` for rows or cells that do not apply; do not invent a PR, issue, or comment
 - flow-table test cells mean test-based evidence, whether that came from TDD, a regression test, or another targeted test path
-- if manual non-browser reproduction or verification happened, explain it in the prose below the tables rather than adding extra rows
-- `Confidence` must stay `100%` or lower and use this format:
-  - `🟢 95-100%`
-  - `🟡 80-94%`
-  - `🔴 below 80%`
-- after the tables, use these short sections in this order:
+- if manual non-browser reproduction or verification happened, explain it in the prose below the metadata lines + flow table rather than adding extra rows
+- `Confidence` must stay `100%` or lower and use this line format:
+  - `🟢 95-100% confidence`
+  - `🟡 80-94% confidence`
+  - `🔴 below 80% confidence`
+- after the metadata lines + flow table, use these short sections in this order:
   - `**🌐 Browser Check**`, only when browser verification applies
   - `**✅ Outcome**`
   - `**⚠️ Caveat**`
@@ -297,7 +353,7 @@ Every final response must include:
 - Include at least one real browser proof screenshot in the final response.
 - The screenshot must come from `dev-browser` or the real browser workflow used for verification.
 - When `**🌐 Browser Check**` is present, put the screenshot immediately after that section.
-- Otherwise, put the screenshot immediately after the two tables, before the completion summary.
+- Otherwise, put the screenshot immediately after the metadata lines + flow table, before the completion summary.
 - If no real browser proof exists, the task is not done unless the user explicitly waived it.
 - If `dev-browser` is blocked on a likely reusable tool-side issue and the product task is still otherwise fixable, load `agent-browser-issue`.
 - If that follow-up issue is opened, mention it in the caveat or handoff.
@@ -331,7 +387,8 @@ Apply this section only when the task came from a tracker item and reached a mea
 ### Pull Request
 
 - When a PR exists, the PR description must match the exact current final handoff from chat:
-  - same two tables
+  - same flow table
+  - same metadata lines, except omit the leading `🔀 PR ...` line because the PR page already identifies itself
   - same screenshot when applicable
   - same `**✅ Outcome**`, `**🏗️ Design**`, `**🧪 Verified**`, `**⚠️ Caveat**`, and `**🌐 Browser Check**` sections when applicable
   - same caveats
@@ -411,10 +468,12 @@ Example:
 - Source-of-truth context was read first.
 - Relevant local instructions and code patterns were read before editing.
 - Tracker items were fetched and summarized correctly when provided.
+- Video attachments or screen recordings were turned into normalized `<video-transcripts>` evidence before implementation when tracker evidence required it.
 - Bare GitHub issues like `#555` were resolved against the current `gh` repo instead of guessed.
 - The chosen implementation fixed the highest-leverage seam available, not just the nearest symptom.
-- Code-changing tasks that did not already start on a relevant feature branch checked out `main` and pulled latest before branching.
+- Code-changing tasks that did not already start on a branch clearly dedicated to the same task checked out `main` and pulled latest before branching.
 - Non-trivial work loaded `planning-with-files` or the repo-equivalent planning workflow before implementation.
+- Non-trivial package or registry work recorded release-artifact requirements in the plan early: changeset for published package work, `docs/components/changelog.mdx` for registry-only work.
 - Testing work loaded the testing policy before implementation.
 - Only the necessary skills were loaded.
 - The implementation matched the task type instead of following a one-size-fits-all ritual.

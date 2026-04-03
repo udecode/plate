@@ -1,4 +1,5 @@
 import {
+  type Descendant,
   type SlateEditor,
   type TElement,
   type TListElement,
@@ -47,6 +48,40 @@ function isBoolean(value: any) {
       Object.prototype.toString.call(value) === '[object Boolean]')
   );
 }
+
+const createClassicListItemContent = (
+  editor: SlateEditor,
+  children: Descendant[] = []
+) => ({
+  children: children.length > 0 ? children : [{ text: '' }],
+  type: getPluginType(editor, KEYS.lic),
+});
+
+const deserializeClassicListItemChildren = (
+  mdastChildren: MdRootContent[],
+  deco: any,
+  options: { editor?: SlateEditor } & Record<string, any>
+) => {
+  const licType = getPluginType(options.editor!, KEYS.lic);
+  const children = mdastChildren
+    .map((child) => {
+      if (child.type === 'paragraph') {
+        return createClassicListItemContent(
+          options.editor!,
+          convertChildrenDeserialize(child.children, deco, options)
+        );
+      }
+
+      return convertChildrenDeserialize([child], deco, options)[0];
+    })
+    .filter(Boolean);
+
+  if (!children.some((child) => child.type === licType)) {
+    children.unshift(createClassicListItemContent(options.editor!));
+  }
+
+  return children;
+};
 
 export const defaultRules: MdRules = {
   a: {
@@ -446,25 +481,12 @@ export const defaultRules: MdRules = {
         // For standard lists, we need to ensure each list item is properly structured
         const children = mdastNode.children.map((child) => {
           if (child.type === 'listItem') {
-            // Process each list item
             return {
-              children: child.children.map((itemChild) => {
-                if (itemChild.type === 'paragraph') {
-                  return {
-                    children: convertChildrenDeserialize(
-                      itemChild.children,
-                      deco,
-                      options
-                    ),
-                    type: getPluginType(options.editor!, KEYS.lic),
-                  };
-                }
-                return convertChildrenDeserialize(
-                  [itemChild],
-                  deco,
-                  options
-                )[0];
-              }),
+              children: deserializeClassicListItemChildren(
+                child.children,
+                deco,
+                options
+              ),
               type: getPluginType(options.editor!, KEYS.li),
             };
           }
@@ -630,23 +652,14 @@ export const defaultRules: MdRules = {
     },
   },
   listItem: {
-    deserialize: (mdastNode, deco, options) => {
-      // Transform each paragraph in the list item into a 'lic' type
-      const children = mdastNode.children.map((child: MdRootContent) => {
-        if (child.type === 'paragraph') {
-          return {
-            children: convertChildrenDeserialize(child.children, deco, options),
-            type: getPluginType(options.editor!, KEYS.lic),
-          };
-        }
-        return convertChildrenDeserialize([child], deco, options)[0];
-      });
-
-      return {
-        children,
-        type: getPluginType(options.editor!, KEYS.li),
-      };
-    },
+    deserialize: (mdastNode, deco, options) => ({
+      children: deserializeClassicListItemChildren(
+        mdastNode.children,
+        deco,
+        options
+      ),
+      type: getPluginType(options.editor!, KEYS.li),
+    }),
     serialize: (node, options) => ({
       children: convertNodesSerialize(node.children, options),
       type: 'listItem',

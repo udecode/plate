@@ -17,19 +17,36 @@ import { rehypeNpmCommand } from './src/lib/rehype-npm-command';
 import 'dotenv/config';
 
 const DIRECTORY_PATTERN_REGEX = /\(([^)]*)\)\//g;
+const CONTENT_PREFIX_REGEX = /^content\//;
 const EVENT_META_REGEX = /event="([^"]*)"/;
+const normalizeDocsPath = (flattenedPath) => {
+  const normalizedPath = flattenedPath.replace(DIRECTORY_PATTERN_REGEX, '');
+  const withoutContentRoot =
+    normalizedPath === 'content'
+      ? ''
+      : normalizedPath.replace(CONTENT_PREFIX_REGEX, '');
+  const docsPath = withoutContentRoot ? `docs/${withoutContentRoot}` : 'docs';
+
+  if (docsPath === 'docs/index') {
+    return 'docs';
+  }
+
+  if (docsPath.endsWith('/index')) {
+    return docsPath.slice(0, -'/index'.length);
+  }
+
+  return docsPath;
+};
 
 /** @type {import('contentlayer2/source-files').ComputedFields} */
 const computedFields = {
   slug: {
     type: 'string',
-    resolve: (doc) =>
-      `/docs/${doc._raw.flattenedPath.replace(DIRECTORY_PATTERN_REGEX, '')}`,
+    resolve: (doc) => `/${normalizeDocsPath(doc._raw.flattenedPath)}`,
   },
   slugAsParams: {
     type: 'string',
-    resolve: (doc) =>
-      doc._raw.flattenedPath.replace(DIRECTORY_PATTERN_REGEX, ''),
+    resolve: (doc) => normalizeDocsPath(doc._raw.flattenedPath),
   },
 };
 
@@ -102,7 +119,7 @@ export const Doc = defineDocumentType(() => ({
 }));
 
 export default makeSource({
-  contentDirInclude: ['docs'],
+  contentDirInclude: ['content'],
   contentDirPath: '../..',
   documentTypes: [Doc],
   mdx: {

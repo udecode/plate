@@ -68,4 +68,41 @@ describe('getTopTableCell', () => {
     const cellAbove = getTopTableCell(emptyEditor);
     expect(cellAbove).toBeUndefined();
   });
+
+  it('returns the spanning cell above when the row above has a merged column', () => {
+    const mergedInput = (
+      <editor>
+        <htable>
+          <htr>
+            <htd colSpan={2} id="c11">
+              <hp>11</hp>
+            </htd>
+            <htd id="c13">
+              <hp>13</hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd id="c21">
+              <hp>21</hp>
+            </htd>
+            <htd id="c22">
+              <hp>
+                22
+                <cursor />
+              </hp>
+            </htd>
+            <htd id="c23">
+              <hp>23</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as any as SlateEditor;
+    const editor = createEditorInstance(mergedInput);
+
+    expect(getTopTableCell(editor)).toEqual([
+      expect.objectContaining({ id: 'c11' }),
+      [0, 0, 0],
+    ]);
+  });
 });

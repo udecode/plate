@@ -316,7 +316,7 @@ alwaysApply: true
 
 ### 5. Save and Next Steps
 
-- Create directories: `mkdir -p .claude/docs .claude/skills`
+- Create directories: `mkdir -p docs .claude/skills`
 - Save design document: `.agents/rules/1-app-design-document.mdc`
 - Update Claude rule: `.agents/rules/status.mdc`
 - Suggest: "Would you like me to create a technical stack document next?"

@@ -1,11 +1,6 @@
-import {
-  type Path,
-  type SlateEditor,
-  type TTableCellElement,
-  PathApi,
-} from 'platejs';
+import type { Path, SlateEditor } from 'platejs';
 
-import { getCellTypes } from '../utils/index';
+import { getAdjacentTableCell } from './getAdjacentTableCell';
 
 // Get cell to the top of the current cell
 export const getTopTableCell = (
@@ -15,26 +10,8 @@ export const getTopTableCell = (
   }: {
     at?: Path;
   } = {}
-) => {
-  if (!cellPath) {
-    cellPath = editor.api.node<TTableCellElement>({
-      match: { type: getCellTypes(editor) },
-    })?.[1];
-
-    if (!cellPath) return;
-  }
-
-  const cellIndex = cellPath.at(-1)!;
-  const rowIndex = cellPath.at(-2)!;
-
-  // If the current cell is in the first row, there is no cell above it
-  if (rowIndex === 0) return;
-
-  const cellAbovePath = [
-    ...PathApi.parent(PathApi.parent(cellPath)),
-    rowIndex - 1,
-    cellIndex,
-  ];
-
-  return editor.api.node<TTableCellElement>(cellAbovePath);
-};
+) =>
+  getAdjacentTableCell(editor, {
+    at: cellPath,
+    deltaRow: -1,
+  });

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/test-utils",
-  "version": "52.3.12",
+  "version": "52.3.21",
   "description": "Testing utilities for Plate",
   "keywords": [
     "plate",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@platejs/slate": "workspace:*",
-    "slate": "0.123.0",
+    "slate": "0.124.0",
     "slate-hyperscript": "0.100.0"
   },
   "publishConfig": {

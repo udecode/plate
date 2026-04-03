@@ -1,5 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
+import type { useTocSideBarState } from './useTocSideBar';
+
 import {
   checkInMock,
   registerSharedTocHookMocks,
@@ -10,6 +12,16 @@ import {
   useScrollRefMock,
   useTocControllerMock,
 } from './__tests__/tocHookMocks';
+
+type AssertFalse<T extends false> = T;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type TocSideBarState = ReturnType<typeof useTocSideBarState>;
+
+type _tocSideBarStateNotAny = AssertFalse<IsAny<TocSideBarState>>;
+type _headingListNotAny = AssertFalse<IsAny<TocSideBarState['headingList']>>;
+type _onContentScrollNotAny = AssertFalse<
+  IsAny<TocSideBarState['onContentScroll']>
+>;
 
 describe('useTocSideBar', () => {
   beforeEach(() => {

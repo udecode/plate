@@ -1,9 +1,7 @@
-- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `install` to sync. Never edit `SKILL.md` directly.
+- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `bun install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
-
-- Internal agent docs live under `.claude/docs/`, not `docs/`. Put solution docs in `.claude/docs/solutions/` and plans in `.claude/docs/plans/`.
 
 ## Git
 
@@ -19,10 +17,23 @@
 ## Packages
 
 - DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
-- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow .claude/docs/solutions/style.md for writing tone/structure.
+- Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow docs/solutions/style.md for writing tone/structure.
 - Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles during package/app work. If local verification rewrites template files, restore them before handoff. Only change `templates/**` when the user explicitly asks for template work.
+- Barrels: If you change package exports, move public files, add/remove files under exported folders, or CI says `pnpm brl` produced changes, run `pnpm brl` before final verification/commit and include the generated barrel updates.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
+
+## Tooling
+
+- If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
+- Treat local-only React runtime weirdness as install corruption first, not product code:
+  - `Invalid hook call`
+  - `resolveDispatcher()` / null dispatcher crashes
+  - package-local `node_modules/react` or `node_modules/react-dom` paths under `packages/*`
+  - mixed `.bun` and `.pnpm` React paths in the same failing stack
+- If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
+- `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
+- Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
 
 ## Skill
 
@@ -43,9 +54,9 @@ When using the following skills, override the default behavior.
 
 `planning-with-files`:
 
-- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`.
-- For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `.claude/docs/plans/4510-fix-schema.md`
-- For non-ticket work, keep the date-based format. Example: `.claude/docs/plans/2026-02-07-fix-schema.md`
+- Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `docs/plans/`.
+- For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `docs/plans/4510-fix-schema.md`
+- For non-ticket work, keep the date-based format. Example: `docs/plans/2026-02-07-fix-schema.md`
 
 `dev-browser`:
 
@@ -77,7 +88,11 @@ Do not default to `pnpm typecheck` for package work in this repo. Package type c
 
 If filtered package builds still leave unresolved workspace-package imports during typecheck, run `pnpm build` at the repo root before treating the failure as real package debt.
 
+If a local-only build/runtime/test failure points at corrupted files under `node_modules/.bun`, mixed `.bun` / `.pnpm` React installs, package-local `node_modules/react*` symlinks, `Invalid hook call`, or other non-versioned env state while CI is green, clean local env before changing repo code: run `pnpm run reinstall` once, then rerun the exact failing command. If the failure shape changes or disappears, it was local env rot. If not, go back to normal debugging.
+
 **CLOSEOUT GATE**: If a task edits code, tests, package manifests, or build/type/lint config, do not post a final handoff until the relevant verification ran in this same turn. If you skip a required check or it fails, say that plainly and do not present the task as done.
+
+If package work changed exports or file layout, run `pnpm brl` before the final verification pass. If `pnpm brl` writes files, keep those barrel updates in the change.
 
 **Required sequence for type checking modified packages:**
 
