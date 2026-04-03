@@ -38,13 +38,26 @@ export type NodeIdOptions = {
    */
   idKey?: string;
   /**
-   * Normalize initial value. If false, normalize only the first and last node
-   * are missing id. To disable this behavior, use `NodeIdPlugin.configure({
-   * normalizeInitialValue: null })`.
+   * Controls how missing ids are assigned in the initial value.
    *
-   * @default false
+   * - `'if-needed'`: normalize only when the first or last top-level node is
+   *   missing an id
+   * - `'always'`: walk the whole initial value and fill any missing ids
+   * - `false`: skip initial-value id assignment
+   *
+   * @default 'if-needed'
    */
-  normalizeInitialValue?: boolean;
+  initialValueIds?: false | 'always' | 'if-needed';
+  /**
+   * Legacy alias for `initialValueIds`.
+   *
+   * - `false`: only check the first and last top-level nodes
+   * - `true`: walk the whole initial value and fill missing ids
+   * - `null`: skip initial-value id assignment
+   *
+   * @deprecated Use `initialValueIds` instead.
+   */
+  normalizeInitialValue?: boolean | null;
   /**
    * Reuse ids on undo/redo and copy/pasting if not existing in the document.
    * This is disabled by default to avoid duplicate ids across documents.
@@ -71,70 +84,219 @@ export type NormalizeNodeIdOptions = Pick<
   | 'idKey'
 >;
 
-/**
- * Normalize node IDs in a value without using editor operations. This is a pure
- * function that returns a new normalized value.
- */
-export const normalizeNodeId = <V extends Value>(
-  value: V,
-  options: NormalizeNodeIdOptions = {}
-): V => {
+type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
+  isBlock?: (node: Descendant) => boolean;
+};
+
+const isDefaultNodeIdFastPath = ({
+  allow,
+  exclude,
+  filter,
+  filterInline = true,
+  filterText = true,
+}: NormalizeNodeIdRuntimeOptions) =>
+  allow === undefined &&
+  exclude === undefined &&
+  filter === undefined &&
+  filterInline &&
+  filterText;
+
+const isBlockCandidate = (
+  node: Descendant,
+  isBlock?: (node: Descendant) => boolean
+) =>
+  ElementApi.isElement(node) &&
+  (isBlock ? isBlock(node) : (node as any).inline !== true);
+
+const shouldAssignNodeId = (
+  entry: [Descendant, number[]],
+  options: NormalizeNodeIdRuntimeOptions = {}
+) => {
   const {
     allow,
     exclude,
     filter = () => true,
     filterInline = true,
     filterText = true,
-    idCreator = () => nanoid(10),
+    isBlock,
     idKey = 'id',
   } = options;
+  const [node, path] = entry;
+
+  return (
+    !node[idKey] &&
+    queryNode([node, path], {
+      allow,
+      exclude,
+      filter: (nextEntry) => {
+        const [entryNode] = nextEntry;
+
+        if (filterText && !ElementApi.isElement(entryNode)) {
+          return false;
+        }
+        if (
+          filterInline &&
+          ElementApi.isElement(entryNode) &&
+          !(isBlock ? isBlock(entryNode) : (entryNode as any).inline !== true)
+        ) {
+          return false;
+        }
+
+        return filter(nextEntry);
+      },
+    })
+  );
+};
+
+const resolveInitialValueIds = (
+  options: Pick<NodeIdOptions, 'initialValueIds' | 'normalizeInitialValue'>
+): false | 'always' | 'if-needed' => {
+  if (options.initialValueIds !== undefined) {
+    return options.initialValueIds;
+  }
+
+  if (options.normalizeInitialValue === null) {
+    return false;
+  }
+
+  if (options.normalizeInitialValue === true) {
+    return 'always';
+  }
+
+  return 'if-needed';
+};
+
+/**
+ * Normalize node IDs in a value without using editor operations. This is a pure
+ * function that returns the normalized value and preserves references for
+ * unchanged branches.
+ */
+const normalizeNodeIdRuntime = <V extends Value>(
+  value: V,
+  options: NormalizeNodeIdRuntimeOptions = {}
+): V => {
+  const { idCreator = () => nanoid(10), idKey = 'id' } = options;
+
+  if (isDefaultNodeIdFastPath(options)) {
+    const normalizeNodeFast = (node: Descendant): Descendant => {
+      if (!ElementApi.isElement(node)) return node;
+      if (!isBlockCandidate(node, options.isBlock)) return node;
+
+      let nextChildren: Descendant[] | undefined;
+
+      node.children.forEach((child, index) => {
+        const nextChild = normalizeNodeFast(child as Descendant);
+
+        if (nextChild !== child) {
+          if (!nextChildren) {
+            nextChildren = [...node.children] as Descendant[];
+          }
+
+          nextChildren[index] = nextChild;
+        }
+      });
+
+      if (!node[idKey]) {
+        return {
+          ...node,
+          ...(nextChildren ? { children: nextChildren } : {}),
+          [idKey]: idCreator(),
+        };
+      }
+
+      if (nextChildren) {
+        return {
+          ...node,
+          children: nextChildren,
+        };
+      }
+
+      return node;
+    };
+
+    let valueChanged = false;
+
+    const nextValue = value.map((node) => {
+      const nextNode = normalizeNodeFast(node as Descendant);
+
+      if (nextNode !== node) {
+        valueChanged = true;
+      }
+
+      return nextNode;
+    }) as V;
+
+    return valueChanged ? nextValue : value;
+  }
 
   const normalizeNode = (node: Descendant, path: number[]): Descendant => {
-    // Clone the node to avoid mutating the original
-    const clonedNode = { ...node };
+    let nextNode = node;
+    let childrenChanged = false;
 
-    // Check if we should add ID to this node
-    if (
-      !clonedNode[idKey] &&
-      queryNode([clonedNode, path], {
-        allow,
-        exclude,
-        filter: (entry) => {
-          const [node] = entry;
-
-          if (filterText && !ElementApi.isElement(node)) {
-            return false;
-          }
-          if (
-            filterInline &&
-            ElementApi.isElement(node) &&
-            // For static normalization, we can't use editor.api.isBlock
-            // so we'll assume all elements with children are blocks unless inline is explicitly set
-            (node as any).inline === true
-          ) {
-            return false;
-          }
-
-          return filter(entry);
-        },
-      })
-    ) {
-      clonedNode[idKey] = idCreator();
+    if (shouldAssignNodeId([node, path], options)) {
+      nextNode = {
+        ...node,
+        [idKey]: idCreator(),
+      };
     }
 
-    // Recursively normalize children if it's an element
-    if (ElementApi.isElement(clonedNode)) {
-      clonedNode.children = clonedNode.children.map((child, index) =>
-        normalizeNode(child as Descendant, [...path, index])
-      );
+    if (ElementApi.isElement(node)) {
+      const nextChildren = node.children.map((child, index) => {
+        const nextChild = normalizeNode(child as Descendant, [...path, index]);
+
+        if (nextChild !== child) {
+          childrenChanged = true;
+        }
+
+        return nextChild;
+      });
+
+      if (childrenChanged) {
+        nextNode =
+          nextNode === node
+            ? {
+                ...node,
+                children: nextChildren,
+              }
+            : {
+                ...nextNode,
+                children: nextChildren,
+              };
+      }
     }
 
-    return clonedNode;
+    return nextNode;
   };
 
-  // Normalize all top-level nodes
-  return value.map((node, index) => normalizeNode(node, [index])) as V;
+  let valueChanged = false;
+
+  const nextValue = value.map((node, index) => {
+    const nextNode = normalizeNode(node, [index]);
+
+    if (nextNode !== node) {
+      valueChanged = true;
+    }
+
+    return nextNode;
+  }) as V;
+
+  return valueChanged ? nextValue : value;
 };
+
+export const normalizeNodeId = <V extends Value>(
+  value: V,
+  options: NormalizeNodeIdOptions = {}
+): V => normalizeNodeIdRuntime(value, options);
+
+export const normalizeNodeIdWithEditor = <V extends Value>(
+  editor: { api: { isBlock: (node: Descendant) => boolean } },
+  value: V,
+  options: NormalizeNodeIdOptions = {}
+): V =>
+  normalizeNodeIdRuntime(value, {
+    ...options,
+    isBlock: editor.api.isBlock,
+  });
 
 export type NodeIdConfig = PluginConfig<
   'nodeId',
@@ -154,53 +316,63 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
     filterInline: true,
     filterText: true,
     idKey: 'id',
-    normalizeInitialValue: false,
     filter: () => true,
     idCreator: () => nanoid(10),
   },
 })
   .extendTransforms(({ editor, getOptions }) => ({
     normalize() {
-      const { allow, exclude, filter, filterInline, filterText, idKey } =
-        getOptions();
+      const options = getOptions();
+      const { idCreator, idKey } = options;
+      const updates: { at: number[]; props: Record<string, unknown> }[] = [];
+
+      if (
+        isDefaultNodeIdFastPath({ ...options, isBlock: editor.api.isBlock })
+      ) {
+        const path: number[] = [];
+
+        const visitFast = (node: Descendant) => {
+          if (!ElementApi.isElement(node)) return;
+          if (!isBlockCandidate(node, editor.api.isBlock)) return;
+
+          if (!node[idKey!]) {
+            updates.push({
+              at: [...path],
+              props: { [idKey!]: idCreator!() },
+            });
+          }
+
+          node.children.forEach((child: any, index: number) => {
+            path.push(index);
+            visitFast(child);
+            path.pop();
+          });
+        };
+
+        editor.children.forEach((node, index) => {
+          path.push(index);
+          visitFast(node);
+          path.pop();
+        });
+
+        if (updates.length === 0) return;
+
+        editor.tf.withoutSaving(() => {
+          editor.tf.setNodesBatch(updates as any);
+        });
+
+        return;
+      }
 
       const addNodeId = (entry: [Descendant, number[]]) => {
         const [node, path] = entry;
 
         if (
-          !node[idKey!] &&
-          queryNode([node, path], {
-            allow,
-            exclude,
-            filter: (entry) => {
-              const [node] = entry;
-
-              if (filterText && !ElementApi.isElement(node)) {
-                return false;
-              }
-              if (
-                filterInline &&
-                ElementApi.isElement(node) &&
-                !editor.api.isBlock(node)
-              ) {
-                return false;
-              }
-
-              return filter!(entry);
-            },
-          })
+          shouldAssignNodeId(entry, { ...options, isBlock: editor.api.isBlock })
         ) {
-          // Verify node exists at path before attempting to modify
-          const existingNode = editor.api.node(path);
-          if (!existingNode) {
-            return;
-          }
-
-          editor.tf.withoutSaving(() => {
-            editor.tf.setNodes(
-              { [idKey!]: getOptions().idCreator!() },
-              { at: path }
-            );
+          updates.push({
+            at: path,
+            props: { [idKey!]: idCreator!() },
           });
         }
 
@@ -212,27 +384,39 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
         }
       };
 
-      // Process top-level nodes in place
+      // Start traversal from top-level nodes.
       editor.children.forEach((node, index) => {
         addNodeId([node, [index]]);
+      });
+
+      if (updates.length === 0) return;
+
+      editor.tf.withoutSaving(() => {
+        editor.tf.setNodesBatch(updates as any);
       });
     },
   }))
   .extend({
-    normalizeInitialValue: ({ editor, getOptions, tf }) => {
-      const { normalizeInitialValue } = getOptions();
+    transformInitialValue: ({ editor, getOptions, value }): Value => {
+      const options = getOptions();
+      const { idKey = 'id' } = options;
+      const initialValueIds = resolveInitialValueIds(options);
+
+      if (initialValueIds === false) {
+        return value;
+      }
 
       // Perf: check if normalization is needed by looking at the first node and last node
-      if (!normalizeInitialValue) {
-        const firstNode = editor.children[0];
-        const lastNode = editor.children.at(-1);
+      if (initialValueIds === 'if-needed') {
+        const firstNode = value[0];
+        const lastNode = value.at(-1);
 
-        if (firstNode?.id && lastNode?.id) {
-          return;
+        if (firstNode?.[idKey] && lastNode?.[idKey]) {
+          return value;
         }
       }
 
-      tf.nodeId.normalize();
+      return normalizeNodeIdWithEditor(editor, value, options);
     },
   })
   .overrideEditor(withNodeId);

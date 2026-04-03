@@ -437,7 +437,7 @@ The next real split win also turned out to be dirty-path bookkeeping, not tree r
 - the first "parent-only for everything" shortcut was too aggressive and broke element-split cases like `splitNodeThenSetSelection`
 - the correct cut is narrower:
   - keep the cheap carried-path prefix transform
-  - derive each split op's *new* dirty paths from `editor.getDirtyPaths(op)`
+  - derive each split op's _new_ dirty paths from `editor.getDirtyPaths(op)`
 - that keeps the semantic fix while still cutting real cost on the flat `5,000`-block split lane:
   - `Transforms.applyBatch([...split_node])`: `110.96 ms` -> `91.12 ms`
   - manual `Editor.withBatch([...split_node])`: `176.32 ms` -> `100 ms`
@@ -548,10 +548,12 @@ This is a getter, yes. The mistake would be making every internal engine read lo
 The final draft model has two layers:
 
 1. generic draft root
+
 - current private children root for the batch
 - every tree op in a batch reads and writes against this draft root
 
 2. op-family optimizer overlays
+
 - exact-path `set_node` is the first one
 - future families plug in only when they beat the generic draft-root path
 - the long-term target is a planner/dispatcher that can combine compatible overlays in one batch and safely drop back to the generic draft root when needed
@@ -1460,12 +1462,12 @@ Mitigation:
 Finish the rewrite in two layers:
 
 1. generic correctness layer
+
 - every batched tree op uses a private draft root
 - `editor.children` exposes immutable snapshots
 - one public seam stays: `editor.apply(op)`
 
 2. measured optimization layer
+
 - exact-path `set_node` stays optimized
 - structural families get optimizers only when benchmarked workloads justify them
-
-That is the real end-state Joe was pushing toward: one `apply` seam, no public batch-special-case API, no mutable published refs, and no regression hiding behind fake benchmarks.

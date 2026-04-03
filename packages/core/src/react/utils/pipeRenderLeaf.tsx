@@ -18,6 +18,8 @@ export const pipeRenderLeaf = (
 ): EditableProps['renderLeaf'] => {
   const renderLeafs: RenderLeaf[] = [];
   const leafPropsPlugins: AnyEditorPlatePlugin[] = [];
+  const hasInjectNodeProps =
+    editor.meta.pluginCache.inject.nodeProps.length > 0;
 
   editor.meta.pluginCache.node.isLeaf.forEach((key) => {
     const plugin = editor.getPlugin({ key });
@@ -33,6 +35,23 @@ export const pipeRenderLeaf = (
       leafPropsPlugins.push(plugin as any);
     }
   });
+
+  if (
+    !hasInjectNodeProps &&
+    renderLeafs.length === 0 &&
+    leafPropsPlugins.length === 0
+  ) {
+    if (renderLeafProp) {
+      return renderLeafProp;
+    }
+
+    return function render({ attributes, ...props }) {
+      return <span {...attributes}>{props.children}</span>;
+    };
+  }
+
+  const canUsePlainOuterLeaf =
+    !hasInjectNodeProps && !renderLeafProp && leafPropsPlugins.length === 0;
 
   return function render({ attributes, ...props }) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -66,6 +85,10 @@ export const pipeRenderLeaf = (
         };
       }
     });
+
+    if (canUsePlainOuterLeaf) {
+      return <span {...attributes}>{props.children}</span>;
+    }
 
     if (renderLeafProp) {
       return renderLeafProp({ attributes, ...props } as any);

@@ -40,7 +40,53 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
   expect(leaf).toHaveTextContent('test content');
 });
 
-it('uses a PlateLeaf hard-affinity fast path for simple hard-edge plugins', () => {
+it('renders simple hard-affinity leaves without spacers when inactive', () => {
+  const testPlugin = createTSlatePlugin({
+    key: 'test',
+    node: {
+      isLeaf: true,
+      type: 'test',
+    },
+    render: {
+      as: 'code',
+    },
+    rules: {
+      selection: {
+        affinity: 'hard',
+      },
+    },
+  });
+  const editor = createPlateEditor({
+    value: [
+      {
+        children: [{ test: true, text: 'test content' }],
+        type: 'p',
+      },
+    ] as any,
+    plugins: [testPlugin],
+  });
+  const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
+  const text = editor.children[0].children[0] as any;
+  const TestComponent = () =>
+    renderLeaf({
+      children: 'test content',
+      leaf: text,
+      leafPosition: { end: 0, start: 12 } as any,
+      text,
+    } as any);
+
+  const { container } = render(<TestComponent />);
+
+  const leaf = container.querySelector('code');
+  const spacers = container.querySelectorAll('span[contenteditable="false"]');
+
+  expect(leaf).not.toBeNull();
+  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveTextContent('test content');
+  expect(spacers).toHaveLength(0);
+});
+
+it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
     node: {
@@ -58,14 +104,25 @@ it('uses a PlateLeaf hard-affinity fast path for simple hard-edge plugins', () =
   });
   const editor = createPlateEditor({
     plugins: [testPlugin],
+    selection: {
+      anchor: { offset: 12, path: [0, 0] },
+      focus: { offset: 12, path: [0, 0] },
+    } as any,
+    value: [
+      {
+        children: [{ test: true, text: 'test content' }],
+        type: 'p',
+      },
+    ] as any,
   });
   const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
+  const text = editor.children[0].children[0] as any;
   const TestComponent = () =>
     renderLeaf({
       children: 'test content',
-      leaf: { test: true, text: 'test content' } as any,
+      leaf: text,
       leafPosition: { end: 0, start: 12 } as any,
-      text: { test: true, text: 'test content' } as any,
+      text,
     } as any);
 
   const { container } = render(<TestComponent />);

@@ -7,7 +7,7 @@
 - Source context:
   [deep-interview-editor-performance-rest-plan.md](/Users/zbeyens/git/plate-2/.omx/specs/deep-interview-editor-performance-rest-plan.md)
 - Primary evidence:
-  [editor-perf-layer1-core-plugins-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json)
+  `editor-perf-layer1-core-plugins-summary.json` (historical compact summary not retained)
 
 ## RALPLAN-DR Summary
 
@@ -228,7 +228,7 @@ Goal:
 Deliverables:
 
 - fresh
-  [editor-perf-layer1-core-plugins-summary.json](/Users/zbeyens/git/plate-2/.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json)
+  `editor-perf-layer1-core-plugins-summary.json` (historical compact summary not retained)
 - master-plan update with the current cheap/core state
 
 Exit gate:

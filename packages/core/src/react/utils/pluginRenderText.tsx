@@ -3,6 +3,7 @@ import React from 'react';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
+import { getSlateClass } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { type PlateTextProps, PlateText } from '../components/plate-nodes';
 import { useReadOnly } from '../slate-react';
@@ -20,16 +21,34 @@ export const pluginRenderText = (
   plugin: AnyEditorPlatePlugin
 ): RenderText =>
   function render(nodeProps) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const readOnly = useReadOnly();
     const {
       render: { node },
     } = plugin;
     const { children, text } = nodeProps;
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const readOnly = useReadOnly();
+    const textKey = plugin.node.type ?? plugin.key;
 
     if (isEditOnly(readOnly, plugin, 'render')) return children;
 
-    if (text[plugin.node.type ?? plugin.key]) {
+    if (text[textKey]) {
+      const canUsePlainText =
+        !node &&
+        editor.meta.pluginCache.inject.nodeProps.length === 0 &&
+        !plugin.node.props &&
+        !plugin.node.dangerouslyAllowAttributes?.length;
+
+      if (canUsePlainText) {
+        const Tag = (plugin.render?.as ??
+          'span') as keyof HTMLElementTagNameMap;
+
+        return (
+          <Tag className={getSlateClass(plugin.node.type) || undefined}>
+            {children}
+          </Tag>
+        );
+      }
+
       const Text = node ?? PlateText;
 
       const ctxProps = getRenderNodeProps({

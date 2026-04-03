@@ -4,12 +4,14 @@ const { withNodeId } = await import('./withNodeId');
 
 const createNodeIdOverride = (
   overrides: Record<string, any> = {},
-  someImpl: (args: { match: Record<string, any> }) => boolean = () => false
+  someImpl: (args: { match: Record<string, any> }) => boolean = () => false,
+  children: any[] = []
 ) => {
   const apply = mock();
   const insertNode = mock();
   const insertNodes = mock();
   const editor = {
+    children,
     api: {
       some: mock(someImpl),
     },
@@ -46,9 +48,16 @@ const createNodeIdOverride = (
 
 describe('withNodeId', () => {
   it('replaces duplicate inserted ids and restores a unique _id override', () => {
-    const { apply, transforms } = createNodeIdOverride(
+    const { apply, editor, transforms } = createNodeIdOverride(
       {},
-      ({ match }) => match.id === 'taken-id'
+      () => false,
+      [
+        {
+          children: [{ text: 'existing' }],
+          id: 'taken-id',
+          type: 'p',
+        },
+      ]
     );
 
     transforms.apply({
@@ -62,12 +71,111 @@ describe('withNodeId', () => {
       type: 'insert_node',
     } as any);
 
+    expect(editor.api.some).not.toHaveBeenCalled();
+
     expect(apply).toHaveBeenCalledWith({
       node: {
         _id: undefined,
         children: [{ text: 'hello' }],
         id: 'preferred-id',
         type: 'p',
+      },
+      path: [0],
+      type: 'insert_node',
+    });
+  });
+
+  it('generates a new id for inserted duplicates even when reuseId is enabled', () => {
+    const { apply, editor, transforms } = createNodeIdOverride(
+      { reuseId: true },
+      () => false,
+      [
+        {
+          children: [{ text: 'existing' }],
+          id: 'taken-id',
+          type: 'p',
+        },
+      ]
+    );
+
+    transforms.apply({
+      node: {
+        children: [{ text: 'hello' }],
+        id: 'taken-id',
+        type: 'p',
+      },
+      path: [0],
+      type: 'insert_node',
+    } as any);
+
+    expect(editor.api.some).not.toHaveBeenCalled();
+
+    expect(apply).toHaveBeenCalledWith({
+      node: {
+        children: [{ text: 'hello' }],
+        id: 'generated-id',
+        type: 'p',
+      },
+      path: [0],
+      type: 'insert_node',
+    });
+  });
+
+  it('reuses one editor scan for multiple duplicate ids during insert_node', () => {
+    const { apply, editor, transforms } = createNodeIdOverride(
+      {},
+      () => false,
+      [
+        {
+          children: [{ text: 'existing-a' }],
+          id: 'taken-a',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'existing-b' }],
+          id: 'taken-b',
+          type: 'p',
+        },
+      ]
+    );
+
+    transforms.apply({
+      node: {
+        children: [
+          {
+            children: [{ text: 'hello' }],
+            id: 'taken-a',
+            type: 'p',
+          },
+          {
+            children: [{ text: 'world' }],
+            id: 'taken-b',
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
+      },
+      path: [0],
+      type: 'insert_node',
+    } as any);
+
+    expect(editor.api.some).not.toHaveBeenCalled();
+    expect(apply).toHaveBeenCalledWith({
+      node: {
+        children: [
+          {
+            children: [{ text: 'hello' }],
+            id: 'generated-id',
+            type: 'p',
+          },
+          {
+            children: [{ text: 'world' }],
+            id: 'generated-id',
+            type: 'p',
+          },
+        ],
+        id: 'generated-id',
+        type: 'blockquote',
       },
       path: [0],
       type: 'insert_node',

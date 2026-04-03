@@ -13,6 +13,8 @@ Use this first.
 
 ## Core Docs
 
+- [final-synthesis.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/final-synthesis.md)
+  The settled read after the full comparison pass.
 - [engine.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/engine.md)
   The architecture north star.
 - [cohesive-program-plan.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/cohesive-program-plan.md)
@@ -50,6 +52,7 @@ Start there only if you need:
    - `slate-dom-v2`
    - `slate-react-v2`
 7. React `19.2+` as the runtime target for `slate-react-v2`
+8. the clipboard-boundary proof belongs in `slate-v2` + `slate-dom-v2` before any new package is invented
 
 ## What Can Still Pivot
 
@@ -60,11 +63,41 @@ Start there only if you need:
 
 ## Current Execution Posture
 
-The docs are now strong enough to start the first `packages/slate-v2` prototype.
+The proof stack now exists for:
 
-But the right order stays:
+- `packages/slate-v2`
+- `packages/slate-dom-v2`
+- `packages/slate-react-v2`
+- `packages/slate-history-v2`
+
+The comparison phase is complete.
+
+The settled read is in:
+
+- [final-synthesis.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/final-synthesis.md)
+
+The next structural seam is still the missing clipboard-boundary proof from Phase 4.
+
+The broad package direction is also clearer now:
+
+- keep the split package architecture
+- keep the core data-model-first
+- keep the runtime packages headless and adapter-friendly
+- prefer explicit boundary ownership over giant convenience layers
+
+External comparison so far reinforces that direction.
+
+- Edix is useful evidence for explicit DOM and clipboard adapter seams.
+- Edix is not a reason to collapse everything back into one package.
+- Edix is not a better React renderer model than the selector-first `slate-react-v2` direction.
+- Tiptap, TanStack DB, urql, VS Code, LSP, EditContext, and Open UI all sharpen future `plate-v2` or later imports.
+- `Pretext` still matters inside v2, but narrowly:
+  as a planning primitive for inactive-region geometry, not as the active editing geometry source.
+- None of them change the immediate `slate-v2` next step.
+
+The right order still stays:
 
 1. respect the runtime specs
-2. keep core answering to them
-3. spike `packages/slate-v2`
-4. stop at the next proof gate before widening the surface
+2. keep each package answering to the packages below it
+3. finish the clipboard-boundary proof
+4. only then start cashing out on the chronic bug families

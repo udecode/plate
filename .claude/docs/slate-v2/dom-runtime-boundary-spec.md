@@ -120,6 +120,12 @@ Responsibilities:
 - HTML/plaintext browser boundary
 - foreign DOM ingestion hooks
 
+Important:
+
+- internal clipboard format ownership should be explicit and editor-scoped
+- import/export hooks should be extension-style seams, not regex accidents buried in one DOM helper
+- `slate-dom-v2` should expose the browser-boundary part of clipboard handling without making `slate-react-v2` or `slate-v2` guess at fragment format details
+
 ### 5. Editor Boundary Rules
 
 `slate-dom-v2` must define explicit ownership for:
@@ -139,6 +145,18 @@ It needs a small honest surface:
 - selection bridge primitives
 - clipboard DOM helpers
 - editor boundary registration and lookup helpers
+
+That means this package should stay an adapter layer:
+
+- mount and unmount editor roots
+- bind DOM nodes to runtime identity
+- translate browser ranges and transfer formats
+
+Not:
+
+- broad editor UI helpers
+- history semantics
+- React subscription policy
 
 Do **not** start with:
 

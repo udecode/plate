@@ -22,6 +22,7 @@ Without this file, the work risks drifting into a pile of good-looking local doc
 ## Inputs
 
 - [engine.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/engine.md)
+- [final-synthesis.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/final-synthesis.md)
 - [dom-runtime-boundary-spec.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/dom-runtime-boundary-spec.md)
 - [react-runtime-spec.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/react-runtime-spec.md)
 - [issue-clusters.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-issues/issue-clusters.md)
@@ -72,6 +73,8 @@ If any of these wobble, stop and re-decide before writing more code.
 3. Do not pull DOM or browser recovery logic into `slate-v2`.
 4. Do not start with compatibility shims as the main architecture.
 5. Do not let docs, examples, or migration concerns freeze core seams early.
+6. Do not pull pagination, semantic services, or lightweight native-input work down into `slate-v2`.
+7. Do not invent a standalone clipboard package before the boundary is proved inside `slate-v2` + `slate-dom-v2`.
 
 ## Program Shape
 
@@ -144,12 +147,22 @@ Deliver:
 - stable editor instance semantics
 - controlled/external update sanity
 - explicit no-effect-mirroring runtime rules
+- default large-document-safe rendering posture:
+  - active-slice invalidation
+  - semantic islands
+  - active editing corridor
+  - default occlusion outside the corridor
+- explicit measurement split:
+  - live DOM geometry for the active corridor
+  - optional deterministic planning geometry for inactive islands
 
 Proof to move on:
 
 - rerender-breadth lanes move materially
 - the runtime no longer depends on half-mutated editor state
 - controlled and derived UI paths do not rely on effect-driven state mirroring or effect-chained commands
+- large-doc behavior is good by default before virtualization enters the picture
+- any deterministic measurement helper, including `Pretext`, is clearly scoped to inactive planning rather than active editing correctness
 
 ### Phase 4
 
@@ -160,6 +173,22 @@ Deliver:
 - transaction-aware undo units
 - collaboration-safe grouping rules
 - internal fragment ownership and import/export seams
+
+The recommended sub-order inside Phase 4 is:
+
+1. `slate-history-v2` proof first
+2. clipboard-boundary proof second
+
+Why:
+
+- history depends directly on committed transaction boundaries
+- clipboard depends on a clean `slate-dom-v2` + `slate-v2` boundary
+- they belong in the same phase, but they are not equally sharp as first slices
+
+Current status:
+
+- `slate-history-v2` proof is done
+- clipboard-boundary proof is the remaining open structural slice
 
 Proof to move on:
 
@@ -263,6 +292,17 @@ If not:
 - keep docs thin
 - do not turn unstable surfaces into public promises
 
+### Gate G: Before chronic bug-family cleanup
+
+Question:
+
+- are all structural package seams actually proven, including clipboard boundaries?
+
+If not:
+
+- do not jump to the chronic runtime clusters yet
+- finish the missing structural seam first
+
 ## Frozen First Tranche
 
 Do not boil the ocean.
@@ -317,14 +357,14 @@ No phase gets to advance on vibes alone.
 
 ## Immediate Next Step
 
-The runtime specs now exist. The next real move is the first `packages/slate-v2` prototype.
+The first proof packages now exist for core, DOM, React, and history.
 
 That means:
 
-1. treat `dom-runtime-boundary-spec.md` and `react-runtime-spec.md` as hard constraints
-2. create the package skeleton for `slate-v2`
-3. wire the first red-test and benchmark harnesses
-4. stop again at Gate B before widening the surface
+1. keep the package split
+2. finish the clipboard-boundary proof
+3. stop again before chronic bug-family cleanup
+4. only then start cashing out on mobile, selection, and runtime pain
 
 That is the best plan.
 

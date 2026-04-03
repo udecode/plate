@@ -5,10 +5,15 @@ export type EditorPerfPluginSetId =
   | 'blockquote-only'
   | 'bold-only'
   | 'code-only'
+  | 'highlight-only'
   | 'horizontal-rule-only'
   | 'heading-only'
   | 'italic-only'
+  | 'kbd-only'
   | 'underline-only'
+  | 'strikethrough-only'
+  | 'subscript-only'
+  | 'superscript-only'
   | 'none';
 
 export type CorePluginCensusEntryId =
@@ -16,8 +21,13 @@ export type CorePluginCensusEntryId =
   | 'bold'
   | 'code'
   | 'heading'
+  | 'highlight'
   | 'horizontal-rule'
   | 'italic'
+  | 'kbd'
+  | 'strikethrough'
+  | 'subscript'
+  | 'superscript'
   | 'underline';
 
 export type CorePluginCensusPerformanceClass =
@@ -82,6 +92,17 @@ export const CORE_PLUGIN_CENSUS_ENTRIES: CorePluginCensusEntry[] = [
     provisionalMountBudgetMs: 12,
   },
   {
+    activatedWorkload: 'huge-highlight',
+    description:
+      'Directional mark wrapper. Measures the isolated highlight mark path without bold/italic sibling fan-out.',
+    id: 'highlight',
+    inactiveWorkload: 'huge-paragraph',
+    label: 'HighlightPlugin',
+    performanceClass: 'cheap marks/text wrappers',
+    pluginSet: 'highlight-only',
+    provisionalMountBudgetMs: 8,
+  },
+  {
     activatedWorkload: 'huge-italic',
     description:
       'Cheap mark wrapper. Measures the isolated italic mark path without the full basic-marks bundle.',
@@ -90,6 +111,50 @@ export const CORE_PLUGIN_CENSUS_ENTRIES: CorePluginCensusEntry[] = [
     label: 'ItalicPlugin',
     performanceClass: 'cheap marks/text wrappers',
     pluginSet: 'italic-only',
+    provisionalMountBudgetMs: 8,
+  },
+  {
+    activatedWorkload: 'huge-kbd',
+    description:
+      'Affinity-bearing mark. Measures the isolated kbd mark path without code sibling fan-out.',
+    id: 'kbd',
+    inactiveWorkload: 'huge-paragraph',
+    label: 'KbdPlugin',
+    performanceClass: 'affinity-bearing marks',
+    pluginSet: 'kbd-only',
+    provisionalMountBudgetMs: 12,
+  },
+  {
+    activatedWorkload: 'huge-strikethrough',
+    description:
+      'Directional mark wrapper. Measures the isolated strikethrough mark path without the full basic-marks bundle.',
+    id: 'strikethrough',
+    inactiveWorkload: 'huge-paragraph',
+    label: 'StrikethroughPlugin',
+    performanceClass: 'cheap marks/text wrappers',
+    pluginSet: 'strikethrough-only',
+    provisionalMountBudgetMs: 8,
+  },
+  {
+    activatedWorkload: 'huge-subscript',
+    description:
+      'Directional mark wrapper. Measures the isolated subscript mark path without superscript sibling fan-out.',
+    id: 'subscript',
+    inactiveWorkload: 'huge-paragraph',
+    label: 'SubscriptPlugin',
+    performanceClass: 'cheap marks/text wrappers',
+    pluginSet: 'subscript-only',
+    provisionalMountBudgetMs: 8,
+  },
+  {
+    activatedWorkload: 'huge-superscript',
+    description:
+      'Directional mark wrapper. Measures the isolated superscript mark path without subscript sibling fan-out.',
+    id: 'superscript',
+    inactiveWorkload: 'huge-paragraph',
+    label: 'SuperscriptPlugin',
+    performanceClass: 'cheap marks/text wrappers',
+    pluginSet: 'superscript-only',
     provisionalMountBudgetMs: 8,
   },
   {

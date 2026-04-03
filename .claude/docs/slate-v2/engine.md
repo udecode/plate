@@ -71,6 +71,14 @@ Those are not here because "React won, deal with it."
 
 They are here because they improve the engine on its own merits and also happen to make a React runtime dramatically cleaner.
 
+One more correction after broader package comparison work:
+
+- keep the package split
+- keep adapters explicit
+- do not confuse "headless" with "single-package"
+
+Edix is a useful reference for headless DOM binding and explicit clipboard boundaries, but not a reason to collapse `slate-v2`, `slate-dom-v2`, `slate-react-v2`, and `slate-history-v2` back into one bucket.
+
 ## Principles Stack
 
 This is the principle order that makes the most sense for a Slate v2:
@@ -357,6 +365,19 @@ This is the real win.
 This is end-state direction, not a Phase 1 requirement.
 
 Plugins should override one middleware surface, not one mutable method.
+
+There is one useful external constraint here: explicit hook points are good, but they should stay package-local and boundary-local.
+
+Good:
+
+- core transaction phases in `slate-v2`
+- DOM bridge phases in `slate-dom-v2`
+- runtime subscription and lifecycle phases in `slate-react-v2`
+- history capture and grouping phases in `slate-history-v2`
+
+Bad:
+
+- one giant plugin surface that spans every package and quietly re-couples them
 
 Instead of this:
 

@@ -16,7 +16,21 @@ import type {
 } from '../../lib';
 import type { PlatePluginContext } from '../plugin';
 
-import { useEditorMounted } from '../stores';
+const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'source',
+  'track',
+  'wbr',
+]);
 
 export const useNodeAttributes = (props: any, ref?: any) => ({
   ...props.attributes,
@@ -25,6 +39,9 @@ export const useNodeAttributes = (props: any, ref?: any) => ({
   ref: useComposedRef(ref, props.attributes.ref),
   style: { ...(props.attributes as any).style, ...props.style },
 });
+
+export const isHtmlVoidElementTag = (tag: keyof HTMLElementTagNameMap) =>
+  VOID_HTML_TAGS.has(tag);
 
 export type PlateChunkProps = RenderChunkProps;
 
@@ -94,39 +111,40 @@ export const PlateElement = React.forwardRef(function PlateElement(
   { as: Tag = 'div', children, insetProp, ...props }: StyledPlateElementProps,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
-  const attributes = useNodeAttributes(props, ref);
-
-  const mounted = useEditorMounted();
-  const block = React.useMemo(
-    () =>
-      mounted &&
-      !!props.element.id &&
-      !!props.editor.api.isBlock(props.element),
-    [props.element, props.editor, mounted]
+  const attributes = useNodeAttributes(
+    {
+      attributes: props.attributes,
+      className: props.className,
+      style: props.style,
+    },
+    ref
   );
+  const elementId = props.element.id as string | undefined;
+  const blockId =
+    elementId && props.editor.api.isBlock(props.element)
+      ? elementId
+      : undefined;
 
   const inset =
     insetProp ?? props.plugin?.rules.selection?.affinity === 'directional';
 
-  return (
-    <>
-      {inset && <NonBreakingSpace />}
-      <Tag
-        data-slate-node="element"
-        data-slate-inline={attributes['data-slate-inline']}
-        data-block-id={block ? props.element.id : undefined}
-        {...attributes}
-        style={
-          {
-            position: 'relative',
-            ...attributes?.style,
-          } as React.CSSProperties
-        }
-      >
+  if (!blockId) {
+    return (
+      <PlateElementBody attributes={attributes} inset={inset} tag={Tag}>
         {children}
-        {inset && <NonBreakingSpace />}
-      </Tag>
-    </>
+      </PlateElementBody>
+    );
+  }
+
+  return (
+    <PlateElementBody
+      attributes={attributes}
+      blockId={blockId}
+      inset={inset}
+      tag={Tag}
+    >
+      {children}
+    </PlateElementBody>
   );
 }) as <
   N extends TElement = TElement,
@@ -135,6 +153,59 @@ export const PlateElement = React.forwardRef(function PlateElement(
 >(
   props: StyledPlateElementProps<N, C, T>
 ) => React.ReactElement;
+
+function PlateElementBody({
+  attributes,
+  blockId,
+  children,
+  inset,
+  tag: Tag,
+}: {
+  attributes: any;
+  blockId?: string;
+  children: React.ReactNode;
+  inset: boolean;
+  tag: keyof HTMLElementTagNameMap;
+}) {
+  const isVoidTag = isHtmlVoidElementTag(Tag);
+
+  return (
+    <>
+      {inset && <NonBreakingSpace />}
+      {isVoidTag ? (
+        <Tag
+          data-slate-node="element"
+          data-slate-inline={attributes['data-slate-inline']}
+          data-block-id={blockId}
+          {...attributes}
+          style={
+            {
+              position: 'relative',
+              ...attributes?.style,
+            } as React.CSSProperties
+          }
+        />
+      ) : (
+        <Tag
+          data-slate-node="element"
+          data-slate-inline={attributes['data-slate-inline']}
+          data-block-id={blockId}
+          {...attributes}
+          style={
+            {
+              position: 'relative',
+              ...attributes?.style,
+            } as React.CSSProperties
+          }
+        >
+          {children}
+          {inset && <NonBreakingSpace />}
+        </Tag>
+      )}
+      {inset && isVoidTag && <NonBreakingSpace />}
+    </>
+  );
+}
 
 export type PlateTextProps<
   N extends TText = TText,

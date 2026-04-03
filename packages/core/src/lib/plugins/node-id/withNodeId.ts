@@ -3,6 +3,7 @@ import {
   type NodeEntry,
   type NodeProps,
   type TNode,
+  NodeApi,
   queryNode,
 } from '@platejs/slate';
 import { isDefined } from '@udecode/utils';
@@ -11,8 +12,6 @@ import cloneDeep from 'lodash/cloneDeep.js';
 
 import type { OverrideEditor } from '../../plugin';
 import type { NodeIdConfig } from './NodeIdPlugin';
-
-import { applyDeepToNodes, defaultsDeepToNodes } from '../../utils';
 
 /** Enables support for inserting nodes with an id key. */
 export const withNodeId: OverrideEditor<NodeIdConfig> = ({
@@ -32,28 +31,75 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
     );
   };
 
-  const removeIdFromNodeIfDuplicate = <N extends Descendant>(node: N) => {
-    const { idKey = '', reuseId } = getOptions();
+  const collectDuplicateCandidateIds = ({
+    disableInsertOverrides,
+    idKey,
+    nodeEntry,
+    query,
+  }: {
+    disableInsertOverrides: boolean | undefined;
+    idKey: string;
+    nodeEntry: NodeEntry;
+    query: {
+      allow: any;
+      exclude: any;
+      filter: (nodeEntry: NodeEntry) => boolean;
+    };
+  }) => {
+    const duplicateCandidateIds = new Set<any>();
+    const collectNodeIds = (entry: NodeEntry) => {
+      const [entryNode, path] = entry;
 
-    if (
-      !reuseId &&
-      editor.api.some({ at: [], match: { [idKey]: node[idKey] } })
-    ) {
-      delete node[idKey];
-    }
+      if (queryNode(entry, query)) {
+        if (entryNode[idKey] !== undefined) {
+          duplicateCandidateIds.add(entryNode[idKey]);
+        }
+
+        if (!disableInsertOverrides && isDefined(entryNode._id)) {
+          duplicateCandidateIds.add(entryNode._id);
+        }
+      }
+
+      const children = (entryNode as any).children as Descendant[] | undefined;
+
+      if (!children) return;
+
+      children.forEach((child, index: number) => {
+        collectNodeIds([child as any, [...path, index]]);
+      });
+    };
+
+    collectNodeIds(nodeEntry);
+
+    return duplicateCandidateIds;
   };
 
-  const overrideIdIfSet = (node: TNode) => {
-    const { idKey = '' } = getOptions();
+  const collectExistingEditorIds = ({
+    duplicateCandidateIds,
+    idKey,
+  }: {
+    duplicateCandidateIds: Set<any>;
+    idKey: string;
+  }) => {
+    if (duplicateCandidateIds.size === 0) {
+      return new Set<any>();
+    }
 
-    if (isDefined(node._id)) {
-      const id = node._id;
-      node._id = undefined;
+    const existingIds = new Set<any>();
 
-      if (!editor.api.some({ at: [], match: { [idKey]: id } })) {
-        node[idKey] = id;
+    for (const [entryNode] of NodeApi.nodes(editor as any)) {
+      const id = (entryNode as any)?.[idKey];
+
+      if (id === undefined || !duplicateCandidateIds.has(id)) continue;
+
+      existingIds.add(id);
+
+      if (existingIds.size === duplicateCandidateIds.size) {
+        break;
       }
     }
+
+    return existingIds;
   };
 
   return {
@@ -77,30 +123,53 @@ export const withNodeId: OverrideEditor<NodeIdConfig> = ({
         if (operation.type === 'insert_node') {
           // clone to be able to write (read-only)
           const node = cloneDeep(operation.node);
-
-          // Delete ids from node that are already being used
-          applyDeepToNodes({
-            apply: removeIdFromNodeIfDuplicate,
-            node,
-            query,
-            source: {},
-          });
-
-          defaultsDeepToNodes({
-            node,
-            path: operation.path,
-            query,
-            source: idPropsCreator,
-          });
-
-          if (!disableInsertOverrides) {
-            applyDeepToNodes({
-              apply: overrideIdIfSet,
-              node,
+          const existingIds = collectExistingEditorIds({
+            duplicateCandidateIds: collectDuplicateCandidateIds({
+              disableInsertOverrides,
+              idKey,
+              nodeEntry: [node as any, operation.path as any],
               query,
-              source: {},
+            }),
+            idKey,
+          });
+          const hasIdInEditor = (id: any) => existingIds.has(id);
+          const normalizeInsertedNode = (nodeEntry: NodeEntry) => {
+            const [entryNode, path] = nodeEntry;
+
+            if (queryNode(nodeEntry, query)) {
+              if (
+                entryNode[idKey] !== undefined &&
+                hasIdInEditor(entryNode[idKey])
+              ) {
+                delete entryNode[idKey];
+              }
+
+              if (entryNode[idKey] === undefined) {
+                Object.assign(entryNode, idPropsCreator());
+              }
+
+              if (!disableInsertOverrides && isDefined(entryNode._id)) {
+                const id = entryNode._id;
+                entryNode._id = undefined;
+
+                if (!hasIdInEditor(id)) {
+                  entryNode[idKey] = id;
+                }
+              }
+            }
+
+            const children = (entryNode as any).children as
+              | Descendant[]
+              | undefined;
+
+            if (!children) return;
+
+            children.forEach((child, index: number) => {
+              normalizeInsertedNode([child as any, [...path, index]]);
             });
-          }
+          };
+
+          normalizeInsertedNode([node as any, operation.path as any]);
 
           return apply({
             ...operation,

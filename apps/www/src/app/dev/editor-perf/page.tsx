@@ -15,9 +15,14 @@ import {
   BlockquotePlugin,
   BoldPlugin,
   CodePlugin,
+  HighlightPlugin,
   HeadingPlugin,
   HorizontalRulePlugin,
   ItalicPlugin,
+  KbdPlugin,
+  StrikethroughPlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import {
@@ -88,9 +93,12 @@ import {
 import {
   SCENARIO_WORKLOADS,
   createBenchIdFactory,
+  getDefaultNodeIdFragmentBlockCount,
   getEditorPerfWorkloadValue,
+  getNodeIdFragmentBenchmarkData,
   getSeededEditorPerfWorkloadValue,
   type EditorPerfWorkloadId,
+  type NodeIdFragmentBenchmarkKind,
   type ScenarioWorkloadId,
 } from './workloads';
 
@@ -106,6 +114,7 @@ type RunnerBenchmarkName =
   | 'construction'
   | 'core-mount'
   | 'init-dissection'
+  | 'nodeid-fragment'
   | 'input'
   | 'mount'
   | 'plugin-census'
@@ -202,6 +211,29 @@ type DissectionMetrics = {
   setNodesCalls: BenchmarkResult | null;
   setNodesTime: BenchmarkResult | null;
   staticNormalize: BenchmarkResult | null;
+};
+
+type NodeIdFragmentCaseId =
+  | 'plate-core-nodeid-off-raw-import'
+  | 'plate-core-nodeid-raw-import'
+  | 'plate-core-nodeid-off-seeded-duplicate-paste'
+  | 'plate-core-nodeid-on-seeded-duplicate-paste';
+
+type NodeIdFragmentCase = {
+  description: string;
+  fragmentKind: NodeIdFragmentBenchmarkKind;
+  id: NodeIdFragmentCaseId;
+  label: string;
+  nodeId: false | 'default';
+};
+
+type NodeIdFragmentMetrics = {
+  duplicateLookupCalls: BenchmarkResult | null;
+  duplicateLookupTime: BenchmarkResult | null;
+  fragmentBlocks: number | null;
+  idsAssigned: BenchmarkResult | null;
+  insertFragment: BenchmarkResult | null;
+  insertNodeOps: BenchmarkResult | null;
 };
 
 type FanoutCaseId =
@@ -479,6 +511,41 @@ const DISSECTION_CASES: DissectionCase[] = [
     nodeId: false,
     plugins: 'basic',
     seedIds: false,
+  },
+];
+
+const NODE_ID_FRAGMENT_CASES: NodeIdFragmentCase[] = [
+  {
+    description:
+      'Plate core without nodeId, inserting a raw fragment with no ids. This is the baseline insertFragment cost.',
+    fragmentKind: 'raw-import',
+    id: 'plate-core-nodeid-off-raw-import',
+    label: 'NodeId off, raw import',
+    nodeId: false,
+  },
+  {
+    description:
+      'Plate core with nodeId, inserting a raw fragment with no ids. This isolates id assignment cost during import.',
+    fragmentKind: 'raw-import',
+    id: 'plate-core-nodeid-raw-import',
+    label: 'NodeId on, raw import',
+    nodeId: 'default',
+  },
+  {
+    description:
+      'Plate core without nodeId, pasting a seeded fragment whose ids already exist in the destination document.',
+    fragmentKind: 'seeded-duplicate-paste',
+    id: 'plate-core-nodeid-off-seeded-duplicate-paste',
+    label: 'NodeId off, duplicate paste',
+    nodeId: false,
+  },
+  {
+    description:
+      'Plate core with nodeId, pasting a seeded fragment whose ids already exist in the destination document. This is the real duplicate-id paste lane.',
+    fragmentKind: 'seeded-duplicate-paste',
+    id: 'plate-core-nodeid-on-seeded-duplicate-paste',
+    label: 'NodeId on, duplicate paste',
+    nodeId: 'default',
   },
 ];
 
@@ -1441,6 +1508,14 @@ function getDissectionValue(caseItem: DissectionCase, blocks: number) {
       });
 }
 
+function getNodeIdFragmentValue(caseItem: NodeIdFragmentCase, blocks: number) {
+  return getNodeIdFragmentBenchmarkData({
+    blocks,
+    fragmentBlocks: getDefaultNodeIdFragmentBlockCount(blocks),
+    kind: caseItem.fragmentKind,
+  });
+}
+
 function getCoreMountValue({
   blocks,
   documentMode = 'default',
@@ -1503,8 +1578,28 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
     return [HeadingPlugin];
   }
 
+  if (plugins === 'highlight-only') {
+    return [HighlightPlugin];
+  }
+
   if (plugins === 'italic-only') {
     return [ItalicPlugin];
+  }
+
+  if (plugins === 'kbd-only') {
+    return [KbdPlugin];
+  }
+
+  if (plugins === 'strikethrough-only') {
+    return [StrikethroughPlugin];
+  }
+
+  if (plugins === 'subscript-only') {
+    return [SubscriptPlugin];
+  }
+
+  if (plugins === 'superscript-only') {
+    return [SuperscriptPlugin];
   }
 
   if (plugins === 'underline-only') {
@@ -4560,6 +4655,70 @@ function DissectionCard({
   );
 }
 
+function NodeIdFragmentCard({
+  label,
+  description,
+  metrics,
+}: {
+  label: string;
+  description: string;
+  metrics: NodeIdFragmentMetrics;
+}) {
+  return (
+    <div className="rounded-lg border bg-background p-4">
+      <h3 className="font-semibold">{label}</h3>
+      <p className="mt-2 text-muted-foreground text-sm">{description}</p>
+
+      <div className="mt-4 space-y-1 font-mono text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">fragment blocks</span>
+          <span>{metrics.fragmentBlocks ?? 'n/a'}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">insertFragment</span>
+          <span>
+            {metrics.insertFragment
+              ? `${metrics.insertFragment.mean.toFixed(2)} ms`
+              : 'No data'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">ids assigned</span>
+          <span>
+            {metrics.idsAssigned
+              ? metrics.idsAssigned.mean.toFixed(0)
+              : 'No data'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">duplicate lookups</span>
+          <span>
+            {metrics.duplicateLookupCalls
+              ? metrics.duplicateLookupCalls.mean.toFixed(0)
+              : 'No data'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">duplicate lookup time</span>
+          <span>
+            {metrics.duplicateLookupTime
+              ? `${metrics.duplicateLookupTime.mean.toFixed(2)} ms`
+              : 'No data'}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">insert_node ops</span>
+          <span>
+            {metrics.insertNodeOps
+              ? metrics.insertNodeOps.mean.toFixed(0)
+              : 'No data'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EditorPerfPage() {
   const [config, setConfig] = React.useState<BenchmarkConfig>(
     () => HUGE_DOCUMENT_DEFAULT_BENCHMARK_CONFIG as BenchmarkConfig
@@ -4637,6 +4796,24 @@ export default function EditorPerfPage() {
           } satisfies DissectionMetrics,
         ])
       ) as Record<DissectionCaseId, DissectionMetrics>
+  );
+  const [nodeIdFragmentResults, setNodeIdFragmentResults] = React.useState<
+    Record<NodeIdFragmentCaseId, NodeIdFragmentMetrics>
+  >(
+    () =>
+      Object.fromEntries(
+        NODE_ID_FRAGMENT_CASES.map((caseItem) => [
+          caseItem.id,
+          {
+            duplicateLookupCalls: null,
+            duplicateLookupTime: null,
+            fragmentBlocks: null,
+            idsAssigned: null,
+            insertFragment: null,
+            insertNodeOps: null,
+          } satisfies NodeIdFragmentMetrics,
+        ])
+      ) as Record<NodeIdFragmentCaseId, NodeIdFragmentMetrics>
   );
   const [fanoutResults, setFanoutResults] = React.useState<
     Record<FanoutCaseId, FanoutMetrics>
@@ -4776,6 +4953,16 @@ export default function EditorPerfPage() {
           staticNormalize: 25,
         },
       },
+      nodeIdFragment: {
+        cases: NODE_ID_FRAGMENT_CASES,
+        config: {
+          fragmentBlocks: getDefaultNodeIdFragmentBlockCount(config.blocks),
+        },
+        results: nodeIdFragmentResults,
+        runs: {
+          insertFragment: 25,
+        },
+      },
       fanout: {
         cases: FANOUT_CASES,
         config: {
@@ -4829,6 +5016,7 @@ export default function EditorPerfPage() {
       activePluginCensusEntryId,
       coreMountResults,
       dissectionResults,
+      nodeIdFragmentResults,
       fanoutResults,
       fanoutSubscriberCount,
       lastCompletedBenchmark,
@@ -5405,6 +5593,102 @@ export default function EditorPerfPage() {
     markBenchmarkComplete('init-dissection');
   }, [config, markBenchmarkComplete]);
 
+  const runNodeIdFragmentBenchmark = React.useCallback(async () => {
+    const WARMUP_RUNS = 5;
+    const MEASURED_RUNS = 25;
+
+    setRunningLabel('Running nodeId paste/import dissection');
+
+    try {
+      for (const caseItem of NODE_ID_FRAGMENT_CASES) {
+        const duplicateLookupCallSamples: number[] = [];
+        const duplicateLookupTimeSamples: number[] = [];
+        const idsAssignedSamples: number[] = [];
+        const insertFragmentSamples: number[] = [];
+        const insertNodeOpSamples: number[] = [];
+        let fragmentBlocks: number | null = null;
+
+        for (let run = 0; run < WARMUP_RUNS + MEASURED_RUNS; run++) {
+          const isWarmup = run < WARMUP_RUNS;
+          const idCounter = { count: 0 };
+          const { fragment, value } = getNodeIdFragmentValue(
+            caseItem,
+            config.blocks
+          );
+          const editor = createPlateEditor({
+            chunking: config.chunking ? { chunkSize: config.chunkSize } : false,
+            nodeId: getNodeIdOption({
+              counter: idCounter,
+              mode: caseItem.nodeId,
+            }) as any,
+            value,
+          }) as any;
+          const duplicateLookupStats = { count: 0, time: 0 };
+          const insertNodeStats = { count: 0 };
+          const idCountBeforeInsert = idCounter.count;
+          const originalSome = editor.api.some.bind(editor.api);
+          const originalApply = editor.apply.bind(editor);
+
+          editor.api.some = ((...args: any[]) => {
+            const start = performance.now();
+            const result = originalSome(...args);
+
+            duplicateLookupStats.count += 1;
+            duplicateLookupStats.time += performance.now() - start;
+
+            return result;
+          }) as typeof editor.api.some;
+
+          editor.apply = ((operation: any) => {
+            if (operation.type === 'insert_node') {
+              insertNodeStats.count += 1;
+            }
+
+            return originalApply(operation);
+          }) as typeof editor.apply;
+
+          Transforms.select(editor, Editor.end(editor, []));
+
+          const insertStart = performance.now();
+          editor.tf.insertFragment(fragment as any);
+          const insertDuration = performance.now() - insertStart;
+
+          editor.api.some = originalSome;
+          editor.apply = originalApply;
+
+          if (!isWarmup) {
+            fragmentBlocks = fragment.length;
+            duplicateLookupCallSamples.push(duplicateLookupStats.count);
+            duplicateLookupTimeSamples.push(duplicateLookupStats.time);
+            idsAssignedSamples.push(idCounter.count - idCountBeforeInsert);
+            insertFragmentSamples.push(insertDuration);
+            insertNodeOpSamples.push(insertNodeStats.count);
+          }
+
+          if (run % 5 === 0) {
+            await wait(0);
+          }
+        }
+
+        setNodeIdFragmentResults((current) => ({
+          ...current,
+          [caseItem.id]: {
+            duplicateLookupCalls: calculateStats(duplicateLookupCallSamples),
+            duplicateLookupTime: calculateStats(duplicateLookupTimeSamples),
+            fragmentBlocks,
+            idsAssigned: calculateStats(idsAssignedSamples),
+            insertFragment: calculateStats(insertFragmentSamples),
+            insertNodeOps: calculateStats(insertNodeOpSamples),
+          },
+        }));
+      }
+    } finally {
+      setRunningLabel(null);
+    }
+
+    markBenchmarkComplete('nodeid-fragment');
+  }, [config, markBenchmarkComplete]);
+
   const runFanoutBenchmark = React.useCallback(async () => {
     const WARMUP_RUNS = 3;
     const MEASURED_RUNS = 10;
@@ -5660,6 +5944,10 @@ export default function EditorPerfPage() {
         await runDissectionBenchmark();
         return;
       }
+      if (benchmark === 'nodeid-fragment') {
+        await runNodeIdFragmentBenchmark();
+        return;
+      }
       if (benchmark === 'core-mount') {
         await runActiveCoreMountBenchmark();
         return;
@@ -5682,6 +5970,7 @@ export default function EditorPerfPage() {
     [
       runConstructionBenchmark,
       runDissectionBenchmark,
+      runNodeIdFragmentBenchmark,
       runFanoutBenchmark,
       runInputBenchmark,
       runMountBenchmark,
@@ -5935,6 +6224,14 @@ export default function EditorPerfPage() {
             Run init dissection
           </Button>
           <Button
+            data-testid="run-nodeid-fragment-benchmark"
+            disabled={!!runningLabel}
+            variant="secondary"
+            onClick={runNodeIdFragmentBenchmark}
+          >
+            Run paste/import dissection
+          </Button>
+          <Button
             data-testid="run-store-fanout-benchmark"
             disabled={!!runningLabel}
             variant="secondary"
@@ -6080,6 +6377,27 @@ export default function EditorPerfPage() {
                   description={caseItem.description}
                   label={caseItem.label}
                   metrics={dissectionResults[caseItem.id]}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-background p-4">
+            <h2 className="font-semibold">NodeId paste/import dissection</h2>
+            <p className="mt-2 text-muted-foreground text-sm">
+              This lane times real <code>insertFragment</code> work against raw
+              import data and duplicate-id paste data. That is the only honest
+              way to see whether <code>withNodeId</code> still has money on the
+              table.
+            </p>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              {NODE_ID_FRAGMENT_CASES.map((caseItem) => (
+                <NodeIdFragmentCard
+                  key={caseItem.id}
+                  description={caseItem.description}
+                  label={caseItem.label}
+                  metrics={nodeIdFragmentResults[caseItem.id]}
                 />
               ))}
             </div>

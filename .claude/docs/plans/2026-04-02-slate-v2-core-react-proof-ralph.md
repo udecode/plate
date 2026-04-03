@@ -72,7 +72,7 @@ Status: `completed`
 
 ### Phase 5: Verification And Review
 
-Status: `in_progress`
+Status: `completed`
 
 - targeted package build
 - targeted package typecheck
@@ -115,3 +115,15 @@ Status: `in_progress`
   - `fnm exec --using 22 yarn lint:prettier`
   - `rg -n "useEffect\\(" src` in `support/slate-v2-react-proof` returns no matches
 - waiting on architect verification before the deslop pass
+- architect feedback found two real contract holes, then one React proof gap, and those blockers were fixed instead of argued away
+- architect approval obtained on the settled proof seam
+- deslop pass removed the dead `createEmptyIndex` helper and unused `Root` type import
+- post-deslop regression re-verification is green:
+  - `fnm exec --using 22 yarn tsc --project packages/slate-v2/tsconfig.json --noEmit`
+  - `fnm exec --using 22 yarn mocha --require ./config/babel/register.cjs ./packages/slate-v2/test/**/*.ts`
+  - `npm run typecheck` in `support/slate-v2-react-proof`
+  - `npm test` in `support/slate-v2-react-proof`
+  - `rg -n "useEffect\\(" src` in `support/slate-v2-react-proof` returns no matches
+  - `fnm exec --using 22 yarn build:rollup`
+  - `fnm exec --using 22 yarn lint:eslint`
+  - `fnm exec --using 22 yarn lint:prettier`

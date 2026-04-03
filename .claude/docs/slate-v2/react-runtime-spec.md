@@ -51,6 +51,7 @@ This package does **not** try to:
 - smuggle browser selection repair back into React components
 - normalize effect anti-patterns into the package contract
 - re-decide browser semantics that belong in `slate-dom-v2`
+- rebuild a thin imperative adapter and call that a renderer architecture
 
 ## Core Contract Required From `slate-v2`
 
@@ -82,6 +83,7 @@ Strong take:
 
 - broad `useSlate()` rerenders are failure
 - snapshot selectors are the baseline
+- a tiny imperative adapter may be fine for demos, but it is not the target runtime model here
 
 ### 2. Selector Subscriptions
 
@@ -97,6 +99,17 @@ Selector hooks should behave like real React reads:
 - calculate view data during render
 - use `useMemo` only for genuinely expensive derivation
 - never bounce derived values through `useState` plus `useEffect`
+
+The real target is not “rerender only the selected node.”
+
+The real target is:
+
+- the selected or edited node
+- the minimal affected ancestor chain
+- structurally affected neighbors
+- intersecting overlay slices
+
+Anything broader than that is runtime debt.
 
 ### 3. Event Handling Before Effects
 
@@ -200,6 +213,85 @@ That means:
 - they do **not** make core correctness safe
 - if a value can be calculated during render, calculate it during render first and only defer the expensive version
 
+### 8. Default Large-Document Posture
+
+Large-document behavior is not a special mode.
+
+It is the default design target.
+
+That means `slate-react-v2` should assume:
+
+- big trees are normal
+- the runtime must stay local by default
+- the browser should paint as little as possible outside the active editing slice
+
+The default posture should be:
+
+1. active-slice invalidation
+   - edited leaf
+   - directly affected element
+   - minimal ancestor chain
+   - intersecting overlays
+2. semantic render islands
+   - block
+   - section
+   - table
+   - void/embed
+   - other real document boundaries when they matter
+3. active editing corridor
+   - current selection
+   - active composition
+   - nearby siblings and ancestors needed for correctness
+4. default occlusion outside that corridor
+   - `content-visibility: auto`
+   - `contain-intrinsic-size`
+   - deferred non-urgent overlay work
+
+### 9. Measurement And Planning Layer
+
+The runtime should distinguish between:
+
+1. active editing geometry
+2. inactive island planning
+
+For active editing geometry:
+
+- trust the real DOM
+- trust browser selection and caret geometry
+- keep composition and menu anchoring tied to the live editing surface
+
+For inactive island planning:
+
+- it is acceptable to use approximate or precomputed geometry
+- deterministic text measurement is useful when it avoids forced reflow
+
+This is where `Pretext` is relevant.
+
+`Pretext` is not a general rendering engine for `slate-react-v2`.
+
+It is a candidate planning primitive for:
+
+- estimating inactive island heights
+- stabilizing offscreen island sizes
+- preserving scroll anchors while distant islands wake up
+- future paged or measured higher-layer experiences
+
+Strong rule:
+
+- do not route the active editing corridor through `Pretext`
+- do not replace DOM truth for selection/caret/composition with a measurement engine
+- use `Pretext` only where deterministic offscreen planning wins more than live DOM measurement
+
+Strong take:
+
+- current chunking is a useful optimization for `slate-react`
+- chunking should not be the foundational v2 story
+- the foundational story is local subscriptions plus semantic islands
+
+Virtualization is a later escalation layer.
+
+It is not the baseline runtime contract.
+
 ## React-19.2-Specific Posture
 
 This package should assume:
@@ -228,6 +320,8 @@ Phase 3 should expose a small but hard-edged runtime surface:
 - focused editor-instance hooks
 - controlled/external update primitives
 - Activity-friendly editor boundary helpers
+- large-document-safe rendering defaults
+- hooks or helpers for geometry/planning layers only if they preserve the DOM-vs-planning split cleanly
 
 Do **not** start with:
 
@@ -235,6 +329,17 @@ Do **not** start with:
 - broad context subscriptions
 - magic convenience APIs that remount or resubscribe unpredictably
 - hooks whose main job is hiding effect anti-patterns
+- chunk-count knobs as the main correctness/perf lever
+
+This package should feel like a real React runtime, not a thin imperative wrapper around DOM binding.
+
+That means:
+
+- React owns subscription and render invalidation policy
+- `slate-dom-v2` owns browser translation
+- `slate-v2` owns committed state
+
+If those boundaries blur, the package is drifting.
 
 ## Acceptance Lanes
 
@@ -268,3 +373,6 @@ That means at minimum:
 6. Effect-driven event logic uses `useEffectEvent` instead of dependency-array hacks.
 7. Hidden/background UI can use `<Activity>` without state corruption or stale-editor weirdness.
 8. The runtime can explain what is urgent and what is deferred without hand-wavy “React will figure it out” nonsense.
+9. A local edit in a deep tree no longer causes broad ancestor-chain rerender breadth by default.
+10. Large documents are handled by default through active-slice invalidation and default occlusion, without needing chunking as the first answer.
+11. Offscreen planning can use deterministic measurement where useful, but the active editing corridor still runs on live DOM truth.

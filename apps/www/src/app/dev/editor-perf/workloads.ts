@@ -14,14 +14,23 @@ export type EditorPerfWorkloadId =
   | 'huge-blockquote'
   | 'huge-bold'
   | 'huge-code'
+  | 'huge-highlight'
   | 'huge-hr'
   | 'huge-italic'
+  | 'huge-kbd'
+  | 'huge-strikethrough'
+  | 'huge-subscript'
+  | 'huge-superscript'
   | 'huge-underline'
   | 'huge-dense-text'
   | 'huge-dense-inline-props'
   | 'huge-paragraph-fallback';
 
 export type ScenarioWorkloadId = Exclude<EditorPerfWorkloadId, 'huge-bold'>;
+
+export type NodeIdFragmentBenchmarkKind =
+  | 'raw-import'
+  | 'seeded-duplicate-paste';
 
 type WorkloadDefinition = {
   description: string;
@@ -36,9 +45,19 @@ const BOLD_TEXT =
   'Bold benchmark copy. This forces render.as-only mark plugins without changing the element path.';
 const CODE_TEXT =
   'Code benchmark copy. This forces render.as-only decoration plugins without changing the element path.';
+const HIGHLIGHT_TEXT =
+  'Highlight benchmark copy. This forces render.as-only mark plugins without changing the element path.';
 const HR_TEXT = '';
 const ITALIC_TEXT =
   'Italic benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+const KBD_TEXT =
+  'Kbd benchmark copy. This forces hard-affinity render.as-only mark plugins without changing the element path.';
+const STRIKETHROUGH_TEXT =
+  'Strikethrough benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+const SUBSCRIPT_TEXT =
+  'Subscript benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+const SUPERSCRIPT_TEXT =
+  'Superscript benchmark copy. This forces render.as-only mark plugins without changing the element path.';
 const UNDERLINE_TEXT =
   'Underline benchmark copy. This forces render.as-only mark plugins without changing the element path.';
 const DENSE_TEXT_SEGMENTS = [
@@ -106,6 +125,13 @@ export const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
     scenarioSelectable: false,
   },
   {
+    description:
+      'Huge highlight-only document for mark-side lanes with HighlightPlugin.',
+    id: 'huge-highlight',
+    label: 'Huge highlight',
+    scenarioSelectable: false,
+  },
+  {
     description: 'Huge code-only document for leaf-side lanes with CodePlugin.',
     id: 'huge-code',
     label: 'Huge code',
@@ -119,10 +145,37 @@ export const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
     scenarioSelectable: false,
   },
   {
+    description: 'Huge kbd-only document for leaf-side lanes with KbdPlugin.',
+    id: 'huge-kbd',
+    label: 'Huge kbd',
+    scenarioSelectable: false,
+  },
+  {
     description:
       'Huge italic-only document for mark-side lanes with ItalicPlugin.',
     id: 'huge-italic',
     label: 'Huge italic',
+    scenarioSelectable: false,
+  },
+  {
+    description:
+      'Huge strikethrough-only document for mark-side lanes with StrikethroughPlugin.',
+    id: 'huge-strikethrough',
+    label: 'Huge strikethrough',
+    scenarioSelectable: false,
+  },
+  {
+    description:
+      'Huge subscript-only document for mark-side lanes with SubscriptPlugin.',
+    id: 'huge-subscript',
+    label: 'Huge subscript',
+    scenarioSelectable: false,
+  },
+  {
+    description:
+      'Huge superscript-only document for mark-side lanes with SuperscriptPlugin.',
+    id: 'huge-superscript',
+    label: 'Huge superscript',
     scenarioSelectable: false,
   },
   {
@@ -151,6 +204,10 @@ const markDocumentCache = new Map<string, Value>();
 const denseTextDocumentCache = new Map<number, Value>();
 const denseInlinePropsDocumentCache = new Map<number, Value>();
 const fallbackParagraphDocumentCache = new Map<number, Value>();
+const nodeIdFragmentDocumentCache = new Map<
+  string,
+  { fragment: Value; value: Value }
+>();
 const seededDocumentCache = new Map<string, Value>();
 
 export function cloneValue(value: Value): Value {
@@ -166,6 +223,10 @@ export function createBenchIdFactory(
 
     return `${prefix}-${counter.count}`;
   };
+}
+
+export function getDefaultNodeIdFragmentBlockCount(blocks: number) {
+  return Math.max(25, Math.min(200, Math.floor(blocks / 25)));
 }
 
 function buildMixedBlockValue(blocks: number): Value {
@@ -241,7 +302,16 @@ function buildMarkedValue({
 }: {
   blocks: number;
   cacheKey: string;
-  markKey: 'bold' | 'italic' | 'underline' | 'code';
+  markKey:
+    | 'bold'
+    | 'code'
+    | 'highlight'
+    | 'italic'
+    | 'kbd'
+    | 'strikethrough'
+    | 'sub'
+    | 'sup'
+    | 'underline';
   text: string;
 }): Value {
   const resolvedCacheKey = `${cacheKey}:${blocks}`;
@@ -279,6 +349,15 @@ function buildCodeValue(blocks: number): Value {
   });
 }
 
+function buildHighlightValue(blocks: number): Value {
+  return buildMarkedValue({
+    blocks,
+    cacheKey: 'highlight',
+    markKey: 'highlight',
+    text: HIGHLIGHT_TEXT,
+  });
+}
+
 function buildItalicValue(blocks: number): Value {
   return buildMarkedValue({
     blocks,
@@ -304,6 +383,42 @@ function buildHorizontalRuleValue(blocks: number): Value {
   markDocumentCache.set(resolvedCacheKey, value);
 
   return cloneValue(value);
+}
+
+function buildKbdValue(blocks: number): Value {
+  return buildMarkedValue({
+    blocks,
+    cacheKey: 'kbd',
+    markKey: 'kbd',
+    text: KBD_TEXT,
+  });
+}
+
+function buildStrikethroughValue(blocks: number): Value {
+  return buildMarkedValue({
+    blocks,
+    cacheKey: 'strikethrough',
+    markKey: 'strikethrough',
+    text: STRIKETHROUGH_TEXT,
+  });
+}
+
+function buildSubscriptValue(blocks: number): Value {
+  return buildMarkedValue({
+    blocks,
+    cacheKey: 'subscript',
+    markKey: 'sub',
+    text: SUBSCRIPT_TEXT,
+  });
+}
+
+function buildSuperscriptValue(blocks: number): Value {
+  return buildMarkedValue({
+    blocks,
+    cacheKey: 'superscript',
+    markKey: 'sup',
+    text: SUPERSCRIPT_TEXT,
+  });
 }
 
 function buildUnderlineValue(blocks: number): Value {
@@ -396,10 +511,20 @@ export function getEditorPerfWorkloadValue({
       return buildBoldValue(blocks);
     case 'huge-code':
       return buildCodeValue(blocks);
+    case 'huge-highlight':
+      return buildHighlightValue(blocks);
     case 'huge-hr':
       return buildHorizontalRuleValue(blocks);
     case 'huge-italic':
       return buildItalicValue(blocks);
+    case 'huge-kbd':
+      return buildKbdValue(blocks);
+    case 'huge-strikethrough':
+      return buildStrikethroughValue(blocks);
+    case 'huge-subscript':
+      return buildSubscriptValue(blocks);
+    case 'huge-superscript':
+      return buildSuperscriptValue(blocks);
     case 'huge-underline':
       return buildUnderlineValue(blocks);
     case 'huge-dense-text':
@@ -442,4 +567,57 @@ export function getSeededEditorPerfWorkloadValue({
   seededDocumentCache.set(resolvedCacheKey, seededValue);
 
   return cloneValue(seededValue);
+}
+
+export function getNodeIdFragmentBenchmarkData({
+  blocks,
+  fragmentBlocks = getDefaultNodeIdFragmentBlockCount(blocks),
+  kind,
+}: {
+  blocks: number;
+  fragmentBlocks?: number;
+  kind: NodeIdFragmentBenchmarkKind;
+}) {
+  const resolvedFragmentBlocks = Math.max(1, Math.min(blocks, fragmentBlocks));
+  const cacheKey = `${kind}:${blocks}:${resolvedFragmentBlocks}`;
+  const cachedValue = nodeIdFragmentDocumentCache.get(cacheKey);
+
+  if (cachedValue) {
+    return {
+      fragment: cloneValue(cachedValue.fragment),
+      value: cloneValue(cachedValue.value),
+    };
+  }
+
+  let value: Value;
+  let fragment: Value;
+
+  if (kind === 'seeded-duplicate-paste') {
+    const sourceValue = getSeededEditorPerfWorkloadValue({
+      blocks,
+      cacheKey: `nodeid-fragment:${blocks}`,
+      workloadId: 'huge-mixed-block',
+    });
+
+    value = sourceValue;
+    fragment = sourceValue
+      .slice(0, resolvedFragmentBlocks)
+      .map((node) => structuredClone(node)) as Value;
+  } else {
+    value = getEditorPerfWorkloadValue({
+      blocks,
+      workloadId: 'huge-mixed-block',
+    });
+    fragment = getEditorPerfWorkloadValue({
+      blocks: resolvedFragmentBlocks,
+      workloadId: 'huge-mixed-block',
+    });
+  }
+
+  nodeIdFragmentDocumentCache.set(cacheKey, { fragment, value });
+
+  return {
+    fragment: cloneValue(fragment),
+    value: cloneValue(value),
+  };
 }

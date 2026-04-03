@@ -13,6 +13,7 @@ type BenchmarkName =
   | 'construction'
   | 'core-mount'
   | 'init-dissection'
+  | 'nodeid-fragment'
   | 'input'
   | 'mount'
   | 'plugin-census'
