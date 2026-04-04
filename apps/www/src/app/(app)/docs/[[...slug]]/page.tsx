@@ -118,13 +118,34 @@ export async function generateMetadata({
 }
 
 const registryNames = new Set(registry.items.map((item) => item.name));
+const DEMO_SUFFIX_REGEX = /-demo$/;
+
+function getRegistryStaticParams() {
+  return [
+    ...registryUI.map((item) => ({
+      slug: ['components', item.name],
+    })),
+    ...registryExamples.map((item) => ({
+      slug: ['examples', item.name.replace(DEMO_SUFFIX_REGEX, '')],
+    })),
+  ];
+}
 
 export function generateStaticParams() {
-  return allDocs
-    .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-    .map((doc) => ({
-      slug: doc.slugAsParams.split('/').slice(1),
-    }));
+  return [
+    ...allDocs
+      .filter((doc) => !doc._raw.sourceFileName?.endsWith('.cn.mdx'))
+      .map((doc) => ({
+        slug: doc.slugAsParams.split('/').slice(1),
+      })),
+    ...getRegistryStaticParams(),
+  ].filter(
+    (value, index, array) =>
+      index ===
+      array.findIndex(
+        (candidate) => candidate.slug.join('/') === value.slug.join('/')
+      )
+  );
 }
 
 export default async function DocPage(props: DocPageProps) {

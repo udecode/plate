@@ -135,16 +135,35 @@ export async function generateMetadata({
 
 const registryNames = new Set(registry.items.map((item) => item.name));
 const CN_SUFFIX_REGEX = /\.cn$/;
+const DEMO_SUFFIX_REGEX = /-demo$/;
+
+function getRegistryStaticParams() {
+  return [
+    ...registryUI.map((item) => ({
+      slug: ['components', item.name],
+    })),
+    ...registryExamples.map((item) => ({
+      slug: ['examples', item.name.replace(DEMO_SUFFIX_REGEX, '')],
+    })),
+  ];
+}
 
 export function generateStaticParams() {
   // Generate params for CN docs - both .cn.mdx files and fallback to English
-  const cnDocs = allDocs
-    .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
-    .map((doc) => ({
-      slug: doc.slugAsParams.replace(CN_SUFFIX_REGEX, '').split('/').slice(1),
-    }));
-
-  return cnDocs;
+  return [
+    ...allDocs
+      .filter((doc) => doc._raw.sourceFileName?.endsWith('.cn.mdx'))
+      .map((doc) => ({
+        slug: doc.slugAsParams.replace(CN_SUFFIX_REGEX, '').split('/').slice(1),
+      })),
+    ...getRegistryStaticParams(),
+  ].filter(
+    (value, index, array) =>
+      index ===
+      array.findIndex(
+        (candidate) => candidate.slug.join('/') === value.slug.join('/')
+      )
+  );
 }
 
 export default async function CNDocPage(props: DocPageProps) {
