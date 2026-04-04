@@ -20,7 +20,7 @@ import {
   getCachedHighlightedFiles,
   getCachedRegistryItem,
 } from '@/lib/registry-cache';
-import { getRegistryTitle } from '@/lib/registry-utils';
+import { getDocTitle, getRegistryTitle } from '@/lib/registry-utils';
 import { getAllDependencies, getAllFiles } from '@/lib/rehype-utils';
 import { getTableOfContents } from '@/lib/toc';
 import { registry } from '@/registry/registry';
@@ -211,7 +211,7 @@ export default async function DocPage(props: DocPageProps) {
         {...file}
         doc={{
           ...file.meta,
-          docs,
+          docs: docs as any,
           slug,
         }}
       >
@@ -299,26 +299,29 @@ function getRegistryDocs({
 
   const groups = [...(file.meta?.docs || []), ...relatedDocs].reduce(
     (acc, doc) => {
-      if (doc.route!.startsWith(siteConfig.links.platePro)) {
-        acc.external.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/components')) {
-        acc.components.push(doc as any);
-      } else if (doc.route!.startsWith('/docs/api')) {
+      if (!doc.route) return acc;
+
+      const titledDoc = {
+        ...doc,
+        title: getDocTitle(doc),
+      };
+
+      if (doc.route.startsWith(siteConfig.links.platePro)) {
+        acc.external.push(titledDoc as any);
+      } else if (doc.route.startsWith('/docs/components')) {
+        acc.components.push(titledDoc as any);
+      } else if (doc.route.startsWith('/docs/api')) {
         acc.docs.push({
-          ...doc,
-          title: `${getRegistryTitle({
-            name: doc.title ?? doc.route?.split('/').pop(),
-          })} API`,
+          ...titledDoc,
+          title: `${titledDoc.title} API`,
         } as any);
-      } else if (doc.route!.startsWith('/docs/')) {
+      } else if (doc.route.startsWith('/docs/')) {
         acc.docs.push({
-          ...doc,
-          title: `${getRegistryTitle({
-            name: doc.title ?? doc.route?.split('/').pop(),
-          })} Plugin`,
+          ...titledDoc,
+          title: `${titledDoc.title} Plugin`,
         } as any);
       } else {
-        acc.docs.push(doc as any);
+        acc.docs.push(titledDoc as any);
       }
 
       return acc;
@@ -329,12 +332,13 @@ function getRegistryDocs({
     >
   );
 
+  const sortDocs = (docs: typeof relatedDocs) =>
+    docs.sort((a: any, b: any) => getDocTitle(a).localeCompare(getDocTitle(b)));
+
   return [
-    ...groups.docs.sort((a: any, b: any) => a.title.localeCompare(b.title)),
-    ...groups.components.sort((a: any, b: any) =>
-      a.title.localeCompare(b.title)
-    ),
-    ...groups.external.sort((a: any, b: any) => a.title.localeCompare(b.title)),
+    ...sortDocs(groups.docs),
+    ...sortDocs(groups.components),
+    ...sortDocs(groups.external),
   ];
 }
 
