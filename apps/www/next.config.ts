@@ -112,9 +112,10 @@ const nextConfig = async (_phase: string) => {
       ],
     },
     outputFileTracingIncludes: {
-      '/api/registry/*': ['./src/registry/**/*'],
+      '/api/registry/[name]': ['./src/registry/**/*', './public/r/**/*'],
       '/blocks/slate-to-html': ['./public/tailwind.css'],
-      '/docs/*': ['./src/registry/**/*'],
+      '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
+      '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/examples/slate-to-html': ['./public/tailwind.css'],
     },
     reactCompiler: !isDev,
