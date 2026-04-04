@@ -1971,12 +1971,16 @@ export const Index: Record<string, any> = {
     type: "registry:component",
     registryDependencies: ["https://platejs.org/r/markdown-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/ai-menu.json","https://platejs.org/r/ai-node.json","https://platejs.org/r/ai-toolbar-button.json","https://platejs.org/r/ai-api.json"],
     files: [{
+      path: "src/registry/lib/ai-stream-batching.ts",
+      type: "registry:lib",
+      target: ""
+    },{
       path: "src/registry/components/editor/plugins/ai-kit.tsx",
       type: "registry:component",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/ai-kit.tsx")
+      const mod = await import("@/registry/lib/ai-stream-batching.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

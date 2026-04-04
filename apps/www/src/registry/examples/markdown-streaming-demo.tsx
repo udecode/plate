@@ -5,6 +5,7 @@ import {
   type ErrorInfo,
   type ReactNode,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -378,6 +379,12 @@ export default function MarkdownStreamingDemo() {
   const currentChunkLabel =
     activeIndex === 0 ? 'before first chunk' : `#${activeIndex}`;
   const editorBoundaryResetKey = `${sourceIdentity}:${activeIndex}`;
+  const syncTreeJson = useEffectEvent(() => {
+    setTreeJson(encodeEditorTree(editor.children));
+  });
+  const stopPlayback = useEffectEvent(() => {
+    setIsPlaying(false);
+  });
 
   async function handleCopyChunks() {
     try {
@@ -510,7 +517,7 @@ export default function MarkdownStreamingDemo() {
         };
       }
 
-      setTreeJson(encodeEditorTree(editor.children));
+      syncTreeJson();
       return;
     }
 
@@ -521,7 +528,7 @@ export default function MarkdownStreamingDemo() {
         sourceIdentity,
         streamedChunks: chunks.slice(0, activeIndex),
       };
-      setTreeJson(encodeEditorTree(editor.children));
+      syncTreeJson();
       return;
     }
 
@@ -541,13 +548,13 @@ export default function MarkdownStreamingDemo() {
       };
     }
 
-    setTreeJson(encodeEditorTree(editor.children));
+    syncTreeJson();
   }, [activeIndex, editor, sourceIdentity, transformedCurrentChunks]);
 
   useEffect(() => {
     if (!isPlaying) return;
     if (activeIndex >= transformedCurrentChunks.length) {
-      setIsPlaying(false);
+      stopPlayback();
       return;
     }
 

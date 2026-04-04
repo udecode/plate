@@ -73,7 +73,7 @@ const createProxyTransportFetch = (chatId: string): typeof fetch =>
 
 export const useChat = () => {
   const editor = useEditorRef();
-  const chatInstanceIdRef = React.useRef<string | undefined>(undefined);
+  const [chatInstanceId] = React.useState(() => `editor:${nanoid()}`);
   const options: PluginChatOptions =
     usePluginOption(aiChatPlugin, 'chatOptions') ?? {};
   const {
@@ -81,10 +81,6 @@ export const useChat = () => {
     transport: providedTransport,
     ...chatOptions
   } = options;
-  if (!chatInstanceIdRef.current) {
-    chatInstanceIdRef.current = `editor:${nanoid()}`;
-  }
-  const chatInstanceId = chatInstanceIdRef.current;
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
