@@ -129,8 +129,12 @@ describe('useChat', () => {
       .mockImplementationOnce(() => createEditor('editor-a'))
       .mockImplementationOnce(() => createEditor('editor-b'));
     usePluginOptionMock
-      .mockImplementationOnce(() => ({ body: { instance: 'editor-a' } }))
-      .mockImplementationOnce(() => ({ body: { instance: 'editor-b' } }));
+      .mockImplementationOnce(() => ({
+        chatOptions: { body: { instance: 'editor-a' } },
+      }))
+      .mockImplementationOnce(() => ({
+        chatOptions: { body: { instance: 'editor-b' } },
+      }));
 
     const { useChat } = await loadModule();
     const hookA = renderHook(() => useChat());

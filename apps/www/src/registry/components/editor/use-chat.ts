@@ -74,9 +74,10 @@ const createProxyTransportFetch = (chatId: string): typeof fetch =>
 export const useChat = () => {
   const editor = useEditorRef();
   const [chatInstanceId] = React.useState(() => `editor:${nanoid()}`);
-  const options = (usePluginOption(aiChatPlugin, 'chatOptions') ?? undefined) as
-    | PluginChatOptions
+  const aiChatState = usePluginOption(aiChatPlugin, 'state') as
+    | { chatOptions?: PluginChatOptions }
     | undefined;
+  const options = aiChatState?.chatOptions;
   const {
     api = '/api/ai/command',
     transport: providedTransport,
