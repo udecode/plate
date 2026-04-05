@@ -24,7 +24,7 @@
     "ce:plan": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "8f67c695b154c6c13a369744082e7ea013ee557862ad9a917a965d069ac268ff"
+      "computedHash": "b0f4481bedad14008ab49b201700258a05c7065f3d29240ea807fa50ccbffd7b"
     },
     "ce:review": {
       "source": "EveryInc/compound-engineering-plugin",
@@ -64,12 +64,12 @@
     "git-commit": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "0ed681627c453441cc13e22ea8f3a788d1c2b47401471da41fc072ccd7975c75"
+      "computedHash": "1c76aaf68b93a16306be4d43d06ca77443c2555eff78a8d85125cc9ba4b067a1"
     },
     "git-commit-push-pr": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
-      "computedHash": "e44856e4d00405f6af3f47605e2b3513062e22ab309db3a49bfcbc7642e0016c"
+      "computedHash": "08485868a3586a4f2ced521a98b427a110b4979089cd3fad215974c589863eca"
     },
     "git-worktree": {
       "source": "EveryInc/compound-engineering-plugin",
