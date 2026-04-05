@@ -6,7 +6,6 @@ import type { TSuggestionData, TSuggestionText } from 'platejs';
 import type { PlateLeafProps, RenderNodeWrapper } from 'platejs/react';
 
 import { cva } from 'class-variance-authority';
-import { CornerDownLeftIcon } from 'lucide-react';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -14,6 +13,7 @@ import {
   type SuggestionConfig,
   suggestionPlugin,
 } from '@/registry/components/editor/plugins/suggestion-kit';
+import { SuggestionLineBreakAnchor } from '@/registry/ui/suggestion-line-break-anchor';
 
 const suggestionVariants = cva(
   cn(
@@ -99,7 +99,7 @@ export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
   };
 };
 
-function SuggestionLineBreakContent({
+export function SuggestionLineBreakContent({
   children,
   suggestionData,
 }: {
@@ -116,33 +116,31 @@ function SuggestionLineBreakContent({
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;
 
-  const spanRef = React.useRef<HTMLSpanElement>(null);
   const { setOption } = useEditorPlugin(suggestionPlugin);
 
   return (
     <>
       {isLineBreak ? (
-        <>
+        <SuggestionLineBreakAnchor
+          badgeProps={{
+            onClick: (event) => {
+              event.stopPropagation();
+              setOption('activeId', suggestionData.id);
+            },
+            onMouseDown: (event) => {
+              event.preventDefault();
+            },
+          }}
+          className={cn(
+            suggestionVariants({
+              insertActive: isInsert && (isActive || isHover),
+              remove: isRemove,
+              removeActive: (isActive || isHover) && isRemove,
+            })
+          )}
+        >
           {children}
-          <span
-            ref={spanRef}
-            className={cn(
-              'absolute text-justify',
-              suggestionVariants({
-                insertActive: isInsert && (isActive || isHover),
-                remove: isRemove,
-                removeActive: (isActive || isHover) && isRemove,
-              })
-            )}
-            style={{
-              bottom: 3.5,
-              height: 21,
-            }}
-            contentEditable={false}
-          >
-            <CornerDownLeftIcon className="mt-0.5 size-4" />
-          </span>
-        </>
+        </SuggestionLineBreakAnchor>
       ) : (
         <div
           className={cn(
