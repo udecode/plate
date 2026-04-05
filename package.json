@@ -45,7 +45,7 @@
     "p:test": "cd ${INIT_CWD:-.} && bun test",
     "p:tsdown": "cd ${INIT_CWD:-.} && pnpm exec tsdown --config=${PROJECT_CWD:-.}/tooling/config/tsdown.config.ts --log-level warn",
     "p:typecheck": "tsc -p ./tsconfig.json",
-    "prepare": "bun x skiller@latest apply",
+    "prepare": "if [ -f .agents/skiller.toml ] || [ -f .claude/skiller.toml ]; then bun x skiller@latest apply; else echo '[prepare] skipping skiller apply: no skiller config found'; fi",
     "r": "pnpm --filter www r",
     "rc": "turbo --filter=www rc",
     "rd": "pnpm --filter www rd",

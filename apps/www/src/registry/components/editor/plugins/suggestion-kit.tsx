@@ -1,19 +1,18 @@
 'use client';
 
-import type { ExtendConfig, Path } from 'platejs';
+import type { ExtendConfig } from 'platejs';
 
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
 } from '@platejs/suggestion';
-import { isSlateEditor, isSlateString } from 'platejs';
 import { toTPlatePlugin } from 'platejs/react';
 
+import { getAnnotationClickTarget } from '@/registry/lib/get-annotation-click-target';
 import {
   SuggestionLeaf,
   SuggestionLineBreak,
 } from '@/registry/ui/suggestion-node';
-
 import { discussionPlugin } from './discussion-kit';
 
 export type SuggestionConfig = ExtendConfig<
@@ -21,7 +20,6 @@ export type SuggestionConfig = ExtendConfig<
   {
     activeId: string | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -32,53 +30,33 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       activeId: null,
       currentUserId: editor.getOption(discussionPlugin, 'currentUserId'),
       hoverId: null,
-      uniquePathMap: new Map(),
     },
   })
 ).configure({
   handlers: {
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
-      let leaf = event.target as HTMLElement;
-      let isSet = false;
+      const activeTarget = getAnnotationClickTarget({
+        allowBlockSuggestion: true,
+        target: event.target,
+        type,
+      });
 
-      const isBlockLeaf = leaf.dataset.blockSuggestion === 'true';
-
-      const unsetActiveSuggestion = () => {
+      if (!activeTarget) {
         setOption('activeId', null);
-        isSet = true;
-      };
-
-      if (!isSlateString(leaf) && !isBlockLeaf) {
-        unsetActiveSuggestion();
+        return;
       }
 
-      while (leaf.parentElement && !isSlateEditor(leaf.parentElement)) {
-        const isBlockSuggestion = leaf.dataset.blockSuggestion === 'true';
+      const suggestionEntry = api.suggestion?.node({
+        isText: !activeTarget.isBlockSuggestion,
+      });
 
-        if (leaf.classList.contains(`slate-${type}`) || isBlockSuggestion) {
-          const suggestionEntry = api.suggestion!.node({
-            isText: !isBlockSuggestion,
-          });
-
-          if (!suggestionEntry) {
-            unsetActiveSuggestion();
-
-            break;
-          }
-
-          const id = api.suggestion!.nodeId(suggestionEntry[0]);
-          setOption('activeId', id ?? null);
-
-          isSet = true;
-
-          break;
-        }
-
-        leaf = leaf.parentElement;
-      }
-
-      if (!isSet) unsetActiveSuggestion();
+      setOption(
+        'activeId',
+        suggestionEntry
+          ? (api.suggestion?.nodeId(suggestionEntry[0]) ?? null)
+          : null
+      );
     },
   },
   render: {

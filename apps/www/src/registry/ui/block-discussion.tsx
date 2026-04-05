@@ -21,9 +21,8 @@ import {
   type TElement,
   type TSuggestionText,
   PathApi,
-  TextApi,
 } from 'platejs';
-import { useEditorPlugin, useEditorRef, usePluginOption } from 'platejs/react';
+import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -33,17 +32,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
-import {
-  type TDiscussion,
-  discussionPlugin,
-} from '@/registry/components/editor/plugins/discussion-kit';
+import type { TDiscussion } from '@/registry/components/editor/plugins/discussion-kit';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
-import {
-  BlockSuggestionCard,
-  isResolvedSuggestion,
-  useResolveSuggestion,
-} from './block-suggestion';
+import { BlockSuggestionCard, isResolvedSuggestion } from './block-suggestion';
+import { useBlockDiscussionItems } from './block-discussion-index';
 import { Comment, CommentCreateForm } from './comment';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
@@ -95,8 +88,8 @@ const BlockCommentContent = ({
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
   const editor = useEditorRef();
-  const resolvedSuggestions = useResolveSuggestion(suggestionNodes, blockPath);
-  const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
+  const { resolvedDiscussions, resolvedSuggestions } =
+    useBlockDiscussionItems(blockPath);
 
   const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;
@@ -142,9 +135,8 @@ const BlockCommentContent = ({
     if (activeSuggestion) {
       activeNode = suggestionNodes.find(
         ([node]) =>
-          TextApi.isText(node) &&
           editor.getApi(SuggestionPlugin).suggestion.nodeId(node) ===
-            activeSuggestion.suggestionId
+          activeSuggestion.suggestionId
       );
     }
 
@@ -307,61 +299,3 @@ function BlockComment({
     </React.Fragment>
   );
 }
-
-const useResolvedDiscussion = (
-  commentNodes: NodeEntry<TCommentText>[],
-  blockPath: Path
-) => {
-  const { api, getOption, setOption } = useEditorPlugin(commentPlugin);
-
-  const discussions = usePluginOption(discussionPlugin, 'discussions');
-
-  commentNodes.forEach(([node]) => {
-    const id = api.comment.nodeId(node);
-    const map = getOption('uniquePathMap');
-
-    if (!id) return;
-
-    const previousPath = map.get(id);
-
-    // If there are no comment nodes in the corresponding path in the map, then update it.
-    if (PathApi.isPath(previousPath)) {
-      const nodes = api.comment.node({ id, at: previousPath });
-
-      if (!nodes) {
-        setOption('uniquePathMap', new Map(map).set(id, blockPath));
-        return;
-      }
-
-      return;
-    }
-    // TODO: fix throw error
-    setOption('uniquePathMap', new Map(map).set(id, blockPath));
-  });
-
-  const commentsIds = new Set(
-    commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean)
-  );
-
-  const resolvedDiscussions = discussions
-    .map((d: TDiscussion) => ({
-      ...d,
-      createdAt: new Date(d.createdAt),
-    }))
-    .filter((item: TDiscussion) => {
-      /** If comment cross blocks just show it in the first block */
-      const commentsPathMap = getOption('uniquePathMap');
-      const firstBlockPath = commentsPathMap.get(item.id);
-
-      if (!firstBlockPath) return false;
-      if (!PathApi.equals(firstBlockPath, blockPath)) return false;
-
-      return (
-        api.comment.has({ id: item.id }) &&
-        commentsIds.has(item.id) &&
-        !item.isResolved
-      );
-    });
-
-  return resolvedDiscussions;
-};

@@ -84,7 +84,6 @@ type CommentConfig = ExtendConfig<
     activeId: string | null;
     commentingBlock: Path | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -95,7 +94,6 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
       activeId: null,
       commentingBlock: null,
       hoverId: null,
-      uniquePathMap: new Map(),
     },
     render: {
       node: CommentLeaf,
@@ -107,7 +105,6 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 - `options.activeId`: 当前激活的评论 ID,用于视觉高亮
 - `options.commentingBlock`: 当前正在评论的块的路径
 - `options.hoverId`: 当前悬停的评论 ID,用于悬停效果
-- `options.uniquePathMap`: 用于评论解析的唯一路径映射
 - `render.node`: 指定 [`CommentLeaf`](/docs/components/comment-node) 来渲染评论文本标记
 
 ### 添加点击处理器
@@ -267,9 +264,6 @@ const editor = createPlateEditor({
     </APIItem>
     <APIItem name="hoverId" type="string | null">
       当前悬停的评论 ID,用于悬停效果。
-    </APIItem>
-    <APIItem name="uniquePathMap" type="Map<string, Path>">
-      用于评论解析的唯一路径映射。
     </APIItem>
   </APIOptions>
 </API>
