@@ -2,6 +2,7 @@
 
 import type { SlateEditor } from 'platejs';
 
+import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 import { createSlateEditor } from 'platejs';
 
@@ -362,6 +363,86 @@ describe('rejectSuggestion', () => {
 
     const editor = createSlateEditor({
       plugins: [suggestionPlugin],
+      value: input.children,
+    });
+
+    rejectSuggestion(editor, {
+      keyId: 'suggestion_1',
+      suggestionId: '1',
+    } as any);
+
+    expect(editor.children).toEqual(output.children);
+  });
+
+  it('reject remove suggestion on inline link elements', () => {
+    const removeData = {
+      id: '1',
+      createdAt: Date.now(),
+      type: 'remove',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp>
+          before{' '}
+          <ha suggestion suggestion_1={removeData} url="https://example.com">
+            link
+          </ha>{' '}
+          after
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hp>
+          before <ha url="https://example.com">link</ha> after
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [BaseLinkPlugin, suggestionPlugin],
+      value: input.children,
+    });
+
+    rejectSuggestion(editor, {
+      keyId: 'suggestion_1',
+      suggestionId: '1',
+    } as any);
+
+    expect(editor.children).toEqual(output.children);
+  });
+
+  it('reject insert suggestion on inline link elements', () => {
+    const insertData = {
+      id: '1',
+      createdAt: Date.now(),
+      type: 'insert',
+      userId: 'testId',
+    };
+
+    const input = (
+      <editor>
+        <hp>
+          before{' '}
+          <ha suggestion suggestion_1={insertData} url="https://example.com">
+            link
+          </ha>{' '}
+          after
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hp>before after</hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [BaseLinkPlugin, suggestionPlugin],
       value: input.children,
     });
 

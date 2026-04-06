@@ -32,6 +32,11 @@ import { Trash2, DownloadIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+import {
+  getElementSuggestionData,
+  voidRemoveSuggestionClass,
+} from '@/registry/lib/void-remove-suggestion';
 import {
   Popover,
   PopoverAnchor,
@@ -204,22 +209,31 @@ export function CodeDrawingElement(
   );
 
   const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
+  const isRemoveSuggestion =
+    getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
   const content = (
     <PlateElement {...props}>
       <div contentEditable={false}>
-        <CodeDrawingPreview
-          code={code}
-          drawingType={drawingType}
-          drawingMode={drawingMode}
-          image={image}
-          loading={loading}
-          onCodeChange={handleCodeChange}
-          onDrawingTypeChange={handleDrawingTypeChange}
-          onDrawingModeChange={handleDrawingModeChange}
-          readOnly={readOnly}
-          isMobile={isMobile}
-        />
+        <div
+          className={cn(
+            isRemoveSuggestion && 'rounded-md',
+            isRemoveSuggestion && voidRemoveSuggestionClass
+          )}
+        >
+          <CodeDrawingPreview
+            code={code}
+            drawingType={drawingType}
+            drawingMode={drawingMode}
+            image={image}
+            loading={loading}
+            onCodeChange={handleCodeChange}
+            onDrawingTypeChange={handleDrawingTypeChange}
+            onDrawingModeChange={handleDrawingModeChange}
+            readOnly={readOnly}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
     </PlateElement>
   );

@@ -20,6 +20,7 @@ import {
   useReadOnly,
   useSelected,
 } from 'platejs/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,11 +29,16 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { voidRemoveSuggestionClass } from '@/registry/lib/void-remove-suggestion';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
+  const isRemoveSuggestion =
+    props.editor
+      .getApi(SuggestionPlugin)
+      .suggestion.suggestionData(props.element)?.type === 'remove';
 
   useEquationElement({
     element: props.element,
@@ -57,6 +63,7 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
           <div
             className={cn(
               'group flex cursor-pointer select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
+              isRemoveSuggestion && voidRemoveSuggestionClass,
               props.element.texExpression.length === 0
                 ? 'bg-muted p-3 pr-9'
                 : 'px-2 py-1'

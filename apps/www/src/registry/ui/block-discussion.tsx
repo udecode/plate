@@ -13,15 +13,7 @@ import {
   MessagesSquareIcon,
   PencilLineIcon,
 } from 'lucide-react';
-import {
-  type AnyPluginConfig,
-  type NodeEntry,
-  type Path,
-  type TCommentText,
-  type TElement,
-  type TSuggestionText,
-  PathApi,
-} from 'platejs';
+import { type AnyPluginConfig, type NodeEntry, PathApi } from 'platejs';
 import { useEditorRef, usePluginOption } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -39,57 +31,29 @@ import { BlockSuggestionCard, isResolvedSuggestion } from './block-suggestion';
 import { useBlockDiscussionItems } from './block-discussion-index';
 import { Comment, CommentCreateForm } from './comment';
 
-export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
-  const { editor, element } = props;
+export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> =
+  (_props) => (props) => <BlockCommentContent {...props} />;
 
-  const commentsApi = editor.getApi(CommentPlugin).comment;
-  const blockPath = editor.api.findPath(element);
-
-  // avoid duplicate in table or column
-  if (!blockPath || blockPath.length > 1) return;
-
-  const draftCommentNode = commentsApi.node({ at: blockPath, isDraft: true });
-
-  const commentNodes = [...commentsApi.nodes({ at: blockPath })];
-
-  const suggestionNodes = [
-    ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
-  ].filter(([node]) => !node[getTransientSuggestionKey()]);
-
-  if (
-    commentNodes.length === 0 &&
-    suggestionNodes.length === 0 &&
-    !draftCommentNode
-  ) {
-    return;
-  }
-
-  return (props) => (
-    <BlockCommentContent
-      blockPath={blockPath}
-      commentNodes={commentNodes}
-      draftCommentNode={draftCommentNode}
-      suggestionNodes={suggestionNodes}
-      {...props}
-    />
-  );
-};
-
-const BlockCommentContent = ({
-  blockPath,
-  children,
-  commentNodes,
-  draftCommentNode,
-  suggestionNodes,
-}: PlateElementProps & {
-  blockPath: Path;
-  commentNodes: NodeEntry<TCommentText>[];
-  draftCommentNode: NodeEntry<TCommentText> | undefined;
-  suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
-}) => {
+const BlockCommentContent = ({ children, element }: PlateElementProps) => {
   const editor = useEditorRef();
+  const commentsApi = editor.getApi(CommentPlugin).comment;
+  const blockPath = editor.api.findPath(element) ?? [];
+  const isTopLevelBlock = blockPath.length === 1;
+  const draftCommentNode = isTopLevelBlock
+    ? commentsApi.node({ at: blockPath, isDraft: true })
+    : undefined;
+  const commentNodes = isTopLevelBlock
+    ? [...commentsApi.nodes({ at: blockPath })]
+    : [];
+  const suggestionNodes = isTopLevelBlock
+    ? [
+        ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
+      ].filter(([node]) => !node[getTransientSuggestionKey()])
+    : [];
   const { resolvedDiscussions, resolvedSuggestions } =
     useBlockDiscussionItems(blockPath);
+
+  if (!isTopLevelBlock) return <>{children}</>;
 
   const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;

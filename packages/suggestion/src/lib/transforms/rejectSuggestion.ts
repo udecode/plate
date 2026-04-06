@@ -55,7 +55,10 @@ export const rejectSuggestion = (
         at: [],
         mode: 'all',
         match: (n) => {
-          if (TextApi.isText(n)) {
+          if (
+            TextApi.isText(n) ||
+            (ElementApi.isElement(n) && editor.api.isInline(n))
+          ) {
             const node = n as TSuggestionText;
             const suggestionData = getInlineSuggestionData(node);
 
@@ -94,7 +97,10 @@ export const rejectSuggestion = (
       at: [],
       mode: 'all',
       match: (n) => {
-        if (TextApi.isText(n)) {
+        if (
+          TextApi.isText(n) ||
+          (ElementApi.isElement(n) && editor.api.isInline(n))
+        ) {
           const node = n as TSuggestionText;
 
           const suggestionData = getInlineSuggestionData(node);

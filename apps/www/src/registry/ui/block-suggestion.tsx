@@ -53,6 +53,21 @@ export function BlockSuggestionCard({
     return text.split(BLOCK_SUGGESTION_TOKEN).filter(Boolean);
   };
 
+  const getRemoveSummaryItems = (text: string) => {
+    const items = suggestionText2Array(text).map((item) => {
+      if (item === 'column_group') return 'Column';
+      if (item === 'code_block') return 'Code Block';
+
+      return item;
+    });
+
+    if (items.includes('Table')) return ['Table'];
+    if (items.includes('Code Block')) return ['Code Block'];
+    if (items.includes('Column')) return ['Column'];
+
+    return items;
+  };
+
   const [editingId, setEditingId] = React.useState<string | null>(null);
 
   return (
@@ -82,7 +97,7 @@ export function BlockSuggestionCard({
         <div className="relative mt-1 mb-4 pl-[32px]">
           <div className="flex flex-col gap-2">
             {suggestion.type === 'remove' &&
-              suggestionText2Array(suggestion.text!).map((text, index) => (
+              getRemoveSummaryItems(suggestion.text!).map((text, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">Delete:</span>
 

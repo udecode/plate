@@ -6,7 +6,11 @@ import type { TExcalidrawElement } from '@platejs/excalidraw';
 import type { PlateElementProps } from 'platejs/react';
 
 import { useExcalidrawElement } from '@platejs/excalidraw/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { PlateElement, useReadOnly } from 'platejs/react';
+
+import { cn } from '@/lib/utils';
+import { voidRemoveSuggestionClass } from '@/registry/lib/void-remove-suggestion';
 
 import '@excalidraw/excalidraw/index.css';
 
@@ -15,6 +19,9 @@ export function ExcalidrawElement(
 ) {
   const { children, element } = props;
   const readOnly = useReadOnly();
+  const isRemoveSuggestion =
+    props.editor.getApi(SuggestionPlugin).suggestion.suggestionData(element)
+      ?.type === 'remove';
 
   const { Excalidraw, excalidrawProps } = useExcalidrawElement({
     element,
@@ -23,7 +30,12 @@ export function ExcalidrawElement(
   return (
     <PlateElement {...props}>
       <div contentEditable={false}>
-        <div className="mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border">
+        <div
+          className={cn(
+            'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border',
+            isRemoveSuggestion && voidRemoveSuggestionClass
+          )}
+        >
           {Excalidraw && (
             <Excalidraw
               {...(excalidrawProps as any)}

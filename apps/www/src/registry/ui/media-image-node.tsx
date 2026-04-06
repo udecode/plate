@@ -11,6 +11,10 @@ import { ResizableProvider, useResizableValue } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
+import {
+  getElementSuggestionData,
+  voidRemoveSuggestionClass,
+} from '@/registry/lib/void-remove-suggestion';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';
@@ -25,6 +29,8 @@ export const ImageElement = withHOC(
   function ImageElement(props: PlateElementProps<TImageElement>) {
     const { align = 'center', focused, readOnly, selected } = useMediaState();
     const width = useResizableValue('width');
+    const isRemoveSuggestion =
+      getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
@@ -45,16 +51,23 @@ export const ImageElement = withHOC(
                 className={mediaResizeHandleVariants({ direction: 'left' })}
                 options={{ direction: 'left' }}
               />
-              <Image
-                ref={handleRef}
+              <div
                 className={cn(
-                  'block w-full max-w-full cursor-pointer object-cover px-0',
-                  'rounded-sm',
-                  focused && selected && 'ring-2 ring-ring ring-offset-2',
-                  isDragging && 'opacity-50'
+                  isRemoveSuggestion && 'rounded-sm',
+                  isRemoveSuggestion && voidRemoveSuggestionClass
                 )}
-                alt={props.attributes.alt as string | undefined}
-              />
+              >
+                <Image
+                  ref={handleRef}
+                  className={cn(
+                    'block w-full max-w-full cursor-pointer object-cover px-0',
+                    'rounded-sm',
+                    focused && selected && 'ring-2 ring-ring ring-offset-2',
+                    isDragging && 'opacity-50'
+                  )}
+                  alt={props.attributes.alt as string | undefined}
+                />
+              </div>
               <ResizeHandle
                 className={mediaResizeHandleVariants({
                   direction: 'right',
