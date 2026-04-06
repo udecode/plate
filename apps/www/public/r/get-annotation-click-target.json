@@ -1,0 +1,13 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "get-annotation-click-target",
+  "type": "registry:hook",
+  "dependencies": [],
+  "files": [
+    {
+      "path": "src/registry/lib/get-annotation-click-target.ts",
+      "content": "'use client';\n\nconst BLOCK_SUGGESTION_SELECTOR = '[data-block-suggestion=\"true\"]';\n\nconst getTargetElement = (target: EventTarget | null) => {\n  if (target instanceof HTMLElement) return target;\n  if (target instanceof Node) return target.parentElement;\n\n  return null;\n};\n\nexport const getAnnotationClickTarget = ({\n  allowBlockSuggestion = false,\n  target,\n  type,\n}: {\n  allowBlockSuggestion?: boolean;\n  target: EventTarget | null;\n  type: string;\n}) => {\n  const element = getTargetElement(target);\n\n  if (!element) return null;\n\n  const markElement = element.closest(`.slate-${type}`);\n\n  if (markElement) {\n    return {\n      element: markElement as HTMLElement,\n      isBlockSuggestion: false,\n    };\n  }\n\n  if (!allowBlockSuggestion) return null;\n\n  const blockSuggestionElement = element.closest(BLOCK_SUGGESTION_SELECTOR);\n\n  if (!blockSuggestionElement) return null;\n\n  return {\n    element: blockSuggestionElement as HTMLElement,\n    isBlockSuggestion: true,\n  };\n};\n",
+      "type": "registry:lib"
+    }
+  ]
+}

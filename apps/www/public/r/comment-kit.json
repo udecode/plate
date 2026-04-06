@@ -9,7 +9,8 @@
     "https://platejs.org/r/comment-base-kit.json",
     "https://platejs.org/r/comment-node.json",
     "https://platejs.org/r/comment-toolbar-button.json",
-    "https://platejs.org/r/discussion-kit.json"
+    "https://platejs.org/r/discussion-kit.json",
+    "https://platejs.org/r/get-annotation-click-target.json"
   ],
   "files": [
     {

@@ -418,6 +418,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "src/registry/ui/block-discussion-index.ts",
+          "type": "registry:ui"
+        },
+        {
           "path": "src/registry/ui/block-suggestion.tsx",
           "type": "registry:ui"
         },
@@ -3377,7 +3381,8 @@
         "https://platejs.org/r/comment-base-kit.json",
         "https://platejs.org/r/comment-node.json",
         "https://platejs.org/r/comment-toolbar-button.json",
-        "https://platejs.org/r/discussion-kit.json"
+        "https://platejs.org/r/discussion-kit.json",
+        "https://platejs.org/r/get-annotation-click-target.json"
       ],
       "files": [
         {
@@ -3543,6 +3548,7 @@
         "https://platejs.org/r/suggestion-kit.json",
         "https://platejs.org/r/table-kit.json",
         "https://platejs.org/r/toc-kit.json",
+        "https://platejs.org/r/trailing-block-kit.json",
         "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [
@@ -3864,11 +3870,25 @@
         "https://platejs.org/r/suggestion-base-kit.json",
         "https://platejs.org/r/suggestion-node.json",
         "https://platejs.org/r/suggestion-toolbar-button.json",
-        "https://platejs.org/r/discussion-kit.json"
+        "https://platejs.org/r/discussion-kit.json",
+        "https://platejs.org/r/get-annotation-click-target.json"
       ],
       "files": [
         {
           "path": "src/registry/components/editor/plugins/suggestion-kit.tsx",
+          "type": "registry:component"
+        }
+      ]
+    },
+    {
+      "name": "trailing-block-kit",
+      "type": "registry:component",
+      "dependencies": [
+        "@platejs/suggestion"
+      ],
+      "files": [
+        {
+          "path": "src/registry/components/editor/plugins/trailing-block-kit.ts",
           "type": "registry:component"
         }
       ]
@@ -4176,6 +4196,7 @@
         "https://platejs.org/r/suggestion-kit.json",
         "https://platejs.org/r/table-kit.json",
         "https://platejs.org/r/toc-kit.json",
+        "https://platejs.org/r/trailing-block-kit.json",
         "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [
@@ -4344,6 +4365,17 @@
       },
       "categories": [
         "Serializers"
+      ]
+    },
+    {
+      "name": "get-annotation-click-target",
+      "type": "registry:hook",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "src/registry/lib/get-annotation-click-target.ts",
+          "type": "registry:lib"
+        }
       ]
     },
     {

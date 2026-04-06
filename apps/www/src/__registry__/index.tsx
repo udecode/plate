@@ -206,6 +206,10 @@ export const Index: Record<string, any> = {
       type: "registry:ui",
       target: ""
     },{
+      path: "src/registry/ui/block-discussion-index.ts",
+      type: "registry:ui",
+      target: ""
+    },{
       path: "src/registry/ui/block-suggestion.tsx",
       type: "registry:ui",
       target: ""
@@ -2207,7 +2211,7 @@ export const Index: Record<string, any> = {
     name: "comment-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/comment-node.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion-kit.json"],
+    registryDependencies: ["https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/comment-node.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/get-annotation-click-target.json"],
     files: [{
       path: "src/registry/components/editor/plugins/comment-kit.tsx",
       type: "registry:component",
@@ -2343,7 +2347,7 @@ export const Index: Record<string, any> = {
     name: "editor-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/code-drawing-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/excalidraw-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/toggle-kit.json"],
+    registryDependencies: ["https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/code-drawing-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/excalidraw-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/trailing-block-kit.json","https://platejs.org/r/toggle-kit.json"],
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
@@ -2658,7 +2662,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/suggestion-node.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/discussion-kit.json"],
+    registryDependencies: ["https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/suggestion-node.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/get-annotation-click-target.json"],
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-kit.tsx",
       type: "registry:component",
@@ -2666,6 +2670,23 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/suggestion-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "trailing-block-kit": {
+    name: "trailing-block-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/components/editor/plugins/trailing-block-kit.ts",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/trailing-block-kit.ts")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),
@@ -2911,7 +2932,7 @@ export const Index: Record<string, any> = {
     name: "editor-ai",
     description: "An AI editor",
     type: "registry:block",
-    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/copilot-kit.json","https://platejs.org/r/media-uploadthing-api.json","https://platejs.org/r/plate-types.json","https://platejs.org/r/settings-dialog.json","https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/toggle-kit.json"],
+    registryDependencies: ["https://platejs.org/r/plate-ui.json","https://platejs.org/r/copilot-kit.json","https://platejs.org/r/media-uploadthing-api.json","https://platejs.org/r/plate-types.json","https://platejs.org/r/settings-dialog.json","https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/trailing-block-kit.json","https://platejs.org/r/toggle-kit.json"],
     files: [{
       path: "src/registry/blocks/editor-ai/page.tsx",
       type: "registry:page",
@@ -3054,6 +3075,23 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"rsc":true},
+  },
+  "get-annotation-click-target": {
+    name: "get-annotation-click-target",
+    description: "",
+    type: "registry:hook",
+    registryDependencies: undefined,
+    files: [{
+      path: "src/registry/lib/get-annotation-click-target.ts",
+      type: "registry:lib",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/lib/get-annotation-click-target.ts")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
   },
   "uploadthing": {
     name: "uploadthing",

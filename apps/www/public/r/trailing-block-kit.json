@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "trailing-block-kit",
+  "type": "registry:component",
+  "dependencies": [
+    "@platejs/suggestion"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/plugins/trailing-block-kit.ts",
+      "content": "import { SuggestionPlugin } from '@platejs/suggestion/react';\nimport { TrailingBlockPlugin } from 'platejs';\n\nexport const TrailingBlockKit = TrailingBlockPlugin.configure({\n  options: {\n    insert: (editor, { insert }) => {\n      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);\n    },\n  },\n});\n",
+      "type": "registry:component"
+    }
+  ]
+}

@@ -520,6 +520,7 @@ export const registryKits: Registry['items'] = [
       'comment-node',
       'comment-toolbar-button',
       'discussion-kit',
+      'get-annotation-click-target',
     ],
     type: 'registry:component',
   },
@@ -660,6 +661,7 @@ export const registryKits: Registry['items'] = [
       'suggestion-kit',
       'table-kit',
       'toc-kit',
+      'trailing-block-kit',
       'toggle-kit',
     ],
     type: 'registry:component',
@@ -931,7 +933,19 @@ export const registryKits: Registry['items'] = [
       'suggestion-node',
       'suggestion-toolbar-button',
       'discussion-kit',
+      'get-annotation-click-target',
     ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@platejs/suggestion'],
+    files: [
+      {
+        path: 'components/editor/plugins/trailing-block-kit.ts',
+        type: 'registry:component',
+      },
+    ],
+    name: 'trailing-block-kit',
     type: 'registry:component',
   },
   {

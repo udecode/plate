@@ -9,7 +9,8 @@
     "https://platejs.org/r/suggestion-base-kit.json",
     "https://platejs.org/r/suggestion-node.json",
     "https://platejs.org/r/suggestion-toolbar-button.json",
-    "https://platejs.org/r/discussion-kit.json"
+    "https://platejs.org/r/discussion-kit.json",
+    "https://platejs.org/r/get-annotation-click-target.json"
   ],
   "files": [
     {

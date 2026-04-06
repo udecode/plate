@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 
+import { cva } from 'class-variance-authority';
+import { CornerDownLeftIcon } from 'lucide-react';
 import type {
   AnyPluginConfig,
   TElement,
@@ -9,6 +11,7 @@ import type {
   TSuggestionText,
   WithRequiredKey,
 } from 'platejs';
+import { KEYS } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
@@ -20,16 +23,61 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
-import { SuggestionLineBreakAnchor } from '@/registry/ui/suggestion-line-break-anchor';
-import {
-  getBlockSuggestionWrapperClassName,
-  suggestionVariants,
-} from '@/registry/ui/suggestion-styles';
 
 const suggestionPlugin = SuggestionPlugin as WithRequiredKey<SuggestionConfig>;
 
+export const suggestionVariants = cva(
+  cn(
+    'bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200'
+  ),
+  {
+    defaultVariants: {
+      insertActive: false,
+      remove: false,
+      removeActive: false,
+    },
+    variants: {
+      insertActive: {
+        false: '',
+        true: 'bg-emerald-200/80',
+      },
+      remove: {
+        false: '',
+        true: 'bg-red-100 text-red-700',
+      },
+      removeActive: {
+        false: '',
+        true: 'bg-red-200/80 no-underline',
+      },
+    },
+  }
+);
+
 export const voidRemoveSuggestionClass =
   'relative overflow-hidden before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:z-20 before:flex before:size-10 before:-translate-x-1/2 before:-translate-y-1/2 before:items-center before:justify-center before:rounded-full before:bg-red-500/90 before:text-2xl before:font-semibold before:text-white before:shadow-lg before:content-["X"] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:border after:border-red-300/80 after:bg-zinc-950/35 after:content-[""]';
+
+export function getBlockSuggestionWrapperClassName({
+  elementType,
+  isActive,
+  isHover,
+  isInsert,
+  isRemove,
+}: {
+  elementType?: string;
+  isActive: boolean;
+  isHover: boolean;
+  isInsert: boolean;
+  isRemove: boolean;
+}) {
+  return cn(
+    elementType === KEYS.columnGroup && 'flex size-full rounded',
+    suggestionVariants({
+      insertActive: isInsert && (isActive || isHover),
+      remove: isRemove,
+      removeActive: (isActive || isHover) && isRemove,
+    })
+  );
+}
 
 export function getElementSuggestionData(
   editor: PlateEditor,
@@ -42,6 +90,33 @@ export function getElementSuggestionData(
 
 export function getStaticElementSuggestionData(element: TElement) {
   return (element as TElement & { suggestion?: TSuggestionData }).suggestion;
+}
+
+export function SuggestionLineBreakAnchor({
+  badgeProps,
+  children,
+  className,
+}: {
+  badgeProps?: React.ComponentProps<'span'>;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className="inline-flex max-w-full items-center align-top">
+      {children}
+      <span
+        {...badgeProps}
+        className={cn(
+          'inline-flex h-[calc(1lh+2px)] w-[1lh] shrink-0 items-center justify-center leading-none',
+          badgeProps?.className,
+          className
+        )}
+        contentEditable={false}
+      >
+        <CornerDownLeftIcon className="-top-px relative size-4" />
+      </span>
+    </div>
+  );
 }
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {

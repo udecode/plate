@@ -44,6 +44,7 @@
     "https://platejs.org/r/suggestion-kit.json",
     "https://platejs.org/r/table-kit.json",
     "https://platejs.org/r/toc-kit.json",
+    "https://platejs.org/r/trailing-block-kit.json",
     "https://platejs.org/r/toggle-kit.json"
   ],
   "files": [

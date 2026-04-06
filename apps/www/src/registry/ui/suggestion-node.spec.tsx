@@ -15,8 +15,10 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
-import { SuggestionLineBreakAnchor } from './suggestion-line-break-anchor';
-import { getBlockSuggestionWrapperClassName } from './suggestion-styles';
+import {
+  getBlockSuggestionWrapperClassName,
+  SuggestionLineBreakAnchor,
+} from './suggestion-node';
 
 describe('SuggestionLineBreakAnchor', () => {
   afterAll(() => {

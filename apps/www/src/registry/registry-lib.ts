@@ -2,6 +2,17 @@ import type { Registry } from 'shadcn/registry';
 
 export const registryLib: Registry['items'] = [
   {
+    dependencies: [],
+    files: [
+      {
+        path: 'lib/get-annotation-click-target.ts',
+        type: 'registry:lib',
+      },
+    ],
+    name: 'get-annotation-click-target',
+    type: 'registry:hook',
+  },
+  {
     dependencies: [
       'uploadthing@7.7.4',
       '@uploadthing/react@7.3.3',
