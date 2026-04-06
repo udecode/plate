@@ -1,3 +1,5 @@
+'use client';
+
 export * from '@platejs/core/react';
 export {
   toPlatePlugin,

@@ -30,5 +30,6 @@ Make `plate-template` and `plate-playground-template` build again after the regi
 - Rebuilt `apps/www` registry output with `pnpm --filter www rd`.
 - `pnpm turbo typecheck --filter=./apps/www` and `pnpm lint:fix` passed.
 - Investigated the separate Vercel failure and reproduced it locally with `pnpm turbo build --filter=./apps/www`.
-- Fixed the actual deploy blocker by marking `packages/core/src/react/index.ts` as a client boundary.
-- `pnpm turbo build --filter=./apps/www` now passes.
+- The first fix used `packages/core/src/react/index.ts`, but `pnpm brl` rewrote that generated barrel and reintroduced drift.
+- Moved the durable client boundary to `packages/plate/src/react/index.tsx`, which survives `pnpm brl`.
+- `pnpm brl` and `pnpm turbo build --filter=./apps/www` now both pass together.
