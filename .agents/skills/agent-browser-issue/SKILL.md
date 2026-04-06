@@ -1,0 +1,69 @@
+---
+description: Open a concise GitHub follow-up for reusable dev-browser or agent-browser limitations. Use when browser automation is blocked by a likely tool-side issue that is worth fixing separately, especially for clicks, dropdowns, file inputs, focus traps, or other repeatable agent/browser failures.
+argument-hint: '[browser block summary]'
+disable-model-invocation: true
+name: agent-browser-issue
+metadata:
+  skiller:
+    source: .agents/rules/agent-browser-issue.mdc
+---
+
+# Agent Browser Issue
+
+Handle $ARGUMENTS.
+
+Use this only for likely reusable agent/browser tooling bugs. Do not use it for:
+
+- auth or SSO gates
+- manual human gates
+- product bugs on the site itself
+- one-off flaky noise with no minimal repro
+
+## Collect
+
+Capture only the minimum:
+
+- page or URL
+- action attempted
+- exact block
+- expected vs actual
+- minimal repro
+- screenshot only if it adds signal
+
+## Issue
+
+Open a GitHub issue with:
+
+- a short title focused on the browser/tool failure
+- label `agent:browser`
+- concise body
+
+Body shape:
+
+```md
+## URL
+<url>
+
+## Action
+<what the agent tried>
+
+## Block
+<what failed>
+
+## Expected
+<what should have happened>
+
+## Actual
+<what happened instead>
+
+## Repro
+1. ...
+2. ...
+3. ...
+```
+
+## After
+
+- if the browser/tool failure exposes a user-action parity gap, load `agent-native-reviewer` and note that gap in the issue
+- link the issue in the task caveat or handoff
+- keep moving if the product task is still otherwise fixable
