@@ -53,8 +53,6 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
   const { resolvedDiscussions, resolvedSuggestions } =
     useBlockDiscussionItems(blockPath);
 
-  if (!isTopLevelBlock) return <>{children}</>;
-
   const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
@@ -129,6 +127,8 @@ const BlockCommentContent = ({ children, element }: PlateElementProps) => {
     draftCommentNode,
     commentNodes,
   ]);
+
+  if (!isTopLevelBlock) return <>{children}</>;
 
   if (suggestionsCount + resolvedDiscussions.length === 0 && !draftCommentNode)
     return <div className="w-full">{children}</div>;

@@ -18,11 +18,29 @@ import {
   getTransientSuggestionKey,
 } from '../utils';
 
+const ENDS_WITH_WHITESPACE_RE = /\s$/;
+const STARTS_WITH_WHITESPACE_RE = /^\s/;
+
 export const rejectSuggestion = (
   editor: SlateEditor,
   description: TResolvedSuggestion
 ) => {
   editor.tf.withoutNormalizing(() => {
+    const inlineInsertElementEntries = [
+      ...editor.api.nodes({
+        at: [],
+        match: (n) => {
+          if (!ElementApi.isElement(n) || !editor.api.isInline(n)) return false;
+
+          const suggestionData = getInlineSuggestionData(n);
+
+          return (
+            suggestionData?.type === 'insert' &&
+            suggestionData.id === description.suggestionId
+          );
+        },
+      }),
+    ];
     const mergeNodes = [
       ...editor.api.nodes({
         at: [],
@@ -97,10 +115,7 @@ export const rejectSuggestion = (
       at: [],
       mode: 'all',
       match: (n) => {
-        if (
-          TextApi.isText(n) ||
-          (ElementApi.isElement(n) && editor.api.isInline(n))
-        ) {
+        if (TextApi.isText(n)) {
           const node = n as TSuggestionText;
 
           const suggestionData = getInlineSuggestionData(node);
@@ -128,6 +143,40 @@ export const rejectSuggestion = (
 
         return false;
       },
+    });
+
+    inlineInsertElementEntries.reverse().forEach(([, path]) => {
+      const previousPath = path.at(-1)! > 0 ? PathApi.previous(path) : null;
+      const nextPath = PathApi.next(path);
+      const previousEntry = previousPath ? editor.api.node(previousPath) : null;
+      const nextEntry = editor.api.node(nextPath);
+      const trimOffset =
+        previousPath &&
+        previousEntry &&
+        nextEntry &&
+        TextApi.isText(previousEntry[0]) &&
+        TextApi.isText(nextEntry[0]) &&
+        ENDS_WITH_WHITESPACE_RE.test(previousEntry[0].text) &&
+        STARTS_WITH_WHITESPACE_RE.test(nextEntry[0].text)
+          ? 0
+          : null;
+
+      editor.tf.removeNodes({ at: path });
+
+      if (trimOffset === null) return;
+
+      const nextEntryAfterRemoval = editor.api.node(path);
+
+      if (!nextEntryAfterRemoval || !TextApi.isText(nextEntryAfterRemoval[0]))
+        return;
+
+      const start = editor.api.start(path);
+      const end = start && editor.api.after(start);
+      const range = start && end && editor.api.range(start, end);
+
+      if (range) {
+        editor.tf.delete({ at: range });
+      }
     });
 
     const updateNodes = [

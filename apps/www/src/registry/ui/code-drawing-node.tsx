@@ -132,6 +132,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
 export function CodeDrawingElement(
   props: PlateElementProps<TCodeDrawingElement>
 ) {
+  const { children } = props;
   const isMobile = useIsMobile();
   const editor = useEditorRef();
   const readOnly = useReadOnly();
@@ -235,6 +236,7 @@ export function CodeDrawingElement(
           />
         </div>
       </div>
+      {children}
     </PlateElement>
   );
 

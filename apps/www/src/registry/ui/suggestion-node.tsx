@@ -5,7 +5,6 @@ import * as React from 'react';
 import type { TSuggestionData, TSuggestionText } from 'platejs';
 import type { PlateLeafProps, RenderNodeWrapper } from 'platejs/react';
 
-import { cva } from 'class-variance-authority';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -14,33 +13,10 @@ import {
   suggestionPlugin,
 } from '@/registry/components/editor/plugins/suggestion-kit';
 import { SuggestionLineBreakAnchor } from '@/registry/ui/suggestion-line-break-anchor';
-
-const suggestionVariants = cva(
-  cn(
-    'bg-emerald-100 text-emerald-700 no-underline transition-colors duration-200'
-  ),
-  {
-    defaultVariants: {
-      insertActive: false,
-      remove: false,
-      removeActive: false,
-    },
-    variants: {
-      insertActive: {
-        false: '',
-        true: 'bg-emerald-200/80',
-      },
-      remove: {
-        false: '',
-        true: 'bg-red-100 text-red-700',
-      },
-      removeActive: {
-        false: '',
-        true: 'bg-red-200/80 no-underline',
-      },
-    },
-  }
-);
+import {
+  getBlockSuggestionWrapperClassName,
+  suggestionVariants,
+} from '@/registry/ui/suggestion-styles';
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
   const { api, setOption } = useEditorPlugin(suggestionPlugin);
@@ -92,7 +68,10 @@ export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
 
   return function Component({ children }) {
     return (
-      <SuggestionLineBreakContent suggestionData={suggestionData}>
+      <SuggestionLineBreakContent
+        elementType={element.type}
+        suggestionData={suggestionData}
+      >
         {children}
       </SuggestionLineBreakContent>
     );
@@ -101,9 +80,11 @@ export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
 
 export function SuggestionLineBreakContent({
   children,
+  elementType,
   suggestionData,
 }: {
   children: React.ReactNode;
+  elementType?: string;
   suggestionData: TSuggestionData;
 }) {
   const { isLineBreak, type } = suggestionData;
@@ -143,13 +124,13 @@ export function SuggestionLineBreakContent({
         </SuggestionLineBreakAnchor>
       ) : (
         <div
-          className={cn(
-            suggestionVariants({
-              insertActive: isInsert && (isActive || isHover),
-              remove: isRemove,
-              removeActive: (isActive || isHover) && isRemove,
-            })
-          )}
+          className={getBlockSuggestionWrapperClassName({
+            elementType,
+            isActive,
+            isHover,
+            isInsert,
+            isRemove,
+          })}
           onMouseEnter={() => setOption('hoverId', suggestionData.id)}
           onMouseLeave={() => setOption('hoverId', null)}
           data-block-suggestion="true"

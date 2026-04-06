@@ -1,4 +1,8 @@
 export * from '@platejs/core/react';
+export {
+  toPlatePlugin,
+  toTPlatePlugin,
+} from '@platejs/core/react';
 
 export * from '@platejs/utils/react';
 
