@@ -10,7 +10,7 @@ import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { PlateElement, useReadOnly } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { voidRemoveSuggestionClass } from '@/registry/lib/void-remove-suggestion';
+import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node';
 
 import '@excalidraw/excalidraw/index.css';
 

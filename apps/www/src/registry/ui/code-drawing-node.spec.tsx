@@ -69,7 +69,7 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
-mock.module('@/registry/lib/void-remove-suggestion', () => ({
+mock.module('@/registry/ui/suggestion-node', () => ({
   getElementSuggestionData: () => {},
   voidRemoveSuggestionClass: 'void-remove-suggestion',
 }));

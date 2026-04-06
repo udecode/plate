@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import {
   getStaticElementSuggestionData,
   voidRemoveSuggestionClass,
-} from '@/registry/lib/void-remove-suggestion';
+} from '@/registry/ui/suggestion-node';
 
 export function AudioElementStatic(props: SlateElementProps<TAudioElement>) {
   const isRemoveSuggestion =

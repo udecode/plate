@@ -2,21 +2,47 @@
 
 import * as React from 'react';
 
-import type { TSuggestionData, TSuggestionText } from 'platejs';
-import type { PlateLeafProps, RenderNodeWrapper } from 'platejs/react';
+import type {
+  AnyPluginConfig,
+  TElement,
+  TSuggestionData,
+  TSuggestionText,
+  WithRequiredKey,
+} from 'platejs';
+import type {
+  PlateEditor,
+  PlateLeafProps,
+  RenderNodeWrapper,
+} from 'platejs/react';
 
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import {
-  type SuggestionConfig,
-  suggestionPlugin,
-} from '@/registry/components/editor/plugins/suggestion-kit';
+import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
 import { SuggestionLineBreakAnchor } from '@/registry/ui/suggestion-line-break-anchor';
 import {
   getBlockSuggestionWrapperClassName,
   suggestionVariants,
 } from '@/registry/ui/suggestion-styles';
+
+const suggestionPlugin = SuggestionPlugin as WithRequiredKey<SuggestionConfig>;
+
+export const voidRemoveSuggestionClass =
+  'relative overflow-hidden before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:z-20 before:flex before:size-10 before:-translate-x-1/2 before:-translate-y-1/2 before:items-center before:justify-center before:rounded-full before:bg-red-500/90 before:text-2xl before:font-semibold before:text-white before:shadow-lg before:content-["X"] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:border after:border-red-300/80 after:bg-zinc-950/35 after:content-[""]';
+
+export function getElementSuggestionData(
+  editor: PlateEditor,
+  element: TElement
+) {
+  return editor.getApi(SuggestionPlugin).suggestion.suggestionData(element) as
+    | TSuggestionData
+    | undefined;
+}
+
+export function getStaticElementSuggestionData(element: TElement) {
+  return (element as TElement & { suggestion?: TSuggestionData }).suggestion;
+}
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
   const { api, setOption } = useEditorPlugin(suggestionPlugin);
@@ -58,13 +84,13 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
     </PlateLeaf>
   );
 }
-export const SuggestionLineBreak: RenderNodeWrapper<SuggestionConfig> = ({
+export const SuggestionLineBreak: RenderNodeWrapper<AnyPluginConfig> = ({
   api,
   element,
 }) => {
   if (!api.suggestion.isBlockSuggestion(element)) return;
 
-  const suggestionData = element.suggestion;
+  const suggestionData = element.suggestion as TSuggestionData;
 
   return function Component({ children }) {
     return (

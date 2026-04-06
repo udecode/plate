@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import {
   getElementSuggestionData,
   voidRemoveSuggestionClass,
-} from '@/registry/lib/void-remove-suggestion';
+} from '@/registry/ui/suggestion-node';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';
