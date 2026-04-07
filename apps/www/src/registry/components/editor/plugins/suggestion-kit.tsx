@@ -8,12 +8,15 @@ import {
 } from '@platejs/suggestion';
 import { toTPlatePlugin } from 'platejs/react';
 
-import { getAnnotationClickTarget } from '@/registry/lib/get-annotation-click-target';
 import {
   SuggestionLeaf,
   SuggestionLineBreak,
 } from '@/registry/ui/suggestion-node';
-import { discussionPlugin } from './discussion-kit';
+import {
+  discussionPlugin,
+  getDiscussionBlockClickTarget,
+  getDiscussionClickTarget,
+} from './discussion-kit';
 
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
@@ -36,19 +39,23 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
   handlers: {
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
-      const activeTarget = getAnnotationClickTarget({
-        allowBlockSuggestion: true,
+      const markTarget = getDiscussionClickTarget({
+        selector: `.slate-${type}`,
         target: event.target,
-        type,
       });
+      const blockTarget = markTarget
+        ? null
+        : getDiscussionBlockClickTarget({
+            target: event.target,
+          });
 
-      if (!activeTarget) {
+      if (!markTarget && !blockTarget) {
         setOption('activeId', null);
         return;
       }
 
       const suggestionEntry = api.suggestion?.node({
-        isText: !activeTarget.isBlockSuggestion,
+        isText: !blockTarget,
       });
 
       setOption(

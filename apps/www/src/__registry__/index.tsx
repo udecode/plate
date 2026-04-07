@@ -2211,7 +2211,7 @@ export const Index: Record<string, any> = {
     name: "comment-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/comment-node.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/get-annotation-click-target.json"],
+    registryDependencies: ["https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/comment-node.json","https://platejs.org/r/comment-toolbar-button.json","https://platejs.org/r/discussion-kit.json"],
     files: [{
       path: "src/registry/components/editor/plugins/comment-kit.tsx",
       type: "registry:component",
@@ -2662,7 +2662,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/suggestion-node.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/get-annotation-click-target.json"],
+    registryDependencies: ["https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/suggestion-node.json","https://platejs.org/r/suggestion-toolbar-button.json","https://platejs.org/r/discussion-kit.json"],
     files: [{
       path: "src/registry/components/editor/plugins/suggestion-kit.tsx",
       type: "registry:component",
@@ -3075,23 +3075,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"rsc":true},
-  },
-  "get-annotation-click-target": {
-    name: "get-annotation-click-target",
-    description: "",
-    type: "registry:hook",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/lib/get-annotation-click-target.ts",
-      type: "registry:lib",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/lib/get-annotation-click-target.ts")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
   },
   "uploadthing": {
     name: "uploadthing",

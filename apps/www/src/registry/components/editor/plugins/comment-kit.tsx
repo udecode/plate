@@ -9,8 +9,8 @@ import {
 } from '@platejs/comment';
 import { toTPlatePlugin } from 'platejs/react';
 
-import { getAnnotationClickTarget } from '@/registry/lib/get-annotation-click-target';
 import { CommentLeaf } from '@/registry/ui/comment-node';
+import { getDiscussionClickTarget } from './discussion-kit';
 
 type CommentConfig = ExtendConfig<
   BaseCommentConfig,
@@ -24,9 +24,9 @@ type CommentConfig = ExtendConfig<
 export const commentPlugin = toTPlatePlugin<CommentConfig>(BaseCommentPlugin, {
   handlers: {
     onClick: ({ api, event, setOption, type }) => {
-      const activeTarget = getAnnotationClickTarget({
+      const activeTarget = getDiscussionClickTarget({
+        selector: `.slate-${type}`,
         target: event.target,
-        type,
       });
 
       if (!activeTarget) {
