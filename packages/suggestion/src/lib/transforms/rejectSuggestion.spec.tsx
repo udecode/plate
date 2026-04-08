@@ -437,7 +437,7 @@ describe('rejectSuggestion', () => {
 
     const output = (
       <editor>
-        <hp>before after</hp>
+        <hp>{'before  after'}</hp>
       </editor>
     ) as any as SlateEditor;
 
