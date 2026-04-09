@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';
@@ -14,6 +14,11 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const MentionPlugin = createSlatePlugin({
+  key: KEYS.mention,
+  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
 const testSuggestionData = {
@@ -258,6 +263,120 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         expect(editor.children).toEqual(output.children);
         expect(editor.selection).toEqual(output.selection);
       });
+    });
+
+    it('marks only the previous mention-shaped inline void and moves the cursor to its left edge', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hmention key="u1" value="Ada">
+              <htext />
+            </hmention>
+            <htext>
+              <cursor />
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hp>
+            <htext>
+              a
+              <cursor />
+            </htext>
+            <hmention key="u1" value="Ada">
+              <htext />
+            </hmention>
+            <htext />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, MentionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const mentionNode = editor.children[0].children[1] as any;
+      const leftText = editor.children[0].children[0] as any;
+      const rightText = editor.children[0].children[2] as any;
+      const suggestionData = getInlineSuggestionData(mentionNode);
+
+      expect(leftText).toEqual(output.children[0].children[0]);
+      expect(mentionNode.suggestion).toBe(true);
+      expect(suggestionData?.type).toBe('remove');
+      expect(suggestionData?.userId).toBe('testId');
+      expect(rightText).toEqual(output.children[0].children[2]);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('marks a remove line break when deleting backward at the start of a paragraph', () => {
+      const input = (
+        <editor>
+          <hp>test1</hp>
+          <hp>
+            <cursor />
+            test2
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const lineBreakSuggestion = (editor.children[0] as any).suggestion;
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp
+              suggestion={{
+                createdAt: lineBreakSuggestion.createdAt,
+                id: lineBreakSuggestion.id,
+                isLineBreak: true,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              test1
+              <cursor />
+            </hp>
+            <hp>test2</hp>
+          </editor>
+        ).children
+      );
+      expect(editor.selection).toEqual(
+        (
+          <editor>
+            <hp
+              suggestion={{
+                createdAt: lineBreakSuggestion.createdAt,
+                id: lineBreakSuggestion.id,
+                isLineBreak: true,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              test1
+              <cursor />
+            </hp>
+            <hp>test2</hp>
+          </editor>
+        ).selection
+      );
     });
   });
 });

@@ -10,6 +10,7 @@ import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
   type NodeEntry,
+  NodeApi,
   type Path,
   type TCommentText,
   type TElement,
@@ -154,6 +155,58 @@ const getSuggestionIds = (
 const suggestionTypeText = (node: TElement) =>
   (TYPE_TEXT_MAP[node.type] ?? (() => node.type))(node);
 
+const formatSuggestionDateText = (date: string) => {
+  const elementDate = new Date(date);
+
+  if (Number.isNaN(elementDate.getTime())) return date;
+
+  const today = new Date();
+  const yesterday = new Date(today);
+  const tomorrow = new Date(today);
+
+  yesterday.setDate(today.getDate() - 1);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const sameDay = (left: Date, right: Date) =>
+    left.getDate() === right.getDate() &&
+    left.getMonth() === right.getMonth() &&
+    left.getFullYear() === right.getFullYear();
+
+  if (sameDay(elementDate, today)) return 'Today';
+  if (sameDay(elementDate, yesterday)) return 'Yesterday';
+  if (sameDay(elementDate, tomorrow)) return 'Tomorrow';
+
+  return elementDate.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+const getInlineSuggestionElementText = (node: TElement) => {
+  if (typeof node.value === 'string' && node.value.length > 0) {
+    return node.value;
+  }
+
+  if (typeof node.date === 'string' && node.date.length > 0) {
+    return formatSuggestionDateText(node.date);
+  }
+
+  if (
+    typeof (node as TElement & { texExpression?: unknown }).texExpression ===
+      'string' &&
+    (node as TElement & { texExpression: string }).texExpression.length > 0
+  ) {
+    return (node as TElement & { texExpression: string }).texExpression;
+  }
+
+  const nodeText = NodeApi.string(node);
+
+  if (nodeText.length > 0) {
+    return nodeText;
+  }
+};
+
 const toResolvedSuggestion = ({
   discussionsById,
   entries,
@@ -206,11 +259,32 @@ const toResolvedSuggestion = ({
       return;
     }
 
-    if (!ElementApi.isElement(node) || !isBlockSuggestion(node)) return;
+    if (!ElementApi.isElement(node)) return;
 
     const suggestionData = getSuggestionData(node);
 
     if (suggestionData?.id !== keyId2SuggestionId(id)) return;
+
+    const inlineSuggestionText = getInlineSuggestionElementText(node);
+
+    if (inlineSuggestionText) {
+      if (suggestionData.type === 'insert') {
+        newText += inlineSuggestionText;
+      } else if (suggestionData.type === 'remove') {
+        text += inlineSuggestionText;
+      } else if (suggestionData.type === 'update') {
+        properties = { ...properties, ...suggestionData.properties };
+        newProperties = {
+          ...newProperties,
+          ...suggestionData.newProperties,
+        };
+        newText += inlineSuggestionText;
+      }
+
+      return;
+    }
+
+    if (!isBlockSuggestion(node)) return;
 
     const nextText = suggestionData.isLineBreak
       ? BLOCK_SUGGESTION_TOKEN

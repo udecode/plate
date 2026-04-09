@@ -32,12 +32,14 @@ describe('deleteSuggestion', () => {
 
     const editor = {
       api: {
+        above: () => {},
         after: () => pointTarget,
         isAt: () => false,
         isEmpty: () => true,
         isStart: () => true,
         node: () => [suggestionNode, [0, 0]],
         pointRef: () => ({ current: pointTarget }),
+        some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
@@ -84,11 +86,13 @@ describe('deleteSuggestion', () => {
 
     const editor = {
       api: {
+        above: () => {},
         after: (point: typeof pointCurrent) =>
           point.offset === 0 ? pointNext : undefined,
         isAt: () => false,
         node: () => {},
         pointRef: () => ({ current: target }),
+        some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
