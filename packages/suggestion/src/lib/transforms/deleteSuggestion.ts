@@ -128,8 +128,34 @@ export const deleteSuggestion = (
         );
 
         const beforeInlineElement = editor.api.before(inlineEntry[1]);
+        const targetIsInsideInlineElement =
+          PathApi.equals(inlineEntry[1], pointTarget.path) ||
+          PathApi.isAncestor(inlineEntry[1], pointTarget.path);
 
-        if (beforeInlineElement) {
+        if (reverse) {
+          if (beforeInlineElement) {
+            editor.tf.select(beforeInlineElement);
+
+            if (
+              !targetIsInsideInlineElement &&
+              !PointApi.equals(beforeInlineElement, pointTarget)
+            ) {
+              continue;
+            }
+          }
+
+          break;
+        }
+
+        const afterInlineElement = editor.api.after(inlineEntry[1]);
+
+        if (afterInlineElement) {
+          editor.tf.select(afterInlineElement);
+
+          if (!PointApi.equals(afterInlineElement, pointTarget)) {
+            continue;
+          }
+        } else if (beforeInlineElement) {
           editor.tf.select(beforeInlineElement);
         }
 

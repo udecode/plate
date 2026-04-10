@@ -543,6 +543,87 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       focus: { offset: 0, path: [0, 0] },
     });
   });
+
+  it('keeps the cursor at the start of an expanded selection that spans text, a mention-shaped inline void, and trailing text', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext>
+            before <anchor />
+            text{' '}
+          </htext>
+          <hmention key="u1" value="Ada">
+            <htext />
+          </hmention>
+          <htext>
+            {' after'}
+            <focus />
+            {' text'}
+          </htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.deleteFragment();
+
+    const output = (
+      <editor>
+        <hp>
+          <htext>before </htext>
+          <htext suggestion>
+            <cursor />
+            text{' '}
+          </htext>
+          <hmention key="u1" suggestion value="Ada">
+            <htext />
+          </hmention>
+          <htext suggestion>{' after'}</htext>
+          <htext>{' text'}</htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    expect(editor.children[0].children).toHaveLength(
+      output.children[0].children.length
+    );
+
+    const leftText = editor.children[0].children[0] as any;
+    const removeTextNode = editor.children[0].children[1] as any;
+    const mentionNode = editor.children[0].children[2] as any;
+    const removeTrailingTextNode = editor.children[0].children[3] as any;
+    const trailingText = editor.children[0].children[4] as any;
+    const removeData = getInlineSuggestionData(removeTextNode);
+    const mentionData = getInlineSuggestionData(mentionNode);
+    const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
+
+    expect(leftText).toEqual(output.children[0].children[0]);
+    expect(removeTextNode.text).toBe(
+      (output.children[0].children[1] as any).text
+    );
+    expect(removeData?.type).toBe('remove');
+    expect(removeData?.userId).toBe('testId');
+    expect(mentionNode.children).toEqual(
+      output.children[0].children[2].children
+    );
+    expect(mentionData?.id).toBe(removeData?.id);
+    expect(mentionData?.type).toBe('remove');
+    expect(mentionData?.userId).toBe('testId');
+    expect(removeTrailingTextNode.text).toBe(
+      (output.children[0].children[3] as any).text
+    );
+    expect(trailingRemoveData?.id).toBe(removeData?.id);
+    expect(trailingRemoveData?.type).toBe('remove');
+    expect(trailingRemoveData?.userId).toBe('testId');
+    expect(trailingText).toEqual(output.children[0].children[4]);
+    expect(editor.selection).toEqual(output.selection);
+  });
 });
 
 describe('normalizeNode', () => {
@@ -693,6 +774,96 @@ describe('insert text when cursor is expanded', () => {
     expect(removeNodeData?.id).toEqual(insertedNodeData?.id);
     expect(removeNodeData?.type).toEqual('remove');
     expect(insertedNodeData?.type).toEqual('insert');
+  });
+
+  it('replaces an expanded selection across text, a mention-shaped inline void, and trailing text without looping', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext>
+            before <anchor />
+            text{' '}
+          </htext>
+          <hmention key="u1" value="Ada">
+            <htext />
+          </hmention>
+          <htext>
+            {' after'}
+            <focus />
+            {' text'}
+          </htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertText('X');
+
+    const output = (
+      <editor>
+        <hp>
+          <htext>before </htext>
+          <htext suggestion>{'text '}</htext>
+          <hmention key="u1" suggestion value="Ada">
+            <htext />
+          </hmention>
+          <htext suggestion>{' after'}</htext>
+          <htext suggestion>
+            X<cursor />
+          </htext>
+          <htext>{' text'}</htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    expect(editor.children[0].children).toHaveLength(
+      output.children[0].children.length
+    );
+
+    const leftText = editor.children[0].children[0] as any;
+    const removeTextNode = editor.children[0].children[1] as any;
+    const mentionNode = editor.children[0].children[2] as any;
+    const removeTrailingTextNode = editor.children[0].children[3] as any;
+    const insertedNode = editor.children[0].children[4] as any;
+    const trailingText = editor.children[0].children[5] as any;
+    const removeData = getInlineSuggestionData(removeTextNode);
+    const mentionData = getInlineSuggestionData(mentionNode);
+    const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
+    const insertData = getInlineSuggestionData(insertedNode);
+
+    expect(leftText).toEqual(output.children[0].children[0]);
+    expect(removeTextNode.text).toBe(
+      (output.children[0].children[1] as any).text
+    );
+    expect(removeData?.type).toBe('remove');
+    expect(removeData?.userId).toBe('testId');
+    expect(mentionNode.children).toEqual(
+      output.children[0].children[2].children
+    );
+    expect(mentionData?.id).toBe(removeData?.id);
+    expect(mentionData?.type).toBe('remove');
+    expect(mentionData?.userId).toBe('testId');
+    expect(removeTrailingTextNode.text).toBe(
+      (output.children[0].children[3] as any).text
+    );
+    expect(trailingRemoveData?.id).toBe(removeData?.id);
+    expect(trailingRemoveData?.type).toBe('remove');
+    expect(trailingRemoveData?.userId).toBe('testId');
+    expect(insertedNode.text).toBe(
+      (output.children[0].children[4] as any).text
+    );
+    expect(insertData?.id).toBe(removeData?.id);
+    expect(insertData?.type).toBe('insert');
+    expect(insertData?.userId).toBe('testId');
+    expect(trailingText).toEqual(output.children[0].children[5]);
+    expect(editor.selection).toEqual(output.selection);
   });
 });
 
