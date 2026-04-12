@@ -42,7 +42,13 @@ export const defaultPlugins = [
   AIChatPlugin,
 ];
 
-export const createTestEditor = () => {
+export const createTestEditor = ({
+  selection,
+  value,
+}: {
+  selection?: SlateEditor['selection'];
+  value?: SlateEditor['children'];
+} = {}) => {
   const input = (
     <editor>
       <hp>
@@ -53,8 +59,8 @@ export const createTestEditor = () => {
 
   const editor = createSlateEditor({
     plugins: defaultPlugins,
-    selection: input.selection,
-    value: input.children,
+    selection: selection ?? input.selection,
+    value: value ?? input.children,
   }) as any;
 
   return { editor, input };

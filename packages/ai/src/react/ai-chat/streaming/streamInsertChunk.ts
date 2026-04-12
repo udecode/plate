@@ -1,28 +1,58 @@
+import { MarkdownPlugin, markdownToAstProcessor } from '@platejs/markdown';
 import type { PlateEditor } from 'platejs/react';
 
 import {
   type Path,
   type SlateEditor,
+  TextApi,
   getPluginType,
   KEYS,
   NodeApi,
   PathApi,
+  type TElement,
 } from 'platejs';
 
 import {
   AI_PREVIEW_KEY,
   hasAIPreview,
 } from '../../../lib/transforms/aiStreamSnapshot';
+import {
+  clearMarkdownStreamSession,
+  getMarkdownStreamCurrentPath,
+  getMarkdownStreamRuntimeState,
+  getMarkdownStreamSource,
+  setMarkdownStreamCurrentPath,
+  setMarkdownStreamRuntimeState,
+  setMarkdownStreamSource,
+  type StreamInsertRuntimeState,
+} from './markdownStreamSession';
 import { AIChatPlugin } from '../AIChatPlugin';
-import { streamDeserializeInlineMd } from './streamDeserializeInlineMd';
+import { remarkStreamdownPendingTail } from './remarkStreamdownPendingTail';
 import { streamDeserializeMd } from './streamDeserializeMd';
-import { streamSerializeMd } from './streamSerializeMd';
-import { isSameNode } from './utils/isSameNode';
 import { nodesWithProps } from './utils/nodesWithProps';
 
 export type SteamInsertChunkOptions = {
   elementProps?: any;
   textProps?: any;
+};
+
+type StreamingBlock = TElement & {
+  children: any[];
+  listRestartPolite?: number;
+  listStart?: number;
+  listStyleType?: string;
+};
+
+type BuildReplayRuntimeStateOptions = {
+  markdownSource: string;
+  nextBlocks: TElement[];
+  previousRuntimeState?: StreamInsertRuntimeState;
+  startPath: Path;
+};
+
+type NextBlocksResult = {
+  blocks: StreamingBlock[];
+  stablePrefixLength: number;
 };
 
 const getNextPath = (path: Path, length: number) => {
@@ -31,8 +61,213 @@ const getNextPath = (path: Path, length: number) => {
   for (let i = 0; i < length; i++) {
     result = PathApi.next(result);
   }
+
   return result;
 };
+
+function pushTextNode(
+  children: Record<string, unknown>[],
+  text: string,
+  props: Record<string, unknown> = {}
+) {
+  if (text.length === 0) return;
+
+  const lastChild = children.at(-1);
+
+  if (lastChild && TextApi.isText(lastChild)) {
+    const { text: lastText, ...lastProps } = lastChild;
+
+    if (areNodesEqual(lastProps, props)) {
+      lastChild.text = `${String(lastText)}${text}`;
+      return;
+    }
+  }
+
+  children.push({
+    ...props,
+    text,
+  });
+}
+
+function transformUnderlineChildren(children: any[]) {
+  const result: any[] = [];
+
+  let underlineActive = false;
+  let underlineText = '';
+
+  const flushPendingUnderlineAsLiteral = () => {
+    pushTextNode(result, `<u>${underlineText}`);
+    underlineActive = false;
+    underlineText = '';
+  };
+
+  for (const child of children) {
+    if (
+      !TextApi.isText(child) ||
+      Object.keys(child).some((key) => key !== 'text')
+    ) {
+      if (underlineActive) {
+        flushPendingUnderlineAsLiteral();
+      }
+
+      if (child && typeof child === 'object' && Array.isArray(child.children)) {
+        result.push({
+          ...child,
+          children: transformUnderlineChildren(child.children),
+        });
+      } else {
+        result.push(child);
+      }
+
+      continue;
+    }
+
+    let remaining = child.text;
+
+    while (remaining.length > 0) {
+      if (!underlineActive) {
+        const openIndex = remaining.indexOf('<u>');
+
+        if (openIndex === -1) {
+          pushTextNode(result, remaining);
+          break;
+        }
+
+        if (openIndex > 0) {
+          pushTextNode(result, remaining.slice(0, openIndex));
+        }
+
+        remaining = remaining.slice(openIndex + 3);
+        underlineActive = true;
+        underlineText = '';
+        continue;
+      }
+
+      const closeIndex = remaining.indexOf('</u>');
+
+      if (closeIndex === -1) {
+        underlineText += remaining;
+        break;
+      }
+
+      underlineText += remaining.slice(0, closeIndex);
+      pushTextNode(result, underlineText, { underline: true });
+      remaining = remaining.slice(closeIndex + 4);
+      underlineActive = false;
+      underlineText = '';
+    }
+  }
+
+  if (underlineActive) {
+    flushPendingUnderlineAsLiteral();
+  }
+
+  return result;
+}
+
+function applyStreamingPostProcessing(blocks: TElement[]): StreamingBlock[] {
+  const transformedBlocks: StreamingBlock[] = blocks.map((block) => {
+    if (block.listStyleType && block.listStyleType !== 'decimal') {
+      const { listRestartPolite, listStart, ...rest } = block as StreamingBlock;
+
+      return {
+        ...rest,
+        children: transformUnderlineChildren(block.children),
+      };
+    }
+
+    return {
+      ...block,
+      children: transformUnderlineChildren(block.children),
+    };
+  });
+
+  return transformedBlocks.map((block, index) => {
+    if (!block.listStyleType || !block.listStart || block.listStart === 1) {
+      return block;
+    }
+
+    const previousBlock = transformedBlocks[index - 1];
+
+    if (previousBlock?.listStyleType && previousBlock?.listStart) {
+      return block;
+    }
+
+    return {
+      ...block,
+      listRestartPolite: block.listStart,
+    };
+  });
+}
+
+function deserializeStreamingMarkdown(
+  editor: PlateEditor,
+  data: string
+): StreamingBlock[] {
+  return applyStreamingPostProcessing(streamDeserializeMd(editor, data));
+}
+
+function areNodesEqual(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    if (left.length !== right.length) return false;
+
+    return left.every((child, index) => areNodesEqual(child, right[index]));
+  }
+
+  if (left && right && typeof left === 'object' && typeof right === 'object') {
+    const leftEntries = Object.entries(left as Record<string, unknown>);
+    const rightEntries = Object.entries(right as Record<string, unknown>);
+
+    if (leftEntries.length !== rightEntries.length) return false;
+
+    return leftEntries.every(
+      ([key, value]) =>
+        Object.hasOwn(right as Record<string, unknown>, key) &&
+        areNodesEqual(value, (right as Record<string, unknown>)[key])
+    );
+  }
+
+  return false;
+}
+
+function getSharedTopLevelPrefixLength(
+  currentBlocks: TElement[],
+  nextBlocks: TElement[],
+  initialLength = 0
+) {
+  const maxLength = Math.min(currentBlocks.length, nextBlocks.length);
+
+  let index = Math.min(initialLength, maxLength);
+
+  while (
+    index < maxLength &&
+    areNodesEqual(currentBlocks[index], nextBlocks[index])
+  ) {
+    index += 1;
+  }
+
+  return index;
+}
+
+function getNodeStartOffset(node: unknown) {
+  if (!node || typeof node !== 'object') {
+    return 0;
+  }
+
+  const startOffset = (
+    node as {
+      position?: {
+        start?: {
+          offset?: number;
+        };
+      };
+    }
+  ).position?.start?.offset;
+
+  return typeof startOffset === 'number' ? startOffset : 0;
+}
 
 const withPreviewElementProps = (
   editor: PlateEditor,
@@ -63,6 +298,293 @@ export const getInsertPreviewStart = (editor: SlateEditor) => {
   };
 };
 
+function isEmptyParagraphBlock(
+  editor: PlateEditor,
+  block: TElement | undefined
+) {
+  if (!block) return false;
+
+  return (
+    block.type === getPluginType(editor, KEYS.p) &&
+    NodeApi.string(block).length === 0
+  );
+}
+
+function getStreamdownPendingMetadata(root: unknown) {
+  if (!root || typeof root !== 'object') {
+    return;
+  }
+
+  const streamdown = (
+    root as {
+      data?: {
+        streamdown?: {
+          pendingReason?: unknown;
+          pendingStart?: unknown;
+        };
+      };
+    }
+  ).data?.streamdown;
+
+  if (!streamdown || typeof streamdown !== 'object') {
+    return;
+  }
+
+  const pendingReason =
+    typeof streamdown.pendingReason === 'string'
+      ? streamdown.pendingReason
+      : undefined;
+  const pendingStart =
+    typeof streamdown.pendingStart === 'number'
+      ? streamdown.pendingStart
+      : undefined;
+
+  return {
+    pendingReason,
+    pendingStart,
+  };
+}
+
+function canReuseReplayRuntimeState(
+  markdownSource: string,
+  previousRuntimeState: StreamInsertRuntimeState | undefined
+) {
+  if (!previousRuntimeState) return false;
+  if (!markdownSource.startsWith(previousRuntimeState.source)) return false;
+
+  const appendedChunk = markdownSource.slice(
+    previousRuntimeState.source.length
+  );
+
+  if (appendedChunk.length === 0) return true;
+
+  return (
+    !previousRuntimeState.source.endsWith('\n') && !appendedChunk.includes('\n')
+  );
+}
+
+function buildReplayRuntimeState(
+  editor: PlateEditor,
+  {
+    markdownSource,
+    nextBlocks,
+    previousRuntimeState,
+    startPath,
+  }: BuildReplayRuntimeStateOptions
+): StreamInsertRuntimeState {
+  if (markdownSource.length === 0 || nextBlocks.length === 0) {
+    return {
+      replayStartOffset: 0,
+      source: markdownSource,
+      stableBlockCount: 0,
+      startPath,
+    };
+  }
+
+  if (canReuseReplayRuntimeState(markdownSource, previousRuntimeState)) {
+    return {
+      replayStartOffset: previousRuntimeState!.replayStartOffset,
+      source: markdownSource,
+      stableBlockCount: previousRuntimeState!.stableBlockCount,
+      startPath,
+    };
+  }
+
+  let replayStartOffset = 0;
+  const parseSource =
+    previousRuntimeState &&
+    markdownSource.startsWith(previousRuntimeState.source) &&
+    previousRuntimeState.replayStartOffset <= markdownSource.length
+      ? markdownSource.slice(previousRuntimeState.replayStartOffset)
+      : markdownSource;
+  const parseOffset =
+    parseSource === markdownSource
+      ? 0
+      : (previousRuntimeState?.replayStartOffset ?? 0);
+
+  try {
+    const pluginRemarkPlugins =
+      editor.getOptions(MarkdownPlugin).remarkPlugins ?? [];
+    const root = markdownToAstProcessor(editor, parseSource, {
+      remarkPlugins: [...pluginRemarkPlugins, remarkStreamdownPendingTail],
+    });
+    const pending = getStreamdownPendingMetadata(root);
+
+    if (pending?.pendingReason === 'trailing-blank-lines') {
+      const trailingPlaceholderCount = isEmptyParagraphBlock(
+        editor,
+        nextBlocks.at(-1)
+      )
+        ? 1
+        : 0;
+
+      return {
+        replayStartOffset: markdownSource.length,
+        source: markdownSource,
+        stableBlockCount: Math.max(
+          0,
+          nextBlocks.length - trailingPlaceholderCount
+        ),
+        startPath,
+      };
+    }
+
+    replayStartOffset = parseOffset + getNodeStartOffset(root.children.at(-1));
+  } catch {
+    return {
+      replayStartOffset: 0,
+      source: markdownSource,
+      stableBlockCount: 0,
+      startPath,
+    };
+  }
+
+  if (replayStartOffset <= 0) {
+    return {
+      replayStartOffset: 0,
+      source: markdownSource,
+      stableBlockCount: 0,
+      startPath,
+    };
+  }
+
+  if (replayStartOffset >= markdownSource.length) {
+    return {
+      replayStartOffset: markdownSource.length,
+      source: markdownSource,
+      stableBlockCount: Math.max(0, nextBlocks.length - 1),
+      startPath,
+    };
+  }
+
+  if (
+    previousRuntimeState &&
+    markdownSource.startsWith(previousRuntimeState.source) &&
+    replayStartOffset === previousRuntimeState.replayStartOffset &&
+    previousRuntimeState.stableBlockCount <= nextBlocks.length
+  ) {
+    return {
+      replayStartOffset,
+      source: markdownSource,
+      stableBlockCount: previousRuntimeState.stableBlockCount,
+      startPath,
+    };
+  }
+
+  const replayBlocks = deserializeStreamingMarkdown(
+    editor,
+    markdownSource.slice(replayStartOffset)
+  );
+
+  return {
+    replayStartOffset,
+    source: markdownSource,
+    stableBlockCount: Math.max(0, nextBlocks.length - replayBlocks.length),
+    startPath,
+  };
+}
+
+function getNextBlocks(
+  editor: PlateEditor,
+  markdownSource: string,
+  currentBlocks: TElement[],
+  runtimeState: StreamInsertRuntimeState | undefined
+): NextBlocksResult {
+  if (markdownSource.length === 0) {
+    return {
+      blocks: [],
+      stablePrefixLength: 0,
+    };
+  }
+
+  if (
+    runtimeState &&
+    markdownSource.startsWith(runtimeState.source) &&
+    runtimeState.replayStartOffset <= markdownSource.length &&
+    runtimeState.stableBlockCount <= currentBlocks.length
+  ) {
+    const stablePrefixLength = Math.min(
+      runtimeState.stableBlockCount,
+      currentBlocks.length
+    );
+    const replayBlocks = deserializeStreamingMarkdown(
+      editor,
+      markdownSource.slice(runtimeState.replayStartOffset)
+    );
+
+    return {
+      blocks: [...currentBlocks.slice(0, stablePrefixLength), ...replayBlocks],
+      stablePrefixLength,
+    };
+  }
+
+  return {
+    blocks: deserializeStreamingMarkdown(editor, markdownSource),
+    stablePrefixLength: 0,
+  };
+}
+
+function removeInitialEmptyParagraph(editor: PlateEditor, path: Path) {
+  const startBlock = editor.api.node(path)?.[0];
+
+  const startInEmptyParagraph =
+    startBlock &&
+    NodeApi.string(startBlock).length === 0 &&
+    startBlock.type === getPluginType(editor, KEYS.p);
+
+  if (startInEmptyParagraph) {
+    editor.tf.removeNodes({ at: path });
+  }
+}
+
+function getInsertStreamStartPath(editor: SlateEditor) {
+  const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
+
+  return startInEmptyParagraph ? path : PathApi.next(path);
+}
+
+function getCurrentStreamBlocks(
+  editor: PlateEditor,
+  startPath: Path,
+  currentPath: Path | null
+) {
+  const children = (editor.children as TElement[]) ?? [];
+  const startIndex = startPath[0] ?? 0;
+  const currentIndex = currentPath?.[0];
+
+  if (
+    typeof currentIndex === 'number' &&
+    currentIndex >= startIndex &&
+    currentIndex < children.length
+  ) {
+    return children.slice(startIndex, currentIndex + 1);
+  }
+
+  if (!hasAIPreview(editor)) {
+    return [];
+  }
+
+  let endIndex = startIndex - 1;
+
+  while (endIndex + 1 < children.length) {
+    if (!(children[endIndex + 1] as any)?.[AI_PREVIEW_KEY]) {
+      break;
+    }
+
+    endIndex += 1;
+  }
+
+  if (endIndex < startIndex) {
+    return [];
+  }
+
+  return children.slice(startIndex, endIndex + 1);
+}
+
+export const resetStreamInsertChunk = (editor: SlateEditor) => {
+  clearMarkdownStreamSession(editor);
+};
+
 /** @experimental */
 export function streamInsertChunk(
   editor: PlateEditor,
@@ -70,199 +592,101 @@ export function streamInsertChunk(
   options: SteamInsertChunkOptions = {}
 ) {
   const insertOptions = withPreviewElementProps(editor, options);
-  const { _blockChunks, _blockPath } = editor.getOptions(AIChatPlugin);
+  const previousCurrentPath = getMarkdownStreamCurrentPath(editor);
+  const previousSource = getMarkdownStreamSource(editor);
+  const isFreshStream =
+    previousCurrentPath === null || previousSource.length === 0;
+  const previousRuntimeState = getMarkdownStreamRuntimeState(editor);
 
-  if (_blockPath === null) {
-    const blocks = streamDeserializeMd(editor, chunk);
+  const startPath =
+    isFreshStream || !previousRuntimeState
+      ? getInsertStreamStartPath(editor)
+      : previousRuntimeState.startPath;
+
+  if (isFreshStream) {
     const { path, startInEmptyParagraph } = getInsertPreviewStart(editor);
 
-    // if start in empty paragraph, remove it
     if (startInEmptyParagraph) {
-      editor.tf.removeNodes({ at: path });
-    }
-
-    if (blocks.length > 0) {
-      editor.tf.insertNodes(
-        nodesWithProps(editor, [blocks[0]], insertOptions),
-        {
-          at: path,
-          nextBlock: !startInEmptyParagraph,
-          select: true,
-        }
-      );
-
-      editor.setOption(AIChatPlugin, '_blockPath', getCurrentBlockPath(editor));
-      editor.setOption(AIChatPlugin, '_blockChunks', chunk);
-
-      if (blocks.length > 1) {
-        const nextBlocks = blocks.slice(1);
-
-        const nextPath = getCurrentBlockPath(editor);
-
-        editor.tf.insertNodes(
-          nodesWithProps(editor, nextBlocks, insertOptions),
-          {
-            at: nextPath,
-            nextBlock: true,
-            select: true,
-          }
-        );
-
-        const lastBlock = editor.api.node(
-          getNextPath(nextPath, nextBlocks.length)
-        )!;
-
-        editor.setOption(AIChatPlugin, '_blockPath', lastBlock[1]);
-
-        const lastBlockChunks = streamSerializeMd(
-          editor,
-          {
-            value: [lastBlock[0]],
-          },
-          chunk
-        );
-
-        editor.setOption(AIChatPlugin, '_blockChunks', lastBlockChunks);
-      }
-    }
-  } else {
-    const tempBlockChunks = _blockChunks + chunk;
-    const tempBlocks = streamDeserializeMd(editor, tempBlockChunks);
-
-    // console.log(
-    //   JSON.stringify(chunk),
-    //   'chunk',
-    //   '-------------------------------------------------------------------------------------------'
-    // );
-    // console.log(
-    //   '🚀 ~ Streaming ~ tempBlockChunks:',
-    //   JSON.stringify(tempBlockChunks)
-    // );
-
-    // console.log('🚀 ~ Streaming ~ tempBlocks:', JSON.stringify(tempBlocks));
-
-    if (tempBlocks.length === 0) {
-      return console.warn(
-        `unsupport md nodes: ${JSON.stringify(tempBlockChunks)}`
-      );
-    }
-
-    if (tempBlocks.length === 1) {
-      const currentBlock = editor.api.node(_blockPath)![0];
-
-      // If the types are the same
-      if (isSameNode(editor, currentBlock, tempBlocks[0])) {
-        const chunkNodes = streamDeserializeInlineMd(editor as any, chunk);
-
-        // Deserialize the chunk and add it to the end of the current block
-        editor.tf.insertNodes(
-          nodesWithProps(editor, chunkNodes, insertOptions),
-          {
-            at: editor.api.end(_blockPath),
-            select: true,
-          }
-        );
-
-        const updatedBlock = editor.api.node(_blockPath)!;
-        const serializedBlock = streamSerializeMd(
-          editor,
-          {
-            value: [updatedBlock[0]],
-          },
-          tempBlockChunks
-        );
-
-        const blockText = NodeApi.string(tempBlocks[0]);
-
-        // Verify if the editor content matches the chunk
-        if (
-          serializedBlock === tempBlockChunks &&
-          blockText === serializedBlock
-        ) {
-          editor.setOption(AIChatPlugin, '_blockChunks', tempBlockChunks);
-        } else {
-          editor.tf.replaceNodes(
-            nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-            {
-              at: _blockPath,
-              select: true,
-            }
-          );
-
-          const serializedBlock = streamSerializeMd(
-            editor,
-            {
-              value: [tempBlocks[0]],
-            },
-            tempBlockChunks
-          );
-
-          editor.setOption(
-            AIChatPlugin,
-            '_blockChunks',
-            // one block includes multiple children
-            tempBlocks[0].type === getPluginType(editor, KEYS.codeBlock) ||
-              tempBlocks[0].type === getPluginType(editor, KEYS.table) ||
-              tempBlocks[0].type === getPluginType(editor, KEYS.equation)
-              ? tempBlockChunks
-              : serializedBlock
-          );
-        }
-      } else {
-        const serializedBlock = streamSerializeMd(
-          editor,
-          {
-            value: [tempBlocks[0]],
-          },
-          tempBlockChunks
-        );
-
-        editor.tf.replaceNodes(
-          nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-          {
-            at: _blockPath,
-            select: true,
-          }
-        );
-
-        editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
-      }
-    } else {
-      editor.tf.replaceNodes(
-        nodesWithProps(editor, [tempBlocks[0]], insertOptions),
-        {
-          at: _blockPath,
-          select: true,
-        }
-      );
-
-      if (tempBlocks.length > 1) {
-        const newEndBlockPath = getNextPath(_blockPath, tempBlocks.length - 1);
-
-        editor.tf.insertNodes(
-          nodesWithProps(editor, tempBlocks.slice(1), insertOptions),
-          {
-            at: PathApi.next(_blockPath),
-            select: true,
-          }
-        );
-
-        editor.setOption(AIChatPlugin, '_blockPath', newEndBlockPath);
-
-        const endBlock = editor.api.node(newEndBlockPath)![0];
-
-        const serializedBlock = streamSerializeMd(
-          editor,
-          {
-            value: [endBlock],
-          },
-          tempBlockChunks
-        );
-
-        editor.setOption(AIChatPlugin, '_blockChunks', serializedBlock);
-      }
+      removeInitialEmptyParagraph(editor, path);
     }
   }
+
+  const markdownSource = previousSource + chunk;
+  const startIndex = startPath[0] ?? 0;
+  const currentBlocks = getCurrentStreamBlocks(
+    editor,
+    startPath,
+    previousCurrentPath
+  );
+  const nextBlocksResult = getNextBlocks(
+    editor,
+    markdownSource,
+    currentBlocks,
+    isFreshStream ? undefined : previousRuntimeState
+  );
+  const nextBlocks = nextBlocksResult.blocks;
+  const sharedPrefixLength = getSharedTopLevelPrefixLength(
+    currentBlocks,
+    nextBlocks,
+    nextBlocksResult.stablePrefixLength
+  );
+  const nextRuntimeState = buildReplayRuntimeState(editor, {
+    markdownSource,
+    nextBlocks,
+    previousRuntimeState: isFreshStream ? undefined : previousRuntimeState,
+    startPath,
+  });
+
+  if (
+    sharedPrefixLength === currentBlocks.length &&
+    sharedPrefixLength === nextBlocks.length
+  ) {
+    setMarkdownStreamSource(editor, markdownSource);
+    setMarkdownStreamRuntimeState(editor, nextRuntimeState);
+    setMarkdownStreamCurrentPath(
+      editor,
+      nextBlocks.length > 0
+        ? getNextPath(startPath, nextBlocks.length - 1)
+        : startPath
+    );
+    return;
+  }
+
+  if (editor.selection) {
+    editor.tf.deselect();
+  }
+
+  editor.tf.withoutNormalizing(() => {
+    for (
+      let index = currentBlocks.length - 1;
+      index >= sharedPrefixLength;
+      index -= 1
+    ) {
+      editor.tf.removeNodes({ at: [startIndex + index] });
+    }
+
+    for (
+      let index = sharedPrefixLength;
+      index < nextBlocks.length;
+      index += 1
+    ) {
+      editor.tf.insertNodes(
+        nodesWithProps(editor, [nextBlocks[index] as any], insertOptions),
+        {
+          at: [startIndex + index],
+        }
+      );
+    }
+  });
+
+  setMarkdownStreamSource(editor, markdownSource);
+  setMarkdownStreamRuntimeState(editor, nextRuntimeState);
+  setMarkdownStreamCurrentPath(
+    editor,
+    nextBlocks.length > 0
+      ? getNextPath(startPath, nextBlocks.length - 1)
+      : startPath
+  );
 }
 
 export const getCurrentBlockPath = (editor: SlateEditor) => {

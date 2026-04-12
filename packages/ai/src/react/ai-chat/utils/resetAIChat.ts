@@ -3,6 +3,7 @@ import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
+import { clearMarkdownStreamSession } from '../streaming/markdownStreamSession';
 
 export const resetAIChat = (
   editor: PlateEditor,
@@ -22,6 +23,8 @@ export const resetAIChat = (
   if (chat.messages && chat.messages.length > 0) {
     chat.setMessages?.([]);
   }
+
+  clearMarkdownStreamSession(editor);
 
   setOptions({
     _replaceIds: [],

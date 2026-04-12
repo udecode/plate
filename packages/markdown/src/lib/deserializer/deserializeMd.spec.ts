@@ -5,6 +5,27 @@ import {
   markdownToSlateNodes,
 } from './deserializeMd';
 
+function remarkStreamdownPendingTail(this: {
+  data(key: 'settings'): Record<string, unknown> | undefined;
+  data(key: 'settings', value: Record<string, unknown>): void;
+}) {
+  const settings = this.data('settings') ?? {};
+  const streamdown =
+    settings.streamdown &&
+    typeof settings.streamdown === 'object' &&
+    !Array.isArray(settings.streamdown)
+      ? (settings.streamdown as Record<string, unknown>)
+      : {};
+
+  this.data('settings', {
+    ...settings,
+    streamdown: {
+      ...streamdown,
+      preservePendingTail: true,
+    },
+  });
+}
+
 describe('deserializeMd', () => {
   it('falls back to the safe markdown path for incomplete mdx tails', () => {
     const editor = createTestEditor();
@@ -65,6 +86,17 @@ describe('markdownToAstProcessor', () => {
 
     expect(ast.type).toBe('root');
     expect(ast.children[0]?.type).toBe('heading');
+  });
+
+  it('exposes streamdown metadata when pending-tail mode is enabled', () => {
+    const editor = createTestEditor();
+    const ast = markdownToAstProcessor(editor, 'one\n\n', {
+      remarkPlugins: [remarkStreamdownPendingTail as any],
+    }) as any;
+
+    expect(ast.data?.streamdown?.pendingReason).toBe('trailing-blank-lines');
+    expect(ast.data?.streamdown?.pendingStart).toBeGreaterThan(0);
+    expect(ast.data?.streamdown?.pendingSource).toBeTruthy();
   });
 });
 

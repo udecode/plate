@@ -317,6 +317,10 @@ export const registryKits: Registry['items'] = [
     dependencies: ['@platejs/ai'],
     files: [
       {
+        path: 'lib/ai-stream-batching.ts',
+        type: 'registry:lib',
+      },
+      {
         path: 'components/editor/plugins/ai-kit.tsx',
         type: 'registry:component',
       },

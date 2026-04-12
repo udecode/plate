@@ -6,7 +6,6 @@ import {
   type EditorNodesOptions,
   type NodeEntry,
   type OmitFirst,
-  type Path,
   type PluginConfig,
   type SlateEditor,
   type TIdElement,
@@ -27,6 +26,8 @@ import { removeAnchorAIChat } from './transforms';
 import { acceptAIChat } from './transforms/acceptAIChat';
 import { insertBelowAIChat } from './transforms/insertBelowAIChat';
 import { replaceSelectionAIChat } from './transforms/replaceSelectionAIChat';
+import type { AIChatTextStreamState } from './streaming/chatTextStreamTransport';
+import { getMarkdownStreamCurrentPath } from './streaming/markdownStreamSession';
 import { resetAIChat } from './utils/resetAIChat';
 import { submitAIChat } from './utils/submitAIChat';
 import { withAIChat } from './withAIChat';
@@ -34,14 +35,10 @@ import { withAIChat } from './withAIChat';
 export type AIChatPluginConfig = PluginConfig<
   'aiChat',
   {
-    _blockChunks: string;
-    _blockPath: Path | null;
-    /** @private Using For streamInsertChunk */
-    _mdxName: string | null;
     _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
     aiEditor: SlateEditor | null;
-    chat: UseChatHelpers<ChatMessage>;
+    chat: UseChatHelpers<ChatMessage> & AIChatTextStreamState;
     chatNodes: TIdElement[];
     chatSelection: TRange | null;
     /** @deprecated Use api.aiChat.node({streaming:true}) instead */
@@ -89,9 +86,6 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     isElement: true,
   },
   options: {
-    _blockChunks: '',
-    _blockPath: null,
-    _mdxName: null,
     _replaceIds: [],
     aiEditor: null,
     chat: { messages: [] } as unknown as UseChatHelpers<ChatMessage>,
@@ -129,7 +123,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
       if (streaming) {
         if (!getOption('streaming')) return;
 
-        const path = getOption('_blockPath');
+        const path = getMarkdownStreamCurrentPath(editor);
         if (!path) return;
 
         return editor.api.node({

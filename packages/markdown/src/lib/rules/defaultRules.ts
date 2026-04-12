@@ -204,10 +204,14 @@ export const defaultRules: MdRules = {
   callout: {
     deserialize: (mdastNode, deco, options) => {
       const props = parseAttributes(mdastNode.attributes);
+      const variant = props.variant ?? props.type;
+      const { type: _legacyType, ...rest } = props;
+
       return {
         children: convertChildrenDeserialize(mdastNode.children, deco, options),
+        ...rest,
         type: getPluginType(options.editor!, KEYS.callout),
-        ...props,
+        ...(variant ? { variant } : {}),
       };
     },
     serialize(slateNode, options): MdMdxJsxFlowElement {

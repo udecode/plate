@@ -3145,6 +3145,10 @@
       ],
       "files": [
         {
+          "path": "src/registry/lib/ai-stream-batching.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/registry/components/editor/plugins/ai-kit.tsx",
           "type": "registry:component"
         }
@@ -4653,7 +4657,6 @@
       "type": "registry:example",
       "dependencies": [],
       "registryDependencies": [
-        "https://platejs.org/r/copilot-kit.json",
         "https://platejs.org/r/editor-kit.json",
         "https://platejs.org/r/markdown-joiner-transform.json"
       ],

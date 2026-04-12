@@ -2,6 +2,7 @@
 
 import { deserializeMd } from '@platejs/markdown';
 import { jsxt } from '@platejs/test-utils';
+import { NodeApi } from 'platejs';
 
 import { createTestEditor } from './__tests__/createTestEditor';
 import { streamInsertChunk } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
@@ -22,6 +23,18 @@ const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
 
   return { editor, expected: deserializeMd(editor, chunks.join('')) };
+};
+
+const getChunkRegroupingState = (groupings: string[][]) => {
+  const fullSource = groupings[0]?.join('');
+  const expected = streamChunks(groupings[0] ?? []).children;
+
+  return {
+    expected,
+    fullSource,
+    outputs: groupings.map((chunks) => streamChunks(chunks).children),
+    sameSource: groupings.every((chunks) => chunks.join('') === fullSource),
+  };
 };
 
 describe('streamInsertChunk', () => {
@@ -174,6 +187,49 @@ describe('streamInsertChunk', () => {
         },
       ]);
     });
+
+    it('keeps completed markdown and mdx structured before a later incomplete mdx tail', () => {
+      const editor = streamChunks([
+        '<callout>one</callout>\n\n',
+        '**after**\n\n',
+        '<callout type="note">',
+      ]);
+
+      expect(editor.children).toEqual([
+        {
+          children: [
+            {
+              children: [{ text: 'one' }],
+              type: 'callout',
+            },
+          ],
+          type: 'p',
+        },
+        {
+          children: [{ bold: true, text: 'after' }],
+          type: 'p',
+        },
+        {
+          children: [{ text: '<callout type="note">' }],
+          type: 'p',
+        },
+      ]);
+    });
+
+    it('keeps newly streamed text visible inside an incomplete column tail', () => {
+      const editor = streamChunks([
+        '## MDX callout props\n\n',
+        '<callout type="info" title="Chunky props">i</callout>\n\n',
+        '<column_group layout="[60,40]">\n',
+        '<column width="60%">\n\n- Keep the editor aliv',
+      ]);
+
+      expect(editor.children.map((node: any) => NodeApi.string(node))).toEqual([
+        'MDX callout props',
+        'i',
+        '<column_group layout="[60,40]">\n<column width="60%">\n\n- Keep the editor aliv',
+      ]);
+    });
   });
 
   describe('lists', () => {
@@ -195,6 +251,50 @@ describe('streamInsertChunk', () => {
       ) as any;
 
       expect(editor.children).toEqual(output);
+    });
+
+    it('keeps consecutive marked list items in the same list', () => {
+      const editor = streamChunks([
+        '- *',
+        '*Syntax Highlighting:** Improves',
+        ' readability',
+        ' by',
+        ' highlighting',
+        ' markdown',
+        ' syntax',
+        '.\n',
+        '- *',
+        '*Collaboration:** Allows multiple',
+        ' users',
+        ' to',
+        ' edit',
+        ' the',
+        ' same',
+        ' document',
+      ]);
+
+      const [firstBlock, secondBlock] = editor.children as any[];
+
+      expect(firstBlock).toEqual({
+        children: [
+          { bold: true, text: 'Syntax Highlighting:' },
+          {
+            text: ' Improves readability by highlighting markdown syntax.',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      });
+
+      expect(secondBlock?.type).toBe('p');
+      expect(secondBlock?.indent).toBe(1);
+      expect(secondBlock?.listStyleType).toBe('disc');
+      expect(secondBlock?.children?.[0]?.bold).toBe(true);
+      expect(secondBlock?.children?.[0]?.text).toBe('Collaboration:');
+      expect(secondBlock?.children?.[1]?.text).toBe(
+        ' Allows multiple users to edit the same document'
+      );
     });
 
     it('preserves ordered list numbering after a paragraph break', () => {
@@ -305,6 +405,63 @@ describe('streamInsertChunk', () => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
       expect(editor.children).toEqual(expected);
+    });
+  });
+
+  describe('chunk regrouping invariance', () => {
+    it.each([
+      [
+        'mixed inline formatting and paragraph boundaries',
+        [
+          [
+            'Intro',
+            '\n\nThis has **bo',
+            'ld** and <u>',
+            'underline',
+            '</u>',
+            '\n\ntail',
+          ],
+          ['Intro\n\nThis has **bold** ', 'and <u>underline</u>\n\n', 'tail'],
+          ['Intro\n\nThis has **bold** and <u>underline</u>\n\ntail'],
+        ],
+      ],
+      [
+        'ordered list restarts after a paragraph break',
+        [
+          ['1', '. First', '\n\nbridge', '\n\n2', '. Second'],
+          ['1. First\n\n', 'bridge\n\n2. Second'],
+          ['1. First\n\nbridge\n\n2. Second'],
+        ],
+      ],
+      [
+        'inline math and fenced code blocks',
+        [
+          [
+            'Equation ',
+            '$$a^2 ',
+            '+ b^2 ',
+            '= c^2$$',
+            '\n\n```ts',
+            '\nconst x = 1;\n',
+            '```\n\nafter',
+          ],
+          [
+            'Equation $$a^2 + b^2 = c^2$$\n\n',
+            '```ts\nconst x = 1;\n```\n\n',
+            'after',
+          ],
+          ['Equation $$a^2 + b^2 = c^2$$\n\n```ts\nconst x = 1;\n```\n\nafter'],
+        ],
+      ],
+    ])('keeps the final editor state stable for %s', (_label, groupings) => {
+      const { expected, outputs, sameSource } =
+        getChunkRegroupingState(groupings);
+
+      expect(sameSource).toBe(true);
+
+      for (const output of outputs) {
+        expect(output).toEqual(expected);
+      }
     });
   });
 });

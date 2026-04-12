@@ -42,16 +42,25 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "decode-named-character-reference": "^1.0.0",
+    "devlop": "^1.0.0",
     "lodash": "^4.17.23",
     "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",
     "mdast-util-mdx": "3.0.0",
+    "mdast-util-to-string": "^4.0.0",
+    "micromark": "^4.0.0",
+    "micromark-util-decode-numeric-character-reference": "^2.0.0",
+    "micromark-util-decode-string": "^2.0.0",
+    "micromark-util-normalize-identifier": "^2.0.0",
+    "micromark-util-symbol": "^2.0.0",
+    "micromark-util-types": "^2.0.0",
     "react-compiler-runtime": "^1.0.0",
     "remark-mdx": "^3.1.0",
-    "remark-parse": "^11.0.0",
     "remark-stringify": "^11.0.0",
     "ts-essentials": "10.1.0",
     "unified": "^11.0.5",
+    "unist-util-stringify-position": "^4.0.0",
     "unist-util-visit": "5.0.0"
   },
   "devDependencies": {

@@ -1,4 +1,11 @@
-import { type SlateEditor, ElementApi, getPluginType, KEYS } from 'platejs';
+import {
+  type Descendant,
+  type SlateEditor,
+  ElementApi,
+  KEYS,
+  NodeApi,
+  getPluginType,
+} from 'platejs';
 
 import {
   type DeserializeMdOptions,
@@ -6,6 +13,42 @@ import {
 } from '../deserializeMd';
 import { deserializeInlineMd } from './deserializeInlineMd';
 import { splitIncompleteMdx } from './splitIncompleteMdx';
+import { stripMarkdown } from './stripMarkdown';
+
+const getSafeIncompleteNodes = (
+  editor: SlateEditor,
+  incompleteString: string,
+  options?: Omit<DeserializeMdOptions, 'editor'>
+): { appendAsSeparateBlock: boolean; incompleteNodes: Descendant[] } => {
+  const inlineNodes = deserializeInlineMd(editor, incompleteString, {
+    ...options,
+    withoutMdx: true,
+  });
+
+  if (!incompleteString.includes('\n')) {
+    return {
+      appendAsSeparateBlock: false,
+      incompleteNodes: inlineNodes,
+    };
+  }
+
+  const visibleText = NodeApi.string({
+    children: inlineNodes,
+  } as any).trim();
+  const expectedVisibleText = stripMarkdown(incompleteString).trim();
+
+  if (visibleText.length >= expectedVisibleText.length) {
+    return {
+      appendAsSeparateBlock: false,
+      incompleteNodes: inlineNodes,
+    };
+  }
+
+  return {
+    appendAsSeparateBlock: true,
+    incompleteNodes: [{ text: incompleteString }],
+  };
+};
 
 export const markdownToSlateNodesSafely = (
   editor: SlateEditor,
@@ -22,12 +65,12 @@ export const markdownToSlateNodesSafely = (
 
   const [completeString, incompleteString] = result;
 
-  const incompleteNodes = deserializeInlineMd(editor, incompleteString, {
-    ...options,
-    withoutMdx: true,
-  });
-
   const completeNodes = markdownToSlateNodes(editor, completeString, options);
+  const { appendAsSeparateBlock, incompleteNodes } = getSafeIncompleteNodes(
+    editor,
+    incompleteString,
+    options
+  );
 
   const newBlock = {
     children: incompleteNodes,
@@ -42,6 +85,19 @@ export const markdownToSlateNodesSafely = (
   const lastBlock = completeNodes.at(-1);
 
   if (ElementApi.isElement(lastBlock) && editor.api.isVoid(lastBlock)) {
+    return [...completeNodes, newBlock];
+  }
+
+  if (appendAsSeparateBlock) {
+    if (
+      ElementApi.isElement(lastBlock) &&
+      NodeApi.string(lastBlock).length === 0
+    ) {
+      lastBlock.children = incompleteNodes as any;
+
+      return completeNodes;
+    }
+
     return [...completeNodes, newBlock];
   }
 

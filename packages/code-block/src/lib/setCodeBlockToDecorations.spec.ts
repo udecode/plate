@@ -14,13 +14,13 @@ import {
 const mockHighlight = mock();
 const mockHighlightAuto = mock();
 const mockListLanguages = mock();
-const mockLowlight = {
-  highlight: mockHighlight,
-  highlightAuto: mockHighlightAuto,
-  listLanguages: mockListLanguages,
-};
 
 let editor: SlateEditor;
+let mockLowlight: {
+  highlight: typeof mockHighlight;
+  highlightAuto: typeof mockHighlightAuto;
+  listLanguages: typeof mockListLanguages;
+};
 
 beforeEach(() => {
   // Reset mocks
@@ -28,6 +28,11 @@ beforeEach(() => {
   mockHighlightAuto.mockReset();
   mockListLanguages.mockReset();
   mockListLanguages.mockReturnValue(['javascript', 'typescript']);
+  mockLowlight = {
+    highlight: mockHighlight,
+    highlightAuto: mockHighlightAuto,
+    listLanguages: mockListLanguages,
+  };
 
   // Create a basic editor
   editor = createSlateEditor({
@@ -256,7 +261,7 @@ describe('codeBlockToDecorations', () => {
     expect(line3Decorations).toHaveLength(1);
   });
 
-  it('logs debug errors for registered languages that fail to highlight', () => {
+  it('warns once and stops retrying registered languages that already failed to highlight', () => {
     const error = new Error('boom');
     mockHighlight.mockImplementation(() => {
       throw error;
@@ -268,14 +273,42 @@ describe('codeBlockToDecorations', () => {
       type: 'code_block',
     };
 
-    const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
+    const firstResult = codeBlockToDecorations(editor, [codeBlock, [0]]);
+    const secondResult = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
-    expect(result.get(codeBlock.children[0] as any)).toEqual([]);
-    expect(editor.api.debug.error).toHaveBeenCalledWith(
-      error,
-      'CODE_HIGHLIGHT'
+    expect(firstResult.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(secondResult.get(codeBlock.children[0] as any)).toEqual([]);
+    expect(mockHighlight).toHaveBeenCalledTimes(1);
+    expect(editor.api.debug.error).not.toHaveBeenCalled();
+    expect(editor.api.debug.warn).toHaveBeenCalledTimes(1);
+    expect(editor.api.debug.warn).toHaveBeenCalledWith(
+      'Failed to highlight language "javascript". Falling back to plaintext',
+      'CODE_HIGHLIGHT',
+      'boom'
     );
-    expect(editor.api.debug.warn).not.toHaveBeenCalled();
+  });
+
+  it('sanitizes invalid regular expression highlight errors before warning', () => {
+    const error = new SyntaxError(
+      'Invalid regular expression: /very-long-regex/: Range out of order in character class'
+    );
+    mockHighlight.mockImplementation(() => {
+      throw error;
+    });
+
+    const codeBlock: TCodeBlockElement = {
+      children: [{ children: [{ text: 'print(1)' }], type: 'code_line' }],
+      lang: 'javascript',
+      type: 'code_block',
+    };
+
+    codeBlockToDecorations(editor, [codeBlock, [0]]);
+
+    expect(editor.api.debug.warn).toHaveBeenCalledWith(
+      'Failed to highlight language "javascript". Falling back to plaintext',
+      'CODE_HIGHLIGHT',
+      'Invalid regular expression (Range out of order in character class)'
+    );
   });
 
   it('warns and falls back to plaintext for unregistered languages', () => {

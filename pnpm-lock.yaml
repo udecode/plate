@@ -182,6 +182,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 7.0.1
         version: 7.0.1(eslint@9.39.4(jiti@2.6.1))
+      lefthook:
+        specifier: 2.1.4
+        version: 2.1.4
       openai:
         specifier: 5.3.0
         version: 5.3.0(ws@8.19.0)(zod@4.1.12)
@@ -1363,6 +1366,12 @@ importers:
 
   packages/markdown:
     dependencies:
+      decode-named-character-reference:
+        specifier: ^1.0.0
+        version: 1.3.0
+      devlop:
+        specifier: ^1.0.0
+        version: 1.1.0
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1375,15 +1384,33 @@ importers:
       mdast-util-mdx:
         specifier: 3.0.0
         version: 3.0.0
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
+      micromark:
+        specifier: ^4.0.0
+        version: 4.0.2
+      micromark-util-decode-numeric-character-reference:
+        specifier: ^2.0.0
+        version: 2.0.2
+      micromark-util-decode-string:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-normalize-identifier:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-symbol:
+        specifier: ^2.0.0
+        version: 2.0.1
+      micromark-util-types:
+        specifier: ^2.0.0
+        version: 2.0.2
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
       remark-mdx:
         specifier: ^3.1.0
         version: 3.1.1
-      remark-parse:
-        specifier: ^11.0.0
-        version: 11.0.0
       remark-stringify:
         specifier: ^11.0.0
         version: 11.0.0
@@ -1393,6 +1420,9 @@ importers:
       unified:
         specifier: ^11.0.5
         version: 11.0.5
+      unist-util-stringify-position:
+        specifier: ^4.0.0
+        version: 4.0.0
       unist-util-visit:
         specifier: 5.0.0
         version: 5.0.0
@@ -7642,6 +7672,60 @@ packages:
   layout-base@2.0.1:
     resolution: {integrity: sha512-dp3s92+uNI1hWIpPGH3jK2kxE2lMjdXdr+DH8ynZHpd6PUlH6x6cbuXnoMmiNumznqaNO31xu9e79F0uuZ0JFg==}
 
+  lefthook-darwin-arm64@2.1.4:
+    resolution: {integrity: sha512-BUAAE9+rUrjr39a+wH/1zHmGrDdwUQ2Yq/z6BQbM/yUb9qtXBRcQ5eOXxApqWW177VhGBpX31aqIlfAZ5Q7wzw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  lefthook-darwin-x64@2.1.4:
+    resolution: {integrity: sha512-K1ncIMEe84fe+ss1hQNO7rIvqiKy2TJvTFpkypvqFodT7mJXZn7GLKYTIXdIuyPAYthRa9DwFnx5uMoHwD2F1Q==}
+    cpu: [x64]
+    os: [darwin]
+
+  lefthook-freebsd-arm64@2.1.4:
+    resolution: {integrity: sha512-PVUhjOhVN71YaYsVdQyNbFZ4a2jFB2Tg5hKrrn9kaWpx64aLz/XivLjwr8sEuTaP1GRlEWBpW6Bhrcsyo39qFw==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  lefthook-freebsd-x64@2.1.4:
+    resolution: {integrity: sha512-ZWV9o/LeyWNEBoVO+BhLqxH3rGTba05nkm5NvMjEFSj7LbUNUDbQmupZwtHl1OMGJO66eZP0CalzRfUH6GhBxQ==}
+    cpu: [x64]
+    os: [freebsd]
+
+  lefthook-linux-arm64@2.1.4:
+    resolution: {integrity: sha512-iWN0pGnTjrIvNIcSI1vQBJXUbybTqJ5CLMniPA0olabMXQfPDrdMKVQe+mgdwHK+E3/Y0H0ZNL3lnOj6Sk6szA==}
+    cpu: [arm64]
+    os: [linux]
+
+  lefthook-linux-x64@2.1.4:
+    resolution: {integrity: sha512-96bTBE/JdYgqWYAJDh+/e/0MaxJ25XTOAk7iy/fKoZ1ugf6S0W9bEFbnCFNooXOcxNVTan5xWKfcjJmPIKtsJA==}
+    cpu: [x64]
+    os: [linux]
+
+  lefthook-openbsd-arm64@2.1.4:
+    resolution: {integrity: sha512-oYUoK6AIJNEr9lUSpIMj6g7sWzotvtc3ryw7yoOyQM6uqmEduw73URV/qGoUcm4nqqmR93ZalZwR2r3Gd61zvw==}
+    cpu: [arm64]
+    os: [openbsd]
+
+  lefthook-openbsd-x64@2.1.4:
+    resolution: {integrity: sha512-i/Dv9Jcm68y9cggr1PhyUhOabBGP9+hzQPoiyOhKks7y9qrJl79A8XfG6LHekSuYc2VpiSu5wdnnrE1cj2nfTg==}
+    cpu: [x64]
+    os: [openbsd]
+
+  lefthook-windows-arm64@2.1.4:
+    resolution: {integrity: sha512-hSww7z+QX4YMnw2lK7DMrs3+w7NtxksuMKOkCKGyxUAC/0m1LAICo0ZbtdDtZ7agxRQQQ/SEbzFRhU5ysNcbjA==}
+    cpu: [arm64]
+    os: [win32]
+
+  lefthook-windows-x64@2.1.4:
+    resolution: {integrity: sha512-eE68LwnogxwcPgGsbVGPGxmghyMGmU9SdGwcc+uhGnUxPz1jL89oECMWJNc36zjVK24umNeDAzB5KA3lw1MuWw==}
+    cpu: [x64]
+    os: [win32]
+
+  lefthook@2.1.4:
+    resolution: {integrity: sha512-JNfJ5gAn0KADvJ1I6/xMcx70+/6TL6U9gqGkKvPw5RNMfatC7jIg0Evl97HN846xmfz959BV70l8r3QsBJk30w==}
+    hasBin: true
+
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -8909,7 +8993,7 @@ packages:
   puppeteer@24.10.0:
     resolution: {integrity: sha512-Oua9VkGpj0S2psYu5e6mCer6W9AU9POEQh22wRgSXnLXASGH+MwLUVWgLCLeP9QPHHcJ7tySUlg4Sa9OJmaLpw==}
     engines: {node: '>=18'}
-    deprecated: < 24.15.0 is no longer supported
+    deprecated: < 24.10.2 is no longer supported
     hasBin: true
 
   pure-rand@6.1.0:
@@ -16754,6 +16838,49 @@ snapshots:
   layout-base@1.0.2: {}
 
   layout-base@2.0.1: {}
+
+  lefthook-darwin-arm64@2.1.4:
+    optional: true
+
+  lefthook-darwin-x64@2.1.4:
+    optional: true
+
+  lefthook-freebsd-arm64@2.1.4:
+    optional: true
+
+  lefthook-freebsd-x64@2.1.4:
+    optional: true
+
+  lefthook-linux-arm64@2.1.4:
+    optional: true
+
+  lefthook-linux-x64@2.1.4:
+    optional: true
+
+  lefthook-openbsd-arm64@2.1.4:
+    optional: true
+
+  lefthook-openbsd-x64@2.1.4:
+    optional: true
+
+  lefthook-windows-arm64@2.1.4:
+    optional: true
+
+  lefthook-windows-x64@2.1.4:
+    optional: true
+
+  lefthook@2.1.4:
+    optionalDependencies:
+      lefthook-darwin-arm64: 2.1.4
+      lefthook-darwin-x64: 2.1.4
+      lefthook-freebsd-arm64: 2.1.4
+      lefthook-freebsd-x64: 2.1.4
+      lefthook-linux-arm64: 2.1.4
+      lefthook-linux-x64: 2.1.4
+      lefthook-openbsd-arm64: 2.1.4
+      lefthook-openbsd-x64: 2.1.4
+      lefthook-windows-arm64: 2.1.4
+      lefthook-windows-x64: 2.1.4
 
   levn@0.4.1:
     dependencies:

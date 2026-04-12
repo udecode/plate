@@ -1,15 +1,25 @@
-import { ElementApi, KEYS, PathApi, getPluginType } from 'platejs';
+import { ElementApi, KEYS, NodeApi, PathApi, getPluginType } from 'platejs';
 
 import { AIChatPlugin } from '../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
 import {
   getInsertPreviewStart,
+  resetStreamInsertChunk,
   streamInsertChunk,
 } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
 import { acceptAIChat } from '../../../../../../packages/ai/src/react/ai-chat/transforms/acceptAIChat';
 import { createTestEditor } from './__tests__/createTestEditor';
 
-const streamPreview = (chunks: string[]) => {
-  const { editor } = createTestEditor();
+const streamPreview = (
+  chunks: string[],
+  {
+    selection,
+    value,
+  }: {
+    selection?: ReturnType<typeof createTestEditor>['editor']['selection'];
+    value?: ReturnType<typeof createTestEditor>['editor']['children'];
+  } = {}
+) => {
+  const { editor } = createTestEditor({ selection, value });
   const initialSelection = JSON.parse(JSON.stringify(editor.selection));
   const initialValue = JSON.parse(JSON.stringify(editor.children));
 
@@ -50,9 +60,7 @@ const streamPreview = (chunks: string[]) => {
   }
 
   editor.setOption(AIChatPlugin, 'streaming', false);
-  editor.setOption(AIChatPlugin, '_blockChunks', '');
-  editor.setOption(AIChatPlugin, '_blockPath', null);
-  editor.setOption(AIChatPlugin, '_mdxName', null);
+  resetStreamInsertChunk(editor);
 
   return { editor, initialSelection, initialValue };
 };
@@ -128,5 +136,51 @@ describe('ai chat streaming history', () => {
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });
+  });
+
+  it('keeps trailing blocks outside the insert preview range', () => {
+    const { editor } = streamPreview(['hello', ' world'], {
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      value: [
+        { children: [{ text: 'before' }], type: 'p' },
+        { children: [{ text: 'keep after one' }], type: 'p' },
+        { children: [{ text: 'keep after two' }], type: 'p' },
+      ],
+    });
+
+    acceptAIChat(editor);
+
+    expect(editor.children.map((node: any) => NodeApi.string(node))).toEqual([
+      'before',
+      'hello world',
+      'keep after one',
+      'keep after two',
+    ]);
+  });
+
+  it('restores trailing blocks when an accepted insert preview is undone', () => {
+    const { editor, initialSelection, initialValue } = streamPreview(
+      ['hello', ' world'],
+      {
+        selection: {
+          anchor: { offset: 6, path: [0, 0] },
+          focus: { offset: 6, path: [0, 0] },
+        },
+        value: [
+          { children: [{ text: 'before' }], type: 'p' },
+          { children: [{ text: 'keep after one' }], type: 'p' },
+          { children: [{ text: 'keep after two' }], type: 'p' },
+        ],
+      }
+    );
+
+    acceptAIChat(editor);
+    editor.undo();
+
+    expect(editor.children).toEqual(initialValue);
+    expect(editor.selection).toEqual(initialSelection);
   });
 });

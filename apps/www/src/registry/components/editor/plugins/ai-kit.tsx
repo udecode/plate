@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import cloneDeep from 'lodash/cloneDeep.js';
 import { BaseAIPlugin, withAIBatch } from '@platejs/ai';
 import {
@@ -7,6 +9,7 @@ import {
   AIPlugin,
   applyAISuggestions,
   getInsertPreviewStart,
+  resetStreamInsertChunk,
   streamInsertChunk,
   useChatChunk,
 } from '@platejs/ai/react';
@@ -15,6 +18,7 @@ import { usePluginOption } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
 import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
+import { createAIStreamBatcher } from '@/registry/lib/ai-stream-batching';
 
 import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
@@ -38,6 +42,35 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
     const mode = usePluginOption(AIChatPlugin, 'mode');
     const toolName = usePluginOption(AIChatPlugin, 'toolName');
+    const insertStreamBatcherRef = useRef<ReturnType<
+      typeof createAIStreamBatcher
+    > | null>(null);
+
+    if (!insertStreamBatcherRef.current) {
+      insertStreamBatcherRef.current = createAIStreamBatcher({
+        applyChunk: (chunk, options) => {
+          editor.tf.withoutSaving(() => {
+            if (!getOption('streaming') && !options?.force) return;
+
+            editor.tf.withScrolling(() => {
+              streamInsertChunk(editor, chunk, {
+                textProps: {
+                  [getPluginType(editor, KEYS.ai)]: true,
+                },
+              });
+            });
+          });
+        },
+      });
+    }
+
+    useEffect(
+      () => () => {
+        insertStreamBatcherRef.current?.reset();
+      },
+      []
+    );
+
     useChatChunk({
       onChunk: ({ chunk, isFirst, nodes, text: content }) => {
         if (isFirst && mode === 'insert') {
@@ -68,17 +101,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
 
         if (mode === 'insert' && nodes.length > 0) {
-          editor.tf.withoutSaving(() => {
-            if (!getOption('streaming')) return;
-
-            editor.tf.withScrolling(() => {
-              streamInsertChunk(editor, chunk, {
-                textProps: {
-                  [getPluginType(editor, KEYS.ai)]: true,
-                },
-              });
-            });
-          });
+          insertStreamBatcherRef.current?.queue({ chunk, isFirst });
         }
 
         if (toolName === 'edit' && mode === 'chat') {
@@ -94,10 +117,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
       },
       onFinish: () => {
+        insertStreamBatcherRef.current?.flush({ force: true });
         editor.setOption(AIChatPlugin, 'streaming', false);
-        editor.setOption(AIChatPlugin, '_blockChunks', '');
-        editor.setOption(AIChatPlugin, '_blockPath', null);
-        editor.setOption(AIChatPlugin, '_mdxName', null);
+        resetStreamInsertChunk(editor);
+        insertStreamBatcherRef.current?.reset();
       },
     });
   },

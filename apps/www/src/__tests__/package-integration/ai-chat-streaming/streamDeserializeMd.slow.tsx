@@ -67,4 +67,21 @@ describe('streamDeserializeMd', () => {
 
     expect(serialized).toEqual(chunk);
   });
+
+  it('clears mdx literal mode after a chunk that already closes the tag', async () => {
+    streamDeserializeMd(editor, '<callout>one</callout>\n\n');
+
+    const result = streamDeserializeMd(editor, '**after**\n\n');
+
+    expect(result).toEqual([
+      {
+        children: [{ bold: true, text: 'after' }],
+        type: 'p',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'p',
+      },
+    ]);
+  });
 });

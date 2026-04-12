@@ -170,11 +170,7 @@ export const examples: Registry['items'] = [
       },
     ],
     name: 'markdown-streaming-demo',
-    registryDependencies: [
-      'copilot-kit',
-      'editor-kit',
-      'markdown-joiner-transform',
-    ],
+    registryDependencies: ['editor-kit', 'markdown-joiner-transform'],
     type: 'registry:example',
   },
   {
