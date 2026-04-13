@@ -2,4 +2,4 @@
 "@platejs/suggestion": patch
 ---
 
-Fix suggestion-mode backspace not marking mention voids for removal
+Fix inline-void delete and replace suggestions around mentions and paragraph boundaries

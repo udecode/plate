@@ -33,10 +33,8 @@ import { Trash2, DownloadIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import {
-  getElementSuggestionData,
-  voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node';
+import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
+import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 import {
   Popover,
   PopoverAnchor,

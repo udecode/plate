@@ -29,7 +29,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node';
+import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();

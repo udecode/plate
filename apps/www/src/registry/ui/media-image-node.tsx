@@ -11,10 +11,8 @@ import { ResizableProvider, useResizableValue } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import {
-  getElementSuggestionData,
-  voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node';
+import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
+import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';

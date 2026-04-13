@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   getStaticElementSuggestionData,
   voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node';
+} from '@/registry/ui/suggestion-node-static';
 import { SlateElement } from 'platejs/static';
 
 export function CodeDrawingElementStatic({

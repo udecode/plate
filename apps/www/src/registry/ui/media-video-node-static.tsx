@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import {
   getStaticElementSuggestionData,
   voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node';
+} from '@/registry/ui/suggestion-node-static';
 
 export function VideoElementStatic(
   props: SlateElementProps<TVideoElement & TCaptionElement & TResizableProps>

@@ -25,10 +25,10 @@ import {
 } from '@/components/ui/popover';
 import { commentPlugin } from '@/registry/components/editor/plugins/comment-kit';
 import type { TDiscussion } from '@/registry/components/editor/plugins/discussion-kit';
+import { useBlockDiscussionItems } from '@/registry/lib/block-discussion-index';
 import { suggestionPlugin } from '@/registry/components/editor/plugins/suggestion-kit';
 
 import { BlockSuggestionCard, isResolvedSuggestion } from './block-suggestion';
-import { useBlockDiscussionItems } from './block-discussion-index';
 import { Comment, CommentCreateForm } from './comment';
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> =

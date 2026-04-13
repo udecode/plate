@@ -1,6 +1,6 @@
 'use client';
 
-import type { Value } from 'platejs';
+import { type Value, TrailingBlockPlugin } from 'platejs';
 import { type TPlateEditor, useEditorRef } from 'platejs/react';
 
 import { AIKit } from './plugins/ai-kit';
@@ -36,7 +36,6 @@ import { SlashKit } from './plugins/slash-kit';
 import { SuggestionKit } from './plugins/suggestion-kit';
 import { TableKit } from './plugins/table-kit';
 import { TocKit } from './plugins/toc-kit';
-import { TrailingBlockKit } from './plugins/trailing-block-kit';
 import { ToggleKit } from './plugins/toggle-kit';
 
 export const EditorKit = [
@@ -79,7 +78,7 @@ export const EditorKit = [
   ...DndKit,
   ...EmojiKit,
   ...ExitBreakKit,
-  TrailingBlockKit,
+  TrailingBlockPlugin,
 
   // Parsers
   ...DocxKit,
