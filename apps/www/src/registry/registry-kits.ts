@@ -939,7 +939,7 @@ export const registryKits: Registry['items'] = [
     dependencies: ['@platejs/suggestion'],
     files: [
       {
-        path: 'components/editor/plugins/trailing-block-kit.ts',
+        path: 'components/editor/plugins/trailing-block-kit.tsx',
         type: 'registry:component',
       },
     ],

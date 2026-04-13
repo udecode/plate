@@ -2677,12 +2677,12 @@ export const Index: Record<string, any> = {
     type: "registry:component",
     registryDependencies: undefined,
     files: [{
-      path: "src/registry/components/editor/plugins/trailing-block-kit.ts",
+      path: "src/registry/components/editor/plugins/trailing-block-kit.tsx",
       type: "registry:component",
       target: ""
     }],
     component: React.lazy(async () => {
-      const mod = await import("@/registry/components/editor/plugins/trailing-block-kit.ts")
+      const mod = await import("@/registry/components/editor/plugins/trailing-block-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

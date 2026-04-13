@@ -7,8 +7,8 @@
   ],
   "files": [
     {
-      "path": "src/registry/components/editor/plugins/trailing-block-kit.ts",
-      "content": "import { SuggestionPlugin } from '@platejs/suggestion/react';\nimport { TrailingBlockPlugin } from 'platejs';\n\nexport const TrailingBlockKit = TrailingBlockPlugin.configure({\n  options: {\n    insert: (editor, { insert }) => {\n      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);\n    },\n  },\n});\n",
+      "path": "src/registry/components/editor/plugins/trailing-block-kit.tsx",
+      "content": "'use client';\n\nimport { TrailingBlockPlugin } from 'platejs';\nimport { SuggestionPlugin } from '@platejs/suggestion/react';\n\nconst trailingBlockPlugin = TrailingBlockPlugin.configure({\n  options: {\n    insert: (editor, { insert }) => {\n      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);\n    },\n  },\n});\n\nexport const TrailingBlockKit = [trailingBlockPlugin];\n",
       "type": "registry:component"
     }
   ]

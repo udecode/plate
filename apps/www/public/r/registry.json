@@ -3882,7 +3882,7 @@
       ],
       "files": [
         {
-          "path": "src/registry/components/editor/plugins/trailing-block-kit.ts",
+          "path": "src/registry/components/editor/plugins/trailing-block-kit.tsx",
           "type": "registry:component"
         }
       ]

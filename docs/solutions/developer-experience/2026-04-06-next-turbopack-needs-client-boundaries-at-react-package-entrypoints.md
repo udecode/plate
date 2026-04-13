@@ -1,12 +1,12 @@
 ---
-module: Plate React Package
+module: Docs App Registry
 date: 2026-04-06
 problem_type: developer_experience
 component: tooling
 symptoms:
-  - "Vercel preview deploy failed while GitHub Actions CI still passed"
-  - "`pnpm turbo build --filter=./apps/www` failed with `You're importing a module that depends on useEffect/useRef into a React Server Component module`"
-  - "The error pointed at hook-using files inside `packages/core/src/react/**` even though the consuming pages were client components"
+  - "`pnpm --filter ./apps/www build` failed with `You're importing a module that depends on useEffect/useRef into a React Server Component module`"
+  - "The stack trace pointed at `packages/core/src/react/**` even though the immediate app files were already client components"
+  - "A registry item that imported `@platejs/suggestion/react` without its own client boundary poisoned the server-visible registry graph"
 root_cause: config_error
 resolution_type: config_change
 severity: high
@@ -14,103 +14,101 @@ tags:
   - nextjs
   - turbopack
   - rsc
-  - use-client
+  - registry
   - workspace-packages
   - platejs
 ---
 
-# Next Turbopack needs client boundaries at React package entrypoints
+# Registry routes must not pull client-only trailing block helpers into the server graph
 
 ## Problem
 
-`apps/www` started failing its production build in the same way Vercel preview was failing.
-
-The visible error looked like a React hook misuse inside `packages/core`:
+`apps/www` production build failed with a React Server Component error that
+looked like a package-entry problem:
 
 ```text
 You're importing a module that depends on `useEffect` into a React Server Component module.
 ```
 
-The misleading part was that the consuming pages were already client components. The real issue was that the workspace package entry for `platejs/react` did not declare a client boundary, so Turbopack kept walking into hook-heavy source files as if they were server-safe.
+The reported files lived under `packages/core/src/react/**`, which made it
+tempting to blame `platejs/react`.
 
-## What Didn't Work
+That diagnosis was wrong.
 
-### 1. Treating this like another app-route bug
+## Root Cause
 
-That was the wrong layer.
+The server-side registry route imports [`src/lib/rehype-utils.ts`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/lib/rehype-utils.ts), and that file statically imports the generated registry index:
 
-The failing stack traces mentioned:
+- [`src/__registry__/index.tsx`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/__registry__/index.tsx)
 
-- `packages/core/src/react/components/EditorHotkeysEffect.tsx`
-- `packages/core/src/react/components/PlateContent.tsx`
-- `packages/core/src/react/plugins/event-editor/useFocusEditorEvents.ts`
+Once `trailing-block-kit` was added as a registry item, the generated index
+started exposing:
 
-Those are package internals. Fixing route files in `apps/www` would only hide the real seam.
+- [`src/registry/components/editor/plugins/trailing-block-kit.tsx`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/registry/components/editor/plugins/trailing-block-kit.tsx)
 
-### 2. Scattering `use client` across individual hook files first
+That helper imports `@platejs/suggestion/react`, which pulls the React editor
+graph into a server build path. Turbopack then reports the first hook-using
+files it sees in `packages/core/src/react/**`.
 
-That would work, but it is the wrong abstraction.
+The package entrypoint was only the messenger. The real bug was that a
+client-only helper became part of the server-visible registry graph.
 
-The problem is not that those specific files forgot they are client-only. The problem is that the package entrypoint exporting the React surface failed to tell Next that the whole `react` subpath is client territory.
+## What Did Not Fix It
+
+### 1. Adding `'use client'` to `platejs/react`
+
+That masks the bad import graph instead of removing it.
+
+### 2. Moving the directive to `@platejs/core/react` files
+
+That also masks the graph problem and broadens client boundaries for the wrong
+reason.
+
+### 3. Treating the error as a generic app-page issue
+
+The page trace was real, but the decisive server-only signal was the registry
+route path:
+
+- [`src/app/api/registry/[name]/route.ts`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/app/api/registry/%5Bname%5D/route.ts)
+- [`src/lib/rehype-utils.ts`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/lib/rehype-utils.ts)
+- [`src/__registry__/index.tsx`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/__registry__/index.tsx)
 
 ## Solution
 
-Mark the public React entrypoint of `platejs` as a client boundary:
+Make `trailing-block-kit` a real client-only kit before exposing it through the
+registry.
 
-- [`packages/plate/src/react/index.tsx`](/Users/felixfeng/Desktop/repos/plate-copy/packages/plate/src/react/index.tsx)
+Concretely:
 
-Add:
+- implement [`src/registry/components/editor/plugins/trailing-block-kit.tsx`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/registry/components/editor/plugins/trailing-block-kit.tsx) as a `'use client'` file
+- keep the `SuggestionPlugin` access inside that client boundary
+- let [`EditorKit`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/registry/components/editor/editor-kit.tsx) consume `TrailingBlockKit`
+- expose the kit through [`src/registry/registry-kits.ts`](/Users/felixfeng/Desktop/repos/plate/apps/www/src/registry/registry-kits.ts) only after that boundary exists
 
-```ts
-'use client';
-```
-
-at the top of that file.
-
-That is the durable seam because app code imports the React surface through `platejs/react`, and this file is hand-written source rather than a generated barrel.
+The problem was not that `trailing-block-kit` existed. The problem was that it
+was exposed as a server-visible registry item without declaring that it was
+client-only.
 
 ## Why This Works
 
-Next and Turbopack reason about client/server boundaries from module entrypoints.
+The generated registry index is read by server code. Any registry item added
+there must either be server-safe or mark its own client boundary.
 
-`platejs/react` is the package boundary Next actually sees on these app imports. Once that entrypoint is marked with `'use client'`, Next stops trying to treat downstream hook-using modules as server-safe code paths.
-
-That fixes the real contract:
-
-- public package React entry: client
-- package static/non-React entrypoints: can remain server-safe if designed that way
-
-## Gotchas
-
-### Generated barrels are the wrong place for manual client directives
-
-`packages/core/src/react/index.ts` is generated by `pnpm brl`. A manual `'use client'` there will be removed the next time barrels are regenerated, which is exactly what the PR barrel-drift check caught.
-
-If the fix needs to survive `pnpm brl`, put it on a non-generated public entrypoint.
-
-### Vercel can catch this even when other checks are green
-
-In this case:
-
-- GitHub Actions CI passed
-- Validate Registry passed
-- Vercel failed
-
-That made it easy to misclassify the deploy failure as external noise. It was not noise; it was the only check exercising the real Next production build path that mattered here.
+With `'use client'` on `trailing-block-kit.tsx`, Turbopack stops treating that
+helper as server-safe while keeping the kit available as registry surface.
 
 ## Verification
 
-These commands passed after the fix:
+These commands passed after converting the kit to a client-only registry item:
 
 ```bash
 pnpm install
-pnpm turbo build --filter=./packages/plate
-pnpm brl
-pnpm turbo build --filter=./apps/www
+pnpm --filter ./apps/www build
+pnpm turbo typecheck --filter=./apps/www
 pnpm lint:fix
 ```
 
 ## Related Docs
 
-- See also: [Next prerendered client editors need DnD hooks to noop on the server](/Users/felixfeng/Desktop/repos/plate-copy/docs/solutions/developer-experience/2026-03-28-next-prerendered-client-editors-need-dnd-hooks-to-noop-on-the-server.md)
-- See also: [Next Turbopack + React Compiler + workspace packages](/Users/felixfeng/Desktop/repos/plate-copy/docs/solutions/developer-experience/2026-03-11-next-turbopack-react-compiler-workspace-aliases.md)
+- See also: [Registry helper refactors must update template registry dependencies](/Users/felixfeng/Desktop/repos/plate/docs/solutions/developer-experience/2026-04-06-registry-helper-refactors-must-update-template-registry-dependencies.md)
+- See also: [Next Turbopack + React Compiler + workspace packages](/Users/felixfeng/Desktop/repos/plate/docs/solutions/developer-experience/2026-03-11-next-turbopack-react-compiler-workspace-aliases.md)

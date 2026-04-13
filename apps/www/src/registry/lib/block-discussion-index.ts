@@ -27,7 +27,7 @@ import {
   discussionPlugin,
 } from '@/registry/components/editor/plugins/discussion-kit';
 
-import type { TComment } from './comment';
+import type { TComment } from '@/registry/ui/comment';
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
   comments: TComment[];
