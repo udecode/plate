@@ -418,6 +418,10 @@
           "type": "registry:ui"
         },
         {
+          "path": "src/registry/lib/block-discussion-index.ts",
+          "type": "registry:lib"
+        },
+        {
           "path": "src/registry/ui/block-suggestion.tsx",
           "type": "registry:ui"
         },

@@ -223,6 +223,10 @@ export const uiComponents: Registry['items'] = [
         type: 'registry:ui',
       },
       {
+        path: 'lib/block-discussion-index.ts',
+        type: 'registry:lib',
+      },
+      {
         path: 'ui/block-suggestion.tsx',
         type: 'registry:ui',
       },

@@ -180,6 +180,9 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
     },
     stop: () => {
       setOption('streaming', false);
+      setOption('_blockChunks', '');
+      setOption('_blockPath', null);
+      setOption('_mdxName', null);
       getOptions().chat.stop?.();
     },
   }))

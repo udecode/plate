@@ -206,6 +206,10 @@ export const Index: Record<string, any> = {
       type: "registry:ui",
       target: ""
     },{
+      path: "src/registry/lib/block-discussion-index.ts",
+      type: "registry:lib",
+      target: ""
+    },{
       path: "src/registry/ui/block-suggestion.tsx",
       type: "registry:ui",
       target: ""
