@@ -384,14 +384,54 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
 
       const dateNode = editor.children[0].children[1] as any;
       const dateChild = dateNode.children?.[0] as any;
-      const suggestionData = getInlineSuggestionData(dateNode) ??
-        getInlineSuggestionData(dateChild);
+      const suggestionData =
+        getInlineSuggestionData(dateNode) ?? getInlineSuggestionData(dateChild);
 
       expect(dateNode.suggestion || dateChild?.suggestion).toBeTruthy();
       expect(suggestionData).toMatchObject({
         type: 'remove',
         userId: 'testId',
       });
+    });
+
+    it('does not delete a non-selectable date when backspacing inside later trailing text', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext />
+            </hdate>
+            <htext>
+              b<cursor />c
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const paragraphChildren = editor.children[0].children as any[];
+      const leftText = paragraphChildren[0];
+      const dateNode = paragraphChildren[1];
+      const trailingNodes = paragraphChildren.slice(2);
+      const dateSuggestion =
+        getInlineSuggestionData(dateNode) ??
+        getInlineSuggestionData(dateNode.children?.[0]);
+      const trailingSuggestionNode = trailingNodes.find(
+        (node) => getInlineSuggestionData(node)?.type === 'remove'
+      );
+
+      expect(leftText).toEqual({ text: 'a' });
+      expect(dateSuggestion).toBeUndefined();
+      expect(trailingSuggestionNode?.text).toBe('b');
     });
 
     it('marks a remove line break when deleting backward at the start of a paragraph', () => {

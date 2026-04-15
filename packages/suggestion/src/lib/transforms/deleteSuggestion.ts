@@ -38,8 +38,7 @@ export const deleteSuggestion = (
   const getInlineEntryAt = (point: Point) =>
     editor.api.above<TElement>({
       at: point,
-      match: (node) =>
-        ElementApi.isElement(node) && editor.api.isInline(node),
+      match: (node) => ElementApi.isElement(node) && editor.api.isInline(node),
     });
 
   const getAdjacentInlineVoidEntry = (
@@ -55,6 +54,8 @@ export const deleteSuggestion = (
         ? PathApi.previous(point.path)
         : PathApi.next(point.path);
 
+      if (!adjacentPath) return;
+
       const entry = editor.api.node<TElement>(adjacentPath);
 
       if (
@@ -66,6 +67,23 @@ export const deleteSuggestion = (
         return entry;
       }
     } catch {}
+  };
+
+  const isBoundaryPoint = (
+    point: Point,
+    {
+      reverse,
+    }: {
+      reverse?: boolean;
+    }
+  ) => {
+    const range = editor.api.range(point.path);
+
+    if (!range) return false;
+
+    return reverse
+      ? editor.api.isStart(point, range)
+      : editor.api.isEnd(point, range);
   };
 
   editor.tf.withoutNormalizing(() => {
@@ -140,8 +158,13 @@ export const deleteSuggestion = (
       const inlineEntryAtCurrent = inlineEntryAtNext
         ? undefined
         : getInlineEntryAt(pointCurrent);
+      const canUseAdjacentInlineFallback = isBoundaryPoint(pointCurrent, {
+        reverse,
+      });
       const adjacentInlineEntry =
-        inlineEntryAtNext || inlineEntryAtCurrent
+        inlineEntryAtNext ||
+        inlineEntryAtCurrent ||
+        !canUseAdjacentInlineFallback
           ? undefined
           : getAdjacentInlineVoidEntry(pointCurrent, { reverse });
       const inlineEntryAtCurrentIsNonSelectable =
@@ -152,7 +175,9 @@ export const deleteSuggestion = (
         !editor.api.isSelectable(adjacentInlineEntry[0]);
       const inlineEntry =
         inlineEntryAtNext ??
-        (inlineEntryAtCurrentIsNonSelectable ? inlineEntryAtCurrent : undefined) ??
+        (inlineEntryAtCurrentIsNonSelectable
+          ? inlineEntryAtCurrent
+          : undefined) ??
         (adjacentInlineEntryIsNonSelectable ? adjacentInlineEntry : undefined);
       const pointCurrentInsideInline =
         !!inlineEntry && PathApi.isAncestor(inlineEntry[1], pointCurrent.path);
