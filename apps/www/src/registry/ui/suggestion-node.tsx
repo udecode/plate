@@ -7,11 +7,12 @@ import { CornerDownLeftIcon } from 'lucide-react';
 import type {
   AnyPluginConfig,
   TElement,
+  TInlineSuggestionData,
   TSuggestionData,
   TSuggestionText,
   WithRequiredKey,
 } from 'platejs';
-import { KEYS } from 'platejs';
+import { KEYS, TextApi } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
@@ -80,9 +81,41 @@ export function getElementSuggestionData(
   editor: PlateEditor,
   element: TElement
 ) {
-  return editor.getApi(SuggestionPlugin).suggestion.suggestionData(element) as
+  const data = editor
+    .getApi(SuggestionPlugin)
+    .suggestion.suggestionData(element) as
     | TSuggestionData
+    | TInlineSuggestionData
     | undefined;
+
+  if (data) return data;
+
+  for (const child of element.children) {
+    if (!TextApi.isText(child)) continue;
+
+    const childData = editor
+      .getApi(SuggestionPlugin)
+      .suggestion.dataList(child as TSuggestionText)
+      .at(-1);
+
+    if (childData) return childData;
+  }
+}
+
+export function getInlineElementSuggestionClassName(
+  suggestionData?: TInlineSuggestionData | TSuggestionData
+) {
+  if (!suggestionData) return '';
+
+  return suggestionVariants({
+    insertActive: false,
+    remove: suggestionData.type === 'remove',
+    removeActive: false,
+  })
+    .replace('bg-emerald-100', 'bg-emerald-100!')
+    .replace('text-emerald-700', 'text-emerald-700!')
+    .replace('bg-red-100', 'bg-red-100!')
+    .replace('text-red-700', 'text-red-700!');
 }
 
 export function SuggestionLineBreakAnchor({

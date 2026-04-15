@@ -21,6 +21,11 @@ const MentionPlugin = createSlatePlugin({
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
+const DatePlugin = createSlatePlugin({
+  key: KEYS.date,
+  node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
+});
+
 const testSuggestionData = {
   id: '1',
   createdAt: Date.now(),
@@ -315,6 +320,78 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
       expect(suggestionData?.userId).toBe('testId');
       expect(rightText).toEqual(output.children[0].children[2]);
       expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('marks the previous date-shaped inline void with remove suggestion metadata', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext />
+            </hdate>
+            <htext>
+              <cursor />
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const dateNode = editor.children[0].children[1] as any;
+      const dateChild = dateNode.children?.[0] as any;
+      const elementSuggestionData = getInlineSuggestionData(dateNode);
+      const childSuggestionData = getInlineSuggestionData(dateChild);
+
+      expect(dateNode.suggestion || dateChild?.suggestion).toBeTruthy();
+      expect(elementSuggestionData ?? childSuggestionData).toMatchObject({
+        type: 'remove',
+        userId: 'testId',
+      });
+    });
+
+    it('marks a date-shaped inline void when the cursor is inside its void child text', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext>
+                <cursor />
+              </htext>
+            </hdate>
+            <htext />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const dateNode = editor.children[0].children[1] as any;
+      const dateChild = dateNode.children?.[0] as any;
+      const suggestionData = getInlineSuggestionData(dateNode) ??
+        getInlineSuggestionData(dateChild);
+
+      expect(dateNode.suggestion || dateChild?.suggestion).toBeTruthy();
+      expect(suggestionData).toMatchObject({
+        type: 'remove',
+        userId: 'testId',
+      });
     });
 
     it('marks a remove line break when deleting backward at the start of a paragraph', () => {

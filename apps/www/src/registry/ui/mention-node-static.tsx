@@ -7,6 +7,10 @@ import { KEYS } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
+import {
+  getStaticElementSuggestionData,
+  getStaticInlineElementSuggestionClassName,
+} from '@/registry/ui/suggestion-node-static';
 
 export function MentionElementStatic(
   props: SlateElementProps<TMentionElement> & {
@@ -15,6 +19,7 @@ export function MentionElementStatic(
 ) {
   const { prefix } = props;
   const element = props.element;
+  const suggestionData = getStaticElementSuggestionData(element);
 
   return (
     <SlateElement
@@ -22,6 +27,7 @@ export function MentionElementStatic(
       as="span"
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
+        getStaticInlineElementSuggestionClassName(suggestionData),
         element.children[0][KEYS.bold] === true && 'font-bold',
         element.children[0][KEYS.italic] === true && 'italic',
         element.children[0][KEYS.underline] === true && 'underline'

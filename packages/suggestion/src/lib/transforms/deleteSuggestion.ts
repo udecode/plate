@@ -35,6 +35,39 @@ export const deleteSuggestion = (
 ) => {
   let resId: string | undefined;
 
+  const getInlineEntryAt = (point: Point) =>
+    editor.api.above<TElement>({
+      at: point,
+      match: (node) =>
+        ElementApi.isElement(node) && editor.api.isInline(node),
+    });
+
+  const getAdjacentInlineVoidEntry = (
+    point: Point,
+    {
+      reverse,
+    }: {
+      reverse?: boolean;
+    }
+  ) => {
+    try {
+      const adjacentPath = reverse
+        ? PathApi.previous(point.path)
+        : PathApi.next(point.path);
+
+      const entry = editor.api.node<TElement>(adjacentPath);
+
+      if (
+        entry &&
+        ElementApi.isElement(entry[0]) &&
+        editor.api.isInline(entry[0]) &&
+        editor.api.isVoid(entry[0])
+      ) {
+        return entry;
+      }
+    } catch {}
+  };
+
   editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
 
@@ -103,16 +136,31 @@ export const deleteSuggestion = (
           };
       range = editor.api.unhangRange(range, { character: true });
 
-      const inlineEntry = editor.api.above<TElement>({
-        at: pointNext,
-        match: (node) =>
-          ElementApi.isElement(node) && editor.api.isInline(node),
-      });
+      const inlineEntryAtNext = getInlineEntryAt(pointNext);
+      const inlineEntryAtCurrent = inlineEntryAtNext
+        ? undefined
+        : getInlineEntryAt(pointCurrent);
+      const adjacentInlineEntry =
+        inlineEntryAtNext || inlineEntryAtCurrent
+          ? undefined
+          : getAdjacentInlineVoidEntry(pointCurrent, { reverse });
+      const inlineEntryAtCurrentIsNonSelectable =
+        !!inlineEntryAtCurrent &&
+        !editor.api.isSelectable(inlineEntryAtCurrent[0]);
+      const adjacentInlineEntryIsNonSelectable =
+        !!adjacentInlineEntry &&
+        !editor.api.isSelectable(adjacentInlineEntry[0]);
+      const inlineEntry =
+        inlineEntryAtNext ??
+        (inlineEntryAtCurrentIsNonSelectable ? inlineEntryAtCurrent : undefined) ??
+        (adjacentInlineEntryIsNonSelectable ? adjacentInlineEntry : undefined);
+      const pointCurrentInsideInline =
+        !!inlineEntry && PathApi.isAncestor(inlineEntry[1], pointCurrent.path);
 
       if (
         inlineEntry &&
         editor.api.isVoid(inlineEntry[0]) &&
-        !PathApi.isAncestor(inlineEntry[1], pointCurrent.path)
+        (!inlineEntryAtNext || !pointCurrentInsideInline)
       ) {
         editor.tf.setNodes(
           {

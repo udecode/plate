@@ -58,13 +58,7 @@ export default function PlaygroundDemo({
   );
 
   return (
-    <Plate
-      editor={editor}
-      onValueChange={({ value }) => {
-        // biome-ignore lint/suspicious/noConsole: debugging latest playground values is intentional
-        console.log('playground value', value);
-      }}
-    >
+    <Plate editor={editor}>
       <EditorContainer className={className}>
         <Editor
           variant="demo"

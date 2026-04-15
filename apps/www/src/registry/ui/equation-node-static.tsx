@@ -10,6 +10,7 @@ import { SlateElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
 import {
   getStaticElementSuggestionData,
+  getStaticInlineElementSuggestionClassName,
   voidRemoveSuggestionClass,
 } from '@/registry/ui/suggestion-node-static';
 
@@ -65,6 +66,7 @@ export function EquationElementStatic(
 export function InlineEquationElementStatic(
   props: SlateElementProps<TEquationElement>
 ) {
+  const suggestionData = getStaticElementSuggestionData(props.element);
   const html = getEquationHtml({
     element: props.element,
     options: {
@@ -89,6 +91,7 @@ export function InlineEquationElementStatic(
         className={cn(
           'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
+          getStaticInlineElementSuggestionClassName(suggestionData),
           props.element.texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'
         )}

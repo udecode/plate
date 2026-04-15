@@ -12,16 +12,22 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  getElementSuggestionData,
+  getInlineElementSuggestionClassName,
+} from '@/registry/ui/suggestion-node';
 
 export function DateElement(props: PlateElementProps<TDateElement>) {
   const { editor, element } = props;
+  const suggestionData = getElementSuggestionData(editor, element);
 
   const readOnly = useReadOnly();
 
   const trigger = (
     <span
       className={cn(
-        'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground'
+        'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
+        getInlineElementSuggestionClassName(suggestionData)
       )}
       contentEditable={false}
       draggable

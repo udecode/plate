@@ -29,6 +29,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import {
+  getElementSuggestionData,
+  getInlineElementSuggestionClassName,
+} from '@/registry/ui/suggestion-node';
 import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
@@ -102,6 +106,7 @@ export function InlineEquationElement(
   props: PlateElementProps<TEquationElement>
 ) {
   const element = props.element;
+  const suggestionData = getElementSuggestionData(props.editor, element);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(
@@ -145,6 +150,7 @@ export function InlineEquationElement(
             className={cn(
               'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
+              getInlineElementSuggestionClassName(suggestionData),
               ((element.texExpression.length > 0 && open) || selected) &&
                 'after:bg-brand/15',
               element.texExpression.length === 0 &&
