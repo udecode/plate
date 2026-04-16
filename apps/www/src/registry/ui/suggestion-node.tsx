@@ -81,22 +81,19 @@ export function getElementSuggestionData(
   editor: PlateEditor,
   element: TElement
 ) {
-  const data = editor
-    .getApi(SuggestionPlugin)
-    .suggestion.suggestionData(element) as
+  const suggestionApi = editor.getApi(SuggestionPlugin).suggestion;
+  const data = suggestionApi.suggestionData(element) as
     | TSuggestionData
     | TInlineSuggestionData
     | undefined;
 
   if (data) return data;
+  if (typeof suggestionApi.dataList !== 'function') return;
 
   for (const child of element.children) {
     if (!TextApi.isText(child)) continue;
 
-    const childData = editor
-      .getApi(SuggestionPlugin)
-      .suggestion.dataList(child as TSuggestionText)
-      .at(-1);
+    const childData = suggestionApi.dataList(child as TSuggestionText).at(-1);
 
     if (childData) return childData;
   }
