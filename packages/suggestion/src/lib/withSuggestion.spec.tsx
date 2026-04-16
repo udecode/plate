@@ -26,6 +26,11 @@ const DatePlugin = createSlatePlugin({
   node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
 });
 
+const TocPlugin = createSlatePlugin({
+  key: KEYS.toc,
+  node: { isElement: true, isVoid: true },
+});
+
 const testSuggestionData = {
   id: '1',
   createdAt: Date.now(),
@@ -490,6 +495,71 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
               test1
               <cursor />
             </hp>
+            <hp>test2</hp>
+          </editor>
+        ).selection
+      );
+    });
+
+    it('marks the previous block void for removal instead of creating a line-break suggestion', () => {
+      const input = (
+        <editor>
+          <htoc>
+            <htext />
+          </htoc>
+          <hp>
+            <cursor />
+            test2
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, TocPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const voidSuggestion = (editor.children[0] as any).suggestion;
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <htoc
+              suggestion={{
+                createdAt: voidSuggestion.createdAt,
+                id: voidSuggestion.id,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              <htext>
+                <cursor />
+              </htext>
+            </htoc>
+            <hp>test2</hp>
+          </editor>
+        ).children
+      );
+      expect(voidSuggestion.isLineBreak).toBeUndefined();
+      expect(editor.selection).toEqual(
+        (
+          <editor>
+            <htoc
+              suggestion={{
+                createdAt: voidSuggestion.createdAt,
+                id: voidSuggestion.id,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              <htext>
+                <cursor />
+              </htext>
+            </htoc>
             <hp>test2</hp>
           </editor>
         ).selection

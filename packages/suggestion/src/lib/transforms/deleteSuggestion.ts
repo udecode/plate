@@ -291,15 +291,19 @@ export const deleteSuggestion = (
           }
 
           if (!isBlockSuggestion) {
+            const isPreviousBlockVoid =
+              editor.api.isVoid(previousAboveNode[0]) &&
+              !editor.api.isInline(previousAboveNode[0]);
+
             editor.tf.setNodes(
               {
                 [KEYS.suggestion]: {
                   id,
                   createdAt,
-                  isLineBreak: true,
                   type: 'remove',
                   userId:
                     editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                  ...(isPreviousBlockVoid ? {} : { isLineBreak: true }),
                 },
               },
               { at: previousAboveNode[1] }

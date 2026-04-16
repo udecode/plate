@@ -11,6 +11,7 @@ symptoms:
   - "Deleting an expanded selection across text, an inline void, and trailing text stopped at the inline void and collapsed the cursor to the wrong edge"
   - "Replacing an expanded selection across text, an inline void, and trailing text could loop forever in the browser"
   - "Backspace at the start of a paragraph marked the previous block as a generic remove suggestion instead of a remove line break"
+  - "Backspace at the start of a paragraph after a solitary block void marked that void as a remove line break instead of a normal block removal"
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
@@ -29,7 +30,7 @@ tags:
 
 In suggestion mode, pressing backspace after a mention first did nothing, and after the initial range fix it still behaved like a character delete instead of an inline-void delete.
 
-That caused six user-visible bugs around deletion suggestions: adjacent text could be marked for removal, the cursor could jump past an inline void's left edge, continued deletion could fork into a second suggestion card, expanded selections could stop at the inline void instead of consuming the whole selected range, replace-selection flows could loop forever, and paragraph-boundary deletes could skip the red line-break suggestion shape entirely.
+That caused seven user-visible bugs around deletion suggestions: adjacent text could be marked for removal, the cursor could jump past an inline void's left edge, continued deletion could fork into a second suggestion card, expanded selections could stop at the inline void instead of consuming the whole selected range, replace-selection flows could loop forever, paragraph-boundary deletes could skip the red line-break suggestion shape entirely, and solitary block voids could be mislabeled as line breaks.
 
 ## Symptoms
 
@@ -138,17 +139,21 @@ const getInlineElementEntry = (point: Point) =>
 
 Use that fallback for `nextPoint` and `prevPoint` before generating a fresh suggestion id.
 
-For paragraph-boundary deletes, keep the cross-block suggestion shape aligned with the existing line-break accept/reject semantics:
+For paragraph-boundary deletes, keep the cross-block suggestion shape aligned with the existing merge semantics. Mergeable text blocks should still use the dedicated line-break suggestion, but solitary block voids should stay ordinary block removals:
 
 ```ts
+const isPreviousBlockVoid =
+  editor.api.isVoid(previousAboveNode[0]) &&
+  !editor.api.isInline(previousAboveNode[0]);
+
 editor.tf.setNodes(
   {
     [KEYS.suggestion]: {
       id,
       createdAt,
-      isLineBreak: true,
       type: 'remove',
       userId,
+      ...(isPreviousBlockVoid ? {} : { isLineBreak: true }),
     },
   },
   { at: previousAboveNode[1] }
@@ -178,7 +183,7 @@ The same ownership rule applies in the forward direction. If the loop reselects 
 
 By reusing adjacent inline suggestion metadata in `findSuggestionProps`, the next backspace keeps extending the same remove suggestion instead of starting a new discussion card for the neighboring text.
 
-By tagging cross-block removes with `isLineBreak: true`, the existing `acceptSuggestion` and `rejectSuggestion` logic takes the paragraph-merge path instead of treating the previous block like ordinary deleted content.
+By tagging only mergeable cross-block removes with `isLineBreak: true`, the existing `acceptSuggestion` and `rejectSuggestion` logic still takes the paragraph-merge path where it should. Block voids such as images or table-of-contents nodes stay ordinary block removals, so accepting them deletes the void instead of trying to merge through it.
 
 ## Verification
 
@@ -202,7 +207,7 @@ pnpm lint:fix
 - When an expanded selection crosses an inline void, only stop after marking that node if the original target point is inside the inline void subtree
 - When an expanded forward delete crosses an inline void, advance the traversal point to the inline void's right edge before continuing
 - If the cursor can continue deleting from the edge of an inline void, merge against adjacent inline suggestion elements before minting a new suggestion id
-- If a delete crosses a paragraph boundary, preserve the dedicated line-break suggestion shape so accept/reject can merge blocks correctly
+- If a delete crosses a paragraph boundary, use the dedicated line-break suggestion shape only for mergeable block boundaries, not for solitary block voids
 - Keep at least one regression test for suggestion-mode deletion around an inline void element, including cursor placement and neighboring-text assertions
 
 ## Related Issues
