@@ -7,17 +7,11 @@ import { NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
-import {
-  getStaticElementSuggestionData,
-  voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node-static';
 
 export function ImageElementStatic(
   props: SlateElementProps<TImageElement & TCaptionProps & TResizableProps>
 ) {
   const { align = 'center', caption, url, width } = props.element;
-  const isRemoveSuggestion =
-    getStaticElementSuggestionData(props.element)?.type === 'remove';
 
   return (
     <SlateElement {...props} className="py-2.5">
@@ -26,12 +20,7 @@ export function ImageElementStatic(
           className="relative min-w-[92px] max-w-full"
           style={{ textAlign: align }}
         >
-          <div
-            className={cn(
-              isRemoveSuggestion && 'rounded-sm',
-              isRemoveSuggestion && voidRemoveSuggestionClass
-            )}
-          >
+          <div>
             <img
               className={cn(
                 'w-full max-w-full cursor-default object-cover px-0',

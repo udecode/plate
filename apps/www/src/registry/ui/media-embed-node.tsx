@@ -13,8 +13,6 @@ import { ResizableProvider, useResizableValue } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';
@@ -41,8 +39,6 @@ export const MediaEmbedElement = withHOC(
     });
     const width = useResizableValue('width');
     const provider = embed?.provider;
-    const isRemoveSuggestion =
-      getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
     return (
       <MediaToolbar plugin={MediaEmbedPlugin}>
@@ -66,12 +62,7 @@ export const MediaEmbedElement = withHOC(
 
               {isVideo ? (
                 isYoutube ? (
-                  <div
-                    className={cn(
-                      isRemoveSuggestion && 'rounded-sm',
-                      isRemoveSuggestion && voidRemoveSuggestionClass
-                    )}
-                  >
+                  <div>
                     <LiteYouTubeEmbed
                       id={embed!.id!}
                       title="youtube"
@@ -97,8 +88,6 @@ export const MediaEmbedElement = withHOC(
                 ) : (
                   <div
                     className={cn(
-                      isRemoveSuggestion && 'rounded-sm',
-                      isRemoveSuggestion && voidRemoveSuggestionClass,
                       provider === 'vimeo' && 'pb-[75%]',
                       provider === 'youku' && 'pb-[56.25%]',
                       provider === 'dailymotion' && 'pb-[56.0417%]',
@@ -122,8 +111,6 @@ export const MediaEmbedElement = withHOC(
               {isTweet && (
                 <div
                   className={cn(
-                    isRemoveSuggestion && 'rounded-sm',
-                    isRemoveSuggestion && voidRemoveSuggestionClass,
                     '[&_.react-tweet-theme]:my-0',
                     !readOnly &&
                       selected &&

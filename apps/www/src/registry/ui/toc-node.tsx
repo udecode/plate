@@ -9,9 +9,6 @@ import { cva } from 'class-variance-authority';
 import { PlateElement } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 const headingItemVariants = cva(
   'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
@@ -30,18 +27,10 @@ export function TocElement(props: PlateElementProps) {
   const state = useTocElementState();
   const { props: btnProps } = useTocElement(state);
   const { headingList } = state;
-  const isRemoveSuggestion =
-    getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
   return (
     <PlateElement {...props} className="mb-1 p-0">
-      <div
-        className={cn(
-          isRemoveSuggestion && 'rounded-sm',
-          isRemoveSuggestion && voidRemoveSuggestionClass
-        )}
-        contentEditable={false}
-      >
+      <div contentEditable={false}>
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button

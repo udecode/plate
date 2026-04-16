@@ -1,7 +1,15 @@
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 
-import { SuggestionLeafStatic } from '@/registry/ui/suggestion-node-static';
+import {
+  SuggestionLeafStatic,
+  VoidRemoveSuggestionOverlayStatic,
+} from '@/registry/ui/suggestion-node-static';
 
 export const BaseSuggestionKit = [
-  BaseSuggestionPlugin.withComponent(SuggestionLeafStatic),
+  BaseSuggestionPlugin.configure({
+    render: {
+      belowRootNodes: VoidRemoveSuggestionOverlayStatic as any,
+      node: SuggestionLeafStatic as any,
+    },
+  }),
 ];

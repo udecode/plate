@@ -14,8 +14,6 @@ import { ResizableProvider, useResizableValue } from '@platejs/resizable';
 import { PlateElement, useEditorMounted, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 import { Caption, CaptionTextarea } from './caption';
 import {
@@ -41,8 +39,6 @@ export const VideoElement = withHOC(
       urlParsers: [parseTwitterUrl, parseVideoUrl],
     });
     const width = useResizableValue('width');
-    const isRemoveSuggestion =
-      getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
     const isEditorMounted = useEditorMounted();
     const shouldRenderEmbedPlayer =
@@ -80,13 +76,7 @@ export const VideoElement = withHOC(
               />
 
               {!isUpload && isYoutube && (
-                <div
-                  ref={handleRef}
-                  className={cn(
-                    isRemoveSuggestion && 'rounded-sm',
-                    isRemoveSuggestion && voidRemoveSuggestionClass
-                  )}
-                >
+                <div ref={handleRef}>
                   <LiteYouTubeEmbed
                     id={embed!.id!}
                     title="youtube"
@@ -111,13 +101,7 @@ export const VideoElement = withHOC(
               )}
 
               {shouldRenderFileVideo && (
-                <div
-                  ref={handleRef}
-                  className={cn(
-                    isRemoveSuggestion && 'rounded-sm',
-                    isRemoveSuggestion && voidRemoveSuggestionClass
-                  )}
-                >
+                <div ref={handleRef}>
                   <video
                     className="w-full max-w-full rounded-sm object-cover px-0"
                     src={unsafeUrl}
@@ -127,13 +111,7 @@ export const VideoElement = withHOC(
               )}
 
               {shouldRenderEmbedPlayer && (
-                <div
-                  ref={handleRef}
-                  className={cn(
-                    isRemoveSuggestion && 'rounded-sm',
-                    isRemoveSuggestion && voidRemoveSuggestionClass
-                  )}
-                >
+                <div ref={handleRef}>
                   <ReactPlayer
                     height="100%"
                     src={unsafeUrl}

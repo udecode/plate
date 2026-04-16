@@ -5,7 +5,10 @@ import { jsxt } from '@platejs/test-utils';
 import { describe, expect, it } from 'bun:test';
 import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
 
-import { buildBlockDiscussionIndex } from './block-discussion-index';
+import {
+  BLOCK_SUGGESTION_TOKEN,
+  buildBlockDiscussionIndex,
+} from './block-discussion-index';
 
 jsxt;
 
@@ -195,6 +198,34 @@ describe('buildBlockDiscussionIndex', () => {
 
     expect(suggestion?.type).toBe('remove');
     expect(suggestion?.text).toBe('link');
+  });
+
+  it('uses the block label for block equation remove summaries', () => {
+    const input = (
+      <editor>
+        <hequation
+          suggestion={{ ...suggestionData }}
+          texExpression="\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}"
+        >
+          <htext />
+        </hequation>
+      </editor>
+    ) as any;
+
+    const index = buildBlockDiscussionIndex({
+      discussions: [],
+      entries: collectEntries(input),
+      getCommentId: () => {},
+      getSuggestionData: (node: any) => node.suggestion,
+      getSuggestionDataList,
+      getSuggestionId: (node: any) => node.suggestion?.id,
+      isBlockSuggestion: (node: any) => !!node.suggestion,
+    });
+
+    const suggestion = index.suggestionsByBlock.get('0')?.[0];
+
+    expect(suggestion?.type).toBe('remove');
+    expect(suggestion?.text).toBe(`${BLOCK_SUGGESTION_TOKEN}Equation`);
   });
 
   it.each([

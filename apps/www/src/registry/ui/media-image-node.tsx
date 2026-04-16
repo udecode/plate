@@ -11,8 +11,6 @@ import { ResizableProvider, useResizableValue } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 import { Caption, CaptionTextarea } from './caption';
 import { MediaToolbar } from './media-toolbar';
@@ -27,8 +25,6 @@ export const ImageElement = withHOC(
   function ImageElement(props: PlateElementProps<TImageElement>) {
     const { align = 'center', focused, readOnly, selected } = useMediaState();
     const width = useResizableValue('width');
-    const isRemoveSuggestion =
-      getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
@@ -49,12 +45,7 @@ export const ImageElement = withHOC(
                 className={mediaResizeHandleVariants({ direction: 'left' })}
                 options={{ direction: 'left' }}
               />
-              <div
-                className={cn(
-                  isRemoveSuggestion && 'rounded-sm',
-                  isRemoveSuggestion && voidRemoveSuggestionClass
-                )}
-              >
+              <div>
                 <Image
                   ref={handleRef}
                   className={cn(

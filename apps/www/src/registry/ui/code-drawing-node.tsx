@@ -32,9 +32,6 @@ import { Trash2, DownloadIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 import {
   Popover,
   PopoverAnchor,
@@ -208,18 +205,11 @@ export function CodeDrawingElement(
   );
 
   const open = isFocusedLast && !readOnly && selected && selectionCollapsed;
-  const isRemoveSuggestion =
-    getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
   const content = (
     <PlateElement {...props}>
       <div contentEditable={false}>
-        <div
-          className={cn(
-            isRemoveSuggestion && 'rounded-md',
-            isRemoveSuggestion && voidRemoveSuggestionClass
-          )}
-        >
+        <div>
           <CodeDrawingPreview
             code={code}
             drawingType={drawingType}

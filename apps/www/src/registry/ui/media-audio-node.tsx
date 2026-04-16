@@ -10,8 +10,6 @@ import { ResizableProvider } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { getElementSuggestionData } from '@/registry/ui/suggestion-node';
-import { voidRemoveSuggestionClass } from '@/registry/ui/suggestion-node-static';
 
 import { Caption, CaptionTextarea } from './caption';
 
@@ -19,8 +17,6 @@ export const AudioElement = withHOC(
   ResizableProvider,
   function AudioElement(props: PlateElementProps<TAudioElement>) {
     const { align = 'center', readOnly, unsafeUrl } = useMediaState();
-    const isRemoveSuggestion =
-      getElementSuggestionData(props.editor, props.element)?.type === 'remove';
 
     return (
       <PlateElement {...props} className="mb-1">
@@ -28,12 +24,7 @@ export const AudioElement = withHOC(
           className="group relative cursor-default"
           contentEditable={false}
         >
-          <div
-            className={cn(
-              'h-16 rounded-sm',
-              isRemoveSuggestion && voidRemoveSuggestionClass
-            )}
-          >
+          <div className={cn('h-16 rounded-sm')}>
             <audio className="size-full" src={unsafeUrl} controls />
           </div>
 

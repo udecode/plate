@@ -24,6 +24,14 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
+import {
+  voidRemoveSuggestionOverlayVariants as staticVoidRemoveSuggestionOverlayVariants,
+  voidRemoveSuggestionVariants as staticVoidRemoveSuggestionVariants,
+} from '@/registry/ui/suggestion-node-static';
+
+export const voidRemoveSuggestionVariants = staticVoidRemoveSuggestionVariants;
+export const voidRemoveSuggestionOverlayVariants =
+  staticVoidRemoveSuggestionOverlayVariants;
 
 const suggestionPlugin = SuggestionPlugin as WithRequiredKey<SuggestionConfig>;
 
@@ -113,6 +121,33 @@ export function getInlineElementSuggestionClassName(
     .replace('text-emerald-700', 'text-emerald-700!')
     .replace('bg-red-100', 'bg-red-100!')
     .replace('text-red-700', 'text-red-700!');
+}
+
+export function isVoidRemoveSuggestion(editor: PlateEditor, element: TElement) {
+  return getElementSuggestionData(editor, element)?.type === 'remove';
+}
+
+export function VoidRemoveSuggestionOverlay({
+  editor,
+  element,
+}: {
+  editor: PlateEditor;
+  element: TElement;
+}) {
+  const active =
+    editor.api.isVoid(element) &&
+    !editor.api.isInline(element) &&
+    isVoidRemoveSuggestion(editor, element);
+
+  if (!active) return null;
+
+  return (
+    <div
+      className={voidRemoveSuggestionOverlayVariants({ active })}
+      contentEditable={false}
+      data-slot="void-remove-suggestion"
+    />
+  );
 }
 
 export function SuggestionLineBreakAnchor({

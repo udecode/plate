@@ -193,6 +193,7 @@ const getInlineSuggestionElementText = (node: TElement) => {
   }
 
   if (
+    node.type === KEYS.inlineEquation &&
     typeof (node as TElement & { texExpression?: unknown }).texExpression ===
       'string' &&
     (node as TElement & { texExpression: string }).texExpression.length > 0

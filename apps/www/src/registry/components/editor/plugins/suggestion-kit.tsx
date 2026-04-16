@@ -11,6 +11,7 @@ import { toTPlatePlugin } from 'platejs/react';
 import {
   SuggestionLeaf,
   SuggestionLineBreak,
+  VoidRemoveSuggestionOverlay,
 } from '@/registry/ui/suggestion-node';
 import {
   discussionPlugin,
@@ -68,6 +69,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
   },
   render: {
     belowNodes: SuggestionLineBreak as any,
+    belowRootNodes: VoidRemoveSuggestionOverlay as any,
     node: SuggestionLeaf,
   },
 });

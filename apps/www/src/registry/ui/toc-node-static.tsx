@@ -8,11 +8,6 @@ import { type SlateEditor, type TElement, NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import {
-  getStaticElementSuggestionData,
-  voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node-static';
 
 const headingItemVariants = cva(
   'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
@@ -30,17 +25,10 @@ const headingItemVariants = cva(
 export function TocElementStatic(props: SlateElementProps) {
   const { editor } = props;
   const headingList = getHeadingList(editor);
-  const isRemoveSuggestion =
-    getStaticElementSuggestionData(props.element)?.type === 'remove';
 
   return (
     <SlateElement {...props} className="mb-1 p-0">
-      <div
-        className={cn(
-          isRemoveSuggestion && 'rounded-sm',
-          isRemoveSuggestion && voidRemoveSuggestionClass
-        )}
-      >
+      <div>
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button

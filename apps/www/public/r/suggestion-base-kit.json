@@ -11,7 +11,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/suggestion-base-kit.tsx",
-      "content": "import { BaseSuggestionPlugin } from '@platejs/suggestion';\n\nimport { SuggestionLeafStatic } from '@/registry/ui/suggestion-node-static';\n\nexport const BaseSuggestionKit = [\n  BaseSuggestionPlugin.withComponent(SuggestionLeafStatic),\n];\n",
+      "content": "import { BaseSuggestionPlugin } from '@platejs/suggestion';\n\nimport {\n  SuggestionLeafStatic,\n  VoidRemoveSuggestionOverlayStatic,\n} from '@/registry/ui/suggestion-node-static';\n\nexport const BaseSuggestionKit = [\n  BaseSuggestionPlugin.configure({\n    render: {\n      belowRootNodes: VoidRemoveSuggestionOverlayStatic as any,\n      node: SuggestionLeafStatic as any,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

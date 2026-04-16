@@ -11,15 +11,12 @@ import { cn } from '@/lib/utils';
 import {
   getStaticElementSuggestionData,
   getStaticInlineElementSuggestionClassName,
-  voidRemoveSuggestionClass,
 } from '@/registry/ui/suggestion-node-static';
 
 export function EquationElementStatic(
   props: SlateElementProps<TEquationElement>
 ) {
   const { element } = props;
-  const isRemoveSuggestion =
-    getStaticElementSuggestionData(element)?.type === 'remove';
 
   const html = getEquationHtml({
     element,
@@ -41,7 +38,6 @@ export function EquationElementStatic(
       <div
         className={cn(
           'group flex select-none items-center justify-center rounded-sm hover:bg-primary/10 data-[selected=true]:bg-primary/10',
-          isRemoveSuggestion && voidRemoveSuggestionClass,
           element.texExpression.length === 0 ? 'bg-muted p-3 pr-9' : 'px-2 py-1'
         )}
       >

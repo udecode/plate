@@ -6,18 +6,10 @@ import type { SlateElementProps } from 'platejs/static';
 import { NodeApi } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
-import { cn } from '@/lib/utils';
-import {
-  getStaticElementSuggestionData,
-  voidRemoveSuggestionClass,
-} from '@/registry/ui/suggestion-node-static';
-
 export function VideoElementStatic(
   props: SlateElementProps<TVideoElement & TCaptionElement & TResizableProps>
 ) {
   const { align = 'center', caption, url, width } = props.element;
-  const isRemoveSuggestion =
-    getStaticElementSuggestionData(props.element)?.type === 'remove';
 
   return (
     <SlateElement className="py-2.5" {...props}>
@@ -26,12 +18,7 @@ export function VideoElementStatic(
           className="group relative m-0 inline-block cursor-default"
           style={{ width }}
         >
-          <div
-            className={cn(
-              isRemoveSuggestion && 'rounded-sm',
-              isRemoveSuggestion && voidRemoveSuggestionClass
-            )}
-          >
+          <div>
             <video
               className="w-full max-w-full rounded-sm object-cover px-0"
               src={url}
