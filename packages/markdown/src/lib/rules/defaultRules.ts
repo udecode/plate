@@ -10,6 +10,7 @@ import {
   getPluginType,
   KEYS,
 } from 'platejs';
+import { normalizeDateValue } from '@platejs/date';
 
 import type {
   MdBlockquote,
@@ -276,17 +277,31 @@ export const defaultRules: MdRules = {
   },
   date: {
     deserialize(mdastNode, _deco, options) {
-      const dateValue = (mdastNode.children?.[0] as any)?.value || '';
+      const props = parseAttributes((mdastNode as any).attributes);
+      const dateValue =
+        typeof props.value === 'string'
+          ? props.value
+          : (mdastNode.children?.[0] as any)?.value || '';
+
       return {
         children: [{ text: '' }],
-        date: dateValue,
+        ...normalizeDateValue(dateValue),
         type: getPluginType(options.editor!, KEYS.date),
       };
     },
-    serialize({ date }): MdMdxJsxTextElement {
+    serialize({ date, rawDate }): MdMdxJsxTextElement {
+      if (date && !rawDate) {
+        return {
+          attributes: propsToAttributes({ value: date }),
+          children: [],
+          name: 'date',
+          type: 'mdxJsxTextElement',
+        };
+      }
+
       return {
         attributes: [],
-        children: [{ type: 'text', value: date ?? '' }],
+        children: [{ type: 'text', value: rawDate ?? date ?? '' }],
         name: 'date',
         type: 'mdxJsxTextElement',
       };
@@ -313,8 +328,6 @@ export const defaultRules: MdRules = {
       value: node.texExpression,
     }),
   },
-  // plate doesn't support footnoteDefinition and footnoteReference
-  // so we need to convert them to p for now
   footnoteDefinition: {
     deserialize: (mdastNode, deco, options) => {
       const paragraphType = getPluginType(options.editor!, KEYS.p);
@@ -333,28 +346,47 @@ export const defaultRules: MdRules = {
       );
 
       const identifier = (mdastNode as any).identifier;
-      const labelPrefix = identifier ? `[^${identifier}]: ` : '';
-
       if (blocks.length === 0) {
         return {
-          children: [{ text: labelPrefix }],
-          type: paragraphType,
+          children: [
+            {
+              children: [{ text: '' }],
+              type: paragraphType,
+            },
+          ],
+          identifier,
+          type: getPluginType(options.editor!, 'footnoteDefinition'),
         };
       }
 
-      return blocks.map((block: any, index: number) =>
-        index === 0
-          ? {
-              ...block,
-              children: [{ text: labelPrefix }, ...block.children],
-            }
-          : block
-      );
+      return {
+        children: blocks,
+        identifier,
+        type: getPluginType(options.editor!, 'footnoteDefinition'),
+      };
     },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(node.children, options) as any,
+      identifier: node.identifier,
+      type: 'footnoteDefinition',
+    }),
   },
   footnoteReference: {
-    deserialize: (mdastNode) => ({
-      text: `[^${(mdastNode as any).identifier ?? ''}]`,
+    deserialize: (mdastNode, _deco, options) => {
+      const identifier = (mdastNode as any).identifier ?? '';
+
+      return {
+        children: [{ text: '' }],
+        identifier,
+        type: getPluginType(options.editor!, 'footnoteReference'),
+      };
+    },
+    serialize: (node) => ({
+      identifier:
+        node.identifier ??
+        node.children?.map((child: any) => child.text ?? '').join('') ??
+        '',
+      type: 'footnoteReference',
     }),
   },
   heading: {

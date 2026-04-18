@@ -6,6 +6,10 @@ import type {
 
 import { KEYS } from 'platejs';
 
+import { parseMediaUrl } from '../../media/parseMediaUrl';
+import { parseTwitterUrl } from '../parseTwitterUrl';
+import { parseVideoUrl } from '../parseVideoUrl';
+
 export const insertMediaEmbed = (
   editor: SlateEditor,
   { url = '' }: Partial<TMediaEmbedElement>,
@@ -18,11 +22,18 @@ export const insertMediaEmbed = (
   if (!selectionParentEntry) return;
 
   const [, path] = selectionParentEntry;
+  const normalized = parseMediaUrl(url, {
+    urlParsers: [parseTwitterUrl, parseVideoUrl],
+  });
+
   editor.tf.insertNodes<TMediaEmbedElement>(
     {
       children: [{ text: '' }],
+      id: normalized?.id,
+      provider: normalized?.provider,
+      sourceUrl: normalized?.sourceUrl,
       type: editor.getType(KEYS.mediaEmbed),
-      url,
+      url: normalized?.url ?? url,
     },
     {
       at: path,

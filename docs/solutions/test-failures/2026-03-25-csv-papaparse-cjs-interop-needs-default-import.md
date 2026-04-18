@@ -27,16 +27,16 @@ symptoms:
 
 ## Problem
 
-`@platejs/csv` exposes an ESM entrypoint from [packages/csv/dist/index.js](/Users/zbeyens/git/plate/packages/csv/dist/index.js). That entrypoint imported `parse` as a named export from `papaparse`.
+`@platejs/csv` exposes an ESM entrypoint from [packages/csv/dist/index.js](packages/csv/dist/index.js). That entrypoint imported `parse` as a named export from `papaparse`.
 
 That looks harmless until native Node ESM loads the package. `papaparse` is CommonJS, so Node rejects `import { parse } from 'papaparse'` and the whole package explodes before any CSV logic runs.
 
 ## Root Cause
 
-The deserializer in [packages/csv/src/lib/deserializer/utils/deserializeCsv.ts](/Users/zbeyens/git/plate/packages/csv/src/lib/deserializer/utils/deserializeCsv.ts) used a named import:
+The deserializer in [packages/csv/src/lib/deserializer/utils/deserializeCsv.ts](packages/csv/src/lib/deserializer/utils/deserializeCsv.ts) used a named import:
 
 ```ts
-import { parse } from 'papaparse';
+import { parse } from "papaparse";
 ```
 
 The build preserved that shape in the published ESM output. Native Node ESM does not guarantee named exports from a CommonJS dependency, so the runtime import failed with:
@@ -52,7 +52,7 @@ There was one extra trap here: Bun can hide the issue. A Bun test that shells ou
 Load Papa Parse through the CommonJS-safe default import and call `parse` from that namespace:
 
 ```ts
-import Papa from 'papaparse';
+import Papa from "papaparse";
 
 const parseCsv = <T>(data: string, config?: CsvParseOptions) =>
   Papa.parse<T>(data, {
@@ -65,19 +65,19 @@ const parseCsv = <T>(data: string, config?: CsvParseOptions) =>
 That makes the built entrypoint emit:
 
 ```ts
-import Papa from 'papaparse';
+import Papa from "papaparse";
 ```
 
 Node can load that form correctly from an ESM package, so Vitest and other native ESM consumers stop failing at module load time.
 
 ## Verification
 
-Add a regression test at [packages/csv/src/lib/esmInterop.spec.ts](/Users/zbeyens/git/plate/packages/csv/src/lib/esmInterop.spec.ts) that imports the built package entrypoint through real Node ESM:
+Add a regression test at [packages/csv/src/lib/esmInterop.spec.ts](packages/csv/src/lib/esmInterop.spec.ts) that imports the built package entrypoint through real Node ESM:
 
 ```ts
-execFileSync('node', [
-  '--input-type=module',
-  '--eval',
+execFileSync("node", [
+  "--input-type=module",
+  "--eval",
   `await import(${JSON.stringify(distEntry)});`,
 ]);
 ```

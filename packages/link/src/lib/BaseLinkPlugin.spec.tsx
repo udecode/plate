@@ -65,4 +65,10 @@ describe('BaseLinkPlugin', () => {
       } as any)
     ).toBeUndefined();
   });
+
+  it('registers no input rules by default', () => {
+    const editor = createEditor();
+
+    expect(editor.meta.inputRules.plugins[KEYS.link].rules).toEqual([]);
+  });
 });

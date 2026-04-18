@@ -15,6 +15,7 @@ docs:
 
 - 自动从文档标题生成目录
 - 平滑滚动至标题位置
+- 滚动时跟踪当前活动标题
 
 </PackageInfo>
 
@@ -201,6 +202,9 @@ function Layout() {
 
 <API name="useTocElementState">
 <APIReturns>
+  <APIItem name="activeContentId" type="string">
+    当前文档位置对应的活动标题 ID
+  </APIItem>
   <APIItem name="headingList" type="Heading[]">
     文档标题数组
   </APIItem>

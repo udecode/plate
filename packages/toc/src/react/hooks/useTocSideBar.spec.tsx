@@ -88,6 +88,7 @@ describe('useTocSideBar', () => {
       behavior: undefined,
       el: expect.any(HTMLElement),
       id: 'h1',
+      path: [0],
     });
   });
 });

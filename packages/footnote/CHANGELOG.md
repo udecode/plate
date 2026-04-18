@@ -1,0 +1,1 @@
+# @platejs/footnote

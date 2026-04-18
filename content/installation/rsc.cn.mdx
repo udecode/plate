@@ -29,7 +29,6 @@ npm install platejs @platejs/basic-nodes
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from 'platejs';
-import { AutoformatPlugin } from '@platejs/autoformat';
 import { BaseTextAlignPlugin } from '@platejs/basic-styles';
 import {
   BaseBoldPlugin,
@@ -71,9 +70,6 @@ const editor = createSlateEditor({
     BaseItalicPlugin,
     BaseCodePlugin,
     // ... 添加更多标记插件
-
-    // 功能插件
-    AutoformatPlugin,
     MarkdownPlugin.configure({ // 序列化示例
       options: {
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx],

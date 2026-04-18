@@ -9,18 +9,18 @@ status: completed
 
 ## Scope
 
-Closed the last locked non-React coverage batch from [2026-03-25-non-react-coverage-roadmap-phase-4.md](/Users/zbeyens/git/plate/docs/plans/2026-03-25-non-react-coverage-roadmap-phase-4.md).
+Closed the last locked non-React coverage batch from [2026-03-25-non-react-coverage-roadmap-phase-4.md](docs/plans/2026-03-25-non-react-coverage-roadmap-phase-4.md).
 
 ## Work
 
-- Expanded [docxListToList.spec.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/docxListToList.spec.ts) for bookmark skipping and nested list recursion.
-- Added [BaseMarkPlugins.spec.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseMarkPlugins.spec.ts) to cover bold, italic, underline, strikethrough, and code plugin parser veto + toggle wiring.
-- Expanded [getSelectedCellsBorders.spec.tsx](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getSelectedCellsBorders.spec.tsx) for left-adjacent border checks and right-edge boundary fallthrough.
-- Expanded [AutoformatPlugin.spec.tsx](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.spec.tsx) for mixed rule undo-on-delete and successful text autoformat without `insertTrigger`.
-- Expanded [DebugPlugin.spec.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/debug/DebugPlugin.spec.ts) for the default console logger surface.
-- Expanded [get-package-manager.spec.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/get-package-manager.spec.ts) for yarn fallback and empty user-agent defaulting.
-- Added [getCellIndices.spec.ts](/Users/zbeyens/git/plate/packages/table/src/lib/utils/getCellIndices.spec.ts) for cache-hit and warn/fallback behavior.
-- Expanded [deleteText.spec.tsx](/Users/zbeyens/git/plate/packages/slate/src/internal/transforms/deleteText.spec.tsx) for point-inside-void deletion and forward delete no-op at document end.
+- Expanded [docxListToList.spec.ts](packages/docx/src/lib/docx-cleaner/utils/docxListToList.spec.ts) for bookmark skipping and nested list recursion.
+- Added [BaseMarkPlugins.spec.ts](packages/basic-nodes/src/lib/BaseMarkPlugins.spec.ts) to cover bold, italic, underline, strikethrough, and code plugin parser veto + toggle wiring.
+- Expanded [getSelectedCellsBorders.spec.tsx](packages/table/src/lib/queries/getSelectedCellsBorders.spec.tsx) for left-adjacent border checks and right-edge boundary fallthrough.
+- Expanded [AutoformatPlugin.spec.tsx](packages/autoformat/src/lib/AutoformatPlugin.spec.tsx) for mixed rule undo-on-delete and successful text autoformat without `insertTrigger`.
+- Expanded [DebugPlugin.spec.ts](packages/core/src/lib/plugins/debug/DebugPlugin.spec.ts) for the default console logger surface.
+- Expanded [get-package-manager.spec.ts](packages/udecode/depset/src/utils/get-package-manager.spec.ts) for yarn fallback and empty user-agent defaulting.
+- Added [getCellIndices.spec.ts](packages/table/src/lib/utils/getCellIndices.spec.ts) for cache-hit and warn/fallback behavior.
+- Expanded [deleteText.spec.tsx](packages/slate/src/internal/transforms/deleteText.spec.tsx) for point-inside-void deletion and forward delete no-op at document end.
 
 ## Verification
 

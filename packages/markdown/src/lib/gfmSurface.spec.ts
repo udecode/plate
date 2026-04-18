@@ -53,36 +53,39 @@ describe('gfm package surfaces', () => {
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 
-  it('preserves footnote references and definitions as plain-text fallback paragraphs', () => {
+  it('round-trips footnote references and definitions as dedicated nodes', () => {
     const editor = createTestEditor();
     const input = '[^1]\n\n[^1]: Footnote text';
-    const expected = '\\[^1]\n\n\\[^1]: Footnote text\n';
+    const expected = '[^1]\n\n[^1]: Footnote text\n';
 
     const value = deserializeMd(editor, input);
 
     expect(value).toMatchObject([
       {
-        children: [{ text: '[^1]' }],
+        children: [
+          {
+            children: [{ text: '' }],
+            identifier: '1',
+            type: 'footnoteReference',
+          },
+        ],
         type: 'p',
       },
       {
-        children: [{ text: '[^1]: ' }, { text: 'Footnote text' }],
-        type: 'p',
+        children: [
+          {
+            children: [{ text: 'Footnote text' }],
+            type: 'p',
+          },
+        ],
+        identifier: '1',
+        type: 'footnoteDefinition',
       },
     ]);
 
     const markdown = serializeMd(editor, { value: value as any });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject([
-      {
-        children: [{ text: '[^1]' }],
-        type: 'p',
-      },
-      {
-        children: [{ text: '[^1]: Footnote text' }],
-        type: 'p',
-      },
-    ]);
+    expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 });

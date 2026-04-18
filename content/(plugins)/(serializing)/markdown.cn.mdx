@@ -796,6 +796,14 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 
 默认情况下，`@platejs/markdown` 出于安全考虑**不会**处理原始的 HTML 标签。标准 Markdown 生成的 HTML（如 `*emphasis*` → `<em>`）会被正常转换。
 
+默认回退行为是保守的：
+
+- 未知的内联 MDX / 类 HTML 节点会按源码文本原样保留。
+- 未知的块级 MDX / 原始 HTML 块会保留为可编辑的源码文本段落，而不是被丢弃或静默转换成其它块类型。
+- 这让源码保持原样，也更适合流式 / AI 生成的 Markdown，这类 HTML 往往会分片到达，或者没有对应的 Plate 规则。
+
+如果需要比“保留源码”更丰富的 HTML 行为，可为目标标签显式添加 `rules`。
+
 如需在**受信任环境**下处理原始 HTML：
 
 1.  **引入 `remark-mdx`：** 添加到 `remarkPlugins`。

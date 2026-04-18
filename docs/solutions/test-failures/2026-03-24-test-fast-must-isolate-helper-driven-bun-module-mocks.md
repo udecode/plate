@@ -26,11 +26,11 @@ The runner only checked each spec file's own source for `mock.module(`.
 
 That missed specs like:
 
-- [useContentObserver.spec.tsx](/Users/zbeyens/git/plate/packages/toc/src/react/hooks/useContentObserver.spec.tsx)
+- [useContentObserver.spec.tsx](packages/toc/src/react/hooks/useContentObserver.spec.tsx)
 
 That spec looked clean, but it imported:
 
-- [tocHookMocks.ts](/Users/zbeyens/git/plate/packages/toc/src/react/hooks/tocHookMocks.ts)
+- [tocHookMocks.ts](packages/toc/src/react/hooks/tocHookMocks.ts)
 
 And that helper registered multiple top-level `mock.module(...)` calls.
 
@@ -38,7 +38,7 @@ So the spec stayed in the shared batch, leaked module mocking into unrelated tes
 
 ## Fix
 
-Update [test-fast.mjs](/Users/zbeyens/git/plate/tooling/scripts/test-fast.mjs) so isolation is based on the local import graph, not just the spec file body.
+Update [test-fast.mjs](tooling/scripts/test-fast.mjs) so isolation is based on the local import graph, not just the spec file body.
 
 The runner now:
 

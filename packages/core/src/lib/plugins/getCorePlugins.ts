@@ -8,7 +8,12 @@ import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
+import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { LengthPlugin } from './length';
+import {
+  type NavigationFeedbackConfig,
+  NavigationFeedbackPlugin,
+} from './navigation-feedback';
 import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
@@ -50,7 +55,9 @@ export const getCorePlugins = ({
     DebugPlugin as SlatePlugin<DebugConfig>,
     SlateExtensionPlugin,
     DOMPlugin,
+    NavigationFeedbackPlugin,
     HistoryPlugin,
+    InputRulesPlugin,
     OverridePlugin,
     ParserPlugin,
     maxLength
@@ -96,8 +103,10 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-export type CorePluginTransforms = SlateExtensionConfig['transforms'];
-export type CorePluginApi = SlateExtensionConfig['api'];
+export type CorePluginTransforms = SlateExtensionConfig['transforms'] &
+  NavigationFeedbackConfig['transforms'];
+export type CorePluginApi = SlateExtensionConfig['api'] &
+  NavigationFeedbackConfig['api'];
 
 export type DebugConfig = PluginConfig<
   'debug',

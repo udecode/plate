@@ -11,8 +11,10 @@ docs:
 
 ## Features
 
-- Insert and display dates within your text using inline date elements.
-- These dates can be easily selected and modified using a calendar interface.
+- Insert and display inline date elements in your text.
+- Pick and edit dates through a bundled calendar UI.
+- Store dates as a single `YYYY-MM-DD` value on `node.date`.
+- Serialize to `<date value="YYYY-MM-DD" />` in Markdown and MDX.
 
 </PackageInfo>
 
@@ -145,11 +147,15 @@ Check if a point is next to a specific node type.
 <API name="insert.date">
 <APIParameters>
   <APIItem name="date" type="string" optional>
-    The date string to insert in 'YYYY-MM-DD' format.
-    - **Default:** Current date
+    The date string to insert, in `YYYY-MM-DD` format. Input is normalized to that shape before it reaches the node.
+    - **Default:** Today's date as `YYYY-MM-DD`
   </APIItem>
   <APIItem name="options" type="InsertNodesOptions" optional>
     Options for inserting nodes.
   </APIItem>
 </APIParameters>
 </API>
+
+<Callout type="info">
+  **Note:** `DateElement` may render a friendlier label such as `Today` or a long-date string, but that is display-only. The stored node value is always the `YYYY-MM-DD` string.
+</Callout>

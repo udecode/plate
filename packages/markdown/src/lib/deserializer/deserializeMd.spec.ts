@@ -175,6 +175,26 @@ describe('deserializeMd', () => {
       },
     ]);
   });
+
+  it('preserves raw html blocks as editable source text paragraphs', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        '<figure class="hero"><img src="/image.png"></figure>'
+      )
+    ).toEqual([
+      {
+        children: [
+          {
+            text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
 });
 
 describe('markdownToAstProcessor', () => {

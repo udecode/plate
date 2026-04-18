@@ -5,13 +5,18 @@ describe('parseMediaUrl', () => {
     const result = parseMediaUrl('https://example.com/video', {
       urlParsers: [
         (): undefined => {},
-        () => ({ provider: 'video', url: 'https://cdn.example.com/embed/1' }),
+        () => ({
+          provider: 'video',
+          sourceUrl: 'https://example.com/video',
+          url: 'https://cdn.example.com/embed/1',
+        }),
         () => ({ provider: 'ignored', url: 'https://cdn.example.com/embed/2' }),
       ],
     });
 
     expect(result).toEqual({
       provider: 'video',
+      sourceUrl: 'https://example.com/video',
       url: 'https://cdn.example.com/embed/1',
     });
   });

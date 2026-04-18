@@ -1,6 +1,7 @@
 import {
   BaseAudioPlugin,
   BaseFilePlugin,
+  BaseMediaEmbedPlugin,
   BaseVideoPlugin,
 } from '../../../media/src/lib';
 
@@ -10,7 +11,12 @@ import { serializeMd } from './serializer';
 
 describe('media package surfaces', () => {
   const createMediaEditor = () =>
-    createTestEditor([BaseFilePlugin, BaseAudioPlugin, BaseVideoPlugin]);
+    createTestEditor([
+      BaseFilePlugin,
+      BaseAudioPlugin,
+      BaseMediaEmbedPlugin,
+      BaseVideoPlugin,
+    ]);
 
   it.each([
     {
@@ -38,6 +44,23 @@ describe('media package surfaces', () => {
         },
       ],
       title: 'round-trips audio nodes',
+    },
+    {
+      expected:
+        '<media_embed id="M7lc1UVf-VE" provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />\n',
+      input:
+        '<media_embed id="M7lc1UVf-VE" provider="youtube" sourceUrl="https://www.youtube.com/watch?v=M7lc1UVf-VE" src="https://www.youtube.com/embed/M7lc1UVf-VE" />',
+      output: [
+        {
+          children: [{ text: '' }],
+          id: 'M7lc1UVf-VE',
+          provider: 'youtube',
+          sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+          type: 'media_embed',
+          url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
+        },
+      ],
+      title: 'round-trips media embed nodes with normalized metadata',
     },
     {
       expected: '<video width={640} src="https://example.com/video.mp4" />\n',

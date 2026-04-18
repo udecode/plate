@@ -21,6 +21,9 @@ import { liftBlock } from './transforms/liftBlock';
 import { resetBlock } from './transforms/resetBlock';
 import { setValue } from './transforms/setValue';
 
+const NOOP_ON_NODE_CHANGE = () => {};
+const NOOP_ON_TEXT_CHANGE = () => {};
+
 export type SlateExtensionConfig = PluginConfig<
   'slateExtension',
   {
@@ -57,8 +60,8 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
   },
   key: 'slateExtension',
   options: {
-    onNodeChange: () => {},
-    onTextChange: () => {},
+    onNodeChange: NOOP_ON_NODE_CHANGE,
+    onTextChange: NOOP_ON_TEXT_CHANGE,
   },
 }).extendEditorTransforms(({ editor, getOption, tf }) => {
   const apply = tf?.apply ?? editor.tf.apply;
@@ -75,13 +78,12 @@ export const SlateExtensionPlugin = createTSlatePlugin<SlateExtensionConfig>({
     setValue: bindFirst(setValue, editor),
     apply(operation) {
       // Performance optimization: skip state capture if no handlers are registered
-      const noop = () => {};
       const hasNodeHandlers =
         editor.meta.pluginCache.handlers.onNodeChange.length > 0 ||
-        getOption('onNodeChange') !== noop;
+        getOption('onNodeChange') !== NOOP_ON_NODE_CHANGE;
       const hasTextHandlers =
         editor.meta.pluginCache.handlers.onTextChange.length > 0 ||
-        getOption('onTextChange') !== noop;
+        getOption('onTextChange') !== NOOP_ON_TEXT_CHANGE;
 
       if (!hasNodeHandlers && !hasTextHandlers) {
         apply(operation);

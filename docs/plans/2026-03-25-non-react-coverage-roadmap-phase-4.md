@@ -14,7 +14,7 @@ Freeze the last defensible non-React cleanup queue after the Phase 3 burn-down a
 ## Lock Rules
 
 - Phase: temporary non-React cut only.
-- Frozen threshold: use [2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv) as source of truth.
+- Frozen threshold: use [2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv](docs/plans/2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv) as source of truth.
 - Tier 1 is every remaining `score >= 5` file.
 - Tier 2 is optional cleanup from the best `score = 4` files below.
 - Keep the queue file-first.
@@ -29,33 +29,33 @@ Freeze the last defensible non-React cleanup queue after the Phase 3 burn-down a
 
 ## Tier 1: Execute Now
 
-1. `[done]` `5` [docxListToList.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/docxListToList.ts)
-2. `[done]` `5` [BaseCodePlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseCodePlugin.ts)
-3. `[done]` `5` [BaseStrikethroughPlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts)
-4. `[done]` `5` [BaseItalicPlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseItalicPlugin.ts)
-5. `[done]` `5` [BaseUnderlinePlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts)
+1. `[done]` `5` [docxListToList.ts](packages/docx/src/lib/docx-cleaner/utils/docxListToList.ts)
+2. `[done]` `5` [BaseCodePlugin.ts](packages/basic-nodes/src/lib/BaseCodePlugin.ts)
+3. `[done]` `5` [BaseStrikethroughPlugin.ts](packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts)
+4. `[done]` `5` [BaseItalicPlugin.ts](packages/basic-nodes/src/lib/BaseItalicPlugin.ts)
+5. `[done]` `5` [BaseUnderlinePlugin.ts](packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts)
 
 ## Tier 2: Optional Cleanup
 
-1. `[done]` `4` [getSelectedCellsBorders.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getSelectedCellsBorders.ts)
-2. `[done]` `4` [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts)
-3. `[done]` `4` [DebugPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/debug/DebugPlugin.ts)
-4. `[done]` `4` [get-package-manager.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/get-package-manager.ts)
-5. `[done]` `4` [getCellIndices.ts](/Users/zbeyens/git/plate/packages/table/src/lib/utils/getCellIndices.ts)
-6. `[done]` `4` [BaseBoldPlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseBoldPlugin.ts)
-7. `[done]` `4` [deleteText.ts](/Users/zbeyens/git/plate/packages/slate/src/internal/transforms/deleteText.ts)
+1. `[done]` `4` [getSelectedCellsBorders.ts](packages/table/src/lib/queries/getSelectedCellsBorders.ts)
+2. `[done]` `4` [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts)
+3. `[done]` `4` [DebugPlugin.ts](packages/core/src/lib/plugins/debug/DebugPlugin.ts)
+4. `[done]` `4` [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts)
+5. `[done]` `4` [getCellIndices.ts](packages/table/src/lib/utils/getCellIndices.ts)
+6. `[done]` `4` [BaseBoldPlugin.ts](packages/basic-nodes/src/lib/BaseBoldPlugin.ts)
+7. `[done]` `4` [deleteText.ts](packages/slate/src/internal/transforms/deleteText.ts)
 
 ## Deferred By Design
 
-- `[deferred]` score-4 Slate DOM-editor helpers like [hasDOMNode.ts](/Users/zbeyens/git/plate/packages/slate/src/internal/dom-editor/hasDOMNode.ts)
+- `[deferred]` score-4 Slate DOM-editor helpers like [hasDOMNode.ts](packages/slate/src/internal/dom-editor/hasDOMNode.ts)
   Reason: DOM-only seam. Real code, wrong phase.
-- `[deferred]` score-4 schema dust like [settings.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/schemas/settings.ts)
+- `[deferred]` score-4 schema dust like [settings.ts](packages/docx-io/src/lib/internal/schemas/settings.ts)
   Reason: low-signal data/schema constants. Bad ROI.
-- `[deferred]` [html-to-docx.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/html-to-docx.ts)
+- `[deferred]` [html-to-docx.ts](packages/docx-io/src/lib/internal/html-to-docx.ts)
   Reason: giant serializer sludge. Bad final non-React spend.
-- `[deferred]` [BasePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugin/BasePlugin.ts) and similar core foundation slabs
+- `[deferred]` [BasePlugin.ts](packages/core/src/lib/plugin/BasePlugin.ts) and similar core foundation slabs
   Reason: broad rearchitecture target, not a good late coverage slice.
-- `[deferred]` utility dust like [isTouchEvent.ts](/Users/zbeyens/git/plate/packages/resizable/src/utils/isTouchEvent.ts)
+- `[deferred]` utility dust like [isTouchEvent.ts](packages/resizable/src/utils/isTouchEvent.ts)
   Reason: uncovered, but not worth touching.
 
 ## Update Rule

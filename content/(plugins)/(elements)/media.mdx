@@ -44,6 +44,7 @@ docs:
 ### Media Features
 - Editable captions
 - Resizable elements
+- Embed URLs are normalized into `url`, `provider`, and `id` props, with an optional `sourceUrl` preserved for reversible editing.
 
 ### Upload
 - **Multiple upload methods**:
@@ -192,6 +193,10 @@ const editor = createPlateEditor({
 - `withComponent`: Assigns custom components to render each media type.
 - `options.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
 - `render.afterEditable`: Renders upload progress toast outside the editor.
+
+<Callout type="info">
+  **Note:** When serialized to Markdown or MDX, embeds persist the canonical `url`, `provider`, and `id`, plus an optional `sourceUrl` so edits remain reversible. Allowlisted provider snippets (e.g. YouTube, Tweet) are reduced to canonical URLs on paste. Raw `<script>` or custom embed chrome is out of scope — add your own rules if you need to preserve it.
+</Callout>
 
 ### Caption Support
 

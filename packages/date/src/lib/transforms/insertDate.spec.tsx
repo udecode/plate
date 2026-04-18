@@ -27,7 +27,7 @@ describe('insertDate', () => {
           { text: 'hi' },
           {
             children: [{ text: '' }],
-            date: 'Mon Mar 23 2026',
+            date: '2026-03-23',
             type: KEYS.date,
           },
           { text: ' ' },
@@ -62,7 +62,7 @@ describe('insertDate', () => {
       children: [
         { text: 'x' },
         {
-          date: 'Mon Mar 23 2026',
+          date: '2026-03-23',
           type: 'custom-date',
         },
         { text: ' ' },
@@ -97,7 +97,7 @@ describe('insertDate', () => {
           { text: 'a' },
           {
             children: [{ text: '' }],
-            date: 'Mon Mar 23 2026',
+            date: '2026-03-23',
             type: KEYS.date,
           },
           { text: ' b' },
@@ -105,5 +105,35 @@ describe('insertDate', () => {
         type: KEYS.p,
       },
     ]);
+  });
+
+  it('preserves non-normalizable input on the raw fallback field', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseDatePlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      value: [
+        {
+          children: [{ text: 'x' }],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    insertDate(editor, { date: 'sometime next week' });
+
+    expect(editor.children[0]).toMatchObject({
+      children: [
+        { text: 'x' },
+        {
+          rawDate: 'sometime next week',
+          type: KEYS.date,
+        },
+        { text: ' ' },
+      ],
+      type: KEYS.p,
+    });
   });
 });

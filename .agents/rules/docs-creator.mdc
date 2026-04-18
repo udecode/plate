@@ -1,0 +1,418 @@
+---
+description: Create or update Plate docs with conversational voice, lane-aware structure, explicit ownership, and code-backed accuracy. North star is `docs/solutions/style.md`. Use for plugin pages, guides, install docs, serialization docs, API docs, and specs — anywhere both humans and agents need a clear, readable source of truth.
+---
+
+# Docs Creator
+
+North star: `docs/solutions/style.md`. Required reading. Every rule below collapses to "docs that teach humans AND parse cleanly for agents."
+
+Most bad Plate docs fail the same way: reference dump instead of a working path, blurred ownership, missing "why", vibes instead of code. This skill kills that drift.
+
+## Who owns what
+
+`docs-creator` owns shared docs law:
+
+- voice and tone
+- information order
+- lane selection
+- ownership clarity
+- anti-slop rules
+- agent affordances
+
+`docs-plugin` owns plugin-page execution only:
+
+- kit/manual section order
+- plugin/component/tooling scaffolding
+
+Plugin pages: load both. `docs-creator` first, `docs-plugin` second.
+
+## Read First
+
+Before writing, read only what actually grounds the page:
+
+- the target doc
+- nearest sibling docs in the same lane
+- the source code for the behavior or API being documented
+- `docs/solutions/style.md` — non-negotiable
+- strongest baselines:
+  - `content/index.mdx`
+  - `content/installation.mdx`
+  - `content/installation/plate-ui.mdx`
+  - `content/(guides)/plugin-rules.mdx`
+  - `content/(guides)/plugin-input-rules.mdx`
+  - `content/(plugins)/(serializing)/html.mdx`
+  - `content/(plugins)/(serializing)/markdown.mdx`
+  - `content/(plugins)/(ai)/ai.mdx`
+- relevant `docs/solutions/*` learnings when the lane touches ownership, spec
+  truth, docs drift, or authoring doctrine
+
+Start from code plus the best baseline doc. Not from old prose alone.
+
+## Voice
+
+Write the way `style.md` writes. This is where docs usually go wrong.
+
+- **Conversational.** Use "you" and "we". "Let's start with...", "We'll pass...", "You can now...".
+- **Progressive.** One new idea per paragraph. Never land an advanced pattern before the fundamentals.
+- **Why before what.** Every non-obvious choice gets a one-line reason.
+- **Guide, don't just show.** One sentence of context before every code block. Code is never a substitute for prose.
+- **Celebrate completion.** End a section with a landing: "Done.", "That's it.", or one line on what the reader now has.
+- **Real code.** Never write placeholder comments (`// your logic here`). Write what the reader would actually write.
+- **Reinforce in tiers.** Concept in prose → example in code → recap in a table if it's an enum or option matrix.
+
+Shadcn-terse vs conversational: **the tension resolves cleanly.** Prose is conversational. Code blocks and API reference sections are shadcn-terse. Don't mix the two tones within a section.
+
+Banned openings:
+
+- "In this guide, we will explore..."
+- "This comprehensive guide..."
+- "This robust, powerful, seamless..."
+- Any marketing adjective pile before the reader sees the problem.
+
+## Structural Rules
+
+### Opening (above the first `##`)
+
+Three sentences max:
+
+1. What the page is about and what it does for the reader.
+2. If a sibling concept exists, one inline sentence distinguishing them. Plain prose — not a Callout.
+3. One sentence on what the guide will walk through.
+
+Nothing else above the first `##`. No feature brag, no marketing adjectives, no TOC cosplay.
+
+### Ownership
+
+- Always state where behavior lives: core runtime, feature package, kit, app-local copied code.
+- If the page says "the kit also adds X", the ownership boundary matters — surface it in a table or callout.
+- For every named API, the reader should be able to tell you which package/layer owns it within 10 seconds of scanning.
+
+### Quick path first
+
+- The reader does the thing before hitting the appendix.
+- The kit-based path is the default quick path in this repo.
+- Manual/headless path comes after, labelled as such.
+
+### Reference last
+
+- Exact helper signatures, option matrices, primitives → `## API Reference` at the end.
+- Don't sprinkle precise type signatures across tutorial sections. It kills flow.
+- API Reference = ProseMirror-style exactness. Tutorial = Slate-style narrative.
+
+### Headings agents can find
+
+- Use stable, predictable heading names matching the real API or concept in code.
+- `### createMarkInputRule` beats "Creating a mark rule".
+- `## Kit Usage` / `## Manual Usage` / `## API Reference` are stable slugs across the repo. Don't invent synonyms.
+- Same lane → same heading names. Cross-page consistency matters for agent navigation.
+
+### Page length
+
+- If the page passes ~300 lines, add an anchor list or "On this page" jump block near the top.
+- If the page passes ~600 lines, consider splitting. Ask first.
+
+## Code Example Rules
+
+- Repo-backed examples only. If a kit does what you're teaching, cite the exact kit file.
+- Include real imports. Show `platejs` vs `platejs/react` vs `@platejs/*` paths explicitly.
+- Use `// ...otherPlugins,` only when the omission is obvious.
+- No placeholder comments (`// your logic here`, `// Your validation logic`).
+- `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
+- `title="filename.tsx"` when file context matters.
+
+Inline code hygiene:
+
+- CommonMark matches inline-code delimiters by backtick-run length. Literal `` ` ``` ` `` inline breaks rendering.
+- To show triple backticks, rephrase ("a triple-backtick fence") or use a fenced block.
+
+## Links
+
+- Link the specific leaf page, not a broad hub.
+- Don't link the same target three times in one section.
+- If you're displacing an old page, **do not link back to it** — it reinforces the page you're killing.
+- Inline links on the exact concept being referenced.
+- When a page has a close sibling concept, link the sibling near the top.
+
+## Demos and Previews
+
+- `<ComponentPreview name="..." />` only when the demo exists in the registry.
+- Never fake a demo name to balance a page.
+- If the demo lands after the doc, ship the doc without the preview and add it when real.
+
+## Agent Affordances
+
+Agents specifically benefit from:
+
+- **Exact names in prose.** API names, file paths, package specifiers — spelled out, not paraphrased.
+- **Predictable heading slugs.** Same names for the same sections across similar pages.
+- **Real imports.** Import statements complete enough to copy-paste and run.
+- **No invented APIs.** If the source code does not ship it, it does not exist.
+- **Tables for enums and variants.** Bullet-buried enums get missed.
+- **Disambiguation on near-name siblings.** If `FooPlugin` and `FooClassicPlugin` coexist, the first sentence says which one this page is about.
+
+## Anti-Slop Rules
+
+Do not:
+
+- Use changelog voice: "previously", "now supports", "has been removed", "new feature", "updated to".
+- Open with generic fluff or marketing adjectives ("comprehensive", "robust", "seamless", "powerful", "first-class").
+- Brag in bullet lists before the reader can do anything.
+- Dump a full API catalog before the happy path.
+- Blur package-owned behavior with app-local copied code.
+- Flatten adjacent lanes because they smell related.
+- Hide critical environment limits halfway down the page.
+- Invent examples that skip required imports or dependent plugins.
+- Paste giant code walls without explaining why the code matters.
+- Duplicate whole doc blocks when a precise link would do.
+- Keep stale routes, file paths, imports, or package names in prose.
+- Write placeholder comments (`// your logic here`).
+- Claim a model or behavior the runtime does not implement.
+- End with a redundant "Summary" or "Recap" — the celebrate-completion line is enough.
+- Ship a `<ComponentPreview>` pointing at a demo that does not exist.
+- Reference a route you're about to delete or displace.
+
+Silence in the source code is a gap, not an agreement.
+
+## Workflow
+
+1. Classify the lane.
+2. Lock the owner map.
+3. Define the fastest success path.
+4. Gather 1–3 real examples from code.
+5. Write the quick path.
+6. Add deeper explanation and boundaries.
+7. Add API or reference material only where it earns its keep.
+8. Trim repetition, vague adjectives, and fake completeness.
+9. Verify every claim against the current repo.
+
+## Lane Map
+
+Use the page shape that matches the job, not the one you wrote last time.
+
+| Lane | Job | What readers need first |
+| --- | --- | --- |
+| Install / get-started | help someone adopt Plate | choose a path, install, next step |
+| Guide / system | teach a runtime or concept | mental model, ownership, quick start |
+| Plugin / feature | teach one capability | what it does, quickest setup, manual path |
+| Serialization / conversion | explain import/export or round-trip | direction split, environment constraints |
+| Workflow / AI | explain multi-surface flows | setup path, runtime flow, optional UI |
+| API reference | explain an exact surface | short purpose, exact contract, caveats |
+| Spec / law / behavior | lock a contract | model, ownership, evidence, explicit gaps |
+
+## Lane Templates
+
+### Install / Get Started
+
+Entry docs like `content/index.mdx`, `content/installation.mdx`.
+
+Required shape:
+
+1. Short opening: what Plate is or what the guide does.
+2. Recommended path first.
+3. Alternative paths after.
+4. Next steps / where to go next.
+
+Voice moves:
+
+- Choose for the reader when there's an obvious best path.
+- "Let's start with the fastest setup" beats "Several setup options are available".
+- Keep branching shallow.
+- Link the exact next leaf, not a vague hub.
+
+### Guide / System
+
+Pages like `plugin-rules.mdx`, `plugin-input-rules.mdx`.
+
+Required shape:
+
+1. Opening (3 sentences max, per Structural Rules).
+2. Immediate inline disambiguation if a sibling concept exists.
+3. Ownership model.
+4. Quick start.
+5. Deeper mechanics.
+6. API reference last.
+
+Voice moves:
+
+- Open with what the system is and what it is not.
+- Ownership table early, not buried in prose.
+- Happy path before the full primitive catalog.
+- If something is explicit, say "explicit" — never imply hidden defaults.
+- End each mechanics section with a one-line landing.
+
+### Plugin / Feature
+
+Feature pages. Pair with `docs-plugin`.
+
+Required shape:
+
+1. Short opening or preview.
+2. What the feature does (one paragraph, not a brag list).
+3. Fastest setup path (kit).
+4. Manual / headless path.
+5. Real configuration details.
+6. API or transforms only if they exist and earn their keep.
+
+Voice moves:
+
+- Kit path is the quick path. Say so.
+- Keep the headless package contract explicit even when the fast path uses UI.
+- Components are render examples, not the feature itself.
+- Never document plugin APIs or transforms the source does not actually ship.
+
+### Serialization / Conversion
+
+Pages like `html.mdx`, `markdown.mdx`.
+
+Required shape:
+
+1. Explain the two directions up front (A→B and B→A).
+2. Split the page by direction.
+3. State environment constraints (server vs client, static vs React) before the first example.
+4. Show extension points only after the base path is clear.
+5. Put the heavy API reference late.
+
+Voice moves:
+
+- "A to B" and "B to A" never share a section.
+- Call out server/client/static/React-only boundaries early — in a Callout if required.
+- Use correct imports for each environment.
+- If round-trip behavior has limits, say so where the user will hit them.
+
+### Workflow / AI
+
+Pages like `ai.mdx`.
+
+Required shape:
+
+1. What the feature enables (one paragraph).
+2. Fastest setup path.
+3. Runtime architecture or flow.
+4. Client vs server split.
+5. Optional UI surfaces.
+6. Utilities and API reference.
+
+Voice moves:
+
+- Separate required runtime pieces from optional UI sugar. Explicitly.
+- Multi-surface flows stay explicit: editor, route, provider, streaming, transforms.
+- If the page is passing ~300 lines, add an on-page jump list near the top.
+- Don't dump every helper until the main workflow is already clear.
+
+### API Reference
+
+When the page is mostly contract, not onboarding.
+
+Required shape:
+
+1. Short purpose paragraph.
+2. Surface grouping.
+3. Exact parameters, options, returns.
+4. Caveats and constraints.
+
+Voice moves:
+
+- No tutorial cosplay. Shadcn-terse.
+- Still one sentence on when to use the API.
+- Use `<API>` blocks or a consistent table format.
+- Examples minimal and exact.
+
+### Spec / Law / Behavior
+
+Behavior-spec, law, protocol docs.
+
+Required shape:
+
+1. Goal or contract.
+2. Explicit owner map.
+3. Model before UX chrome.
+4. Evidence or source backing.
+5. Clear gap markers where evidence is missing.
+6. Reference appendix only after the contract is clear.
+
+Voice moves:
+
+- Lock the node model and affinity before writing hover, toolbar, or interaction chrome.
+- Treat silence in references as a gap, not an agreement.
+- Prefer binary wording over vibes.
+- If the docs claim behavior the runtime does not implement, the docs are wrong until the code changes.
+
+## Writing Voice Examples
+
+**Opening — bad:**
+
+> This guide provides a comprehensive overview of input rules. Input rules are a powerful feature of Plate that enable users to define custom syntax transformations.
+
+**Opening — good:**
+
+> Plugin Input Rules are Plate's runtime for typed editor conversions. As you type, paste, or press Enter, the first matching rule transforms the editor on the spot — `# ` becomes a heading, `**bold**` turns on bold, a pasted URL becomes a link.
+
+---
+
+**Config example — bad:**
+
+> Here is an example of configuring the plugin:
+>
+> ```tsx
+> Plugin.configure({ /* options */ });
+> ```
+
+**Config example — good:**
+
+> Reach for `.configure()` when you need more than the default behavior. Let's add a keyboard shortcut:
+>
+> ```tsx
+> Plugin.configure({ shortcuts: { toggle: 'mod+alt+s' } });
+> ```
+
+---
+
+**Changelog drift — bad:**
+
+> The API has been updated. Previously, options were passed as strings; now they support objects.
+
+**Changelog drift — good:**
+
+> Options are passed as objects. Example: `{ variant: 'paste' }`.
+
+---
+
+**Completion — bad:**
+
+> This concludes the overview. You have now been presented with the available options for configuring input rules.
+
+**Completion — good:**
+
+> Done. You now have a working markdown shortcut — type `# ` and watch the heading land.
+
+## Structure & Formatting
+
+- `<Steps>` for real multi-step procedures.
+- `###` inside `<Steps>` for sub-steps.
+- Code blocks with `title="..."` when file context matters.
+- `showLineNumbers` + `{n-m}` line highlights when a large snippet needs focus.
+- Tables for option matrices, ownership boundaries, or variant comparisons.
+- Callouts for:
+  - environment constraints
+  - security warnings
+  - "this is explicit, not automatic" guidance
+
+Do not force `<ComponentPreview>`, `<PackageInfo>`, or a giant feature list just because another page had one. Every section earns its place.
+
+## Verification Checklist
+
+Before finishing a docs change:
+
+- `pnpm build:contentlayer` parses the MDX cleanly.
+- Every named API, option, transform, and component exists in the source.
+- Every import path matches the current repo/package layout.
+- Every ownership claim matches the code.
+- Every link target or route is real and not about to be removed.
+- Every `<ComponentPreview>` name points at a demo that exists.
+- Opening lands in 3 sentences or fewer.
+- A first-time reader could complete the happy path before reaching `## API Reference`.
+- No placeholder comments, no `TODO`, no dead anchors.
+- No changelog voice ("previously", "now supports", "has been removed").
+- Neighboring lanes are split cleanly enough that a reader can answer "where does this behavior live?".
+
+If the page still reads like stitched-together notes, it is not done.

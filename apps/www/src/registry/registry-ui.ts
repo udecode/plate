@@ -1260,7 +1260,7 @@ export const uiNodes: Registry['items'] = [
       examples: ['basic-blocks-demo', 'basic-nodes-pro'],
     },
     name: 'heading-node',
-    registryDependencies: [],
+    registryDependencies: ['highlight-style'],
     title: 'Heading Element',
     type: 'registry:ui',
   },

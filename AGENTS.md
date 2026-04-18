@@ -3,7 +3,7 @@
 
 <!-- Source: .agents/AGENTS.md -->
 
-- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `bun install` to sync. Never edit `SKILL.md` directly.
+- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `pnpm install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
@@ -39,6 +39,7 @@
 - If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
 - `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
+- For `react-dnd` / DnD fixes, do not treat a follow-up Bun `Invalid hook call`, `resolveDispatcher()`, or mixed `.bun` + `.pnpm` React stack as proof the DnD fix is wrong. In this repo, run `pnpm run reinstall` once before reopening the diagnosis; that failure shape is usually local env rot, not duplicate deps or broken DnD logic.
 
 ## Skill
 
@@ -49,6 +50,7 @@ Use those skills when relevant:
 - `tdd`
 - `ce-review` when doing a code review
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
+- @.agents/rules/editor-spec.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
 
 Plate-specific CE exclusions:
 
@@ -75,7 +77,7 @@ When using the following skills, override the default behavior.
 - Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
 - Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
 - If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
-  - [Add browser learning]
+  - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 `ce-*`:
 

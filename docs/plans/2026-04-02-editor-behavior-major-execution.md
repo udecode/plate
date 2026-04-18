@@ -3,8 +3,8 @@
 ## Task
 
 - Source of truth:
-  - [/Users/zbeyens/git/plate/.omx/plans/prd-editor-behavior-major.md](/Users/zbeyens/git/plate/.omx/plans/prd-editor-behavior-major.md)
-  - [/Users/zbeyens/git/plate/.omx/plans/test-spec-editor-behavior-major.md](/Users/zbeyens/git/plate/.omx/plans/test-spec-editor-behavior-major.md)
+  - [.omx/plans/prd-editor-behavior-major.md](.omx/plans/prd-editor-behavior-major.md)
+  - [.omx/plans/test-spec-editor-behavior-major.md](.omx/plans/test-spec-editor-behavior-major.md)
 - Goal: execute the breaking markdown-first editor-behavior major, starting with Batch 1 structural ownership.
 - Constraints:
   - prioritize breaking cleanup over minor new features
@@ -15,16 +15,25 @@
 
 ## Phases
 
-| Phase | Status | Notes |
-| --- | --- | --- |
-| Ground approved PRD + test spec | complete | `.omx` plan is the execution contract |
-| Mine existing learnings + current test seams | complete | blockquote/container lessons loaded |
-| Batch 1 red tests | complete | quote/list structural ownership locked |
-| Batch 1 implementation | complete | `liftBlock` seam + blockquote rewiring landed |
-| Batch 2 tab ownership cleanup | complete | plain and quoted paragraph `Tab` stay editor-owned through indent; reverse `Tab` exhausts paragraph indent before quote lift |
-| Existing-feature markdown-native parity batch | complete | table round-trip, nested quote coverage, heading coverage, ordered-list restart coverage, image/title fixes, and affinity policy landed |
-| Full existing-feature matrix expansion | in_progress | markdown-native gate is closed, but the broader existing-feature gate is reopened around Notion / Docs / styling / collaboration surfaces |
-| Verification + review | complete | package tests/build/typecheck/lint and browser checks green; `apps/www` full type lane remains separately noisy |
+| Phase                                         | Status   | Notes                                                                                                                                                                                    |
+| --------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ground approved PRD + test spec               | complete | `.omx` plan is the execution contract                                                                                                                                                    |
+| Mine existing learnings + current test seams  | complete | blockquote/container lessons loaded                                                                                                                                                      |
+| Batch 1 red tests                             | complete | quote/list structural ownership locked                                                                                                                                                   |
+| Batch 1 implementation                        | complete | `liftBlock` seam + blockquote rewiring landed                                                                                                                                            |
+| Batch 2 tab ownership cleanup                 | complete | plain and quoted paragraph `Tab` stay editor-owned through indent; reverse `Tab` exhausts paragraph indent before quote lift                                                             |
+| Existing-feature markdown-native parity batch | complete | table round-trip, nested quote coverage, heading coverage, ordered-list restart coverage, image/title fixes, and affinity policy landed                                                  |
+| Full existing-feature matrix expansion        | complete | broader existing-feature gate was reopened, then closed after the block-editor-native, styling/layout, media/caption, and collaboration lanes were either covered or explicitly deferred |
+| Verification + review                         | complete | package tests/build/typecheck/lint and browser checks green; `apps/www` full type lane remains separately noisy                                                                          |
+
+## Current Status
+
+This is a historical execution note.
+
+Current gate truth lives in
+[docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md),
+which currently says the active major-release gate is closed and the remaining
+lanes are release-prep or later-release follow-up.
 
 ## Findings
 
@@ -144,10 +153,10 @@
 - 2026-04-02: Re-read `ralph`, `major-task`, `planning-with-files`, `tdd`, and `learnings-researcher` instructions.
 - 2026-04-02: Re-read the approved `.omx` PRD and test-spec artifacts.
 - 2026-04-02: Loaded relevant prior artifacts:
-  - `/Users/zbeyens/git/plate/docs/plans/4898-blockquote-markdown-first.md`
-  - `/Users/zbeyens/git/plate/docs/solutions/logic-errors/2026-04-01-markdown-blockquotes-must-round-trip-as-container-blocks.md`
-  - `/Users/zbeyens/git/plate/docs/solutions/ui-bugs/2026-04-02-blockquote-transforms-must-keep-selection-inside-the-new-quote.md`
-  - `/Users/zbeyens/git/plate/docs/solutions/ui-bugs/2026-04-02-blockquote-autoformat-must-wrap-nested-quotes.md`
+  - `docs/plans/4898-blockquote-markdown-first.md`
+  - `docs/solutions/logic-errors/2026-04-01-markdown-blockquotes-must-round-trip-as-container-blocks.md`
+  - `docs/solutions/ui-bugs/2026-04-02-blockquote-transforms-must-keep-selection-inside-the-new-quote.md`
+  - `docs/solutions/ui-bugs/2026-04-02-blockquote-autoformat-must-wrap-nested-quotes.md`
 - 2026-04-02: Added Batch 1 red tests in core override, blockquote, and list seams.
 - 2026-04-02: Added `editor.tf.liftBlock(...)` and rewired quote Enter/Backspace to use one-level lift semantics.
 - 2026-04-02: Corrected `Tab` ownership to follow Typora-style editor-owned paragraph indent instead of letting plain `Tab` fall out of the editor.
@@ -195,3 +204,4 @@
 - 2026-04-03: Added direct markdown package round-trip coverage for column groups in `packages/markdown/src/lib/columnSurface.spec.ts` and removed the duplicate `audit` column rows from the editing spec.
 - 2026-04-03: Reclassified the media + caption lane as mostly coverage/spec debt after the MDX attribute-expression serializer bug was fixed; remaining work is per-type selection/deletion policy rather than a broad runtime seam.
 - 2026-04-03: Final matrix re-evaluation: deferred toggle plus the full collaboration/editor-only lane, marked the active major-release gate closed, and reclassified the remaining partial rows as non-blocking follow-up.
+- 2026-04-08: Reconsolidated roadmap truth with the parity matrix and marked this execution note as historical instead of the current gate source.

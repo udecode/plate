@@ -669,6 +669,29 @@ export const demoExamples: Registry['items'] = (
     },
     {
       description:
+        'GFM footnote references and definitions as dedicated editor nodes.',
+      files: [
+        { path: 'examples/demo.tsx', type: 'registry:example' },
+        {
+          path: 'examples/values/footnote-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: {
+        docs: [
+          {
+            route: '/docs/footnote',
+            title: 'Footnote',
+          },
+        ],
+      },
+      name: 'footnote-demo',
+      registryDependencies: ['editor-kit', 'highlight-style'],
+      title: 'Footnote',
+      type: 'registry:example',
+    },
+    {
+      description:
         'Implements draggable functionality for editor blocks, including drag handles and drop indicators.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },

@@ -284,9 +284,6 @@ importers:
       '@platejs/ai':
         specifier: workspace:^
         version: link:../../packages/ai
-      '@platejs/autoformat':
-        specifier: workspace:^
-        version: link:../../packages/autoformat
       '@platejs/basic-nodes':
         specifier: workspace:^
         version: link:../../packages/basic-nodes
@@ -341,6 +338,9 @@ importers:
       '@platejs/floating':
         specifier: workspace:^
         version: link:../../packages/floating
+      '@platejs/footnote':
+        specifier: workspace:^
+        version: link:../../packages/footnote
       '@platejs/indent':
         specifier: workspace:^
         version: link:../../packages/indent
@@ -806,22 +806,6 @@ importers:
         specifier: workspace:^
         version: link:../plate
 
-  packages/autoformat:
-    dependencies:
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
   packages/basic-nodes:
     dependencies:
       react-compiler-runtime:
@@ -1265,6 +1249,22 @@ importers:
         specifier: workspace:^
         version: link:../plate
 
+  packages/footnote:
+    dependencies:
+      '@platejs/combobox':
+        specifier: workspace:^
+        version: link:../combobox
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@19.2.4)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
+
   packages/indent:
     dependencies:
       react-compiler-runtime:
@@ -1363,6 +1363,9 @@ importers:
 
   packages/markdown:
     dependencies:
+      '@platejs/date':
+        specifier: workspace:*
+        version: link:../date
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1400,6 +1403,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/footnote':
+        specifier: workspace:*
+        version: link:../footnote
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
@@ -1409,6 +1415,9 @@ importers:
       platejs:
         specifier: workspace:^
         version: link:../plate
+      remark-emoji:
+        specifier: 5.0.1
+        version: 5.0.1
       remark-gfm:
         specifier: 4.0.1
         version: 4.0.1

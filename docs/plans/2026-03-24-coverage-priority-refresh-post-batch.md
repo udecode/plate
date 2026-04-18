@@ -33,6 +33,6 @@ Rerun fresh repo coverage after the recent coverage batch and regenerate the non
 
 ## Completed Outputs
 
-- [2026-03-24-coverage-priority-map-refresh-post-batch.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-map-refresh-post-batch.md)
-- [2026-03-24-coverage-priority-packages-refresh-post-batch.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-refresh-post-batch.tsv)
-- [2026-03-24-coverage-priority-files-refresh-post-batch.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-refresh-post-batch.tsv)
+- [2026-03-24-coverage-priority-map-refresh-post-batch.md](docs/plans/2026-03-24-coverage-priority-map-refresh-post-batch.md)
+- [2026-03-24-coverage-priority-packages-refresh-post-batch.tsv](docs/plans/2026-03-24-coverage-priority-packages-refresh-post-batch.tsv)
+- [2026-03-24-coverage-priority-files-refresh-post-batch.tsv](docs/plans/2026-03-24-coverage-priority-files-refresh-post-batch.tsv)

@@ -9,7 +9,7 @@ status: completed
 
 ## Scope
 
-- Execute Tier 1 and Tier 2 from [2026-03-24-non-react-coverage-roadmap-phase-3.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-non-react-coverage-roadmap-phase-3.md).
+- Execute Tier 1 and Tier 2 from [2026-03-24-non-react-coverage-roadmap-phase-3.md](docs/plans/2026-03-24-non-react-coverage-roadmap-phase-3.md).
 - Keep the batch file-first.
 - Expand existing honest specs before inventing wrapper smoke junk.
 
@@ -23,10 +23,10 @@ status: completed
 
 ## Learnings Applied
 
-- Restore Bun spies in the same spec file or full-suite order lies. See [2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md).
-- Keep Bun module mock surfaces consistent across related specs. See [2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md).
-- Filtered Turbo typecheck can lie. Use the normal build-first flow, then serialize Turbo if it gets weird. See [2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md).
-- Markdown fallback tests should cover incomplete tails and void-block preservation. See [2026-03-14-markdown-incomplete-mdx-fallback-drops-void-blocks.md](/Users/zbeyens/git/plate/docs/solutions/logic-errors/2026-03-14-markdown-incomplete-mdx-fallback-drops-void-blocks.md).
+- Restore Bun spies in the same spec file or full-suite order lies. See [2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md](docs/solutions/test-failures/2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md).
+- Keep Bun module mock surfaces consistent across related specs. See [2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md](docs/solutions/test-failures/2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md).
+- Filtered Turbo typecheck can lie. Use the normal build-first flow, then serialize Turbo if it gets weird. See [2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md](docs/solutions/test-failures/2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md).
+- Markdown fallback tests should cover incomplete tails and void-block preservation. See [2026-03-14-markdown-incomplete-mdx-fallback-drops-void-blocks.md](docs/solutions/logic-errors/2026-03-14-markdown-incomplete-mdx-fallback-drops-void-blocks.md).
 
 ## Notes
 

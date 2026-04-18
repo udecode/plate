@@ -9,7 +9,7 @@ status: completed
 
 ## Goal
 
-Execute the locked full-repo roadmap from [2026-03-24-full-repo-coverage-roadmap.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-full-repo-coverage-roadmap.md) without inventing a new batch.
+Execute the locked full-repo roadmap from [2026-03-24-full-repo-coverage-roadmap.md](docs/plans/2026-03-24-full-repo-coverage-roadmap.md) without inventing a new batch.
 
 ## Phase Plan
 
@@ -22,7 +22,7 @@ Execute the locked full-repo roadmap from [2026-03-24-full-repo-coverage-roadmap
 
 ## Learnings Applied
 
-- Restore Bun spies in the same spec file or full-suite order lies. See [2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md).
+- Restore Bun spies in the same spec file or full-suite order lies. See [2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md](docs/solutions/test-failures/2026-03-24-spec-spies-must-be-restored-or-full-suite-order-breaks.md).
 - Keep React coverage file-first and seam-first. No wrapper smoke tests.
 
 ## Notes

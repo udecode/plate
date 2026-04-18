@@ -21,9 +21,14 @@ import {
   BaseCodeLinePlugin,
   BaseCodeSyntaxPlugin,
 } from '@platejs/code-block';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnoteReferencePlugin,
+} from '@platejs/footnote';
 import { BaseListPlugin } from '@platejs/list';
 import { BaseLinkPlugin } from '@platejs/link';
 import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -33,7 +38,13 @@ import { remarkMdx, remarkMention } from '../plugins';
 const markdownPlugin = MarkdownPlugin.configure({
   options: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
-    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+    remarkPlugins: [
+      remarkMath,
+      remarkGfm,
+      remarkEmoji as any,
+      remarkMdx,
+      remarkMention,
+    ],
   },
 });
 
@@ -62,6 +73,8 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseKbdPlugin,
       BaseListPlugin,
       BaseLinkPlugin,
+      BaseFootnoteReferencePlugin,
+      BaseFootnoteDefinitionPlugin,
       markdownPlugin,
       ...plugins,
     ],

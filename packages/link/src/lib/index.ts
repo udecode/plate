@@ -3,6 +3,7 @@
  */
 
 export * from './BaseLinkPlugin';
+export * from './LinkRules';
 export * from './withLink';
 export * from './transforms/index';
 export * from './utils/index';

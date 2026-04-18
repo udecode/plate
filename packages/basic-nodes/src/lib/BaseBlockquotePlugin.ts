@@ -1,13 +1,16 @@
 import {
   type Descendant,
+  type Path,
+  type SlateEditor,
+  type TElement,
+  createSlatePlugin,
   ElementApi,
   PathApi,
-  createSlatePlugin,
   KEYS,
 } from 'platejs';
 
 const normalizeBlockquoteChildren = (
-  editor: any,
+  editor: SlateEditor,
   children: Descendant[] = []
 ) => {
   const paragraphType = editor.getType(KEYS.p);
@@ -18,9 +21,9 @@ const normalizeBlockquoteChildren = (
     if (inlineNodes.length === 0) return;
 
     elements.push({
-      children: inlineNodes as any,
+      children: inlineNodes,
       type: paragraphType,
-    } as any);
+    } as Descendant);
     inlineNodes = [];
   };
 
@@ -54,9 +57,9 @@ const normalizeBlockquoteChildren = (
 };
 
 const isLiftableBlockquoteChild = (
-  editor: any,
-  node: any,
-  path: number[],
+  editor: SlateEditor,
+  node: TElement,
+  path: Path,
   blockquoteType: string
 ) => {
   const paragraphType = editor.getType(KEYS.p);
@@ -65,15 +68,15 @@ const isLiftableBlockquoteChild = (
 
   return !!editor.api.above({
     at: path,
-    match: (entryNode: any, entryPath: number[]) =>
+    match: (entryNode: TElement, entryPath: Path) =>
       entryPath.length < path.length && entryNode.type === blockquoteType,
   });
 };
 
 const shouldLiftOnDeleteStart = (
-  editor: any,
-  node: any,
-  path: number[],
+  editor: SlateEditor,
+  node: TElement,
+  path: Path,
   blockquoteType: string
 ) => {
   if (!isLiftableBlockquoteChild(editor, node, path, blockquoteType)) {
@@ -149,7 +152,7 @@ export const BaseBlockquotePlugin = createSlatePlugin({
             nextChildren.some((child, index) => child !== node.children[index]);
 
           if (shouldNormalizeChildren) {
-            editor.tf.replaceNodes(nextChildren as any, {
+            editor.tf.replaceNodes(nextChildren as Descendant[], {
               at: path,
               children: true,
             });
@@ -163,9 +166,9 @@ export const BaseBlockquotePlugin = createSlatePlugin({
         if (options.reverse) {
           const liftableBlocks = editor.api.blocks({
             mode: 'lowest',
-            match: (node, path) =>
-              !(node as any).indent &&
-              isLiftableBlockquoteChild(editor, node, path as number[], type),
+            match: (node: TElement, path: Path) =>
+              !(node as { indent?: unknown }).indent &&
+              isLiftableBlockquoteChild(editor, node, path, type),
           });
 
           if (liftableBlocks.length > 0) {

@@ -30,7 +30,7 @@ export function TocElementStatic(props: SlateElementProps) {
     <SlateElement {...props} className="mb-1 p-0">
       <div>
         {headingList.length > 0 ? (
-          headingList.map((item) => (
+          headingList.map((item: Heading) => (
             <Button
               key={item.title}
               variant="ghost"
@@ -116,7 +116,7 @@ export function TocElementDocx(props: SlateElementProps) {
         }}
       >
         {headingList.length > 0 ? (
-          headingList.map((item) => (
+          headingList.map((item: Heading) => (
             <p
               key={item.id}
               style={{

@@ -12,6 +12,7 @@ export const parseTwitterUrl = (url: string): EmbedUrlData | undefined => {
     return {
       id: match[TWITTER_ID_INDEX],
       provider: 'twitter',
+      sourceKind: 'url',
       url,
     };
   }

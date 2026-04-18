@@ -12,7 +12,7 @@ The target split stays:
 - `editor-protocol-matrix.md` = exhaustive scenario matrix
 - `markdown-parity-matrix.md` = family coverage gate
 - `markdown-editing-reference-audit.md` = external reference evidence
-- `editor-behavior-architecture.md` = long-horizon architecture
+- `docs/research/systems/editor-behavior-architecture.md` = long-horizon architecture
 - `references/*` = corpus inventories and usage
 
 ## Cleanup Rules

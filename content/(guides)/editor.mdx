@@ -181,6 +181,40 @@ By disabling this, certain plugins that rely on node IDs will not function prope
 - **[Table of Contents](/docs/toc)** - Needs heading IDs for navigation and scrolling
 - **[Toggle](/docs/toggle)** - Uses IDs to track which toggles are open/closed
 
+### Navigation Feedback
+
+Plate also includes a built-in navigation feedback plugin for "you landed here"
+UX after TOC jumps, footnote navigation, search jumps, and custom outline
+movement.
+
+This feature is enabled by default. You only need to touch the
+`navigationFeedback` option when you want to change the flash duration or turn
+the plugin off.
+
+#### Configuration
+
+```ts
+const editor = createPlateEditor({
+  navigationFeedback: {
+    duration: 1200,
+  },
+});
+```
+
+<Callout type="note">
+  The `NavigationFeedbackPlugin` is part of the core plugins and is
+  automatically included. Use `navigationFeedback` for normal configuration and
+  keep `rootPlugin.configurePlugin(...)` for advanced escape-hatch work.
+</Callout>
+
+#### Disabling Navigation Feedback
+
+```ts
+const editor = createPlateEditor({
+  navigationFeedback: false,
+});
+```
+
 ### Normalization
 
 Control whether the editor should normalize its content on initialization:
@@ -353,4 +387,3 @@ const editorExplicit = createPlateEditor<MyValue, typeof TablePlugin | typeof Li
   value,
 });
 ```
-

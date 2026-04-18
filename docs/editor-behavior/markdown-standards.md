@@ -8,8 +8,9 @@ It exists to stop two common failure modes:
 - treating editor behavior as whatever the current plugin implementation happens
   to do
 
-This file is intentionally written before the full Typora and Milkdown audit.
-It defines the methodology first so later reference digging has a stable target.
+This file records the methodology and authority model after the current
+reference pass. It exists so later behavior work does not drift back into
+guesswork.
 
 ## Goal
 
@@ -20,11 +21,13 @@ Define the standards process for Plate's markdown-first profile so we can:
 - drive TDD from stable spec IDs
 - justify breaking changes during the major release
 
-## North Stars
+## Reference Pools
 
 ### Typora
 
-Typora is the primary behavioral north star for markdown-native editing.
+Typora is a high-signal reference pool for many markdown-first surfaces.
+
+It is not a governing default owner for every markdown-native row.
 
 Use it for:
 
@@ -36,10 +39,38 @@ Use it for:
 - markdown-native marks
 - code
 - hard breaks
+- markdown-native click-to-edit behavior for links and image-like source syntax
+- footnote preview and reference navigation
+- HTML-block edit entry
+- clipboard text expectations for markdown-first editing
+- token-style TOC insertion
+
+### Obsidian
+
+Obsidian is a high-signal reference pool for dual-mode and
+note-linked-navigation surfaces.
+
+Use it for:
+
+- live preview vs source mode
+- link autocomplete for files, headings, and block references
+- rename-updating internal links
+- backlinks and unlinked mentions
+- outline-as-navigation chrome
+- markdown-workspace search chrome
+- block-reference product behavior
+- product constraints around inline footnotes in dual-mode editors
+
+Do not treat Obsidian as a broad default owner for:
+
+- plain markdown-native typing and structural keys
+- generic markdown-first source-entry behavior for rendered links, images, or
+  HTML blocks
+- low-level destructive-key law where Typora is stronger and more explicit
 
 ### Notion
 
-Notion is the primary behavioral north star for block-editor-native elements.
+Notion is a high-signal reference pool for many block-editor-native elements.
 
 Use it for:
 
@@ -50,21 +81,25 @@ Use it for:
 - TOC-like blocks
 - columns
 - media / file blocks
+- slash-style or block-menu insertion feel for non-markdown blocks
+- inline chip and page-reference interactions
 
 ### Google Docs
 
-Google Docs is the primary behavioral north star for document-style editing.
+Google Docs is a high-signal reference pool for document-style editing.
 
 Use it for:
 
 - table cell behavior
 - selection and multi-cell expectations
 - indentation and alignment feel
+- table row and column structure operations
+- document-navigation chrome such as outline-like heading jumps
 - comment / suggestion / review behavior
 
 ### GitHub
 
-GitHub is the primary product authority for GFM-only syntax and rendered
+GitHub is a high-signal product reference for GFM-only syntax and rendered
 semantics.
 
 Use it for:
@@ -75,12 +110,13 @@ Use it for:
 - GFM table syntax and rendered rules
 
 Do not use GitHub as the main WYSIWYG editing authority for generic text
-behavior. That still belongs to Typora for markdown-native editing and Google
-Docs for table-feel and document-feel.
+behavior. Those surfaces usually point toward Typora for markdown-native
+editing and Google Docs for table-feel and document-feel, but the concrete row
+still has to choose its own authority.
 
 ### Milkdown
 
-Milkdown is the open-source companion reference and architecture cross-check.
+Milkdown is the inspectable open-source cross-check.
 
 Use it to inspect:
 
@@ -93,9 +129,104 @@ Use it to inspect:
 Use this order when deciding Plate behavior.
 
 1. syntax spec
-2. strongest feature-family UX authority
-3. Milkdown as inspectable cross-check
-4. explicit fallback only when the others are silent or incompatible
+2. explicit surface definition and node model
+3. strongest surface-specific UX authority with real evidence
+4. inspectable cross-check and strongest adjacent precedent
+5. explicit fallback only when the others are silent or incompatible
+
+## Node Model And Affinity Requirement
+
+Every current feature family in the readable spec, parity matrix, and protocol
+docs must state:
+
+- node model:
+  - `block non-void`
+  - `block void atom`
+  - `inline non-void span`
+  - `inline void atom`
+  - `leaf mark`
+  - `text token`
+  - `overlay / no node`
+- affinity class when inline typing can cross its boundary:
+  - `directional`
+  - `hard`
+  - `outward`
+  - `none / n-a`
+
+Rules:
+
+- do not infer atomicity from UI chrome
+- do not infer voidness from DOM `contentEditable={false}`
+- use the editor node contract, not the rendered DOM trick
+- if a feature is non-void and participates in inline typing, the spec must say
+  which affinity class it uses
+- inline void atoms do not get link/mark affinity; they own navigation and
+  boundary delete as atoms instead
+
+## Candidate Reference Pools
+
+Do not treat this section as governing law.
+
+Use it to route a pass toward likely sources. Concrete sections and protocol
+rows still choose authority explicitly.
+
+- parse / serialize semantics:
+  - CommonMark for native markdown
+  - GFM spec plus GitHub Docs for GFM-only constructs
+  - local MDX contract only for intentionally local MDX round-trip
+- markdown-native typing, boundary, and source-expansion behavior:
+  - often Typora
+  - sometimes Milkdown as the stronger inspectable check
+- markdown-native interactive preview and navigation:
+  - often Typora for plain markdown-native spans, footnotes, image-source
+    editing, and HTML-block edit entry
+- source-preserving conversion behavior:
+  - often Typora for source-entry editing and explicit source-to-structure
+    conversion feel
+  - often Obsidian for conservative markdown-sensitive conversion pressure such
+    as selection-wrap-first delimiter handling
+  - often Milkdown as the inspectable cross-check for input-rule conversion
+    mechanics
+- mode architecture and note-linked navigation:
+  - often Obsidian
+  - sometimes Google Docs or Typora for narrower document-navigation pieces
+- search and navigation chrome:
+  - often Obsidian for markdown-workspace search, backlinks, outline, and
+    linked-note navigation
+  - often Google Docs for linear document outline and heading-jump behavior
+- navigation feedback after successful jumps:
+  - local shared contract
+  - informed by the strongest owner for the target surface
+- table navigation, selection, and structure:
+  - often Google Docs
+- block-editor-native shell behavior:
+  - often Notion
+- comments, suggestions, and review semantics:
+  - often Google Docs
+- clipboard:
+  - often Typora for general markdown-first copy / paste semantics
+  - often Google Docs when table or document-fidelity expectations are stronger
+- open-source cross-check:
+  - Milkdown
+- profile-adjacent options:
+  - Typora is often the primary reference for markdown shorthand and
+    markdown-delimiter autoformat
+  - Typora is often a useful reference for strict-mode and more aggressive
+    pair-on-type behavior
+  - Obsidian is often a useful reference for conservative markdown-sensitive
+    selection-wrap and live-preview-sensitive trigger behavior
+  - Milkdown is often a useful inspectable cross-check for input-rule-backed
+    trigger behavior
+  - mainstream typographic norms are useful for smart quotes and punctuation
+    substitutions
+  - local current contract may temporarily own thinner symbol-substitution
+    tables when stronger editor-level proof is absent
+  - `[text](url)` automd and math delimiter triggers belong with
+    source-preserving conversion behavior, not with plain mark or
+    text-substitution autoformat
+- fallback:
+  - explicit Plate decision only after the stronger refs for the concrete
+    surface are silent or incompatible
 
 ### 1. Syntax spec
 
@@ -106,15 +237,21 @@ For parse and serialize semantics, prefer the syntax spec first:
 - LaTeX / KaTeX-style math delimiter conventions where explicitly adopted
 - MDX where Plate intentionally uses MDX for custom round-trip support
 
-### 2. Strongest feature-family UX authority
+### 2. Strongest surface-specific UX authority
 
-Pick the most standard or popular reference for the feature family:
+Pick the strongest reference for the concrete surface you are actually
+specifying, not for the broad family label wrapped around it.
 
-- Typora for markdown-native editing
-- Notion for block-editor-native elements
-- Google Docs for tables, styling, and review-like collaboration
-- GitHub for GFM-only syntax and rendered behavior where Typora is not the
-  product authority
+Family labels are routing hints only.
+
+Examples:
+
+- one markdown-extension row may land on Typora
+- another markdown-extension row may land on Obsidian
+- a third may land on Google Docs or GitHub Docs
+
+That is normal. Do not force one owner across the whole family unless the
+evidence genuinely supports it.
 
 ### 3. Milkdown
 
@@ -131,6 +268,13 @@ Only when that still fails should Plate choose explicitly and record that
 choice in the spec and tests.
 
 ## Decision Rules
+
+### Surface-first rule
+
+Do not let a category label decide the winner.
+
+Each concrete surface, family split, or protocol row should choose the
+strongest authority it can actually justify.
 
 ### When the primary and secondary references agree
 
@@ -293,7 +437,8 @@ Use these labels in the spec docs and parity matrix:
 
 Deviations are allowed. Hidden deviations are not.
 
-When Plate differs from Typora, Google Docs, Notion, or Milkdown, record:
+When Plate differs from Typora, Obsidian, Google Docs, Notion, or Milkdown,
+record:
 
 - spec ID
 - scenario
@@ -309,6 +454,8 @@ Good reasons:
 - better streaming stability
 - better profile composability
 - stronger mainstream editor precedent
+- exposing a reference behavior as an explicit profile option instead of forcing
+  it as the one global default
 
 Bad reasons:
 
@@ -346,7 +493,7 @@ Without that, the audit will drift into vague prose.
 
 ## Relationship To Other Docs
 
-- [editor-behavior-architecture.md](./editor-behavior-architecture.md)
+- [editor-behavior-architecture.md](docs/research/systems/editor-behavior-architecture.md)
   defines the long-term behavior engine direction
 - [markdown-editing-spec.md](./markdown-editing-spec.md)
   defines editing behavior for the markdown-first profile
@@ -355,5 +502,15 @@ Without that, the audit will drift into vague prose.
 
 ## Immediate Next Step
 
-Run the reference audit with Typora and Milkdown against the spec IDs in the
-editing spec and parity matrix. Do not skip straight to implementation.
+Do not rerun the broad markdown-first reference audit by default.
+
+Use the live command pack and roadmap first:
+
+- [commands/README.md](docs/editor-behavior/commands/README.md)
+- [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
+
+Rerun research or audit only when:
+
+- a concrete authority lane is still unresolved
+- compiled research is stale or contradictory
+- a new surface appears that the current stack does not honestly cover

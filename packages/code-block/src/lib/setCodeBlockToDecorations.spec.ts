@@ -14,10 +14,14 @@ import {
 const mockHighlight = mock();
 const mockHighlightAuto = mock();
 const mockListLanguages = mock();
+const mockRegister = mock();
+const mockRegisterAlias = mock();
 const mockLowlight = {
   highlight: mockHighlight,
   highlightAuto: mockHighlightAuto,
   listLanguages: mockListLanguages,
+  register: mockRegister,
+  registerAlias: mockRegisterAlias,
 };
 
 let editor: SlateEditor;
@@ -27,6 +31,8 @@ beforeEach(() => {
   mockHighlight.mockReset();
   mockHighlightAuto.mockReset();
   mockListLanguages.mockReset();
+  mockRegister.mockReset();
+  mockRegisterAlias.mockReset();
   mockListLanguages.mockReturnValue(['javascript', 'typescript']);
 
   // Create a basic editor
@@ -149,6 +155,44 @@ describe('codeBlockToDecorations', () => {
     expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
+  it('patches python grammar before highlighting', () => {
+    mockHighlight.mockReturnValue({
+      value: [
+        {
+          properties: { className: ['hljs-comment'] },
+          value: '# Python class with type hints',
+        },
+      ],
+    });
+
+    const codeBlock: TCodeBlockElement = {
+      children: [
+        {
+          children: [{ text: '# Python class with type hints' }],
+          type: 'code_line',
+        },
+      ],
+      lang: 'python',
+      type: 'code_block',
+    };
+
+    const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
+
+    expect(result.get(codeBlock.children[0] as any)?.[0]).toMatchObject({
+      className: 'hljs-comment',
+    });
+    expect(mockRegister).toHaveBeenCalledWith('python', expect.any(Function));
+    expect(mockRegisterAlias).toHaveBeenCalledWith('python', [
+      'py',
+      'gyp',
+      'ipython',
+    ]);
+    expect(mockHighlight).toHaveBeenCalledWith(
+      'python',
+      '# Python class with type hints'
+    );
+  });
+
   it('use auto detection when language is "auto"', () => {
     // Mock highlight auto result
     mockHighlightAuto.mockReturnValue({
@@ -256,7 +300,7 @@ describe('codeBlockToDecorations', () => {
     expect(line3Decorations).toHaveLength(1);
   });
 
-  it('logs debug errors for registered languages that fail to highlight', () => {
+  it('warns and falls back to plaintext when a registered language fails to highlight', () => {
     const error = new Error('boom');
     mockHighlight.mockImplementation(() => {
       throw error;
@@ -271,11 +315,12 @@ describe('codeBlockToDecorations', () => {
     const result = codeBlockToDecorations(editor, [codeBlock, [0]]);
 
     expect(result.get(codeBlock.children[0] as any)).toEqual([]);
-    expect(editor.api.debug.error).toHaveBeenCalledWith(
-      error,
-      'CODE_HIGHLIGHT'
+    expect(editor.api.debug.error).not.toHaveBeenCalled();
+    expect(editor.api.debug.warn).toHaveBeenCalledWith(
+      'Could not highlight with Highlight.js for language "javascript". Falling back to plaintext',
+      'CODE_HIGHLIGHT',
+      error
     );
-    expect(editor.api.debug.warn).not.toHaveBeenCalled();
   });
 
   it('warns and falls back to plaintext for unregistered languages', () => {

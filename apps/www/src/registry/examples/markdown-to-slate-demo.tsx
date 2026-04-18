@@ -41,6 +41,10 @@ function greet() {
 
 - [ ] Pending tasks
 
+GFM footnotes round-trip too.[^1]
+
+[^1]: Footnote definitions deserialize to dedicated footnote nodes.
+
 ---
 
 ## Advanced Features

@@ -58,6 +58,7 @@ bower_components
 .lock-wscript
 
 # IDEs and editors
+**/.obsidian
 .idea
 .project
 .classpath

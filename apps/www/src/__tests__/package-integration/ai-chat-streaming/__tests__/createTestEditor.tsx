@@ -1,6 +1,7 @@
 /** @jsx jsxt */
 import { jsxt } from '@platejs/test-utils';
 import { KEYS, createSlateEditor, type SlateEditor } from 'platejs';
+import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -10,6 +11,10 @@ jsxt;
 import { AIChatPlugin } from '../../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
 import { BaseAIPlugin } from '../../../../../../../packages/ai/src/lib/BaseAIPlugin';
 import { BaseBasicMarksPlugin } from '../../../../../../../packages/basic-nodes/src/lib/BaseBasicMarksPlugin';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnoteReferencePlugin,
+} from '../../../../../../../packages/footnote/src/lib';
 import { BaseIndentPlugin } from '../../../../../../../packages/indent/src/lib/BaseIndentPlugin';
 import { BaseListPlugin } from '../../../../../../../packages/list/src/lib/BaseListPlugin';
 import { MarkdownPlugin } from '../../../../../../../packages/markdown/src/lib/MarkdownPlugin';
@@ -26,7 +31,13 @@ import { BaseParagraphPlugin } from '../../../../../../../packages/core/src/lib/
 const markdownPlugin = MarkdownPlugin.configure({
   options: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
-    remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+    remarkPlugins: [
+      remarkMath,
+      remarkGfm,
+      remarkEmoji as any,
+      remarkMdx,
+      remarkMention,
+    ],
   },
 });
 // Helper function to create input and editor with common configuration
@@ -35,6 +46,8 @@ export const defaultPlugins = [
   BaseBasicMarksPlugin,
   BaseIndentPlugin,
   BaseListPlugin,
+  BaseFootnoteReferencePlugin,
+  BaseFootnoteDefinitionPlugin,
   markdownPlugin,
   BaseEquationPlugin,
   BaseInlineEquationPlugin,

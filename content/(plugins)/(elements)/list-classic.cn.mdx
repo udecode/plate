@@ -52,7 +52,7 @@ docs:
   - 同级和嵌套项拖放尚未支持
 
 - **快捷键**：
-  - 结合自动格式化插件，使用 markdown 快捷键（**`-`**、**`*`**、**`1.`**、**`[ ]`**）创建列表
+  - 注册自带的 input rules 后，可以使用 markdown 快捷键（**`-`**、**`*`**、**`1.`**、**`[ ]`**）创建列表
   - Tab/Shift+Tab 用于缩进控制
 
 - **限制（使用 [列表插件](/docs/list) 获取这些功能）**：
@@ -69,7 +69,7 @@ docs:
 
 ### 安装
 
-添加列表功能的最快方法是使用 `ListKit`，它包含预配置的列表插件，带有 [Plate UI](/docs/installation/plate-ui) 组件和键盘快捷键。
+添加列表功能的最快方法是使用 `list-classic-kit` 中导出的 `ListKit`，它包含预配置的列表插件、classic markdown entry rules、[Plate UI](/docs/installation/plate-ui) 组件和键盘快捷键。
 
 <ComponentSource name="list-classic-kit" />
 
@@ -94,6 +94,8 @@ const editor = createPlateEditor({
 ```
 
 </Steps>
+
+内置的 `ListKit` 也会注册项目符号、编号和任务列表的 classic markdown entry rules。运行时模型请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
 
 ## 手动使用
 
@@ -130,6 +132,11 @@ const editor = createPlateEditor({
 使用自定义组件和键盘快捷键配置插件。
 
 ```tsx
+import {
+  BulletedListRules,
+  OrderedListRules,
+  TaskListRules,
+} from '@platejs/list-classic';
 import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
@@ -137,7 +144,16 @@ import { BulletedListElement, NumberedListElement, TaskListElement } from '@/com
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    ListPlugin,
+    ListPlugin.configure({
+      inputRules: [
+        BulletedListRules.markdown({ variant: '-' }),
+        BulletedListRules.markdown({ variant: '*' }),
+        OrderedListRules.markdown({ variant: '.' }),
+        OrderedListRules.markdown({ variant: ')' }),
+        TaskListRules.markdown({ checked: false }),
+        TaskListRules.markdown({ checked: true }),
+      ],
+    }),
     BulletedListPlugin.configure({
       node: { component: BulletedListElement },
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
@@ -155,6 +171,7 @@ const editor = createPlateEditor({
 });
 ```
 
+- `inputRules`：注册项目符号、编号和任务列表的 classic markdown entry rules。
 - `node.component`：分配 [`BulletedListElement`](/docs/components/list-classic-node)、[`NumberedListElement`](/docs/components/list-classic-node) 和 [`TaskListElement`](/docs/components/list-classic-node) 来渲染列表元素。
 - `shortcuts.toggle`：定义键盘[快捷键](/docs/plugin-shortcuts)来切换列表类型（`mod+alt+5` 用于项目符号，`mod+alt+6` 用于编号，`mod+alt+7` 用于任务列表）。
 

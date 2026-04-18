@@ -29,8 +29,12 @@ Here's an example demonstrating how to set up an editor with various plugins, si
 
 ```tsx title="app/api/generate-doc/route.ts"
 import { createSlateEditor } from 'platejs';
-import { AutoformatPlugin } from '@platejs/autoformat';
 import { BaseTextAlignPlugin } from '@platejs/basic-styles';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnoteReferencePlugin,
+} from '@platejs/footnote';
+import remarkEmoji from 'remark-emoji';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
@@ -70,13 +74,12 @@ const editor = createSlateEditor({
     BaseBoldPlugin,
     BaseItalicPlugin,
     BaseCodePlugin,
+    BaseFootnoteReferencePlugin,
+    BaseFootnoteDefinitionPlugin,
     // ... add more mark plugins
-
-    // Functionality plugins
-    AutoformatPlugin,
     MarkdownPlugin.configure({ // For serialization example
       options: {
-        remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
+        remarkPlugins: [remarkMath, remarkGfm, remarkEmoji, remarkMdx],
       },
     }),
     // ... add other functional plugins

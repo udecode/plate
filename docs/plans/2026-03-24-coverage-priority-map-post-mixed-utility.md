@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24d/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24d/lcov.info)
 - Constraints:
   - exclude `/react`
   - no coverage vanity
@@ -18,7 +18,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24d --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24d --reporter=dots`
 - Result: `2750 pass`, `0 fail`, `541 files`, `2.53s`
 
 ## Scoring Rules
@@ -51,18 +51,18 @@ Why:
 
 ## Best Remaining Files
 
-- [isHotkeyPressed.ts](/Users/zbeyens/git/plate/packages/udecode/react-hotkeys/src/internal/isHotkeyPressed.ts) — `@udecode/react-hotkeys`, score `7`
-- [DocxPlugin.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/DocxPlugin.ts) — `docx`, score `6`
-- [someToggle.ts](/Users/zbeyens/git/plate/packages/toggle/src/lib/queries/someToggle.ts) — `toggle`, score `6`
-- [isDocxFootnote.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/isDocxFootnote.ts) — `docx`, score `6`
-- [findSuggestionNode.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/queries/findSuggestionNode.ts) — `suggestion`, score `6`
-- [validators.ts](/Users/zbeyens/git/plate/packages/udecode/react-hotkeys/src/internal/validators.ts) — `@udecode/react-hotkeys`, score `6`
-- [autoformatSuperscript.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/rules/math/autoformatSuperscript.ts) — `autoformat`, score `5`
-- [autoformatSubscript.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/rules/math/autoformatSubscript.ts) — `autoformat`, score `5`
-- [cleanDocx.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/cleanDocx.ts) — `docx`, score `5`
-- [mdast.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/mdast.ts) — `markdown`, score `5`
-- [BasePlaceholderPlugin.ts](/Users/zbeyens/git/plate/packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts) — `media`, score `4`
-- [BaseMediaEmbedPlugin.ts](/Users/zbeyens/git/plate/packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts) — `media`, score `4`
+- [isHotkeyPressed.ts](packages/udecode/react-hotkeys/src/internal/isHotkeyPressed.ts) — `@udecode/react-hotkeys`, score `7`
+- [DocxPlugin.ts](packages/docx/src/lib/DocxPlugin.ts) — `docx`, score `6`
+- [someToggle.ts](packages/toggle/src/lib/queries/someToggle.ts) — `toggle`, score `6`
+- [isDocxFootnote.ts](packages/docx/src/lib/docx-cleaner/utils/isDocxFootnote.ts) — `docx`, score `6`
+- [findSuggestionNode.ts](packages/suggestion/src/lib/queries/findSuggestionNode.ts) — `suggestion`, score `6`
+- [validators.ts](packages/udecode/react-hotkeys/src/internal/validators.ts) — `@udecode/react-hotkeys`, score `6`
+- [autoformatSuperscript.ts](packages/autoformat/src/lib/rules/math/autoformatSuperscript.ts) — `autoformat`, score `5`
+- [autoformatSubscript.ts](packages/autoformat/src/lib/rules/math/autoformatSubscript.ts) — `autoformat`, score `5`
+- [cleanDocx.ts](packages/docx/src/lib/docx-cleaner/cleanDocx.ts) — `docx`, score `5`
+- [mdast.ts](packages/markdown/src/lib/mdast.ts) — `markdown`, score `5`
+- [BasePlaceholderPlugin.ts](packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts) — `media`, score `4`
+- [BaseMediaEmbedPlugin.ts](packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts) — `media`, score `4`
 
 ## Package Order By Real Value
 
@@ -101,8 +101,8 @@ That is because what remains there is mostly revisit work, already-swept crumbs,
 
 The exhaustive scoring lives here:
 
-- [2026-03-24-coverage-priority-packages-post-mixed-utility.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-post-mixed-utility.tsv)
-- [2026-03-24-coverage-priority-files-post-mixed-utility.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-post-mixed-utility.tsv)
+- [2026-03-24-coverage-priority-packages-post-mixed-utility.tsv](docs/plans/2026-03-24-coverage-priority-packages-post-mixed-utility.tsv)
+- [2026-03-24-coverage-priority-files-post-mixed-utility.tsv](docs/plans/2026-03-24-coverage-priority-files-post-mixed-utility.tsv)
 
 Those TSVs contain:
 

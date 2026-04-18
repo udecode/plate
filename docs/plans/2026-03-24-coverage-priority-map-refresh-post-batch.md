@@ -2,13 +2,13 @@
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24b/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24b/lcov.info)
 - Constraints: exclude `/react`, skip browser and UI-heavy packages, and score only files worth direct unit or editor-contract tests.
 - Sync basis: March 17, March 22, March 23, and earlier March 24 maps, plus the coverage work completed since then.
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24b --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24b --reporter=dots`
 - Result: `2687 pass`, `0 fail`, `510 files`, `2.37s`
 
 ## Scoring Rules
@@ -27,40 +27,49 @@ Do the untouched score-7+ seam files first:
 
 ### tag
 
-- [isEqualTags.ts](/Users/zbeyens/git/plate/packages/tag/src/lib/isEqualTags.ts) `9`
-- [BaseTagPlugin.ts](/Users/zbeyens/git/plate/packages/tag/src/lib/BaseTagPlugin.ts) `9`
+- [isEqualTags.ts](packages/tag/src/lib/isEqualTags.ts) `9`
+- [BaseTagPlugin.ts](packages/tag/src/lib/BaseTagPlugin.ts) `9`
+
 ### toggle
 
-- [BaseTogglePlugin.ts](/Users/zbeyens/git/plate/packages/toggle/src/lib/BaseTogglePlugin.ts) `10`
+- [BaseTogglePlugin.ts](packages/toggle/src/lib/BaseTogglePlugin.ts) `10`
+
 ### slash-command
 
-- [BaseSlashPlugin.ts](/Users/zbeyens/git/plate/packages/slash-command/src/lib/BaseSlashPlugin.ts) `9`
+- [BaseSlashPlugin.ts](packages/slash-command/src/lib/BaseSlashPlugin.ts) `9`
+
 ### mention
 
-- [getMentionOnSelectItem.ts](/Users/zbeyens/git/plate/packages/mention/src/lib/getMentionOnSelectItem.ts) `7`
-- [BaseMentionPlugin.ts](/Users/zbeyens/git/plate/packages/mention/src/lib/BaseMentionPlugin.ts) `5`
+- [getMentionOnSelectItem.ts](packages/mention/src/lib/getMentionOnSelectItem.ts) `7`
+- [BaseMentionPlugin.ts](packages/mention/src/lib/BaseMentionPlugin.ts) `5`
+
 ### udecode/cmdk
 
-- [command-score.ts](/Users/zbeyens/git/plate/packages/udecode/cmdk/src/internal/command-score.ts) `8`
+- [command-score.ts](packages/udecode/cmdk/src/internal/command-score.ts) `8`
+
 ### tabbable
 
-- [BaseTabbablePlugin.ts](/Users/zbeyens/git/plate/packages/tabbable/src/lib/BaseTabbablePlugin.ts) `10`
+- [BaseTabbablePlugin.ts](packages/tabbable/src/lib/BaseTabbablePlugin.ts) `10`
+
 ### juice
 
-- [JuicePlugin.ts](/Users/zbeyens/git/plate/packages/juice/src/lib/JuicePlugin.ts) `7`
+- [JuicePlugin.ts](packages/juice/src/lib/JuicePlugin.ts) `7`
+
 ### docx revisit
 
-- [getDocxIndent.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/getDocxIndent.ts) `5`
-- [getTextListStyleType.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/getTextListStyleType.ts) `5`
-- [isDocxContent.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/isDocxContent.ts) `5`
+- [getDocxIndent.ts](packages/docx/src/lib/docx-cleaner/utils/getDocxIndent.ts) `5`
+- [getTextListStyleType.ts](packages/docx/src/lib/docx-cleaner/utils/getTextListStyleType.ts) `5`
+- [isDocxContent.ts](packages/docx/src/lib/docx-cleaner/utils/isDocxContent.ts) `5`
+
 ### docx-io revisit
 
-- [document.template.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/schemas/document.template.ts) `5`
-- [core.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/schemas/core.ts) `5`
+- [document.template.ts](packages/docx-io/src/lib/internal/schemas/document.template.ts) `5`
+- [core.ts](packages/docx-io/src/lib/internal/schemas/core.ts) `5`
+
 ### emoji utility revisit
 
-- [IndexSearch.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/IndexSearch/IndexSearch.ts) `5`
-- [EmojiInlineLibrary.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/EmojiLibrary/EmojiInlineLibrary.ts) `5`
+- [IndexSearch.ts](packages/emoji/src/lib/utils/IndexSearch/IndexSearch.ts) `5`
+- [EmojiInlineLibrary.ts](packages/emoji/src/lib/utils/EmojiLibrary/EmojiInlineLibrary.ts) `5`
 
 After that, the next reopen-worthy work is a small `docx` / `docx-io` revisit. Those packages still have deterministic leftovers, but they are second-tier because they were just swept and what remains is less leveraged.
 
@@ -92,21 +101,21 @@ After that, the next reopen-worthy work is a small `docx` / `docx-io` revisit. T
 
 ## Best Remaining Files
 
-- [BaseTabbablePlugin.ts](/Users/zbeyens/git/plate/packages/tabbable/src/lib/BaseTabbablePlugin.ts) — `tabbable`, score `10`, coverage `0.0%`, uncovered `46`
-- [BaseTogglePlugin.ts](/Users/zbeyens/git/plate/packages/toggle/src/lib/BaseTogglePlugin.ts) — `toggle`, score `10`, coverage `0.0%`, uncovered `46`
-- [isEqualTags.ts](/Users/zbeyens/git/plate/packages/tag/src/lib/isEqualTags.ts) — `tag`, score `9`, coverage `0.0%`, uncovered `42`
-- [BaseSlashPlugin.ts](/Users/zbeyens/git/plate/packages/slash-command/src/lib/BaseSlashPlugin.ts) — `slash-command`, score `9`, coverage `0.0%`, uncovered `32`
-- [BaseTagPlugin.ts](/Users/zbeyens/git/plate/packages/tag/src/lib/BaseTagPlugin.ts) — `tag`, score `9`, coverage `0.0%`, uncovered `30`
-- [command-score.ts](/Users/zbeyens/git/plate/packages/udecode/cmdk/src/internal/command-score.ts) — `udecode/cmdk`, score `8`, coverage `0.0%`, uncovered `129`
-- [getMentionOnSelectItem.ts](/Users/zbeyens/git/plate/packages/mention/src/lib/getMentionOnSelectItem.ts) — `mention`, score `7`, coverage `10.7%`, uncovered `25`
-- [JuicePlugin.ts](/Users/zbeyens/git/plate/packages/juice/src/lib/JuicePlugin.ts) — `juice`, score `7`, coverage `0.0%`, uncovered `19`
-- [IndexSearch.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/IndexSearch/IndexSearch.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `74`
-- [GridSection.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/Grid/GridSection.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `63`
-- [document.template.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/schemas/document.template.ts) — `docx-io`, score `5`, coverage `0.0%`, uncovered `47`
-- [core.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/schemas/core.ts) — `docx-io`, score `5`, coverage `0.0%`, uncovered `46`
-- [Grid.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/Grid/Grid.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `42`
-- [EmojiInlineLibrary.ts](/Users/zbeyens/git/plate/packages/emoji/src/lib/utils/EmojiLibrary/EmojiInlineLibrary.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `40`
-- [getDocxIndent.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/getDocxIndent.ts) — `docx`, score `5`, coverage `0.0%`, uncovered `34`
+- [BaseTabbablePlugin.ts](packages/tabbable/src/lib/BaseTabbablePlugin.ts) — `tabbable`, score `10`, coverage `0.0%`, uncovered `46`
+- [BaseTogglePlugin.ts](packages/toggle/src/lib/BaseTogglePlugin.ts) — `toggle`, score `10`, coverage `0.0%`, uncovered `46`
+- [isEqualTags.ts](packages/tag/src/lib/isEqualTags.ts) — `tag`, score `9`, coverage `0.0%`, uncovered `42`
+- [BaseSlashPlugin.ts](packages/slash-command/src/lib/BaseSlashPlugin.ts) — `slash-command`, score `9`, coverage `0.0%`, uncovered `32`
+- [BaseTagPlugin.ts](packages/tag/src/lib/BaseTagPlugin.ts) — `tag`, score `9`, coverage `0.0%`, uncovered `30`
+- [command-score.ts](packages/udecode/cmdk/src/internal/command-score.ts) — `udecode/cmdk`, score `8`, coverage `0.0%`, uncovered `129`
+- [getMentionOnSelectItem.ts](packages/mention/src/lib/getMentionOnSelectItem.ts) — `mention`, score `7`, coverage `10.7%`, uncovered `25`
+- [JuicePlugin.ts](packages/juice/src/lib/JuicePlugin.ts) — `juice`, score `7`, coverage `0.0%`, uncovered `19`
+- [IndexSearch.ts](packages/emoji/src/lib/utils/IndexSearch/IndexSearch.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `74`
+- [GridSection.ts](packages/emoji/src/lib/utils/Grid/GridSection.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `63`
+- [document.template.ts](packages/docx-io/src/lib/internal/schemas/document.template.ts) — `docx-io`, score `5`, coverage `0.0%`, uncovered `47`
+- [core.ts](packages/docx-io/src/lib/internal/schemas/core.ts) — `docx-io`, score `5`, coverage `0.0%`, uncovered `46`
+- [Grid.ts](packages/emoji/src/lib/utils/Grid/Grid.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `42`
+- [EmojiInlineLibrary.ts](packages/emoji/src/lib/utils/EmojiLibrary/EmojiInlineLibrary.ts) — `emoji`, score `5`, coverage `0.0%`, uncovered `40`
+- [getDocxIndent.ts](packages/docx/src/lib/docx-cleaner/utils/getDocxIndent.ts) — `docx`, score `5`, coverage `0.0%`, uncovered `34`
 
 ## What I Would Skip For Now
 
@@ -116,5 +125,5 @@ After that, the next reopen-worthy work is a small `docx` / `docx-io` revisit. T
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-refresh-post-batch.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-refresh-post-batch.tsv)
-- [2026-03-24-coverage-priority-files-refresh-post-batch.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-refresh-post-batch.tsv)
+- [2026-03-24-coverage-priority-packages-refresh-post-batch.tsv](docs/plans/2026-03-24-coverage-priority-packages-refresh-post-batch.tsv)
+- [2026-03-24-coverage-priority-files-refresh-post-batch.tsv](docs/plans/2026-03-24-coverage-priority-files-refresh-post-batch.tsv)

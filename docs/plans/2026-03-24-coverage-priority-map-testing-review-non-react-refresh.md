@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24i/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24i/lcov.info)
 - Constraints:
   - temporary exclude `/react` and obvious React surfaces outside `/react`
   - no browser or e2e coverage work
@@ -18,7 +18,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24i --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24i --reporter=dots`
 - Result: Fresh coverage: `2898` pass, `0` fail, `582` files, `2.47s`.
 
 ## Suite Health
@@ -45,14 +45,15 @@ Do not do another package sweep.
 Raw score says `core` first, but I would split that into two moves: do the plugin and HTML seam files first, then decide if the DOM-ish static helper is worth it.
 
 Strict batch, sorted by value:
-1. `core`: [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `8`
-2. `core`: [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `8`
-3. `core`: [resolvePlugins.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugins.ts) — score `7`
-4. `autoformat`: [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`
-5. `callout`: [BaseCalloutPlugin.ts](/Users/zbeyens/git/plate/packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`
-6. `table`: [withNormalizeTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withNormalizeTable.ts) — score `6`
-7. `list-classic`: [withNormalizeList.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/withNormalizeList.ts) — score `6`
-8. `core`: [deserializeHtmlNode.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`
+
+1. `core`: [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `8`
+2. `core`: [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `8`
+3. `core`: [resolvePlugins.ts](packages/core/src/internal/plugin/resolvePlugins.ts) — score `7`
+4. `autoformat`: [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`
+5. `callout`: [BaseCalloutPlugin.ts](packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`
+6. `table`: [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`
+7. `list-classic`: [withNormalizeList.ts](packages/list-classic/src/lib/withNormalizeList.ts) — score `6`
+8. `core`: [deserializeHtmlNode.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`
 
 ## Threshold Counts
 
@@ -79,21 +80,21 @@ Strict batch, sorted by value:
 
 ## Best Files By Value
 
-1. `core` — [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `8`, coverage `13.9%`, uncovered `31`
-2. `core` — [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `8`, coverage `88.1%`, uncovered `8`
-3. `core` — [resolvePlugins.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugins.ts) — score `7`, coverage `95.8%`, uncovered `15`
-4. `autoformat` — [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`, coverage `37.0%`, uncovered `46`
-5. `callout` — [BaseCalloutPlugin.ts](/Users/zbeyens/git/plate/packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`, coverage `0.0%`, uncovered `20`
-6. `table` — [withNormalizeTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withNormalizeTable.ts) — score `6`, coverage `92.7%`, uncovered `8`
-7. `list-classic` — [withNormalizeList.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/withNormalizeList.ts) — score `6`, coverage `92.5%`, uncovered `7`
-8. `core` — [deserializeHtmlNode.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`, coverage `94.4%`, uncovered `4`
-9. `markdown` — [splitIncompleteMdx.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `6`, coverage `95.7%`, uncovered `3`
-10. `markdown` — [deserializeInlineMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/deserializeInlineMd.ts) — score `6`, coverage `93.3%`, uncovered `2`
-11. `core` — [pipeNormalizeInitialValue.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/pipeNormalizeInitialValue.ts) — score `6`, coverage `93.8%`, uncovered `1`
-12. `core` — [SlatePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugin/SlatePlugin.ts) — score `5`, coverage `0.0%`, uncovered `641`
-13. `core` — [BasePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugin/BasePlugin.ts) — score `5`, coverage `0.0%`, uncovered `541`
-14. `utils` — [plate-types.ts](/Users/zbeyens/git/plate/packages/utils/src/lib/plate-types.ts) — score `5`, coverage `0.0%`, uncovered `251`
-15. `core` — [SlateEditor.ts](/Users/zbeyens/git/plate/packages/core/src/lib/editor/SlateEditor.ts) — score `5`, coverage `0.0%`, uncovered `197`
+1. `core` — [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `8`, coverage `13.9%`, uncovered `31`
+2. `core` — [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `8`, coverage `88.1%`, uncovered `8`
+3. `core` — [resolvePlugins.ts](packages/core/src/internal/plugin/resolvePlugins.ts) — score `7`, coverage `95.8%`, uncovered `15`
+4. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `6`, coverage `37.0%`, uncovered `46`
+5. `callout` — [BaseCalloutPlugin.ts](packages/callout/src/lib/BaseCalloutPlugin.ts) — score `6`, coverage `0.0%`, uncovered `20`
+6. `table` — [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`, coverage `92.7%`, uncovered `8`
+7. `list-classic` — [withNormalizeList.ts](packages/list-classic/src/lib/withNormalizeList.ts) — score `6`, coverage `92.5%`, uncovered `7`
+8. `core` — [deserializeHtmlNode.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNode.ts) — score `6`, coverage `94.4%`, uncovered `4`
+9. `markdown` — [splitIncompleteMdx.ts](packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `6`, coverage `95.7%`, uncovered `3`
+10. `markdown` — [deserializeInlineMd.ts](packages/markdown/src/lib/deserializer/utils/deserializeInlineMd.ts) — score `6`, coverage `93.3%`, uncovered `2`
+11. `core` — [pipeNormalizeInitialValue.ts](packages/core/src/internal/plugin/pipeNormalizeInitialValue.ts) — score `6`, coverage `93.8%`, uncovered `1`
+12. `core` — [SlatePlugin.ts](packages/core/src/lib/plugin/SlatePlugin.ts) — score `5`, coverage `0.0%`, uncovered `641`
+13. `core` — [BasePlugin.ts](packages/core/src/lib/plugin/BasePlugin.ts) — score `5`, coverage `0.0%`, uncovered `541`
+14. `utils` — [plate-types.ts](packages/utils/src/lib/plate-types.ts) — score `5`, coverage `0.0%`, uncovered `251`
+15. `core` — [SlateEditor.ts](packages/core/src/lib/editor/SlateEditor.ts) — score `5`, coverage `0.0%`, uncovered `197`
 
 ## Stop Condition
 
@@ -107,5 +108,5 @@ Stop when the remaining misses are mostly wrappers, DOM-only seams, giant sludge
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-testing-review-non-react-refresh.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-refresh.tsv)
-- [2026-03-24-coverage-priority-files-testing-review-non-react-refresh.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-refresh.tsv)
+- [2026-03-24-coverage-priority-packages-testing-review-non-react-refresh.tsv](docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-refresh.tsv)
+- [2026-03-24-coverage-priority-files-testing-review-non-react-refresh.tsv](docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-refresh.tsv)

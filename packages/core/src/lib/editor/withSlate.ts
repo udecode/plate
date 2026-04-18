@@ -337,7 +337,7 @@ export const withSlate = <
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
   const normalizeNode = editor.tf.normalizeNode;
-  editor.tf.normalizeNode = (...args) => {
+  editor.tf.normalizeNode = (...args: Parameters<typeof normalizeNode>) => {
     if (!editor.api.shouldNormalizeNode(args[0])) {
       return;
     }
