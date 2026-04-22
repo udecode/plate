@@ -37,6 +37,11 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
+  const lineBreakBadge = (
+    props as PlateElementProps<TEquationElement> & {
+      lineBreakBadge?: React.ReactNode;
+    }
+  ).lineBreakBadge;
 
   useEquationElement({
     element: props.element,
@@ -77,6 +82,7 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
                 <div>Add a Tex equation</div>
               </div>
             )}
+            {lineBreakBadge}
           </div>
         </PopoverTrigger>
 
