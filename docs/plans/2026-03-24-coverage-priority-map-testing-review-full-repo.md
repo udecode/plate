@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24l/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24l/lcov.info)
 - Constraints:
   - whole repo phase, including React
   - no browser or e2e theater
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24l --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24l --reporter=dots`
 - Result: Fresh coverage: `2956` pass, `0` fail, `592` files, `3.56s`.
 
 ## Suite Health
@@ -27,7 +27,7 @@ status: completed
 - `pnpm test:profile -- --top 25`: clean. Nothing breached the fast-lane budget.
 - `pnpm test:slowest -- --top 25`: clean. Nothing breached the fast-lane budget.
 - Stale debt scans found no skipped-test junk, commented-out spec junk, or cross-spec imports worth fixing.
-- Audit caveat: the first full coverage run exposed leaked spies in [BaseCodeBlockPlugin.spec.ts](/Users/zbeyens/git/plate/packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts) and [withApplyTable.spec.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withApplyTable.spec.ts). Those are fixed now, so this map is based on a clean run, not poisoned test order.
+- Audit caveat: the first full coverage run exposed leaked spies in [BaseCodeBlockPlugin.spec.ts](packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts) and [withApplyTable.spec.ts](packages/table/src/lib/withApplyTable.spec.ts). Those are fixed now, so this map is based on a clean run, not poisoned test order.
 
 ## Scoring Rules
 
@@ -46,7 +46,7 @@ Do not do another package sweep. The remaining value is split across `selection`
 
 The locked next phase is simple:
 
-1. Execute the full-repo roadmap at [2026-03-24-full-repo-coverage-roadmap.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-full-repo-coverage-roadmap.md).
+1. Execute the full-repo roadmap at [2026-03-24-full-repo-coverage-roadmap.md](docs/plans/2026-03-24-full-repo-coverage-roadmap.md).
 2. Finish **Tier 1** first. That is every remaining `score >= 9` file.
 3. Then finish **Tier 2**. That is every remaining `score = 8` file.
 4. Stop and rerun coverage before touching the score-7 ring.
@@ -89,21 +89,21 @@ Reason: raw package totals overrate some hook clusters. The file queue is the re
 
 ## Best Files By Value
 
-1. `ai` — [applyAISuggestions.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/applyAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `164`
-2. `selection` — [useCursorOverlay.ts](/Users/zbeyens/git/plate/packages/selection/src/react/hooks/useCursorOverlay.ts) — score `10`, coverage `7.9%`, uncovered `116`
-3. `ai` — [submitAIChat.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/submitAIChat.ts) — score `10`, coverage `0.0%`, uncovered `97`
-4. `ai` — [callCompletionApi.ts](/Users/zbeyens/git/plate/packages/ai/src/react/copilot/utils/callCompletionApi.ts) — score `10`, coverage `0.0%`, uncovered `90`
-5. `selection` — [useBlockSelectable.ts](/Users/zbeyens/git/plate/packages/selection/src/react/hooks/useBlockSelectable.ts) — score `10`, coverage `5.8%`, uncovered `81`
-6. `emoji` — [EmojiFloatingLibrary.ts](/Users/zbeyens/git/plate/packages/emoji/src/react/utils/EmojiLibrary/EmojiFloatingLibrary.ts) — score `10`, coverage `0.0%`, uncovered `78`
-7. `selection` — [getSelectionRects.ts](/Users/zbeyens/git/plate/packages/selection/src/react/queries/getSelectionRects.ts) — score `10`, coverage `2.7%`, uncovered `71`
-8. `ai` — [applyTableCellSuggestion.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/applyTableCellSuggestion.ts) — score `10`, coverage `0.0%`, uncovered `41`
-9. `ai` — [triggerCopilotSuggestion.ts](/Users/zbeyens/git/plate/packages/ai/src/react/copilot/utils/triggerCopilotSuggestion.ts) — score `10`, coverage `0.0%`, uncovered `36`
-10. `link` — [triggerFloatingLinkInsert.ts](/Users/zbeyens/git/plate/packages/link/src/react/utils/triggerFloatingLinkInsert.ts) — score `10`, coverage `0.0%`, uncovered `36`
-11. `ai` — [acceptAISuggestions.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/acceptAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `31`
-12. `ai` — [rejectAISuggestions.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/rejectAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `31`
-13. `ai` — [resetAIChat.ts](/Users/zbeyens/git/plate/packages/ai/src/react/ai-chat/utils/resetAIChat.ts) — score `10`, coverage `0.0%`, uncovered `29`
-14. `selection` — [getCursorOverlayState.ts](/Users/zbeyens/git/plate/packages/selection/src/react/queries/getCursorOverlayState.ts) — score `10`, coverage `11.5%`, uncovered `23`
-15. `selection` — [getCaretPosition.ts](/Users/zbeyens/git/plate/packages/selection/src/react/queries/getCaretPosition.ts) — score `10`, coverage `11.1%`, uncovered `16`
+1. `ai` — [applyAISuggestions.ts](packages/ai/src/react/ai-chat/utils/applyAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `164`
+2. `selection` — [useCursorOverlay.ts](packages/selection/src/react/hooks/useCursorOverlay.ts) — score `10`, coverage `7.9%`, uncovered `116`
+3. `ai` — [submitAIChat.ts](packages/ai/src/react/ai-chat/utils/submitAIChat.ts) — score `10`, coverage `0.0%`, uncovered `97`
+4. `ai` — [callCompletionApi.ts](packages/ai/src/react/copilot/utils/callCompletionApi.ts) — score `10`, coverage `0.0%`, uncovered `90`
+5. `selection` — [useBlockSelectable.ts](packages/selection/src/react/hooks/useBlockSelectable.ts) — score `10`, coverage `5.8%`, uncovered `81`
+6. `emoji` — [EmojiFloatingLibrary.ts](packages/emoji/src/react/utils/EmojiLibrary/EmojiFloatingLibrary.ts) — score `10`, coverage `0.0%`, uncovered `78`
+7. `selection` — [getSelectionRects.ts](packages/selection/src/react/queries/getSelectionRects.ts) — score `10`, coverage `2.7%`, uncovered `71`
+8. `ai` — [applyTableCellSuggestion.ts](packages/ai/src/react/ai-chat/utils/applyTableCellSuggestion.ts) — score `10`, coverage `0.0%`, uncovered `41`
+9. `ai` — [triggerCopilotSuggestion.ts](packages/ai/src/react/copilot/utils/triggerCopilotSuggestion.ts) — score `10`, coverage `0.0%`, uncovered `36`
+10. `link` — [triggerFloatingLinkInsert.ts](packages/link/src/react/utils/triggerFloatingLinkInsert.ts) — score `10`, coverage `0.0%`, uncovered `36`
+11. `ai` — [acceptAISuggestions.ts](packages/ai/src/react/ai-chat/utils/acceptAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `31`
+12. `ai` — [rejectAISuggestions.ts](packages/ai/src/react/ai-chat/utils/rejectAISuggestions.ts) — score `10`, coverage `0.0%`, uncovered `31`
+13. `ai` — [resetAIChat.ts](packages/ai/src/react/ai-chat/utils/resetAIChat.ts) — score `10`, coverage `0.0%`, uncovered `29`
+14. `selection` — [getCursorOverlayState.ts](packages/selection/src/react/queries/getCursorOverlayState.ts) — score `10`, coverage `11.5%`, uncovered `23`
+15. `selection` — [getCaretPosition.ts](packages/selection/src/react/queries/getCaretPosition.ts) — score `10`, coverage `11.1%`, uncovered `16`
 
 ## Caveats
 
@@ -114,6 +114,6 @@ Reason: raw package totals overrate some hook clusters. The file queue is the re
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-testing-review-full-repo.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-testing-review-full-repo.tsv)
-- [2026-03-24-coverage-priority-files-testing-review-full-repo.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-testing-review-full-repo.tsv)
-- [2026-03-24-full-repo-coverage-roadmap.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-full-repo-coverage-roadmap.md)
+- [2026-03-24-coverage-priority-packages-testing-review-full-repo.tsv](docs/plans/2026-03-24-coverage-priority-packages-testing-review-full-repo.tsv)
+- [2026-03-24-coverage-priority-files-testing-review-full-repo.tsv](docs/plans/2026-03-24-coverage-priority-files-testing-review-full-repo.tsv)
+- [2026-03-24-full-repo-coverage-roadmap.md](docs/plans/2026-03-24-full-repo-coverage-roadmap.md)

@@ -36,4 +36,18 @@ describe('propsToAttributes', () => {
       { name: 'label', type: 'mdxJsxAttribute', value: 'plain-text' },
     ]);
   });
+
+  it('preserves mdx attribute value expressions without stringifying them', () => {
+    const expression = {
+      data: { estree: { body: [], type: 'Program' } },
+      type: 'mdxJsxAttributeValueExpression',
+      value: '640',
+    };
+
+    expect(
+      propsToAttributes({
+        width: expression,
+      })
+    ).toEqual([{ name: 'width', type: 'mdxJsxAttribute', value: expression }]);
+  });
 });

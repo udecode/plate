@@ -3,6 +3,8 @@
  */
 
 export * from './BaseCodeBlockPlugin';
+export * from './CodeBlockRules';
+export * from './ensureStablePythonGrammar';
 export * from './setCodeBlockToDecorations';
 export * from './withCodeBlock';
 export * from './withInsertDataCodeBlock';

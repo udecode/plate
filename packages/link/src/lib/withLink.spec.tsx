@@ -3,26 +3,34 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor, defineInputRule } from 'platejs';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
+import { LinkRules } from './LinkRules';
+import { upsertLink } from './transforms';
 
 jsxt;
+
+const autolinkRules = [
+  LinkRules.autolink({ variant: 'break' }),
+  LinkRules.autolink({ variant: 'paste' }),
+  LinkRules.autolink({ variant: 'space' }),
+];
 
 const createClipboardData = (text: string) =>
   ({
     getData: (type: string) => (type === 'text/plain' ? text : ''),
   }) as any;
 
-const createLinkEditor = (input: SlateEditor, options?: Record<string, any>) =>
+const createLinkEditor = (
+  input: SlateEditor,
+  config?: {
+    inputRules?: any[];
+    options?: Record<string, any>;
+  }
+) =>
   createSlateEditor({
-    plugins: [
-      options
-        ? BaseLinkPlugin.configure({
-            options,
-          })
-        : BaseLinkPlugin,
-    ],
+    plugins: [config ? BaseLinkPlugin.configure(config) : BaseLinkPlugin],
     selection: input.selection,
     value: input.children,
   });
@@ -39,7 +47,9 @@ describe('withLink', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createLinkEditor(input);
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
       editor.tf.insertData(createClipboardData('http://google.com'));
 
       expect(editor.children).toEqual(
@@ -66,7 +76,9 @@ describe('withLink', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createLinkEditor(input);
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
       editor.tf.insertData(createClipboardData('https://google.com'));
 
       expect(editor.children).toEqual(
@@ -93,7 +105,10 @@ describe('withLink', () => {
       ) as any as SlateEditor;
 
       const editor = createLinkEditor(input, {
-        keepSelectedTextOnPaste: false,
+        inputRules: autolinkRules,
+        options: {
+          keepSelectedTextOnPaste: false,
+        },
       });
       editor.tf.insertData(createClipboardData('https://google.com'));
 
@@ -102,6 +117,92 @@ describe('withLink', () => {
           <editor>
             <hp>
               start <ha url="https://google.com">https://google.com</ha>
+              <htext />
+            </hp>
+          </editor>
+        ).children
+      );
+    });
+
+    it('keeps pasted urls literal inside markdown link source entry by default', () => {
+      const input = (
+        <editor>
+          <hp>
+            [Example](
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
+      editor.tf.insertData(createClipboardData('https://google.com'));
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp>[Example](https://google.com</hp>
+          </editor>
+        ).children
+      );
+    });
+
+    it('lets user code opt back into eager paste autolink by redefining the rule', () => {
+      const input = (
+        <editor>
+          <hp>
+            [Example](
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+      const CustomLinkPlugin = BaseLinkPlugin.extend({
+        inputRules: [
+          defineInputRule({
+            target: 'insertData',
+            resolve: (context) =>
+              context.text
+                ? {
+                    shouldLink: true,
+                    text: context.text,
+                    url: context.text,
+                  }
+                : undefined,
+            apply: (
+              context,
+              match: { shouldLink: boolean; text: string; url: string }
+            ) => {
+              if (match.shouldLink) {
+                const inserted = upsertLink(context.editor, {
+                  insertTextInLink: true,
+                  text: match.url,
+                  url: match.url,
+                });
+
+                if (inserted) return true;
+              }
+
+              context.editor.tf.insertText(match.text);
+
+              return true;
+            },
+          }),
+        ],
+      });
+      const editor = createSlateEditor({
+        plugins: [CustomLinkPlugin.configure({ inputRules: autolinkRules })],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.tf.insertData(createClipboardData('https://google.com'));
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp>
+              [Example](
+              <ha url="https://google.com">https://google.com</ha>
               <htext />
             </hp>
           </editor>
@@ -120,16 +221,47 @@ describe('withLink', () => {
           </hp>
         </editor>
       ) as any as SlateEditor;
+      const output = (
+        <editor>
+          <hp>
+            link: <ha url="http://google.com">http://google.com</ha> <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
-      const editor = createLinkEditor(input);
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
+      editor.tf.insertText(' ');
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('respects app-level enabled overrides for space autolink', () => {
+      const input = (
+        <editor>
+          <hp>
+            link: http://google.com
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createLinkEditor(input, {
+        inputRules: [
+          LinkRules.autolink({
+            enabled: () => false,
+            variant: 'space',
+          }),
+        ],
+      });
       editor.tf.insertText(' ');
 
       expect(editor.children).toEqual(
         (
           <editor>
-            <hp>
-              link: <ha url="http://google.com">http://google.com</ha>{' '}
-            </hp>
+            <hp>link: http://google.com </hp>
           </editor>
         ).children
       );
@@ -146,7 +278,10 @@ describe('withLink', () => {
       ) as any as SlateEditor;
 
       const editor = createLinkEditor(input, {
-        getUrlHref: () => 'http://google.com',
+        inputRules: autolinkRules,
+        options: {
+          getUrlHref: () => 'http://google.com',
+        },
       });
       editor.tf.insertText(' ');
 
@@ -172,7 +307,9 @@ describe('withLink', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createLinkEditor(input);
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
       editor.tf.insertText(' ');
 
       expect(editor.children).toEqual(
@@ -199,7 +336,9 @@ describe('withLink', () => {
         </editor>
       ) as any as SlateEditor;
 
-      const editor = createLinkEditor(input);
+      const editor = createLinkEditor(input, {
+        inputRules: autolinkRules,
+      });
       editor.tf.insertBreak();
 
       expect(editor.children).toEqual(

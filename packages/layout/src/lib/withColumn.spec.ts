@@ -1,4 +1,4 @@
-import { createSlateEditor, NodeApi } from 'platejs';
+import { BaseParagraphPlugin, NodeApi, createSlateEditor } from 'platejs';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
 import { withColumn } from './withColumn';
@@ -186,5 +186,127 @@ describe('withColumn', () => {
 
     expect(transforms.selectAll()).toBe(true);
     expect(select).toHaveBeenCalledWith([2]);
+  });
+
+  it('keeps Enter inside the same column content flow', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseColumnPlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'abc' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: '' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    } as any);
+
+    editor.tf.insertBreak();
+
+    expect(editor.children).toMatchObject([
+      {
+        children: [
+          {
+            children: [
+              { children: [{ text: 'a' }], type: 'p' },
+              { children: [{ text: 'bc' }], type: 'p' },
+            ],
+            type: 'column',
+          },
+          {
+            children: [{ children: [{ text: '' }], type: 'p' }],
+            type: 'column',
+          },
+        ],
+        type: 'column_group',
+      },
+    ]);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [0, 0, 1, 0] },
+      focus: { offset: 0, path: [0, 0, 1, 0] },
+    });
+  });
+
+  it('keeps Backspace at the start of a paragraph from unwrapping the column group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseColumnPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'abc' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: '' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    } as any);
+
+    const before = JSON.parse(JSON.stringify(editor.children));
+
+    editor.tf.deleteBackward('character');
+
+    expect(editor.children).toEqual(before);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [0, 0, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0] },
+    });
+  });
+
+  it('lets Tab fall through instead of claiming column-local tab behavior', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseColumnPlugin],
+      selection: {
+        anchor: { offset: 1, path: [0, 0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0, 0] },
+      },
+      value: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: 'abc' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: '' }], type: 'p' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'column_group',
+        },
+      ],
+    } as any);
+
+    expect(editor.tf.tab({ reverse: false })).toBe(false);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 1, path: [0, 0, 0, 0] },
+      focus: { offset: 1, path: [0, 0, 0, 0] },
+    });
   });
 });

@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24g/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24g/lcov.info)
 - Constraints:
   - exclude `/react`
   - no browser or e2e
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24g --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24g --reporter=dots`
 - Result: Fresh coverage: `2869` pass, `0` fail, `575` files, `3.59s`.
 
 ## Scoring Rules
@@ -38,11 +38,11 @@ The honest next work is a small core-heavy batch, then a second ring of list/tab
 
 If you want the strict next batch, use the raw `score >= 6` set:
 
-1. `core`: [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
-2. `diff`: [transformDiffTexts.ts](/Users/zbeyens/git/plate/packages/diff/src/internal/transforms/transformDiffTexts.ts) — score `7`
-3. `core`: [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `6`
-4. `markdown`: [deserializeMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `6`
-5. `core`: [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`
+1. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
+2. `diff`: [transformDiffTexts.ts](packages/diff/src/internal/transforms/transformDiffTexts.ts) — score `7`
+3. `core`: [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `6`
+4. `markdown`: [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `6`
+5. `core`: [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`
 
 My actual recommendation is slightly stricter than the raw score:
 
@@ -76,21 +76,21 @@ My actual recommendation is slightly stricter than the raw score:
 
 ## Best Files By Value
 
-1. `core` — [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`, coverage `88.8%`, uncovered `18`
-2. `diff` — [transformDiffTexts.ts](/Users/zbeyens/git/plate/packages/diff/src/internal/transforms/transformDiffTexts.ts) — score `7`, coverage `96.2%`, uncovered `8`
-3. `core` — [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `6`, coverage `13.9%`, uncovered `31`
-4. `markdown` — [deserializeMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `6`, coverage `79.2%`, uncovered `15`
-5. `core` — [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`, coverage `88.1%`, uncovered `8`
-6. `autoformat` — [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`, coverage `37.0%`, uncovered `46`
-7. `list-classic` — [BaseTodoListPlugin.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `5`, coverage `37.1%`, uncovered `22`
-8. `table` — [withApplyTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withApplyTable.ts) — score `5`, coverage `83.8%`, uncovered `16`
-9. `code-drawing` — [renderers.ts](/Users/zbeyens/git/plate/packages/code-drawing/src/lib/utils/renderers.ts) — score `5`, coverage `85.4%`, uncovered `15`
-10. `core` — [resolvePlugins.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugins.ts) — score `5`, coverage `95.8%`, uncovered `15`
-11. `dnd` — [onDropNode.ts](/Users/zbeyens/git/plate/packages/dnd/src/transforms/onDropNode.ts) — score `5`, coverage `87.5%`, uncovered `14`
-12. `core` — [htmlElementToLeaf.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `5`, coverage `69.4%`, uncovered `11`
-13. `list-classic` — [withList.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/withList.ts) — score `5`, coverage `84.7%`, uncovered `11`
-14. `suggestion` — [deleteSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `5`, coverage `93.6%`, uncovered `10`
-15. `core` — [cleanHtmlFontElements.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`, coverage `66.7%`, uncovered `4`
+1. `core` — [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`, coverage `88.8%`, uncovered `18`
+2. `diff` — [transformDiffTexts.ts](packages/diff/src/internal/transforms/transformDiffTexts.ts) — score `7`, coverage `96.2%`, uncovered `8`
+3. `core` — [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `6`, coverage `13.9%`, uncovered `31`
+4. `markdown` — [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `6`, coverage `79.2%`, uncovered `15`
+5. `core` — [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`, coverage `88.1%`, uncovered `8`
+6. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`, coverage `37.0%`, uncovered `46`
+7. `list-classic` — [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `5`, coverage `37.1%`, uncovered `22`
+8. `table` — [withApplyTable.ts](packages/table/src/lib/withApplyTable.ts) — score `5`, coverage `83.8%`, uncovered `16`
+9. `code-drawing` — [renderers.ts](packages/code-drawing/src/lib/utils/renderers.ts) — score `5`, coverage `85.4%`, uncovered `15`
+10. `core` — [resolvePlugins.ts](packages/core/src/internal/plugin/resolvePlugins.ts) — score `5`, coverage `95.8%`, uncovered `15`
+11. `dnd` — [onDropNode.ts](packages/dnd/src/transforms/onDropNode.ts) — score `5`, coverage `87.5%`, uncovered `14`
+12. `core` — [htmlElementToLeaf.ts](packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `5`, coverage `69.4%`, uncovered `11`
+13. `list-classic` — [withList.ts](packages/list-classic/src/lib/withList.ts) — score `5`, coverage `84.7%`, uncovered `11`
+14. `suggestion` — [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `5`, coverage `93.6%`, uncovered `10`
+15. `core` — [cleanHtmlFontElements.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`, coverage `66.7%`, uncovered `4`
 
 ## Caveats
 
@@ -100,5 +100,5 @@ My actual recommendation is slightly stricter than the raw score:
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-post-gte-5.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-post-gte-5.tsv)
-- [2026-03-24-coverage-priority-files-post-gte-5.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-post-gte-5.tsv)
+- [2026-03-24-coverage-priority-packages-post-gte-5.tsv](docs/plans/2026-03-24-coverage-priority-packages-post-gte-5.tsv)
+- [2026-03-24-coverage-priority-files-post-gte-5.tsv](docs/plans/2026-03-24-coverage-priority-files-post-gte-5.tsv)

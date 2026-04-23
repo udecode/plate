@@ -6,8 +6,75 @@ import type { MdDecoration } from '../../types';
 import type { DeserializeMdOptions } from '../deserializeMd';
 
 import { mdastToPlate } from '../../types';
-import { convertChildrenDeserialize } from '../convertChildrenDeserialize';
 import { getDeserializerByKey } from './getDeserializerByKey';
+
+const MDX_ATTR_NAME_TO_HTML_ATTR: Record<string, string> = {
+  className: 'class',
+  htmlFor: 'for',
+};
+
+const serializeUnknownMdxChild = (child: any): string => {
+  if (
+    child?.type === 'mdxJsxTextElement' ||
+    child?.type === 'mdxJsxFlowElement'
+  ) {
+    return serializeUnknownMdxNode(child);
+  }
+
+  if ('value' in (child ?? {})) {
+    return child.value ?? '';
+  }
+
+  if (Array.isArray(child?.children)) {
+    return child.children.map(serializeUnknownMdxChild).join('');
+  }
+
+  return '';
+};
+
+const serializeUnknownMdxAttributes = (attributes?: any[]) => {
+  if (!attributes?.length) return '';
+
+  const serialized = attributes.map((attribute) => {
+    const name = MDX_ATTR_NAME_TO_HTML_ATTR[attribute.name] ?? attribute.name;
+
+    if (attribute.value === undefined || attribute.value === null) {
+      return name;
+    }
+
+    if (
+      typeof attribute.value === 'object' &&
+      attribute.value?.type === 'mdxJsxAttributeValueExpression'
+    ) {
+      return `${name}={${attribute.value.value}}`;
+    }
+
+    return `${name}="${String(attribute.value)}"`;
+  });
+
+  return serialized.length > 0 ? ` ${serialized.join(' ')}` : '';
+};
+
+const serializeUnknownMdxNode = (
+  mdastNode: MdxJsxFlowElement | MdxJsxTextElement
+) => {
+  const attrs = serializeUnknownMdxAttributes(mdastNode.attributes as any[]);
+  const openTag = `<${mdastNode.name}${attrs}`;
+
+  if (!mdastNode.children?.length) {
+    return `${openTag} />`;
+  }
+
+  const inner = mdastNode.children
+    .map(serializeUnknownMdxChild)
+    .join(mdastNode.type === 'mdxJsxFlowElement' ? '\n' : '');
+
+  if (mdastNode.type === 'mdxJsxFlowElement') {
+    return `${openTag}>\n${inner}\n</${mdastNode.name}>`;
+  }
+
+  return `${openTag}>${inner}</${mdastNode.name}>`;
+};
 
 export const customMdxDeserialize = (
   mdastNode: MdxJsxFlowElement | MdxJsxTextElement,
@@ -36,38 +103,19 @@ export const customMdxDeserialize = (
 
   // Default fallback: preserve tag structure as text
   if (mdastNode.type === 'mdxJsxTextElement') {
-    const tagName = mdastNode.name;
-    let textContent = '';
-
-    if (mdastNode.children) {
-      textContent = mdastNode.children
-        .map((child) => {
-          if ('value' in child) return child.value;
-          return '';
-        })
-        .join('');
-    }
-
     return [
       {
-        text: `<${tagName}>${textContent}</${tagName}>`,
+        text: serializeUnknownMdxNode(mdastNode),
       },
     ];
   }
 
   if (mdastNode.type === 'mdxJsxFlowElement') {
-    const tagName = mdastNode.name;
-
-    // Return as a paragraph with the tag structure preserved
     return [
       {
         children: [
           {
-            text: `<${tagName}>\n`,
-          },
-          ...convertChildrenDeserialize(mdastNode.children, deco, options),
-          {
-            text: `\n</${tagName}>`,
+            text: serializeUnknownMdxNode(mdastNode),
           },
         ],
         type: getPluginType(options.editor!, KEYS.p),

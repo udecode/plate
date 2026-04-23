@@ -1,75 +1,175 @@
-name: "Bug Report"
-description: Create a new ticket for a bug.
-labels: ["bug"]
+name: Bug report
+description: Report defects, including regressions, crashes, and behavior bugs.
+title: "[Bug]: "
+labels:
+  - bug
 body:
-  - type: textarea
-    id: description
+  - type: markdown
     attributes:
-      label: "Description"
-      description: Please enter an explicit description of your issue
-      placeholder: Short and explicit description of your incident...
-    validations:
-      required: true
-  - type: input
-    id: reprod-url
-    attributes:
-      label: "Reproduction URL"
-      description: Please enter your GitHub or Sandbox URL to provide a reproduction of the issue
-      placeholder: ex. https://github.com/USERNAME/REPO-NAME
-  - type: textarea
-    id: reprod
-    attributes:
-      label: "Reproduction steps"
-      description: Please enter an explicit description of your issue
       value: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error
-      render: bash
+        Thanks for filing this report. Keep every answer concise, reproducible, and grounded in observed evidence.
+        Do not speculate or infer beyond the evidence. If a narrative section cannot be answered from the available evidence, respond with exactly `NOT_ENOUGH_INFO`.
+
+        If the same issue reproduces in plain Slate without Plate-specific code, open it in Slate instead: https://github.com/ianstormtaylor/slate/issues
+
+        This form is tuned for maintainer Codex intake through `task`. Public repros, affected packages, browser surface, and concrete acceptance criteria save a debugging round-trip.
+  - type: dropdown
+    id: bug_type
+    attributes:
+      label: Bug type
+      description: Choose the category that best matches this report.
+      options:
+        - Regression (worked before, now fails)
+        - Crash (process/app exits or hangs)
+        - Behavior bug (incorrect output/state without crash)
     validations:
       required: true
-  - type: input
-    id: plate
+  - type: dropdown
+    id: browser_surface
     attributes:
-      label: "Plate version"
-      description: Please give the version of plate
-      placeholder: ex. 33.0.0
-    validations:
-      required: true
-  - type: input
-    id: slate-react
-    attributes:
-      label: "Slate React version"
-      description: Please give the version of slate-react
-      placeholder: ex. 0.112.0
+      label: Browser surface
+      description: >
+        Choose `Yes` only if this bug lives on a real browser/UI/editor flow that should be
+        verified in a browser during maintainer `task` execution.
+      options:
+        - "No"
+        - "Yes"
     validations:
       required: true
   - type: textarea
-    id: screenshot
+    id: summary
     attributes:
-      label: "Screenshots"
-      description: If applicable, add screenshots to help explain your problem.
-      render: bash
+      label: Summary
+      description: One-sentence statement of what is broken, based only on observed evidence. If the evidence is insufficient, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: After merging a table cell, pressing Backspace at the start of the merged cell removes the border from a different cell.
     validations:
-      required: false
+      required: true
+  - type: input
+    id: repro_url
+    attributes:
+      label: Public reproduction URL
+      description: Link a minimal GitHub repo, StackBlitz, CodeSandbox, or demo page. If none exists, use `NOT_ENOUGH_INFO`.
+      placeholder: https://codesandbox.io/p/github/udecode/plate-template/main
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Provide the shortest deterministic repro path supported by direct observation. If the repro path cannot be grounded from the evidence, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: |
+        1. Start the repro with the attached editor setup.
+        2. Insert a table and merge two cells.
+        3. Place the cursor at the start of the merged cell and press Backspace.
+        4. Observe the neighboring cell border changes instead of the current cell.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: State the expected result using a concrete reference such as prior observed behavior, attached docs, or a known-good version. If no grounded reference exists, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: Backspace should only affect the current merged cell and should not mutate a neighboring cell.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Describe only the observed result, including user-visible errors and cited evidence. If the observed result cannot be grounded from the evidence, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: The merged cell keeps focus, but the border is removed from the cell on the left.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: State what should be true after the fix lands. If the fixed-state criteria cannot be grounded from the evidence, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: |
+        - Backspace only affects the current merged cell.
+        - No neighboring cell border changes.
+        - The behavior matches the same flow on the last known good version.
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Plate / Slate / React versions
+      description: Exact versions tested. Use `NOT_ENOUGH_INFO` for unknown values.
+      placeholder: |
+        plate:
+        slate:
+        slate-react:
+        react:
+      render: yaml
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      description: OS and version where this occurs.
+      placeholder: macOS 15.4 / Ubuntu 24.04 / Windows 11
+    validations:
+      required: true
+  - type: input
+    id: install_method
+    attributes:
+      label: Install method
+      description: How Plate was installed, launched, or reproduced.
+      placeholder: pnpm dev / npm install / bun / CodeSandbox / StackBlitz
+  - type: input
+    id: framework
+    attributes:
+      label: Framework / app setup
+      description: Effective framework or app environment under test.
+      placeholder: Next.js 15 / Vite / plain React / plate-template
+    validations:
+      required: true
+  - type: input
+    id: affected_packages
+    attributes:
+      label: Affected packages or entry points
+      description: List the packages, plugins, examples, or routes involved.
+      placeholder: "@platejs/table, @platejs/selection, apps/www example"
+    validations:
+      required: true
+  - type: textarea
+    id: minimal_code
+    attributes:
+      label: Minimal code or config excerpt
+      description: Include the smallest relevant editor setup, plugin list, value, route, or config needed to understand the repro. If the public repro fully covers it, respond with `NOT_ENOUGH_INFO`.
+      placeholder: |
+        const editor = createPlateEditor({
+          plugins: [TablePlugin],
+        });
+      render: tsx
+    validations:
+      required: true
   - type: textarea
     id: logs
     attributes:
-      label: "Logs"
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
-      render: bash
-    validations:
-      required: false
-  - type: dropdown
-    id: browsers
+      label: Logs, screenshots, and evidence
+      description: Include the redacted logs, screenshots, recordings, docs, or version comparisons that support the grounded answers above.
+      render: shell
+  - type: textarea
+    id: impact
     attributes:
-      label: "Browsers"
-      description: What browsers are you seeing the problem on ?
-      multiple: true
-      options:
-        - Chrome
-        - Firefox
-        - Safari
-    validations:
-      required: false
+      label: Impact and severity
+      description: |
+        Explain who is affected, how severe it is, how often it happens, and the practical consequence using only observed evidence.
+        If any part cannot be grounded from the evidence, respond with exactly `NOT_ENOUGH_INFO`.
+        Include:
+        - Affected users/packages/surfaces
+        - Severity (annoying, blocks workflow, data risk, etc.)
+        - Frequency (always/intermittent/edge case)
+        - Consequence (editor breakage, failed serialization, incorrect selection, extra debugging cost, etc.)
+      placeholder: |
+        Affected: table users on the current release
+        Severity: High (breaks expected editing behavior)
+        Frequency: 4/4 observed attempts
+        Consequence: Border mutations happen on the wrong cell during normal editing
+  - type: textarea
+    id: additional_information
+    attributes:
+      label: Additional information
+      description: Add any remaining grounded context that helps triage but does not fit above. If this is a regression, include the last known good and first known bad versions when observed. If there is not enough evidence, respond with exactly `NOT_ENOUGH_INFO`.
+      placeholder: Last known good version ..., first known bad version ..., temporary workaround ...

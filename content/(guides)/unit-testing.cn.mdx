@@ -229,12 +229,14 @@ describe('Table plugin', () => {
 测试不同插件选项如何影响行为：
 
 ```typescript
-describe('when undo is enabled', () => {
-  it('should undo text format upon delete', () => {
+describe('when keepSelectedTextOnPaste is disabled', () => {
+  it('replaces the selected text with the pasted url', () => {
     const input = (
       <fragment>
         <hp>
-          1/<cursor />
+          start <anchor />
+          of regular text
+          <focus />
         </hp>
       </fragment>
     ) as any;
@@ -242,44 +244,27 @@ describe('when undo is enabled', () => {
     const output = (
       <fragment>
         <hp>
-          1/4<cursor />
+          start <ha url="https://google.com">https://google.com</ha>
+          <htext />
         </hp>
       </fragment>
     ) as any;
 
     const editor = createPlateEditor({
       plugins: [
-        AutoformatPlugin.configure({
+        LinkPlugin.configure({
           options: {
-            enableUndoOnDelete: true,
-            rules: [
-              {
-                format: '¼',
-                match: '1/4',
-                mode: 'text',
-              },
-            ],
+            keepSelectedTextOnPaste: false,
           },
         }),
       ],
       value: input,
     });
 
-    // Trigger the autoformat
-    editor.tf.insertText('4');
+    editor.tf.insertData({
+      getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
+    } as any);
 
-    // Simulate backspace key
-    const event = new KeyboardEvent('keydown', {
-      key: 'backspace',
-    }) as any;
-
-    // Call the handler
-    editor.getPlugin({key: KEYS.autoformat}).handlers.onKeyDown({
-      ...getEditorPlugin(editor, AutoformatPlugin),
-      event,
-    });
-
-    // With enableUndoOnDelete: true, pressing backspace should restore the original text
     expect(input.children).toEqual(output.children);
   });
 });

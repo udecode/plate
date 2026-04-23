@@ -7,6 +7,7 @@ describe('parseTwitterUrl', () => {
     ).toEqual({
       id: '1234567890',
       provider: 'twitter',
+      sourceKind: 'url',
       url: 'https://twitter.com/platejs/status/1234567890',
     });
   });
@@ -16,6 +17,7 @@ describe('parseTwitterUrl', () => {
       {
         id: '987654321',
         provider: 'twitter',
+        sourceKind: 'url',
         url: 'https://x.com/platejs/statuses/987654321',
       }
     );

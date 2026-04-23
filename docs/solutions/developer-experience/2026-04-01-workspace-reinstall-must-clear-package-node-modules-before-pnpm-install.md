@@ -4,7 +4,7 @@ date: 2026-04-01
 problem_type: developer_experience
 component: tooling
 symptoms:
-  - "`pnpm test` or `pnpm check` fails before React specs run with `ENOENT reading \".../packages/<pkg>/node_modules/react\"`"
+  - '`pnpm test` or `pnpm check` fails before React specs run with `ENOENT reading ".../packages/<pkg>/node_modules/react"`'
   - "Direct Bun package test commands fail even though the same code worked earlier"
   - "`pnpm install` reports the lockfile is up to date but the broken package-local React path stays broken"
 root_cause: incomplete_setup
@@ -46,7 +46,7 @@ This repo now has a dedicated helper:
 pnpm run reinstall
 ```
 
-The script lives at [`tooling/scripts/reinstall.sh`](/Users/zbeyens/git/plate/tooling/scripts/reinstall.sh). It removes:
+The script lives at [`tooling/scripts/reinstall.sh`](tooling/scripts/reinstall.sh). It removes:
 
 - root `node_modules`
 - workspace package `node_modules`
@@ -86,5 +86,5 @@ A real reinstall works because it deletes the stale package-local `node_modules`
 
 ## Related Issues
 
-- [TypeScript 6 upgrade needs explicit paths and Bun test typing](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-25-typescript-6-upgrade-needs-explicit-paths-and-bun-test-typing.md)
-- [Bun module mocks must export a consistent surface across related specs](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md)
+- [TypeScript 6 upgrade needs explicit paths and Bun test typing](docs/solutions/developer-experience/2026-03-25-typescript-6-upgrade-needs-explicit-paths-and-bun-test-typing.md)
+- [Bun module mocks must export a consistent surface across related specs](docs/solutions/test-failures/2026-03-24-bun-module-mocks-must-export-a-consistent-surface-across-related-specs.md)

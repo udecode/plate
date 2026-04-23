@@ -12,9 +12,9 @@ export const useFloatingMediaEditButton = () => {
   return {
     props: {
       onClick: React.useCallback(() => {
-        FloatingMediaStore.set('url', element.url);
+        FloatingMediaStore.set('url', element.sourceUrl ?? element.url);
         FloatingMediaStore.set('isEditing', true);
-      }, [element.url]),
+      }, [element.sourceUrl, element.url]),
     },
   };
 };

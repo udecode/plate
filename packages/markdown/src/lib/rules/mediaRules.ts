@@ -19,7 +19,7 @@ function createMediaRule() {
       } as TMediaElement;
     },
     serialize: (node: TMediaElement, options: any) => {
-      const { id, children, type, url, ...rest } = node;
+      const { children, type, url, ...rest } = node;
 
       return {
         attributes: propsToAttributes({ ...rest, src: url }),
@@ -34,5 +34,6 @@ function createMediaRule() {
 export const mediaRules: MdRules = {
   audio: createMediaRule(),
   file: createMediaRule(),
+  media_embed: createMediaRule(),
   video: createMediaRule(),
 };

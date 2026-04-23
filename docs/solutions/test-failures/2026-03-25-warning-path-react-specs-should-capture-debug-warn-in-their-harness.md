@@ -10,7 +10,7 @@ category: test-failures
 
 ## Problem
 
-A broad Bun run was green, but [useElementStore.spec.tsx](/Users/zbeyens/git/plate/packages/core/src/react/stores/element/useElementStore.spec.tsx) sprayed a wall of `USE_ELEMENT_CONTEXT` warnings into the output.
+A broad Bun run was green, but [useElementStore.spec.tsx](packages/core/src/react/stores/element/useElementStore.spec.tsx) sprayed a wall of `USE_ELEMENT_CONTEXT` warnings into the output.
 
 The spec intentionally rendered consumers outside `ElementProvider`, so the warnings were expected behavior. The noisy part was the test harness, not the runtime code.
 
@@ -18,7 +18,7 @@ The spec intentionally rendered consumers outside `ElementProvider`, so the warn
 
 Override the core debug plugin in the spec harness and replace `logger.warn` with a no-op for that test editor:
 
-- use [DebugPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/debug/DebugPlugin.ts)
+- use [DebugPlugin.ts](packages/core/src/lib/plugins/debug/DebugPlugin.ts)
 - configure `logger.warn`
 - keep the runtime warning path intact
 

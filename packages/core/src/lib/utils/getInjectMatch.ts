@@ -8,7 +8,7 @@ export const getInjectMatch = <E extends SlateEditor>(
   editor: E,
   plugin: EditorPlugin
 ) => {
-  return (node: TNode, path: Path) => {
+  return (node: TNode, path?: Path) => {
     const {
       inject: {
         excludeBelowPlugins,
@@ -41,6 +41,8 @@ export const getInjectMatch = <E extends SlateEditor>(
     }
     // Exclude below plugins
     if (excludeBelowPlugins || maxLevel) {
+      if (!path) return false;
+
       if (maxLevel && path.length > maxLevel) {
         return false;
       }

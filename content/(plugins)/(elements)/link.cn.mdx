@@ -102,6 +102,31 @@ const editor = createPlateEditor({
 - `render.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link-toolbar) 用于链接编辑
 - `render.node`: 指定 [`LinkElement`](/docs/components/link-node) 来渲染链接元素
 
+### Input Rules
+
+你也可以配置 `LinkPlugin` 来启用内置的链接 input rules：
+
+```tsx
+import { LinkRules } from '@platejs/link';
+import { LinkPlugin } from '@platejs/link/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    LinkPlugin.configure({
+      inputRules: [
+        LinkRules.markdown(),
+        LinkRules.autolink({ variant: 'paste' }),
+        LinkRules.autolink({ variant: 'space' }),
+        LinkRules.autolink({ variant: 'break' }),
+      ],
+    }),
+  ],
+});
+```
+
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`：启用纯 URL 自动链接。
+- `LinkRules.markdown()`：启用在输入结束 `)` 时把 `[text](url)` 转成结构化链接。
+
 ### 添加工具栏按钮
 
 您可以在[工具栏](/docs/toolbar)中添加 [`LinkToolbarButton`](/docs/components/link-toolbar-button) 来插入和编辑链接。

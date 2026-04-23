@@ -62,6 +62,7 @@ npm install @platejs/basic-nodes
 Include `HorizontalRulePlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
+import { HorizontalRuleRules } from '@platejs/basic-nodes';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
@@ -75,41 +76,23 @@ const editor = createPlateEditor({
 
 ### Configure Plugin
 
-You can configure the `HorizontalRulePlugin` with autoformat rules to automatically convert typed patterns like `---` into horizontal rules.
+You can enable the built-in markdown shorthand on `HorizontalRulePlugin`:
 
 ```tsx
-import { KEYS } from 'platejs';
-import { AutoformatPlugin } from '@platejs/autoformat';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    HorizontalRulePlugin,
-    AutoformatPlugin.configure({
-      options: {
-        rules: [
-          {
-            mode: 'block',
-            type: KEYS.hr,
-            match: ['---', '—-', '___ '],
-            format: (editor) => {
-              editor.tf.setNodes({ type: KEYS.hr });
-              editor.tf.insertNodes({
-                type: KEYS.p,
-                children: [{ text: '' }],
-              });
-            },
-          },
-        ],
-      },
+    HorizontalRulePlugin.configure({
+      inputRules: [HorizontalRuleRules.markdown({ variant: '-' })],
     }),
   ],
 });
 ```
 
-- `AutoformatPlugin`: Automatically converts typed patterns (like `---`) into horizontal rules.
+- `HorizontalRuleRules.markdown({ variant: '-' })`: Enables `---`.
 
 ### Insert Toolbar Button
 

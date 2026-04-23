@@ -30,6 +30,7 @@ import { exitBreakValue } from './exit-break-value';
 import { findReplaceValue } from './find-replace-value';
 import { floatingToolbarValue } from './floating-toolbar-value';
 import { fontValue } from './font-value';
+import { footnoteValue } from './footnote-value';
 import { iframeValue } from './iframe-value';
 import { indentValue } from './indent-value';
 import { lineHeightValue } from './line-height-value';
@@ -77,6 +78,7 @@ const values = {
   'find-replace': findReplaceValue,
   'floating-toolbar': floatingToolbarValue,
   font: fontValue,
+  footnote: footnoteValue,
   html: deserializeHtmlValue,
   // 'huge-document': hugeDocumentValue,
   iframe: iframeValue,

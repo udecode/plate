@@ -54,7 +54,7 @@ docs:
 
 ### 安装
 
-`BasicMarksKit` 集成了加粗、斜体、下划线、删除线、代码、下标、上标、高亮和键盘键标记的插件，以及来自 [Plate UI](/docs/installation/plate-ui) 的相应 UI 组件。
+`BasicMarksKit` 集成了加粗、斜体、下划线、删除线、代码、下标、上标、高亮和键盘键标记的插件，以及来自 [Plate UI](/docs/installation/plate-ui) 的相应 UI 组件。同时也注册了这些 mark family 自带的 Markdown input rules。
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -79,6 +79,18 @@ const editor = createPlateEditor({
 ```
 
 </Steps>
+
+该套件默认启用常见的 mark 快捷输入，例如：
+
+- `**bold**` / `__bold__`
+- `*italic*` / `_italic_`
+- `` `code` ``
+- `~~strike~~`
+- `~sub~`
+- `^sup^`
+- `==highlight==`
+
+完整运行时模型请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
 
 ## 手动使用
 

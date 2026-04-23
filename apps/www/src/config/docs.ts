@@ -84,13 +84,11 @@ export const installationNavItems: SidebarNavItem[] = [
   },
   {
     href: '/docs/installation/docs',
-    label: 'New',
     title: 'Local Docs',
     titleCn: '本地文档',
   },
   {
     href: '/docs/installation/mcp',
-    label: 'New',
     title: 'MCP',
     titleCn: 'MCP',
   },
@@ -99,7 +97,6 @@ export const installationNavItems: SidebarNavItem[] = [
 export const guidesNavItems: SidebarNavItem[] = [
   {
     href: '/docs/feature-kits',
-    label: 'New',
     title: 'Feature Kits',
     titleCn: '功能套件',
   },
@@ -130,9 +127,14 @@ export const guidesNavItems: SidebarNavItem[] = [
       },
       {
         href: '/docs/plugin-rules',
-        label: 'New',
         title: 'Plugin Rules',
         titleCn: '插件规则',
+      },
+      {
+        href: '/docs/plugin-input-rules',
+        title: 'Plugin Input Rules',
+        label: 'New',
+        titleCn: '插件输入规则',
       },
     ],
     title: 'Plugin',

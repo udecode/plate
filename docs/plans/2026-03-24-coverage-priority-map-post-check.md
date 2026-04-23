@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24e/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24e/lcov.info)
 - Constraints:
   - exclude `/react`
   - no browser or e2e
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24e --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24e --reporter=dots`
 - Result: Fresh coverage: `2789` pass, `0` fail, `554` files, `2.75s`.
 
 ## Scoring Rules
@@ -36,40 +36,40 @@ Do not do another repo-wide sweep. The honest next work is a **strict `score >= 
 
 That batch is:
 
-1. `list-classic`: [transforms/toggleList.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
-2. `list-classic`: [transforms/insertListItem.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
-3. `table`: [lib/withDeleteTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withDeleteTable.ts) — score `6`
-4. `table`: [merge/deleteRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteRow.ts) — score `6`
-5. `diff`: [lib/withGetFragmentExcludeDiff.ts](/Users/zbeyens/git/plate/packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
-6. `link`: [transforms/unwrapLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/unwrapLink.ts) — score `6`
-7. `docx`: [utils/isDocxOl.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/isDocxOl.ts) — score `6`
-8. `list`: [transforms/setListNodes.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/setListNodes.ts) — score `6`
-9. `list`: [transforms/setListSiblingNodes.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/setListSiblingNodes.ts) — score `6`
+1. `list-classic`: [transforms/toggleList.ts](packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
+2. `list-classic`: [transforms/insertListItem.ts](packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
+3. `table`: [lib/withDeleteTable.ts](packages/table/src/lib/withDeleteTable.ts) — score `6`
+4. `table`: [merge/deleteRow.ts](packages/table/src/lib/merge/deleteRow.ts) — score `6`
+5. `diff`: [lib/withGetFragmentExcludeDiff.ts](packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
+6. `link`: [transforms/unwrapLink.ts](packages/link/src/lib/transforms/unwrapLink.ts) — score `6`
+7. `docx`: [utils/isDocxOl.ts](packages/docx/src/lib/docx-cleaner/utils/isDocxOl.ts) — score `6`
+8. `list`: [transforms/setListNodes.ts](packages/list/src/lib/transforms/setListNodes.ts) — score `6`
+9. `list`: [transforms/setListSiblingNodes.ts](packages/list/src/lib/transforms/setListSiblingNodes.ts) — score `6`
 
 ## Wider Batch (`score >= 5`)
 
 Use this only if you want one more sweep before rerunning coverage again.
 
-1. `list-classic`: [transforms/toggleList.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
-2. `list-classic`: [transforms/insertListItem.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
-3. `table`: [lib/withDeleteTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withDeleteTable.ts) — score `6`
-4. `table`: [merge/deleteRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteRow.ts) — score `6`
-5. `diff`: [lib/withGetFragmentExcludeDiff.ts](/Users/zbeyens/git/plate/packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
-6. `link`: [transforms/unwrapLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/unwrapLink.ts) — score `6`
-7. `docx`: [utils/isDocxOl.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/isDocxOl.ts) — score `6`
-8. `list`: [transforms/setListNodes.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/setListNodes.ts) — score `6`
-9. `list`: [transforms/setListSiblingNodes.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/setListSiblingNodes.ts) — score `6`
-10. `list`: [transforms/indentList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/indentList.ts) — score `5`
-11. `link`: [transforms/upsertLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/upsertLink.ts) — score `5`
-12. `table`: [transforms/moveSelectionFromCell.ts](/Users/zbeyens/git/plate/packages/table/src/lib/transforms/moveSelectionFromCell.ts) — score `5`
-13. `udecode/react-hotkeys`: [internal/isHotkeyPressed.ts](/Users/zbeyens/git/plate/packages/udecode/react-hotkeys/src/internal/isHotkeyPressed.ts) — score `5`
-14. `docx`: [utils/cleanDocxTabCount.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/cleanDocxTabCount.ts) — score `5`
-15. `docx`: [utils/cleanDocxSpacerun.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/cleanDocxSpacerun.ts) — score `5`
-16. `suggestion`: [transforms/setSuggestionNodes.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/setSuggestionNodes.ts) — score `5`
-17. `list`: [transforms/toggleListSet.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/toggleListSet.ts) — score `5`
-18. `list`: [transforms/toggleListUnset.ts](/Users/zbeyens/git/plate/packages/list/src/lib/transforms/toggleListUnset.ts) — score `5`
-19. `core`: [transforms/setAffinitySelection.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.ts) — score `5`
-20. `list-classic`: [transforms/unindentListItems.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/unindentListItems.ts) — score `5`
+1. `list-classic`: [transforms/toggleList.ts](packages/list-classic/src/lib/transforms/toggleList.ts) — score `7`
+2. `list-classic`: [transforms/insertListItem.ts](packages/list-classic/src/lib/transforms/insertListItem.ts) — score `7`
+3. `table`: [lib/withDeleteTable.ts](packages/table/src/lib/withDeleteTable.ts) — score `6`
+4. `table`: [merge/deleteRow.ts](packages/table/src/lib/merge/deleteRow.ts) — score `6`
+5. `diff`: [lib/withGetFragmentExcludeDiff.ts](packages/diff/src/lib/withGetFragmentExcludeDiff.ts) — score `6`
+6. `link`: [transforms/unwrapLink.ts](packages/link/src/lib/transforms/unwrapLink.ts) — score `6`
+7. `docx`: [utils/isDocxOl.ts](packages/docx/src/lib/docx-cleaner/utils/isDocxOl.ts) — score `6`
+8. `list`: [transforms/setListNodes.ts](packages/list/src/lib/transforms/setListNodes.ts) — score `6`
+9. `list`: [transforms/setListSiblingNodes.ts](packages/list/src/lib/transforms/setListSiblingNodes.ts) — score `6`
+10. `list`: [transforms/indentList.ts](packages/list/src/lib/transforms/indentList.ts) — score `5`
+11. `link`: [transforms/upsertLink.ts](packages/link/src/lib/transforms/upsertLink.ts) — score `5`
+12. `table`: [transforms/moveSelectionFromCell.ts](packages/table/src/lib/transforms/moveSelectionFromCell.ts) — score `5`
+13. `udecode/react-hotkeys`: [internal/isHotkeyPressed.ts](packages/udecode/react-hotkeys/src/internal/isHotkeyPressed.ts) — score `5`
+14. `docx`: [utils/cleanDocxTabCount.ts](packages/docx/src/lib/docx-cleaner/utils/cleanDocxTabCount.ts) — score `5`
+15. `docx`: [utils/cleanDocxSpacerun.ts](packages/docx/src/lib/docx-cleaner/utils/cleanDocxSpacerun.ts) — score `5`
+16. `suggestion`: [transforms/setSuggestionNodes.ts](packages/suggestion/src/lib/transforms/setSuggestionNodes.ts) — score `5`
+17. `list`: [transforms/toggleListSet.ts](packages/list/src/lib/transforms/toggleListSet.ts) — score `5`
+18. `list`: [transforms/toggleListUnset.ts](packages/list/src/lib/transforms/toggleListUnset.ts) — score `5`
+19. `core`: [transforms/setAffinitySelection.ts](packages/core/src/lib/plugins/affinity/transforms/setAffinitySelection.ts) — score `5`
+20. `list-classic`: [transforms/unindentListItems.ts](packages/list-classic/src/lib/transforms/unindentListItems.ts) — score `5`
 
 ## Package Order By Real Value
 
@@ -94,5 +94,5 @@ Use this only if you want one more sweep before rerunning coverage again.
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-post-check.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-post-check.tsv)
-- [2026-03-24-coverage-priority-files-post-check.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-post-check.tsv)
+- [2026-03-24-coverage-priority-packages-post-check.tsv](docs/plans/2026-03-24-coverage-priority-packages-post-check.tsv)
+- [2026-03-24-coverage-priority-files-post-check.tsv](docs/plans/2026-03-24-coverage-priority-files-post-check.tsv)

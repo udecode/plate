@@ -46,4 +46,24 @@ describe('parseMediaUrl', () => {
     });
     expect(embed).toBeUndefined();
   });
+
+  it('preserves sourceUrl metadata when a parser returns it', () => {
+    const embed = parseMediaUrl('https://example.com/watch', {
+      urlParsers: [
+        () => ({
+          id: 'video-1',
+          provider: 'youtube',
+          sourceUrl: 'https://example.com/watch',
+          url: 'https://example.com/embed/1',
+        }),
+      ],
+    });
+
+    expect(embed).toEqual({
+      id: 'video-1',
+      provider: 'youtube',
+      sourceUrl: 'https://example.com/watch',
+      url: 'https://example.com/embed/1',
+    });
+  });
 });

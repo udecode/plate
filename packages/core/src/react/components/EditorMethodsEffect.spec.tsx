@@ -7,7 +7,7 @@ import { createPlateEditor } from '../editor';
 import { PlateContent } from './PlateContent';
 
 describe('EditorMethodsEffect and redecorate', () => {
-  it('set redecorate method on editor', () => {
+  it('sets redecorate method on editor', () => {
     const editor = createPlateEditor();
 
     const wrapper = () => (

@@ -16,6 +16,7 @@ description: 配置常见的编辑行为。
 - **`'default'`**: Slate 的默认行为。
 - **`'reset'`**: 将当前块重置为默认段落，保留内容。
 - **`'exit'`**: 退出当前块结构，在其后插入新段落。详见 [Exit Break](/docs/exit-break) 了解此行为的更多信息。
+- **`'lift'`**: 将当前块从最近匹配的祖先容器中提升出来，一次只移除一层结构。
 - **`'deleteExit'`**: 删除内容后退出块。
 - **`'lineBreak'`**: 插入换行符 (`\n`) 而非拆分块。
 
@@ -83,6 +84,26 @@ description: 配置常见的编辑行为。
 </p>
 ```
 
+### `lift`
+
+将当前块从最近匹配的祖先容器中提升出来。
+
+```tsx
+<blockquote>
+  <p>
+    |
+  </p>
+</blockquote>
+```
+
+配置 `rules: { break: { empty: 'lift' } }` 后按下 `Enter`：
+
+```tsx
+<p>
+  |
+</p>
+```
+
 ### `deleteExit`
 
 删除内容后退出块。
@@ -129,14 +150,14 @@ description: 配置常见的编辑行为。
 ### 配置
 
 ```tsx
-BlockquotePlugin.configure({
+CalloutPlugin.configure({
   rules: {
     break: {
       // 正常按下 Enter 时的操作
       default: 'default' | 'lineBreak' | 'exit' | 'deleteExit',
       
       // 在空块中按下 Enter 时的操作
-      empty: 'default' | 'reset' | 'exit' | 'deleteExit',
+      empty: 'default' | 'reset' | 'exit' | 'lift' | 'deleteExit',
       
       // 在空行末尾按下 Enter 时的操作
       emptyLineEnd: 'default' | 'exit' | 'deleteExit',
@@ -160,6 +181,7 @@ BlockquotePlugin.configure({
   - [`'default'`](#default)
   - [`'reset'`](#reset)
   - [`'exit'`](#exit)
+  - [`'lift'`](#lift)
   - [`'deleteExit'`](#deleteexit)
 
 - `emptyLineEnd`
@@ -207,14 +229,14 @@ const plugins = [
 </p>
 ```
 
-**带换行和智能退出的块引用：**
+**带换行和智能退出的 Callout：**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...其他插件
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       break: {
         default: 'lineBreak',
@@ -226,19 +248,19 @@ const plugins = [
 ];
 ```
 
-在块引用中按下 `Enter` 前：
+在 Callout 中按下 `Enter` 前：
 ```tsx
-<blockquote>
+<callout>
   Quote text|
-</blockquote>
+</callout>
 ```
 
 按下后（换行）：
 ```tsx
-<blockquote>
+<callout>
   Quote text
   |
-</blockquote>
+</callout>
 ```
 
 **带自定义空块处理的代码块：**
@@ -286,7 +308,7 @@ HeadingPlugin.configure({
   rules: {
     delete: {
       // 在块起始处按下 Backspace 时的操作
-      start: 'default' | 'reset',
+      start: 'default' | 'reset' | 'lift',
       
       // 在空块中按下 Backspace 时的操作
       empty: 'default' | 'reset',
@@ -300,6 +322,7 @@ HeadingPlugin.configure({
 - `start`
   - [`'default'`](#default)
   - [`'reset'`](#reset)
+  - [`'lift'`](#lift)
 
 - `empty`
   - [`'default'`](#default)
@@ -307,14 +330,14 @@ HeadingPlugin.configure({
 
 ### 示例
 
-**在起始处重置块引用：**
+**在起始处重置 Callout：**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...其他插件
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       delete: { start: 'reset' },
     },
@@ -324,15 +347,15 @@ const plugins = [
 
 在起始处按下 `Backspace` 前：
 ```tsx
-<blockquote>
-  |Quote content
-</blockquote>
+<callout>
+  |Callout content
+</callout>
 ```
 
 按下后（重置）：
 ```tsx
 <p>
-  |Quote content
+  |Callout content
 </p>
 ```
 
@@ -416,14 +439,14 @@ const plugins = [
 </h1>
 ```
 
-**禁用移除的块引用：**
+**禁用移除的 Callout：**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...其他插件
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       merge: { removeEmpty: false }, // 默认
     },
@@ -436,9 +459,9 @@ const plugins = [
 <p>
   <text />
 </p>
-<blockquote>
-  |Code content
-</blockquote>
+<callout>
+  |Callout content
+</callout>
 ```
 
 按下后（保留空段落）：

@@ -33,6 +33,7 @@ function ToggleGroup({
       data-size={size}
       data-slot="toggle-group"
       data-variant={variant}
+      suppressHydrationWarning
       {...props}
     >
       <ToggleGroupContext.Provider value={{ size, variant }}>

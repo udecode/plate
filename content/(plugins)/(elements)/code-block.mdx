@@ -17,6 +17,7 @@ docs:
 - Support for multiple programming languages
 - Customizable language selection
 - Proper indentation handling
+- Markdown code fence shortcuts through `CodeBlockRules.markdown({ on })`
 
 </PackageInfo>
 
@@ -26,7 +27,7 @@ docs:
 
 ### Installation
 
-The fastest way to add code block functionality is with the `CodeBlockKit`, which includes pre-configured `CodeBlockPlugin`, `CodeLinePlugin`, and `CodeSyntaxPlugin` with syntax highlighting and [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add code block functionality is with the `CodeBlockKit`, which includes pre-configured `CodeBlockPlugin`, `CodeLinePlugin`, and `CodeSyntaxPlugin` with syntax highlighting, the shipped triple-backtick input rule, and [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="code-block-kit" />
 
@@ -87,6 +88,7 @@ Configure the plugins with syntax highlighting and custom components.
 **Basic Setup with All Languages:**
 
 ```tsx
+import { CodeBlockRules } from '@platejs/code-block';
 import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
@@ -99,6 +101,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
+      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       node: { component: CodeBlockElement },
       options: { lowlight },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
@@ -133,6 +136,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
+      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       node: { component: CodeBlockElement },
       options: {
         lowlight,
@@ -147,10 +151,13 @@ const editor = createPlateEditor({
 ```
 
 - `node.component`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
+- `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
 - `options.lowlight`: Lowlight instance for syntax highlighting.
 - `options.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 - `withComponent`: Assigns components for code lines and syntax highlighting.
+
+For the runtime model, see [Plugin Input Rules](/docs/plugin-input-rules).
 
 ### Turn Into Toolbar Button
 

@@ -47,7 +47,12 @@ const initialValue = [
   },
   {
     type: 'blockquote',
-    children: [{ text: '这是一段引用。' }],
+    children: [
+      {
+        type: 'p',
+        children: [{ text: '这是一段引用。' }],
+      },
+    ],
   },
   {
     type: 'p',

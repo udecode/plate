@@ -10,6 +10,28 @@ Use the [CLI](https://platejs.org/docs/components/cli) to install the latest ver
 
 ## April 2026 #30
 
+### April #30.2
+- **`footnote-kit`** (new): Add GFM footnotes with reference, definition, and input plugins plus UI — hover preview, navigation flash, multi-reference picker, and duplicate-definition recovery.
+- **`footnote-base-kit`** (new): Add static footnote rendering for SSR and markdown pipelines.
+- **`editor-kit`**, **`editor-base-kit`**: Register the new footnote kits.
+- **`markdown-kit`**: Register the base footnote plugins and add `remark-emoji` so GFM footnotes and emoji shortcodes round-trip.
+- **`insert-toolbar-button`**, **`insert-toolbar-classic-button`**, **`slash-node`**: Add a Footnote insert entry wired to `action_footnote`.
+- **`transforms`**, **`transforms-classic`**: Map `action_footnote` to `insertFootnote(editor, { select: true })`.
+- **`autoformat-kit`**: Reduce to symbol substitutions (arrows, fractions, legal, punctuation, smart quotes, sub/superscript). Markdown shortcuts move to the feature kits below. Add link automd so `[text](url)` closing on `)` resolves to a structured link.
+- **`autoformat-classic-kit`**: Drop `@platejs/autoformat`; re-export `AutoformatKit`.
+- **`basic-blocks-kit`**: Register `HeadingRules.markdown()` on `H1`–`H6`, `BlockquoteRules.markdown()`, and `HorizontalRuleRules.markdown({ variant: '-' | '_' })`.
+- **`basic-marks-kit`**: Register `BoldRules`, `ItalicRules`, `UnderlineRules`, `CodeRules`, `StrikethroughRules`, `SubscriptRules`, `SuperscriptRules`, `HighlightRules`, and `MarkComboRules` (`boldItalic`, `boldUnderline`, `italicUnderline`, `boldItalicUnderline`).
+- **`code-block-kit`**: Register `CodeBlockRules.markdown({ on: 'match' })`.
+- **`list-kit`**, **`list-classic-kit`**: Register `BulletedListRules`, `OrderedListRules`, and `TaskListRules` markdown variants.
+- **`link-kit`**: Register `LinkRules.markdown()` and `LinkRules.autolink` with `paste`, `space`, and `break` variants.
+- **`math-kit`**: Register `MathRules.markdown({ variant: '$' })` for inline and `MathRules.markdown({ on: 'break', variant: '$$' })` for block equations.
+- **`date-node`**, **`date-node-static`**: Render dates via `getDateDisplayLabel`; persist canonical values with `formatDateValue` and restore them with `parseCanonicalDateValue` so stored dates no longer drift across time zones.
+- **`heading-node`**: Flash the landed heading with `data-nav-target` + `--color-highlight`; add `highlight-style` dependency.
+- **`toc-node`**: Mark the active heading with solid background, foreground text, and `aria-current="location"`.
+- **`toc-node-static`**: Type the static map item as `Heading` to satisfy strict builds.
+- **`block-selection-kit`**: Export `hasSelectableClass` and use it to gate `belowRootNodes`.
+- **Docs**: Update the shipped kit docs to match the explicit `inputRules` API — required `on` for block fences, feature-owned markdown rule registration, and the new `plugin-input-rules` guide.
+
 ### April 1 #30.1
 - **`inline-combobox`**: Keep cancel insertion anchored to the live `PointRef` so collaboration or selection changes don't reinsert text at a stale location.
 

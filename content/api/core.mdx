@@ -39,6 +39,15 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="maxLength" type="number" optional>
     Specifies the maximum number of characters allowed in the editor.
   </APIItem>
+  <APIItem name="navigationFeedback" type="object | boolean" optional>
+    Configuration for the built-in navigation feedback plugin.
+    <APISubList>
+      <APISubListItem parent="navigationFeedback" name="duration" type="number" optional>
+        Default flash duration in milliseconds.
+        - **Default:** `1600`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
   <APIItem name="nodeId" type="object | boolean" optional>
     Configuration for automatic node ID generation and management.
     <APISubList>

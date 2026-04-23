@@ -17,7 +17,9 @@ docs:
 
 ## Features
 
-- Support for hyperlink insertion, edition and removal.
+- Insert, edit, and remove hyperlinks.
+- Markdown shortcut: type `[text](url)` and close with `)` to turn it into a link.
+- Plain URL autolink: paste a URL, or type a URL then press space or `Enter`.
 
 </PackageInfo>
 
@@ -27,7 +29,7 @@ docs:
 
 ### Installation
 
-The fastest way to add link functionality is with the `LinkKit`, which includes pre-configured `LinkPlugin` with floating toolbar and [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add link functionality is with the `LinkKit`, which includes pre-configured `LinkPlugin` with floating toolbar, autolink rules, and [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="link-kit" />
 
@@ -67,6 +69,7 @@ npm install @platejs/link
 Include `LinkPlugin` in your Plate plugins array when creating the editor.
 
 ```tsx
+import { LinkRules } from '@platejs/link';
 import { LinkPlugin } from '@platejs/link/react';
 import { createPlateEditor } from 'platejs/react';
 
@@ -103,6 +106,30 @@ const editor = createPlateEditor({
 
 - `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link-toolbar) after the editable area for link editing.
 - `render.node`: Assigns [`LinkElement`](/docs/components/link-node) to render link elements.
+
+### Input Rules
+
+Configure `LinkPlugin` to enable the built-in link input presets:
+
+```tsx
+import { LinkPlugin } from '@platejs/link/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    LinkPlugin.configure({
+      inputRules: [
+        LinkRules.markdown(),
+        LinkRules.autolink({ variant: 'paste' }),
+        LinkRules.autolink({ variant: 'space' }),
+        LinkRules.autolink({ variant: 'break' }),
+      ],
+    }),
+  ],
+});
+```
+
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink.
+- `LinkRules.markdown()`: Enables `[text](url)` source-entry conversion on the closing `)`.
 
 ### Add Toolbar Button
 

@@ -20,13 +20,13 @@ describe('useContentController', () => {
     mock.restore();
   });
 
-  it('scrolls the active content target and selects its row', async () => {
-    const addSelectedRow = mock();
+  it('scrolls the active content target without entering block-selection mode', async () => {
+    const flashTarget = mock();
     const scrollTo = mock();
     const editor = {
-      getApi: () => ({
-        blockSelection: { addSelectedRow },
-      }),
+      tf: {
+        navigation: { flashTarget },
+      },
     } as any;
     const container = document.createElement('div');
     Object.defineProperties(container, {
@@ -55,11 +55,17 @@ describe('useContentController', () => {
       result.current.onContentScroll({
         el: document.createElement('h2'),
         id: 'h1',
+        path: [0],
       });
     });
 
     expect(result.current.activeContentId).toBe('h1');
     expect(scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 35 });
-    expect(addSelectedRow).toHaveBeenCalledWith('h1');
+    expect(flashTarget).toHaveBeenCalledWith({
+      target: {
+        path: [0],
+        type: 'node',
+      },
+    });
   });
 });

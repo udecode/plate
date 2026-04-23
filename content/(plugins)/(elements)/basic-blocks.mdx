@@ -27,7 +27,7 @@ Insert horizontal lines to separate content.
 
 ### Installation
 
-The `BasicBlocksKit` bundles plugins for Paragraphs, Headings (H1, H2, H3), Blockquotes, and Horizontal Rules, along with their respective UI components from [Plate UI](/docs/installation/plate-ui).
+The `BasicBlocksKit` bundles plugins for Paragraphs, Headings (H1, H2, H3), Blockquotes, and Horizontal Rules, along with their respective UI components from [Plate UI](/docs/installation/plate-ui). It also registers the shipped markdown input rules for headings, blockquotes, and horizontal rules.
 
 <ComponentSource name="basic-blocks-kit" />
 
@@ -55,6 +55,14 @@ const editor = createPlateEditor({
 ```
 
 </Steps>
+
+The kit enables the common block markdown shortcuts out of the box:
+
+- `# `, `## `, `### ` for headings
+- `> ` for blockquotes
+- `---` and `___` for horizontal rules
+
+See the [Plugin Input Rules](/docs/plugin-input-rules) guide for the runtime model and the exact rule families.
 
 ## Manual Usage
 

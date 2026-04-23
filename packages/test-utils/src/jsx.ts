@@ -36,6 +36,8 @@ declare global {
       hequation: any;
       hexcalidraw: any;
       hfile: any;
+      hfootnoteDefinition: any;
+      hfootnoteReference: any;
       hh1: any;
       hh2: any;
       hh3: any;
@@ -94,6 +96,8 @@ export const elements: HyperscriptShorthands = {
   hequation: { type: 'equation' },
   hexcalidraw: { type: 'excalidraw' },
   hfile: { children: voidChildren, type: 'file' },
+  hfootnoteDefinition: { type: 'footnoteDefinition' },
+  hfootnoteReference: { type: 'footnoteReference' },
   hh1: { type: 'h1' },
   hh2: { type: 'h2' },
   hh3: { type: 'h3' },

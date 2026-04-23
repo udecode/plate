@@ -16,14 +16,14 @@ This pass starts from real `lcov`, not stale assumptions.
 ## Coverage Run
 
 - Command:
-  - `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo --reporter=dots`
+  - `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo --reporter=dots`
 - Result:
   - `2433 pass`
   - `0 fail`
   - `405 files`
   - `3.09s`
 - Artifact:
-  - [/Users/zbeyens/git/plate/.coverage-repo/lcov.info](/Users/zbeyens/git/plate/.coverage-repo/lcov.info)
+  - [.coverage-repo/lcov.info](.coverage-repo/lcov.info)
 
 ## Scoring Rules
 
@@ -47,11 +47,11 @@ This pass starts from real `lcov`, not stale assumptions.
 Best next slice.
 
 - High-value files:
-  - [packages/markdown/src/lib/MarkdownPlugin.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/MarkdownPlugin.ts)
-  - [packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts)
-  - [packages/markdown/src/lib/rules/defaultRules.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/rules/defaultRules.ts)
-  - [packages/markdown/src/lib/serializer/convertTextsSerialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/convertTextsSerialize.ts)
-  - [packages/markdown/src/lib/serializer/convertNodesSerialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/convertNodesSerialize.ts)
+  - [packages/markdown/src/lib/MarkdownPlugin.ts](packages/markdown/src/lib/MarkdownPlugin.ts)
+  - [packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts](packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts)
+  - [packages/markdown/src/lib/rules/defaultRules.ts](packages/markdown/src/lib/rules/defaultRules.ts)
+  - [packages/markdown/src/lib/serializer/convertTextsSerialize.ts](packages/markdown/src/lib/serializer/convertTextsSerialize.ts)
+  - [packages/markdown/src/lib/serializer/convertNodesSerialize.ts](packages/markdown/src/lib/serializer/convertNodesSerialize.ts)
 - Why:
   - pure deterministic behavior
   - user-visible output contracts
@@ -62,11 +62,11 @@ Best next slice.
 Best untouched contract lane.
 
 - High-value files:
-  - [packages/yjs/src/lib/BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts)
-  - [packages/yjs/src/lib/withPlateYjs.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withPlateYjs.ts)
-  - [packages/yjs/src/utils/slateToDeterministicYjsState.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.ts)
-  - [packages/yjs/src/lib/providers/registry.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/registry.ts)
-  - [packages/yjs/src/lib/providers/hocuspocus-provider.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/hocuspocus-provider.ts)
+  - [packages/yjs/src/lib/BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts)
+  - [packages/yjs/src/lib/withPlateYjs.ts](packages/yjs/src/lib/withPlateYjs.ts)
+  - [packages/yjs/src/utils/slateToDeterministicYjsState.ts](packages/yjs/src/utils/slateToDeterministicYjsState.ts)
+  - [packages/yjs/src/lib/providers/registry.ts](packages/yjs/src/lib/providers/registry.ts)
+  - [packages/yjs/src/lib/providers/hocuspocus-provider.ts](packages/yjs/src/lib/providers/hocuspocus-provider.ts)
 - Why:
   - zero runtime coverage on real contracts
   - framework-critical provider and synchronization logic
@@ -77,11 +77,11 @@ Best untouched contract lane.
 Cheap, useful, and still visibly under-covered in the exact seams that matter.
 
 - High-value files:
-  - [packages/media/src/lib/media/insertMedia.ts](/Users/zbeyens/git/plate/packages/media/src/lib/media/insertMedia.ts)
-  - [packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts](/Users/zbeyens/git/plate/packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts)
-  - [packages/media/src/lib/placeholder/transforms/insertPlaceholder.ts](/Users/zbeyens/git/plate/packages/media/src/lib/placeholder/transforms/insertPlaceholder.ts)
-  - [packages/media/src/lib/placeholder/transforms/setMediaNode.ts](/Users/zbeyens/git/plate/packages/media/src/lib/placeholder/transforms/setMediaNode.ts)
-  - [packages/media/src/lib/media-embed/parseVideoUrl.ts](/Users/zbeyens/git/plate/packages/media/src/lib/media-embed/parseVideoUrl.ts)
+  - [packages/media/src/lib/media/insertMedia.ts](packages/media/src/lib/media/insertMedia.ts)
+  - [packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts](packages/media/src/lib/media-embed/transforms/insertMediaEmbed.ts)
+  - [packages/media/src/lib/placeholder/transforms/insertPlaceholder.ts](packages/media/src/lib/placeholder/transforms/insertPlaceholder.ts)
+  - [packages/media/src/lib/placeholder/transforms/setMediaNode.ts](packages/media/src/lib/placeholder/transforms/setMediaNode.ts)
+  - [packages/media/src/lib/media-embed/parseVideoUrl.ts](packages/media/src/lib/media-embed/parseVideoUrl.ts)
 - Why:
   - deterministic URL and transform logic
   - exact kind of coverage that catches real regressions
@@ -92,11 +92,11 @@ Cheap, useful, and still visibly under-covered in the exact seams that matter.
 Still worth a pass, but after the three above.
 
 - High-value files:
-  - [packages/autoformat/src/lib/transforms/autoformatBlock.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/transforms/autoformatBlock.ts)
-  - [packages/autoformat/src/lib/transforms/autoformatMark.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/transforms/autoformatMark.ts)
-  - [packages/autoformat/src/lib/transforms/autoformatText.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/transforms/autoformatText.ts)
-  - [packages/autoformat/src/lib/utils/getMatchPoints.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/utils/getMatchPoints.ts)
-  - [packages/autoformat/src/lib/utils/getMatchRange.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/utils/getMatchRange.ts)
+  - [packages/autoformat/src/lib/transforms/autoformatBlock.ts](packages/autoformat/src/lib/transforms/autoformatBlock.ts)
+  - [packages/autoformat/src/lib/transforms/autoformatMark.ts](packages/autoformat/src/lib/transforms/autoformatMark.ts)
+  - [packages/autoformat/src/lib/transforms/autoformatText.ts](packages/autoformat/src/lib/transforms/autoformatText.ts)
+  - [packages/autoformat/src/lib/utils/getMatchPoints.ts](packages/autoformat/src/lib/utils/getMatchPoints.ts)
+  - [packages/autoformat/src/lib/utils/getMatchRange.ts](packages/autoformat/src/lib/utils/getMatchRange.ts)
 - Why:
   - big logic gaps
   - deterministic transforms
@@ -128,18 +128,18 @@ Still worth a pass, but after the three above.
 
 ## Ranking Snapshot
 
-| Rank | Package | Score | Notes |
-| --- | --- | ---: | --- |
-| 1 | `markdown` | 50 | Best next deterministic parser/serializer slice |
-| 2 | `yjs` | 50 | Biggest untouched non-React contract lane |
-| 3 | `media` | 49 | Cheap and useful transform/url seams |
-| 4 | `autoformat` | 48 | Large transform gaps, honest unit seams |
-| 5 | `docx-io` | 46 | Still valuable, but not the very next move |
-| 6 | `docx` | 45 | Good second-tier deterministic cleanup |
-| 7 | `table` | 44 | Real backlog, but not next after table work |
-| 8 | `list-classic` | 44 | Useful transform coverage |
-| 9 | `dnd` | 44 | Pure but lower leverage |
-| 10 | `suggestion` | 43 | Solid follow-up package |
+| Rank | Package        | Score | Notes                                           |
+| ---- | -------------- | ----: | ----------------------------------------------- |
+| 1    | `markdown`     |    50 | Best next deterministic parser/serializer slice |
+| 2    | `yjs`          |    50 | Biggest untouched non-React contract lane       |
+| 3    | `media`        |    49 | Cheap and useful transform/url seams            |
+| 4    | `autoformat`   |    48 | Large transform gaps, honest unit seams         |
+| 5    | `docx-io`      |    46 | Still valuable, but not the very next move      |
+| 6    | `docx`         |    45 | Good second-tier deterministic cleanup          |
+| 7    | `table`        |    44 | Real backlog, but not next after table work     |
+| 8    | `list-classic` |    44 | Useful transform coverage                       |
+| 9    | `dnd`          |    44 | Pure but lower leverage                         |
+| 10   | `suggestion`   |    43 | Solid follow-up package                         |
 
 ## Full Data
 

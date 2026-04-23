@@ -1,4 +1,4 @@
-import type { OverrideEditor, TElement } from 'platejs';
+import { RangeApi, type OverrideEditor, type TElement } from 'platejs';
 
 import type { TableConfig } from './BaseTablePlugin';
 
@@ -84,6 +84,21 @@ export const withTable: OverrideEditor<TableConfig> = (ctx) => {
           if (!table) return;
 
           const [, tablePath] = table;
+          const tableRange = editor.api.range(tablePath);
+
+          if (
+            tableRange &&
+            editor.selection &&
+            RangeApi.equals(editor.selection, tableRange)
+          ) {
+            const documentRange = editor.api.range([]);
+
+            if (!documentRange) return true;
+
+            editor.tf.select(documentRange);
+
+            return true;
+          }
 
           // select the whole table
           editor.tf.select(tablePath);

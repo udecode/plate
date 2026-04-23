@@ -33,10 +33,14 @@ export const parseVideoUrl = (url: string): EmbedUrlData | undefined => {
       youtube: `${YOUTUBE_PREFIX}${id}`,
     };
 
+    const embedUrl = providerUrls[provider];
+
     return {
       id,
       provider,
-      url: providerUrls[provider],
+      sourceKind: 'url',
+      sourceUrl: embedUrl === url ? undefined : url,
+      url: embedUrl,
     };
   }
 };

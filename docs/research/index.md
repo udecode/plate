@@ -128,6 +128,13 @@ This is the entrypoint for the compiled agent research layer.
   - [link-automd-belongs-to-the-link-interaction-lane.md](docs/research/decisions/link-automd-belongs-to-the-link-interaction-lane.md)
   - [current-kit-autoformat-normalization-split.md](docs/research/decisions/current-kit-autoformat-normalization-split.md)
   - [text-substitution-autoformat-authority.md](docs/research/open-questions/text-substitution-autoformat-authority.md)
+- input-rule docs IA follow-up now also includes:
+  - [sources/tiptap/input-rules-and-extension-doc-patterns.md](docs/research/sources/tiptap/input-rules-and-extension-doc-patterns.md)
+  - [sources/prosemirror/guide-reference-and-example-doc-patterns.md](docs/research/sources/prosemirror/guide-reference-and-example-doc-patterns.md)
+  - [sources/lexical/markdown-package-and-shortcuts-doc-patterns.md](docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md)
+  - [sources/slate/walkthrough-concepts-and-api-doc-patterns.md](docs/research/sources/slate/walkthrough-concepts-and-api-doc-patterns.md)
+  - [systems/plugin-input-rule-doc-pattern-landscape.md](docs/research/systems/plugin-input-rule-doc-pattern-landscape.md)
+  - [decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md](docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md)
 - one-to-one Typora source-card layer now lives in:
   `../raw/typora/page-cards/` and `../raw/typora/catalog.md`
 - cross-links from Typora pages into existing

@@ -160,12 +160,13 @@ Plate 用于向任何节点组件注入 props 的属性。
 
 - **默认值:** `false`
 </APISubListItem>
-<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'lift' | 'reset'" optional>
 在空块中按下 Enter 时的动作。参见 [插件规则](/docs/plugin-rules)。
 
 - `'default'`: 默认行为
 - `'reset'`: 重置块为默认段落类型
 - `'exit'`: 退出当前块
+- `'lift'`: 将当前块从最近匹配的祖先中提升出来
 - `'deleteExit'`: 向后删除然后退出
 </APISubListItem>
 <APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
@@ -186,10 +187,11 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
 如果为 true，分割后的新块将被重置为默认类型。参见 [插件规则](/docs/plugin-rules)。
 </APISubListItem>
-<APISubListItem parent="rules" name="delete.start" type="'default' | 'reset'" optional>
+<APISubListItem parent="rules" name="delete.start" type="'default' | 'lift' | 'reset'" optional>
 在块开头按下 Backspace 时的动作。无论块是否为空都适用。参见 [插件规则](/docs/plugin-rules)。
 
 - `'default'`: 默认行为
+- `'lift'`: 将当前块从最近匹配的祖先中提升出来
 - `'reset'`: 重置块为默认段落类型
 </APISubListItem>
 <APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>

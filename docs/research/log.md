@@ -210,3 +210,16 @@
   the huge-doc perf win is real, but direct DOM text sync, shell activation,
   shell-backed paste, and shell accessibility must be hardened before calling
   the runtime "perfect"
+
+## [2026-04-15] full | plugin input rules documentation pattern landscape
+
+- compiled new source pages for four documentation corpora:
+  - [tiptap/input-rules-and-extension-doc-patterns.md](docs/research/sources/tiptap/input-rules-and-extension-doc-patterns.md)
+  - [prosemirror/guide-reference-and-example-doc-patterns.md](docs/research/sources/prosemirror/guide-reference-and-example-doc-patterns.md)
+  - [lexical/markdown-package-and-shortcuts-doc-patterns.md](docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md)
+  - [slate/walkthrough-concepts-and-api-doc-patterns.md](docs/research/sources/slate/walkthrough-concepts-and-api-doc-patterns.md)
+- added a cross-corpus synthesis page:
+  [plugin-input-rule-doc-pattern-landscape.md](docs/research/systems/plugin-input-rule-doc-pattern-landscape.md)
+- accepted one doc-structure decision for Plate:
+  [plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md](docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md)
+- updated the research index with the new docs IA lane

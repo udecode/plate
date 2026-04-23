@@ -76,7 +76,7 @@ Even after patching the local source and rebuilding `apps/www/public/r`, default
 
 ### 1. Make the wrapper script safe when no CLI args are passed
 
-In [`tooling/scripts/update-templates.sh`](/Users/zbeyens/git/plate/tooling/scripts/update-templates.sh), do not splat an empty array under `set -u`.
+In [`tooling/scripts/update-templates.sh`](tooling/scripts/update-templates.sh), do not splat an empty array under `set -u`.
 
 Use a simple branch instead:
 
@@ -96,8 +96,8 @@ That gets `templates:update` into the real work instead of dying in shell plumbi
 
 In both template package manifests:
 
-- [`templates/plate-template/package.json`](/Users/zbeyens/git/plate/templates/plate-template/package.json)
-- [`templates/plate-playground-template/package.json`](/Users/zbeyens/git/plate/templates/plate-playground-template/package.json)
+- [`templates/plate-template/package.json`](templates/plate-template/package.json)
+- [`templates/plate-playground-template/package.json`](templates/plate-playground-template/package.json)
 
 replace `biome check .` with explicit paths:
 
@@ -125,8 +125,8 @@ This is the right place for the stronger rewrite. These files are generated and 
 
 In both template tsconfigs:
 
-- [`templates/plate-template/tsconfig.json`](/Users/zbeyens/git/plate/templates/plate-template/tsconfig.json)
-- [`templates/plate-playground-template/tsconfig.json`](/Users/zbeyens/git/plate/templates/plate-playground-template/tsconfig.json)
+- [`templates/plate-template/tsconfig.json`](templates/plate-template/tsconfig.json)
+- [`templates/plate-playground-template/tsconfig.json`](templates/plate-playground-template/tsconfig.json)
 
 add:
 
@@ -147,7 +147,7 @@ That matches the decision to keep alias-based imports instead of rewriting the t
 
 ### 5. Fix the stale playground Biome config
 
-In [`templates/plate-playground-template/biome.jsonc`](/Users/zbeyens/git/plate/templates/plate-playground-template/biome.jsonc), use the same preset path shape as the other template:
+In [`templates/plate-playground-template/biome.jsonc`](templates/plate-playground-template/biome.jsonc), use the same preset path shape as the other template:
 
 ```json
 "extends": [
@@ -163,7 +163,7 @@ Without that, template-local Biome resolution was broken before lint even had a 
 
 The upstream source still had the lint-triggering condition:
 
-- [`apps/www/src/registry/ui/code-drawing-node.tsx`](/Users/zbeyens/git/plate/apps/www/src/registry/ui/code-drawing-node.tsx)
+- [`apps/www/src/registry/ui/code-drawing-node.tsx`](apps/www/src/registry/ui/code-drawing-node.tsx)
 
 Change:
 
@@ -227,5 +227,5 @@ pnpm lint:fix
 
 ## Related Issues
 
-- See also: [Template updater should generate, not own CI verification](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-13-template-update-script-should-not-own-ci-verification.md)
-- See also: [TypeScript 6 upgrade needs explicit paths and Bun test typing](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-25-typescript-6-upgrade-needs-explicit-paths-and-bun-test-typing.md)
+- See also: [Template updater should generate, not own CI verification](docs/solutions/developer-experience/2026-03-13-template-update-script-should-not-own-ci-verification.md)
+- See also: [TypeScript 6 upgrade needs explicit paths and Bun test typing](docs/solutions/developer-experience/2026-03-25-typescript-6-upgrade-needs-explicit-paths-and-bun-test-typing.md)

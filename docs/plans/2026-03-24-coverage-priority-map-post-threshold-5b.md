@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24f/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24f/lcov.info)
 - Constraints:
   - exclude `/react`
   - no browser or e2e
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24f --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24f --reporter=dots`
 - Result: Fresh coverage: `2826` pass, `0` fail, `565` files, `2.44s`.
 
 ## Scoring Rules
@@ -36,35 +36,35 @@ Do not do another wide sweep. The honest next work is a **strict `score >= 6` ba
 
 That batch is:
 
-1. `dnd`: [DndPlugin.tsx](/Users/zbeyens/git/plate/packages/dnd/src/DndPlugin.tsx) — score `7`
-2. `docx`: [getVShapes.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/getVShapes.ts) — score `7`
-3. `list`: [BaseListPlugin.tsx](/Users/zbeyens/git/plate/packages/list/src/lib/BaseListPlugin.tsx) — score `6`
-4. `code-drawing`: [renderers.ts](/Users/zbeyens/git/plate/packages/code-drawing/src/lib/utils/renderers.ts) — score `6`
-5. `markdown`: [listToMdastTree.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/listToMdastTree.ts) — score `6`
-6. `list`: [getSiblingList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/queries/getSiblingList.ts) — score `6`
+1. `dnd`: [DndPlugin.tsx](packages/dnd/src/DndPlugin.tsx) — score `7`
+2. `docx`: [getVShapes.ts](packages/docx/src/lib/docx-cleaner/utils/getVShapes.ts) — score `7`
+3. `list`: [BaseListPlugin.tsx](packages/list/src/lib/BaseListPlugin.tsx) — score `6`
+4. `code-drawing`: [renderers.ts](packages/code-drawing/src/lib/utils/renderers.ts) — score `6`
+5. `markdown`: [listToMdastTree.ts](packages/markdown/src/lib/serializer/listToMdastTree.ts) — score `6`
+6. `list`: [getSiblingList.ts](packages/list/src/lib/queries/getSiblingList.ts) — score `6`
 
 ## Wider Batch (`score >= 5`)
 
-1. `dnd`: [DndPlugin.tsx](/Users/zbeyens/git/plate/packages/dnd/src/DndPlugin.tsx) — score `7`
-2. `docx`: [getVShapes.ts](/Users/zbeyens/git/plate/packages/docx/src/lib/docx-cleaner/utils/getVShapes.ts) — score `7`
-3. `list`: [BaseListPlugin.tsx](/Users/zbeyens/git/plate/packages/list/src/lib/BaseListPlugin.tsx) — score `6`
-4. `code-drawing`: [renderers.ts](/Users/zbeyens/git/plate/packages/code-drawing/src/lib/utils/renderers.ts) — score `6`
-5. `markdown`: [listToMdastTree.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/listToMdastTree.ts) — score `6`
-6. `list`: [getSiblingList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/queries/getSiblingList.ts) — score `6`
-7. `autoformat`: [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`
-8. `layout`: [withColumn.ts](/Users/zbeyens/git/plate/packages/layout/src/lib/withColumn.ts) — score `5`
-9. `core`: [getPlainText.tsx](/Users/zbeyens/git/plate/packages/core/src/static/internal/getPlainText.tsx) — score `5`
-10. `dnd`: [onHoverNode.ts](/Users/zbeyens/git/plate/packages/dnd/src/transforms/onHoverNode.ts) — score `5`
-11. `link`: [unwrapLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/unwrapLink.ts) — score `5`
-12. `slate`: [isTargetInsideNonReadonlyVoid.ts](/Users/zbeyens/git/plate/packages/slate/src/internal/dom-editor/isTargetInsideNonReadonlyVoid.ts) — score `5`
-13. `udecode/depset`: [get-package-manager.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/get-package-manager.ts) — score `5`
-14. `core`: [cleanHtmlTextNodes.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/cleanHtmlTextNodes.ts) — score `5`
-15. `core`: [deserializeHtmlNodeChildren.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/deserializeHtmlNodeChildren.ts) — score `5`
-16. `suggestion`: [getActiveSuggestionDescriptions.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/utils/getActiveSuggestionDescriptions.ts) — score `5`
-17. `core`: [createStaticString.ts](/Users/zbeyens/git/plate/packages/core/src/static/utils/createStaticString.ts) — score `5`
-18. `list`: [areEqListStyleType.ts](/Users/zbeyens/git/plate/packages/list/src/lib/queries/areEqListStyleType.ts) — score `5`
-19. `table`: [getSelectedCells.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getSelectedCells.ts) — score `5`
-20. `docx-io`: [vnode.ts](/Users/zbeyens/git/plate/packages/docx-io/src/lib/internal/utils/vnode.ts) — score `5`
+1. `dnd`: [DndPlugin.tsx](packages/dnd/src/DndPlugin.tsx) — score `7`
+2. `docx`: [getVShapes.ts](packages/docx/src/lib/docx-cleaner/utils/getVShapes.ts) — score `7`
+3. `list`: [BaseListPlugin.tsx](packages/list/src/lib/BaseListPlugin.tsx) — score `6`
+4. `code-drawing`: [renderers.ts](packages/code-drawing/src/lib/utils/renderers.ts) — score `6`
+5. `markdown`: [listToMdastTree.ts](packages/markdown/src/lib/serializer/listToMdastTree.ts) — score `6`
+6. `list`: [getSiblingList.ts](packages/list/src/lib/queries/getSiblingList.ts) — score `6`
+7. `autoformat`: [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`
+8. `layout`: [withColumn.ts](packages/layout/src/lib/withColumn.ts) — score `5`
+9. `core`: [getPlainText.tsx](packages/core/src/static/internal/getPlainText.tsx) — score `5`
+10. `dnd`: [onHoverNode.ts](packages/dnd/src/transforms/onHoverNode.ts) — score `5`
+11. `link`: [unwrapLink.ts](packages/link/src/lib/transforms/unwrapLink.ts) — score `5`
+12. `slate`: [isTargetInsideNonReadonlyVoid.ts](packages/slate/src/internal/dom-editor/isTargetInsideNonReadonlyVoid.ts) — score `5`
+13. `udecode/depset`: [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — score `5`
+14. `core`: [cleanHtmlTextNodes.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlTextNodes.ts) — score `5`
+15. `core`: [deserializeHtmlNodeChildren.ts](packages/core/src/lib/plugins/html/utils/deserializeHtmlNodeChildren.ts) — score `5`
+16. `suggestion`: [getActiveSuggestionDescriptions.ts](packages/suggestion/src/lib/utils/getActiveSuggestionDescriptions.ts) — score `5`
+17. `core`: [createStaticString.ts](packages/core/src/static/utils/createStaticString.ts) — score `5`
+18. `list`: [areEqListStyleType.ts](packages/list/src/lib/queries/areEqListStyleType.ts) — score `5`
+19. `table`: [getSelectedCells.ts](packages/table/src/lib/queries/getSelectedCells.ts) — score `5`
+20. `docx-io`: [vnode.ts](packages/docx-io/src/lib/internal/utils/vnode.ts) — score `5`
 
 ## Package Order By Real Value
 
@@ -89,5 +89,5 @@ That batch is:
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-post-threshold-5b.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-post-threshold-5b.tsv)
-- [2026-03-24-coverage-priority-files-post-threshold-5b.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-post-threshold-5b.tsv)
+- [2026-03-24-coverage-priority-packages-post-threshold-5b.tsv](docs/plans/2026-03-24-coverage-priority-packages-post-threshold-5b.tsv)
+- [2026-03-24-coverage-priority-files-post-threshold-5b.tsv](docs/plans/2026-03-24-coverage-priority-files-post-threshold-5b.tsv)

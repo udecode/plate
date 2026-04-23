@@ -224,6 +224,43 @@ describe('resolvePlugins', () => {
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });
+
+  it('throws when AutoformatPlugin is combined with active input rules', () => {
+    expect(() =>
+      createEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'autoformat',
+          }),
+          createSlatePlugin({
+            key: 'marks',
+          }).configure({
+            inputRules: [
+              {
+                apply: () => true,
+                target: 'insertText',
+                trigger: '*',
+              },
+            ],
+          }),
+        ],
+      })
+    ).toThrow('AutoformatPlugin cannot be used with plugin-owned input rules.');
+  });
+
+  it('throws when inputRules is configured as a boolean map', () => {
+    expect(() =>
+      createEditor({
+        plugins: [
+          createSlatePlugin({
+            key: 'marks',
+          }).configure({
+            inputRules: { markdown: true } as any,
+          }),
+        ],
+      })
+    ).toThrow('inputRules config must be an array of explicit rule instances.');
+  });
 });
 
 describe('resolveAndSortPlugins', () => {

@@ -13,6 +13,7 @@ docs:
 
 - Create blockquotes to emphasize important information or highlight quotes from external sources.
 - Renders as `<blockquote>` HTML element by default.
+- Supports nested block content such as paragraphs, lists, and nested blockquotes.
 
 </PackageInfo>
 
@@ -125,10 +126,10 @@ You can add blockquote to the [Insert Toolbar Button](/docs/toolbar#insert-toolb
 
 ### `BlockquotePlugin`
 
-Plugin for blockquote elements. Renders as `<blockquote>` HTML element by default.
+Plugin for blockquote container elements. Renders as `<blockquote>` HTML element by default.
 
 ## Transforms
 
 ### `tf.blockquote.toggle`
 
-Toggles the current block between blockquote and paragraph. If the block is already a blockquote, it reverts to a paragraph. If it's a paragraph or another block type, it converts to a blockquote.
+Wraps the current block or selection in a blockquote. If the selection is already inside a blockquote, it unwraps the quoted blocks.

@@ -9,14 +9,14 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24h/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24h/lcov.info)
 - Constraint: temporary non-React review
 - Scope: `packages/**/src/**` only
 - Goal: regression confidence for breaking changes, not vanity coverage
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24h --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24h --reporter=dots`
 - Result: Fresh coverage: `2869 pass, 0 fail, 575 files, 2.97s`.
 
 ## Suite Health
@@ -41,39 +41,39 @@ Do not do another package sweep.
 
 The strict next batch is the raw `score >= 6` set:
 
-1. `list-classic`: [BaseTodoListPlugin.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
-2. `core`: [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
-3. `markdown`: [deserializeMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
-4. `suggestion`: [deleteSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
-5. `table`: [deleteColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteColumn.ts) — score `7`
-6. `suggestion`: [rejectSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`
-7. `table`: [insertTableColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableColumn.ts) — score `7`
-8. `table`: [insertTableRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableRow.ts) — score `7`
-9. `suggestion`: [BaseSuggestionPlugin.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`
-10. `table`: [BaseTablePlugin.ts](/Users/zbeyens/git/plate/packages/table/src/lib/BaseTablePlugin.ts) — score `6`
-11. `list`: [withList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/withList.ts) — score `6`
-12. `core`: [withMergeRules.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`
+1. `list-classic`: [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
+2. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
+3. `markdown`: [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
+4. `suggestion`: [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
+5. `table`: [deleteColumn.ts](packages/table/src/lib/merge/deleteColumn.ts) — score `7`
+6. `suggestion`: [rejectSuggestion.ts](packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`
+7. `table`: [insertTableColumn.ts](packages/table/src/lib/merge/insertTableColumn.ts) — score `7`
+8. `table`: [insertTableRow.ts](packages/table/src/lib/merge/insertTableRow.ts) — score `7`
+9. `suggestion`: [BaseSuggestionPlugin.ts](packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`
+10. `table`: [BaseTablePlugin.ts](packages/table/src/lib/BaseTablePlugin.ts) — score `6`
+11. `list`: [withList.ts](packages/list/src/lib/withList.ts) — score `6`
+12. `core`: [withMergeRules.ts](packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`
 
 The wider but still defensible batch is the raw `score >= 5` set:
 
-1. `list-classic`: [BaseTodoListPlugin.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
-2. `core`: [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
-3. `markdown`: [deserializeMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
-4. `suggestion`: [deleteSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
-5. `table`: [deleteColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteColumn.ts) — score `7`
-6. `suggestion`: [rejectSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`
-7. `table`: [insertTableColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableColumn.ts) — score `7`
-8. `table`: [insertTableRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableRow.ts) — score `7`
-9. `suggestion`: [BaseSuggestionPlugin.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`
-10. `table`: [BaseTablePlugin.ts](/Users/zbeyens/git/plate/packages/table/src/lib/BaseTablePlugin.ts) — score `6`
-11. `list`: [withList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/withList.ts) — score `6`
-12. `core`: [withMergeRules.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`
-13. `dnd`: [onDropNode.ts](/Users/zbeyens/git/plate/packages/dnd/src/transforms/onDropNode.ts) — score `6`
-14. `core`: [htmlElementToLeaf.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `6`
-15. `basic-styles`: [BaseTextAlignPlugin.ts](/Users/zbeyens/git/plate/packages/basic-styles/src/lib/BaseTextAlignPlugin.ts) — score `6`
-16. `core`: [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`
-17. `table`: [withInsertFragmentTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withInsertFragmentTable.ts) — score `6`
-18. `table`: [withNormalizeTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withNormalizeTable.ts) — score `6`
+1. `list-classic`: [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`
+2. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`
+3. `markdown`: [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`
+4. `suggestion`: [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`
+5. `table`: [deleteColumn.ts](packages/table/src/lib/merge/deleteColumn.ts) — score `7`
+6. `suggestion`: [rejectSuggestion.ts](packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`
+7. `table`: [insertTableColumn.ts](packages/table/src/lib/merge/insertTableColumn.ts) — score `7`
+8. `table`: [insertTableRow.ts](packages/table/src/lib/merge/insertTableRow.ts) — score `7`
+9. `suggestion`: [BaseSuggestionPlugin.ts](packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`
+10. `table`: [BaseTablePlugin.ts](packages/table/src/lib/BaseTablePlugin.ts) — score `6`
+11. `list`: [withList.ts](packages/list/src/lib/withList.ts) — score `6`
+12. `core`: [withMergeRules.ts](packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`
+13. `dnd`: [onDropNode.ts](packages/dnd/src/transforms/onDropNode.ts) — score `6`
+14. `core`: [htmlElementToLeaf.ts](packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `6`
+15. `basic-styles`: [BaseTextAlignPlugin.ts](packages/basic-styles/src/lib/BaseTextAlignPlugin.ts) — score `6`
+16. `core`: [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`
+17. `table`: [withInsertFragmentTable.ts](packages/table/src/lib/withInsertFragmentTable.ts) — score `6`
+18. `table`: [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`
 
 ## Threshold Counts
 
@@ -102,26 +102,26 @@ The wider but still defensible batch is the raw `score >= 5` set:
 
 ## Best Files By Value
 
-1. `list-classic` — [BaseTodoListPlugin.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`, coverage `37.1%`, uncovered `22`
-2. `core` — [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`, coverage `88.8%`, uncovered `18`
-3. `markdown` — [deserializeMd.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`, coverage `79.2%`, uncovered `15`
-4. `suggestion` — [deleteSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`, coverage `93.6%`, uncovered `10`
-5. `table` — [deleteColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteColumn.ts) — score `7`, coverage `93.4%`, uncovered `9`
-6. `suggestion` — [rejectSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`, coverage `94.0%`, uncovered `8`
-7. `table` — [insertTableColumn.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableColumn.ts) — score `7`, coverage `94.3%`, uncovered `8`
-8. `table` — [insertTableRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/insertTableRow.ts) — score `7`, coverage `93.9%`, uncovered `8`
-9. `suggestion` — [BaseSuggestionPlugin.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`, coverage `68.5%`, uncovered `28`
-10. `table` — [BaseTablePlugin.ts](/Users/zbeyens/git/plate/packages/table/src/lib/BaseTablePlugin.ts) — score `6`, coverage `85.6%`, uncovered `26`
-11. `list` — [withList.ts](/Users/zbeyens/git/plate/packages/list/src/lib/withList.ts) — score `6`, coverage `78.3%`, uncovered `25`
-12. `core` — [withMergeRules.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`, coverage `87.7%`, uncovered `14`
-13. `dnd` — [onDropNode.ts](/Users/zbeyens/git/plate/packages/dnd/src/transforms/onDropNode.ts) — score `6`, coverage `87.5%`, uncovered `14`
-14. `core` — [htmlElementToLeaf.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `6`, coverage `69.4%`, uncovered `11`
-15. `basic-styles` — [BaseTextAlignPlugin.ts](/Users/zbeyens/git/plate/packages/basic-styles/src/lib/BaseTextAlignPlugin.ts) — score `6`, coverage `72.2%`, uncovered `10`
-16. `core` — [resolvePlugin.ts](/Users/zbeyens/git/plate/packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`, coverage `88.1%`, uncovered `8`
-17. `table` — [withInsertFragmentTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withInsertFragmentTable.ts) — score `6`, coverage `93.2%`, uncovered `8`
-18. `table` — [withNormalizeTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withNormalizeTable.ts) — score `6`, coverage `92.7%`, uncovered `8`
-19. `link` — [upsertLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/upsertLink.ts) — score `6`, coverage `93.9%`, uncovered `6`
-20. `markdown` — [customMdxDeserialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts) — score `6`, coverage `91.4%`, uncovered `5`
+1. `list-classic` — [BaseTodoListPlugin.ts](packages/list-classic/src/lib/BaseTodoListPlugin.ts) — score `8`, coverage `37.1%`, uncovered `22`
+2. `core` — [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `7`, coverage `88.8%`, uncovered `18`
+3. `markdown` — [deserializeMd.ts](packages/markdown/src/lib/deserializer/deserializeMd.ts) — score `7`, coverage `79.2%`, uncovered `15`
+4. `suggestion` — [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts) — score `7`, coverage `93.6%`, uncovered `10`
+5. `table` — [deleteColumn.ts](packages/table/src/lib/merge/deleteColumn.ts) — score `7`, coverage `93.4%`, uncovered `9`
+6. `suggestion` — [rejectSuggestion.ts](packages/suggestion/src/lib/transforms/rejectSuggestion.ts) — score `7`, coverage `94.0%`, uncovered `8`
+7. `table` — [insertTableColumn.ts](packages/table/src/lib/merge/insertTableColumn.ts) — score `7`, coverage `94.3%`, uncovered `8`
+8. `table` — [insertTableRow.ts](packages/table/src/lib/merge/insertTableRow.ts) — score `7`, coverage `93.9%`, uncovered `8`
+9. `suggestion` — [BaseSuggestionPlugin.ts](packages/suggestion/src/lib/BaseSuggestionPlugin.ts) — score `6`, coverage `68.5%`, uncovered `28`
+10. `table` — [BaseTablePlugin.ts](packages/table/src/lib/BaseTablePlugin.ts) — score `6`, coverage `85.6%`, uncovered `26`
+11. `list` — [withList.ts](packages/list/src/lib/withList.ts) — score `6`, coverage `78.3%`, uncovered `25`
+12. `core` — [withMergeRules.ts](packages/core/src/lib/plugins/override/withMergeRules.ts) — score `6`, coverage `87.7%`, uncovered `14`
+13. `dnd` — [onDropNode.ts](packages/dnd/src/transforms/onDropNode.ts) — score `6`, coverage `87.5%`, uncovered `14`
+14. `core` — [htmlElementToLeaf.ts](packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `6`, coverage `69.4%`, uncovered `11`
+15. `basic-styles` — [BaseTextAlignPlugin.ts](packages/basic-styles/src/lib/BaseTextAlignPlugin.ts) — score `6`, coverage `72.2%`, uncovered `10`
+16. `core` — [resolvePlugin.ts](packages/core/src/internal/plugin/resolvePlugin.ts) — score `6`, coverage `88.1%`, uncovered `8`
+17. `table` — [withInsertFragmentTable.ts](packages/table/src/lib/withInsertFragmentTable.ts) — score `6`, coverage `93.2%`, uncovered `8`
+18. `table` — [withNormalizeTable.ts](packages/table/src/lib/withNormalizeTable.ts) — score `6`, coverage `92.7%`, uncovered `8`
+19. `link` — [upsertLink.ts](packages/link/src/lib/transforms/upsertLink.ts) — score `6`, coverage `93.9%`, uncovered `6`
+20. `markdown` — [customMdxDeserialize.ts](packages/markdown/src/lib/deserializer/utils/customMdxDeserialize.ts) — score `6`, coverage `91.4%`, uncovered `5`
 
 ## Stop Condition
 
@@ -135,5 +135,5 @@ Stop when the remaining misses are mostly wrappers, DOM/provider dust, giant slu
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-testing-review-non-react.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react.tsv)
-- [2026-03-24-coverage-priority-files-testing-review-non-react.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react.tsv)
+- [2026-03-24-coverage-priority-packages-testing-review-non-react.tsv](docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react.tsv)
+- [2026-03-24-coverage-priority-files-testing-review-non-react.tsv](docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react.tsv)

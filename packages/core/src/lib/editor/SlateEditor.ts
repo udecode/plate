@@ -27,6 +27,7 @@ import type {
   InjectNodeProps,
 } from '../plugin/SlatePlugin';
 import type { BaseParagraphPlugin, CorePlugin } from '../plugins';
+import type { ResolvedInputRulesMeta } from '../plugins/input-rules/types';
 
 export type BaseEditor = EditorBase & {
   /** DOM state */
@@ -163,6 +164,7 @@ export type SlateEditor = BaseEditor & {
   meta: BaseEditor['meta'] & {
     /** An array of plugins that are currently being used by the editor. */
     pluginList: AnyEditorPlugin[];
+    inputRules: ResolvedInputRulesMeta;
     shortcuts: any;
   };
   plugins: Record<string, AnyEditorPlugin>;
@@ -188,6 +190,7 @@ export type TSlateEditor<
   api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
   meta: BaseEditor['meta'] & {
+    inputRules: ResolvedInputRulesMeta;
     pluginList: P[];
     shortcuts: any;
   };

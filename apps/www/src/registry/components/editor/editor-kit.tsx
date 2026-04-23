@@ -24,6 +24,7 @@ import { EmojiKit } from './plugins/emoji-kit';
 import { ExitBreakKit } from './plugins/exit-break-kit';
 import { FixedToolbarKit } from './plugins/fixed-toolbar-kit';
 import { FloatingToolbarKit } from './plugins/floating-toolbar-kit';
+import { FootnoteKit } from './plugins/footnote-kit';
 import { FontKit } from './plugins/font-kit';
 import { LineHeightKit } from './plugins/line-height-kit';
 import { LinkKit } from './plugins/link-kit';
@@ -83,6 +84,7 @@ export const EditorKit = [
   // Parsers
   ...DocxKit,
   ...MarkdownKit,
+  ...FootnoteKit,
 
   // UI
   ...BlockPlaceholderKit,

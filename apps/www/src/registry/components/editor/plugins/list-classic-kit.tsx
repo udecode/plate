@@ -1,6 +1,11 @@
 'use client';
 
 import {
+  BulletedListRules,
+  OrderedListRules,
+  TaskListRules,
+} from '@platejs/list-classic';
+import {
   BulletedListPlugin,
   ListItemContentPlugin,
   ListItemPlugin,
@@ -17,7 +22,16 @@ import {
 } from '@/registry/ui/list-classic-node';
 
 export const ListKit = [
-  ListPlugin,
+  ListPlugin.configure({
+    inputRules: [
+      BulletedListRules.markdown({ variant: '-' }),
+      BulletedListRules.markdown({ variant: '*' }),
+      OrderedListRules.markdown({ variant: '.' }),
+      OrderedListRules.markdown({ variant: ')' }),
+      TaskListRules.markdown({ checked: false }),
+      TaskListRules.markdown({ checked: true }),
+    ],
+  }),
   ListItemPlugin,
   ListItemContentPlugin,
   BulletedListPlugin.configure({

@@ -1,6 +1,10 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { BaseBlockquotePlugin, BaseH1Plugin } from '@platejs/basic-nodes';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseIndentPlugin } from '@platejs/indent';
+import { BaseListPlugin } from '@platejs/list';
 
 import { createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
@@ -55,6 +59,479 @@ const getEditorAfterAction = ({
 };
 
 describe('withDeleteRules', () => {
+  describe('generic delete behavior', () => {
+    it('deletes an expanded inline paragraph selection in place', () => {
+      const input = (
+        <editor>
+          <hp>
+            ab
+            <anchor />
+            cd
+            <focus />
+            ef
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            ab
+            <cursor />
+            ef
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteFragment(),
+        input,
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('deletes a backward multi-block selection without corrupting the surviving paragraph', () => {
+      const input = (
+        <editor>
+          <hp>
+            ab
+            <focus />
+            cd
+          </hp>
+          <hp>
+            ef
+            <anchor />
+            gh
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            ab
+            <cursor />
+            gh
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteFragment(),
+        input,
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('blockquote structural delete rules', () => {
+    it('lifts the current quoted block out of a top-level quote', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+              Quote
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            Quote
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('lifts only the current quoted block and keeps quoted siblings wrapped', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+              Lead
+            </hp>
+            <hp>Tail</hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            Lead
+          </hp>
+          <hblockquote>
+            <hp>Tail</hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('lets list ownership win for a quoted list item at block start', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp indent={1} listStyleType="disc">
+              <cursor />
+              Quote
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+              Quote
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseListPlugin, BaseIndentPlugin, BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('removes the list layer first, then the quote layer on the next delete', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp indent={1} listStyleType="disc">
+              <cursor />
+              Quote
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            Quote
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => {
+          editor.tf.deleteBackward('character');
+          editor.tf.deleteBackward('character');
+        },
+        input,
+        plugins: [BaseListPlugin, BaseIndentPlugin, BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('deletes an empty non-first quoted paragraph inside the quote before any lift', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp>Lead</hp>
+            <hp>
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hp>
+              Lead
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('still lifts the first empty quoted paragraph out of the quote', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+            </hp>
+            <hp>Tail</hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+          <hblockquote>
+            <hp>Tail</hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('lifts a nested quoted paragraph one quote level on delete at block start', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>
+                <cursor />
+                Quote
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+              Quote
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('deletes an empty nested quoted paragraph inside the same inner quote before lifting', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>Lead</hp>
+              <hp>
+                <cursor />
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>
+                Lead
+                <cursor />
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('heading structural delete rules', () => {
+    it('resets a non-empty heading to a paragraph before merging', () => {
+      const input = (
+        <editor>
+          <hp>Lead</hp>
+          <hh1>
+            <cursor />
+            Heading
+          </hh1>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>Lead</hp>
+          <hp>
+            <cursor />
+            Heading
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseH1Plugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('deletes an expanded inline heading selection in place', () => {
+      const input = (
+        <editor>
+          <hh1>
+            He
+            <anchor />
+            ad
+            <focus />
+            ing
+          </hh1>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hh1>
+            He
+            <cursor />
+            ing
+          </hh1>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteFragment(),
+        input,
+        plugins: [BaseH1Plugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('deletes a heading-to-paragraph selection without leaving a broken heading boundary', () => {
+      const input = (
+        <editor>
+          <hh1>
+            He
+            <focus />
+            ad
+          </hh1>
+          <hp>
+            ef
+            <anchor />
+            gh
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hh1>
+            He
+            <cursor />
+            gh
+          </hh1>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteFragment(),
+        input,
+        plugins: [BaseH1Plugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('resets an empty heading to an empty paragraph before any merge', () => {
+      const input = (
+        <editor>
+          <hp>Lead</hp>
+          <hh1>
+            <cursor />
+          </hh1>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>Lead</hp>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseH1Plugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
   describe('empty reset rules', () => {
     it('resets an empty block on deleteBackward', () => {
       const input = (
@@ -127,6 +604,35 @@ describe('withDeleteRules', () => {
   });
 
   describe('start reset rules', () => {
+    it('resets a callout block to a paragraph at block start', () => {
+      const input = (
+        <editor>
+          <element type="callout">
+            <cursor />
+            Callout
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+            Callout
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [BaseCalloutPlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
     it.each([
       [
         'resets a non-empty heading at the start',

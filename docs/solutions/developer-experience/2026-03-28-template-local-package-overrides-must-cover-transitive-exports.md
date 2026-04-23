@@ -83,22 +83,19 @@ That was not related to the template export failure, but it still needed to be c
 
 ### 1. Re-export the helper from `platejs`
 
-In [`packages/plate/src/index.tsx`](/Users/zbeyens/git/plate/packages/plate/src/index.tsx), add an explicit umbrella export:
+In [`packages/plate/src/index.tsx`](packages/plate/src/index.tsx), add an explicit umbrella export:
 
 ```ts
-export {
-  STATIC_VALUE_CREATED_AT,
-  normalizeStaticValue,
-} from '@platejs/core';
+export { STATIC_VALUE_CREATED_AT, normalizeStaticValue } from "@platejs/core";
 
-export type { NormalizeStaticValueOptions } from '@platejs/core';
+export type { NormalizeStaticValueOptions } from "@platejs/core";
 ```
 
 That makes the package API honest. If the template imports from `platejs`, the symbol needs to exist there explicitly.
 
 ### 2. Select affected template packages by walking upward through local dependents
 
-In [`tooling/scripts/prepare-local-template-packages.mjs`](/Users/zbeyens/git/plate/tooling/scripts/prepare-local-template-packages.mjs), compute the affected package set from changed packages plus their relevant local dependents.
+In [`tooling/scripts/prepare-local-template-packages.mjs`](tooling/scripts/prepare-local-template-packages.mjs), compute the affected package set from changed packages plus their relevant local dependents.
 
 That means a change in `@platejs/core` can pull in:
 
@@ -135,7 +132,7 @@ pnpm brl
 
 and keep the generated change in:
 
-- [`packages/dnd/src/utils/index.ts`](/Users/zbeyens/git/plate/packages/dnd/src/utils/index.ts)
+- [`packages/dnd/src/utils/index.ts`](packages/dnd/src/utils/index.ts)
 
 This removes the separate CI failure so the registry fix is not hidden behind unrelated red.
 
@@ -192,5 +189,5 @@ pnpm lint:fix
 
 ## Related Issues
 
-- See also: [Static demo values need deterministic IDs and timestamps for hydration](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-28-static-demo-values-need-deterministic-ids-and-timestamps-for-hydration.md)
-- See also: [Template update and check need an arg-safe wrapper, template-scoped lint, and a TS6 `baseUrl` opt-out](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-25-templates-update-check-need-arg-safe-wrapper-template-scoped-lint-and-ts6-baseurl-opt-out.md)
+- See also: [Static demo values need deterministic IDs and timestamps for hydration](docs/solutions/developer-experience/2026-03-28-static-demo-values-need-deterministic-ids-and-timestamps-for-hydration.md)
+- See also: [Template update and check need an arg-safe wrapper, template-scoped lint, and a TS6 `baseUrl` opt-out](docs/solutions/developer-experience/2026-03-25-templates-update-check-need-arg-safe-wrapper-template-scoped-lint-and-ts6-baseurl-opt-out.md)

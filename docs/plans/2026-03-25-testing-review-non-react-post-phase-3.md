@@ -22,7 +22,7 @@ Run a fresh testing-review pass for the temporary non-React cut after Phase 3 an
 ## Verification
 
 - regenerated `.claude/tmp/non_react_test_files.txt` (`615` files)
-- scoped non-React `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-25b --reporter=dots`
+- scoped non-React `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-25b --reporter=dots`
 - `pnpm test:profile -- --top 25`
 - `pnpm test:slowest -- --top 25`
 - `rg -n 'describe\.skip|it\.skip|test\.skip|xit\(|xdescribe\(' packages apps -g '*.spec.ts' -g '*.spec.tsx' -g '*.slow.ts' -g '*.slow.tsx'`
@@ -31,10 +31,10 @@ Run a fresh testing-review pass for the temporary non-React cut after Phase 3 an
 
 ## Outputs
 
-- [2026-03-25-coverage-priority-map-testing-review-non-react-post-phase-3.md](/Users/zbeyens/git/plate/docs/plans/2026-03-25-coverage-priority-map-testing-review-non-react-post-phase-3.md)
-- [2026-03-25-coverage-priority-packages-testing-review-non-react-post-phase-3.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-25-coverage-priority-packages-testing-review-non-react-post-phase-3.tsv)
-- [2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv)
-- [2026-03-25-non-react-coverage-roadmap-phase-4.md](/Users/zbeyens/git/plate/docs/plans/2026-03-25-non-react-coverage-roadmap-phase-4.md)
+- [2026-03-25-coverage-priority-map-testing-review-non-react-post-phase-3.md](docs/plans/2026-03-25-coverage-priority-map-testing-review-non-react-post-phase-3.md)
+- [2026-03-25-coverage-priority-packages-testing-review-non-react-post-phase-3.tsv](docs/plans/2026-03-25-coverage-priority-packages-testing-review-non-react-post-phase-3.tsv)
+- [2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv](docs/plans/2026-03-25-coverage-priority-files-testing-review-non-react-post-phase-3.tsv)
+- [2026-03-25-non-react-coverage-roadmap-phase-4.md](docs/plans/2026-03-25-non-react-coverage-roadmap-phase-4.md)
 
 ## Notes
 

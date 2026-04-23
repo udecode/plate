@@ -44,7 +44,7 @@ That would have thrown away the useful local signal. The local fast loop is wher
 
 ## Fix
 
-Make the thresholds environment-aware in [`tooling/config/test-suites.mjs`](/Users/zbeyens/git/plate/tooling/config/test-suites.mjs):
+Make the thresholds environment-aware in [`tooling/config/test-suites.mjs`](tooling/config/test-suites.mjs):
 
 - local hard-fail bucket stays at `75ms/test` and `150ms/file`
 - CI hard-fail bucket widens to `90ms/test` and `180ms/file`

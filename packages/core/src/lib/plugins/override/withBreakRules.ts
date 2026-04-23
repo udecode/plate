@@ -1,7 +1,6 @@
 import { PathApi } from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
-import type { BreakRules } from '../../plugin/BasePlugin';
 
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
@@ -14,7 +13,7 @@ export const withBreakRules: OverrideEditor = (ctx) => {
     rule: string,
     blockNode: any,
     blockPath: any
-  ): BreakRules | null => {
+  ) => {
     const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
       const overridePlugin = editor.getPlugin({ key });
@@ -27,7 +26,7 @@ export const withBreakRules: OverrideEditor = (ctx) => {
           rule: rule as any,
         })
       ) {
-        return overridePlugin.rules.break;
+        return overridePlugin;
       }
     }
     return null;
@@ -35,7 +34,8 @@ export const withBreakRules: OverrideEditor = (ctx) => {
 
   const executeBreakAction = (
     action: string | undefined,
-    blockPath: any
+    blockPath: any,
+    type: string | undefined
   ): boolean => {
     if (action === 'reset') {
       editor.tf.resetBlock({ at: blockPath });
@@ -54,13 +54,19 @@ export const withBreakRules: OverrideEditor = (ctx) => {
       editor.tf.insertSoftBreak();
       return true;
     }
+    if (action === 'lift' && type) {
+      return !!editor.tf.liftBlock({
+        at: blockPath,
+        match: { type },
+      });
+    }
     return false;
   };
 
   return {
     transforms: {
       insertBreak() {
-        if (editor.selection && editor.api.isCollapsed()) {
+        if (editor.selection) {
           const block = editor.api.block();
           if (block) {
             const [blockNode, blockPath] = block;
@@ -70,24 +76,29 @@ export const withBreakRules: OverrideEditor = (ctx) => {
 
             // Handle 'empty' scenario
             if (
+              editor.api.isCollapsed() &&
               editor.api.isEmpty(editor.selection, {
                 block: true,
               })
             ) {
-              const overrideBreakRules = checkMatchRulesOverride(
+              const overridePlugin = checkMatchRulesOverride(
                 'break.empty',
                 blockNode,
                 blockPath
               );
-              const effectiveBreakRules = overrideBreakRules || breakRules;
+              const effectiveBreakRules =
+                overridePlugin?.rules.break ?? breakRules;
               const emptyAction = effectiveBreakRules?.empty;
+              const actionType = overridePlugin?.node.type;
 
-              if (executeBreakAction(emptyAction, blockPath)) return;
+              if (executeBreakAction(emptyAction, blockPath, actionType))
+                return;
               // if 'default', fall through to breakRules.default or standard behavior
             }
 
             // Handle 'emptyLineEnd' scenario
             if (
+              editor.api.isCollapsed() &&
               !editor.api.isEmpty(editor.selection, {
                 block: true,
               }) &&
@@ -97,40 +108,56 @@ export const withBreakRules: OverrideEditor = (ctx) => {
               if (range) {
                 const char = editor.api.string(range);
                 if (char === '\n') {
-                  const overrideBreakRules = checkMatchRulesOverride(
+                  const overridePlugin = checkMatchRulesOverride(
                     'break.emptyLineEnd',
                     blockNode,
                     blockPath
                   );
-                  const effectiveBreakRules = overrideBreakRules || breakRules;
+                  const effectiveBreakRules =
+                    overridePlugin?.rules.break ?? breakRules;
                   const emptyLineEndAction = effectiveBreakRules?.emptyLineEnd;
+                  const actionType = overridePlugin?.node.type;
 
-                  if (executeBreakAction(emptyLineEndAction, blockPath)) return;
+                  if (
+                    executeBreakAction(
+                      emptyLineEndAction,
+                      blockPath,
+                      actionType
+                    )
+                  ) {
+                    return;
+                  }
                 }
               }
             }
 
             // Handle 'default' scenario (or fallthrough from 'empty: default' or 'emptyLineEnd: default')
-            const overrideDefaultBreakRules = checkMatchRulesOverride(
+            const overrideDefaultPlugin = checkMatchRulesOverride(
               'break.default',
               blockNode,
               blockPath
             );
-            const defaultAction = (overrideDefaultBreakRules || breakRules)
-              ?.default;
+            const defaultAction = (
+              overrideDefaultPlugin?.rules.break ?? breakRules
+            )?.default;
+            const defaultActionType = overrideDefaultPlugin?.node.type;
 
-            if (executeBreakAction(defaultAction, blockPath)) return;
+            if (
+              executeBreakAction(defaultAction, blockPath, defaultActionType)
+            ) {
+              return;
+            }
 
-            const overrideSplitResetBreakRules = checkMatchRulesOverride(
+            const overrideSplitResetPlugin = checkMatchRulesOverride(
               'break.splitReset',
               blockNode,
               blockPath
             );
             const splitReset =
-              overrideSplitResetBreakRules?.splitReset ??
+              overrideSplitResetPlugin?.rules.break?.splitReset ??
               breakRules?.splitReset;
 
-            if (splitReset) {
+            if (splitReset && !editor.api.isAt({ blocks: true })) {
               const isAtStart = editor.api.isAt({ start: true });
 
               insertBreak();

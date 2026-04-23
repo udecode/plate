@@ -1,6 +1,8 @@
 export type EmbedUrlData = {
   id?: string;
   provider?: string;
+  sourceKind?: 'allowlisted_snippet' | 'iframe' | 'url';
+  sourceUrl?: string;
   url?: string;
 };
 
