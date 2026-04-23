@@ -2,11 +2,11 @@
 "@platejs/autoformat": major
 ---
 
-Remove `@platejs/autoformat`. Markdown shortcuts and text substitutions are now authored as `inputRules` on each feature plugin.
+Deprecate `@platejs/autoformat`. Markdown shortcuts and text substitutions are now authored as `inputRules` on each feature plugin, and `AutoformatPlugin` remains only as an inert compatibility export.
 
 **Migration:**
 
-1. Remove `@platejs/autoformat` and `AutoformatPlugin` from your plugins and dependencies.
+1. Remove `AutoformatPlugin` from your plugins and replace `@platejs/autoformat` after migrating rules.
 2. Replace each old `AutoformatRule` with the matching rule factory on the plugin that owns the feature. See the table below.
 3. Replace symbol substitutions (arrows, fractions, smart quotes, legal, math operators) with `createTextSubstitutionInputRule` registered on a local `createSlatePlugin`.
 4. Replace `rules[].query` with `enabled` on the rule factory call. Replace the global code-block guard with a per-plugin `enabled` check.

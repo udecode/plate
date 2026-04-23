@@ -806,6 +806,15 @@ importers:
         specifier: workspace:^
         version: link:../plate
 
+  packages/autoformat:
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
+
   packages/basic-nodes:
     dependencies:
       react-compiler-runtime:
