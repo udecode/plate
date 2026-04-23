@@ -1,5 +1,19 @@
 # @platejs/core
 
+## 53.0.0
+
+### Minor Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `lift` as a break and delete rule action for blocks that should leave one ancestor level instead of resetting or exiting.
+  Reset the trailing block to a paragraph when `splitReset` handles selected heading text.
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `createRuleFactory` for building input rule families with overridable defaults and required options
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `useNavigationHighlight(path)` for React node components that need the
+  current navigation-feedback target without reading plugin options directly
+
 ## 52.3.21
 
 ## 52.3.16

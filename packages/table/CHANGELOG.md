@@ -1,5 +1,11 @@
 # @platejs/table
 
+## 53.0.0
+
+### Major Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Escalate the second `selectAll` from the current table to the whole document.
+
 ## 52.3.20
 
 ### Patch Changes

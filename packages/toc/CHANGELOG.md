@@ -1,5 +1,13 @@
 # @udecode/plate-heading
 
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add active section state to `useTocElementState` so TOC elements can mark the current heading while the document scrolls
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Fix TOC activation to navigate without entering block-selection mode
+
 ## 52.3.10
 
 ### Patch Changes
