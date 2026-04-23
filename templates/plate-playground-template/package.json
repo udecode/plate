@@ -75,7 +75,7 @@
     "lodash": "^4.18.1",
     "lowlight": "^3.3.0",
     "lucide-react": "^1.7.0",
-    "next": "16.2.2",
+    "next": "16.2.3",
     "pdf-lib": "^1.17.1",
     "platejs": "^52.3.21",
     "radix-ui": "^1.4.3",
