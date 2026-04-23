@@ -2043,9 +2043,7 @@
       "title": "Heading Element",
       "description": "A heading with multiple level support.",
       "dependencies": [],
-      "registryDependencies": [
-        "https://platejs.org/r/highlight-style.json"
-      ],
+      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/ui/heading-node.tsx",
@@ -3173,6 +3171,7 @@
       "name": "autoformat-classic-kit",
       "type": "registry:component",
       "dependencies": [
+        "@platejs/autoformat",
         "@platejs/code-block",
         "@platejs/list-classic"
       ],
@@ -3191,6 +3190,7 @@
       "name": "autoformat-kit",
       "type": "registry:component",
       "dependencies": [
+        "@platejs/autoformat",
         "@platejs/code-block",
         "@platejs/list"
       ],
@@ -3752,9 +3752,7 @@
       "name": "markdown-kit",
       "type": "registry:component",
       "dependencies": [
-        "@platejs/footnote",
         "@platejs/markdown",
-        "remark-emoji",
         "remark-gfm",
         "remark-math"
       ],
@@ -4743,7 +4741,6 @@
         "https://platejs.org/r/playwright-docs",
         "https://platejs.org/r/plugin-components-docs",
         "https://platejs.org/r/plugin-context-docs",
-        "https://platejs.org/r/plugin-input-rules-docs",
         "https://platejs.org/r/plugin-methods-docs",
         "https://platejs.org/r/plugin-rules-docs",
         "https://platejs.org/r/plugin-shortcuts-docs",
@@ -4767,7 +4764,6 @@
         "https://platejs.org/r/date-docs",
         "https://platejs.org/r/equation-docs",
         "https://platejs.org/r/excalidraw-docs",
-        "https://platejs.org/r/footnote-docs",
         "https://platejs.org/r/heading-docs",
         "https://platejs.org/r/horizontal-rule-docs",
         "https://platejs.org/r/link-docs",
@@ -4793,7 +4789,6 @@
         "https://platejs.org/r/dnd-docs",
         "https://platejs.org/r/find-replace-docs",
         "https://platejs.org/r/multi-select-docs",
-        "https://platejs.org/r/navigation-feedback-docs",
         "https://platejs.org/r/tabbable-docs",
         "https://platejs.org/r/toolbar-docs",
         "https://platejs.org/r/basic-marks-docs",
@@ -5014,19 +5009,6 @@
       ],
       "name": "plugin-context-docs",
       "title": "Plugin Context",
-      "type": "registry:file"
-    },
-    {
-      "description": "Typed editor rules for markdown shortcuts, block fences, autolinks, and text substitutions.",
-      "files": [
-        {
-          "path": "../../content/(guides)/plugin-input-rules.mdx",
-          "target": "content/docs/plate/(guides)/plugin-input-rules.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "plugin-input-rules-docs",
-      "title": "Plugin Input Rules",
       "type": "registry:file"
     },
     {
@@ -5329,19 +5311,6 @@
       "type": "registry:file"
     },
     {
-      "description": "Documentation for Footnote",
-      "files": [
-        {
-          "path": "../../content/(plugins)/(elements)/footnote.mdx",
-          "target": "content/docs/plate/(plugins)/(elements)/footnote.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "footnote-docs",
-      "title": "Footnote",
-      "type": "registry:file"
-    },
-    {
       "description": "Documentation for Heading",
       "files": [
         {
@@ -5550,7 +5519,7 @@
       "type": "registry:file"
     },
     {
-      "description": "Markdown shortcuts and text substitutions powered by input rules.",
+      "description": "Automatic text formatting via shortcodes and markdown-like shortcuts.",
       "files": [
         {
           "path": "../../content/(plugins)/(functionality)/autoformat.mdx",
@@ -5664,19 +5633,6 @@
       ],
       "name": "multi-select-docs",
       "title": "Multi Select",
-      "type": "registry:file"
-    },
-    {
-      "description": "Flash a landed target after TOC, footnote, search, or custom navigation jumps.",
-      "files": [
-        {
-          "path": "../../content/(plugins)/(functionality)/navigation-feedback.mdx",
-          "target": "content/docs/plate/(plugins)/(functionality)/navigation-feedback.mdx",
-          "type": "registry:file"
-        }
-      ],
-      "name": "navigation-feedback-docs",
-      "title": "Navigation Feedback",
       "type": "registry:file"
     },
     {
