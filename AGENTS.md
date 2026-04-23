@@ -30,6 +30,7 @@
 
 ## Tooling
 
+- Never run `build:registry` outside CI. Registry build output is automated by CI and does not belong in local agent commits.
 - If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
 - Treat local-only React runtime weirdness as install corruption first, not product code:
   - `Invalid hook call`
