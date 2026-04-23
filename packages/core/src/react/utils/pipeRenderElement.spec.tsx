@@ -313,6 +313,110 @@ describe('pipeRenderElement', () => {
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
 
+  it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createSlatePlugin({
+          inject: {
+            nodeProps: {
+              nodeKey: 'listStyleType',
+              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              transformProps: ({ props, value }) => ({
+                ...props,
+                role: 'listitem',
+                style: {
+                  ...props.style,
+                  display: 'list-item',
+                  listStyleType: value,
+                },
+              }),
+            },
+            targetPlugins: ['p'],
+          },
+          key: 'list',
+        }),
+        createSlatePlugin({
+          key: 'p',
+          node: {
+            isElement: true,
+            type: 'p',
+          },
+          rules: {
+            selection: {
+              affinity: 'directional',
+            },
+          },
+        }),
+      ],
+      value: [
+        {
+          children: [{ text: 'Body' }],
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ] as any,
+    });
+
+    const { container } = renderPipe(editor);
+    const element = container.querySelector('[data-slate-node="element"]');
+
+    expect(element).toHaveAttribute('role', 'listitem');
+    expect((element as HTMLElement).style.display).toBe('list-item');
+    expect((element as HTMLElement).style.listStyleType).toBe('disc');
+  });
+
+  it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createSlatePlugin({
+          inject: {
+            nodeProps: {
+              nodeKey: 'listStyleType',
+              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              transformProps: ({ props, value }) => ({
+                ...props,
+                role: 'listitem',
+                style: {
+                  ...props.style,
+                  display: 'list-item',
+                  listStyleType: value,
+                },
+              }),
+            },
+            targetPlugins: ['p'],
+          },
+          key: 'list',
+        }),
+        createSlatePlugin({
+          key: 'active-below',
+          render: {
+            belowNodes: ({ element }: any) =>
+              element.type === 'p'
+                ? ({ children }: any) => (
+                    <section data-testid="active-below">{children}</section>
+                  )
+                : undefined,
+          },
+        }),
+      ],
+      value: [
+        {
+          children: [{ text: 'Body' }],
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ] as any,
+    });
+
+    const { container, getByTestId } = renderPipe(editor);
+    const element = container.querySelector('[data-slate-node="element"]');
+
+    expect(getByTestId('active-below')).toBeInTheDocument();
+    expect(element).toHaveAttribute('role', 'listitem');
+    expect((element as HTMLElement).style.display).toBe('list-item');
+    expect((element as HTMLElement).style.listStyleType).toBe('disc');
+  });
+
   it('keeps plugin selection affinity behavior on the plain fast path', () => {
     const editor = createPlateEditor({
       plugins: [

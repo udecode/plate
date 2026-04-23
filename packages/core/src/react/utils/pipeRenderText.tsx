@@ -20,13 +20,20 @@ type SimpleRenderText = {
   textKey: string;
 };
 
+type RenderTextEntry = {
+  renderText: RenderText;
+  textKey: string;
+};
+
 /** @see {@link RenderText} */
 export const pipeRenderText = (
   editor: PlateEditor,
   renderTextProp?: EditableProps['renderText']
 ): EditableProps['renderText'] => {
-  const renderTexts: RenderText[] = [];
+  const renderTexts: RenderTextEntry[] = [];
+  const renderTextByKey = new Map<string, true>();
   const simpleRenderTexts: SimpleRenderText[] = [];
+  const simpleRenderTextByKey = new Map<string, true>();
   const textPropsPlugins: AnyEditorPlatePlugin[] = [];
   const hasInjectNodeProps =
     editor.meta.pluginCache.inject.nodeProps.length > 0;
@@ -40,14 +47,23 @@ export const pipeRenderText = (
         !plugin.node.dangerouslyAllowAttributes?.length;
 
       if (canUsePlainText) {
-        simpleRenderTexts.push({
+        const entry = {
           className: getSlateClass(plugin.node.type) || undefined,
           plugin,
           tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
           textKey: plugin.node.type ?? plugin.key,
-        });
+        };
+
+        simpleRenderTexts.push(entry);
+        simpleRenderTextByKey.set(entry.textKey, true);
       } else {
-        renderTexts.push(pluginRenderText(editor, plugin));
+        const entry = {
+          renderText: pluginRenderText(editor, plugin),
+          textKey: plugin.node.type ?? plugin.key,
+        };
+
+        renderTexts.push(entry);
+        renderTextByKey.set(entry.textKey, true);
       }
     }
 
@@ -77,22 +93,49 @@ export const pipeRenderText = (
   return function render({ attributes, ...props }) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const readOnly = useReadOnly();
+    const text = props.text as Record<string, unknown>;
+    let hasActiveSimpleRenderText = false;
+    let hasActiveRenderText = false;
 
-    simpleRenderTexts.forEach(({ className, plugin, tag: Tag, textKey }) => {
-      if (isEditOnly(readOnly, plugin, 'render')) return;
+    for (const textKey in text) {
+      if (!Object.hasOwn(text, textKey)) continue;
 
-      if (props.text[textKey]) {
+      if (!hasActiveSimpleRenderText && simpleRenderTextByKey.has(textKey)) {
+        hasActiveSimpleRenderText = true;
+      }
+
+      if (!hasActiveRenderText && renderTextByKey.has(textKey)) {
+        hasActiveRenderText = true;
+      }
+
+      if (hasActiveSimpleRenderText && hasActiveRenderText) break;
+    }
+
+    if (hasActiveSimpleRenderText) {
+      for (const {
+        className,
+        plugin,
+        tag: Tag,
+        textKey,
+      } of simpleRenderTexts) {
+        if (!text[textKey]) continue;
+        if (isEditOnly(readOnly, plugin, 'render')) continue;
+
         props.children = <Tag className={className}>{props.children}</Tag>;
       }
-    });
+    }
 
-    renderTexts.forEach((renderText) => {
-      const newChildren = renderText(props as any);
+    if (hasActiveRenderText) {
+      for (const { renderText, textKey } of renderTexts) {
+        if (!text[textKey]) continue;
 
-      if (newChildren !== undefined) {
-        props.children = newChildren;
+        const newChildren = renderText(props as any);
+
+        if (newChildren !== undefined) {
+          props.children = newChildren;
+        }
       }
-    });
+    }
 
     textPropsPlugins.forEach((plugin) => {
       if (props.text[plugin.node.type ?? plugin.key]) {
