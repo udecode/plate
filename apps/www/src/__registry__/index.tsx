@@ -1161,7 +1161,7 @@ export const Index: Record<string, any> = {
     name: "heading-node",
     description: "A heading with multiple level support.",
     type: "registry:ui",
-    registryDependencies: [],
+    registryDependencies: ["https://platejs.org/r/highlight-style.json"],
     files: [{
       path: "src/registry/ui/heading-node.tsx",
       type: "registry:ui",
@@ -3880,6 +3880,27 @@ export const Index: Record<string, any> = {
       return { default: mod.default || mod[exportName] }
     }),
     meta: {"docs":[{"route":"/docs/date","title":"Date"}],"registry":false},
+  },
+  "footnote-demo": {
+    name: "footnote-demo",
+    description: "GFM footnote references and definitions as dedicated editor nodes.",
+    type: "registry:example",
+    registryDependencies: ["https://platejs.org/r/editor-kit.json","https://platejs.org/r/highlight-style.json"],
+    files: [{
+      path: "src/registry/examples/demo.tsx",
+      type: "registry:example",
+      target: ""
+    },{
+      path: "src/registry/examples/values/footnote-value.tsx",
+      type: "registry:example",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/examples/demo.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/footnote","title":"Footnote"}],"registry":false},
   },
   "dnd-demo": {
     name: "dnd-demo",
