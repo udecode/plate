@@ -13,7 +13,7 @@ import {
   usePluginOption,
 } from 'platejs/react';
 import * as React from 'react';
-
+import { setBlockType } from '@/components/editor/transforms';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -41,14 +41,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       editor
         .getApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
-        .forEach(([node, path]) => {
-          if (node[KEYS.listType]) {
-            editor.tf.unsetNodes([KEYS.listType, 'indent'], {
-              at: path,
-            });
-          }
-
-          editor.tf.toggleBlock(type, { at: path });
+        .forEach(([, path]) => {
+          setBlockType(editor, type, { at: path });
         });
     },
     [editor]

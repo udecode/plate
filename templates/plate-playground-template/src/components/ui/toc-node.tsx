@@ -8,9 +8,13 @@ import { PlateElement } from 'platejs/react';
 import { Button } from '@/components/ui/button';
 
 const headingItemVariants = cva(
-  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium text-muted-foreground underline decoration-[0.5px] underline-offset-4 hover:bg-accent hover:text-muted-foreground',
+  'block h-auto w-full cursor-pointer truncate rounded-none px-0.5 py-1.5 text-left font-medium underline decoration-[0.5px] underline-offset-4',
   {
     variants: {
+      active: {
+        false: 'text-muted-foreground hover:bg-accent hover:text-foreground',
+        true: 'bg-accent text-foreground decoration-foreground',
+      },
       depth: {
         1: 'pl-0.5',
         2: 'pl-[26px]',
@@ -23,7 +27,7 @@ const headingItemVariants = cva(
 export function TocElement(props: PlateElementProps) {
   const state = useTocElementState();
   const { props: btnProps } = useTocElement(state);
-  const { headingList } = state;
+  const { activeContentId, headingList } = state;
 
   return (
     <PlateElement {...props} className="mb-1 p-0">
@@ -31,8 +35,11 @@ export function TocElement(props: PlateElementProps) {
         {headingList.length > 0 ? (
           headingList.map((item) => (
             <Button
-              aria-current
+              aria-current={
+                item.id === activeContentId ? 'location' : undefined
+              }
               className={headingItemVariants({
+                active: item.id === activeContentId,
                 depth: item.depth as 1 | 2 | 3,
               })}
               key={item.id}
