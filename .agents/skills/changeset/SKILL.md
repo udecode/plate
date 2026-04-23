@@ -18,7 +18,7 @@ Use when:
 
 - Creating `.changeset/*.md` files
 - Documenting package changes: feat, fix, breaking
-- Updating `content/components/changelog.mdx` for registry work
+- Updating `docs/components/changelog.mdx` for registry work
 
 Do not use for:
 
@@ -93,7 +93,7 @@ If a package changed internally on this branch but has no user-visible delta fro
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
-Update `content/components/changelog.mdx` instead.
+Update `docs/components/changelog.mdx` instead.
 
 ### 5. Style
 

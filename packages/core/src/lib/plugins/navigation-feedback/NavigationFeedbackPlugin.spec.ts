@@ -184,4 +184,26 @@ describe('NavigationFeedbackPlugin', () => {
     ).toBeNull();
     expect(editor.api.navigation.isTarget([0])).toBe(false);
   });
+
+  it('uses the top-level navigationFeedback option to override duration', () => {
+    const editor = createSlateEditor({
+      navigationFeedback: { duration: 1200 },
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    } as any);
+
+    expect(editor.getOption(NavigationFeedbackPlugin, 'duration')).toBe(1200);
+  });
+
+  it('can disable the navigation feedback plugin from editor options', () => {
+    const editor = createSlateEditor({
+      navigationFeedback: false,
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    } as any);
+
+    expect(editor.meta.pluginList.map((plugin) => plugin.key)).not.toContain(
+      NavigationFeedbackPlugin.key
+    );
+    expect(editor.api.navigation).toBeUndefined();
+    expect(editor.tf.navigation).toBeUndefined();
+  });
 });

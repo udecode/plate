@@ -5,6 +5,7 @@ import { act, render } from '@testing-library/react';
 import { Plate } from '../../components/Plate';
 import { PlateContent } from '../../components/PlateContent';
 import { createPlateEditor } from '../../editor';
+import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 
 const flushMicrotasks = async (count = 3) => {
   for (let index = 0; index < count; index += 1) {
@@ -72,5 +73,14 @@ describe('NavigationFeedbackPlugin', () => {
     expect(
       getHighlightedElement().getAttribute('data-nav-highlight')
     ).toBeNull();
+  });
+
+  it('uses the top-level navigationFeedback option on createPlateEditor', () => {
+    const editor = createPlateEditor({
+      navigationFeedback: { duration: 1200 },
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    } as any);
+
+    expect(editor.getOption(NavigationFeedbackPlugin, 'duration')).toBe(1200);
   });
 });

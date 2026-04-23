@@ -32,6 +32,8 @@ export type GetCorePluginsOptions = {
   chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
+  /** Configure the navigation feedback plugin. */
+  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /** Configure the node id plugin. */
   nodeId?: NodeIdConfig['options'] | boolean;
   /** Override the core plugins using the same key. */
@@ -42,6 +44,7 @@ export const getCorePlugins = ({
   affinity,
   chunking,
   maxLength,
+  navigationFeedback,
   nodeId,
   plugins = [],
 }: GetCorePluginsOptions) => {
@@ -55,7 +58,13 @@ export const getCorePlugins = ({
     DebugPlugin as SlatePlugin<DebugConfig>,
     SlateExtensionPlugin,
     DOMPlugin,
-    NavigationFeedbackPlugin,
+    NavigationFeedbackPlugin.configure({
+      enabled: navigationFeedback !== false,
+      options:
+        typeof navigationFeedback === 'boolean'
+          ? undefined
+          : navigationFeedback,
+    }),
     HistoryPlugin,
     InputRulesPlugin,
     OverridePlugin,
