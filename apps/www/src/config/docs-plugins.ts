@@ -155,6 +155,13 @@ export const pluginsNavItems: SidebarNavItem[] = [
         titleCn: 'Table of Contents',
       },
       {
+        description:
+          'Parse and edit GFM footnote references and definitions as dedicated nodes.',
+        href: '/docs/footnote',
+        title: 'Footnote',
+        titleCn: 'Footnote',
+      },
+      {
         description: 'Add toggles to your document.',
         href: '/docs/toggle',
         title: 'Toggle',
@@ -317,7 +324,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
       {
         description: 'Show placeholder when a block is empty.',
         href: '/docs/block-placeholder',
-        label: 'New',
         title: 'Block Placeholder',
         titleCn: 'Block Placeholder',
       },
@@ -372,6 +378,14 @@ export const pluginsNavItems: SidebarNavItem[] = [
         titleCn: 'Drag & Drop',
       },
       {
+        description:
+          'Flash the landed target after TOC, footnote, search, or custom navigation jumps.',
+        href: '/docs/navigation-feedback',
+        title: 'Navigation Feedback',
+        titleCn: 'Navigation Feedback',
+        label: 'New',
+      },
+      {
         description: 'Maintain a consistent tab order for tabbable elements.',
         href: '/docs/tabbable',
         title: 'Tabbable',
@@ -380,7 +394,6 @@ export const pluginsNavItems: SidebarNavItem[] = [
       {
         description: 'Add a toolbar to your editor.',
         href: '/docs/toolbar',
-        label: 'New',
         title: 'Toolbar',
         titleCn: 'Toolbar',
       },

@@ -45,6 +45,7 @@ export interface TColumnGroupElement extends TElement {
 
 export interface TDateElement extends TElement {
   date?: string;
+  rawDate?: string;
 }
 
 export interface TEquationElement extends TElement {
@@ -147,6 +148,8 @@ export type TMediaProps = {
   isUpload?: boolean;
   name?: string;
   placeholderId?: string;
+  provider?: string;
+  sourceUrl?: string;
 };
 
 export type TMediaElement = TElement & TMediaProps;

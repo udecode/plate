@@ -25,6 +25,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import { setBlockType } from '@/registry/components/editor/transforms';
 import { useIsTouchDevice } from '@/registry/hooks/use-is-touch-device';
 
 type Value = 'askAI' | null;
@@ -42,14 +43,8 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
       editor
         .getApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
-        .forEach(([node, path]) => {
-          if (node[KEYS.listType]) {
-            editor.tf.unsetNodes([KEYS.listType, 'indent'], {
-              at: path,
-            });
-          }
-
-          editor.tf.toggleBlock(type, { at: path });
+        .forEach(([, path]) => {
+          setBlockType(editor, type, { at: path });
         });
     },
     [editor]

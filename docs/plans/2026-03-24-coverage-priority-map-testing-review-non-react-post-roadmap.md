@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24n/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24n/lcov.info)
 - Constraints:
   - temporary exclude `/react`
   - temporarily exclude obvious component and hook shells outside `/react`
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: `xargs -0 bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24n --reporter=dots < <(tr '\n' '\0' < .claude/tmp/non_react_test_files.txt)`
+- Command: `xargs -0 bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24n --reporter=dots < <(tr '\n' '\0' < .claude/tmp/non_react_test_files.txt)`
 - Result: Fresh non-React coverage: `2711` pass, `0` fail, `545` files, `2.35s`.
 
 ## Suite Health
@@ -57,26 +57,26 @@ There is one last real non-React cleanup batch, and it is mostly `core` static o
 
 ## Strict Next Batch
 
-1. `code-block`: [htmlDeserializerCodeBlock.ts](/Users/zbeyens/git/plate/packages/code-block/src/lib/deserializer/htmlDeserializerCodeBlock.ts) — score `7`
-2. `core`: [HtmlPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/HtmlPlugin.ts) — score `7`
-3. `core`: [htmlStringToEditorDOM.ts](/Users/zbeyens/git/plate/packages/core/src/static/deserialize/htmlStringToEditorDOM.ts) — score `7`
-4. `core`: [pluginRenderTextStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pluginRenderTextStatic.tsx) — score `6`
-5. `core`: [ParserPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/ParserPlugin.ts) — score `6`
-6. `core`: [pipeDecorate.ts](/Users/zbeyens/git/plate/packages/core/src/static/utils/pipeDecorate.ts) — score `6`
-7. `excalidraw`: [BaseExcalidrawPlugin.ts](/Users/zbeyens/git/plate/packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts) — score `6`
-8. `core`: [ViewPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/static/plugins/ViewPlugin.ts) — score `6`
+1. `code-block`: [htmlDeserializerCodeBlock.ts](packages/code-block/src/lib/deserializer/htmlDeserializerCodeBlock.ts) — score `7`
+2. `core`: [HtmlPlugin.ts](packages/core/src/lib/plugins/html/HtmlPlugin.ts) — score `7`
+3. `core`: [htmlStringToEditorDOM.ts](packages/core/src/static/deserialize/htmlStringToEditorDOM.ts) — score `7`
+4. `core`: [pluginRenderTextStatic.tsx](packages/core/src/static/pluginRenderTextStatic.tsx) — score `6`
+5. `core`: [ParserPlugin.ts](packages/core/src/lib/plugins/ParserPlugin.ts) — score `6`
+6. `core`: [pipeDecorate.ts](packages/core/src/static/utils/pipeDecorate.ts) — score `6`
+7. `excalidraw`: [BaseExcalidrawPlugin.ts](packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts) — score `6`
+8. `core`: [ViewPlugin.ts](packages/core/src/static/plugins/ViewPlugin.ts) — score `6`
 
 ## Wider Batch If You Still Care
 
-1. `core`: [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `5`
-2. `core`: [pluginRenderLeafStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pluginRenderLeafStatic.tsx) — score `5`
-3. `core`: [withScrolling.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/dom/withScrolling.ts) — score `5`
-4. `core`: [pluginRenderElementStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pluginRenderElementStatic.tsx) — score `5`
-5. `dnd`: [onDropNode.ts](/Users/zbeyens/git/plate/packages/dnd/src/transforms/onDropNode.ts) — score `5`
-6. `core`: [htmlElementToLeaf.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `5`
-7. `core`: [AstPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/AstPlugin.ts) — score `5`
-8. `link`: [upsertLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/upsertLink.ts) — score `5`
-9. `markdown`: [convertNodesSerialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `5`
+1. `core`: [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `5`
+2. `core`: [pluginRenderLeafStatic.tsx](packages/core/src/static/pluginRenderLeafStatic.tsx) — score `5`
+3. `core`: [withScrolling.ts](packages/core/src/lib/plugins/dom/withScrolling.ts) — score `5`
+4. `core`: [pluginRenderElementStatic.tsx](packages/core/src/static/pluginRenderElementStatic.tsx) — score `5`
+5. `dnd`: [onDropNode.ts](packages/dnd/src/transforms/onDropNode.ts) — score `5`
+6. `core`: [htmlElementToLeaf.ts](packages/core/src/lib/plugins/html/utils/htmlElementToLeaf.ts) — score `5`
+7. `core`: [AstPlugin.ts](packages/core/src/lib/plugins/AstPlugin.ts) — score `5`
+8. `link`: [upsertLink.ts](packages/link/src/lib/transforms/upsertLink.ts) — score `5`
+9. `markdown`: [convertNodesSerialize.ts](packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `5`
 
 ## Packages By Value
 
@@ -93,16 +93,16 @@ There is one last real non-React cleanup batch, and it is mostly `core` static o
 
 ## Best Files By Value
 
-1. `code-block` — [htmlDeserializerCodeBlock.ts](/Users/zbeyens/git/plate/packages/code-block/src/lib/deserializer/htmlDeserializerCodeBlock.ts) — score `7`, coverage `39.5%`, uncovered `23`
-2. `core` — [HtmlPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/HtmlPlugin.ts) — score `7`, coverage `75.0%`, uncovered `5`
-3. `core` — [htmlStringToEditorDOM.ts](/Users/zbeyens/git/plate/packages/core/src/static/deserialize/htmlStringToEditorDOM.ts) — score `7`, coverage `16.7%`, uncovered `5`
-4. `core` — [pluginRenderTextStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pluginRenderTextStatic.tsx) — score `6`, coverage `35.7%`, uncovered `63`
-5. `core` — [ParserPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/ParserPlugin.ts) — score `6`, coverage `47.8%`, uncovered `36`
-6. `core` — [pipeDecorate.ts](/Users/zbeyens/git/plate/packages/core/src/static/utils/pipeDecorate.ts) — score `6`, coverage `21.2%`, uncovered `26`
-7. `excalidraw` — [BaseExcalidrawPlugin.ts](/Users/zbeyens/git/plate/packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts) — score `6`, coverage `0.0%`, uncovered `13`
-8. `core` — [ViewPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/static/plugins/ViewPlugin.ts) — score `6`, coverage `73.1%`, uncovered `7`
-9. `core` — [getSelectedDomFragment.tsx](/Users/zbeyens/git/plate/packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `5`, coverage `13.9%`, uncovered `31`
-10. `core` — [pluginRenderLeafStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pluginRenderLeafStatic.tsx) — score `5`, coverage `74.4%`, uncovered `23`
+1. `code-block` — [htmlDeserializerCodeBlock.ts](packages/code-block/src/lib/deserializer/htmlDeserializerCodeBlock.ts) — score `7`, coverage `39.5%`, uncovered `23`
+2. `core` — [HtmlPlugin.ts](packages/core/src/lib/plugins/html/HtmlPlugin.ts) — score `7`, coverage `75.0%`, uncovered `5`
+3. `core` — [htmlStringToEditorDOM.ts](packages/core/src/static/deserialize/htmlStringToEditorDOM.ts) — score `7`, coverage `16.7%`, uncovered `5`
+4. `core` — [pluginRenderTextStatic.tsx](packages/core/src/static/pluginRenderTextStatic.tsx) — score `6`, coverage `35.7%`, uncovered `63`
+5. `core` — [ParserPlugin.ts](packages/core/src/lib/plugins/ParserPlugin.ts) — score `6`, coverage `47.8%`, uncovered `36`
+6. `core` — [pipeDecorate.ts](packages/core/src/static/utils/pipeDecorate.ts) — score `6`, coverage `21.2%`, uncovered `26`
+7. `excalidraw` — [BaseExcalidrawPlugin.ts](packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts) — score `6`, coverage `0.0%`, uncovered `13`
+8. `core` — [ViewPlugin.ts](packages/core/src/static/plugins/ViewPlugin.ts) — score `6`, coverage `73.1%`, uncovered `7`
+9. `core` — [getSelectedDomFragment.tsx](packages/core/src/static/utils/getSelectedDomFragment.tsx) — score `5`, coverage `13.9%`, uncovered `31`
+10. `core` — [pluginRenderLeafStatic.tsx](packages/core/src/static/pluginRenderLeafStatic.tsx) — score `5`, coverage `74.4%`, uncovered `23`
 
 ## Stop Condition
 
@@ -118,5 +118,5 @@ That is the point where more non-React coverage turns into percentage cosplay. S
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-testing-review-non-react-post-roadmap.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-post-roadmap.tsv)
-- [2026-03-24-coverage-priority-files-testing-review-non-react-post-roadmap.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-post-roadmap.tsv)
+- [2026-03-24-coverage-priority-packages-testing-review-non-react-post-roadmap.tsv](docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-post-roadmap.tsv)
+- [2026-03-24-coverage-priority-files-testing-review-non-react-post-roadmap.tsv](docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-post-roadmap.tsv)

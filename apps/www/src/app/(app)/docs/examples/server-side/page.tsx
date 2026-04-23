@@ -2,7 +2,6 @@ import type { Doc } from '@/.contentlayer/generated';
 
 import type { Metadata } from 'next';
 
-import { AutoformatPlugin } from '@platejs/autoformat';
 import { DocxPlugin } from '@platejs/docx';
 import {
   createSlateEditor,
@@ -55,7 +54,6 @@ export default function RSCPage() {
       ...BaseEditorKit,
 
       // Functionality
-      AutoformatPlugin,
       ExitBreakPlugin,
       TrailingBlockPlugin,
       DocxPlugin,

@@ -12,8 +12,8 @@ category: test-failures
 
 A broad Bun package-graph run failed in random places with nonsense like:
 
-- `editor.tf` undefined inside [SlateExtensionPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts)
-- missing exports from [packages/table/src/lib/index.ts](/Users/zbeyens/git/plate/packages/table/src/lib/index.ts)
+- `editor.tf` undefined inside [SlateExtensionPlugin.ts](packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts)
+- missing exports from [packages/table/src/lib/index.ts](packages/table/src/lib/index.ts)
 - unrelated specs passing alone but failing when paired
 
 The product code was mostly innocent. The failures only appeared when certain React specs ran in the same Bun process as unrelated package specs.
@@ -22,8 +22,8 @@ The product code was mostly innocent. The failures only appeared when certain Re
 
 Two specs were mocking shared package surfaces too broadly:
 
-- [floatingLinkTriggers.spec.ts](/Users/zbeyens/git/plate/packages/link/src/react/utils/floatingLinkTriggers.spec.ts) replaced the whole `platejs` module just to fake `getEditorPlugin`
-- [useTableMergeState.spec.tsx](/Users/zbeyens/git/plate/packages/table/src/react/hooks/useTableMergeState.spec.tsx) replaced the whole `../../lib` barrel with a tiny export subset
+- [floatingLinkTriggers.spec.ts](packages/link/src/react/utils/floatingLinkTriggers.spec.ts) replaced the whole `platejs` module just to fake `getEditorPlugin`
+- [useTableMergeState.spec.tsx](packages/table/src/react/hooks/useTableMergeState.spec.tsx) replaced the whole `../../lib` barrel with a tiny export subset
 
 That poisoned later imports depending on module load order. Bun then made unrelated specs look broken.
 

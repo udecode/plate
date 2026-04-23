@@ -345,11 +345,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/autoformat',
-      '@platejs/code-block',
-      '@platejs/list-classic',
-    ],
+    dependencies: ['@platejs/code-block', '@platejs/list-classic'],
     files: [
       {
         path: 'components/editor/plugins/autoformat-classic-kit.tsx',
@@ -361,11 +357,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/autoformat',
-      '@platejs/code-block',
-      '@platejs/list',
-    ],
+    dependencies: ['@platejs/code-block', '@platejs/list'],
     files: [
       {
         path: 'components/editor/plugins/autoformat-kit.tsx',
@@ -832,7 +824,13 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/markdown', 'remark-gfm', 'remark-math'],
+    dependencies: [
+      '@platejs/footnote',
+      '@platejs/markdown',
+      'remark-emoji',
+      'remark-gfm',
+      'remark-math',
+    ],
     files: [
       {
         path: 'components/editor/plugins/markdown-kit.tsx',

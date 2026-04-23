@@ -61,6 +61,10 @@ export const autoformatValue: any = (
       create a block quote.
     </hp>
     <hp indent={1} listStyleType="disc">
+      Inside an existing quote, type <htext code>&gt;</htext> followed by{' '}
+      <htext code>space</htext> again to create a nested blockquote.
+    </hp>
+    <hp indent={1} listStyleType="disc">
       Type <htext code>```</htext> to create a code block.
     </hp>
     <hp indent={1} listStyleType="disc">

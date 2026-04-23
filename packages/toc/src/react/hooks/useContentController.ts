@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { KEYS } from 'platejs';
+import type { Path } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 
 import type { UseContentController } from '../types';
@@ -47,13 +47,15 @@ export const useContentController = ({
   const [activeContentId, setActiveContentId] = React.useState(activeId);
 
   const onContentScroll = ({
-    id,
     behavior = 'instant',
     el,
+    id,
+    path,
   }: {
-    id: string;
-    el: HTMLElement;
     behavior?: ScrollBehavior;
+    el: HTMLElement;
+    id: string;
+    path?: Path;
   }) => {
     setActiveContentId(id);
 
@@ -68,9 +70,14 @@ export const useContentController = ({
       window.scrollTo({ behavior, top });
     }
 
-    editor
-      .getApi({ key: KEYS.blockSelection })
-      .blockSelection?.addSelectedRow?.(id);
+    if (path) {
+      editor.tf.navigation.flashTarget({
+        target: {
+          path,
+          type: 'node',
+        },
+      });
+    }
   };
 
   React.useEffect(() => {

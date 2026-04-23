@@ -56,6 +56,145 @@ describe('deserializeMd', () => {
     expect((onError as any).mock.calls[0]?.[0]).toBeInstanceOf(Error);
     expect((onError as any).mock.calls[0]?.[0].message).toBe('boom');
   });
+
+  it('deserializes blockquotes as container blocks with nested list content', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        `Hello!
+> some thing is reference
+> - aaa
+> - bbb`
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'Hello!' }],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [{ text: 'some thing is reference' }],
+            type: 'p',
+          },
+          {
+            children: [{ text: 'aaa' }],
+            indent: 1,
+            listStyleType: 'disc',
+            type: 'p',
+          },
+          {
+            children: [{ text: 'bbb' }],
+            indent: 1,
+            listStyleType: 'disc',
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
+      },
+    ]);
+  });
+
+  it('deserializes nested blockquotes as nested container blocks', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        `> outer
+> > inner
+> > tail`
+      )
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'outer' }],
+            type: 'p',
+          },
+          {
+            children: [
+              {
+                children: [{ text: 'inner\ntail' }],
+                type: 'p',
+              },
+            ],
+            type: 'blockquote',
+          },
+        ],
+        type: 'blockquote',
+      },
+    ]);
+  });
+
+  it('deserializes fenced code blocks directly from raw markdown', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(editor, '```ts\nconst x = 1;\nconsole.log(x)\n```')
+    ).toEqual([
+      {
+        children: [
+          {
+            children: [{ text: 'const x = 1;' }],
+            type: 'code_line',
+          },
+          {
+            children: [{ text: 'console.log(x)' }],
+            type: 'code_line',
+          },
+        ],
+        lang: 'ts',
+        type: 'code_block',
+      },
+    ]);
+  });
+
+  it('deserializes raw markdown headings across multiple depths', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        '# Title\n\n#### Deep title\n\n###### Deepest title'
+      )
+    ).toEqual([
+      {
+        children: [{ text: 'Title' }],
+        type: 'h1',
+      },
+      {
+        children: [{ text: 'Deep title' }],
+        type: 'h4',
+      },
+      {
+        children: [{ text: 'Deepest title' }],
+        type: 'h6',
+      },
+    ]);
+  });
+
+  it('preserves raw html blocks as editable source text paragraphs', () => {
+    const editor = createTestEditor();
+
+    expect(
+      deserializeMd(
+        editor,
+        '<figure class="hero"><img src="/image.png"></figure>'
+      )
+    ).toEqual([
+      {
+        children: [
+          {
+            text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
+          },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
 });
 
 describe('markdownToAstProcessor', () => {

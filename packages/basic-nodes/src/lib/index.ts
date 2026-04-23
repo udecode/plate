@@ -16,3 +16,5 @@ export * from './BaseStrikethroughPlugin';
 export * from './BaseSubscriptPlugin';
 export * from './BaseSuperscriptPlugin';
 export * from './BaseUnderlinePlugin';
+export * from './BasicBlockRules';
+export * from './BasicMarkRules';

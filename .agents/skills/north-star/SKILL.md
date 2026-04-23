@@ -1,0 +1,197 @@
+---
+description: Constitutional source of truth for reusable Plate architecture and public API design. Use when introducing or changing reusable public APIs, runtime/service boundaries, builder or factory patterns, extension registration contracts, naming/layering rules, or performance-sensitive architecture.
+name: north-star
+metadata:
+  skiller:
+    source: .agents/rules/north-star.mdc
+---
+
+# North-Star
+
+Plate's constitutional doctrine for reusable architecture and public API design.
+
+Use this skill before shaping a reusable Plate surface. This is the upstream
+decision layer. It owns architecture law, public API shape, layering,
+performance/scalability selection, and anti-patterns.
+
+Use [plate-plugin-creator](../plate-plugin-creator/SKILL.md) after the public
+pattern is already chosen and the work has become plugin-authoring execution.
+
+## Use When
+
+- Introducing or changing a reusable public API
+- Designing builder/factory patterns
+- Designing plugin/extension registration patterns
+- Designing runtime/service boundaries
+- Designing caches, projections, protocol layers, or service seams
+- Choosing between competing ergonomic vs performance shapes
+- Renaming or re-layering a reusable API family
+- The right owner or architectural layer is ambiguous
+
+## Do Not Use When
+
+- The work is app-local convenience only
+- The work is a one-off migration helper with no durable public pattern
+- The public pattern is already settled and you are just implementing plugin
+  mechanics
+- The question is only about public docs wording
+- The work is git/process workflow, not reusable API design
+
+## Hard Routing Rule
+
+- If the work touches a reusable public/editor-platform API, use `north-star`
+  first.
+- If the work touches runtime/service-boundary architecture, use `north-star`
+  first.
+- If the work is ambiguous between reusable API design and implementation,
+  route upward to `north-star` first.
+- If the work is app-local convenience only, do not use `north-star`.
+- If the public pattern is already settled and the task is plugin execution,
+  hand off to [plate-plugin-creator](../plate-plugin-creator/SKILL.md).
+
+## Routing Matrix
+
+| Scenario | Route | Why |
+| --- | --- | --- |
+| new reusable plugin public API | `north-star` first, then execution companion | public contract decision |
+| runtime/service boundary | `north-star` first | architecture/runtime law |
+| new builder/factory pattern | `north-star` first | reusable pattern decision |
+| reusable naming/layering rule | `north-star` first | doctrine |
+| wrapper/component implementation under settled doctrine | execution companion | mechanics only |
+| app-local registry-kit sugar | stay local | not reusable doctrine |
+| one-off docs/demo convenience | stay local | not reusable doctrine |
+| package-local mechanics only | execution companion | implementation lane |
+
+## Who Owns What
+
+| Concern | Owner |
+| --- | --- |
+| reusable architecture doctrine | `north-star` |
+| public API shape decisions | `north-star` |
+| runtime/service-boundary patterns | `north-star` |
+| layering / ownership law | `north-star` |
+| performance/scalability law | `north-star` |
+| anti-pattern catalog | `north-star` |
+| plugin file placement / wrappers / typing mechanics | execution companion |
+| plugin authoring execution flow | execution companion |
+| app-local sugar | local app/kits |
+
+## Constitutional Layer
+
+- [laws.md](./rules/laws.md)
+- [decision-ladder.md](./rules/decision-ladder.md)
+- [performance-selection-rules.md](./rules/performance-selection-rules.md)
+- [update-policy.md](./rules/update-policy.md)
+
+## Pattern Layer
+
+- [pattern-catalog.md](./rules/pattern-catalog.md)
+- [anti-patterns.md](./rules/anti-patterns.md)
+
+## Best Mix
+
+- ProseMirror/Tiptap: extension ownership and productized ergonomics
+- Lexical: runtime contracts and perf posture
+- Premirror/Pretext: layout and measurement as first-class architecture
+- urql/TanStack DB/LSP: pipeline, state, and service-boundary patterns
+- kitcn plus lighter editors: scoped builders where earned, restraint where not
+
+The concrete pattern guidance lives in
+[pattern-catalog.md](./rules/pattern-catalog.md).
+
+## Matcher Extraction Heuristic
+
+When scanning a reusable API family, aggressively inspect repeated `resolve()`
+and `apply()` bodies before inventing more package-level wrappers.
+
+Default posture:
+
+- if multiple packages repeat the same **matching prelude**, that is pressure
+  for a core primitive
+- if multiple packages repeat the same **feature action**, that usually still
+  belongs in the owning package
+
+Pull into core when the repeated logic is mostly:
+
+- trigger gating
+- collapsed-selection gating
+- block-start / text-before / adjacent-char lookup
+- delimiter / prefix / regex matching
+- range or payload construction
+- other editor-state inspection that is feature-agnostic
+
+Keep local when the repeated logic is mostly:
+
+- node creation
+- mark toggling
+- list transforms
+- link validation or insertion
+- equation insertion
+- code-block insertion
+- any semantic transform owned by a feature package
+
+The goal is:
+
+- core owns matcher primitives and shared input-state access
+- feature packages own semantic apply behavior
+
+Do not flatten package semantics into core just because the files look similar.
+Do not miss a real core primitive because the action code is loud.
+
+## Workflow
+
+1. Run the [decision ladder](./rules/decision-ladder.md).
+2. Decide the owner and layer first.
+3. Check the [pattern catalog](./rules/pattern-catalog.md) for the preferred
+   family.
+4. Scan repeated `resolve()` / `apply()` shapes and separate matcher logic from
+   feature semantics before blessing a new public helper.
+5. Run the
+   [performance selection protocol](./rules/performance-selection-rules.md)
+   before blessing the prettier API.
+6. Check the [anti-patterns](./rules/anti-patterns.md).
+7. If the work introduces or materially changes a reusable public pattern,
+   follow the [update policy](./rules/update-policy.md).
+8. Once the pattern is chosen, hand off implementation mechanics to
+   [plate-plugin-creator](../plate-plugin-creator/SKILL.md) or another more
+   specific execution skill.
+
+## Reaffirmation Contract
+
+Every lane that introduces or materially changes a reusable public API, runtime
+boundary, builder/factory pattern, or extension contract must include one of:
+
+- `north-star updated`
+- `north-star reaffirmed: <section-name>`
+
+Reaffirmation is not implicit. It must name the governing section so the claim
+is reviewable.
+
+Examples:
+
+- `north-star reaffirmed: laws`
+- `north-star reaffirmed: decision-ladder`
+- `north-star reaffirmed: performance-selection-rules`
+
+## Binary Review Checklist
+
+1. Is the owner named?
+2. Is the layer named?
+3. Is reusable vs local decided?
+4. Is the governing `north-star` section named?
+5. Was the performance protocol applied when hot-path relevant?
+
+## Relationship To Other Skills
+
+- [plate-plugin-creator](../plate-plugin-creator/SKILL.md)
+  - plugin-authoring execution companion
+- [docs-plugin](../docs-plugin/SKILL.md)
+  - public docs companion
+- [react](../react/SKILL.md)
+  - React implementation companion
+
+## Final Law
+
+If a reusable API or runtime boundary matters to future Plate work, `north-star`
+decides the pattern. Local convenience, plugin mechanics, and documentation
+follow from that. Not the other way around.

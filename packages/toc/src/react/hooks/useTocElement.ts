@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { KEYS, NodeApi } from 'platejs';
+import { type Path, NodeApi } from 'platejs';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -11,40 +11,46 @@ import type { Heading } from '../../lib/types';
 
 import { getHeadingList } from '../../internal/getHeadingList';
 import { TocPlugin } from '../TocPlugin';
-import { heightToTop } from '../utils';
+import { useContentController } from './useContentController';
 
 export const useTocElementState = () => {
   const { editor, getOptions } = useEditorPlugin(TocPlugin);
-  const { isScroll, topOffset } = getOptions();
+  const { topOffset } = getOptions();
 
   const headingList = useEditorSelector(getHeadingList, []);
 
   const containerRef = useScrollRef();
 
-  const onContentScroll = React.useCallback(
-    (el: HTMLElement, id: string, behavior: ScrollBehavior = 'instant') => {
-      if (!containerRef.current) return;
-      if (isScroll) {
-        containerRef.current?.scrollTo({
-          behavior,
-          top: heightToTop(el, containerRef as any) - topOffset,
-        });
-      } else {
-        const top = heightToTop(el) - topOffset;
-        window.scrollTo({ behavior, top });
-      }
+  const { activeContentId, onContentScroll } = useContentController({
+    containerRef,
+    isObserve: true,
+    rootMargin: '0px 0px 0px 0px',
+    topOffset,
+  });
 
-      setTimeout(() => {
-        editor
-          .getApi({ key: KEYS.blockSelection })
-          .blockSelection?.addSelectedRow?.(id);
-      }, 0);
+  const onHeadingScroll = React.useCallback(
+    (
+      el: HTMLElement,
+      id: string,
+      behavior: ScrollBehavior = 'instant',
+      path?: Path
+    ) => {
+      onContentScroll({
+        behavior,
+        el,
+        id,
+        path,
+      });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isScroll, topOffset]
+    [onContentScroll]
   );
 
-  return { editor, headingList, onContentScroll };
+  return {
+    activeContentId,
+    editor,
+    headingList,
+    onContentScroll: onHeadingScroll,
+  };
 };
 
 export const useTocElement = ({
@@ -67,7 +73,7 @@ export const useTocElement = ({
 
       if (!el) return;
 
-      onContentScroll(el, id, behavior);
+      onContentScroll(el, id, behavior, path);
     },
   },
 });

@@ -9,6 +9,7 @@ import {
 } from 'platejs';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
+import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
 // Cache for storing decorations per code line element
 export const CODE_LINE_TO_DECORATIONS: WeakMap<TElement, DecoratedRange[]> =
@@ -76,6 +77,8 @@ export function codeBlockToDecorations(
   const language = block.lang;
   const effectiveLanguage = language || defaultLanguage;
 
+  ensureStablePythonGrammar(lowlight, effectiveLanguage);
+
   let highlighted: any;
   try {
     // Skip highlighting for plaintext or when no language is specified
@@ -92,7 +95,11 @@ export function codeBlockToDecorations(
     const isLanguageRegistered =
       effectiveLanguage && availableLanguages.includes(effectiveLanguage);
     if (isLanguageRegistered) {
-      editor.api.debug.error(error, 'CODE_HIGHLIGHT');
+      editor.api.debug.warn(
+        `Could not highlight with Highlight.js for language "${effectiveLanguage}". Falling back to plaintext`,
+        'CODE_HIGHLIGHT',
+        error
+      );
       highlighted = { value: [] }; // Empty result on error
     } else {
       editor.api.debug.warn(

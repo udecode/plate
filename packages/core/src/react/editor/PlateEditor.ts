@@ -16,6 +16,7 @@ import type {
   PluginConfig,
   WithRequiredKey,
 } from '../../lib';
+import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
 import type {
   AnyEditorPlatePlugin,
   EditorPlatePlugin,
@@ -26,6 +27,7 @@ import type { PlateCorePlugin } from './withPlate';
 export type PlateEditor = BaseEditor & {
   api: EditorApi & UnionToIntersection<InferApi<PlateCorePlugin>>;
   meta: BaseEditor['meta'] & {
+    inputRules: ResolvedInputRulesMeta;
     pluginList: AnyEditorPlatePlugin[];
     shortcuts: Shortcuts;
   };
@@ -57,6 +59,7 @@ export type TPlateEditor<
   api: EditorApi<V> & UnionToIntersection<InferApi<P | PlateCorePlugin>>;
   children: V;
   meta: BaseEditor['meta'] & {
+    inputRules: ResolvedInputRulesMeta;
     pluginList: P[];
     shortcuts: Shortcuts;
   };

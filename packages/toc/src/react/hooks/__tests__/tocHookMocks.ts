@@ -1,5 +1,5 @@
 import * as actualPlatejs from 'platejs';
-import * as actualPlatejsReact from 'platejs/react';
+import * as actualPlatejsReact from '../../../../../core/src/react';
 
 import * as actualGetHeadingListModule from '../../../internal/getHeadingList';
 import * as actualUtils from '../../utils';

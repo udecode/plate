@@ -8,6 +8,9 @@ import {
 
 import type { MediaPluginOptions } from '../../../lib/media/types';
 
+import { parseMediaUrl } from '../../../lib/media/parseMediaUrl';
+import { parseTwitterUrl } from '../../../lib/media-embed/parseTwitterUrl';
+import { parseVideoUrl } from '../../../lib/media-embed/parseVideoUrl';
 import { FloatingMediaStore } from './FloatingMediaStore';
 
 export const submitFloatingMedia = (
@@ -30,15 +33,23 @@ export const submitFloatingMedia = (
 
   const { isUrl: _isUrl = isUrl, transformUrl } =
     editor.getOptions<PluginConfig<any, MediaPluginOptions>>(plugin);
-  const isValid = _isUrl(url);
-
-  if (!isValid) return;
   if (transformUrl) {
     url = transformUrl(url);
   }
 
+  const isValid = _isUrl(url);
+
+  if (!isValid) return;
+
+  const normalized = parseMediaUrl(url, {
+    urlParsers: [parseTwitterUrl, parseVideoUrl],
+  });
+
   editor.tf.setNodes<TMediaElement>({
-    url,
+    id: normalized?.id,
+    provider: normalized?.provider,
+    sourceUrl: normalized?.sourceUrl,
+    url: normalized?.url ?? url,
   });
 
   FloatingMediaStore.actions.reset();

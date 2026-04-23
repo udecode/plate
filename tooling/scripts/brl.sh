@@ -9,23 +9,32 @@ run_barrelsby() {
     shift  # Remove the first argument (dir) from the list
     if [ ! -f "$dir/index.tsx" ]; then
         local temp_index=""
+        local temp_input_rules_index=""
 
         if [ -f "$dir/index.ts" ]; then
             temp_index="$dir/.index.ts.brl.bak"
             mv "$dir/index.ts" "$temp_index" || return 1
         fi
 
+        if [ -f "$dir/lib/plugins/input-rules/index.ts" ]; then
+            temp_input_rules_index="$dir/lib/plugins/input-rules/.index.ts.brl.bak"
+            mv "$dir/lib/plugins/input-rules/index.ts" "$temp_input_rules_index" || return 1
+        fi
+
         if barrelsby -d "$dir" "$@"; then
             if [ -n "$temp_index" ] && [ ! -f "$dir/index.ts" ]; then
                 mv "$temp_index" "$dir/index.ts" || return 1
+                [ -n "$temp_input_rules_index" ] && mv "$temp_input_rules_index" "$dir/lib/plugins/input-rules/index.ts"
                 echo "barrelsby did not regenerate $dir/index.ts" >&2
                 return 1
             fi
 
             [ -n "$temp_index" ] && rm -f "$temp_index"
+            [ -n "$temp_input_rules_index" ] && rm -f "$temp_input_rules_index"
             return 0
         else
             [ -n "$temp_index" ] && mv "$temp_index" "$dir/index.ts"
+            [ -n "$temp_input_rules_index" ] && mv "$temp_input_rules_index" "$dir/lib/plugins/input-rules/index.ts"
             return 1
         fi
     fi

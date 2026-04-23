@@ -6,6 +6,7 @@ import { withPlate } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
+import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
 import {
   type SlatePlugin,
   AffinityPlugin,
@@ -17,6 +18,7 @@ import {
   HistoryPlugin,
   HtmlPlugin,
   LengthPlugin,
+  NavigationFeedbackPlugin,
   OverridePlugin,
   ParserPlugin,
   SlateExtensionPlugin,
@@ -28,7 +30,9 @@ const coreKeys = [
   DebugPlugin.key,
   SlateExtensionPlugin.key,
   DOMPlugin.key,
+  NavigationFeedbackPlugin.key,
   HistoryPlugin.key,
+  InputRulesPlugin.key,
   OverridePlugin.key,
   ParserPlugin.key,
   LengthPlugin.key,

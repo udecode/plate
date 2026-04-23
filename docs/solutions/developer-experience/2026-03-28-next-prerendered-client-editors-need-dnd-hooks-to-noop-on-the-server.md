@@ -35,8 +35,8 @@ That diagnosis was wrong.
 
 `apps/www` already had `DndProvider` wrappers in:
 
-- [`apps/www/src/registry/components/editor/plugins/dnd-kit.tsx`](/Users/zbeyens/git/plate/apps/www/src/registry/components/editor/plugins/dnd-kit.tsx)
-- [`apps/www/src/components/context/providers.tsx`](/Users/zbeyens/git/plate/apps/www/src/components/context/providers.tsx)
+- [`apps/www/src/registry/components/editor/plugins/dnd-kit.tsx`](apps/www/src/registry/components/editor/plugins/dnd-kit.tsx)
+- [`apps/www/src/components/context/providers.tsx`](apps/www/src/components/context/providers.tsx)
 
 Adding more provider plumbing would only shuffle the problem around.
 
@@ -52,13 +52,13 @@ Make `@platejs/dnd` return inert drag/drop connectors when DOM DnD is unavailabl
 
 Add a small environment utility:
 
-- [`packages/dnd/src/utils/dndEnvironment.ts`](/Users/zbeyens/git/plate/packages/dnd/src/utils/dndEnvironment.ts)
+- [`packages/dnd/src/utils/dndEnvironment.ts`](packages/dnd/src/utils/dndEnvironment.ts)
 
 Then guard the hook entry points:
 
-- [`packages/dnd/src/hooks/useDragNode.ts`](/Users/zbeyens/git/plate/packages/dnd/src/hooks/useDragNode.ts)
-- [`packages/dnd/src/hooks/useDropNode.ts`](/Users/zbeyens/git/plate/packages/dnd/src/hooks/useDropNode.ts)
-- [`packages/dnd/src/hooks/useDndNode.ts`](/Users/zbeyens/git/plate/packages/dnd/src/hooks/useDndNode.ts)
+- [`packages/dnd/src/hooks/useDragNode.ts`](packages/dnd/src/hooks/useDragNode.ts)
+- [`packages/dnd/src/hooks/useDropNode.ts`](packages/dnd/src/hooks/useDropNode.ts)
+- [`packages/dnd/src/hooks/useDndNode.ts`](packages/dnd/src/hooks/useDndNode.ts)
 
 The essential behavior is:
 
@@ -72,7 +72,7 @@ That keeps drag-and-drop fully active in the browser while making prerender path
 
 Add a regression test:
 
-- [`packages/dnd/src/components/useDraggable.spec.tsx`](/Users/zbeyens/git/plate/packages/dnd/src/components/useDraggable.spec.tsx)
+- [`packages/dnd/src/components/useDraggable.spec.tsx`](packages/dnd/src/components/useDraggable.spec.tsx)
 
 The test forces the no-DOM path and asserts that `react-dnd` hooks are not called.
 
@@ -108,7 +108,7 @@ In this repo, `next upgrade` updated the manifest and lockfile correctly, but it
 These commands passed after the fix:
 
 ```bash
-bun test /Users/zbeyens/git/plate/packages/dnd/src/components/useDraggable.spec.tsx
+bun test packages/dnd/src/components/useDraggable.spec.tsx
 pnpm --filter @platejs/dnd build
 pnpm --filter @platejs/dnd typecheck
 pnpm -C apps/www build

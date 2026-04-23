@@ -22,7 +22,7 @@ Fix `@platejs/csv` so native ESM consumers like Vitest do not crash on `papapars
 
 - Issue report says `@platejs/csv/dist/index.js` contains `import { parse } from "papaparse";`.
 - Native ESM loading under Vitest/Node fails because `papaparse` is CommonJS.
-- Reproduced locally with `node --input-type=module -e "import('/Users/zbeyens/git/plate/packages/csv/dist/index.js')"` before the fix.
+- Reproduced locally with `node --input-type=module -e "import('packages/csv/dist/index.js')"` before the fix.
 - Existing CSV learnings already covered a nearby `papaparse` shape bug in `deserializeCsv`, so this fix stayed in the same module and added package-surface coverage.
 - Bun can mask this class of issue because `process.execPath` inside Bun tests points at Bun, not Node. The regression test must invoke `node` explicitly.
 

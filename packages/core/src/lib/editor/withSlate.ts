@@ -10,6 +10,7 @@ import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
 import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { ChunkingConfig } from '../plugins/chunking';
+import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
 import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
 
@@ -77,6 +78,15 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * limit is reached, further input will be prevented.
    */
   maxLength?: number;
+  /**
+   * Configuration for the built-in navigation feedback plugin.
+   *
+   * This core plugin flashes the landed target after navigation jumps such as
+   * TOC, footnote, search, or custom outline movement.
+   *
+   * @default { duration: 1600 }
+   */
+  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /**
    * Configuration for automatic node ID generation and management.
    *
@@ -213,6 +223,7 @@ export const withSlate = <
     autoSelect,
     chunking = true,
     maxLength,
+    navigationFeedback,
     nodeId,
     optionsStoreFactory,
     plugins = [],
@@ -310,6 +321,7 @@ export const withSlate = <
     affinity,
     chunking,
     maxLength,
+    navigationFeedback,
     nodeId,
     plugins,
   });
@@ -337,7 +349,7 @@ export const withSlate = <
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
   const normalizeNode = editor.tf.normalizeNode;
-  editor.tf.normalizeNode = (...args) => {
+  editor.tf.normalizeNode = (...args: Parameters<typeof normalizeNode>) => {
     if (!editor.api.shouldNormalizeNode(args[0])) {
       return;
     }

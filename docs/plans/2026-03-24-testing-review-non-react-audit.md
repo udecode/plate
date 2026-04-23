@@ -26,7 +26,7 @@ Run the repo-wide testing review skill with a temporary non-React constraint, us
 
 ## Verification
 
-- `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24h --reporter=dots`
+- `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24h --reporter=dots`
 - `pnpm test:profile -- --top 25`
 - `pnpm test:slowest -- --top 25`
 - `rg -n "(describe|it|test)\\.skip|\\bxit\\(|\\bxdescribe\\(" packages apps -g "*.spec.ts" -g "*.spec.tsx" -g "*.slow.ts" -g "*.slow.tsx"`

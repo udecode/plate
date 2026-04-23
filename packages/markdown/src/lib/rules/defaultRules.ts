@@ -1,5 +1,6 @@
 import {
   type Descendant,
+  ElementApi,
   type SlateEditor,
   type TElement,
   type TListElement,
@@ -9,8 +10,10 @@ import {
   getPluginType,
   KEYS,
 } from 'platejs';
+import { normalizeDateValue } from '@platejs/date';
 
 import type {
+  MdBlockquote,
   MdHeading,
   MdImage,
   MdLink,
@@ -29,12 +32,15 @@ import type { MdRules } from '../types';
 import {
   buildSlateNode,
   convertChildrenDeserialize,
+  convertNodesDeserialize,
   convertTextsDeserialize,
 } from '../deserializer';
 import { convertNodesSerialize } from '../serializer';
 import { columnRules } from './columnRules';
 import { fontRules } from './fontRules';
 import { mediaRules } from './mediaRules';
+
+const BARE_AUTOLINK_PROTOCOL_REGEX = /^https?:\/\//i;
 import { parseAttributes, propsToAttributes } from './utils';
 
 const LEADING_NEWLINE_REGEX = /^\n/;
@@ -83,6 +89,53 @@ const deserializeClassicListItemChildren = (
   return children;
 };
 
+const groupInlineChildrenIntoParagraphs = (
+  editor: SlateEditor,
+  children: Descendant[] = []
+) => {
+  const paragraphType = getPluginType(editor, KEYS.p);
+  const elements: Descendant[] = [];
+  let inlineNodes: Descendant[] = [];
+
+  const flushInlineNodes = () => {
+    if (inlineNodes.length === 0) return;
+
+    elements.push({
+      children: inlineNodes as any,
+      type: paragraphType,
+    } as TElement);
+    inlineNodes = [];
+  };
+
+  children.forEach((child) => {
+    const isBlock =
+      ElementApi.isElement(child) &&
+      !editor.api.isInline(child) &&
+      editor.api.isBlock(child);
+
+    if (isBlock) {
+      flushInlineNodes();
+      elements.push(child);
+      return;
+    }
+
+    inlineNodes.push(child);
+  });
+
+  flushInlineNodes();
+
+  if (elements.length > 0) {
+    return elements;
+  }
+
+  return [
+    {
+      children: [{ text: '' }],
+      type: paragraphType,
+    } as TElement,
+  ];
+};
+
 export const defaultRules: MdRules = {
   a: {
     deserialize: (mdastNode, deco, options) => ({
@@ -90,98 +143,46 @@ export const defaultRules: MdRules = {
       type: getPluginType(options.editor!, KEYS.a),
       url: mdastNode.url,
     }),
-    serialize: (node, options) => ({
-      children: convertNodesSerialize(
+    serialize: (node, options): any => {
+      const children = convertNodesSerialize(
         node.children,
         options
-      ) as MdLink['children'],
-      type: 'link',
-      url: node.url,
-    }),
+      ) as MdLink['children'];
+      const isBareAutolinkLiteral =
+        children.length === 1 &&
+        children[0]?.type === 'text' &&
+        children[0].value === node.url &&
+        BARE_AUTOLINK_PROTOCOL_REGEX.test(node.url ?? '');
+
+      if (isBareAutolinkLiteral) {
+        return {
+          type: 'html',
+          value: node.url,
+        };
+      }
+
+      return {
+        children,
+        type: 'link',
+        url: node.url,
+      };
+    },
   },
   blockquote: {
-    deserialize: (mdastNode, deco, options) => {
-      const children =
-        mdastNode.children.length > 0
-          ? mdastNode.children.flatMap((paragraph, index, children) => {
-              if (paragraph.type === 'paragraph') {
-                if (children.length > 1 && children.length - 1 !== index) {
-                  // add a line break between the paragraphs
-                  const paragraphChildren = convertChildrenDeserialize(
-                    paragraph.children,
-                    deco,
-                    options
-                  );
-                  paragraphChildren.push({ text: '\n' }, { text: '\n' });
-                  return paragraphChildren;
-                }
-                return convertChildrenDeserialize(
-                  paragraph.children,
-                  deco,
-                  options
-                );
-              }
-
-              if ('children' in paragraph) {
-                return convertChildrenDeserialize(
-                  paragraph.children,
-                  deco,
-                  options
-                );
-              }
-
-              return [{ text: '' }];
-            })
-          : [{ text: '' }];
-
-      const flattenedChildren = children.flatMap((child: any) =>
-        child.type === 'blockquote' ? child.children : [child]
-      );
-
-      return {
-        children: flattenedChildren,
-        type: getPluginType(options.editor!, KEYS.blockquote),
-      };
-    },
-    serialize: (node, options) => {
-      const nodes = [] as any;
-
-      for (const child of node.children) {
-        if (child.text === '\n') {
-          nodes.push({
-            type: 'break',
-          });
-        } else {
-          nodes.push(child);
-        }
-      }
-
-      const paragraphChildren = convertNodesSerialize(
-        nodes,
+    deserialize: (mdastNode, deco, options) => ({
+      children: groupInlineChildrenIntoParagraphs(
+        options.editor!,
+        convertNodesDeserialize(mdastNode.children, deco, options)
+      ),
+      type: getPluginType(options.editor!, KEYS.blockquote),
+    }),
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(
+        groupInlineChildrenIntoParagraphs(options.editor!, node.children),
         options
-      ) as MdParagraph['children'];
-
-      if (
-        paragraphChildren.length > 0 &&
-        paragraphChildren.at(-1)!.type === 'break'
-      ) {
-        // if the last child of the paragraph is a line break add an additional one
-
-        paragraphChildren.at(-1)!.type = 'html';
-        // @ts-expect-error -- value is ok
-        paragraphChildren.at(-1)!.value = '\n<br />';
-      }
-
-      return {
-        children: [
-          {
-            children: paragraphChildren,
-            type: 'paragraph',
-          },
-        ],
-        type: 'blockquote',
-      };
-    },
+      ) as MdBlockquote['children'],
+      type: 'blockquote',
+    }),
   },
   bold: {
     mark: true,
@@ -276,17 +277,31 @@ export const defaultRules: MdRules = {
   },
   date: {
     deserialize(mdastNode, _deco, options) {
-      const dateValue = (mdastNode.children?.[0] as any)?.value || '';
+      const props = parseAttributes((mdastNode as any).attributes);
+      const dateValue =
+        typeof props.value === 'string'
+          ? props.value
+          : (mdastNode.children?.[0] as any)?.value || '';
+
       return {
         children: [{ text: '' }],
-        date: dateValue,
+        ...normalizeDateValue(dateValue),
         type: getPluginType(options.editor!, KEYS.date),
       };
     },
-    serialize({ date }): MdMdxJsxTextElement {
+    serialize({ date, rawDate }): MdMdxJsxTextElement {
+      if (date && !rawDate) {
+        return {
+          attributes: propsToAttributes({ value: date }),
+          children: [],
+          name: 'date',
+          type: 'mdxJsxTextElement',
+        };
+      }
+
       return {
         attributes: [],
-        children: [{ type: 'text', value: date ?? '' }],
+        children: [{ type: 'text', value: rawDate ?? date ?? '' }],
         name: 'date',
         type: 'mdxJsxTextElement',
       };
@@ -313,28 +328,67 @@ export const defaultRules: MdRules = {
       value: node.texExpression,
     }),
   },
-  // plate doesn't support footnoteDefinition and footnoteReference
-  // so we need to convert them to p for now
   footnoteDefinition: {
     deserialize: (mdastNode, deco, options) => {
-      const children = convertChildrenDeserialize(
+      const paragraphType = getPluginType(options.editor!, KEYS.p);
+      const children = convertNodesDeserialize(
         mdastNode.children,
         deco,
         options
       );
-
-      // Flatten nested paragraphs similar to blockquote implementation
-      const flattenedChildren = children.flatMap((child: any) =>
-        child.type === 'p' ? child.children : [child]
+      const blocks = children.map((child: any) =>
+        child.type === paragraphType
+          ? child
+          : {
+              children: [child],
+              type: paragraphType,
+            }
       );
 
+      const identifier = (mdastNode as any).identifier;
+      if (blocks.length === 0) {
+        return {
+          children: [
+            {
+              children: [{ text: '' }],
+              type: paragraphType,
+            },
+          ],
+          identifier,
+          type: getPluginType(options.editor!, 'footnoteDefinition'),
+        };
+      }
+
       return {
-        children: flattenedChildren,
-        type: getPluginType(options.editor!, KEYS.p),
+        children: blocks,
+        identifier,
+        type: getPluginType(options.editor!, 'footnoteDefinition'),
       };
     },
+    serialize: (node, options) => ({
+      children: convertNodesSerialize(node.children, options) as any,
+      identifier: node.identifier,
+      type: 'footnoteDefinition',
+    }),
   },
-  footnoteReference: {},
+  footnoteReference: {
+    deserialize: (mdastNode, _deco, options) => {
+      const identifier = (mdastNode as any).identifier ?? '';
+
+      return {
+        children: [{ text: '' }],
+        identifier,
+        type: getPluginType(options.editor!, 'footnoteReference'),
+      };
+    },
+    serialize: (node) => ({
+      identifier:
+        node.identifier ??
+        node.children?.map((child: any) => child.text ?? '').join('') ??
+        '',
+      type: 'footnoteReference',
+    }),
+  },
   heading: {
     deserialize: (mdastNode, deco, options) => {
       const headingType = {
@@ -423,12 +477,10 @@ export const defaultRules: MdRules = {
         ...rest,
       };
     },
-    serialize: ({ caption, url }) => {
+    serialize: ({ caption, title, url }) => {
       const image: MdImage = {
         alt: caption ? caption.map((c) => (c as any).text).join('') : undefined,
-        title: caption
-          ? caption.map((c) => (c as any).text).join('')
-          : undefined,
+        title: typeof title === 'string' ? title : undefined,
         type: 'image',
         url,
       };

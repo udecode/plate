@@ -102,7 +102,6 @@
         "@hookform/resolvers": "5.1.1",
         "@next/third-parties": "16.2.1",
         "@platejs/ai": "workspace:^",
-        "@platejs/autoformat": "workspace:^",
         "@platejs/basic-nodes": "workspace:^",
         "@platejs/basic-styles": "workspace:^",
         "@platejs/callout": "workspace:^",
@@ -121,6 +120,7 @@
         "@platejs/excalidraw": "workspace:^",
         "@platejs/find-replace": "workspace:^",
         "@platejs/floating": "workspace:^",
+        "@platejs/footnote": "workspace:^",
         "@platejs/indent": "workspace:^",
         "@platejs/juice": "workspace:^",
         "@platejs/layout": "workspace:^",
@@ -269,7 +269,7 @@
     },
     "packages/ai": {
       "name": "@platejs/ai",
-      "version": "52.3.20",
+      "version": "52.3.22",
       "dependencies": {
         "@platejs/markdown": "workspace:^",
         "@platejs/selection": "workspace:^",
@@ -287,23 +287,6 @@
       },
       "peerDependencies": {
         "platejs": ">=52.0.15",
-        "react": ">=18.0.0",
-        "react-dom": ">=18.0.0",
-      },
-    },
-    "packages/autoformat": {
-      "name": "@platejs/autoformat",
-      "version": "52.3.10",
-      "dependencies": {
-        "lodash": "^4.17.21",
-        "react-compiler-runtime": "^1.0.0",
-      },
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "platejs": "workspace:^",
-      },
-      "peerDependencies": {
-        "platejs": ">=52.3.4",
         "react": ">=18.0.0",
         "react-dom": ">=18.0.0",
       },
@@ -693,6 +676,23 @@
         "react-dom": ">=18.0.0",
       },
     },
+    "packages/footnote": {
+      "name": "@platejs/footnote",
+      "version": "52.3.10",
+      "dependencies": {
+        "@platejs/combobox": "workspace:^",
+        "react-compiler-runtime": "^1.0.0",
+      },
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "platejs": "workspace:^",
+      },
+      "peerDependencies": {
+        "platejs": ">=52.0.11",
+        "react": ">=18.0.0",
+        "react-dom": ">=18.0.0",
+      },
+    },
     "packages/indent": {
       "name": "@platejs/indent",
       "version": "52.3.10",
@@ -797,8 +797,9 @@
     },
     "packages/markdown": {
       "name": "@platejs/markdown",
-      "version": "52.3.19",
+      "version": "52.3.22",
       "dependencies": {
+        "@platejs/date": "workspace:*",
         "lodash": "^4.17.23",
         "marked": "^15.0.12",
         "mdast-util-math": "3.0.0",
@@ -813,9 +814,11 @@
       },
       "devDependencies": {
         "@plate/scripts": "workspace:*",
+        "@platejs/footnote": "workspace:*",
         "@types/mdast": "^4.0.4",
         "@types/unist": "^3.0.3",
         "platejs": "workspace:^",
+        "remark-emoji": "5.0.1",
         "remark-gfm": "4.0.1",
         "remark-math": "6.0.0",
       },
@@ -1855,8 +1858,6 @@
 
     "@platejs/ai": ["@platejs/ai@workspace:packages/ai"],
 
-    "@platejs/autoformat": ["@platejs/autoformat@workspace:packages/autoformat"],
-
     "@platejs/basic-nodes": ["@platejs/basic-nodes@workspace:packages/basic-nodes"],
 
     "@platejs/basic-styles": ["@platejs/basic-styles@workspace:packages/basic-styles"],
@@ -1896,6 +1897,8 @@
     "@platejs/find-replace": ["@platejs/find-replace@workspace:packages/find-replace"],
 
     "@platejs/floating": ["@platejs/floating@workspace:packages/floating"],
+
+    "@platejs/footnote": ["@platejs/footnote@workspace:packages/footnote"],
 
     "@platejs/indent": ["@platejs/indent@workspace:packages/indent"],
 

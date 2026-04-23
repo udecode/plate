@@ -17,6 +17,7 @@ Plugin rules use specific action names to define behavior:
 - **`'default'`**: Default Slate behavior.
 - **`'reset'`**: Changes the current block to a default paragraph, keeping content.
 - **`'exit'`**: Exits the current block, inserting a new paragraph after it. See [Exit Break](/docs/exit-break) to learn more about this behavior.
+- **`'lift'`**: Lifts the current block out of the nearest matching ancestor container, changing one structural level at a time.
 - **`'deleteExit'`**: Deletes content then exits the block.
 - **`'lineBreak'`**: Inserts a line break (`\n`) instead of splitting the block.
 
@@ -84,6 +85,26 @@ After pressing `Enter` with `rules: { break: { empty: 'exit' } }`:
 </p>
 ```
 
+### `lift`
+
+Lifts the current block out of the nearest matching ancestor container.
+
+```tsx
+<blockquote>
+  <p>
+    |
+  </p>
+</blockquote>
+```
+
+After pressing `Enter` with `rules: { break: { empty: 'lift' } }`:
+
+```tsx
+<p>
+  |
+</p>
+```
+
 ### `deleteExit`
 
 Deletes content then exits the block.
@@ -130,14 +151,14 @@ Controls what happens when users press `Enter` within specific block types.
 ### Configuration
 
 ```tsx
-BlockquotePlugin.configure({
+CalloutPlugin.configure({
   rules: {
     break: {
       // Action when Enter is pressed normally
       default: 'default' | 'lineBreak' | 'exit' | 'deleteExit',
       
       // Action when Enter is pressed in an empty block
-      empty: 'default' | 'reset' | 'exit' | 'deleteExit',
+      empty: 'default' | 'reset' | 'exit' | 'lift' | 'deleteExit',
       
       // Action when Enter is pressed at end of empty line
       emptyLineEnd: 'default' | 'exit' | 'deleteExit',
@@ -161,6 +182,7 @@ Each property controls a specific scenario:
   - [`'default'`](#default)
   - [`'reset'`](#reset)
   - [`'exit'`](#exit)
+  - [`'lift'`](#lift)
   - [`'deleteExit'`](#deleteexit)
 
 - `emptyLineEnd`
@@ -208,14 +230,14 @@ After (split and reset):
 </p>
 ```
 
-**Blockquote with line breaks and smart exits:**
+**Callout with line breaks and smart exits:**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       break: {
         default: 'lineBreak',
@@ -227,19 +249,19 @@ const plugins = [
 ];
 ```
 
-Before pressing `Enter` in blockquote:
+Before pressing `Enter` in callout:
 ```tsx
-<blockquote>
+<callout>
   Quote text|
-</blockquote>
+</callout>
 ```
 
 After (line break):
 ```tsx
-<blockquote>
+<callout>
   Quote text
   |
-</blockquote>
+</callout>
 ```
 
 **Code block with custom empty handling:**
@@ -287,7 +309,7 @@ HeadingPlugin.configure({
   rules: {
     delete: {
       // Action when Backspace is pressed at block start
-      start: 'default' | 'reset',
+      start: 'default' | 'reset' | 'lift',
       
       // Action when Backspace is pressed in empty block
       empty: 'default' | 'reset',
@@ -301,6 +323,7 @@ Each property controls a specific scenario:
 - `start`
   - [`'default'`](#default)
   - [`'reset'`](#reset)
+  - [`'lift'`](#lift)
 
 - `empty`
   - [`'default'`](#default)
@@ -308,14 +331,14 @@ Each property controls a specific scenario:
 
 ### Examples
 
-**Reset blockquotes at start:**
+**Reset callouts at start:**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       delete: { start: 'reset' },
     },
@@ -325,15 +348,15 @@ const plugins = [
 
 Before pressing `Backspace` at start:
 ```tsx
-<blockquote>
-  |Quote content
-</blockquote>
+<callout>
+  |Callout content
+</callout>
 ```
 
 After (reset):
 ```tsx
 <p>
-  |Quote content
+  |Callout content
 </p>
 ```
 
@@ -417,14 +440,14 @@ After (empty paragraph removed):
 </h1>
 ```
 
-**Blockquote with removal disabled:**
+**Callout with removal disabled:**
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
+import { CalloutPlugin } from '@platejs/callout/react';
 
 const plugins = [
   // ...otherPlugins,
-  BlockquotePlugin.configure({
+  CalloutPlugin.configure({
     rules: {
       merge: { removeEmpty: false }, // Default
     },
@@ -437,9 +460,9 @@ Before pressing `Backspace` at start:
 <p>
   <text />
 </p>
-<blockquote>
-  |Code content
-</blockquote>
+<callout>
+  |Callout content
+</callout>
 ```
 
 After (empty paragraph preserved):

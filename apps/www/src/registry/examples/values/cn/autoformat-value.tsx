@@ -54,6 +54,10 @@ export const autoformatValue: any = (
       输入 <htext code>&gt;</htext> 后跟 <htext code>空格</htext> 来创建引用块。
     </hp>
     <hp indent={1} listStyleType="disc">
+      在已有引用块内部再次输入 <htext code>&gt;</htext> 和{' '}
+      <htext code>空格</htext>，即可创建嵌套引用块。
+    </hp>
+    <hp indent={1} listStyleType="disc">
       输入 <htext code>```</htext> 来创建代码块。
     </hp>
     <hp indent={1} listStyleType="disc">

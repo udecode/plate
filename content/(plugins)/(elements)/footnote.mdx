@@ -1,0 +1,495 @@
+---
+title: Footnote
+docs:
+  - route: /docs/markdown
+    title: Markdown
+  - route: /docs/navigation-feedback
+    title: Navigation Feedback
+---
+
+<ComponentPreview name="footnote-demo" />
+
+Footnote turns GFM footnote markup (`[^1]` references and `[^1]: text` definitions) into dedicated Plate nodes you can insert, repair, and jump between. The reference is an inline void `<sup>`; the definition is a block at the end of the document. Paired with `MarkdownPlugin` and `remark-gfm`, references and definitions round-trip as real footnote markdown instead of fallback text.
+
+<PackageInfo>
+
+## Features
+
+- GFM-compatible footnote references and definitions as dedicated Plate nodes.
+- One-transform insertion with automatic numeric identifier allocation.
+- `[^` inline combobox for insertion from the default UI kit.
+- Recreate a missing definition from an unresolved reference without duplicating.
+- Keep the first duplicate definition canonical; renumber later duplicates on demand.
+- Navigation helpers that jump between reference and definition with a landed-target flash.
+
+</PackageInfo>
+
+## Kit Usage
+
+<Steps>
+
+### Installation
+
+The fastest way to add footnote-aware markdown is with the `MarkdownKit`, which includes `MarkdownPlugin`, the footnote plugins wired for the default markdown profile, and works with [Plate UI](/docs/installation/plate-ui).
+
+<ComponentSource name="markdown-kit" />
+
+### Add Kit
+
+```tsx
+import { createPlateEditor } from 'platejs/react';
+import { MarkdownKit } from '@/components/editor/plugins/markdown-kit';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    ...MarkdownKit,
+  ],
+});
+```
+
+</Steps>
+
+## Manual Usage
+
+<Steps>
+
+### Installation
+
+```bash
+npm install @platejs/footnote @platejs/markdown remark-gfm
+```
+
+### Add Plugins
+
+Three plugins ship together: the inline reference, the block definition, and the combobox input. Pair them with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
+
+```tsx
+import {
+  FootnoteDefinitionPlugin,
+  FootnoteReferencePlugin,
+} from '@platejs/footnote/react';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { createPlateEditor } from 'platejs/react';
+import remarkGfm from 'remark-gfm';
+
+const editor = createPlateEditor({
+  plugins: [
+    // ...otherPlugins,
+    FootnoteReferencePlugin,
+    FootnoteDefinitionPlugin,
+    MarkdownPlugin.configure({
+      options: {
+        remarkPlugins: [remarkGfm],
+      },
+    }),
+  ],
+});
+```
+
+`FootnoteReferencePlugin` pulls in `FootnoteInputPlugin` automatically — that's the inline void rendered while the reader is typing inside the `[^` combobox.
+
+### Insert a Footnote
+
+Call `tf.insert.footnote` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
+
+```tsx
+editor.tf.insert.footnote();
+```
+
+When the selection is expanded, the expanded fragment seeds the definition body so you can select text and "footnote-ify" it in one shot.
+
+Pass `focusDefinition: false` when the reference should stay inline (for example, inside a larger template):
+
+```tsx
+editor.tf.insert.footnote({ focusDefinition: false });
+```
+
+Pass `identifier` to reuse an existing identifier; the transform skips creating a duplicate definition when one already exists.
+
+### Repair an Unresolved Reference
+
+When a reference points at an identifier with no definition (e.g. pasted from elsewhere), use `tf.footnote.createDefinition` to create just the definition — without inserting another reference:
+
+```tsx
+editor.tf.footnote.createDefinition({ identifier: '3' });
+```
+
+Pass `focus: false` when you want to leave the caret where it was:
+
+```tsx
+editor.tf.footnote.createDefinition({ focus: false, identifier: '3' });
+```
+
+### Navigate Between Reference and Definition
+
+`tf.footnote.focusDefinition` and `tf.footnote.focusReference` jump the selection, scroll the target into view, and flash it through [Navigation Feedback](/docs/navigation-feedback). No extra wiring needed:
+
+```tsx
+editor.tf.footnote.focusDefinition({ identifier: '3' });
+editor.tf.footnote.focusReference({ identifier: '3' });
+```
+
+When a single definition is pointed at by multiple references, pass `index` to pick which one to land on:
+
+```tsx
+editor.tf.footnote.focusReference({ identifier: '3', index: 1 });
+```
+
+Both transforms return `false` when the identifier doesn't resolve, so you can branch on stale links without throwing.
+
+### Handle Duplicate Definitions
+
+Two definitions with the same identifier is a resolvable edit state, not an error. The **first** definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
+
+```tsx
+const nextIdentifier = editor.tf.footnote.normalizeDuplicateDefinition({
+  path: duplicatePath,
+});
+```
+
+The transform returns the newly assigned identifier string on success, or `false` when the path isn't a duplicate definition or the requested identifier is already taken. Pass `identifier` to target a specific free identifier instead of the next available one.
+
+### Customize Rendering
+
+Swap in your own React components with `withComponent`:
+
+```tsx
+import {
+  FootnoteDefinitionPlugin,
+  FootnoteReferencePlugin,
+} from '@platejs/footnote/react';
+import { createPlateEditor } from 'platejs/react';
+
+const editor = createPlateEditor({
+  plugins: [
+    FootnoteReferencePlugin.withComponent(MyFootnoteReference),
+    FootnoteDefinitionPlugin.withComponent(MyFootnoteDefinition),
+  ],
+});
+```
+
+The package owns node semantics, identifier allocation, and navigation helpers. App-level surfaces — hover previews, the `[^` combobox, slash-command entries, toolbar buttons — are built on top of the transforms and API methods below.
+
+</Steps>
+
+## Plugins
+
+### `FootnoteReferencePlugin`
+
+Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier registry, navigation transforms, and query API. Automatically includes `FootnoteInputPlugin`.
+
+<API name="FootnoteReferencePlugin">
+<APIOptions>
+  <APIItem name="trigger" type="RegExp | string[] | string" optional>
+    Character that opens the footnote combobox.
+    - **Default:** `'^'`
+  </APIItem>
+  <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>
+    Only trigger when the previous character matches. The default requires `[` so bare `^` in prose doesn't open the combobox.
+    - **Default:** `/^\[$/`
+  </APIItem>
+  <APIItem name="createComboboxInput" type="(trigger: string) => TElement" optional>
+    Factory for the node inserted when the combobox opens. Defaults to a `footnoteInput` element.
+  </APIItem>
+  <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
+    Extra predicate gating the combobox. Return `false` to suppress triggering at the current selection.
+  </APIItem>
+</APIOptions>
+</API>
+
+### `FootnoteDefinitionPlugin`
+
+Block node for footnote definitions. Lives at the bottom of the document and carries the identifier + body content.
+
+<API name="FootnoteDefinitionPlugin" />
+
+### `FootnoteInputPlugin`
+
+Inline void used as the live combobox input while the reader is typing `[^…`. Pulled in automatically by `FootnoteReferencePlugin`; add it directly only if you render the combobox yourself.
+
+<API name="FootnoteInputPlugin" />
+
+## API
+
+All API methods hang off `editor.api.footnote`. Reads go through a lazy per-editor registry that rebuilds only when a footnote operation invalidates it, so hover previews and navigation stay cheap even when a single definition has many references.
+
+### `api.footnote.definition`
+
+Get the canonical (first-in-document-order) definition entry for an identifier.
+
+<API name="definition">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<TElement> | undefined">
+    Canonical definition entry, or `undefined` when nothing matches.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.definitions`
+
+Get every definition entry that shares an identifier, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
+
+<API name="definitions">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<TElement>[]">
+    Definition entries in document order.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.definitionText`
+
+Get the plain-text content of the canonical definition. Ideal for hover previews — reads straight from live definition nodes, no copied state.
+
+<API name="definitionText">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="string | undefined">
+    Definition text, or `undefined` when no definition exists.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.references`
+
+Get every reference entry that points at an identifier, in document order.
+
+<API name="references">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<TElement>[]">
+    Reference entries in document order.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.identifiers`
+
+List every identifier that has at least one definition, in document order.
+
+<API name="identifiers">
+<APIReturns>
+  <APIItem name="return" type="string[]">
+    Defined identifiers.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.nextId`
+
+Compute the next free numeric identifier. Used by `tf.insert.footnote` when the caller doesn't supply one.
+
+<API name="nextId">
+<APIReturns>
+  <APIItem name="return" type="string">
+    Next free identifier (e.g. `'1'`, `'2'`).
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.isResolved`
+
+Check whether an identifier has at least one definition.
+
+<API name="isResolved">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `true` when at least one definition exists for the identifier.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.duplicateDefinitions`
+
+Get every non-canonical definition entry for an identifier — that is, every definition after the first in document order.
+
+<API name="duplicateDefinitions">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="NodeEntry<TElement>[]">
+    Definition entries past the canonical one.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.duplicateIdentifiers`
+
+List every identifier that has more than one definition.
+
+<API name="duplicateIdentifiers">
+<APIReturns>
+  <APIItem name="return" type="string[]">
+    Identifiers with duplicate definitions.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.hasDuplicateDefinitions`
+
+Check whether an identifier has more than one definition.
+
+<API name="hasDuplicateDefinitions">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `true` when two or more definitions share the identifier.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.footnote.isDuplicateDefinition`
+
+Check whether a given definition path is a later duplicate (not the canonical one).
+
+<API name="isDuplicateDefinition">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of the definition to check.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `true` when the node at `path` is a footnote definition past the canonical one.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Transforms
+
+### `tf.insert.footnote`
+
+Insert a footnote reference at the current selection, create a matching definition if one doesn't already exist, and focus the definition body.
+
+When the selection is expanded, the expanded fragment seeds the new definition body so you can convert selected prose into a footnote in one call.
+
+<API name="insert.footnote">
+<APIParameters>
+  <APIItem name="identifier" type="string" optional>
+    Reuse an existing identifier. Defaults to `api.footnote.nextId()`.
+  </APIItem>
+  <APIItem name="focusDefinition" type="boolean" optional>
+    Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
+    - **Default:** `true`
+  </APIItem>
+  <APIItem name="...options" type="InsertNodesOptions" optional>
+    Standard insert-nodes options (`at`, `select`, etc.) forwarded to the reference insert.
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.footnote.createDefinition`
+
+Create the missing definition for an existing identifier without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the identifier already resolves.
+
+<API name="footnote.createDefinition">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Identifier to create a definition for.
+  </APIItem>
+  <APIItem name="focus" type="boolean" optional>
+    Focus the definition body after creation.
+    - **Default:** `true`
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="number[]">
+    Path of the resolved definition.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `tf.footnote.focusDefinition`
+
+Jump the selection into the canonical definition body, scroll it into view, and flash it through Navigation Feedback.
+
+<API name="footnote.focusDefinition">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `false` when no definition resolves, `true` otherwise.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `tf.footnote.focusReference`
+
+Jump the selection to the matching reference, scroll it into view, and flash it through Navigation Feedback.
+
+<API name="footnote.focusReference">
+<APIParameters>
+  <APIItem name="identifier" type="string">
+    Footnote identifier.
+  </APIItem>
+  <APIItem name="index" type="number" optional>
+    Pick a specific reference when the definition is pointed at by several. Indexed by document order.
+    - **Default:** `0`
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="boolean">
+    `false` when the reference doesn't resolve, `true` otherwise.
+  </APIItem>
+</APIReturns>
+</API>
+
+### `tf.footnote.normalizeDuplicateDefinition`
+
+Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `identifier` to target, otherwise the transform picks `api.footnote.nextId()`.
+
+<API name="footnote.normalizeDuplicateDefinition">
+<APIParameters>
+  <APIItem name="path" type="number[]">
+    Path of the duplicate definition to renumber.
+  </APIItem>
+  <APIItem name="identifier" type="string" optional>
+    Target identifier. Must be free. Defaults to `api.footnote.nextId()`.
+  </APIItem>
+</APIParameters>
+<APIReturns>
+  <APIItem name="return" type="false | string">
+    The assigned identifier on success, or `false` when the path isn't a duplicate definition or the target identifier is already taken.
+  </APIItem>
+</APIReturns>
+</API>
+
+## Related Docs
+
+- [Markdown](/docs/markdown)
+- [Navigation Feedback](/docs/navigation-feedback)
+- [Editor Methods](/docs/editor-methods)

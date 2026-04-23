@@ -35,7 +35,7 @@ That is not a fix. It is just two blind retries of the same race.
 
 ## Fix
 
-Make [g:build](/Users/zbeyens/git/plate/package.json) smart enough to stabilize itself:
+Make [g:build](package.json) smart enough to stabilize itself:
 
 - try the normal parallel Turbo build first
 - if it fails, rerun the same build serialized with `--concurrency=1`

@@ -30,7 +30,7 @@ docs:
 
 ### 安装
 
-最快捷的方式是使用`MathKit`套件，它包含预配置的`EquationPlugin`和`InlineEquationPlugin`以及[Plate UI](/docs/installation/plate-ui)组件。
+最快捷的方式是使用`MathKit`套件，它包含预配置的`EquationPlugin`和`InlineEquationPlugin`、对应的 `$...$` 与 `$$` input rules，以及[Plate UI](/docs/installation/plate-ui)组件。
 
 <ComponentSource name="math-kit" />
 
@@ -70,6 +70,7 @@ npm install @platejs/math
 在创建编辑器时将公式插件包含到Plate插件数组中。
 
 ```tsx
+import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 import { createPlateEditor } from 'platejs/react';
 
@@ -84,9 +85,10 @@ const editor = createPlateEditor({
 
 ### 配置插件
 
-使用自定义组件配置插件来渲染公式元素。
+使用自定义组件和 input rules 配置插件来渲染公式元素。
 
 ```tsx
+import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 import { createPlateEditor } from 'platejs/react';
 import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
@@ -94,13 +96,27 @@ import { EquationElement, InlineEquationElement } from '@/components/ui/equation
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    EquationPlugin.withComponent(EquationElement),
-    InlineEquationPlugin.withComponent(InlineEquationElement),
+    InlineEquationPlugin.configure({
+      inputRules: [MathRules.markdown({ variant: '$' })],
+      node: {
+        component: InlineEquationElement,
+      },
+    }),
+    EquationPlugin.configure({
+      inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+      node: {
+        component: EquationElement,
+      },
+    }),
   ],
 });
 ```
 
-- `withComponent`: 指定[`EquationElement`](/docs/components/equation-node)渲染块级公式，[`InlineEquationElement`](/docs/components/equation-node)渲染行内公式。
+- `node.component`：指定[`EquationElement`](/docs/components/equation-node)渲染块级公式，[`InlineEquationElement`](/docs/components/equation-node)渲染行内公式。
+- `MathRules.markdown({ variant: '$' })`：启用行内公式 Markdown 快捷输入。
+- `MathRules.markdown({ variant: '$$', on: 'break' | 'match' })`：启用块级公式 Markdown 快捷输入，并显式选择提交时机。
+
+完整运行时模型请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
 
 ### 添加工具栏按钮
 

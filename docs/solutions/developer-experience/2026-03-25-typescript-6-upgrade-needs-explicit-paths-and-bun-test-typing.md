@@ -66,7 +66,7 @@ They had to become:
 
 ### 3. Trusting the global `spyOn` type in `apps/www`
 
-The package-integration test in [`HtmlPlugin.slow.tsx`](/Users/zbeyens/git/plate/apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx) used:
+The package-integration test in [`HtmlPlugin.slow.tsx`](apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx) used:
 
 ```ts
 let jsonParseSpy: ReturnType<typeof spyOn>;
@@ -80,24 +80,24 @@ Under TypeScript 6, that resolved to a broad `Spy` type that no longer exposed `
 
 Update both workspace pins to `6.0.2`:
 
-- [`package.json`](/Users/zbeyens/git/plate/package.json)
-- [`apps/www/package.json`](/Users/zbeyens/git/plate/apps/www/package.json)
+- [`package.json`](package.json)
+- [`apps/www/package.json`](apps/www/package.json)
 
 ### 2. Remove deprecated `baseUrl` usage from repo tsconfigs
 
 These configs no longer use `baseUrl`:
 
-- [`tsconfig.json`](/Users/zbeyens/git/plate/tsconfig.json)
-- [`apps/www/tsconfig.json`](/Users/zbeyens/git/plate/apps/www/tsconfig.json)
-- [`apps/www/scripts/tsconfig.scripts.json`](/Users/zbeyens/git/plate/apps/www/scripts/tsconfig.scripts.json)
-- [`tooling/config/tsconfig.test.json`](/Users/zbeyens/git/plate/tooling/config/tsconfig.test.json)
-- [`packages/udecode/depset/tsconfig.json`](/Users/zbeyens/git/plate/packages/udecode/depset/tsconfig.json)
+- [`tsconfig.json`](tsconfig.json)
+- [`apps/www/tsconfig.json`](apps/www/tsconfig.json)
+- [`apps/www/scripts/tsconfig.scripts.json`](apps/www/scripts/tsconfig.scripts.json)
+- [`tooling/config/tsconfig.test.json`](tooling/config/tsconfig.test.json)
+- [`packages/udecode/depset/tsconfig.json`](packages/udecode/depset/tsconfig.json)
 
 For the test config, rewrite every path target to an explicit relative path.
 
 ### 3. Switch `depset` to modern resolution and restore Bun test types explicitly
 
-In [`packages/udecode/depset/tsconfig.json`](/Users/zbeyens/git/plate/packages/udecode/depset/tsconfig.json):
+In [`packages/udecode/depset/tsconfig.json`](packages/udecode/depset/tsconfig.json):
 
 - change `moduleResolution` from `"node"` to `"bundler"`
 - add `"types": ["bun-types"]`
@@ -106,7 +106,7 @@ That second line matters because TS6 no longer auto-discovers ambient types the 
 
 ### 4. Keep side-effect CSS imports legal in this repo
 
-In [`tsconfig.json`](/Users/zbeyens/git/plate/tsconfig.json), set:
+In [`tsconfig.json`](tsconfig.json), set:
 
 ```json
 "noUncheckedSideEffectImports": false
@@ -122,22 +122,22 @@ Those imports are intentional. This repo uses bundler-managed CSS side effects a
 
 ### 5. Fix the one real TS6 code regression
 
-In [`packages/docx-io/src/lib/html-to-docx.ts`](/Users/zbeyens/git/plate/packages/docx-io/src/lib/html-to-docx.ts), `new Blob([buffer])` started failing because TS6 no longer accepts the `Uint8Array<ArrayBufferLike>` result directly as a `BlobPart`.
+In [`packages/docx-io/src/lib/html-to-docx.ts`](packages/docx-io/src/lib/html-to-docx.ts), `new Blob([buffer])` started failing because TS6 no longer accepts the `Uint8Array<ArrayBufferLike>` result directly as a `BlobPart`.
 
 Copy it into a plain `Uint8Array` first:
 
 ```ts
-const buffer = await resultZip.generateAsync({ type: 'uint8array' });
+const buffer = await resultZip.generateAsync({ type: "uint8array" });
 const blobBuffer = new Uint8Array(buffer);
 
 return new Blob([blobBuffer], {
-  type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 });
 ```
 
 ### 6. Force the package-integration test onto Bun's `spyOn` type
 
-In [`apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx`](/Users/zbeyens/git/plate/apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx):
+In [`apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx`](apps/www/src/__tests__/package-integration/core-html/HtmlPlugin.slow.tsx):
 
 - import `spyOn` from `bun:test`
 - type the spy as `Mock<typeof JSON.parse>`
@@ -201,5 +201,5 @@ pnpm lint
 
 ## Related Issues
 
-- See also: [TypeScript workspace subpath aliases in `apps/www`](/Users/zbeyens/git/plate/docs/solutions/developer-experience/2026-03-12-typescript-workspace-subpath-aliases-in-apps-www.md)
-- See also: [Turbo filtered typecheck can lie when package typecheck passes](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md)
+- See also: [TypeScript workspace subpath aliases in `apps/www`](docs/solutions/developer-experience/2026-03-12-typescript-workspace-subpath-aliases-in-apps-www.md)
+- See also: [Turbo filtered typecheck can lie when package typecheck passes](docs/solutions/test-failures/2026-03-24-turbo-filtered-typecheck-can-lie-when-package-typecheck-passes.md)

@@ -5,6 +5,7 @@ import type { PlateEditor } from 'platejs/react';
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
+import { insertFootnote } from '@platejs/footnote';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
 import { toggleList } from '@platejs/list-classic';
@@ -27,6 +28,7 @@ import {
 } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
+const ACTION_FOOTNOTE = 'action_footnote';
 
 const insertBlockMap: Record<
   string,
@@ -60,6 +62,7 @@ const insertInlineMap: Record<
   (editor: PlateEditor, type: string) => void
 > = {
   [KEYS.date]: (editor) => insertDate(editor, { select: true }),
+  [ACTION_FOOTNOTE]: (editor) => insertFootnote(editor, { select: true }),
   [KEYS.inlineEquation]: (editor) =>
     insertInlineEquation(editor, '', { select: true }),
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),

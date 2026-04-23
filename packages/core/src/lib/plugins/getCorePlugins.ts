@@ -8,7 +8,12 @@ import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { DOMPlugin } from './dom';
 import { HtmlPlugin } from './html';
+import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { LengthPlugin } from './length';
+import {
+  type NavigationFeedbackConfig,
+  NavigationFeedbackPlugin,
+} from './navigation-feedback';
 import { AffinityPlugin } from './affinity';
 import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
@@ -27,6 +32,8 @@ export type GetCorePluginsOptions = {
   chunking?: ChunkingConfig['options'] | boolean;
   /** Specifies the maximum number of characters allowed in the editor. */
   maxLength?: number;
+  /** Configure the navigation feedback plugin. */
+  navigationFeedback?: NavigationFeedbackConfig['options'] | boolean;
   /** Configure the node id plugin. */
   nodeId?: NodeIdConfig['options'] | boolean;
   /** Override the core plugins using the same key. */
@@ -37,6 +44,7 @@ export const getCorePlugins = ({
   affinity,
   chunking,
   maxLength,
+  navigationFeedback,
   nodeId,
   plugins = [],
 }: GetCorePluginsOptions) => {
@@ -50,7 +58,15 @@ export const getCorePlugins = ({
     DebugPlugin as SlatePlugin<DebugConfig>,
     SlateExtensionPlugin,
     DOMPlugin,
+    NavigationFeedbackPlugin.configure({
+      enabled: navigationFeedback !== false,
+      options:
+        typeof navigationFeedback === 'boolean'
+          ? undefined
+          : navigationFeedback,
+    }),
     HistoryPlugin,
+    InputRulesPlugin,
     OverridePlugin,
     ParserPlugin,
     maxLength
@@ -96,8 +112,10 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-export type CorePluginTransforms = SlateExtensionConfig['transforms'];
-export type CorePluginApi = SlateExtensionConfig['api'];
+export type CorePluginTransforms = SlateExtensionConfig['transforms'] &
+  NavigationFeedbackConfig['transforms'];
+export type CorePluginApi = SlateExtensionConfig['api'] &
+  NavigationFeedbackConfig['api'];
 
 export type DebugConfig = PluginConfig<
   'debug',

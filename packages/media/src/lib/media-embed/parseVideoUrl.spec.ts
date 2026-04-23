@@ -7,6 +7,8 @@ describe('parseVideoUrl', () => {
     ).toEqual({
       id: 'M7lc1UVf-VE',
       provider: 'youtube',
+      sourceKind: 'url',
+      sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
     });
   });
@@ -15,6 +17,8 @@ describe('parseVideoUrl', () => {
     expect(parseVideoUrl('https://vimeo.com/76979871')).toEqual({
       id: '76979871',
       provider: 'vimeo',
+      sourceKind: 'url',
+      sourceUrl: 'https://vimeo.com/76979871',
       url: 'https://player.vimeo.com/video/76979871',
     });
   });

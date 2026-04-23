@@ -1,7 +1,6 @@
 import {
   type AnyEditorPlugin,
   type PluginConfig,
-  type SlatePlugin,
   createTSlatePlugin,
 } from 'platejs';
 
@@ -21,6 +20,7 @@ const node = {
 
 const rules = {
   break: { splitReset: true },
+  delete: { start: 'reset' as const },
   merge: { removeEmpty: true },
 };
 
@@ -115,15 +115,15 @@ export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({
     4: BaseH4Plugin,
     5: BaseH5Plugin,
     6: BaseH6Plugin,
-  };
+  } satisfies Record<HeadingLevel, AnyEditorPlugin>;
 
   const headingLevels = Array.isArray(levels)
     ? levels
     : Array.from({ length: levels || 6 }, (_, i) => (i + 1) as HeadingLevel);
 
-  const plugins: SlatePlugin[] = headingLevels.map(
-    (level) => headingPlugins[level] as any
-  );
+  const plugins = headingLevels.map((level) => headingPlugins[level]);
 
-  return { plugins };
+  return {
+    plugins,
+  };
 });

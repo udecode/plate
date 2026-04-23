@@ -4,5 +4,6 @@
 
 export * from './init';
 export * from './insertExitBreak';
+export * from './liftBlock';
 export * from './resetBlock';
 export * from './setValue';

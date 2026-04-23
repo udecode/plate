@@ -45,7 +45,7 @@ This workflow is audit-first. Do not implement the recommended tests unless the 
 Run fresh repo coverage with a date-stamped output directory:
 
 ```bash
-bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-YYYY-MM-DDx --reporter=dots
+bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-YYYY-MM-DDx --reporter=dots
 ```
 
 Capture:

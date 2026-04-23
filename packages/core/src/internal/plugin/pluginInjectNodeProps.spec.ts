@@ -162,4 +162,30 @@ describe('pluginInjectNodeProps', () => {
       },
     });
   });
+
+  it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
+    const PathlessPlugin = createSlatePlugin({
+      inject: {
+        nodeProps: {
+          styleKey: '',
+          transformProps: ({ props }) => props,
+        },
+      },
+      key: 'pathless',
+    });
+
+    const editor = createSlateEditor({
+      plugins: [PathlessPlugin],
+    });
+    const getPath = mock(() => [0]);
+
+    pluginInjectNodeProps(
+      editor,
+      editor.getPlugin(PathlessPlugin),
+      { text: { text: 'hello' } as any },
+      getPath
+    );
+
+    expect(getPath).not.toHaveBeenCalled();
+  });
 });

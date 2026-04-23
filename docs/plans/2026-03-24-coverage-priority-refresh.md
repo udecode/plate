@@ -13,7 +13,7 @@ Re-run full repo coverage from the fresh 2026-03-24 `lcov`, then regenerate pack
 - `2026-03-23-coverage-priority-map-post-package-sweep.md`
 - `2026-03-23-coverage-threshold-map.md`
 - fresh coverage artifact:
-  - `/Users/zbeyens/git/plate/.coverage-repo-2026-03-24a/lcov.info`
+  - `.coverage-repo-2026-03-24a/lcov.info`
 
 ## Constraints
 

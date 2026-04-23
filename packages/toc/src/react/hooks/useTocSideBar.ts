@@ -10,11 +10,23 @@ import { useContentController, useTocController } from '.';
 import { getHeadingList } from '../../internal/getHeadingList';
 import { checkIn } from '../utils';
 
+type TocSideBarState = {
+  activeContentId: string | null;
+  editor: ReturnType<typeof useEditorRef>;
+  headingList: Heading[];
+  mouseInToc: boolean;
+  onContentScroll: ReturnType<typeof useContentController>['onContentScroll'];
+  open: boolean;
+  setIsObserve: React.Dispatch<React.SetStateAction<boolean>>;
+  setMouseInToc: React.Dispatch<React.SetStateAction<boolean>>;
+  tocRef: React.RefObject<HTMLElement | null>;
+};
+
 export const useTocSideBarState = ({
   open = true,
   rootMargin = '0px 0px 0px 0px',
   topOffset = 0,
-}: TocSideBarProps) => {
+}: TocSideBarProps): TocSideBarState => {
   const editor = useEditorRef();
   const headingList = useEditorSelector(getHeadingList, []);
   const containerRef = useScrollRef();
@@ -59,7 +71,7 @@ export const useTocSideBar = ({
   setMouseInToc,
   tocRef,
   onContentScroll,
-}: ReturnType<typeof useTocSideBarState>) => {
+}: TocSideBarState) => {
   React.useEffect(() => {
     if (mouseInToc) {
       setIsObserve(false);
@@ -85,7 +97,7 @@ export const useTocSideBar = ({
 
       if (!el) return;
 
-      onContentScroll({ id, behavior, el });
+      onContentScroll({ behavior, el, id, path });
     },
     [editor, onContentScroll]
   );

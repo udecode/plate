@@ -27,7 +27,7 @@ Rerun the repo testing review after the completed non-React roadmap, keep the te
 
 ## Verification
 
-- `xargs -0 bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24n --reporter=dots < <(tr '\n' '\0' < .claude/tmp/non_react_test_files.txt)`
+- `xargs -0 bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24n --reporter=dots < <(tr '\n' '\0' < .claude/tmp/non_react_test_files.txt)`
 - `pnpm test:profile -- --top 25`
 - `pnpm test:slowest -- --top 25`
 - `rg -n "describe\\.skip|it\\.skip|test\\.skip|xit\\(|xdescribe\\(" packages apps -g "*.spec.ts" -g "*.spec.tsx" -g "*.slow.ts" -g "*.slow.tsx"`

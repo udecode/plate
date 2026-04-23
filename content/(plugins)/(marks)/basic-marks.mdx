@@ -54,7 +54,7 @@ Highlight important text with background colors.
 
 ### Installation
 
-The `BasicMarksKit` bundles plugins for Bold, Italic, Underline, Strikethrough, Code, Subscript, Superscript, Highlight, and Kbd marks, along with their respective UI components from [Plate UI](/docs/installation/plate-ui).
+The `BasicMarksKit` bundles plugins for Bold, Italic, Underline, Strikethrough, Code, Subscript, Superscript, Highlight, and Kbd marks, along with their respective UI components from [Plate UI](/docs/installation/plate-ui). It also registers the shipped markdown input rules for those mark families.
 
 <ComponentSource name="basic-marks-kit" />
 
@@ -79,6 +79,18 @@ const editor = createPlateEditor({
 ```
 
 </Steps>
+
+The kit enables the common mark shortcuts out of the box, including:
+
+- `**bold**` / `__bold__`
+- `*italic*` / `_italic_`
+- `` `code` ``
+- `~~strike~~`
+- `~sub~`
+- `^sup^`
+- `==highlight==`
+
+See the [Plugin Input Rules](/docs/plugin-input-rules) guide for the runtime model and the exact rule families.
 
 ## Manual Usage
 

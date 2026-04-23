@@ -4,6 +4,9 @@
 
 export * from './BaseListPlugin';
 export * from './BaseTodoListPlugin';
+export * from './BulletedListRules';
+export * from './OrderedListRules';
+export * from './TaskListRules';
 export * from './withDeleteBackwardList';
 export * from './withDeleteForwardList';
 export * from './withDeleteFragmentList';

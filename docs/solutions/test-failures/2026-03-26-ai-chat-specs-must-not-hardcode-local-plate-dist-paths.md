@@ -34,7 +34,7 @@ exports while still falling back to the actual implementation.
 The fallback import used this shape:
 
 ```ts
-await import('/Users/zbeyens/git/plate/packages/plate/dist/react/index.js');
+await import("packages/plate/dist/react/index.js");
 ```
 
 TypeScript tried to resolve that literal during package typecheck. On CI, it
@@ -47,7 +47,7 @@ the spec file instead of a hardcoded machine path:
 
 ```ts
 await import(
-  new URL('../../../../../plate/dist/react/index.js', import.meta.url).href
+  new URL("../../../../../plate/dist/react/index.js", import.meta.url).href
 );
 ```
 

@@ -9,7 +9,7 @@ status: completed
 
 ## Goal
 
-Implement the full non-React `score >= 5` batch from [2026-03-24-coverage-priority-map-post-threshold-5b.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-map-post-threshold-5b.md) with narrow, real tests and only minimal runtime fixes if new red tests prove them.
+Implement the full non-React `score >= 5` batch from [2026-03-24-coverage-priority-map-post-threshold-5b.md](docs/plans/2026-03-24-coverage-priority-map-post-threshold-5b.md) with narrow, real tests and only minimal runtime fixes if new red tests prove them.
 
 ## Scope
 

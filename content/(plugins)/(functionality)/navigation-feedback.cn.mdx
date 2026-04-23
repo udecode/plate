@@ -1,0 +1,276 @@
+---
+title: 导航反馈
+description: 在 TOC、脚注、搜索或自定义跳转之后高亮落点目标。
+---
+
+<PackageInfo>
+
+## 功能特性
+
+- 在导航跳转后短暂高亮落点节点
+- 确定性替换上一次高亮，而不是叠加计时器
+- 为纯高亮和带选择的导航流提供编辑器方法
+- 注入 `data-nav-*` 属性，便于自定义渲染层样式
+
+</PackageInfo>
+
+导航反馈是一个小型核心插件，用来表达“你跳到了这里”。
+
+它适合：
+
+- 目录跳转
+- 脚注导航
+- 搜索与查找跳转
+- 自定义锚点或大纲导航
+
+## 手动使用
+
+<Steps>
+
+### 核心插件
+
+`NavigationFeedbackPlugin` 属于 Plate 核心插件的一部分。
+
+如果你使用 `createPlateEditor` 创建编辑器，它会自动启用。你不需要
+为了默认行为单独把它加入 `plugins` 数组。
+
+### 配置时长
+
+如果你想调整高亮时长，可以通过根插件配置这个核心插件：
+
+```tsx
+import { createPlateEditor, NavigationFeedbackPlugin } from 'platejs/react';
+
+const editor = createPlateEditor({
+  rootPlugin: (plugin) =>
+    plugin.configurePlugin(NavigationFeedbackPlugin, {
+      options: {
+        duration: 1200,
+      },
+    }),
+});
+```
+
+- `options.duration`：默认高亮时长，单位为毫秒
+  - **默认值：** `800`
+
+### 仅高亮目标
+
+如果跳转本身已经完成，只需要落点确认，用
+`editor.tf.navigation.flashTarget(...)`：
+
+```tsx
+editor.tf.navigation.flashTarget({
+  target: {
+    path: [12],
+    type: 'node',
+  },
+});
+```
+
+也可以为单次调用覆盖时长或高亮变体：
+
+```tsx
+editor.tf.navigation.flashTarget({
+  duration: 1500,
+  target: {
+    path: [12],
+    type: 'node',
+  },
+  variant: 'navigated',
+});
+```
+
+### 在一次调用中导航并高亮
+
+如果同一个动作应该同时：
+
+- 修改选择
+- 聚焦编辑器
+- 滚动到目标
+- 高亮目标
+
+那就使用 `editor.tf.navigation.navigate(...)`：
+
+```tsx
+editor.tf.navigation.navigate({
+  select: {
+    anchor: { offset: 0, path: [12, 0] },
+    focus: { offset: 0, path: [12, 0] },
+  },
+  target: {
+    path: [12],
+    type: 'node',
+  },
+});
+```
+
+也可以细调：
+
+```tsx
+editor.tf.navigation.navigate({
+  flash: {
+    duration: 1200,
+    variant: 'navigated',
+  },
+  focus: true,
+  scroll: true,
+  scrollTarget: { offset: 0, path: [12, 0] },
+  select: { offset: 0, path: [12, 0] },
+  target: {
+    path: [12],
+    type: 'node',
+  },
+});
+```
+
+- `flash`：当前调用的高亮配置。设为 `false` 可跳过视觉反馈
+- `focus`：导航后聚焦编辑器
+  - **默认值：** `true`
+- `scroll`：将目标滚动到可视区域
+  - **默认值：** `true`
+- `scrollTarget`：显式指定滚动点
+- `select`：高亮前应用的点或范围
+
+### 自定义落点样式
+
+插件会在激活节点上注入这些临时属性：
+
+- `data-nav-highlight`
+- `data-nav-cycle`
+- `data-nav-pulse`
+- `data-nav-target`
+
+还会注入这个 CSS 变量：
+
+- `--plate-nav-feedback-duration`
+
+Plate 文档站在自己的 `globals.css` 中为这些属性提供了默认样式。你也可以在任意编辑器外壳中自定义：
+
+```css
+.slate-editor [data-nav-highlight] {
+  border-radius: 0.375rem;
+}
+
+.slate-editor [data-nav-highlight][data-nav-cycle='0'] {
+  animation: plate-nav-highlight-a var(--plate-nav-feedback-duration, 900ms)
+    ease-out;
+}
+
+.slate-editor [data-nav-highlight][data-nav-cycle='1'] {
+  animation: plate-nav-highlight-b var(--plate-nav-feedback-duration, 900ms)
+    ease-out;
+}
+```
+
+</Steps>
+
+## 插件
+
+### `NavigationFeedbackPlugin`
+
+用于成功导航后短暂“落点高亮”的核心插件。
+
+<API name="NavigationFeedbackPlugin">
+<APIOptions>
+  <APIItem name="duration" type="number" optional>
+    默认高亮时长，单位为毫秒。
+    - **默认值：** `800`
+  </APIItem>
+</APIOptions>
+</API>
+
+## API
+
+### `api.navigation.activeTarget`
+
+获取当前高亮目标。
+
+<API name="activeTarget">
+<APIReturns>
+  <APIItem name="return" type="NavigationFeedbackActiveTarget | null">
+    当前导航目标元数据；如果没有激活高亮则返回 `null`。
+  </APIItem>
+</APIReturns>
+</API>
+
+### `api.navigation.clear`
+
+立即清除当前导航高亮目标。
+
+<API name="clear" />
+
+### `api.navigation.isTarget`
+
+判断某个路径是否就是当前高亮目标。
+
+<API name="isTarget">
+<APIParameters>
+  <APIItem name="path" type="Path">
+    要比较的路径。
+  </APIItem>
+</APIParameters>
+</API>
+
+## Transforms
+
+### `tf.navigation.clear`
+
+立即清除当前高亮目标。
+
+<API name="clear" />
+
+### `tf.navigation.flashTarget`
+
+只高亮目标节点，不修改选择、焦点或滚动。
+
+<API name="flashTarget">
+<APIParameters>
+  <APIItem name="target" type="{ path: Path; type: 'node' }">
+    需要高亮的节点目标。
+  </APIItem>
+  <APIItem name="duration" type="number" optional>
+    覆盖本次调用的默认时长。
+  </APIItem>
+  <APIItem name="variant" type="string" optional>
+    写入 `data-nav-highlight` 的高亮变体。
+    - **默认值：** `navigated`
+  </APIItem>
+</APIParameters>
+</API>
+
+### `tf.navigation.navigate`
+
+在一次调用中完成选择、聚焦、滚动与高亮。
+
+<API name="navigate">
+<APIParameters>
+  <APIItem name="target" type="{ path: Path; type: 'node' }">
+    需要导航到的节点目标。
+  </APIItem>
+  <APIItem name="select" type="Point | Range" optional>
+    在滚动和高亮前应用的点或范围。
+  </APIItem>
+  <APIItem name="focus" type="boolean" optional>
+    导航后聚焦编辑器。
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="scroll" type="boolean" optional>
+    将目标滚动到可视区域。
+    - **默认值：** `true`
+  </APIItem>
+  <APIItem name="scrollTarget" type="Point" optional>
+    显式指定滚动点。
+  </APIItem>
+  <APIItem name="flash" type="false | { duration?: number; variant?: string }" optional>
+    本次导航调用的高亮配置。
+  </APIItem>
+</APIParameters>
+</API>
+
+## 相关文档
+
+- [目录](/docs/toc)
+- [脚注](/docs/footnote)
+- [编辑器方法](/docs/editor-methods)
+- [插件配置](/docs/plugin)

@@ -46,4 +46,144 @@ describe('BaseMentionPlugin', () => {
     });
     expect(children[2]).toEqual({ text: 'llo' });
   });
+
+  it('deleteBackward removes the adjacent mention atom', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'hi ' },
+            {
+              children: [{ text: '' }],
+              key: 'u1',
+              type: KEYS.mention,
+              value: 'Ada',
+            },
+            { text: ' after' },
+          ],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.deleteBackward('character');
+
+    expect(editor.children).toMatchObject([
+      {
+        children: [{ text: 'hi  after' }],
+        type: 'p',
+      },
+    ]);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+  });
+
+  it('deleteForward removes the next mention atom', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'hi ' },
+            {
+              children: [{ text: '' }],
+              key: 'u1',
+              type: KEYS.mention,
+              value: 'Ada',
+            },
+            { text: ' after' },
+          ],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.deleteForward('character');
+
+    expect(editor.children).toMatchObject([
+      {
+        children: [{ text: 'hi  after' }],
+        type: 'p',
+      },
+    ]);
+    expect(editor.selection).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+    });
+  });
+
+  it('moves right into the mention child so the inline void stays keyboard-accessible', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'hi ' },
+            {
+              children: [{ text: '' }],
+              key: 'u1',
+              type: KEYS.mention,
+              value: 'Ada',
+            },
+            { text: ' after' },
+          ],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.move({ distance: 1, unit: 'character' });
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
+    });
+  });
+
+  it('moves left into the mention child so the inline void stays keyboard-accessible', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'hi ' },
+            {
+              children: [{ text: '' }],
+              key: 'u1',
+              type: KEYS.mention,
+              value: 'Ada',
+            },
+            { text: ' after' },
+          ],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
+
+    expect(editor.selection).toEqual({
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
+    });
+  });
 });

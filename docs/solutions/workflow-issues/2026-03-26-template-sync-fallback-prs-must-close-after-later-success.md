@@ -38,7 +38,7 @@ What it did not have was a cleanup step that closed an already-open fallback PR 
 
 ## Solution
 
-In [`release.yml`](/Users/zbeyens/git/plate/.github/workflows/release.yml), give the successful template push step an id and add a follow-up cleanup step with `actions/github-script`.
+In [`release.yml`](.github/workflows/release.yml), give the successful template push step an id and add a follow-up cleanup step with `actions/github-script`.
 
 That cleanup step should:
 

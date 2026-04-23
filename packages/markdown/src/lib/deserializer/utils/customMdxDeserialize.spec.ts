@@ -57,6 +57,25 @@ describe('customMdxDeserialize', () => {
     expect(result).toEqual([{ text: '<Badge>New</Badge>' }]);
   });
 
+  it('preserves inline mdx attributes in the fallback source text', () => {
+    const editor = createTestEditor();
+
+    const result = customMdxDeserialize(
+      {
+        attributes: [
+          { name: 'htmlFor', type: 'mdxJsxAttribute', value: 'email' },
+        ],
+        children: [{ type: 'text', value: 'Email' }],
+        name: 'label',
+        type: 'mdxJsxTextElement',
+      } as any,
+      {},
+      { editor }
+    );
+
+    expect(result).toEqual([{ text: '<label for="email">Email</label>' }]);
+  });
+
   it('warns and falls back when the inline mdx tag name is empty', () => {
     const editor = createTestEditor();
     const warn = spyOn(console, 'warn').mockImplementation(() => {});
@@ -96,10 +115,43 @@ describe('customMdxDeserialize', () => {
 
     expect(result).toEqual([
       {
+        children: [{ text: '<Widget />' }],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('preserves block mdx attributes and nested unknown tags as source text', () => {
+    const editor = createTestEditor();
+
+    const result = customMdxDeserialize(
+      {
+        attributes: [
+          { name: 'className', type: 'mdxJsxAttribute', value: 'hero' },
+        ],
         children: [
-          { text: '<Widget>\n' },
-          { text: '' },
-          { text: '\n</Widget>' },
+          {
+            attributes: [
+              { name: 'src', type: 'mdxJsxAttribute', value: '/image.png' },
+            ],
+            children: [],
+            name: 'img',
+            type: 'mdxJsxFlowElement',
+          },
+        ],
+        name: 'figure',
+        type: 'mdxJsxFlowElement',
+      } as any,
+      {},
+      { editor }
+    );
+
+    expect(result).toEqual([
+      {
+        children: [
+          {
+            text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
+          },
         ],
         type: 'p',
       },

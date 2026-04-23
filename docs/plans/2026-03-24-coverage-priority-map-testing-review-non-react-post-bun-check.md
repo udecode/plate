@@ -9,7 +9,7 @@ status: completed
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24p/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24p/lcov.info)
 - Constraints:
   - temporary exclude `/react`
   - temporarily exclude obvious component shells outside `/react`
@@ -19,7 +19,7 @@ status: completed
 
 ## Coverage Run
 
-- Command: scoped `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24p --reporter=dots` over the temporary non-React file list
+- Command: scoped `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24p --reporter=dots` over the temporary non-React file list
 - Result: Fresh non-React coverage: `2745` pass, `0` fail, `558` files, `2.77s`.
 - Caveat: full-repo `bun test --coverage` is still polluted by React-side suite poison, so this pass uses the stable `/react`-excluded run instead of lying to itself.
 
@@ -63,29 +63,29 @@ There is one last real non-React cleanup phase left. It is mostly parser or seri
 
 ## Strict Next Batch
 
-1. `link`: [upsertLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/upsertLink.ts) — score `6`
-2. `markdown`: [convertNodesSerialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `6`
+1. `link`: [upsertLink.ts](packages/link/src/lib/transforms/upsertLink.ts) — score `6`
+2. `markdown`: [convertNodesSerialize.ts](packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `6`
 
 ## Wider Final Batch
 
-1. `core`: [DOMPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/dom/DOMPlugin.ts) — score `5`
-2. `autoformat`: [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`
-3. `basic-nodes`: [BaseHeadingPlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseHeadingPlugin.ts) — score `5`
-4. `core`: [inferWhiteSpaceRule.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/collapse-white-space/inferWhiteSpaceRule.ts) — score `5`
-5. `core`: [pipeRenderElementStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pipeRenderElementStatic.tsx) — score `5`
-6. `core`: [cleanHtmlFontElements.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`
-7. `core`: [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `5`
-8. `table`: [getTableCellBorders.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getTableCellBorders.ts) — score `5`
-9. `core`: [cleanHtmlTextNodes.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/cleanHtmlTextNodes.ts) — score `5`
-10. `markdown`: [splitIncompleteMdx.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `5`
-11. `core`: [isLastNonEmptyTextOfInlineFormattingContext.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/collapse-white-space/isLastNonEmptyTextOfInlineFormattingContext.ts) — score `5`
-12. `core`: [traverseHtmlNode.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts) — score `5`
-13. `list-classic`: [moveListItemSublistItemsToListItemSublist.ts](/Users/zbeyens/git/plate/packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts) — score `5`
-14. `markdown`: [mdastToSlate.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/mdastToSlate.ts) — score `5`
-15. `markdown`: [markdownToSlateNodesSafely.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts) — score `5`
-16. `suggestion`: [addMarkSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/addMarkSuggestion.ts) — score `5`
-17. `suggestion`: [removeMarkSuggestion.ts](/Users/zbeyens/git/plate/packages/suggestion/src/lib/transforms/removeMarkSuggestion.ts) — score `5`
-18. `table`: [deleteRowWhenExpanded.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteRowWhenExpanded.ts) — score `5`
+1. `core`: [DOMPlugin.ts](packages/core/src/lib/plugins/dom/DOMPlugin.ts) — score `5`
+2. `autoformat`: [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`
+3. `basic-nodes`: [BaseHeadingPlugin.ts](packages/basic-nodes/src/lib/BaseHeadingPlugin.ts) — score `5`
+4. `core`: [inferWhiteSpaceRule.ts](packages/core/src/lib/plugins/html/utils/collapse-white-space/inferWhiteSpaceRule.ts) — score `5`
+5. `core`: [pipeRenderElementStatic.tsx](packages/core/src/static/pipeRenderElementStatic.tsx) — score `5`
+6. `core`: [cleanHtmlFontElements.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`
+7. `core`: [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `5`
+8. `table`: [getTableCellBorders.ts](packages/table/src/lib/queries/getTableCellBorders.ts) — score `5`
+9. `core`: [cleanHtmlTextNodes.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlTextNodes.ts) — score `5`
+10. `markdown`: [splitIncompleteMdx.ts](packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.ts) — score `5`
+11. `core`: [isLastNonEmptyTextOfInlineFormattingContext.ts](packages/core/src/lib/plugins/html/utils/collapse-white-space/isLastNonEmptyTextOfInlineFormattingContext.ts) — score `5`
+12. `core`: [traverseHtmlNode.ts](packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts) — score `5`
+13. `list-classic`: [moveListItemSublistItemsToListItemSublist.ts](packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts) — score `5`
+14. `markdown`: [mdastToSlate.ts](packages/markdown/src/lib/deserializer/mdastToSlate.ts) — score `5`
+15. `markdown`: [markdownToSlateNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts) — score `5`
+16. `suggestion`: [addMarkSuggestion.ts](packages/suggestion/src/lib/transforms/addMarkSuggestion.ts) — score `5`
+17. `suggestion`: [removeMarkSuggestion.ts](packages/suggestion/src/lib/transforms/removeMarkSuggestion.ts) — score `5`
+18. `table`: [deleteRowWhenExpanded.ts](packages/table/src/lib/merge/deleteRowWhenExpanded.ts) — score `5`
 
 ## Packages By Value
 
@@ -102,16 +102,16 @@ There is one last real non-React cleanup phase left. It is mostly parser or seri
 
 ## Best Files By Value
 
-1. `link` — [upsertLink.ts](/Users/zbeyens/git/plate/packages/link/src/lib/transforms/upsertLink.ts) — score `6`, coverage `93.9%`, uncovered `6`
-2. `markdown` — [convertNodesSerialize.ts](/Users/zbeyens/git/plate/packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `6`, coverage `95.6%`, uncovered `6`
-3. `core` — [DOMPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/dom/DOMPlugin.ts) — score `5`, coverage `68.8%`, uncovered `20`
-4. `autoformat` — [AutoformatPlugin.ts](/Users/zbeyens/git/plate/packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`, coverage `88.9%`, uncovered `8`
-5. `basic-nodes` — [BaseHeadingPlugin.ts](/Users/zbeyens/git/plate/packages/basic-nodes/src/lib/BaseHeadingPlugin.ts) — score `5`, coverage `93.5%`, uncovered `6`
-6. `core` — [inferWhiteSpaceRule.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/collapse-white-space/inferWhiteSpaceRule.ts) — score `5`, coverage `79.2%`, uncovered `5`
-7. `core` — [pipeRenderElementStatic.tsx](/Users/zbeyens/git/plate/packages/core/src/static/pipeRenderElementStatic.tsx) — score `5`, coverage `83.3%`, uncovered `5`
-8. `core` — [cleanHtmlFontElements.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`, coverage `66.7%`, uncovered `4`
-9. `core` — [pluginDeserializeHtml.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `5`, coverage `97.5%`, uncovered `4`
-10. `table` — [getTableCellBorders.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getTableCellBorders.ts) — score `5`, coverage `90.2%`, uncovered `4`
+1. `link` — [upsertLink.ts](packages/link/src/lib/transforms/upsertLink.ts) — score `6`, coverage `93.9%`, uncovered `6`
+2. `markdown` — [convertNodesSerialize.ts](packages/markdown/src/lib/serializer/convertNodesSerialize.ts) — score `6`, coverage `95.6%`, uncovered `6`
+3. `core` — [DOMPlugin.ts](packages/core/src/lib/plugins/dom/DOMPlugin.ts) — score `5`, coverage `68.8%`, uncovered `20`
+4. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `5`, coverage `88.9%`, uncovered `8`
+5. `basic-nodes` — [BaseHeadingPlugin.ts](packages/basic-nodes/src/lib/BaseHeadingPlugin.ts) — score `5`, coverage `93.5%`, uncovered `6`
+6. `core` — [inferWhiteSpaceRule.ts](packages/core/src/lib/plugins/html/utils/collapse-white-space/inferWhiteSpaceRule.ts) — score `5`, coverage `79.2%`, uncovered `5`
+7. `core` — [pipeRenderElementStatic.tsx](packages/core/src/static/pipeRenderElementStatic.tsx) — score `5`, coverage `83.3%`, uncovered `5`
+8. `core` — [cleanHtmlFontElements.ts](packages/core/src/lib/plugins/html/utils/cleanHtmlFontElements.ts) — score `5`, coverage `66.7%`, uncovered `4`
+9. `core` — [pluginDeserializeHtml.ts](packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml.ts) — score `5`, coverage `97.5%`, uncovered `4`
+10. `table` — [getTableCellBorders.ts](packages/table/src/lib/queries/getTableCellBorders.ts) — score `5`, coverage `90.2%`, uncovered `4`
 
 ## Stop Condition
 
@@ -127,5 +127,5 @@ That is where more non-React coverage turns into percentage cosplay. Switch to R
 
 ## Full Data
 
-- [2026-03-24-coverage-priority-packages-testing-review-non-react-post-bun-check.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-post-bun-check.tsv)
-- [2026-03-24-coverage-priority-files-testing-review-non-react-post-bun-check.tsv](/Users/zbeyens/git/plate/docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-post-bun-check.tsv)
+- [2026-03-24-coverage-priority-packages-testing-review-non-react-post-bun-check.tsv](docs/plans/2026-03-24-coverage-priority-packages-testing-review-non-react-post-bun-check.tsv)
+- [2026-03-24-coverage-priority-files-testing-review-non-react-post-bun-check.tsv](docs/plans/2026-03-24-coverage-priority-files-testing-review-non-react-post-bun-check.tsv)
