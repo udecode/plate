@@ -119,5 +119,5 @@ It also proves an important compatibility point: Phase 1 batching can preserve t
 
 ## Related Docs
 
-- [2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md)
-- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/slate-batch-engine.md)
+- [2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md)
+- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/slate-batch-engine.md)

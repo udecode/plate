@@ -25,7 +25,7 @@ status: active
 - Add runtime coverage for editor navigation, selection math, structural queries, transform edge cases, extension transforms, and `createEditor` legacy sync.
 - Add a small compile-only type lane for public `@platejs/slate` contracts.
 
-### Upstream `../slate` scan
+### Upstream `../slate-v2` scan
 
 - `[ ]` `slate-react/test/chunking.spec.ts`: save chunk/index-stability ideas for `@platejs/core`
 - `[x]` `slate-react/test/decorations.spec.tsx`: adapt later in `@platejs/core`
@@ -63,7 +63,7 @@ status: active
 - Expand `packages/core/type-tests` into multiple focused fixtures covering `createSlatePlugin`, `createTSlatePlugin`, `createPlatePlugin`, `createPlateEditor`, `withSlate`, `withPlate`, plugin API merging, option merging, and editor or plugin inference.
 - Keep type fixtures compile-only with both positive assertions and `@ts-expect-error` negatives. Do not mix these checks into Bun runtime specs.
 - Deepen runtime coverage around plugin resolution, store behavior, selector equality, rerender semantics, plugin conversion boundaries, override rules, HTML or static behavior, node-id, and affinity.
-- Mine `../slate/packages/slate-react/test` by invariant, not by file copy:
+- Mine `../slate-v2/packages/slate-react/test` by invariant, not by file copy:
   - `use-slate-selector` for equality and stale-rerender prevention
   - `use-slate` for editor version and subscription behavior
   - `use-selected` for selection rerender and path stability
@@ -108,5 +108,5 @@ status: active
 - `testing.mdc` is the single source of truth for durable testing policy.
 - The deleted cleanup or excellence plans do not need to come back; any lasting rule discovered during execution gets merged into `testing.mdc`.
 - Utilities are runtime-first; core is where the serious compile-only type-contract work belongs.
-- Upstream `../slate` remains reference material, not a suite to mirror.
+- Upstream `../slate-v2` remains reference material, not a suite to mirror.
 - Coverage goals stay hotspot-driven. No global percentage floor, no bullshit smoke-test sweep.

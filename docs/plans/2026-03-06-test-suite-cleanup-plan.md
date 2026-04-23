@@ -194,7 +194,7 @@ No blind repo-wide coverage push in this phase. No e2e or browser work.
 ### Pass 25
 
 - Made `@platejs/slate` the explicit phase-1 priority and used the slate phase-1 execution log as the working source, while keeping this file as the canonical cleanup history.
-- Mined upstream `../slate` and `slate-history` tests selectively instead of mirroring them blindly, pulling only the invariants that improved our local public-contract coverage cheaply.
+- Mined upstream `../slate-v2` and `slate-history` tests selectively instead of mirroring them blindly, pulling only the invariants that improved our local public-contract coverage cheaply.
 - Finished the slate package at `395` passing tests, with `packages/slate/src` at `100.00%` function coverage and `96.97%` line coverage from `lcov`.
 - Covered the real slate contract buckets:
   - `slate-history` and history helper behavior

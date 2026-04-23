@@ -5,6 +5,8 @@ topic: slate-v2-plate-v2-comparative-research-plan
 
 # Slate v2 / Plate v2 Comparative Research Plan
 
+> Supporting plan. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md).
+
 ## Goal
 
 Run a phased architecture study across the shortlisted editor and non-editor references so we can sharpen:
@@ -44,13 +46,13 @@ It is asking:
 
 This research should continuously update:
 
-1. [editor-architecture-candidates.md](/Users/zbeyens/git/plate-2/.claude/docs/analysis/editor-architecture-candidates.md)
+1. [editor-architecture-candidates.md](/Users/zbeyens/git/plate-2/docs/analysis/editor-architecture-candidates.md)
    - candidate order and why the order is what it is
-2. [slate-v2-plate-v2-architecture-research.md](/Users/zbeyens/git/plate-2/.claude/docs/analysis/slate-v2-plate-v2-architecture-research.md)
+2. [slate-v2-plate-v2-architecture-research.md](/Users/zbeyens/git/plate-2/docs/analysis/slate-v2-plate-v2-architecture-research.md)
    - the cumulative ledger of useful ideas
-3. [slate-v2-gap-matrix.md](/Users/zbeyens/git/plate-2/.claude/docs/analysis/slate-v2-gap-matrix.md)
+3. [slate-v2-gap-matrix.md](/Users/zbeyens/git/plate-2/docs/analysis/slate-v2-gap-matrix.md)
    - the unresolved structural and product-layer gaps
-4. [slate-v2](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2)
+4. [slate-v2](/Users/zbeyens/git/plate-2/docs/slate-v2)
    - only when a finding is strong enough to actually tighten the current plan
 
 ## Capture Rules

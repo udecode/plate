@@ -10,7 +10,7 @@ context_snapshot: /Users/zbeyens/git/plate-2/.omx/context/slate-history-v2-proof
 
 Ship the first honest `slate-history-v2` proof slice:
 
-- `../slate/packages/slate-history-v2`
+- `../slate-v2/packages/slate-history-v2`
 
 The slice must prove transaction-aware undo units and explicit grouping semantics on top of `slate-v2`.
 

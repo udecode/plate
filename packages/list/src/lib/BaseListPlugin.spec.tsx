@@ -1,7 +1,8 @@
+import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlateEditor, KEYS } from 'platejs';
-
+import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { pluginInjectNodeProps } from '../../../core/src/internal/plugin/pluginInjectNodeProps';
 import { BaseListPlugin } from './BaseListPlugin';
 
 describe('BaseListPlugin', () => {
@@ -94,5 +95,62 @@ describe('BaseListPlugin', () => {
         element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
       } as any)
     ).toBeUndefined();
+  });
+
+  it('renders unordered list items with a lightweight list-item wrapper', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseListPlugin],
+    });
+    const plugin = editor.getPlugin(BaseListPlugin);
+    const renderBelow = plugin.render.belowNodes as any;
+    const unorderedElement = {
+      children: [{ text: 'Item' }],
+      listStyleType: 'disc',
+      type: editor.getType(KEYS.p),
+    } as any;
+    expect(
+      renderBelow({
+        children: 'Item',
+        element: unorderedElement,
+      } as any)
+    ).toBeUndefined();
+  });
+
+  it('injects unordered list item styles onto paragraph elements', () => {
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: KEYS.p,
+          node: { isElement: true, type: KEYS.p },
+        }),
+        BaseListPlugin,
+      ],
+    });
+    const plugin = editor.getPlugin(BaseListPlugin) as any;
+
+    expect(
+      pluginInjectNodeProps(
+        editor as any,
+        plugin,
+        {
+          element: {
+            children: [{ text: 'Item' }],
+            listStyleType: 'disc',
+            type: editor.getType(KEYS.p),
+          } as any,
+        },
+        () => [0]
+      )
+    ).toEqual({
+      className: 'slate-listStyleType-disc',
+      role: 'listitem',
+      style: {
+        display: 'list-item',
+        listStyleType: 'disc',
+        margin: 0,
+        padding: 0,
+        position: 'relative',
+      },
+    } as any);
   });
 });

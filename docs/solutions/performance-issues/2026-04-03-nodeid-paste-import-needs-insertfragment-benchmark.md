@@ -116,5 +116,5 @@ So the benchmark changed the conclusion:
 
 ## Related Issues
 
-- Related learning: [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)
-- Related reference: [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/editor-performance-master-plan.md)
+- Related learning: [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)
+- Related reference: [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-master-plan.md)

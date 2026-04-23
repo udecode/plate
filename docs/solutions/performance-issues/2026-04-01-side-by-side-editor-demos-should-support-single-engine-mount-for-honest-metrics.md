@@ -50,7 +50,7 @@ Treating the side-by-side view as both demo and benchmark surface was the
 mistake. The numbers looked comparable, but the page itself was part of the
 overhead.
 
-Copying the local `../slate` transform-benchmark controls into the docs page
+Copying the local `../slate-v2` transform-benchmark controls into the docs page
 would have made this worse. That work belongs in a dedicated benchmark harness,
 not in a public example page.
 

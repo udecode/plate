@@ -12,6 +12,7 @@
         "https://platejs.org/r/editor-docs",
         "https://platejs.org/r/feature-kits-docs",
         "https://platejs.org/r/form-docs",
+        "https://platejs.org/r/performance-docs",
         "https://platejs.org/r/playwright-docs",
         "https://platejs.org/r/plugin-components-docs",
         "https://platejs.org/r/plugin-context-docs",
@@ -244,6 +245,19 @@
       ],
       "name": "form-docs",
       "title": "Form",
+      "type": "registry:file"
+    },
+    {
+      "description": "Plate vs Slate on real large-document workloads, with reproducible benchmarks and explicit caveats.",
+      "files": [
+        {
+          "path": "../../content/(guides)/performance.mdx",
+          "target": "content/docs/plate/(guides)/performance.mdx",
+          "type": "registry:file"
+        }
+      ],
+      "name": "performance-docs",
+      "title": "Performance",
       "type": "registry:file"
     },
     {

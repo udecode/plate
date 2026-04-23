@@ -14,7 +14,7 @@ category: workflow-issues
 
 The failure shape looked like this:
 
-- `Could not load ../slate/dist/index.d.ts`
+- `Could not load ../slate-v2/dist/index.d.ts`
 - `Could not resolve './index-<hash>' in ../core/dist/index.d.ts`
 
 It bounced between different packages like `list`, `suggestion`, and `media`, which is the giveaway that the workspace was racing, not that those packages were suddenly broken.

@@ -817,5 +817,5 @@ One more lesson from the move follow-up:
 
 ## Related Docs
 
-- [2026-03-31-slate-phase1-batch-lifecycle-should-land-before-fast-paths.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-slate-phase1-batch-lifecycle-should-land-before-fast-paths.md)
-- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/slate-batch-engine.md)
+- [2026-03-31-slate-phase1-batch-lifecycle-should-land-before-fast-paths.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-slate-phase1-batch-lifecycle-should-land-before-fast-paths.md)
+- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/slate-batch-engine.md)

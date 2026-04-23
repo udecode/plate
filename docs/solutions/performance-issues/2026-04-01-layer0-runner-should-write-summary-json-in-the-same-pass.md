@@ -39,7 +39,7 @@ Then expose package scripts that people will actually use:
 
 Both should target `http://localhost:3000/dev/editor-perf` and write:
 
-- a raw artifact under `.claude/docs/plans/`
+- a raw artifact under `docs/plans/`
 - a compact summary artifact beside it
 
 ## Why This Works
@@ -59,7 +59,7 @@ The smoke freeze command is:
 It writes:
 
 - `tmp/editor-perf-layer0-smoke.json`
-- `.claude/docs/plans/editor-perf-layer0-smoke-summary.json`
+- `docs/plans/editor-perf-layer0-smoke-summary.json`
 
 The full Layer 0 command is:
 

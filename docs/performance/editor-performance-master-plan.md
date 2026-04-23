@@ -25,7 +25,7 @@ Do **not** merge the separate Slate batching track into this document.
 
 That work stays in:
 
-- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-v2/slate-batch-engine.md)
+- [slate-batch-engine.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/slate-batch-engine.md)
 
 That is a different lane with a different owner.
 
@@ -76,6 +76,91 @@ wrong layer.
   - `HighlightPlugin`
   - `StrikethroughPlugin`
   - table selection
+
+### Standalone benchmark note (`2026-04-04`)
+
+The new standalone benchmark lab under
+[benchmarks/editor](/Users/zbeyens/git/plate-2/benchmarks/editor) surfaced an
+important distinction:
+
+- Plate is still competitive on the simpler chunked large-document harness in
+  `apps/www`
+- Slate is currently faster on the richer standalone `10k` markdown mount lane
+
+Current local-built standalone result:
+
+- Plate `03_mount-10k`: `736.30 ms`
+- Slate `03_mount-10k`: `437.60 ms`
+
+That does not invalidate the earlier public harness.
+It means the public harness was narrower than the richer markdown profile.
+
+The latest standalone decomposition says the gap is concentrated in richer
+mount surfaces, not generic core mount:
+
+- plain/core-basic: same general class
+- code/core-basic: good
+- blockquote/basic: red
+- heavy marks: very red
+- single basic marks are all red too, with `strikethrough` worst
+- list markdown: red
+
+See:
+
+- [2026-04-04-standalone-benchmark-gap-analysis.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-04-standalone-benchmark-gap-analysis.md)
+
+Latest exact mark finding:
+
+- the bold leaf DOM shape is already basically the same between Plate and Slate
+- the remaining tax is runtime work around that DOM, not extra leaf nodes
+- the bold gap splits into two parts:
+  - bundle fan-out from `BasicMarksPlugin`
+  - the shared active mark path in `pipeRenderLeaf(...)` /
+    `pluginRenderLeaf(...)`
+- the kept current cuts key `pipeRenderLeaf(...)` and `pipeRenderText(...)` by
+  active mark so inactive mark renderers stop running on every leaf/text node
+- after that cut, the next stable red seam is still the mark bundle path; the
+  isolated bold-single lane is no longer a strong enough target to justify more
+  package surgery by itself
+- the next kept mark cut moved simple active leaf marks directly into
+  `pipeRenderLeaf(...)`, which reduced the main bundle lane again:
+  - `48_mount-10k-marks-basic`: about `1387 ms -> 1310 ms`
+  - `86_mount-10k-bold-basic`: about `673 ms -> 597 ms`
+  - `90_mount-10k-bold-single`: about `439 ms -> 428 ms`
+- the latest kept mark cut removes per-leaf `Object.keys(...).flatMap(...).sort(...)`
+  churn from the shared mark pipes without making plain leaves pay the full
+  simple-mark loop:
+  - focused reruns landed `48_mount-10k-marks-basic` in the `1245-1289 ms`
+    range versus the older `1310 ms` baseline
+  - `90_mount-10k-bold-single` moved from about `428 ms` to `400-425 ms`
+  - `91_mount-10k-italic-single` moved from about `427 ms` to `388-423 ms`
+  - `93_mount-10k-strikethrough-single` moved from about `482 ms` to
+    `440-450 ms`
+- the practical read is simple:
+  - inactive mark fan-out was one bill
+  - active simple-mark routing was another
+  - per-leaf activation bookkeeping was the next one
+
+Latest exact list finding:
+
+- the flattened list payload is not the main problem
+- `ListPlugin` is
+- the dedicated rows now split that cleanly:
+  - `list-core`: flattened list payload with no `ListPlugin`
+  - `list-only`: flattened list payload with only `ListPlugin`
+  - `list-markdown`: full markdown bundle
+- the DOM probe shows the real reason:
+  - old Plate `list-only` rendered one `<ul>` per item
+  - fixed Plate `list-only` renders paragraph elements as `[role="listitem"]`
+  - Slate renders one `<ul>` per logical list
+- the kept list fix:
+  - removes unordered `belowNodes` wrappers
+  - injects unordered list-item styling directly onto paragraph elements
+  - keeps the plain element fast path when wrappers are inactive and inject
+    props are pathless
+- current standalone result:
+  - `49_mount-10k-list-markdown`: Plate `890.40 ms`, Slate `630.10 ms`
+  - `97_mount-10k-list-only`: Plate `848.70 ms`, Slate `671.70 ms`
 
 ### What already exists
 
@@ -930,7 +1015,7 @@ The raw JSON pile can stay. It is useful archaeology.
 
 The main artifacts that matter right now:
 
-- older compact summaries and baseline JSONs from `.claude/docs/plans/` were
+- older compact summaries and baseline JSONs from `docs/plans/` were
   not retained after the raw-artifact move
 - use the matching retained raw artifacts in [tmp/](/Users/zbeyens/git/plate-2/tmp/)
   when you need those older lanes
@@ -1092,8 +1177,8 @@ recent smoke/full runs:
 
 ## Related Solution Docs
 
-- [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/plate-vs-slate-benchmarks.md)
-- [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)
-- [2026-04-01-huge-document-demo-and-benchmark-should-share-a-query-param-config-contract.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-04-01-huge-document-demo-and-benchmark-should-share-a-query-param-config-contract.md)
-- [2026-04-01-side-by-side-editor-demos-should-support-single-engine-mount-for-honest-metrics.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-04-01-side-by-side-editor-demos-should-support-single-engine-mount-for-honest-metrics.md)
-- [2026-04-01-layer0-runner-should-write-summary-json-in-the-same-pass.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-04-01-layer0-runner-should-write-summary-json-in-the-same-pass.md)
+- [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/docs/performance/plate-vs-slate-benchmarks.md)
+- [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)
+- [2026-04-01-huge-document-demo-and-benchmark-should-share-a-query-param-config-contract.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-01-huge-document-demo-and-benchmark-should-share-a-query-param-config-contract.md)
+- [2026-04-01-side-by-side-editor-demos-should-support-single-engine-mount-for-honest-metrics.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-01-side-by-side-editor-demos-should-support-single-engine-mount-for-honest-metrics.md)
+- [2026-04-01-layer0-runner-should-write-summary-json-in-the-same-pass.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-01-layer0-runner-should-write-summary-json-in-the-same-pass.md)

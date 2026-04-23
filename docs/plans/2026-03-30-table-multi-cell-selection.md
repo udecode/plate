@@ -16,7 +16,7 @@ Fix the `/docs/table` multi-cell selection runtime error:
 ## Findings
 
 - The failure is reported on the local docs route `http://localhost:3002/docs/table` during multi-cell selection.
-- A prior learning at `.claude/docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md` documents the same Slate error when multiple editor surfaces share the same Slate node graph.
+- A prior learning at `docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md` documents the same Slate error when multiple editor surfaces share the same Slate node graph.
 - The currently captured terminal output is stale and still shows the older local `.bun` parse failure; the docs dev server is not currently running.
 - Browser repro is deterministic: dragging from the `Heading` cell into the lower-right cells of the first table raises `Unable to find the path for Slate node: {"text":"Heading","bold":true}`.
 - `/docs/table` mounts two editors that both start from the same static `tableValue` graph:

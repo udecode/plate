@@ -8,12 +8,14 @@ source_test_spec: /Users/zbeyens/git/plate-2/.omx/plans/test-spec-slate-v2-core-
 
 # Slate v2 Core React Proof Ralph Plan
 
+> Supporting plan. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md).
+
 ## Goal
 
 Ship the first honest proof slice for Slate v2:
 
-- `../slate/packages/slate-v2`
-- `../slate/support/slate-v2-react-proof`
+- `../slate-v2/packages/slate-v2`
+- `../slate-v2/support/slate-v2-react-proof`
 
 The slice must prove the snapshot/store/replacement contract can support selector-first React `19.2+` reads without effect mirroring.
 
@@ -33,7 +35,7 @@ The slice must prove the snapshot/store/replacement contract can support selecto
 
 Status: `completed`
 
-- inspect `../slate` workspace/build/test constraints
+- inspect `../slate-v2` workspace/build/test constraints
 - inspect whether `support/slate-v2-react-proof` can stay private and non-workspace
 - identify the smallest package and command surface needed for the spike
 
@@ -101,7 +103,7 @@ Status: `completed`
 
 - created Ralph context snapshot
 - created durable execution plan
-- reading current `../slate` constraints and proof artifacts before code changes
+- reading current `../slate-v2` constraints and proof artifacts before code changes
 - implemented `packages/slate-v2` with a minimal transaction/snapshot core
 - added the isolated `support/slate-v2-react-proof` React `19.2+` harness
 - wired root Slate build, TypeScript references, and Mocha test discovery for `slate-v2`

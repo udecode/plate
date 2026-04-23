@@ -243,6 +243,76 @@ describe('pipeRenderElement', () => {
     expect(element).toHaveAttribute('data-probe', 'yes');
   });
 
+  it('keeps the fast path when belowNodes plugins are inactive for the current element', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'inactive-below',
+          render: {
+            belowNodes: ({ element }: any) =>
+              element.type === 'quote'
+                ? ({ children }: any) => <section>{children}</section>
+                : undefined,
+          },
+        }),
+      ],
+      value: createValue(),
+    });
+    const findPath = editor.api.findPath;
+    const spy = mock(findPath);
+
+    editor.api.findPath = spy as any;
+
+    renderPipe(editor);
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('keeps the plain fast path for pathless inject.nodeProps', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        createSlatePlugin({
+          inject: {
+            nodeProps: {
+              nodeKey: 'listStyleType',
+              query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+              transformProps: ({ props, value }) => ({
+                ...props,
+                role: 'listitem',
+                style: {
+                  ...props.style,
+                  display: 'list-item',
+                  listStyleType: value,
+                },
+              }),
+            },
+            targetPlugins: ['p'],
+          },
+          key: 'list',
+        }),
+      ],
+      value: [
+        {
+          children: [{ text: 'Body' }],
+          listStyleType: 'disc',
+          type: 'p',
+        },
+      ] as any,
+    });
+    const findPath = editor.api.findPath;
+    const spy = mock(findPath);
+
+    editor.api.findPath = spy as any;
+
+    const { container } = renderPipe(editor);
+    const element = container.querySelector('[data-slate-node="element"]');
+
+    expect(spy).not.toHaveBeenCalled();
+    expect(element).toHaveAttribute('role', 'listitem');
+    expect((element as HTMLElement).style.display).toBe('list-item');
+    expect((element as HTMLElement).style.listStyleType).toBe('disc');
+  });
+
   it('keeps plugin selection affinity behavior on the plain fast path', () => {
     const editor = createPlateEditor({
       plugins: [

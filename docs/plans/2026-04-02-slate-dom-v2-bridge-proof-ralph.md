@@ -10,7 +10,7 @@ context_snapshot: /Users/zbeyens/git/plate-2/.omx/context/slate-dom-v2-bridge-pr
 
 Ship the first honest DOM-boundary proof for Slate v2:
 
-- `../slate/packages/slate-dom-v2`
+- `../slate-v2/packages/slate-dom-v2`
 - one narrow bridge over `slate-v2` snapshots and runtime ids
 
 The slice must prove that DOM lookup and boundary containment can work without path-only weak-map luck.

@@ -194,6 +194,62 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
   expect(container.querySelector('strong em, em strong')).not.toBeNull();
 });
 
+it('skips inactive leaf renderers', () => {
+  let activeCalls = 0;
+  let inactiveCalls = 0;
+
+  const boldPlugin = createTSlatePlugin({
+    key: 'bold',
+    node: {
+      isLeaf: true,
+      type: 'bold',
+    },
+    render: {
+      leaf: ({ children }) => {
+        activeCalls += 1;
+
+        return <strong data-testid="active-leaf">{children}</strong>;
+      },
+    },
+  });
+  const italicPlugin = createTSlatePlugin({
+    key: 'italic',
+    node: {
+      isLeaf: true,
+      type: 'italic',
+    },
+    render: {
+      leaf: ({ children }) => {
+        inactiveCalls += 1;
+
+        return <em data-testid="inactive-leaf">{children}</em>;
+      },
+    },
+  });
+
+  const editor = createPlateEditor({
+    plugins: [boldPlugin, italicPlugin],
+  });
+
+  const Leaf = pipeRenderLeaf(editor)!;
+
+  const { getByTestId, queryByTestId } = render(
+    <Leaf
+      attributes={attributes}
+      leaf={{ bold: true, text: 'test' } as any}
+      leafPosition={{ end: 0, start: 4 }}
+      text={{ bold: true, text: 'test' } as any}
+    >
+      test content
+    </Leaf>
+  );
+
+  expect(activeCalls).toBe(1);
+  expect(inactiveCalls).toBe(0);
+  expect(getByTestId('active-leaf')).toBeInTheDocument();
+  expect(queryByTestId('inactive-leaf')).toBeNull();
+});
+
 it('keeps plugin leafProps behavior', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',
@@ -295,6 +351,59 @@ it('keeps the outer text attributes for render.as text plugins', () => {
     'true'
   );
   expect(container.querySelector('strong')).not.toBeNull();
+});
+
+it('skips inactive text renderers', () => {
+  let activeCalls = 0;
+  let inactiveCalls = 0;
+
+  const boldPlugin = createTSlatePlugin({
+    key: 'bold',
+    node: {
+      isDecoration: false,
+      isLeaf: true,
+      type: 'bold',
+    },
+    render: {
+      node: ({ children }) => {
+        activeCalls += 1;
+
+        return <strong data-testid="active-text">{children}</strong>;
+      },
+    },
+  });
+  const italicPlugin = createTSlatePlugin({
+    key: 'italic',
+    node: {
+      isDecoration: false,
+      isLeaf: true,
+      type: 'italic',
+    },
+    render: {
+      node: ({ children }) => {
+        inactiveCalls += 1;
+
+        return <em data-testid="inactive-text">{children}</em>;
+      },
+    },
+  });
+
+  const editor = createPlateEditor({
+    plugins: [boldPlugin, italicPlugin],
+  });
+
+  const Text = pipeRenderText(editor)!;
+
+  const { getByTestId, queryByTestId } = render(
+    <Text attributes={attributes} text={{ bold: true, text: 'test' } as any}>
+      test content
+    </Text>
+  );
+
+  expect(activeCalls).toBe(1);
+  expect(inactiveCalls).toBe(0);
+  expect(getByTestId('active-text')).toBeInTheDocument();
+  expect(queryByTestId('inactive-text')).toBeNull();
 });
 
 it('keeps plugin textProps behavior', () => {

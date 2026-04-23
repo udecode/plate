@@ -100,5 +100,5 @@ the public NodeId API.
 
 ## Related Issues
 
-- Related learning: [2026-04-03-nodeid-paste-import-needs-insertfragment-benchmark.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-04-03-nodeid-paste-import-needs-insertfragment-benchmark.md)
-- Related learning: [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)
+- Related learning: [2026-04-03-nodeid-paste-import-needs-insertfragment-benchmark.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-03-nodeid-paste-import-needs-insertfragment-benchmark.md)
+- Related learning: [2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-plate-nodeid-should-use-setnodesbatch-only-for-live-normalization.md)

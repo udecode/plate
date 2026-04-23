@@ -162,4 +162,60 @@ describe('pluginInjectNodeProps', () => {
       },
     });
   });
+
+  it('does not resolve a path when inject matching is pathless', () => {
+    const ListishPlugin = createSlatePlugin({
+      inject: {
+        nodeProps: {
+          nodeKey: 'listStyleType',
+          query: ({ nodeProps }) => !!nodeProps.element?.listStyleType,
+          transformProps: ({ props, value }) => ({
+            ...props,
+            style: {
+              ...props.style,
+              listStyleType: value,
+            },
+          }),
+        },
+        targetPlugins: ['paragraph'],
+      },
+      key: 'list',
+    });
+
+    const editor = createSlateEditor({
+      plugins: [
+        createSlatePlugin({
+          key: 'paragraph',
+          node: { isElement: true, type: 'p' },
+        }),
+        ListishPlugin,
+      ],
+    });
+
+    const getPath = mock(() => {
+      throw new Error('path lookup should be skipped');
+    });
+
+    expect(
+      pluginInjectNodeProps(
+        editor,
+        editor.getPlugin(ListishPlugin),
+        {
+          element: {
+            children: [{ text: 'hello' }],
+            listStyleType: 'disc',
+            type: 'p',
+          } as any,
+        },
+        getPath as any
+      )
+    ).toEqual({
+      className: 'slate-listStyleType-disc',
+      style: {
+        listStyleType: 'disc',
+      },
+    });
+
+    expect(getPath).not.toHaveBeenCalled();
+  });
 });

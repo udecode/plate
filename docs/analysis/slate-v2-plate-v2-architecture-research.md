@@ -60,7 +60,7 @@ Every idea should land in exactly one bucket:
 
 ## Current Baseline
 
-Already proven in `../slate`:
+Already proven in `../slate-v2`:
 
 - `slate-v2`
 - `slate-dom-v2`

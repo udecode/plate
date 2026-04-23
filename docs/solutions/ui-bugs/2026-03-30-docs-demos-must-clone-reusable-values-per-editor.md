@@ -103,4 +103,4 @@ Slate expects each mounted editor to own its own node graph. Reusing one static 
 
 ## Related Issues
 
-- Related learning: `.claude/docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md`
+- Related learning: `docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md`

@@ -5,27 +5,33 @@ performance work.
 
 ## Read Order
 
-1. [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/editor-performance-master-plan.md)
+1. [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-master-plan.md)
    - the main program document
    - current state, key wins, remaining red lanes, and sequencing
-2. [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/plate-vs-slate-benchmarks.md)
+2. [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/docs/performance/plate-vs-slate-benchmarks.md)
    - benchmark narrative and forensic history
    - use this when you need to understand why a cut mattered
-3. [editor-performance-next-phase-consensus.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/editor-performance-next-phase-consensus.md)
+3. [editor-performance-next-phase-consensus.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-next-phase-consensus.md)
    - planning artifact for the earlier “what next” decision
    - useful for rationale, not for the latest numbers
-4. [2026-04-03-affinity-redesign-plan.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/2026-04-03-affinity-redesign-plan.md)
+4. [performance-benchmark-spec.md](/Users/zbeyens/git/plate-2/docs/performance/performance-benchmark-spec.md)
+   - benchmark contract for the public Performance guide
+   - defines scope, workloads, and claim boundaries
+5. [2026-04-04-standalone-benchmark-gap-analysis.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-04-standalone-benchmark-gap-analysis.md)
+   - why the standalone rich-markdown lab exposed a Plate mount gap
+   - current diagnosis and next optimization targets
+6. [2026-04-03-affinity-redesign-plan.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-03-affinity-redesign-plan.md)
    - plan for the hard-affinity code-mark redesign
-5. [2026-04-03-remaining-basic-nodes-benchmark.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/2026-04-03-remaining-basic-nodes-benchmark.md)
+7. [2026-04-03-remaining-basic-nodes-benchmark.md](/Users/zbeyens/git/plate-2/docs/performance/2026-04-03-remaining-basic-nodes-benchmark.md)
    - plan for the remaining `@platejs/basic-nodes` census extension
 
 ## Artifact Policy
 
 - Durable markdown lives here.
 - Raw benchmark JSON lives in [tmp/](/Users/zbeyens/git/plate-2/tmp/).
-- Older docs may still mention `.claude/docs/plans/*.json` from before the raw
+- Older docs may still mention `docs/plans/*.json` from before the raw
   artifact move. When that happens, prefer the matching file in `tmp/`.
-- Internal one-off planning/proof notes belong under `.claude/docs/plans/`, not
+- Internal one-off planning/proof notes belong under `docs/plans/`, not
   here, unless they are directly useful to understanding the performance story.
 
 ## Release Snapshot

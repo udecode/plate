@@ -25,7 +25,7 @@ History batches were being derived in a `subscribe(...)` listener that ran **aft
 
 # Root Cause
 
-The core publish order in [core.ts](/Users/zbeyens/git/slate/packages/slate-v2/src/core.ts) was wrong for history capture.
+The core publish order in [core.ts](/Users/zbeyens/git/slate-v2/packages/slate-v2/src/core.ts) was wrong for history capture.
 
 The sequence was:
 
@@ -42,7 +42,7 @@ As soon as `slate-history-v2` derived batches from `editor.operations` and `prev
 
 Move `Editor.subscribe(...)` notification ahead of `editor.onChange()` in `slate-v2`.
 
-The fix lives in [core.ts](/Users/zbeyens/git/slate/packages/slate-v2/src/core.ts).
+The fix lives in [core.ts](/Users/zbeyens/git/slate-v2/packages/slate-v2/src/core.ts).
 
 Before:
 

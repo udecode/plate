@@ -53,7 +53,7 @@ Why it matters:
 
 Current evidence:
 
-- issue cluster explicitly names this as a recurrent cross-cutting seam in [issue-clusters.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-issues/issue-clusters.md)
+- issue cluster explicitly names this as a recurrent cross-cutting seam in [issue-clusters.md](/Users/zbeyens/git/plate-2/docs/slate-issues/issue-clusters.md)
 - direct issue pressure includes `#5987`, `#3354`, `#3352`, `#3383`, `#2465`, `#4477`
 
 Current proof status:
@@ -230,7 +230,7 @@ Current evidence:
 - `#4056`
 - `#5216`
 - `#5131`
-- existing benchmark lanes in [benchmark-candidate-map.md](/Users/zbeyens/git/plate-2/.claude/docs/slate-issues/benchmark-candidate-map.md)
+- existing benchmark lanes in [benchmark-candidate-map.md](/Users/zbeyens/git/plate-2/docs/slate-issues/benchmark-candidate-map.md)
 
 Current proof status:
 

@@ -43,7 +43,7 @@ honest.
   `transformInitialValue`, but the live `nodeId.normalize()` transform still
   paid the per-node `setNodes` cost.
 - The new `setNodesBatch` API lived in Plate's local `packages/slate`, not only
-  in the separate `../slate` prototype repo, so the adoption work could happen
+  in the separate `../slate-v2` prototype repo, so the adoption work could happen
   immediately.
 - Plate's local Slate wrapper does not expose Slate's private dirty-path weak
   maps, so a direct copy of the upstream prototype would have been half true and
@@ -134,5 +134,5 @@ shape:
 
 ## Related Issues
 
-- Related learning: [2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md](/Users/zbeyens/git/plate-2/.claude/docs/solutions/performance-issues/2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md)
-- Related learning: [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/plate-vs-slate-benchmarks.md)
+- Related learning: [2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-03-31-slate-applybatch-should-own-the-exact-path-set-node-fast-path.md)
+- Related learning: [plate-vs-slate-benchmarks.md](/Users/zbeyens/git/plate-2/docs/performance/plate-vs-slate-benchmarks.md)

@@ -28,7 +28,7 @@ Pick the next best issue to start in this repo, with a short rationale grounded 
 ## Findings
 
 - Repo requires concise handoff.
-- For non-trivial work, planning state should live in `.claude/docs/plans/`.
+- For non-trivial work, planning state should live in `docs/plans/`.
 - This task is tracker analysis, not code implementation, so no branch/setup noise.
 - Repo: `udecode/plate`
 - Open issue count analyzed: 14

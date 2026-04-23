@@ -10,7 +10,7 @@ context_snapshot: /Users/zbeyens/git/plate-2/.omx/context/slate-react-v2-runtime
 
 Ship the first honest `slate-react-v2` proof slice:
 
-- `../slate/packages/slate-react-v2`
+- `../slate-v2/packages/slate-react-v2`
 
 The slice must prove selector-first committed-snapshot reads, controlled replacement without effect mirroring, and clean dependency on `slate-dom-v2` for browser ownership.
 

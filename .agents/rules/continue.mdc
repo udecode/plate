@@ -1,0 +1,351 @@
+---
+description: Use after an execution slice to reassess whether the current tactic still serves the user's north star, then keep course, pivot, replan, or stop. Designed for long-running loops where the agent should keep moving unless a real blocker or completed lane exists.
+---
+
+# Continue
+
+Use this after a meaningful execution slice.
+
+This is a progress governor, not a status update.
+
+Its job is to keep long-running work honest:
+
+- continue when the tactic is still right
+- pivot when the owner changed
+- replan when the plan got stale
+- stop only when the lane is complete or genuinely blocked
+
+## Default Bias
+
+- Protect the north star, not the current tactic.
+- Protect the principle stack, not the fastest local win.
+- Prefer one durable owner fix over many local patches.
+- Escalate earlier than feels comfortable.
+- Treat tests, measurements, docs, and screenshots as evidence, not truth by
+  themselves.
+- Keep moving when a safe next move exists.
+
+## Read First
+
+Read only what is needed to decide the next move:
+
+1. the user's current goal
+2. the active plan or mutable state file
+3. the latest verification or evidence
+4. the remaining owner list or blocker list
+5. the files or docs carrying the current problem
+6. any architecture/research/context doc that defines the principle stack
+7. previous failed tactics recorded in the state file
+
+Do not rely on chat history for durable state.
+
+If it matters, read it from disk.
+
+## Mutable State Rule
+
+Before deciding, read the narrowest active state file for the current lane.
+
+After every verdict, update that same file in the same turn.
+
+The state file should record:
+
+- current goal
+- scope lock
+- current tactic
+- current owner classification
+- latest evidence
+- commands or checks run
+- artifacts or outputs produced
+- files changed
+- rejected tactics and why
+- accepted or deferred risks
+- next concrete move
+
+Good default homes:
+
+- `docs/plans/*.md`
+- a focused owner doc under `docs/**`
+- a project-specific execution ledger
+
+Do not keep updating a stale broad plan once the work has moved to a narrower
+owner.
+
+## Completion Guard
+
+Do not call a lane complete while the state file still lists:
+
+- open required owners
+- unresolved blockers
+- missing proof for a required claim
+- accepted-risk decisions that have not actually been accepted
+- known user-path, product, API, accessibility, security, data, or architecture
+  risks without a decision
+
+Green checks are evidence.
+
+They are not completion unless the required owner list is empty or explicitly
+reclassified.
+
+Do not stop just because you wrote a checkpoint.
+
+If the checkpoint has `Next move` and no hard blocker exists, execute it.
+
+## Core Questions
+
+Answer these bluntly:
+
+1. Is the current tactic still the highest-leverage path?
+2. Are we patching the wrong owner?
+3. Are we optimizing for local comfort instead of end-state truth?
+4. Did the last win bypass a higher-priority principle?
+5. Is the current plan stale?
+6. What is the smallest proof that makes the next move safe?
+7. If we repeat this tactic, will it likely move the real owner?
+
+If the answer to 2, 3, 4, or 5 is yes, pivot or replan.
+
+## Escalation Rules
+
+### Rule 1: Cluster Beats Anecdote
+
+If a meaningful cluster of remaining work points to one owner, treat that owner
+as the problem until proven otherwise.
+
+Do not chase scattered local symptoms once the cluster is obvious.
+
+### Rule 2: Patch Limit
+
+After two or three local fixes around the same owner, stop harvesting small
+wins.
+
+Escalate to the deeper owner.
+
+### Rule 3: Principle Stack Wins
+
+If a local win violates a higher-priority principle, it is not a clean win.
+
+Common higher-priority principles:
+
+- correctness
+- user experience
+- accessibility
+- security
+- data integrity
+- public API integrity
+- architecture boundaries
+- maintainability
+- product intent
+
+Gate it, rework it, or cut it.
+
+### Rule 4: Source Of Truth Wins
+
+When deciding the next move:
+
+- user goal beats local preference
+- active plan beats stale chat memory
+- current evidence beats optimism
+- source code beats prose claims
+- principle stack beats local wins
+
+### Rule 5: Evidence Is Not A Commandment
+
+Tests, examples, docs, and measurements can be wrong or too narrow.
+
+Challenge any row that encodes:
+
+- stale assumptions
+- non-equivalent comparison
+- harness noise
+- behavior narrower than the real goal
+- architecture that conflicts with the north star
+
+Classify bad evidence as:
+
+- keep
+- rewrite
+- narrow
+- cut
+
+### Rule 6: Simulation Is Not User Proof
+
+Synthetic proof only proves its own scope.
+
+If the claim is user-facing, require a user-path or integration proof before
+closure.
+
+### Rule 7: Research Can Upgrade The Owner
+
+If research or architecture review exposes a stronger path, replan even if the
+current tactic has local wins.
+
+The goal is the best durable outcome, not the shortest path to a green check.
+
+## Earliest Gates
+
+Every slice should identify:
+
+- the earliest safety gate for the touched owner
+- the earliest progress gate for the north-star claim
+- the first missing gate, if no honest gate exists yet
+
+Before the first milestone:
+
+- a rough gate is acceptable
+- missing ownership is not acceptable
+
+After the first milestone:
+
+- every risky slice needs a repeatable gate
+- missing gates become active work, not future polish
+
+Keep separate:
+
+- regression floor
+- improvement/progress claim
+- user/product/API contract
+
+Do not let a win in one lane hide a regression in another.
+
+## Verdicts
+
+### Keep Course
+
+Use when:
+
+- the current tactic is still the best path
+- latest evidence moved the real owner
+- risks are gated or outside the touched path
+
+Then continue immediately.
+
+### Pivot
+
+Use when:
+
+- the current tactic produced useful evidence
+- the remaining owner is now elsewhere
+- a row or assumption needs to be cut or rewritten
+- the local win exposed a deeper risk
+
+Then execute the better next move immediately unless a real decision is missing.
+
+### Replan
+
+Use when:
+
+- the plan is stale
+- ownership changed
+- scope or success criteria changed
+- the current tactic optimizes the wrong thing
+- the current plan conflicts with the principle stack
+
+Update the plan, then execute the first new move unless blocked.
+
+### Stop
+
+Use only when:
+
+- the lane is complete under the active plan
+- all remaining work is explicitly accepted or deferred
+- a hard blocker prevents all autonomous progress
+- the user explicitly asks to pause
+
+Do not stop when:
+
+- the verdict is pivot
+- the verdict is replan
+- a risky/open lane still has a known next owner
+- the checkpoint names a next move
+
+Before stopping:
+
+- update the mutable state file with the stop reason
+- if the loop uses a completion-check state file, update it before stopping:
+  - use `status: done` when the lane is complete
+  - use `status: blocked` when no autonomous progress is possible
+
+## Output
+
+Keep it short and sharp.
+
+Always include:
+
+- `Verdict:` keep course / pivot / replan / stop
+- `Harsh take:` one blunt sentence
+- `Why:` 1-3 concrete bullets
+- `Risks:` touched risks or `none known`
+- `Earliest gates:` safety gate + progress gate
+- `Next move:` concrete action
+- `Do not do:` what to stop wasting time on
+
+This is a milestone update, not a handoff.
+
+If the verdict is not `stop`, execute the next move in the same turn.
+
+## State Update Checklist
+
+When updating the mutable state file, append:
+
+- exact actions taken
+- evidence gathered
+- commands/checks run
+- artifact paths, if any
+- hypothesis tested
+- decision:
+  - keep
+  - pivot
+  - replan
+  - cut
+  - defer
+  - accept
+- owner classification
+- files changed
+- rejected tactics and why
+- next concrete action
+
+## Tone
+
+Bad:
+
+- `There are several tradeoffs to consider.`
+- `It may be worth exploring.`
+- `A possible option is...`
+
+Good:
+
+- `This tactic is tapped out.`
+- `We are patching the wrong owner.`
+- `The number is green, but the architecture is wrong. Replan.`
+- `This wins locally by bypassing the user contract. Gate it or cut it.`
+
+## Example
+
+```md
+Verdict: pivot
+
+Harsh take: the local fixes bought the easy wins, but the remaining failures prove the owner is deeper.
+
+Why:
+
+- the same behavior family is still red after three local fixes
+- the latest change moved symptoms, not the owner
+- the active plan values end-state correctness over preserving this implementation shape
+
+Risks:
+
+- changing the deeper owner can affect existing callers
+
+Earliest gates:
+
+- safety: focused contract test for the owner
+- progress: focused reproduction for the remaining red family
+
+Next move:
+
+- fix the deeper owner and rerun the focused contract gate
+
+Do not do:
+
+- do not patch more callers around the same owner
+```

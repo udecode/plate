@@ -78,4 +78,4 @@ The new coverage proves both layers:
 ## Related Issues
 
 - `#4111`
-- `.claude/docs/solutions/logic-errors/2026-03-29-table-border-toggle-must-clear-active-cell-selection-before-adjacent-cell-writes.md`
+- `docs/solutions/logic-errors/2026-03-29-table-border-toggle-must-clear-active-cell-selection-before-adjacent-cell-writes.md`

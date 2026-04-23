@@ -86,6 +86,43 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
   expect(spacers).toHaveLength(0);
 });
 
+it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
+  const testPlugin = createTSlatePlugin({
+    key: 'test',
+    node: {
+      isLeaf: true,
+      type: 'test',
+    },
+    render: {
+      as: 's',
+    },
+    rules: {
+      selection: {
+        affinity: 'directional',
+      },
+    },
+  });
+  const editor = createPlateEditor({
+    plugins: [testPlugin],
+  });
+  const renderLeaf = pluginRenderLeaf(editor, testPlugin as any);
+  const TestComponent = () =>
+    renderLeaf({
+      children: 'test content',
+      leaf: { test: true, text: 'test content' } as any,
+      leafPosition: { end: 0, start: 12 } as any,
+      text: { test: true, text: 'test content' } as any,
+    } as any);
+
+  const { container } = render(<TestComponent />);
+
+  const leaf = container.querySelector('s');
+
+  expect(leaf).not.toBeNull();
+  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveTextContent('test content');
+});
+
 it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = createTSlatePlugin({
     key: 'test',

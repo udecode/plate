@@ -24,7 +24,8 @@ type PresetName =
   | 'layer-0-smoke'
   | 'layer-1-core-plugins'
   | 'layer-1-core-plugins-smoke'
-  | 'layer-3-core-stress';
+  | 'layer-3-core-stress'
+  | 'public-slate-vs-plate';
 type ScenarioWorkloadId = EditorPerfWorkloadId;
 type VisibilityMode = 'chunk' | 'element' | 'none';
 type RunnerJob = {
@@ -566,6 +567,31 @@ function getLayer3CoreStressJobs(): RunnerJob[] {
   ];
 }
 
+function getPublicSlateVsPlateJobs(): RunnerJob[] {
+  return [
+    {
+      benchmarks: ['mount', 'input'],
+      blocks: 10_000,
+      chunkSize: 1000,
+      chunking: true,
+      id: 'public-mixed-10k-chunk',
+      scenarioWorkload: 'huge-mixed-block',
+      timeoutMs: 300_000,
+      visibility: 'chunk',
+    },
+    {
+      benchmarks: ['mount'],
+      blocks: 10_000,
+      chunkSize: 1000,
+      chunking: true,
+      id: 'public-code-10k-chunk',
+      scenarioWorkload: 'huge-code',
+      timeoutMs: 300_000,
+      visibility: 'chunk',
+    },
+  ];
+}
+
 function getLayer0SmokeJobs(): RunnerJob[] {
   return [
     {
@@ -649,6 +675,7 @@ function getJobsForPreset(preset: PresetName | undefined): RunnerJob[] {
     return getLayer1CorePluginSmokeJobs();
   }
   if (preset === 'layer-3-core-stress') return getLayer3CoreStressJobs();
+  if (preset === 'public-slate-vs-plate') return getPublicSlateVsPlateJobs();
 
   return [];
 }

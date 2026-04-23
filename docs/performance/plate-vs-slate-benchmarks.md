@@ -1001,7 +1001,7 @@ The deeper split sharpens the take:
   - `10,000`: `10.83 ms`
 - `normalizeInitialValue: null` is now a true disable path in practice, not just in the comment.
 - The upstream Slate follow-up closes the `setNodes(...)` question:
-  - benchmark file: [set-nodes-bench.js](/Users/zbeyens/git/slate/packages/slate/test/perf/set-nodes-bench.js)
+  - benchmark file: [set-nodes-bench.js](/Users/zbeyens/git/slate-v2/packages/slate/test/perf/set-nodes-bench.js)
   - flat `5,000` paragraphs:
     - `setNodes` per path: `73.35 ms`
     - direct `apply(set_node)`: `44.62 ms`
@@ -1093,7 +1093,7 @@ The deeper split sharpens the take:
     creation, hydration, and subscription work, not scope lookup
   - the experiment was reverted; the useful part is the conclusion
   - durable artifact:
-    - `.claude/docs/plans/editor-perf-5000-element-store-experiment.json`
+    - `docs/plans/editor-perf-5000-element-store-experiment.json`
 - The next split answers the “how much is raw Jotai vs `jotai-x` glue” question:
   - provider-only trio at `5,000` blocks:
     - plain React context: `244.15 ms`
@@ -1117,7 +1117,7 @@ The deeper split sharpens the take:
       `useSyncStore` rewrites unless the provider count problem is already
       reduced elsewhere
   - durable artifact:
-    - `.claude/docs/plans/editor-perf-5000-jotai-provider-split.json`
+    - `docs/plans/editor-perf-5000-jotai-provider-split.json`
 - The next store-tech split answers the “what if we swap this hot path to
   `zustand-x` instead” question:
   - provider-only quartet at `5,000` blocks:
@@ -1138,7 +1138,7 @@ The deeper split sharpens the take:
     - `jotai-x` remains a measurable extra tax on top of raw Jotai, but a
       Jotai-to-Zustand swap is not the first move worth making
   - durable artifact:
-    - `.claude/docs/plans/editor-perf-5000-store-tech-split.json`
+    - `docs/plans/editor-perf-5000-store-tech-split.json`
 - I also tried the obvious local `jotai-x` fix: replace the cloned-`Map` scope
   registry in `createAtomProvider` with a linked scope chain
   - that patch was benchmarked and reverted
@@ -1155,7 +1155,7 @@ The deeper split sharpens the take:
       hydration/sync semantics themselves
     - this was not a stable enough win to ship
   - durable artifact:
-    - `.claude/docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`
+    - `docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`
 - The next `jotai-x` fix went after the smaller helper tax that the provider
   split had already exposed:
   - `HydrateAtoms` still hydrates `{ ...initialValues, ...props }` during render
@@ -1181,7 +1181,7 @@ The deeper split sharpens the take:
     - it does not magically fix the rich-plugin wall; provider count still
       dominates there
   - durable artifact:
-    - `.claude/docs/plans/editor-perf-5000-jotaix-sync-batch.json`
+    - `docs/plans/editor-perf-5000-jotaix-sync-batch.json`
 - The next `jotai-x` fix was uglier because it was so stupid:
   - `createAtomProvider(...)` was calling `createStore()` eagerly inside
     `useState(...)`
@@ -1202,7 +1202,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
       - artifact:
         `tmp/editor-perf-5000-plugin-render-element-lazy-store-seq.json`
     - provider-only lane:
-      - baseline from `.claude/docs/plans/editor-perf-5000-store-tech-split.json`:
+      - baseline from `docs/plans/editor-perf-5000-store-tech-split.json`:
         `351.46 ms`
       - clean rerun:
         `353.56 ms`
@@ -1236,7 +1236,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - hydrate-only: `384.95 ms`
     - hydrate-sync: `402.25 ms`
     - artifact:
-      `.claude/docs/plans/editor-perf-5000-hook-consumer-context-summary.json`
+      `docs/plans/editor-perf-5000-hook-consumer-context-summary.json`
   - interpretation:
     - the common element/path reads are not the problem by themselves
     - raw Jotai is measurably slower than plain context, but still far below
@@ -1256,7 +1256,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - provider-backed hook lane: `490.41 ms`
     - plain-context hook lane: `442.69 ms`
     - artifact:
-      `.claude/docs/plans/editor-perf-5000-hook-consumer-context-after.json`
+      `docs/plans/editor-perf-5000-hook-consumer-context-after.json`
   - interpretation:
     - absolute rerun numbers drifted upward in that batch, so the right read is
       the within-batch delta, not the raw means
@@ -1386,7 +1386,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-render-as-provider.json`
     - `tmp/editor-perf-5000-render-as-no-provider.json`
     - `tmp/editor-perf-5000-render-as-pipe.json`
-    - `.claude/docs/plans/editor-perf-5000-render-as-summary.json`
+    - `docs/plans/editor-perf-5000-render-as-summary.json`
 - The next split moved into the mark path and asked where the remaining
   `render.as`-only mark tax actually lives:
   - the harness added seven `5,000`-block chunked lanes on a bold-only
@@ -1425,7 +1425,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
     - `tmp/editor-perf-5000-bold-text-pipe.json`
     - `tmp/editor-perf-5000-bold-pipe.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-summary.json`
+    - `docs/plans/editor-perf-5000-bold-summary.json`
 - The next split proved the remaining bold-mark wall was mostly the outer
   fallback wrapper in `pipeRenderLeaf(...)`, not the inner active bold plugin
   path:
@@ -1458,7 +1458,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
   - durable artifacts:
     - `tmp/editor-perf-5000-bold-plugin-leaf-direct.json`
     - `tmp/editor-perf-5000-bold-leaf-pipe-plain-outer.json`
-    - `.claude/docs/plans/editor-perf-5000-bold-leaf-wrapper-summary.json`
+    - `docs/plans/editor-perf-5000-bold-leaf-wrapper-summary.json`
 - The next bold cut was on the text side, not the leaf side:
   - `pipeRenderText(...)` still always paid the outer `PlateText` path even
     when there was no inject-node-props work, no `textProps`, and no custom
@@ -1578,7 +1578,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - underline remained the worst sibling, but still looks like generic
       text-pipe tax, not a unique underline path
   - durable artifacts:
-    - `.claude/docs/plans/editor-perf-layer1-core-plugins-summary.json`
+    - `docs/plans/editor-perf-layer1-core-plugins-summary.json`
     - `tmp/editor-perf-layer1-bold-only-after-simple-text-fast-path.json`
     - `tmp/editor-perf-layer1-italic-only-after-simple-text-fast-path.json`
     - `tmp/editor-perf-layer1-underline-only-after-simple-text-fast-path.json`
@@ -1599,7 +1599,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-underline-direct-renderers.json`
     - `tmp/editor-perf-5000-underline-plugin-leaf-direct.json`
     - `tmp/editor-perf-5000-underline-pipe.json`
-    - `.claude/docs/plans/editor-perf-5000-underline-dissection-summary.json`
+    - `docs/plans/editor-perf-5000-underline-dissection-summary.json`
 - Widening to the next sibling mark proved the cheap-mark family had already
   told us what it could:
   - targeted `5k` Layer 1 `CodePlugin` rerun:
@@ -1622,7 +1622,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-code-direct-renderers-core-mount.json`
     - `tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount.json`
     - `tmp/editor-perf-5000-code-leaf-text-pipe-core-mount.json`
-    - `.claude/docs/plans/editor-perf-5000-code-dissection-summary.json`
+    - `docs/plans/editor-perf-5000-code-dissection-summary.json`
 - The next safe cut on the active code lane was to keep the hard-affinity
   semantics but skip `getRenderNodeProps(...)` for the simple `render.as`
   branch:
@@ -1646,7 +1646,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
   - durable artifacts:
     - `tmp/editor-perf-5000-code-plateleaf-direct-core-mount.json`
     - `tmp/editor-perf-5000-code-plugin-leaf-direct-core-mount-after-hard-affinity-fast-path.json`
-    - `.claude/docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json`
+    - `docs/plans/editor-perf-5000-code-hard-affinity-fast-path-summary.json`
 - The next split came back to the core paragraph path and proved the remaining
   “plain element” wall was still living inside the fast branch itself:
   - current `5,000`-block chunked numbers before the fix:
@@ -1685,7 +1685,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-minimal-editable-post-element-fast-branch.json`
     - `tmp/editor-perf-5000-plate-content-post-element-fast-branch.json`
     - `tmp/editor-perf-5000-chunk-post-element-fast-branch.json`
-    - `.claude/docs/plans/editor-perf-5000-element-fast-branch-summary.json`
+    - `docs/plans/editor-perf-5000-element-fast-branch-summary.json`
 - The next seeded `nodeId` split showed the remaining mount gap was the mounted
   block-id gate itself:
   - seeded `5,000`-block probes before the fix:
@@ -1721,7 +1721,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
     - `tmp/editor-perf-5000-nodeid-mounted-block-element-seeded.json`
     - `tmp/editor-perf-5000-nodeid-element-pipe-post-mounted-gate-removal.json`
     - `tmp/editor-perf-5000-chunk-post-mounted-gate-removal.json`
-    - `.claude/docs/plans/editor-perf-5000-nodeid-mounted-gate-summary.json`
+    - `docs/plans/editor-perf-5000-nodeid-mounted-gate-summary.json`
 
 ## Prevention
 
@@ -1735,7 +1735,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
 - Add a fan-out lane when the argument is really about store hooks. Without that, mount-time core cost and post-mount subscription cost get mixed together and people end up blaming the wrong state library.
 - Add a core-mount lane when the argument is really about the remaining prebuilt mount cliff. Without that, provider/setup, `Editable`, and hook-consumed render plumbing all get blamed together.
 - If a plugin mutates the initial value and already owns `editor.children`, do not default to live per-node Slate transforms. The `nodeId` init bug was exactly that mistake.
-- If the suspect is a repeated Slate transform, benchmark the same op in `../slate` with both flat and grouped document shapes before blaming React or store glue. Shape-sensitive collapse is a strong sign that immutable ancestor-array cloning is the real cost.
+- If the suspect is a repeated Slate transform, benchmark the same op in `../slate-v2` with both flat and grouped document shapes before blaming React or store glue. Shape-sensitive collapse is a strong sign that immutable ancestor-array cloning is the real cost.
 - If the remaining culprit is still too broad, split the `Editable` path again. Static `Editable`, element-only pipe, leaf/text-only pipes, and full render-pipe stack together are enough to tell whether the first fix should land in element wrappers or leaf/text wrappers.
 - If a component only needs mounted state to gate an optional DOM attribute, do not subscribe every node by default. Split the mounted-only path so non-candidate nodes stay hook-free.
 - Keep both a realistic chunked lane and a no-chunk stress lane.
@@ -1805,24 +1805,24 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
 
 ## Related Issues
 
-- Benchmark plan: [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/.claude/docs/performance/editor-performance-master-plan.md)
+- Benchmark plan: [editor-performance-master-plan.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-master-plan.md)
 - Benchmark outputs:
-  - `.claude/docs/plans/editor-perf-1000-chunk.json`
-  - `.claude/docs/plans/editor-perf-5000-chunk.json`
-  - `.claude/docs/plans/editor-perf-5000-nochunk.json`
-  - `.claude/docs/plans/editor-perf-1000-dissection.json`
-  - `.claude/docs/plans/editor-perf-5000-dissection.json`
-  - `.claude/docs/plans/editor-perf-10000-init-dissection.json`
-  - `.claude/docs/plans/editor-perf-5000-fanout-250.json`
-  - `.claude/docs/plans/editor-perf-5000-fanout-1000.json`
-  - `.claude/docs/plans/editor-perf-1000-core-mount.json`
-  - `.claude/docs/plans/editor-perf-5000-core-mount.json`
-  - `.claude/docs/plans/editor-perf-5000-core-mount-targeted-summary.json`
+  - `docs/plans/editor-perf-1000-chunk.json`
+  - `docs/plans/editor-perf-5000-chunk.json`
+  - `docs/plans/editor-perf-5000-nochunk.json`
+  - `docs/plans/editor-perf-1000-dissection.json`
+  - `docs/plans/editor-perf-5000-dissection.json`
+  - `docs/plans/editor-perf-10000-init-dissection.json`
+  - `docs/plans/editor-perf-5000-fanout-250.json`
+  - `docs/plans/editor-perf-5000-fanout-1000.json`
+  - `docs/plans/editor-perf-1000-core-mount.json`
+  - `docs/plans/editor-perf-5000-core-mount.json`
+  - `docs/plans/editor-perf-5000-core-mount-targeted-summary.json`
   - `tmp/editor-perf-5000-plugin-render-element-plugin-context.json`
   - `tmp/editor-perf-5000-plugin-render-element-precomputed-wrappers.json`
-  - `.claude/docs/plans/editor-perf-5000-jotai-provider-split.json`
-  - `.claude/docs/plans/editor-perf-5000-store-tech-split.json`
-  - `.claude/docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`
-  - `.claude/docs/plans/editor-perf-5000-element-fast-branch-summary.json`
+  - `docs/plans/editor-perf-5000-jotai-provider-split.json`
+  - `docs/plans/editor-perf-5000-store-tech-split.json`
+  - `docs/plans/editor-perf-5000-jotaix-linked-scope-experiment.json`
+  - `docs/plans/editor-perf-5000-element-fast-branch-summary.json`
 - Upstream transform benchmark:
-  - `/Users/zbeyens/git/slate/packages/slate/test/perf/set-nodes-bench.js`
+  - `/Users/zbeyens/git/slate-v2/packages/slate/test/perf/set-nodes-bench.js`
