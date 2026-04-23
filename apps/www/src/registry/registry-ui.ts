@@ -1246,6 +1246,28 @@ export const uiNodes: Registry['items'] = [
     type: 'registry:ui',
   },
   {
+    dependencies: ['@platejs/footnote'],
+    description: 'Inline footnote references, definitions, and input UI.',
+    files: [
+      { path: 'ui/footnote-node.tsx', type: 'registry:ui' },
+      { path: 'ui/footnote-node-static.tsx', type: 'registry:ui' },
+    ],
+    meta: {
+      docs: [{ route: '/docs/footnote' }],
+      examples: ['footnote-demo'],
+    },
+    name: 'footnote-node',
+    registryDependencies: [
+      '@shadcn/button',
+      '@shadcn/command',
+      '@shadcn/hover-card',
+      '@shadcn/popover',
+      'inline-combobox',
+    ],
+    title: 'Footnote Elements',
+    type: 'registry:ui',
+  },
+  {
     dependencies: [],
     description: 'A heading with multiple level support.',
     files: [
