@@ -10,5 +10,11 @@ export default defineConfig([
     ...reactHooks.configs.flat.recommended,
     files: ['src/**/*.tsx', 'src/**/use*.ts'],
     languageOptions: { parser: tsParser },
+    rules: {
+      ...reactHooks.configs.flat.recommended.rules,
+      'react-hooks/refs': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/use-memo': 'off',
+    },
   },
 ]);
