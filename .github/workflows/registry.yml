@@ -66,6 +66,7 @@ jobs:
 
       - name: 🔄 Update templates
         env:
+          TEMPLATE_LOCAL_PACKAGE_BASE_REF: origin/${{ github.base_ref }}
           TEMPLATE_SKIP_VERIFY: 'true'
         run: pnpm templates:update --local
 

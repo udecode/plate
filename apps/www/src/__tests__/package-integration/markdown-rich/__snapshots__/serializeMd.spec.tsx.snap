@@ -64,6 +64,8 @@ Text with custom line height
 
 <video src="https://example.com/video.mp4" />
 
+<media_embed src="https://www.youtube.com/watch?v=example" />
+
 <column_group layout="[50,50]">
   <column width="50%">
     Left column
@@ -76,7 +78,7 @@ Text with custom line height
 
 Mention: [User](mention:User)
 
-Date: <date>2024-01-01</date>
+Date: <date value="2024-01-01" />
 
 Text with <mark>highlight</mark> and <u>underline</u> and <kbd>keyboard</kbd> formatting
 

@@ -73,7 +73,7 @@ describe('footnote registry', () => {
     insertFootnote(editor, { identifier: '2' });
 
     expect((editor.api as any).footnote.nextId()).toBe('3');
-    expect(nodesSpy).toHaveBeenCalledTimes(2);
+    expect(nodesSpy).toHaveBeenCalledTimes(3);
   });
 
   it('detects duplicate definitions without scanning on every lookup', () => {

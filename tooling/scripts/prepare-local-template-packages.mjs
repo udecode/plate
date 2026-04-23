@@ -468,8 +468,13 @@ function toPosixPath(filePath) {
 }
 
 export {
+  buildWorkspacePackages,
   getAffectedRelevantPackageNames,
+  getChangedWorkspacePackageNames,
   getPackagesToPrepare,
   getReachableWorkspacePackageNames,
+  getWorkspacePackages,
+  localPackageOutputDir,
+  packWorkspacePackage,
   rewriteTemplatePackageJson,
 };
