@@ -1157,6 +1157,27 @@ export const Index: Record<string, any> = {
     }),
     meta: {"docs":[{"route":"/docs/font"}],"examples":["font-demo"]},
   },
+  "footnote-node": {
+    name: "footnote-node",
+    description: "Inline footnote references, definitions, and input UI.",
+    type: "registry:ui",
+    registryDependencies: ["@shadcn/button","@shadcn/command","@shadcn/hover-card","@shadcn/popover","https://platejs.org/r/inline-combobox.json"],
+    files: [{
+      path: "src/registry/ui/footnote-node.tsx",
+      type: "registry:ui",
+      target: ""
+    },{
+      path: "src/registry/ui/footnote-node-static.tsx",
+      type: "registry:ui",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/ui/footnote-node.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: {"docs":[{"route":"/docs/footnote"}],"examples":["footnote-demo"]},
+  },
   "heading-node": {
     name: "heading-node",
     description: "A heading with multiple level support.",
@@ -1727,6 +1748,23 @@ export const Index: Record<string, any> = {
     }),
     meta: undefined,
   },
+  "footnote-base-kit": {
+    name: "footnote-base-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/footnote-node.json"],
+    files: [{
+      path: "src/registry/components/editor/plugins/footnote-base-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/footnote-base-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
   "excalidraw-kit": {
     name: "excalidraw-kit",
     description: "",
@@ -1952,7 +1990,7 @@ export const Index: Record<string, any> = {
     name: "editor-base-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/align-base-kit.json","https://platejs.org/r/basic-blocks-base-kit.json","https://platejs.org/r/basic-marks-base-kit.json","https://platejs.org/r/callout-base-kit.json","https://platejs.org/r/code-block-base-kit.json","https://platejs.org/r/code-drawing-base-kit.json","https://platejs.org/r/column-base-kit.json","https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/date-base-kit.json","https://platejs.org/r/font-base-kit.json","https://platejs.org/r/line-height-base-kit.json","https://platejs.org/r/link-base-kit.json","https://platejs.org/r/list-base-kit.json","https://platejs.org/r/math-base-kit.json","https://platejs.org/r/media-base-kit.json","https://platejs.org/r/mention-base-kit.json","https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/table-base-kit.json","https://platejs.org/r/toc-base-kit.json","https://platejs.org/r/toggle-base-kit.json","https://platejs.org/r/markdown-kit.json"],
+    registryDependencies: ["https://platejs.org/r/editor.json","https://platejs.org/r/align-base-kit.json","https://platejs.org/r/basic-blocks-base-kit.json","https://platejs.org/r/basic-marks-base-kit.json","https://platejs.org/r/callout-base-kit.json","https://platejs.org/r/code-block-base-kit.json","https://platejs.org/r/code-drawing-base-kit.json","https://platejs.org/r/column-base-kit.json","https://platejs.org/r/comment-base-kit.json","https://platejs.org/r/date-base-kit.json","https://platejs.org/r/footnote-base-kit.json","https://platejs.org/r/font-base-kit.json","https://platejs.org/r/line-height-base-kit.json","https://platejs.org/r/link-base-kit.json","https://platejs.org/r/list-base-kit.json","https://platejs.org/r/math-base-kit.json","https://platejs.org/r/media-base-kit.json","https://platejs.org/r/mention-base-kit.json","https://platejs.org/r/suggestion-base-kit.json","https://platejs.org/r/table-base-kit.json","https://platejs.org/r/toc-base-kit.json","https://platejs.org/r/toggle-base-kit.json","https://platejs.org/r/markdown-kit.json"],
     files: [{
       path: "src/registry/components/editor/editor-base-kit.tsx",
       type: "registry:component",
@@ -2343,7 +2381,7 @@ export const Index: Record<string, any> = {
     name: "editor-kit",
     description: "",
     type: "registry:component",
-    registryDependencies: ["https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/code-drawing-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/excalidraw-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/toggle-kit.json"],
+    registryDependencies: ["https://platejs.org/r/editor-base-kit.json","https://platejs.org/r/ai-kit.json","https://platejs.org/r/align-kit.json","https://platejs.org/r/autoformat-kit.json","https://platejs.org/r/basic-nodes-kit.json","https://platejs.org/r/block-menu-kit.json","https://platejs.org/r/block-placeholder-kit.json","https://platejs.org/r/callout-kit.json","https://platejs.org/r/code-block-kit.json","https://platejs.org/r/code-drawing-kit.json","https://platejs.org/r/column-kit.json","https://platejs.org/r/comment-kit.json","https://platejs.org/r/cursor-overlay-kit.json","https://platejs.org/r/date-kit.json","https://platejs.org/r/discussion-kit.json","https://platejs.org/r/dnd-kit.json","https://platejs.org/r/docx-kit.json","https://platejs.org/r/emoji-kit.json","https://platejs.org/r/excalidraw-kit.json","https://platejs.org/r/exit-break-kit.json","https://platejs.org/r/fixed-toolbar-kit.json","https://platejs.org/r/floating-toolbar-kit.json","https://platejs.org/r/footnote-kit.json","https://platejs.org/r/font-kit.json","https://platejs.org/r/line-height-kit.json","https://platejs.org/r/link-kit.json","https://platejs.org/r/list-kit.json","https://platejs.org/r/markdown-kit.json","https://platejs.org/r/math-kit.json","https://platejs.org/r/media-kit.json","https://platejs.org/r/mention-kit.json","https://platejs.org/r/slash-kit.json","https://platejs.org/r/suggestion-kit.json","https://platejs.org/r/table-kit.json","https://platejs.org/r/toc-kit.json","https://platejs.org/r/toggle-kit.json"],
     files: [{
       path: "src/registry/components/editor/editor-kit.tsx",
       type: "registry:component",
@@ -2453,6 +2491,23 @@ export const Index: Record<string, any> = {
     }],
     component: React.lazy(async () => {
       const mod = await import("@/registry/components/editor/plugins/floating-toolbar-classic-kit.tsx")
+      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
+      return { default: mod.default || mod[exportName] }
+    }),
+    meta: undefined,
+  },
+  "footnote-kit": {
+    name: "footnote-kit",
+    description: "",
+    type: "registry:component",
+    registryDependencies: ["https://platejs.org/r/footnote-node.json"],
+    files: [{
+      path: "src/registry/components/editor/plugins/footnote-kit.tsx",
+      type: "registry:component",
+      target: ""
+    }],
+    component: React.lazy(async () => {
+      const mod = await import("@/registry/components/editor/plugins/footnote-kit.tsx")
       const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
       return { default: mod.default || mod[exportName] }
     }),

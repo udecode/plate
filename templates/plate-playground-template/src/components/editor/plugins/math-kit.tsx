@@ -1,5 +1,6 @@
 'use client';
 
+import { MathRules } from '@platejs/math';
 import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
 
 import {
@@ -8,6 +9,16 @@ import {
 } from '@/components/ui/equation-node';
 
 export const MathKit = [
-  InlineEquationPlugin.withComponent(InlineEquationElement),
-  EquationPlugin.withComponent(EquationElement),
+  InlineEquationPlugin.configure({
+    inputRules: [MathRules.markdown({ variant: '$' })],
+    node: {
+      component: InlineEquationElement,
+    },
+  }),
+  EquationPlugin.configure({
+    inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+    node: {
+      component: EquationElement,
+    },
+  }),
 ];
