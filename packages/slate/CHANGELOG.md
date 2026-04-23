@@ -1,5 +1,11 @@
 # @udecode/slate
 
+## 53.0.0
+
+### Patch Changes
+
+- [`081cbe9`](https://github.com/udecode/plate/commit/081cbe92d2284fd6f1b6babc7134405fe7e957c6) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate`, `slate-dom`.
+
 ## 52.3.21
 
 ### Patch Changes

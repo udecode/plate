@@ -1,5 +1,13 @@
 # @platejs/media
 
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Support allowlisted Twitter/X embed snippet extraction in media embed URL transforms
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Normalize supported media embeds into canonical provider metadata and preserve source URLs for embed editing
+
 ## 52.3.10
 
 ### Patch Changes

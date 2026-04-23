@@ -1,5 +1,11 @@
 # @platejs/date
 
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Store date nodes as canonical `YYYY-MM-DD` values and preserve unparseable legacy text as fallback data
+
 ## 52.3.10
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@platejs/code-drawing",
-  "version": "52.3.10",
+  "version": "53.0.0",
   "description": "Code drawing plugin for Plate (PlantUml, Graphviz, Flowchart, Mermaid)",
   "keywords": [
     "plate",
@@ -65,7 +65,7 @@
     "platejs": "workspace:^"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.11",
+    "platejs": ">=53.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },
