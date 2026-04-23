@@ -170,6 +170,31 @@ describe('normalizeListStart', () => {
       expect(editor.children).toEqual(output);
     });
 
+    it('honors listRestart on an ordered item following an unordered interruption', () => {
+      const input = [
+        createItem('one'),
+        createItem('two'),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('five', { listRestart: 5 }),
+        createItem('six'),
+      ];
+
+      const output = [
+        createItem('one'),
+        createItem('two', { listStart: 2 }),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('five', { listRestart: 5, listStart: 5 }),
+        createItem('six', { listStart: 6 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
     it('removes listStart from the first items', () => {
       const input = [
         createItem('one', { listStart: 1 }),
