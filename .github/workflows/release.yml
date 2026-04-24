@@ -23,6 +23,85 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🔎 Detect auto-release opt-in
+        id: auto_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { pathToFileURL } = await import('node:url');
+            const helperUrl = pathToFileURL(
+              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
+            ).href;
+            const { hasChangesetFile, isAutoReleaseChecked } = await import(helperUrl);
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pullNumbers = new Set();
+
+            const { data: associatedPullRequests } =
+              await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner,
+                repo,
+                commit_sha: context.sha,
+              });
+
+            for (const pullRequest of associatedPullRequests) {
+              pullNumbers.add(pullRequest.number);
+            }
+
+            const headCommitMessage = context.payload.head_commit?.message ?? '';
+            for (const match of headCommitMessage.matchAll(/\(#(\d+)\)|#(\d+)/g)) {
+              const pullNumber = Number(match[1] ?? match[2]);
+
+              if (pullNumber) pullNumbers.add(pullNumber);
+            }
+
+            for (const pullNumber of pullNumbers) {
+              let pullRequest;
+
+              try {
+                const { data } = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: pullNumber,
+                });
+
+                pullRequest = data;
+              } catch (error) {
+                core.warning(`Could not read PR #${pullNumber}: ${error.message}`);
+                continue;
+              }
+
+              if (!pullRequest.merged_at) {
+                core.info(`Skipping PR #${pullRequest.number}; it is not merged.`);
+                continue;
+              }
+
+              if (!isAutoReleaseChecked(pullRequest.body ?? '')) {
+                core.info(`Skipping PR #${pullRequest.number}; auto-release is unchecked.`);
+                continue;
+              }
+
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: pullRequest.number,
+                per_page: 100,
+              });
+
+              if (!hasChangesetFile(files)) {
+                core.info(`Skipping PR #${pullRequest.number}; no changeset file found.`);
+                continue;
+              }
+
+              core.setOutput('enabled', 'true');
+              core.setOutput('source_pr', String(pullRequest.number));
+              core.notice(`Auto-release enabled by PR #${pullRequest.number}.`);
+              return;
+            }
+
+            core.setOutput('enabled', 'false');
+
       - name: ♻️ Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -46,8 +125,23 @@ jobs:
         env:
           HOME: ${{ github.workspace }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 🤖 Enable auto-merge for Version Packages PR
+        if: ${{ steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+          RELEASE_PR: ${{ steps.changesets.outputs.pullRequestNumber }}
+          SOURCE_PR: ${{ steps.auto_release.outputs.source_pr }}
+        run: |
+          if [[ -z "${GH_TOKEN}" ]]; then
+            echo "API_TOKEN_GITHUB is required so the auto-merged release PR can trigger publish workflows."
+            exit 1
+          fi
+
+          gh pr merge "$RELEASE_PR" --auto --squash --delete-branch
+          gh pr comment "$RELEASE_PR" --body "Auto-merge enabled because PR #${SOURCE_PR} checked auto release."
 
   sync-release-artifacts:
     name: Sync registry and templates after publish

@@ -23,6 +23,7 @@ Remove or neutralize `js-video-url-parser` CVE-2026-5986 exposure from `@platejs
 4. [complete] Add changeset.
 5. [complete] Verify with targeted tests, build-first typecheck, lint, and PR gate if shipping PR.
 6. [complete] Evaluate reusable knowledge for `ce-compound`.
+7. [complete] Add auto-release opt-in for changeset PRs.
 
 ## Findings
 
@@ -47,3 +48,9 @@ Remove or neutralize `js-video-url-parser` CVE-2026-5986 exposure from `@platejs
 - Verified `pnpm lint:fix`.
 - Verified `pnpm check` before compound doc creation.
 - Added `docs/solutions/security-issues/2026-04-24-media-video-url-parser-redos.md`.
+- User asked to add a checkbox that auto-merges the follow-up Version Packages PR.
+- Chosen design: PR-body checkbox for author intent; release workflow reads the merged PR and enables auto-merge on the generated release PR.
+- Added shared helper coverage for detecting changeset PRs, preserving the managed checkbox state, and ignoring stray checkbox text outside the managed block.
+- Added `.github/workflows/changeset-auto-release.yml` to keep the checkbox present on changeset PRs.
+- Updated `.github/workflows/release.yml` to detect checked merged PRs and enable auto-merge on `[Release] Version packages`.
+- Verified `bun test tooling/scripts/auto-release-pr.test.mjs`, `node --check`, `git diff --check`, YAML parsing, `pnpm lint:fix`, and `pnpm check`.
