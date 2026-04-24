@@ -1455,9 +1455,6 @@ importers:
 
   packages/media:
     dependencies:
-      js-video-url-parser:
-        specifier: ^0.5.1
-        version: 0.5.1
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -7558,9 +7555,6 @@ packages:
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-
-  js-video-url-parser@0.5.1:
-    resolution: {integrity: sha512-/vwqT67k0AyIGMHAvSOt+n4JfrZWF7cPKgKswDO35yr27GfW4HtjpQVlTx6JLF45QuPm8mkzFHkZgFVnFm4x/w==}
 
   js-yaml@3.14.1:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
@@ -16678,8 +16672,6 @@ snapshots:
       react: 19.2.4
 
   js-tokens@4.0.0: {}
-
-  js-video-url-parser@0.5.1: {}
 
   js-yaml@3.14.1:
     dependencies:

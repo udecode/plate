@@ -40,7 +40,6 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "js-video-url-parser": "^0.5.1",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {
