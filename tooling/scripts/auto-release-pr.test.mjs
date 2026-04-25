@@ -24,28 +24,26 @@ test('adds an unchecked auto-release block to changeset PRs', () => {
 
   assert.equal(
     body,
-    `## Summary
-Fix media parser.
-
-${AUTO_RELEASE_START}
-**Auto release**
-- [ ] Auto-merge the Version Packages PR after this PR lands.
+    `${AUTO_RELEASE_START}
+- [ ] Auto release
 ${AUTO_RELEASE_END}
+
+## Summary
+Fix media parser.
 `
   );
 });
 
 test('preserves a checked auto-release block', () => {
   const body = `${AUTO_RELEASE_START}
-**Auto release**
-- [x] Auto-merge the Version Packages PR after this PR lands.
+- [x] Auto release
 ${AUTO_RELEASE_END}
 `;
 
   const nextBody = upsertAutoReleaseBlock(body, { hasChangeset: true });
 
   assert.equal(isAutoReleaseChecked(nextBody), true);
-  assert.match(nextBody, /- \[x\] Auto-merge/);
+  assert.match(nextBody, /- \[x\] Auto release/);
 });
 
 test('removes the auto-release block when a PR has no changeset', () => {
@@ -53,8 +51,7 @@ test('removes the auto-release block when a PR has no changeset', () => {
 Docs only.
 
 ${AUTO_RELEASE_START}
-**Auto release**
-- [x] Auto-merge the Version Packages PR after this PR lands.
+- [x] Auto release
 ${AUTO_RELEASE_END}
 `;
 
@@ -65,10 +62,20 @@ ${AUTO_RELEASE_END}
 });
 
 test('only treats the managed checkbox as release intent', () => {
-  assert.equal(
-    isAutoReleaseChecked(
-      '- [x] Auto-merge the Version Packages PR after this PR lands.'
-    ),
-    false
-  );
+  assert.equal(isAutoReleaseChecked('- [x] Auto release'), false);
+});
+
+test('keeps old checked blocks checked while rewriting the label', () => {
+  const body = `${AUTO_RELEASE_START}
+- [x] Auto-merge the Version Packages PR after this PR lands.
+${AUTO_RELEASE_END}
+
+## Summary
+Fix media parser.
+`;
+
+  const nextBody = upsertAutoReleaseBlock(body, { hasChangeset: true });
+
+  assert.match(nextBody, /- \[x\] Auto release/);
+  assert.doesNotMatch(nextBody, /Version Packages/);
 });

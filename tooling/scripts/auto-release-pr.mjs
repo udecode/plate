@@ -1,13 +1,13 @@
 export const AUTO_RELEASE_START = '<!-- plate:auto-release:start -->';
 export const AUTO_RELEASE_END = '<!-- plate:auto-release:end -->';
 
-const checkboxText = 'Auto-merge the Version Packages PR after this PR lands.';
+const checkboxText = 'Auto release';
 const blockPattern = new RegExp(
   `${escapeRegExp(AUTO_RELEASE_START)}[\\s\\S]*?${escapeRegExp(AUTO_RELEASE_END)}\\n*`,
   'm'
 );
 const checkedAutoReleasePattern =
-  /-\s*\[[xX]\]\s*Auto-merge the Version Packages PR after this PR lands\./;
+  /-\s*\[[xX]\]\s*(?:Auto release|Auto-merge the Version Packages PR after this PR lands\.)/;
 
 export function hasChangesetFile(files) {
   return files.some((file) => {
@@ -37,11 +37,10 @@ export function upsertAutoReleaseBlock(body, { hasChangeset }) {
   const checked = isAutoReleaseChecked(body);
   const checkbox = `- [${checked ? 'x' : ' '}] ${checkboxText}`;
   const block = `${AUTO_RELEASE_START}
-**Auto release**
 ${checkbox}
 ${AUTO_RELEASE_END}`;
 
-  return `${bodyWithoutBlock}${bodyWithoutBlock ? '\n\n' : ''}${block}\n`;
+  return `${block}${bodyWithoutBlock ? `\n\n${bodyWithoutBlock}` : ''}\n`;
 }
 
 function getAutoReleaseBlock(body) {
