@@ -1,6 +1,8 @@
 name: Changeset Auto Release Checkbox
 
 on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
   pull_request_target:
     types: [opened, reopened, synchronize, edited]
 
@@ -12,13 +14,25 @@ jobs:
   sync-auto-release-checkbox:
     name: Sync auto-release checkbox
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'udecode/plate' }}
+    if: >-
+      github.repository == 'udecode/plate' &&
+      (
+        (github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository) ||
+        (github.event_name == 'pull_request_target' &&
+          github.event.pull_request.head.repo.full_name != github.repository)
+      )
 
     steps:
-      - name: 📥 Checkout base
+      - name: 📥 Checkout workflow helper
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: >-
+            ${{
+              github.event_name == 'pull_request'
+                && github.event.pull_request.head.sha
+                || github.event.repository.default_branch
+            }}
           persist-credentials: false
 
       - name: 🔁 Sync auto-release checkbox
