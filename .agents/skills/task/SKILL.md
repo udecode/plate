@@ -395,6 +395,24 @@ Apply this section only when the task came from a tracker item and reached a mea
 
 ### Pull Request
 
+- If the PR contains any real `.changeset/*.md` file, put the managed auto-release block at the very top of the PR description yourself. Do not wait for CI to add it.
+- Use this exact checked block when every changeset frontmatter entry is `patch`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [x] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- Use this exact unchecked block when any changeset frontmatter entry is `minor` or `major`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [ ] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- If the PR has no real `.changeset/*.md` file, omit the auto-release block.
 - When a PR exists, the PR description must match the exact current final handoff from chat:
   - same flow table
   - same metadata lines, except omit the leading `🔀 PR ...` line because the PR page already identifies itself
