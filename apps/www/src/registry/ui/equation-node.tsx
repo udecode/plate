@@ -28,10 +28,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  getElementSuggestionData,
-  getInlineElementSuggestionClassName,
-} from '@/registry/ui/suggestion-node';
+import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();
@@ -101,11 +98,10 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
   );
 }
 
-export function InlineEquationElement(
-  props: PlateElementProps<TEquationElement>
-) {
-  const element = props.element;
-  const suggestionData = getElementSuggestionData(props.editor, element);
+export function InlineEquationElement({
+  element,
+  ...props
+}: PlateElementProps<TEquationElement>) {
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(
@@ -142,6 +138,7 @@ export function InlineEquationElement(
       className={cn(
         'mx-1 inline-block select-none rounded-sm [&_.katex-display]:my-0!'
       )}
+      element={element}
     >
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
@@ -149,13 +146,14 @@ export function InlineEquationElement(
             className={cn(
               'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
-              getInlineElementSuggestionClassName(suggestionData),
+              inlineSuggestionDataClassName,
               ((element.texExpression.length > 0 && open) || selected) &&
                 'after:bg-brand/15',
               element.texExpression.length === 0 &&
                 'text-muted-foreground after:bg-neutral-500/10'
             )}
             contentEditable={false}
+            data-slot="inline-equation-trigger"
           >
             <span
               ref={katexRef}

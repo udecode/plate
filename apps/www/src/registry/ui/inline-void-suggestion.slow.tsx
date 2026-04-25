@@ -71,6 +71,12 @@ mock.module('@platejs/mention', () => ({
   getMentionOnSelectItem: () => () => {},
 }));
 
+mock.module('@platejs/link', () => ({
+  getLinkAttributes: () => ({
+    href: 'https://example.com',
+  }),
+}));
+
 mock.module('@platejs/selection/react', () => ({
   BlockSelectionPlugin: { key: 'blockSelection' },
 }));
@@ -126,20 +132,6 @@ mock.module('./inline-combobox', () => ({
 }));
 
 describe('inline void suggestion styling', () => {
-  const removeSuggestion = {
-    createdAt: 0,
-    id: 's1',
-    type: 'remove',
-    userId: 'alice',
-  } as const;
-
-  const insertSuggestion = {
-    createdAt: 0,
-    id: 's2',
-    type: 'insert',
-    userId: 'alice',
-  } as const;
-
   const editor = {
     getApi: () => ({
       suggestion: {
@@ -198,12 +190,11 @@ describe('inline void suggestion styling', () => {
 
     const view = render(
       <MentionElement
-        attributes={{}}
+        attributes={{ 'data-inline-suggestion': 'remove' }}
         editor={editor}
         element={
           {
             children: [{ text: '' }],
-            suggestion: removeSuggestion,
             type: 'mention',
             value: 'Ada',
           } as any
@@ -215,27 +206,47 @@ describe('inline void suggestion styling', () => {
 
     expect(
       view.container.querySelector('[data-testid="plate-element"]')?.className
-    ).toContain('bg-red-100');
+    ).toContain('in-data-[inline-suggestion=remove]:bg-red-100!');
   });
 
-  it('styles date insert suggestions when inline suggestion data lives on the child text', async () => {
+  it('styles link suggestions through injected inline suggestion data', async () => {
+    const { LinkElement } = await import(
+      `./link-node?test=${Math.random().toString(36).slice(2)}`
+    );
+
+    const view = render(
+      <LinkElement
+        attributes={{ 'data-inline-suggestion': 'insert' }}
+        editor={editor}
+        element={
+          {
+            children: [{ text: 'Docs' }],
+            type: 'link',
+            url: 'https://example.com',
+          } as any
+        }
+      >
+        Docs
+      </LinkElement>
+    );
+
+    expect(
+      view.container.querySelector('[data-testid="plate-element"]')?.className
+    ).toContain('in-data-[inline-suggestion=insert]:bg-emerald-100!');
+  });
+
+  it('marks the date trigger with a stable slot and ancestor-aware suggestion variants', async () => {
     const { DateElement } = await import(
       `./date-node?test=${Math.random().toString(36).slice(2)}`
     );
 
     const view = render(
       <DateElement
-        attributes={{}}
+        attributes={{ 'data-inline-suggestion': 'insert' }}
         editor={editor}
         element={
           {
-            children: [
-              {
-                suggestion: true,
-                suggestion_1: insertSuggestion,
-                text: '',
-              },
-            ],
+            children: [{ text: '' }],
             date: '2026-04-13',
             type: 'date',
           } as any
@@ -243,15 +254,20 @@ describe('inline void suggestion styling', () => {
       />
     );
 
-    expect(
-      view.container.querySelector('[draggable="true"]')?.className
-    ).toContain('bg-emerald-100');
+    const trigger = view.container.querySelector('[data-slot="date-trigger"]');
+
+    expect(trigger?.className).toContain(
+      'in-data-[inline-suggestion=insert]:bg-emerald-100!'
+    );
+    expect(trigger?.className).toContain(
+      'in-data-[inline-suggestion=remove]:bg-red-100!'
+    );
+    expect(trigger?.getAttribute('draggable')).toBe('true');
   });
 
   it('styles inline equation remove suggestions', async () => {
     const element = {
       children: [{ text: '' }],
-      suggestion: removeSuggestion,
       texExpression: 'E = mc^2',
       type: 'inline_equation',
     } as any;
@@ -263,13 +279,18 @@ describe('inline void suggestion styling', () => {
     );
 
     const view = render(
-      <InlineEquationElement attributes={{}} editor={editor} element={element}>
+      <InlineEquationElement
+        attributes={{ 'data-inline-suggestion': 'remove' }}
+        editor={editor}
+        element={element}
+      >
         {null}
       </InlineEquationElement>
     );
 
     expect(
-      view.container.querySelector('[contenteditable="false"]')?.className
-    ).toContain('bg-red-100');
+      view.container.querySelector('[data-slot="inline-equation-trigger"]')
+        ?.className
+    ).toContain('in-data-[inline-suggestion=remove]:bg-red-100!');
   });
 });

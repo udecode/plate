@@ -3547,7 +3547,6 @@
         "https://platejs.org/r/suggestion-kit.json",
         "https://platejs.org/r/table-kit.json",
         "https://platejs.org/r/toc-kit.json",
-        "https://platejs.org/r/trailing-block-kit.json",
         "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [
@@ -3879,19 +3878,6 @@
       ]
     },
     {
-      "name": "trailing-block-kit",
-      "type": "registry:component",
-      "dependencies": [
-        "@platejs/suggestion"
-      ],
-      "files": [
-        {
-          "path": "src/registry/components/editor/plugins/trailing-block-kit.tsx",
-          "type": "registry:component"
-        }
-      ]
-    },
-    {
       "name": "tabbable-kit",
       "type": "registry:component",
       "dependencies": [
@@ -4194,7 +4180,6 @@
         "https://platejs.org/r/suggestion-kit.json",
         "https://platejs.org/r/table-kit.json",
         "https://platejs.org/r/toc-kit.json",
-        "https://platejs.org/r/trailing-block-kit.json",
         "https://platejs.org/r/toggle-kit.json"
       ],
       "files": [

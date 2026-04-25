@@ -12,24 +12,25 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import {
-  getElementSuggestionData,
-  getInlineElementSuggestionClassName,
-} from '@/registry/ui/suggestion-node';
+import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
 
-export function DateElement(props: PlateElementProps<TDateElement>) {
-  const { editor, element } = props;
-  const suggestionData = getElementSuggestionData(editor, element);
-
+export function DateElement({
+  attributes,
+  children,
+  editor,
+  element,
+  ...props
+}: PlateElementProps<TDateElement>) {
   const readOnly = useReadOnly();
 
   const trigger = (
     <span
       className={cn(
         'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
-        getInlineElementSuggestionClassName(suggestionData)
+        inlineSuggestionDataClassName
       )}
       contentEditable={false}
+      data-slot="date-trigger"
       draggable
     >
       {element.date ? (
@@ -64,38 +65,40 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
     </span>
   );
 
-  if (readOnly) {
-    return trigger;
-  }
-
   return (
     <PlateElement
-      {...props}
       className="inline-block"
       attributes={{
-        ...props.attributes,
+        ...attributes,
         contentEditable: false,
       }}
+      editor={editor}
+      element={element}
+      {...props}
     >
-      <Popover>
-        <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            selected={new Date(element.date as string)}
-            onSelect={(date) => {
-              if (!date) return;
+      {readOnly ? (
+        trigger
+      ) : (
+        <Popover>
+          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              selected={new Date(element.date as string)}
+              onSelect={(date) => {
+                if (!date) return;
 
-              editor.tf.setNodes(
-                { date: date.toDateString() },
-                { at: element }
-              );
-            }}
-            mode="single"
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-      {props.children}
+                editor.tf.setNodes(
+                  { date: date.toDateString() },
+                  { at: element }
+                );
+              }}
+              mode="single"
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      )}
+      {children}
     </PlateElement>
   );
 }

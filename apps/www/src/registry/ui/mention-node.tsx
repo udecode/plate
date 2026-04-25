@@ -16,10 +16,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
-import {
-  getElementSuggestionData,
-  getInlineElementSuggestionClassName,
-} from '@/registry/ui/suggestion-node';
+import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
 
 import {
   InlineCombobox,
@@ -30,14 +27,15 @@ import {
   InlineComboboxItem,
 } from './inline-combobox';
 
-export function MentionElement(
-  props: PlateElementProps<TMentionElement> & {
-    prefix?: string;
-  }
-) {
-  const element = props.element;
-  const suggestionData = getElementSuggestionData(props.editor, element);
-
+export function MentionElement({
+  attributes,
+  children,
+  element,
+  prefix,
+  ...props
+}: PlateElementProps<TMentionElement> & {
+  prefix?: string;
+}) {
   const selected = useSelected();
   const focused = useFocused();
   const mounted = useMounted();
@@ -48,7 +46,7 @@ export function MentionElement(
       {...props}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
-        getInlineElementSuggestionClassName(suggestionData),
+        inlineSuggestionDataClassName,
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring',
         element.children[0][KEYS.bold] === true && 'font-bold',
@@ -56,25 +54,26 @@ export function MentionElement(
         element.children[0][KEYS.underline] === true && 'underline'
       )}
       attributes={{
-        ...props.attributes,
+        ...attributes,
         contentEditable: false,
         'data-slate-value': element.value,
         draggable: true,
       }}
+      element={element}
     >
       {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
         <>
-          {props.children}
-          {props.prefix}
+          {children}
+          {prefix}
           {element.value}
         </>
       ) : (
         // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
         <>
-          {props.prefix}
+          {prefix}
           {element.value}
-          {props.children}
+          {children}
         </>
       )}
     </PlateElement>

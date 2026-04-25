@@ -39,6 +39,11 @@ export const voidRemoveSuggestionVariants = cva('', {
   },
 });
 
+export const inlineSuggestionDataClassName = cn(
+  'in-data-[inline-suggestion=insert]:bg-emerald-100! in-data-[inline-suggestion=insert]:text-emerald-700!',
+  'in-data-[inline-suggestion=remove]:bg-red-100! in-data-[inline-suggestion=remove]:text-red-700!'
+);
+
 export function getStaticElementSuggestionData(element: TElement) {
   const elementData = (element as TElement & { suggestion?: TSuggestionData })
     .suggestion;

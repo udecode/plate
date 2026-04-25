@@ -60,7 +60,6 @@ export const registryBlocks: Registry['items'] = [
       'suggestion-kit',
       'table-kit',
       'toc-kit',
-      'trailing-block-kit',
       'toggle-kit',
     ],
     type: 'registry:block',

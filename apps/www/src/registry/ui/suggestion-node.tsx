@@ -7,12 +7,11 @@ import { CornerDownLeftIcon } from 'lucide-react';
 import type {
   AnyPluginConfig,
   TElement,
-  TInlineSuggestionData,
   TSuggestionData,
   TSuggestionText,
   WithRequiredKey,
 } from 'platejs';
-import { KEYS, TextApi } from 'platejs';
+import { KEYS } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
@@ -25,10 +24,13 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 import { cn } from '@/lib/utils';
 import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
 import {
+  inlineSuggestionDataClassName as staticInlineSuggestionDataClassName,
   voidRemoveSuggestionOverlayVariants as staticVoidRemoveSuggestionOverlayVariants,
   voidRemoveSuggestionVariants as staticVoidRemoveSuggestionVariants,
 } from '@/registry/ui/suggestion-node-static';
 
+export const inlineSuggestionDataClassName =
+  staticInlineSuggestionDataClassName;
 export const voidRemoveSuggestionVariants = staticVoidRemoveSuggestionVariants;
 export const voidRemoveSuggestionOverlayVariants =
   staticVoidRemoveSuggestionOverlayVariants;
@@ -85,46 +87,11 @@ export function getBlockSuggestionWrapperClassName({
   );
 }
 
-export function getElementSuggestionData(
-  editor: PlateEditor,
-  element: TElement
-) {
-  const suggestionApi = editor.getApi(SuggestionPlugin).suggestion;
-  const data = suggestionApi.suggestionData(element) as
-    | TSuggestionData
-    | TInlineSuggestionData
-    | undefined;
-
-  if (data) return data;
-  if (typeof suggestionApi.dataList !== 'function') return;
-
-  for (const child of element.children) {
-    if (!TextApi.isText(child)) continue;
-
-    const childData = suggestionApi.dataList(child as TSuggestionText).at(-1);
-
-    if (childData) return childData;
-  }
-}
-
-export function getInlineElementSuggestionClassName(
-  suggestionData?: TInlineSuggestionData | TSuggestionData
-) {
-  if (!suggestionData) return '';
-
-  return suggestionVariants({
-    insertActive: false,
-    remove: suggestionData.type === 'remove',
-    removeActive: false,
-  })
-    .replace('bg-emerald-100', 'bg-emerald-100!')
-    .replace('text-emerald-700', 'text-emerald-700!')
-    .replace('bg-red-100', 'bg-red-100!')
-    .replace('text-red-700', 'text-red-700!');
-}
-
 export function isVoidRemoveSuggestion(editor: PlateEditor, element: TElement) {
-  return getElementSuggestionData(editor, element)?.type === 'remove';
+  return (
+    editor.getApi(SuggestionPlugin).suggestion.suggestionData(element)?.type ===
+    'remove'
+  );
 }
 
 export function VoidRemoveSuggestionOverlay({
