@@ -7,6 +7,7 @@ import {
   BaseTableRowPlugin,
 } from '../lib/BaseTablePlugin';
 import { onKeyDownTable } from './onKeyDownTable';
+import { onMouseDownTable } from './onMouseDownTable';
 
 export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin);
 
@@ -18,6 +19,7 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin);
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
   handlers: {
     onKeyDown: onKeyDownTable,
+    onMouseDown: onMouseDownTable,
   },
   plugins: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
 });
