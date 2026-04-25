@@ -12,6 +12,7 @@ const checkedAutoReleasePattern =
   /-\s*\[[xX]\]\s*(?:Auto release|Auto-merge the Version Packages PR after this PR lands\.)/;
 const changesetFrontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---/;
 const changesetReleaseTypePattern = /:\s*(major|minor|patch)\b/g;
+const versionPackagesTitlePattern = /\bVersion Packages\b/i;
 
 export function hasChangesetFile(files) {
   return files.some((file) => {
@@ -41,6 +42,14 @@ export function isAutoReleaseChecked(body = '') {
   const block = getAutoReleaseBlock(body);
 
   return checkedAutoReleasePattern.test(block);
+}
+
+export function isVersionPackagesTitle(title = '') {
+  return versionPackagesTitlePattern.test(title);
+}
+
+export function shouldManageAutoReleaseBlock({ files, title }) {
+  return !isVersionPackagesTitle(title) && hasChangesetFile(files);
 }
 
 export function upsertAutoReleaseBlock(

@@ -8,6 +8,7 @@ component: development_workflow
 symptoms:
   - Changeset PRs require a manual follow-up merge of the Version Packages PR.
   - Release intent is easy to miss when it only lives in chat or reviewer memory.
+  - Auto-merge can be enabled but stay blocked when a required check is skipped.
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
@@ -31,6 +32,7 @@ Changeset PRs create a follow-up `[Release] Version packages` PR after merge. Wh
 - Putting a static checkbox in the PR template would show up on every PR, including PRs with no changeset.
 - Adding only a comment would be easy to miss and harder to treat as the source of truth.
 - Auto-merging the release PR with the default `GITHUB_TOKEN` is risky because GitHub suppresses workflow runs triggered by that token, which can prevent the publish workflow from firing after the release PR merge.
+- Skipping CI for `[Release] Version packages` PRs leaves the required `CI` check skipped, so GitHub auto-merge stays blocked.
 
 ## Solution
 
@@ -42,6 +44,8 @@ Use a managed PR-body checkbox plus release workflow enforcement:
 4. In the release workflow, inspect the merged PR associated with the push to `main`.
 5. If the merged PR has a checked managed checkbox and a changeset file, enable auto-merge on the generated release PR.
 6. Use `API_TOKEN_GITHUB` for the merge path so the follow-up publish workflow can run.
+7. Do not add the managed checkbox to PRs whose title contains `Version packages`.
+8. Let required checks run on release PRs; a skipped required check is not a mergeable check.
 
 ```yaml
 env:
@@ -61,10 +65,14 @@ The PR body is the right place for human release intent because it is visible be
 
 Using the PAT is the critical bit. The release PR merge must create the normal push event that runs the publish path.
 
+Generated release PRs are the output of that intent, not a new decision point. They should not get their own `Auto release` checkbox. If branch rules require `CI`, release PRs need a successful `CI` run rather than a skipped one.
+
 ## Prevention
 
 - Keep dynamic release intent in a managed PR-body block, not only in comments.
 - Default low-risk patch release PRs to checked, but make `minor` and `major` releases an explicit opt-in.
+- Exclude PR titles containing `Version packages` from checkbox management.
+- Do not skip checks that branch rules require for release PR auto-merge.
 - For `pull_request_target`, only run trusted base-repo code and read untrusted PR data through the GitHub API.
 - Do not use default `GITHUB_TOKEN` for workflow-triggering release merges.
 - Add helper tests for checkbox preservation, changeset-file detection, and ignoring stray checkbox text outside the managed block.
