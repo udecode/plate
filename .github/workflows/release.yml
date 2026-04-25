@@ -128,7 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: 🤖 Enable auto-merge for Version Packages PR
+      - name: 🤖 Merge Version Packages PR
         if: ${{ steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
         env:
           GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
@@ -136,12 +136,12 @@ jobs:
           SOURCE_PR: ${{ steps.auto_release.outputs.source_pr }}
         run: |
           if [[ -z "${GH_TOKEN}" ]]; then
-            echo "API_TOKEN_GITHUB is required so the auto-merged release PR can trigger publish workflows."
+            echo "API_TOKEN_GITHUB is required so the merged release PR can trigger publish workflows."
             exit 1
           fi
 
-          gh pr merge "$RELEASE_PR" --auto --squash --delete-branch
-          gh pr comment "$RELEASE_PR" --body "Auto-merge enabled because PR #${SOURCE_PR} checked auto release."
+          gh pr comment "$RELEASE_PR" --body "Merging because PR #${SOURCE_PR} checked auto release."
+          gh pr merge "$RELEASE_PR" --squash --delete-branch --admin
 
   sync-release-artifacts:
     name: Sync registry and templates after publish

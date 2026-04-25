@@ -303,7 +303,8 @@ export default function MarkdownStreamingDemo() {
   const [selectedScenario, setSelectedScenario] =
     useState<keyof typeof testScenarios>('columns');
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const isPauseRef = useRef(false);
+  const pausedRef = useRef(false);
+  const [paused, setPaused] = useState(false);
   const streamSessionRef = useRef(0);
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const [streaming, setStreaming] = useState(false);
@@ -328,12 +329,17 @@ export default function MarkdownStreamingDemo() {
   const currentChunks = testScenarios[selectedScenario];
   const transformedCurrentChunks = transformedChunks(currentChunks);
 
+  const setPausedState = useCallback((nextPaused: boolean) => {
+    pausedRef.current = nextPaused;
+    setPaused(nextPaused);
+  }, []);
+
   const onStreaming = useCallback(async () => {
     setStreaming(true);
     streamSessionRef.current += 1;
     const sessionId = streamSessionRef.current;
 
-    isPauseRef.current = false;
+    setPausedState(false);
     setActiveIndex(0);
     // editor.tf.setValue([]);
 
@@ -342,7 +348,7 @@ export default function MarkdownStreamingDemo() {
     editor.setOption(AIChatPlugin, '_blockPath', null);
 
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
-      while (isPauseRef.current) {
+      while (pausedRef.current) {
         if (sessionId !== streamSessionRef.current) return;
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
@@ -366,16 +372,26 @@ export default function MarkdownStreamingDemo() {
       if (sessionId !== streamSessionRef.current) return;
     }
     setStreaming(false);
-  }, [editor, transformedCurrentChunks, speed]);
+  }, [editor, transformedCurrentChunks, speed, setPausedState]);
 
+  // eslint-disable-next-line react-hooks/immutability -- Static editor demo intentionally mutates editor.children during playback.
   const onStreamingStatic = useCallback(async () => {
     let output = '';
     setStreaming(true);
     streamSessionRef.current += 1;
+    const sessionId = streamSessionRef.current;
+    setPausedState(false);
 
     for (const chunk of transformedCurrentChunks) {
+      while (pausedRef.current) {
+        if (sessionId !== streamSessionRef.current) return;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      if (sessionId !== streamSessionRef.current) return;
+
       output += chunk.chunk;
-      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for streaming visualization
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for streaming visualization.
       editorStatic.children = deserializeMd(editorStatic, output);
       setActiveIndex((prev) => prev + 1);
       forceUpdate();
@@ -384,12 +400,12 @@ export default function MarkdownStreamingDemo() {
       );
     }
     setStreaming(false);
-  }, [editorStatic, speed, transformedCurrentChunks]);
+  }, [editorStatic, speed, transformedCurrentChunks, setPausedState]);
 
   const onReset = useCallback(() => {
     setActiveIndex(0);
     if (isPlateStatic) {
-      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for reset
+      // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for reset.
       editorStatic.children = [];
       forceUpdate();
     } else {
@@ -412,7 +428,7 @@ export default function MarkdownStreamingDemo() {
           output += chunk.chunk;
         }
 
-        // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for navigation
+        // eslint-disable-next-line react-hooks/immutability -- Demo component intentionally mutates static editor for navigation.
         editorStatic.children = deserializeMd(editorStatic, output);
         setActiveIndex(targetIndex);
         forceUpdate();
@@ -477,10 +493,10 @@ export default function MarkdownStreamingDemo() {
           </Button>
 
           <Button
+            // eslint-disable-next-line react-hooks/immutability -- Static editor playback mutates editor.children through onStreamingStatic.
             onClick={() => {
               if (streaming) {
-                isPauseRef.current = !isPauseRef.current;
-                forceUpdate();
+                setPausedState(!pausedRef.current);
               } else if (isPlateStatic) {
                 onStreamingStatic();
               } else {
@@ -488,7 +504,7 @@ export default function MarkdownStreamingDemo() {
               }
             }}
           >
-            {isPauseRef.current || !streaming ? <PlayIcon /> : <PauseIcon />}
+            {paused || !streaming ? <PlayIcon /> : <PauseIcon />}
           </Button>
 
           <Button onClick={onNext}>
