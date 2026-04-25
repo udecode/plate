@@ -3,6 +3,9 @@
  */
 
 export * from './BaseListPlugin';
+export * from './BulletedListRules';
+export * from './OrderedListRules';
+export * from './TaskListRules';
 export * from './types';
 export * from './withList';
 export * from './withNormalizeList';

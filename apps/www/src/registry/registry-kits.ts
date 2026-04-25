@@ -115,6 +115,18 @@ export const registryBaseKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
+    dependencies: ['@platejs/footnote'],
+    files: [
+      {
+        path: 'components/editor/plugins/footnote-base-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'footnote-base-kit',
+    registryDependencies: ['footnote-node'],
+    type: 'registry:component',
+  },
+  {
     dependencies: ['@platejs/excalidraw', '@excalidraw/excalidraw'],
     files: [
       {
@@ -294,6 +306,7 @@ export const registryBaseKits: Registry['items'] = [
       'column-base-kit',
       'comment-base-kit',
       'date-base-kit',
+      'footnote-base-kit',
       'font-base-kit',
       'line-height-base-kit',
       'link-base-kit',
@@ -345,11 +358,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/autoformat',
-      '@platejs/code-block',
-      '@platejs/list-classic',
-    ],
+    dependencies: ['@platejs/code-block', '@platejs/list-classic'],
     files: [
       {
         path: 'components/editor/plugins/autoformat-classic-kit.tsx',
@@ -361,11 +370,7 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      '@platejs/autoformat',
-      '@platejs/code-block',
-      '@platejs/list',
-    ],
+    dependencies: ['@platejs/code-block', '@platejs/list'],
     files: [
       {
         path: 'components/editor/plugins/autoformat-kit.tsx',
@@ -648,6 +653,7 @@ export const registryKits: Registry['items'] = [
       'exit-break-kit',
       'fixed-toolbar-kit',
       'floating-toolbar-kit',
+      'footnote-kit',
       'font-kit',
       'line-height-kit',
       'link-kit',
@@ -736,6 +742,18 @@ export const registryKits: Registry['items'] = [
       'floating-toolbar',
       'floating-toolbar-classic-buttons',
     ],
+    type: 'registry:component',
+  },
+  {
+    dependencies: ['@platejs/footnote'],
+    files: [
+      {
+        path: 'components/editor/plugins/footnote-kit.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'footnote-kit',
+    registryDependencies: ['footnote-node'],
     type: 'registry:component',
   },
   {
@@ -832,7 +850,13 @@ export const registryKits: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: ['@platejs/markdown', 'remark-gfm', 'remark-math'],
+    dependencies: [
+      '@platejs/footnote',
+      '@platejs/markdown',
+      'remark-emoji',
+      'remark-gfm',
+      'remark-math',
+    ],
     files: [
       {
         path: 'components/editor/plugins/markdown-kit.tsx',

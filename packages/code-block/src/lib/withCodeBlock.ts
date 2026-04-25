@@ -1,4 +1,9 @@
-import type { OverrideEditor, TCodeBlockElement, TElement } from 'platejs';
+import {
+  KEYS,
+  type OverrideEditor,
+  type TCodeBlockElement,
+  type TElement,
+} from 'platejs';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
@@ -13,7 +18,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
   const {
     editor,
     getOptions,
-    tf: { apply, insertBreak, resetBlock, selectAll, tab },
+    tf: { apply, deleteBackward, insertBreak, resetBlock, selectAll, tab },
     type,
   } = ctx;
 
@@ -70,6 +75,50 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
         if (apply()) return;
 
         insertBreak();
+      },
+      deleteBackward(unit) {
+        const apply = () => {
+          if (!editor.selection || editor.api.isExpanded()) return;
+
+          const res = getCodeLineEntry(editor, {});
+
+          if (!res) return;
+
+          const { codeLine } = res;
+          const [, codeLinePath] = codeLine;
+
+          if (!editor.api.isStart(editor.selection.anchor, codeLinePath))
+            return;
+
+          const previousCodeLine = editor.api.previous<TElement>({
+            at: codeLinePath,
+            match: { type: editor.getType(KEYS.codeLine) },
+          });
+
+          const codeLineText = editor.api.string(codeLinePath);
+
+          if (!previousCodeLine) {
+            if (codeLineText.length > 0) return true;
+
+            return;
+          }
+
+          if (codeLineText.length > 0) return;
+
+          const previousLineEnd = editor.api.end(previousCodeLine[1]);
+
+          editor.tf.removeNodes({ at: codeLinePath });
+
+          if (previousLineEnd) {
+            editor.tf.select(previousLineEnd);
+          }
+
+          return true;
+        };
+
+        if (apply()) return;
+
+        deleteBackward(unit);
       },
       resetBlock(options) {
         if (

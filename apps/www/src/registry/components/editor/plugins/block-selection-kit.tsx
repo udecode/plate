@@ -6,6 +6,18 @@ import { getPluginTypes, isHotkey, KEYS } from 'platejs';
 
 import { BlockSelection } from '@/registry/ui/block-selection';
 
+export const hasSelectableClass = ({
+  attributes,
+  className,
+}: {
+  attributes: { className?: string };
+  className?: string;
+}) =>
+  [className, attributes.className]
+    .filter(Boolean)
+    .join(' ')
+    .includes('slate-selectable');
+
 export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({
     options: {
@@ -22,8 +34,7 @@ export const BlockSelectionKit = [
     },
     render: {
       belowRootNodes: (props) => {
-        if (!props.attributes.className?.includes('slate-selectable'))
-          return null;
+        if (!hasSelectableClass(props)) return null;
 
         return <BlockSelection {...(props as any)} />;
       },

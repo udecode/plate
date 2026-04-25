@@ -4,5 +4,6 @@
 
 export * from './SlateReactExtensionPlugin';
 export * from './event-editor/index';
+export * from './navigation-feedback/index';
 export * from './paragraph/index';
 export * from './react/index';

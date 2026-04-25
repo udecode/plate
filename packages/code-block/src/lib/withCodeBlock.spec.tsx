@@ -57,6 +57,41 @@ describe('insert break', () => {
 
       expect(editor.children).toEqual(output.children);
     });
+
+    it('replaces an expanded selection with a code-local line split', () => {
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              ab
+              <anchor />
+              cd
+              <focus />
+              ef
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>ab</hcodeline>
+            <hcodeline>
+              <cursor />
+              ef
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createEditor({ input });
+
+      editor.tf.insertBreak();
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
   });
 });
 
@@ -89,6 +124,86 @@ describe('resetBlock', () => {
     editor.tf.resetBlock();
 
     expect(editor.children).toEqual(output.children);
+  });
+});
+
+describe('deleteBackward', () => {
+  it('keeps deleteBackward local at the start of a non-empty first code line', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <cursor />
+            aa
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createEditor({ input });
+
+    editor.tf.deleteBackward();
+
+    expect(editor.children).toEqual(input.children);
+    expect(editor.selection).toEqual(input.selection);
+  });
+
+  it('merges an empty non-first code line into the previous line', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>aa</hcodeline>
+          <hcodeline>
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            aa
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createEditor({ input });
+
+    editor.tf.deleteBackward();
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
+  });
+
+  it('unwraps an empty code block to a plain paragraph', () => {
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
+
+    const output = (
+      <editor>
+        <hp>
+          <cursor />
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createEditor({ input });
+
+    editor.tf.deleteBackward();
+
+    expect(editor.children).toEqual(output.children);
+    expect(editor.selection).toEqual(output.selection);
   });
 });
 

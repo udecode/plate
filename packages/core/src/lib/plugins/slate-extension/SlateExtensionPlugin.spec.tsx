@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { NodeApi } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
 
 jsxt;
@@ -310,9 +309,27 @@ describe('SlateExtensionPlugin', () => {
   });
 
   describe('performance optimization', () => {
-    it('does not capture state when no handlers are registered', () => {
+    it('skips change pipelines when no handlers are registered', async () => {
+      const pipeOnNodeChange = mock(() => false);
+      const pipeOnTextChange = mock(() => false);
+
+      mock.module('../../utils/pipeOnNodeChange', () => ({
+        pipeOnNodeChange,
+      }));
+      mock.module('../../utils/pipeOnTextChange', () => ({
+        pipeOnTextChange,
+      }));
+
+      const { SlateExtensionPlugin: DynamicSlateExtensionPlugin } =
+        await import(
+          `./SlateExtensionPlugin?test=${Math.random().toString(36).slice(2)}`
+        );
       const editor = createSlateEditor({
-        plugins: [SlateExtensionPlugin],
+        plugins: [DynamicSlateExtensionPlugin],
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        },
         value: [
           {
             children: [{ text: 'test' }],
@@ -320,26 +337,34 @@ describe('SlateExtensionPlugin', () => {
           },
         ],
       });
-
-      // Spy on NodeApi.get to ensure it's not called
-      const getSpy = spyOn(NodeApi, 'get');
-
-      // Insert text (no handlers registered)
       editor.tf.insertText('hello');
 
-      // NodeApi.get should not be called for state capture
-      expect(getSpy).not.toHaveBeenCalled();
+      expect(pipeOnNodeChange).not.toHaveBeenCalled();
+      expect(pipeOnTextChange).not.toHaveBeenCalled();
 
-      getSpy.mockRestore();
+      mock.restore();
     });
 
-    it('capture state when handlers are registered', () => {
+    it('runs change pipelines when handlers are registered', async () => {
+      const pipeOnNodeChange = mock(() => false);
+      const pipeOnTextChange = mock(() => false);
       const onTextChange = mock();
 
+      mock.module('../../utils/pipeOnNodeChange', () => ({
+        pipeOnNodeChange,
+      }));
+      mock.module('../../utils/pipeOnTextChange', () => ({
+        pipeOnTextChange,
+      }));
+
+      const { SlateExtensionPlugin: DynamicSlateExtensionPlugin } =
+        await import(
+          `./SlateExtensionPlugin?test=${Math.random().toString(36).slice(2)}`
+        );
       const editor = createSlateEditor({
         autoSelect: 'end',
         plugins: [
-          SlateExtensionPlugin.configure({
+          DynamicSlateExtensionPlugin.configure({
             options: {
               onTextChange,
             },
@@ -352,18 +377,12 @@ describe('SlateExtensionPlugin', () => {
           },
         ],
       });
-
-      // Spy on NodeApi.get to ensure it IS called
-      const getSpy = spyOn(NodeApi, 'get');
-
-      // Insert text (handler is registered)
       editor.tf.insertText('hello');
 
-      // NodeApi.get should be called for state capture
-      expect(getSpy).toHaveBeenCalled();
+      expect(pipeOnTextChange).toHaveBeenCalled();
       expect(onTextChange).toHaveBeenCalled();
 
-      getSpy.mockRestore();
+      mock.restore();
     });
   });
 });
@@ -542,5 +561,13 @@ describe('editor.tf.resetBlock', () => {
       type: 'p',
     });
     expect((editor.children[0] as any).foo).toBeUndefined();
+  });
+});
+
+describe('editor.tf.liftBlock', () => {
+  it('is available on the editor transform surface', () => {
+    const editor = createSlateEditor();
+
+    expect(typeof editor.tf.liftBlock).toBe('function');
   });
 });

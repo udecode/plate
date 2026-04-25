@@ -15,16 +15,16 @@ This package currently has:
 
 - zero runtime specs
 - nine non-React runtime files with score `10`
-- one huge orchestration hotspot in [BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts)
+- one huge orchestration hotspot in [BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts)
 
 ## Scope
 
-- [BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts)
-- [registry.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/registry.ts)
-- [hocuspocus-provider.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/hocuspocus-provider.ts)
-- [webrtc-provider.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/webrtc-provider.ts)
-- [withPlateYjs.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withPlateYjs.ts)
-- [slateToDeterministicYjsState.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.ts)
+- [BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts)
+- [registry.ts](packages/yjs/src/lib/providers/registry.ts)
+- [hocuspocus-provider.ts](packages/yjs/src/lib/providers/hocuspocus-provider.ts)
+- [webrtc-provider.ts](packages/yjs/src/lib/providers/webrtc-provider.ts)
+- [withPlateYjs.ts](packages/yjs/src/lib/withPlateYjs.ts)
+- [slateToDeterministicYjsState.ts](packages/yjs/src/utils/slateToDeterministicYjsState.ts)
 
 ## Explicit Non-Goals
 
@@ -44,8 +44,8 @@ This package currently has:
   - `BaseYjsPlugin` `init`, `connect`, `disconnect`, and `destroy`
   - `withPlateYjs` composition order and branch behavior
 - The README is not trustworthy as test source of truth. It talks about `providerConfigs`, `customProviders`, and `waitForAllProviders`, while the runtime source exposes `providers` and does not implement that README shape here. Tests should follow source, not docs fanfic.
-- [BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts) silently swallows provider creation failures. That may be defensible, or it may be a bug. Do not paper over it with fuzzy tests.
-- [slateToDeterministicYjsState.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.ts) uses `window.crypto.subtle` directly. In Bun this may be fine, but if it is not, that is a real compatibility seam worth testing and fixing.
+- [BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts) silently swallows provider creation failures. That may be defensible, or it may be a bug. Do not paper over it with fuzzy tests.
+- [slateToDeterministicYjsState.ts](packages/yjs/src/utils/slateToDeterministicYjsState.ts) uses `window.crypto.subtle` directly. In Bun this may be fine, but if it is not, that is a real compatibility seam worth testing and fixing.
 
 ## Test Strategy
 
@@ -67,11 +67,11 @@ This package currently has:
 Best first slice. Cheap, deterministic, high signal.
 
 - Files:
-  - [slateToDeterministicYjsState.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.ts)
-  - [registry.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/registry.ts)
+  - [slateToDeterministicYjsState.ts](packages/yjs/src/utils/slateToDeterministicYjsState.ts)
+  - [registry.ts](packages/yjs/src/lib/providers/registry.ts)
 - Add:
-  - [slateToDeterministicYjsState.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.spec.ts)
-  - [registry.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/registry.spec.ts)
+  - [slateToDeterministicYjsState.spec.ts](packages/yjs/src/utils/slateToDeterministicYjsState.spec.ts)
+  - [registry.spec.ts](packages/yjs/src/lib/providers/registry.spec.ts)
 - Cases:
   - same `guid` + same nodes produce bit-identical updates
   - different `guid` or nodes produce different updates
@@ -87,11 +87,11 @@ Best first slice. Cheap, deterministic, high signal.
 Second slice. Still cheap. Still real value.
 
 - Files:
-  - [hocuspocus-provider.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/hocuspocus-provider.ts)
-  - [webrtc-provider.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/webrtc-provider.ts)
+  - [hocuspocus-provider.ts](packages/yjs/src/lib/providers/hocuspocus-provider.ts)
+  - [webrtc-provider.ts](packages/yjs/src/lib/providers/webrtc-provider.ts)
 - Add:
-  - [hocuspocus-provider.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/hocuspocus-provider.spec.ts)
-  - [webrtc-provider.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/webrtc-provider.spec.ts)
+  - [hocuspocus-provider.spec.ts](packages/yjs/src/lib/providers/hocuspocus-provider.spec.ts)
+  - [webrtc-provider.spec.ts](packages/yjs/src/lib/providers/webrtc-provider.spec.ts)
 - Cases for Hocuspocus:
   - passes `doc` and `awareness` through when provided
   - creates websocket wrapper when `wsOptions` is present
@@ -117,9 +117,9 @@ Second slice. Still cheap. Still real value.
 Third slice. Worth it because this file contains real branching and composition, unlike the one-line wrappers under it.
 
 - File:
-  - [withPlateYjs.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withPlateYjs.ts)
+  - [withPlateYjs.ts](packages/yjs/src/lib/withPlateYjs.ts)
 - Add:
-  - [withPlateYjs.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withPlateYjs.spec.ts)
+  - [withPlateYjs.spec.ts](packages/yjs/src/lib/withPlateYjs.spec.ts)
 - Cases:
   - chooses `sharedType` from options when provided
   - falls back to `ydoc.get('content', Y.XmlText)` when no custom shared type exists
@@ -129,16 +129,16 @@ Third slice. Worth it because this file contains real branching and composition,
   - logs a debug error instead of wiring cursors when `awareness` is missing
   - always applies `withTYHistory` last
 - Deliberate skip:
-  - do not add separate direct specs for [withTYjs.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withTYjs.ts), [withTCursors.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withTCursors.ts), or [withTYHistory.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withTYHistory.ts) unless coverage after this slice still lies in a way that matters
+  - do not add separate direct specs for [withTYjs.ts](packages/yjs/src/lib/withTYjs.ts), [withTCursors.ts](packages/yjs/src/lib/withTCursors.ts), or [withTYHistory.ts](packages/yjs/src/lib/withTYHistory.ts) unless coverage after this slice still lies in a way that matters
 
 ### Slice 4: `BaseYjsPlugin` Editor API
 
 Fourth slice. This is the core of the package.
 
 - File:
-  - [BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts)
+  - [BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts)
 - Add:
-  - [BaseYjsPlugin.api.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts)
+  - [BaseYjsPlugin.api.spec.ts](packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts)
 - Cases:
   - default extension creates `ydoc` and `awareness` when omitted
   - `connect()` connects all providers
@@ -154,9 +154,9 @@ Fourth slice. This is the core of the package.
 Fifth slice. Highest value, highest harness cost.
 
 - File:
-  - [BaseYjsPlugin.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.ts)
+  - [BaseYjsPlugin.ts](packages/yjs/src/lib/BaseYjsPlugin.ts)
 - Add:
-  - [BaseYjsPlugin.init.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.init.spec.ts)
+  - [BaseYjsPlugin.init.spec.ts](packages/yjs/src/lib/BaseYjsPlugin.init.spec.ts)
 - Cases:
   - throws when `providers` is empty
   - turns provider configs into instantiated providers
@@ -169,7 +169,7 @@ Fifth slice. Highest value, highest harness cost.
   - when `value` is an async function, awaits it
   - when provided value is empty, falls back to `editor.api.create.value()`
   - custom `sharedType` path uses delta insertion
-  - default path uses [slateToDeterministicYjsState.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.ts) plus `Y.applyUpdate`
+  - default path uses [slateToDeterministicYjsState.ts](packages/yjs/src/utils/slateToDeterministicYjsState.ts) plus `Y.applyUpdate`
   - pre-populated shared content skips initial seeding
   - connects `YjsEditor` only after the provider sync window
   - calls `editor.tf.init` with `shouldNormalizeEditor: false`
@@ -184,19 +184,19 @@ Fifth slice. Highest value, highest harness cost.
 
 Expected new runtime specs:
 
-- [slateToDeterministicYjsState.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/utils/slateToDeterministicYjsState.spec.ts)
-- [registry.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/registry.spec.ts)
-- [hocuspocus-provider.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/hocuspocus-provider.spec.ts)
-- [webrtc-provider.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/webrtc-provider.spec.ts)
-- [withPlateYjs.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/withPlateYjs.spec.ts)
-- [BaseYjsPlugin.api.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts)
-- [BaseYjsPlugin.init.spec.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/BaseYjsPlugin.init.spec.ts)
+- [slateToDeterministicYjsState.spec.ts](packages/yjs/src/utils/slateToDeterministicYjsState.spec.ts)
+- [registry.spec.ts](packages/yjs/src/lib/providers/registry.spec.ts)
+- [hocuspocus-provider.spec.ts](packages/yjs/src/lib/providers/hocuspocus-provider.spec.ts)
+- [webrtc-provider.spec.ts](packages/yjs/src/lib/providers/webrtc-provider.spec.ts)
+- [withPlateYjs.spec.ts](packages/yjs/src/lib/withPlateYjs.spec.ts)
+- [BaseYjsPlugin.api.spec.ts](packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts)
+- [BaseYjsPlugin.init.spec.ts](packages/yjs/src/lib/BaseYjsPlugin.init.spec.ts)
 
 Optional helper-only files under `__tests__/` are fine if repeated doubles become noisy, but keep them package-local and tiny.
 
 ## Deliberate Deferrals
 
-- no direct spec for [types.ts](/Users/zbeyens/git/plate/packages/yjs/src/lib/providers/types.ts)
+- no direct spec for [types.ts](packages/yjs/src/lib/providers/types.ts)
 - no compile-only type lane in the first pass
   - reason: runtime debt is absolute zero right now, so that is the obvious spend
   - exception: if execution exposes broken discriminated-union typing around provider configs, add one narrow type fixture then

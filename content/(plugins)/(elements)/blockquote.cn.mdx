@@ -13,6 +13,7 @@ docs:
 
 - 创建引用块以强调重要信息或突出显示来自外部来源的引用。
 - 默认渲染为 `<blockquote>` HTML 元素。
+- 支持段落、列表、嵌套引用块等嵌套块内容。
 
 </PackageInfo>
 
@@ -125,10 +126,10 @@ const editor = createPlateEditor({
 
 ### `BlockquotePlugin`
 
-用于引用块元素的插件。默认渲染为 `<blockquote>` HTML 元素。
+用于引用块容器元素的插件。默认渲染为 `<blockquote>` HTML 元素。
 
 ## 转换
 
 ### `tf.blockquote.toggle`
 
-在当前块和段落之间切换引用块。如果该块已经是引用块，则恢复为段落。如果是段落或其他块类型，则转换为引用块。
+将当前块或选区包裹进引用块中。如果选区已经位于引用块内，则取消该引用块包裹。

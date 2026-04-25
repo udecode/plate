@@ -8,11 +8,16 @@ export const TEST_SLOW_FILE_PATTERNS = [
   'packages/**/*.slow.{ts,tsx}',
 ];
 
+export const TEST_DEFERRED_FILE_PATTERNS = [
+  'apps/**/__deferred__/**/*.deferred.spec.{ts,tsx}',
+];
+
 export const TEST_IGNORE_PATTERNS = [
   '**/coverage/**',
   '**/dist/**',
   '**/node_modules/**',
   '.next/**',
+  '**/__deferred__/**',
 ];
 
 const isCI = !!process.env.CI;

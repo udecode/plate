@@ -41,4 +41,22 @@ describe('BaseLineHeightPlugin', () => {
       [editor.getType(KEYS.lineHeight)]: '2',
     });
   });
+
+  it('applies and clears line height through the shared transform', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+      value: [
+        {
+          children: [{ text: 'One' }],
+          type: 'p',
+        },
+      ],
+    } as any);
+
+    (editor as any).tf.lineHeight.setNodes(2, { at: [] });
+    expect((editor.children[0] as any).lineHeight).toBe(2);
+
+    (editor as any).tf.lineHeight.setNodes(1.5, { at: [] });
+    expect((editor.children[0] as any).lineHeight).toBeUndefined();
+  });
 });

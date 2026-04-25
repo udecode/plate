@@ -18,7 +18,9 @@ export const softBreakValue: any = (
     <hp indent={1} listStyleType="disc">
       query – Define custom rules to limit soft breaks to specific block types.
     </hp>
-    <hblockquote>Try here ⏎</hblockquote>
+    <hblockquote>
+      <hp>Try here ⏎</hp>
+    </hblockquote>
     <hcodeblock>
       <hcodeline>And here ⏎ as well.</hcodeline>
     </hcodeblock>

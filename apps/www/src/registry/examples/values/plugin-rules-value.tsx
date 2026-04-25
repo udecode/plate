@@ -21,11 +21,20 @@ export const pluginRulesValue: any = (
     <hh3>Press Enter after "Press" to see splitReset behavior</hh3>
 
     <hp>
-      <htext bold>Blockquote with line breaks:</htext> Enter adds line breaks,
-      Enter on empty lines resets to paragraph.
+      <htext bold>Blockquote containers:</htext> Blockquotes wrap nested blocks
+      like paragraphs and lists. Enter acts on the inner block.
     </hp>
     <hblockquote>
-      This blockquote uses lineBreak rules. Press Enter here for line breaks.
+      <hp>
+        Blockquotes are containers now. Split this paragraph or add nested
+        blocks inside the quote.
+      </hp>
+      <hp indent={1} listStyleType="disc">
+        Quoted list items stay inside the same blockquote container.
+      </hp>
+      <hblockquote>
+        <hp>Nested blockquotes keep reply chains explicit.</hp>
+      </hblockquote>
     </hblockquote>
 
     <hh3>Delete Rules</hh3>

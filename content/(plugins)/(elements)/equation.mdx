@@ -15,10 +15,11 @@ docs:
 
 ## Features
 
-- LaTeX syntax support for complex mathematical expressions
-- Both inline and block equation formats
-- Real-time rendering of equations using KaTeX
-- Easy editing and navigation within equations
+- LaTeX syntax support for complex mathematical expressions.
+- Both inline and block equation formats.
+- Real-time rendering of equations using KaTeX.
+- Easy editing and navigation within equations.
+- Markdown shortcuts: type `$...$` to create an inline equation, or `$$` then `Enter` to create a block equation.
 
 </PackageInfo>
 
@@ -28,7 +29,7 @@ docs:
 
 ### Installation
 
-The fastest way to add equation functionality is with the `MathKit`, which includes pre-configured `EquationPlugin` and `InlineEquationPlugin` with [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add equation functionality is with the `MathKit`, which includes the `EquationPlugin` and `InlineEquationPlugin` with [Plate UI](/docs/installation/plate-ui) components, along with the `$...$` and `$$` Markdown shortcuts.
 
 <ComponentSource name="math-kit" />
 
@@ -68,7 +69,11 @@ npm install @platejs/math
 Include the equation plugins in your Plate plugins array when creating the editor.
 
 ```tsx
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import { MathRules } from '@platejs/math';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@platejs/math/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
@@ -85,20 +90,35 @@ const editor = createPlateEditor({
 Configure the plugins with custom components to render equation elements.
 
 ```tsx
-import { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';
+import {
+  EquationPlugin,
+  InlineEquationPlugin,
+} from '@platejs/math/react';
 import { createPlateEditor } from 'platejs/react';
 import { EquationElement, InlineEquationElement } from '@/components/ui/equation-node';
 
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    EquationPlugin.withComponent(EquationElement),
-    InlineEquationPlugin.withComponent(InlineEquationElement),
+    InlineEquationPlugin.configure({
+      inputRules: [MathRules.markdown({ variant: '$' })],
+      node: {
+        component: InlineEquationElement,
+      },
+    }),
+    EquationPlugin.configure({
+      inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+      node: {
+        component: EquationElement,
+      },
+    }),
   ],
 });
 ```
 
-- `withComponent`: Assigns [`EquationElement`](/docs/components/equation-node) to render block equations and [`InlineEquationElement`](/docs/components/equation-node) to render inline equations.
+- `node.component`: Assigns [`EquationElement`](/docs/components/equation-node) to render block equations and [`InlineEquationElement`](/docs/components/equation-node) to render inline equations.
+- `MathRules.markdown({ variant: '$' })`: Enables the inline markdown shortcut.
+- `MathRules.markdown({ variant: '$$', on: 'break' | 'match' })`: Enables the block markdown shortcut and makes the trigger explicit.
 
 ### Add Toolbar Button
 

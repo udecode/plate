@@ -79,7 +79,7 @@ export default async function BlockPage({
       )}
     >
       {/* eslint-disable-next-line react-hooks/static-components -- Dynamic block component loading is intentional */}
-      <Component />
+      <Component id={name.replace('-demo', '')} />
     </div>
   );
 }

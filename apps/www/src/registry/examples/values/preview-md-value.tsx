@@ -13,8 +13,10 @@ export const previewMdValue: any = (
       decorations on it, to make it _dead_ simple to make an editor with
       built-in `Markdown` previewing.
     </hp>
-    <hp>- List.</hp>
-    <hp> Blockquote.</hp>
+    <hp>- List item.</hp>
+    <hp>&gt; Blockquote paragraph.</hp>
+    <hp>&gt; &gt; Nested blockquote.</hp>
+    <hp>&gt; - Quoted list item.</hp>
     <hp>---</hp>
     <hp>## Try it out!</hp>
     <hp>Try it out for yourself!</hp>

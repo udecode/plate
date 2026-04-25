@@ -15,6 +15,7 @@ docs:
 - 支持多种编程语言
 - 可自定义语言选择
 - 正确处理缩进
+- 通过 `CodeBlockRules.markdown({ on })` 支持 Markdown 代码围栏快捷输入
 
 </PackageInfo>
 
@@ -24,7 +25,7 @@ docs:
 
 ### 安装
 
-最快捷添加代码块功能的方式是使用 `CodeBlockKit`，它包含预配置的 `CodeBlockPlugin`、`CodeLinePlugin` 和 `CodeSyntaxPlugin`，提供语法高亮和 [Plate UI](/docs/installation/plate-ui) 组件。
+最快捷添加代码块功能的方式是使用 `CodeBlockKit`，它包含预配置的 `CodeBlockPlugin`、`CodeLinePlugin` 和 `CodeSyntaxPlugin`，同时带上三反引号 input rule、语法高亮和 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="code-block-kit" />
 
@@ -85,6 +86,7 @@ const editor = createPlateEditor({
 **包含所有语言的基础设置：**
 
 ```tsx
+import { CodeBlockRules } from '@platejs/code-block';
 import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@platejs/code-block/react';
 import { all, createLowlight } from 'lowlight';
 import { createPlateEditor } from 'platejs/react';
@@ -97,6 +99,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
+      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       node: { component: CodeBlockElement },
       options: { lowlight },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
@@ -131,6 +134,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
+      inputRules: [CodeBlockRules.markdown({ on: 'match' })],
       node: { component: CodeBlockElement },
       options: {
         lowlight,
@@ -145,9 +149,12 @@ const editor = createPlateEditor({
 ```
 
 - `node.component`: 指定 [`CodeBlockElement`](/docs/components/code-block-node) 来渲染代码块容器
+- `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
 - `options.lowlight`: 用于语法高亮的 lowlight 实例
 - `options.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
+
+完整运行时模型请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
 - `withComponent`: 为代码行和语法高亮指定组件
 
 ### 转换为工具栏按钮

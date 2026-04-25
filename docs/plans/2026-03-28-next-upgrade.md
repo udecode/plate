@@ -41,7 +41,7 @@ Upgrade `apps/www` to the latest stable Next release using the official Next/Ver
 
 ## Verification
 
-- `bun test /Users/zbeyens/git/plate/packages/dnd/src/components/useDraggable.spec.tsx`
+- `bun test packages/dnd/src/components/useDraggable.spec.tsx`
 - `pnpm --filter @platejs/dnd build`
 - `pnpm --filter @platejs/dnd typecheck`
 - `pnpm -C apps/www build`

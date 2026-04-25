@@ -68,13 +68,34 @@ Never combine packages in one changeset.
 .changeset/utils-add-helper.md
 ```
 
-### 3. Registry work is changelog work
+### 3. Relative to `main`, not to your thought process
+
+Write changesets for the user-visible delta from the current `main` branch.
+
+That means:
+
+- describe what users upgrading from `main` need to know
+- describe migration steps only when the user actually has to do something
+- prefer API shape, runtime behavior, serialized data shape, or config changes
+
+Do not write:
+
+- implementation diary
+- architecture rationale
+- internal ownership or seam language
+- test coverage notes
+- "editor-owned", "normalize path", "wrap semantics", or similar internal phrasing unless the public API literally uses those words
+
+If a package changed internally on this branch but has no user-visible delta from
+`main`, do not write a changeset for that package.
+
+### 4. Registry work is changelog work
 
 If changes are only under `apps/www/src/registry/`, do **not** write a package changeset.
 
 Update `docs/components/changelog.mdx` instead.
 
-### 4. Style
+### 5. Style
 
 Use imperative voice:
 
@@ -105,6 +126,14 @@ editor.tf.foo();
 ```
 
 Focus on user impact only. No implementation diary.
+
+Prefer this shape:
+
+- one summary sentence
+- optional short `**Migration:**` block
+- optional before/after example only when migration would be ambiguous
+
+If a sentence would sound stupid in release notes, cut it.
 
 ## Template
 
@@ -160,6 +189,7 @@ Before shipping:
 
 - [ ] Used `minor` for `@platejs/slate`, `@platejs/core`, or `platejs`? Change to `patch`
 - [ ] Multiple packages in frontmatter? Split files
+- [ ] Describes internals instead of the user-visible delta from `main`? Rewrite it
 - [ ] Past tense verbs? Fix them
 - [ ] Multiple paragraphs? Condense
 - [ ] Too much explanation? Cut it

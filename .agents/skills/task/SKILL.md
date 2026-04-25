@@ -55,20 +55,20 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 ```
 ````
 
-   - `source-key` must be the normalized stable identifier for the media. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so rotating signatures do not bust the cache.
-   - Do not add decorative metadata like `title` to cached `<video-transcript>` entries unless a later workflow truly needs it.
-   - Group videos by source container before transcribing:
-     - one cache comment for issue or PR body videos
-     - GitHub: one dedicated top-level cache comment for each issue or PR comment that contains video(s)
-     - Linear: one cache reply for each comment that contains video(s)
-   - Keep the cache body pure XML. Do not prepend markers, prose, or YAML.
-   - Before running the helper, scan existing tracker comments and, when relevant, Linear replies. Match by source container first, then check whether the cached `<video-transcript ... source-key="...">` entries cover every current video URL for that container after the same normalization.
-   - If the matching cache fully covers the current normalized video keys for that source container, reuse the cached XML block and do not re-transcribe.
-   - If the cache is missing any current video, or that source container has new video evidence, transcribe only the missing videos and create or update the matching cache comment or reply.
-   - Use the helper in [$video-transcripts](/Users/zbeyens/git/plate/.agents/skills/video-transcripts/SKILL.md).
-   - Run it once per relevant video attachment or URL.
-   - For auth-gated tracker media like `uploads.linear.app` or private GitHub asset URLs, use the helper directly before declaring the video blocked. It can reuse local tracker auth when available.
-   - Convert the video evidence into a normalized block in this exact shape before continuing:
+- `source-key` must be the normalized stable identifier for the media. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so rotating signatures do not bust the cache.
+- Do not add decorative metadata like `title` to cached `<video-transcript>` entries unless a later workflow truly needs it.
+- Group videos by source container before transcribing:
+  - one cache comment for issue or PR body videos
+  - GitHub: one dedicated top-level cache comment for each issue or PR comment that contains video(s)
+  - Linear: one cache reply for each comment that contains video(s)
+- Keep the cache body pure XML. Do not prepend markers, prose, or YAML.
+- Before running the helper, scan existing tracker comments and, when relevant, Linear replies. Match by source container first, then check whether the cached `<video-transcript ... source-key="...">` entries cover every current video URL for that container after the same normalization.
+- If the matching cache fully covers the current normalized video keys for that source container, reuse the cached XML block and do not re-transcribe.
+- If the cache is missing any current video, or that source container has new video evidence, transcribe only the missing videos and create or update the matching cache comment or reply.
+- Use $video-transcripts skill.
+- Run it once per relevant video attachment or URL.
+- For auth-gated tracker media like `uploads.linear.app` or private GitHub asset URLs, use the helper directly before declaring the video blocked. It can reuse local tracker auth when available.
+- Convert the video evidence into a normalized block in this exact shape before continuing:
 
 ```xml
 <video-transcripts>
@@ -78,10 +78,11 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
 </video-transcripts>
 ```
 
-   - Use the generated or cached transcript output as part of the tracker context.
-   - Do not hand-write, paraphrase, or skip video evidence when the skill can run.
-   - If the helper still cannot fetch or transcribe the media after a real attempt, hard stop and report the exact blocker you hit.
-   - Do not continue implementation without the transcript when a real video is present.
+- Use the generated or cached transcript output as part of the tracker context.
+- Do not hand-write, paraphrase, or skip video evidence when the skill can run.
+- If the helper still cannot fetch or transcribe the media after a real attempt, hard stop and report the exact blocker you hit.
+- Do not continue implementation without the transcript when a real video is present.
+
 5. If there are multiple videos, preserve each as its own `<video-transcript ...>` block under one `<video-transcripts>` wrapper.
 6. Classify the task shape before choosing a workflow:
    - Testing or coverage work: triggered by coverage, regressions, test-suite phases, hotspots, package testing, or similar language.
@@ -98,27 +99,35 @@ Handle $ARGUMENTS. Be thorough, not ceremonial. Start from the source of truth, 
    - Non-trivial task: multi-step work, research-heavy work, phased execution, or anything likely to take more than a handful of tool calls.
    - Trivial task: quick question, small edit, or other work that does not need persistent working memory.
 10. If the task is non-trivial:
-   - load `planning-with-files` before implementation
-   - use persistent planning files or the repo's equivalent planning structure so progress survives context loss
-   - follow local repo overrides for where planning files live
-   - if the task touches published package code under `packages/`, record in the plan whether a changeset will be required before completion
-   - if the task is registry-only work under `apps/www/src/registry/`, record in the plan whether `docs/components/changelog.mdx` must be updated instead of creating a package changeset
+
+- load `planning-with-files` before implementation
+- use persistent planning files or the repo's equivalent planning structure so progress survives context loss
+- follow local repo overrides for where planning files live
+- if the task touches published package code under `packages/`, record in the plan whether a changeset will be required before completion
+- if the task is registry-only work under `apps/www/src/registry/`, record in the plan whether `docs/components/changelog.mdx` must be updated instead of creating a package changeset
+
 11. If the task is testing or coverage work:
-   - restate it as test work, not generic feature work
-   - load `testing` first and use that testing policy as the source of truth
-   - choose the smallest honest seam before loading `tdd`
+
+- restate it as test work, not generic feature work
+- load `testing` first and use that testing policy as the source of truth
+- choose the smallest honest seam before loading `tdd`
+
 12. If the task is program or batch work:
-   - restate the ordered scope and hard constraints
-   - do not treat the whole batch as one implementation unit
-   - default to completing the first slice cleanly unless the user explicitly asks for a broader sweep
+
+- restate the ordered scope and hard constraints
+- do not treat the whole batch as one implementation unit
+- default to completing the first slice cleanly unless the user explicitly asks for a broader sweep
+
 13. GitHub issue rules:
-   - Resolve bare issue numbers like `#555` against the current repo with `gh repo view --json nameWithOwner -q '.nameWithOwner'`.
-   - Fetch GitHub issues with:
-     ```bash
-     gh issue view <number-or-url> --comments --json number,title,body,comments,labels,state,url
-     ```
-   - Fetch GitHub PRs with `gh pr view ... --json`.
-   - If the input is ambiguous and not clearly a GitHub issue token or URL, do not guess.
+
+- Resolve bare issue numbers like `#555` against the current repo with `gh repo view --json nameWithOwner -q '.nameWithOwner'`.
+- Fetch GitHub issues with:
+  ```bash
+  gh issue view <number-or-url> --comments --json number,title,body,comments,labels,state,url
+  ```
+- Fetch GitHub PRs with `gh pr view ... --json`.
+- If the input is ambiguous and not clearly a GitHub issue token or URL, do not guess.
+
 14. For any tracker source, restate for yourself:
 
 - source type
@@ -386,6 +395,24 @@ Apply this section only when the task came from a tracker item and reached a mea
 
 ### Pull Request
 
+- If the PR contains any real `.changeset/*.md` file, put the managed auto-release block at the very top of the PR description yourself. Do not wait for CI to add it.
+- Use this exact checked block when every changeset frontmatter entry is `patch`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [x] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- Use this exact unchecked block when any changeset frontmatter entry is `minor` or `major`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [ ] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- If the PR has no real `.changeset/*.md` file, omit the auto-release block.
 - When a PR exists, the PR description must match the exact current final handoff from chat:
   - same flow table
   - same metadata lines, except omit the leading `🔀 PR ...` line because the PR page already identifies itself

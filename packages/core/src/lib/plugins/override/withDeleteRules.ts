@@ -1,7 +1,6 @@
 import { PointApi, RangeApi } from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
-import type { DeleteRules } from '../../plugin/BasePlugin';
 
 import { getPluginByType } from '../../plugin/getSlatePlugin';
 
@@ -21,7 +20,7 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
     rule: string,
     blockNode: any,
     blockPath: any
-  ): DeleteRules | null => {
+  ) => {
     const matchRulesKeys = editor.meta.pluginCache.rules.match;
     for (const key of matchRulesKeys) {
       const overridePlugin = editor.getPlugin({ key });
@@ -34,7 +33,7 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
           rule: rule as any,
         })
       ) {
-        return overridePlugin.rules.delete;
+        return overridePlugin;
       }
     }
     return null;
@@ -42,11 +41,18 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
 
   const executeDeleteAction = (
     action: string | undefined,
-    blockPath: any
+    blockPath: any,
+    type: string | undefined
   ): boolean => {
     if (action === 'reset') {
       editor.tf.resetBlock({ at: blockPath });
       return true;
+    }
+    if (action === 'lift' && type) {
+      return !!editor.tf.liftBlock({
+        at: blockPath,
+        match: { type },
+      });
     }
     return false;
   };
@@ -64,30 +70,36 @@ export const withDeleteRules: OverrideEditor = (ctx) => {
 
             // Handle 'start' scenario
             if (editor.api.isAt({ start: true })) {
-              const overrideDeleteRules = checkMatchRulesOverride(
+              const overridePlugin = checkMatchRulesOverride(
                 'delete.start',
                 blockNode,
                 blockPath
               );
-              const effectiveDeleteRules = overrideDeleteRules || deleteRules;
+              const effectiveDeleteRules =
+                overridePlugin?.rules.delete ?? deleteRules;
               const startAction = effectiveDeleteRules?.start;
+              const actionType = overridePlugin?.node.type;
 
-              if (executeDeleteAction(startAction, blockPath)) {
+              if (executeDeleteAction(startAction, blockPath, actionType)) {
                 return;
               }
             }
 
             // Handle 'empty' scenario
             if (editor.api.isEmpty(editor.selection, { block: true })) {
-              const overrideDeleteRules = checkMatchRulesOverride(
+              const overridePlugin = checkMatchRulesOverride(
                 'delete.empty',
                 blockNode,
                 blockPath
               );
-              const effectiveDeleteRules = overrideDeleteRules || deleteRules;
+              const effectiveDeleteRules =
+                overridePlugin?.rules.delete ?? deleteRules;
               const emptyAction = effectiveDeleteRules?.empty;
+              const actionType = overridePlugin?.node.type;
 
-              if (executeDeleteAction(emptyAction, blockPath)) return;
+              if (executeDeleteAction(emptyAction, blockPath, actionType)) {
+                return;
+              }
             }
           }
 

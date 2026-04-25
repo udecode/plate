@@ -62,6 +62,7 @@
     "test": "bun tooling/scripts/test-fast.mjs",
     "test:all": "pnpm test && pnpm test:slow",
     "test:coverage": "bun test --coverage",
+    "test:deferred": "bun tooling/scripts/test-deferred.mjs",
     "test:manifests": "node tooling/scripts/check-workspace-package-manifests.mjs",
     "test:profile": "bun tooling/scripts/test-slowest.mjs --profile",
     "test:slow": "bun tooling/scripts/test-slow.mjs",

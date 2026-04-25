@@ -160,12 +160,13 @@ Used by exit break functionality to determine appropriate exit points in nested 
 
 - **Default:** `false`
 </APISubListItem>
-<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'reset'" optional>
+<APISubListItem parent="rules" name="break.empty" type="'default' | 'deleteExit' | 'exit' | 'lift' | 'reset'" optional>
 Action when Enter is pressed in an empty block. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
 - `'reset'`: Reset block to default paragraph type
 - `'exit'`: Exit the current block
+- `'lift'`: Lift the current block out of the nearest matching ancestor
 - `'deleteExit'`: Delete backward then exit
 </APISubListItem>
 <APISubListItem parent="rules" name="break.emptyLineEnd" type="'default' | 'deleteExit' | 'exit'" optional>
@@ -186,10 +187,11 @@ Default action when Enter is pressed. Defaults to splitting the block. See [Plug
 <APISubListItem parent="rules" name="break.splitReset" type="boolean" optional>
 If true, the new block after splitting will be reset to the default type. See [Plugin Rules](/docs/plugin-rules).
 </APISubListItem>
-<APISubListItem parent="rules" name="delete.start" type="'default' | 'reset'" optional>
+<APISubListItem parent="rules" name="delete.start" type="'default' | 'lift' | 'reset'" optional>
 Action when Backspace is pressed at the start of the block. This applies whether the block is empty or not. See [Plugin Rules](/docs/plugin-rules).
 
 - `'default'`: Default behavior
+- `'lift'`: Lift the current block out of the nearest matching ancestor
 - `'reset'`: Reset block to default paragraph type
 </APISubListItem>
 <APISubListItem parent="rules" name="delete.empty" type="'default' | 'reset'" optional>

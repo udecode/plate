@@ -51,6 +51,10 @@ import type {
   SlatePluginContext,
   WithAnyKey,
 } from '../../lib';
+import type {
+  InputRulesConfig,
+  InputRulesDefinition,
+} from '../../lib/plugins/input-rules/types';
 import type { PlateElementProps, PlateLeafProps } from '../components';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
@@ -508,6 +512,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           Shortcut | null
         >
       >;
+      inputRules: InputRulesDefinition | InputRulesConfig;
       useOptionsStore: TCreatedStoreType<
         C['options'],
         [['zustand/mutative-x', never]]

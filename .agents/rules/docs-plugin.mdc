@@ -5,6 +5,18 @@ alwaysApply: false
 
 # Plugin Documentation Guide
 
+Shared docs law now belongs to `docs-creator`.
+
+Use `docs-creator` for:
+
+- tone
+- lane selection
+- ownership boundaries
+- anti-slop rules
+- shared docs structure
+
+This skill stays narrow. It owns plugin-page specifics only.
+
 ## General Principles
 
 1.  **Writing Style**:

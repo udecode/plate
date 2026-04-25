@@ -75,12 +75,18 @@ export const withPlate = <
   e: Editor,
   options: WithPlateOptions<V, P> = {}
 ): TPlateEditor<V, InferPlugins<P[]>> => {
-  const { optionsStoreFactory, plugins = [], ...rest } = options;
+  const {
+    navigationFeedback,
+    optionsStoreFactory,
+    plugins = [],
+    ...rest
+  } = options;
 
   const editor = withSlate<V, P>(e, {
+    navigationFeedback,
     ...rest,
     optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
-    plugins: [...getPlateCorePlugins(), ...plugins],
+    plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
   } as any) as unknown as TPlateEditor<V, InferPlugins<P[]>>;
 
   return editor;

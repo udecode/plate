@@ -28,9 +28,9 @@ Run the next full-repo testing review after the non-React roadmap closed, publis
 
 ## Verification
 
-- `bun test /Users/zbeyens/git/plate/packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts /Users/zbeyens/git/plate/packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts /Users/zbeyens/git/plate/packages/code-block/src/lib/withCodeBlock.spec.tsx`
-- `bun test /Users/zbeyens/git/plate/packages/table/src/lib/withApplyTable.spec.ts /Users/zbeyens/git/plate/packages/table/src/lib/withTableCellSelection.spec.tsx /Users/zbeyens/git/plate/packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts /Users/zbeyens/git/plate/packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts /Users/zbeyens/git/plate/packages/code-block/src/lib/withCodeBlock.spec.tsx`
-- `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24l --reporter=dots`
+- `bun test packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts packages/code-block/src/lib/withCodeBlock.spec.tsx`
+- `bun test packages/table/src/lib/withApplyTable.spec.ts packages/table/src/lib/withTableCellSelection.spec.tsx packages/code-block/src/lib/BaseCodeBlockPlugin.spec.ts packages/code-block/src/lib/setCodeBlockToDecorations.spec.ts packages/code-block/src/lib/withCodeBlock.spec.tsx`
+- `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24l --reporter=dots`
 - `pnpm test:profile -- --top 25`
 - `pnpm test:slowest -- --top 25`
 - `rg -n "(^|[^[:alnum:]_])(describe\\.skip|it\\.skip|test\\.skip|xit\\(|xdescribe\\()" packages apps -g "*.ts" -g "*.tsx"`

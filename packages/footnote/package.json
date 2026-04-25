@@ -1,0 +1,60 @@
+{
+  "name": "@platejs/footnote",
+  "version": "53.0.0",
+  "description": "Footnote plugins for Plate",
+  "keywords": [
+    "plate",
+    "plugin",
+    "slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/footnote"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./react": "./dist/react/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "plate-pkg p:brl",
+    "build": "plate-pkg p:build",
+    "build:watch": "plate-pkg p:build:watch",
+    "clean": "plate-pkg p:clean",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "plate-pkg p:test",
+    "test:watch": "plate-pkg p:test:watch",
+    "typecheck": "plate-pkg p:typecheck"
+  },
+  "devDependencies": {
+    "@plate/scripts": "workspace:*",
+    "platejs": "workspace:^"
+  },
+  "peerDependencies": {
+    "platejs": ">=53.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "dependencies": {
+    "@platejs/combobox": "workspace:^",
+    "react-compiler-runtime": "^1.0.0"
+  }
+}

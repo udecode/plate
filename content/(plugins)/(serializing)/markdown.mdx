@@ -96,7 +96,12 @@ Configuring `MarkdownPlugin` is recommended to enable Markdown paste handling an
 
 ```tsx title="lib/plate-editor.ts"
 import { createPlateEditor } from 'platejs/react';
-import { MarkdownPlugin, remarkMention, remarkMdx } from '@platejs/markdown';
+import {
+  MarkdownPlugin,
+  remarkMention,
+  remarkMdx,
+} from '@platejs/markdown';
+import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -105,8 +110,8 @@ const editor = createPlateEditor({
     // ...other Plate plugins
     MarkdownPlugin.configure({
       options: {
-        // Add remark plugins for syntax extensions (GFM, Math, MDX)
-        remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
+        // Add remark plugins for syntax extensions (GFM, emoji shortcodes, Math, MDX)
+        remarkPlugins: [remarkMath, remarkGfm, remarkEmoji, remarkMdx, remarkMention],
         // Define custom rules if needed
         rules: {
           // date: { /* ... rule implementation ... */ },
@@ -248,8 +253,8 @@ MarkdownPlugin.configure({
 
 **Conversion Process:**
 
-1.  **Serialization (Plate → Markdown):** The Plate `date` node becomes `<date>2025-03-31</date>`.
-2.  **Deserialization (Markdown → Plate):** The MDX tag `<date>2025-03-31</date>` converts back to the Plate `date` node.
+1.  **Serialization (Plate → Markdown):** The Plate `date` node writes as `<date value="2025-03-31" />`.
+2.  **Deserialization (Markdown → Plate):** Both `<date value="2025-03-31" />` and `<date>2025-03-31</date>` convert back to the Plate `date` node.
 
 </Steps>
 
@@ -960,6 +965,10 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 | `mdxJsxTextElement` | _Custom_               | Requires `remark-mdx` and custom `rules`.      |
 
 \* List conversion depends on `ListPlugin` detection.
+
+**Emoji shortcodes:** Add [`remark-emoji`](https://github.com/rhysd/remark-emoji) to `remarkPlugins` to turn `:fire:` into unicode `🔥` on deserialization and back to unicode on serialization.
+
+**GFM footnotes:** With `remark-gfm` enabled, footnotes deserialize into `footnoteReference` and `footnoteDefinition` nodes. Add the matching [Footnote plugins](/docs/footnote) to render them as real editor nodes instead of falling back to unknown types.
 
 ---
 

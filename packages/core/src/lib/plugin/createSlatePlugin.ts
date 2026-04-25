@@ -133,6 +133,7 @@ export function createSlatePlugin<
       render: {},
       rules: {},
       shortcuts: {},
+      inputRules: [],
       transforms: {},
     },
     config

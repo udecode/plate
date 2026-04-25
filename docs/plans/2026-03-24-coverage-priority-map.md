@@ -2,13 +2,13 @@
 
 ## Inputs
 
-- Coverage source: [lcov.info](/Users/zbeyens/git/plate/.coverage-repo-2026-03-24a/lcov.info)
+- Coverage source: [lcov.info](.coverage-repo-2026-03-24a/lcov.info)
 - Constraints: exclude `/react`, ignore coverage vanity, score only real non-React unit-test seams under `packages/**/src/**`.
 - Scoring signals: seam type, uncovered lines, coverage ratio, recent completed passes, package signal penalty.
 
 ## Coverage Run
 
-- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=/Users/zbeyens/git/plate/.coverage-repo-2026-03-24a --reporter=dots`
+- Command: `bun test --coverage --coverage-reporter=lcov --coverage-dir=.coverage-repo-2026-03-24a --reporter=dots`
 - Result: `2643 pass`, `0 fail`, `493 files`, `2.45s`
 
 ## Take
@@ -39,36 +39,36 @@
 
 ## Strict Batch (`score >= 6`)
 
-- [get-package-manager.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/get-package-manager.ts) — `udecode/depset`, score `10`, coverage `0.0%`, uncovered `30`
-- [withCaption.ts](/Users/zbeyens/git/plate/packages/caption/src/lib/withCaption.ts) — `caption`, score `7`, coverage `0.0%`, uncovered `67`
-- [getSelectionRects.ts](/Users/zbeyens/git/plate/packages/cursor/src/queries/getSelectionRects.ts) — `cursor`, score `7`, coverage `0.0%`, uncovered `60`
-- [logger.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/logger.ts) — `udecode/depset`, score `7`, coverage `0.0%`, uncovered `27`
-- [getSelectionWidth.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/getSelectionWidth.ts) — `table`, score `7`, coverage `7.4%`, uncovered `25`
-- [insertCallout.ts](/Users/zbeyens/git/plate/packages/callout/src/lib/transforms/insertCallout.ts) — `callout`, score `7`, coverage `0.0%`, uncovered `24`
-- [insertExcalidraw.ts](/Users/zbeyens/git/plate/packages/excalidraw/src/lib/transforms/insertExcalidraw.ts) — `excalidraw`, score `7`, coverage `0.0%`, uncovered `21`
-- [handle-error.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/handle-error.ts) — `udecode/depset`, score `7`, coverage `0.0%`, uncovered `21`
-- [spinner.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/spinner.ts) — `udecode/depset`, score `6`, coverage `0.0%`, uncovered `12`
+- [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — `udecode/depset`, score `10`, coverage `0.0%`, uncovered `30`
+- [withCaption.ts](packages/caption/src/lib/withCaption.ts) — `caption`, score `7`, coverage `0.0%`, uncovered `67`
+- [getSelectionRects.ts](packages/cursor/src/queries/getSelectionRects.ts) — `cursor`, score `7`, coverage `0.0%`, uncovered `60`
+- [logger.ts](packages/udecode/depset/src/utils/logger.ts) — `udecode/depset`, score `7`, coverage `0.0%`, uncovered `27`
+- [getSelectionWidth.ts](packages/table/src/lib/merge/getSelectionWidth.ts) — `table`, score `7`, coverage `7.4%`, uncovered `25`
+- [insertCallout.ts](packages/callout/src/lib/transforms/insertCallout.ts) — `callout`, score `7`, coverage `0.0%`, uncovered `24`
+- [insertExcalidraw.ts](packages/excalidraw/src/lib/transforms/insertExcalidraw.ts) — `excalidraw`, score `7`, coverage `0.0%`, uncovered `21`
+- [handle-error.ts](packages/udecode/depset/src/utils/handle-error.ts) — `udecode/depset`, score `7`, coverage `0.0%`, uncovered `21`
+- [spinner.ts](packages/udecode/depset/src/utils/spinner.ts) — `udecode/depset`, score `6`, coverage `0.0%`, uncovered `12`
 
 ## Wider Batch (`score >= 5`)
 
-- [get-package-manager.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/get-package-manager.ts) — `udecode/depset`, score `10`
-- [withCaption.ts](/Users/zbeyens/git/plate/packages/caption/src/lib/withCaption.ts) — `caption`, score `7`
-- [getSelectionRects.ts](/Users/zbeyens/git/plate/packages/cursor/src/queries/getSelectionRects.ts) — `cursor`, score `7`
-- [logger.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/logger.ts) — `udecode/depset`, score `7`
-- [getSelectionWidth.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/getSelectionWidth.ts) — `table`, score `7`
-- [insertCallout.ts](/Users/zbeyens/git/plate/packages/callout/src/lib/transforms/insertCallout.ts) — `callout`, score `7`
-- [insertExcalidraw.ts](/Users/zbeyens/git/plate/packages/excalidraw/src/lib/transforms/insertExcalidraw.ts) — `excalidraw`, score `7`
-- [handle-error.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/handle-error.ts) — `udecode/depset`, score `7`
-- [spinner.ts](/Users/zbeyens/git/plate/packages/udecode/depset/src/utils/spinner.ts) — `udecode/depset`, score `6`
-- [withTable.ts](/Users/zbeyens/git/plate/packages/table/src/lib/withTable.ts) — `table`, score `5`
-- [deleteRow.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/deleteRow.ts) — `table`, score `5`
-- [getSelectedCells.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getSelectedCells.ts) — `table`, score `5`
-- [getTableGridByRange.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/getTableGridByRange.ts) — `table`, score `5`
-- [isTableRectangular.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/isTableRectangular.ts) — `table`, score `5`
-- [splitTableCell.ts](/Users/zbeyens/git/plate/packages/table/src/lib/merge/splitTableCell.ts) — `table`, score `5`
-- [moveSelectionFromCell.ts](/Users/zbeyens/git/plate/packages/table/src/lib/transforms/moveSelectionFromCell.ts) — `table`, score `5`
-- [getSelectedCellsBorders.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getSelectedCellsBorders.ts) — `table`, score `5`
-- [getTableRowIndex.ts](/Users/zbeyens/git/plate/packages/table/src/lib/queries/getTableRowIndex.ts) — `table`, score `5`
+- [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — `udecode/depset`, score `10`
+- [withCaption.ts](packages/caption/src/lib/withCaption.ts) — `caption`, score `7`
+- [getSelectionRects.ts](packages/cursor/src/queries/getSelectionRects.ts) — `cursor`, score `7`
+- [logger.ts](packages/udecode/depset/src/utils/logger.ts) — `udecode/depset`, score `7`
+- [getSelectionWidth.ts](packages/table/src/lib/merge/getSelectionWidth.ts) — `table`, score `7`
+- [insertCallout.ts](packages/callout/src/lib/transforms/insertCallout.ts) — `callout`, score `7`
+- [insertExcalidraw.ts](packages/excalidraw/src/lib/transforms/insertExcalidraw.ts) — `excalidraw`, score `7`
+- [handle-error.ts](packages/udecode/depset/src/utils/handle-error.ts) — `udecode/depset`, score `7`
+- [spinner.ts](packages/udecode/depset/src/utils/spinner.ts) — `udecode/depset`, score `6`
+- [withTable.ts](packages/table/src/lib/withTable.ts) — `table`, score `5`
+- [deleteRow.ts](packages/table/src/lib/merge/deleteRow.ts) — `table`, score `5`
+- [getSelectedCells.ts](packages/table/src/lib/queries/getSelectedCells.ts) — `table`, score `5`
+- [getTableGridByRange.ts](packages/table/src/lib/merge/getTableGridByRange.ts) — `table`, score `5`
+- [isTableRectangular.ts](packages/table/src/lib/merge/isTableRectangular.ts) — `table`, score `5`
+- [splitTableCell.ts](packages/table/src/lib/merge/splitTableCell.ts) — `table`, score `5`
+- [moveSelectionFromCell.ts](packages/table/src/lib/transforms/moveSelectionFromCell.ts) — `table`, score `5`
+- [getSelectedCellsBorders.ts](packages/table/src/lib/queries/getSelectedCellsBorders.ts) — `table`, score `5`
+- [getTableRowIndex.ts](packages/table/src/lib/queries/getTableRowIndex.ts) — `table`, score `5`
 
 ## Notes
 

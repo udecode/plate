@@ -1,5 +1,11 @@
 # @platejs/utils
 
+## 53.0.0
+
+### Patch Changes
+
+- [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Add `KEYS.footnoteDefinition`, `KEYS.footnoteReference`, and `KEYS.footnoteInput`
+
 ## 52.3.21
 
 ### Patch Changes

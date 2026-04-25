@@ -198,12 +198,32 @@ describe('convertNodesSerialize', () => {
         {
           children: [
             {
-              children: [
-                {
-                  children: [{ type: 'text', value: 'Nested' }],
-                  type: 'paragraph',
-                },
-              ],
+              children: [{ type: 'text', value: 'Nested' }],
+              type: 'paragraph',
+            },
+          ],
+          type: 'blockquote',
+        },
+      ] as any);
+    });
+
+    it('wraps legacy inline blockquote children into a paragraph when serializing', () => {
+      const result = convertNodesSerialize(
+        [
+          {
+            children: [{ text: 'Legacy quote' }],
+            type: 'blockquote',
+          } as any,
+        ],
+        baseOptions,
+        true
+      );
+
+      expect(result).toEqual([
+        {
+          children: [
+            {
+              children: [{ type: 'text', value: 'Legacy quote' }],
               type: 'paragraph',
             },
           ],
@@ -226,6 +246,26 @@ describe('convertNodesSerialize', () => {
       ).toEqual({
         children: [{ type: 'text', value: 'Subtitle' }],
         depth: 2,
+        type: 'heading',
+      });
+    });
+
+    it.each([
+      ['h4', 4],
+      ['h5', 5],
+      ['h6', 6],
+    ])('normalizes %s plugin keys before selecting the serializer', (type, depth) => {
+      expect(
+        buildMdastNode(
+          {
+            children: [{ text: `Heading ${depth}` }],
+            type,
+          },
+          baseOptions
+        )
+      ).toEqual({
+        children: [{ type: 'text', value: `Heading ${depth}` }],
+        depth,
         type: 'heading',
       });
     });

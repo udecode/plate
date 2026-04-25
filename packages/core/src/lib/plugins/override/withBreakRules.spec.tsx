@@ -1,6 +1,12 @@
 /** @jsx jsxt */
 
-import { BaseH1Plugin } from '@platejs/basic-nodes';
+import {
+  BaseBlockquotePlugin,
+  BaseH1Plugin,
+  BaseH6Plugin,
+} from '@platejs/basic-nodes';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseListPlugin } from '@platejs/list';
 import { jsxt } from '@platejs/test-utils';
 
@@ -55,7 +61,291 @@ const getInsertBreakEditor = ({
 };
 
 describe('withBreakRules', () => {
+  describe('generic split behavior', () => {
+    it('splits a paragraph in the middle', () => {
+      const input = (
+        <editor>
+          <hp>
+            abc
+            <cursor />
+            def
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>abc</hp>
+          <hp>
+            <cursor />
+            def
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('keeps generic root split behavior for an empty paragraph', () => {
+      const input = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <htext />
+          </hp>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('replaces an expanded inline paragraph selection with one split result', () => {
+      const input = (
+        <editor>
+          <hp>
+            ab
+            <anchor />
+            cd
+            <focus />
+            ef
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>ab</hp>
+          <hp>
+            <cursor />
+            ef
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('replaces an expanded multi-block selection with one split result', () => {
+      const input = (
+        <editor>
+          <hp>
+            ab
+            <anchor />
+            cd
+          </hp>
+          <hp>
+            ef
+            <focus />
+            gh
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>ab</hp>
+          <hp>
+            <cursor />
+            gh
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('blockquote structural exit rules', () => {
+    it('lifts an empty top-level quoted paragraph out of the quote', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('lifts an empty nested quoted paragraph one quote level', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>
+                <cursor />
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('splits a non-empty nested quoted paragraph inside the same inner quote', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>
+                abc
+                <cursor />
+                def
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hblockquote>
+              <hp>abc</hp>
+              <hp>
+                <cursor />
+                def
+              </hp>
+            </hblockquote>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('lets list ownership win for an empty quoted list item', () => {
+      const input = (
+        <editor>
+          <hblockquote>
+            <hp indent={1} listStyleType="disc">
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hblockquote>
+            <hp>
+              <cursor />
+            </hp>
+          </hblockquote>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseListPlugin, BaseIndentPlugin, BaseBlockquotePlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
   describe('empty reset rules', () => {
+    it('resets an empty callout block to a paragraph', () => {
+      const input = (
+        <editor>
+          <element type="callout">
+            <cursor />
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseCalloutPlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
     it.each([
       ['blockquote', 'blockquote'],
       ['heading', 'h1'],
@@ -157,6 +447,37 @@ describe('withBreakRules', () => {
 
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
+    });
+  });
+
+  describe('line break rules', () => {
+    it('keeps Enter inside a non-empty callout by inserting a soft break', () => {
+      const input = (
+        <editor>
+          <element type="callout">
+            one
+            <cursor />
+            two
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="callout">{'one\ntwo'}</element>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseCalloutPlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual({
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      });
     });
   });
 
@@ -389,6 +710,43 @@ describe('withBreakRules', () => {
       expect(editor.selection).toEqual(output.selection);
     });
 
+    it('replaces an expanded heading selection and resets the trailing block', () => {
+      const input = (
+        <editor>
+          <element type="h1">
+            He
+            <anchor />
+            ad
+            <focus />
+            ing
+          </element>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <element type="h1">He</element>
+          <hp>
+            <cursor />
+            ing
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [
+          createElementPlugin({
+            breakRules: { splitReset: true },
+            key: 'h1',
+          }),
+        ],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
     it('resets the new block when breaking at the start', () => {
       const input = (
         <editor>
@@ -484,6 +842,35 @@ describe('withBreakRules', () => {
       const editor = getInsertBreakEditor({
         input,
         plugins: [BaseH1Plugin, BaseListPlugin],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('resets the new block after splitting in the middle of an h6 heading', () => {
+      const input = (
+        <editor>
+          <hh6>
+            Heading <cursor />
+            content
+          </hh6>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hh6>Heading </hh6>
+          <hp>
+            <cursor />
+            content
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getInsertBreakEditor({
+        input,
+        plugins: [BaseH6Plugin],
       });
 
       expect(editor.children).toEqual(output.children);

@@ -7,7 +7,6 @@ export const BaseDatePlugin = createSlatePlugin({
   node: {
     isElement: true,
     isInline: true,
-    isSelectable: false,
     isVoid: true,
   },
 }).extendEditorTransforms(({ editor }) => ({

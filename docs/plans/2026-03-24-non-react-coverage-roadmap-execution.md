@@ -13,7 +13,7 @@ Execute Tier 1 and Tier 2 from the locked non-React coverage roadmap in one prog
 
 ## Inputs
 
-- [2026-03-24-non-react-coverage-roadmap.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-non-react-coverage-roadmap.md)
+- [2026-03-24-non-react-coverage-roadmap.md](docs/plans/2026-03-24-non-react-coverage-roadmap.md)
 - `.agents/rules/testing-review.mdc`
 - `.agents/rules/testing.mdc`
 

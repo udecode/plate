@@ -27,21 +27,21 @@ Make the broad Bun package-graph sweep honest again after the non-React coverage
 
 ## Findings
 
-- The first broad failure presents as `editor.tf` being undefined inside [SlateExtensionPlugin.ts](/Users/zbeyens/git/plate/packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts).
+- The first broad failure presents as `editor.tf` being undefined inside [SlateExtensionPlugin.ts](packages/core/src/lib/plugins/slate-extension/SlateExtensionPlugin.ts).
 - That symptom is misleading.
-- [getLinkAttributes.spec.ts](/Users/zbeyens/git/plate/packages/link/src/react/utils/getLinkAttributes.spec.ts) passes alone and fails only when paired with [floatingLinkTriggers.spec.ts](/Users/zbeyens/git/plate/packages/link/src/react/utils/floatingLinkTriggers.spec.ts).
+- [getLinkAttributes.spec.ts](packages/link/src/react/utils/getLinkAttributes.spec.ts) passes alone and fails only when paired with [floatingLinkTriggers.spec.ts](packages/link/src/react/utils/floatingLinkTriggers.spec.ts).
 - That makes the current first culprit test pollution, not a random product regression.
-- [useTableMergeState.spec.tsx](/Users/zbeyens/git/plate/packages/table/src/react/hooks/useTableMergeState.spec.tsx) was the second poison pill: it replaced the whole `../../lib` barrel with a partial mock surface.
-- [useElementStore.spec.tsx](/Users/zbeyens/git/plate/packages/core/src/react/stores/element/useElementStore.spec.tsx) was still dumping expected `USE_ELEMENT_CONTEXT` warnings into the broad run because the spec harness used the default debug logger.
+- [useTableMergeState.spec.tsx](packages/table/src/react/hooks/useTableMergeState.spec.tsx) was the second poison pill: it replaced the whole `../../lib` barrel with a partial mock surface.
+- [useElementStore.spec.tsx](packages/core/src/react/stores/element/useElementStore.spec.tsx) was still dumping expected `USE_ELEMENT_CONTEXT` warnings into the broad run because the spec harness used the default debug logger.
 
 ## Outcome
 
 - Broad Bun package-graph sweep is green again.
 - The product code in `SlateExtensionPlugin` was not the root cause.
 - The actual fix was test-harness cleanup:
-  - [floatingLinkTriggers.spec.ts](/Users/zbeyens/git/plate/packages/link/src/react/utils/floatingLinkTriggers.spec.ts) now spies on `platejs.getEditorPlugin` instead of mocking all of `platejs`
-  - [useTableMergeState.spec.tsx](/Users/zbeyens/git/plate/packages/table/src/react/hooks/useTableMergeState.spec.tsx) now spies on `platejs/react` and `../../lib` exports instead of replacing whole modules
-  - [useElementStore.spec.tsx](/Users/zbeyens/git/plate/packages/core/src/react/stores/element/useElementStore.spec.tsx) now overrides `DebugPlugin` in the test editor so warning-path coverage stays quiet
+  - [floatingLinkTriggers.spec.ts](packages/link/src/react/utils/floatingLinkTriggers.spec.ts) now spies on `platejs.getEditorPlugin` instead of mocking all of `platejs`
+  - [useTableMergeState.spec.tsx](packages/table/src/react/hooks/useTableMergeState.spec.tsx) now spies on `platejs/react` and `../../lib` exports instead of replacing whole modules
+  - [useElementStore.spec.tsx](packages/core/src/react/stores/element/useElementStore.spec.tsx) now overrides `DebugPlugin` in the test editor so warning-path coverage stays quiet
 
 ## Verification
 
@@ -63,5 +63,5 @@ Make the broad Bun package-graph sweep honest again after the non-React coverage
 
 ## Learning
 
-- Shared package mocks should be local spies, not partial Bun module replacements. See [2026-03-25-shared-package-mocks-should-be-local-spies-not-partial-bun-module-replacements.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-25-shared-package-mocks-should-be-local-spies-not-partial-bun-module-replacements.md).
-- Warning-path React specs should capture `debug.warn` in their harness. See [2026-03-25-warning-path-react-specs-should-capture-debug-warn-in-their-harness.md](/Users/zbeyens/git/plate/docs/solutions/test-failures/2026-03-25-warning-path-react-specs-should-capture-debug-warn-in-their-harness.md).
+- Shared package mocks should be local spies, not partial Bun module replacements. See [2026-03-25-shared-package-mocks-should-be-local-spies-not-partial-bun-module-replacements.md](docs/solutions/test-failures/2026-03-25-shared-package-mocks-should-be-local-spies-not-partial-bun-module-replacements.md).
+- Warning-path React specs should capture `debug.warn` in their harness. See [2026-03-25-warning-path-react-specs-should-capture-debug-warn-in-their-harness.md](docs/solutions/test-failures/2026-03-25-warning-path-react-specs-should-capture-debug-warn-in-their-harness.md).

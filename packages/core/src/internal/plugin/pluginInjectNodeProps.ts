@@ -54,8 +54,18 @@ export const pluginInjectNodeProps = (
   } = injectNodeProps;
 
   const injectMatch = getInjectMatch(editor, plugin);
+  const shouldResolvePathForMatch = !!(
+    plugin.inject.excludeBelowPlugins || plugin.inject.maxLevel
+  );
 
-  if (!injectMatch(node, getElementPath(node))) return;
+  if (
+    !injectMatch(
+      node,
+      shouldResolvePathForMatch ? getElementPath(node) : undefined
+    )
+  ) {
+    return;
+  }
 
   const queryResult = query?.({
     ...injectNodeProps,

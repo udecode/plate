@@ -96,6 +96,11 @@
       "sourceType": "github",
       "computedHash": "4294136549ac279a00eb4a9eb731ea0d3b4e478433ade99ea81b8b04fbc36678"
     },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "computedHash": "507f011a70e8b3ae242bdc0bb5b39fd91a1d4049a0f3c281991ccf84973d591c"
+    },
     "tdd": {
       "source": "udecode/dotai",
       "sourceType": "github",
@@ -115,6 +120,11 @@
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
       "computedHash": "0299f567ea43a7c73466e7952120ea0814e4c692b68a1c4ef1ff1355364d7d2a"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "1be892a3ea68b74654326ef836a58dd528d99ae0ab8d879764e2519c39068e67"
     }
   }
 }

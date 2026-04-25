@@ -14,7 +14,7 @@ docs:
 - **Flexible Block Indentation**: Transform any block type (paragraphs, headings, etc.) into list items through indentation.
 - **Simplified Structure**: Flat DOM structure where each indented block is independent, unlike [List Classic plugin](/docs/list-classic).
 - **List Types**: Support for bulleted lists (unordered) and numbered lists (ordered).
-- **Markdown Shortcuts**: Combined with autoformat plugin, use markdown shortcuts (`-`, `*`, `1.`) to create lists.
+- **Markdown Shortcuts**: Register the shipped list input rules to create lists from markdown triggers like `-`, `*`, `1.`, and `[]`.
 
 For more information about the underlying indentation system, see the [Indent plugin](/docs/indent).
 
@@ -26,7 +26,7 @@ For more information about the underlying indentation system, see the [Indent pl
 
 ### Installation
 
-The fastest way to add list functionality is with the `ListKit`, which includes pre-configured `ListPlugin` along with the required [Indent plugin](/docs/indent) targeting paragraph, heading, blockquote, code block, and toggle elements.
+The fastest way to add list functionality is with the `ListKit`, which includes pre-configured `ListPlugin`, the shipped list input rules, and the required [Indent plugin](/docs/indent) targeting paragraph, heading, blockquote, code block, and toggle elements.
 
 <ComponentSource name="list-kit" />
 
@@ -114,10 +114,15 @@ const editor = createPlateEditor({
 
 ### Configure Plugins
 
-You can configure both plugins to target specific elements and customize list behavior.
+You can configure both plugins to target specific elements, customize list behavior, and register the shipped markdown rules.
 
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
+import {
+  BulletedListRules,
+  OrderedListRules,
+  TaskListRules,
+} from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
 import { KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
@@ -132,6 +137,11 @@ const editor = createPlateEditor({
       },
     }),
     ListPlugin.configure({
+      inputRules: [
+        BulletedListRules.markdown({ variant: '-' }),
+        OrderedListRules.markdown({ variant: '.' }),
+        TaskListRules.markdown({ checked: false }),
+      ],
       inject: {
         targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
       },
@@ -144,7 +154,10 @@ const editor = createPlateEditor({
 ```
 
 - `inject.targetPlugins`: An array of plugin keys indicating which element types can become list items.
+- `inputRules`: Registers the feature-owned markdown shortcuts for bulleted, ordered, and task lists.
 - `render.belowNodes`: Assigns [`BlockList`](/docs/components/block-list) to render list wrapper elements.
+
+For the runtime model and other variants, see [Plugin Input Rules](/docs/plugin-input-rules).
 
 </Steps>
 

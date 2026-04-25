@@ -14,7 +14,7 @@ docs:
 - **灵活的块缩进**：通过缩进将任何块类型（段落、标题等）转换为列表项。
 - **简化结构**：扁平的DOM结构，每个缩进的块都是独立的，不同于[List Classic插件](/docs/list-classic)。
 - **列表类型**：支持项目符号列表（无序）和编号列表（有序）。
-- **Markdown快捷键**：结合自动格式化插件，使用Markdown快捷键（`-`、`*`、`1.`）创建列表。
+- **Markdown 快捷输入**：通过注册列表 input rules，可使用 `-`、`*`、`1.`、`[]` 等触发方式创建列表。
 
 有关底层缩进系统的更多信息，请参阅[缩进插件](/docs/indent)。
 
@@ -26,7 +26,7 @@ docs:
 
 ### 安装
 
-添加列表功能的最快方式是使用`ListKit`，它包含预配置的`ListPlugin`以及必需的[缩进插件](/docs/indent)，针对段落、标题、引用块、代码块和折叠元素。
+添加列表功能的最快方式是使用`ListKit`，它包含预配置的`ListPlugin`、自带的列表 input rules，以及必需的[缩进插件](/docs/indent)，针对段落、标题、引用块、代码块和折叠元素。
 
 <ComponentSource name="list-kit" />
 
@@ -114,10 +114,15 @@ const editor = createPlateEditor({
 
 ### 配置插件
 
-您可以配置这两个插件以针对特定元素并自定义列表行为。
+您可以配置这两个插件以针对特定元素、自定义列表行为，并注册内置的 Markdown rules。
 
 ```tsx
 import { IndentPlugin } from '@platejs/indent/react';
+import {
+  BulletedListRules,
+  OrderedListRules,
+  TaskListRules,
+} from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
 import { KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
@@ -132,6 +137,11 @@ const editor = createPlateEditor({
       },
     }),
     ListPlugin.configure({
+      inputRules: [
+        BulletedListRules.markdown({ variant: '-' }),
+        OrderedListRules.markdown({ variant: '.' }),
+        TaskListRules.markdown({ checked: false }),
+      ],
       inject: {
         targetPlugins: [...KEYS.heading, KEYS.p, KEYS.blockquote, KEYS.codeBlock],
       },
@@ -144,7 +154,10 @@ const editor = createPlateEditor({
 ```
 
 - `inject.targetPlugins`：插件键的数组，指示哪些元素类型可以成为列表项。
+- `inputRules`：注册项目符号、编号和待办列表的 feature-owned Markdown 快捷输入。
 - `render.belowNodes`：分配[`BlockList`](/docs/components/block-list)以渲染列表包装元素。
+
+完整运行时模型和其他变体请参阅 [Plugin Input Rules](/docs/plugin-input-rules)。
 
 </Steps>
 

@@ -22,6 +22,7 @@ import {
   RadicalIcon,
   SparklesIcon,
   Square,
+  SuperscriptIcon,
   Table,
   TableOfContentsIcon,
 } from 'lucide-react';
@@ -207,6 +208,13 @@ const groups: Group[] = [
         keywords: ['time'],
         label: 'Date',
         value: KEYS.date,
+      },
+      {
+        focusEditor: true,
+        icon: <SuperscriptIcon />,
+        keywords: ['citation', 'fn', 'footnote', '[^]'],
+        label: 'Footnote',
+        value: 'action_footnote',
       },
       {
         focusEditor: false,

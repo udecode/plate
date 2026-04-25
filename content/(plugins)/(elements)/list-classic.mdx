@@ -53,7 +53,7 @@ docs:
   - Sibling and nested items drag & drop not yet supported
 
 - **Shortcuts**:
-  - Combined with the autoformat plugin, use markdown shortcuts (**`-`**, **`*`**, **`1.`**, **`[ ]`**) to create lists
+  - Register the shipped input rules to use markdown shortcuts (**`-`**, **`*`**, **`1.`**, **`[ ]`**) to create lists
   - Tab/Shift+Tab for indentation control
 
 - **Limitations (use the [List plugin](/docs/list) for these features)**:
@@ -70,7 +70,7 @@ For a more flexible, Word-like approach, see the [List plugin](/docs/list).
 
 ### Installation
 
-The fastest way to add list functionality is with the `ListKit`, which includes pre-configured list plugins with [Plate UI](/docs/installation/plate-ui) components and keyboard shortcuts.
+The fastest way to add list functionality is with the `ListKit` export from `list-classic-kit`, which includes pre-configured list plugins, the classic markdown entry rules, [Plate UI](/docs/installation/plate-ui) components, and keyboard shortcuts.
 
 <ComponentSource name="list-classic-kit" />
 
@@ -95,6 +95,8 @@ const editor = createPlateEditor({
 ```
 
 </Steps>
+
+The shipped `ListKit` also wires the classic markdown entry rules for bulleted, ordered, and task lists. See [Plugin Input Rules](/docs/plugin-input-rules) for the runtime model.
 
 ## Manual Usage
 
@@ -131,6 +133,11 @@ const editor = createPlateEditor({
 Configure the plugins with custom components and keyboard shortcuts.
 
 ```tsx
+import {
+  BulletedListRules,
+  OrderedListRules,
+  TaskListRules,
+} from '@platejs/list-classic';
 import { ListPlugin, BulletedListPlugin, NumberedListPlugin, TaskListPlugin, ListItemPlugin } from '@platejs/list-classic/react';
 import { createPlateEditor } from 'platejs/react';
 import { BulletedListElement, NumberedListElement, TaskListElement } from '@/components/ui/list-classic-node';
@@ -138,7 +145,16 @@ import { BulletedListElement, NumberedListElement, TaskListElement } from '@/com
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    ListPlugin,
+    ListPlugin.configure({
+      inputRules: [
+        BulletedListRules.markdown({ variant: '-' }),
+        BulletedListRules.markdown({ variant: '*' }),
+        OrderedListRules.markdown({ variant: '.' }),
+        OrderedListRules.markdown({ variant: ')' }),
+        TaskListRules.markdown({ checked: false }),
+        TaskListRules.markdown({ checked: true }),
+      ],
+    }),
     BulletedListPlugin.configure({
       node: { component: BulletedListElement },
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
@@ -156,6 +172,7 @@ const editor = createPlateEditor({
 });
 ```
 
+- `inputRules`: Registers the classic markdown entry rules for bulleted, ordered, and task lists.
 - `node.component`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
 - `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered, `mod+alt+7` for task lists).
 

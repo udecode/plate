@@ -1,6 +1,6 @@
 import type { OverrideEditor, TIndentElement } from 'platejs';
 
-import { getInjectMatch } from 'platejs';
+import { getInjectMatch, KEYS } from 'platejs';
 
 import type { IndentConfig } from './BaseIndentPlugin';
 
@@ -53,6 +53,19 @@ export const withIndent: OverrideEditor<IndentConfig> = ({
         if (!match(element, path)) return;
 
         if (options.reverse) {
+          if (!element.indent) {
+            const isInsideBlockquote = !!editor.api.above({
+              at: path,
+              match: (node: any, nodePath: number[]) =>
+                nodePath.length < path.length &&
+                node.type === editor.getType(KEYS.blockquote),
+            });
+
+            if (isInsideBlockquote) return;
+
+            return true;
+          }
+
           outdent(editor);
         } else {
           indent(editor);

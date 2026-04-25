@@ -9,7 +9,7 @@ status: completed
 
 ## Scope
 
-- Execute the locked Tier 1 and Tier 2 non-React files from [2026-03-24-non-react-coverage-roadmap-phase-2.md](/Users/zbeyens/git/plate/docs/plans/2026-03-24-non-react-coverage-roadmap-phase-2.md).
+- Execute the locked Tier 1 and Tier 2 non-React files from [2026-03-24-non-react-coverage-roadmap-phase-2.md](docs/plans/2026-03-24-non-react-coverage-roadmap-phase-2.md).
 - Keep the work file-first.
 - Add direct tests or expand existing specs only where the seam is still honest.
 

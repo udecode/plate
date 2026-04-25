@@ -20,7 +20,7 @@ Run fresh repo coverage from the current tree, then regenerate a full non-React 
 - `docs/plans/2026-03-17-coverage-priority-map.md`
 - latest 2026-03-24 coverage maps and TSVs
 - coverage artifact to generate in this pass:
-  - `/Users/zbeyens/git/plate/.coverage-repo-2026-03-24f/lcov.info`
+  - `.coverage-repo-2026-03-24f/lcov.info`
 
 ## Constraints
 

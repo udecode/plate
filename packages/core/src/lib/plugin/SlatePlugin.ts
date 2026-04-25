@@ -22,6 +22,10 @@ import type {
 import type { SlateEditor } from '../editor';
 import type { CorePluginApi, CorePluginTransforms } from '../plugins';
 import type {
+  InputRulesConfig,
+  InputRulesDefinition,
+} from '../plugins/input-rules/types';
+import type {
   AnyPluginConfig,
   BaseDeserializer,
   BaseHtmlDeserializer,
@@ -414,6 +418,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
           SlateShortcut | null
         >
       >;
+      inputRules: InputRulesDefinition | InputRulesConfig;
     };
 
 export type SlatePluginConfig<

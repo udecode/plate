@@ -1,6 +1,6 @@
 {
   "name": "@platejs/markdown",
-  "version": "52.3.22",
+  "version": "53.0.0",
   "description": "Markdown serializer plugin for Plate",
   "keywords": [
     "markdown",
@@ -42,6 +42,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/date": "workspace:*",
     "lodash": "^4.17.23",
     "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",
@@ -56,14 +57,16 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
+    "@platejs/footnote": "workspace:*",
     "platejs": "workspace:^",
     "@types/mdast": "^4.0.4",
     "@types/unist": "^3.0.3",
+    "remark-emoji": "5.0.1",
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0"
   },
   "peerDependencies": {
-    "platejs": ">=52.0.11",
+    "platejs": ">=53.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

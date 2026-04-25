@@ -133,6 +133,40 @@ describe('withMergeRules', () => {
       expect(editor.children).toEqual(output.children);
       expect(editor.selection).toEqual(output.selection);
     });
+
+    it('merges an empty paragraph into the previous paragraph', () => {
+      const input = (
+        <editor>
+          <hp>alpha</hp>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const output = (
+        <editor>
+          <hp>
+            alpha
+            <cursor />
+          </hp>
+        </editor>
+      ) as any;
+
+      const editor = getEditorAfterAction({
+        action: (editor) => editor.tf.deleteBackward('character'),
+        input,
+        plugins: [
+          createElementPlugin({
+            key: 'p',
+            mergeRules: { removeEmpty: true },
+          }),
+        ],
+      });
+
+      expect(editor.children).toEqual(output.children);
+      expect(editor.selection).toEqual(output.selection);
+    });
   });
 
   describe('default merge behavior', () => {

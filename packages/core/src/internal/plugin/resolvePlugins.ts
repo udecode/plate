@@ -12,6 +12,12 @@ import type { SlateEditor, SlatePlugin, SlatePlugins } from '../../lib';
 import { getEditorPlugin } from '../../lib/plugin';
 import { mergePlugins } from '../utils/mergePlugins';
 import { resolvePlugin } from './resolvePlugin';
+import type {
+  AnyInputRule,
+  ResolvedInputRule,
+  ResolvedInputRulesMeta,
+} from '../../lib/plugins/input-rules/types';
+import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/createInputRuleBuilder';
 
 /**
  * Initialize and configure the editor's plugin system. This function sets up
@@ -27,6 +33,12 @@ export const resolvePlugins = (
 ) => {
   editor.plugins = {};
   editor.meta.pluginList = [];
+  editor.meta.inputRules = {
+    insertBreak: [],
+    insertData: [],
+    insertText: { all: [], byTrigger: {} },
+    plugins: {},
+  } as ResolvedInputRulesMeta;
   editor.meta.shortcuts = {} as Record<
     string,
     SlatePlugin['shortcuts'][string]
@@ -186,6 +198,8 @@ export const resolvePlugins = (
   });
 
   resolvePluginShortcuts(editor);
+  resolvePluginInputRules(editor);
+  validateRemovedRuntimePlugins(editor);
 
   return editor;
 };
@@ -333,6 +347,108 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
       }
     });
   });
+};
+
+const resolvePluginInputRules = (editor: SlateEditor) => {
+  const resolvedMeta: ResolvedInputRulesMeta = {
+    insertBreak: [],
+    insertData: [],
+    insertText: { all: [], byTrigger: {} },
+    plugins: {},
+  };
+
+  editor.meta.pluginList.forEach((plugin, pluginIndex) => {
+    const pluginKey = plugin.key;
+    const inputRulesDefinition = (plugin as any).inputRules;
+    const definitionRules =
+      typeof inputRulesDefinition === 'function'
+        ? inputRulesDefinition({
+            rule: createInputRuleBuilder(),
+          })
+        : (inputRulesDefinition ?? []);
+    const configuredRules = ((plugin as any).__configuredInputRules ??
+      []) as AnyInputRule[];
+    const ruleDefinitions = [
+      ...(definitionRules as AnyInputRule[]),
+      ...configuredRules,
+    ];
+
+    resolvedMeta.plugins[pluginKey] = {
+      rules: [],
+    };
+
+    ruleDefinitions.forEach((definition, ruleIndex) => {
+      if (!definition) return;
+
+      const mergedRule = mergePlugins(
+        {},
+        definition
+      ) as unknown as ResolvedInputRule;
+      const resolvedRule = {
+        ...mergedRule,
+        id: `${pluginKey}.${ruleIndex}`,
+        pluginIndex,
+        pluginKey,
+        priority: mergedRule.priority ?? plugin.priority,
+        ruleIndex,
+      } as ResolvedInputRule;
+
+      resolvedMeta.plugins[pluginKey].rules.push(resolvedRule);
+
+      if (resolvedRule.target === 'insertText') {
+        const triggers = Array.isArray(resolvedRule.trigger)
+          ? [...resolvedRule.trigger]
+          : [resolvedRule.trigger];
+
+        resolvedMeta.insertText.all.push(resolvedRule);
+        triggers.forEach((trigger) => {
+          if (!resolvedMeta.insertText.byTrigger[trigger]) {
+            resolvedMeta.insertText.byTrigger[trigger] = [];
+          }
+
+          resolvedMeta.insertText.byTrigger[trigger].push(resolvedRule);
+        });
+      } else if (resolvedRule.target === 'insertBreak') {
+        resolvedMeta.insertBreak.push(resolvedRule);
+      } else if (resolvedRule.target === 'insertData') {
+        resolvedMeta.insertData.push(resolvedRule);
+      }
+    });
+  });
+
+  const sortRules = (a: ResolvedInputRule, b: ResolvedInputRule) => {
+    if (b.priority !== a.priority) return b.priority - a.priority;
+    if (a.pluginIndex !== b.pluginIndex) return a.pluginIndex - b.pluginIndex;
+
+    return a.ruleIndex - b.ruleIndex;
+  };
+
+  resolvedMeta.insertBreak.sort(sortRules);
+  resolvedMeta.insertData.sort(sortRules);
+  resolvedMeta.insertText.all.sort(sortRules);
+  Object.values(resolvedMeta.insertText.byTrigger).forEach((rules) => {
+    rules.sort(sortRules);
+  });
+
+  editor.meta.inputRules = resolvedMeta;
+};
+
+const validateRemovedRuntimePlugins = (editor: SlateEditor) => {
+  const hasAutoformatPlugin = !!editor.plugins.autoformat;
+  const hasResolvedInputRules =
+    editor.meta.inputRules.insertBreak.length > 0 ||
+    editor.meta.inputRules.insertData.length > 0 ||
+    editor.meta.inputRules.insertText.all.length > 0;
+
+  if (hasAutoformatPlugin && hasResolvedInputRules) {
+    throw new Error(
+      [
+        'AutoformatPlugin cannot be used with plugin-owned input rules.',
+        'Remove AutoformatPlugin from your editor plugins.',
+        'Enable inputRules on the feature plugins you use instead.',
+      ].join(' ')
+    );
+  }
 };
 
 const flattenAndResolvePlugins = (

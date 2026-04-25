@@ -20,10 +20,12 @@ describe(getDocxTestName(name), () => {
           <htext />
         </hp>
         <hblockquote>
-          <htext italic>
-            I don’t know why this would be in italics, but so it appears to be
-            on my screen.
-          </htext>
+          <hp>
+            <htext italic>
+              I don’t know why this would be in italics, but so it appears to be
+              on my screen.
+            </htext>
+          </hp>
         </hblockquote>
         <hp>
           <htext />

@@ -13,7 +13,7 @@
   "files": [
     {
       "path": "src/registry/components/editor/plugins/math-kit.tsx",
-      "content": "'use client';\n\nimport { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';\n\nimport {\n  EquationElement,\n  InlineEquationElement,\n} from '@/registry/ui/equation-node';\n\nexport const MathKit = [\n  InlineEquationPlugin.withComponent(InlineEquationElement),\n  EquationPlugin.withComponent(EquationElement),\n];\n",
+      "content": "'use client';\n\nimport { MathRules } from '@platejs/math';\nimport { EquationPlugin, InlineEquationPlugin } from '@platejs/math/react';\n\nimport {\n  EquationElement,\n  InlineEquationElement,\n} from '@/registry/ui/equation-node';\n\nexport const MathKit = [\n  InlineEquationPlugin.configure({\n    inputRules: [MathRules.markdown({ variant: '$' })],\n    node: {\n      component: InlineEquationElement,\n    },\n  }),\n  EquationPlugin.configure({\n    inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],\n    node: {\n      component: EquationElement,\n    },\n  }),\n];\n",
       "type": "registry:component"
     }
   ]

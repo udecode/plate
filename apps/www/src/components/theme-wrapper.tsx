@@ -24,6 +24,7 @@ export function ThemeWrapper({
         'w-full',
         className
       )}
+      suppressHydrationWarning
       style={
         {
           '--radius': `${defaultTheme ? 0.5 : config.radius}rem`,

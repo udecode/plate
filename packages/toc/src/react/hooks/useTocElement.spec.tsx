@@ -4,12 +4,11 @@ import {
   heightToTopMock,
   registerSharedTocHookMocks,
   resetSharedTocHookMocks,
+  useContentControllerMock,
   useEditorPluginMock,
   useEditorSelectorMock,
   useScrollRefMock,
 } from './__tests__/tocHookMocks';
-
-let setTimeoutSpy: ReturnType<typeof spyOn>;
 
 describe('useTocElement', () => {
   beforeEach(() => {
@@ -19,39 +18,25 @@ describe('useTocElement', () => {
     mock.module('../TocPlugin', () => ({
       TocPlugin: { key: 'toc' },
     }));
-    setTimeoutSpy = spyOn(globalThis, 'setTimeout').mockImplementation(((
-      fn: Function
-    ) => {
-      fn();
-      return 1;
-    }) as any);
-  });
-
-  afterEach(() => {
-    setTimeoutSpy.mockRestore();
+    mock.module('./useContentController', () => ({
+      useContentController: useContentControllerMock,
+    }));
   });
 
   afterAll(() => {
     mock.restore();
   });
 
-  it('builds toc element state and forwards heading clicks into scrolling + row selection', async () => {
+  it('builds toc element state around the shared content controller', async () => {
     const { useTocElement, useTocElementState } = await import(
       `./useTocElement?test=${Math.random().toString(36).slice(2)}`
     );
-    const addSelectedRow = mock();
-    const scrollTo = mock();
+    const onContentScroll = mock();
     const toDOMNode = mock(() => document.createElement('h2'));
-    const container = {
-      current: { scrollTo },
-    };
 
     useEditorPluginMock.mockReturnValue({
       editor: {
         api: { toDOMNode },
-        getApi: () => ({
-          blockSelection: { addSelectedRow },
-        }),
       },
       getOptions: () => ({
         isScroll: true,
@@ -59,7 +44,13 @@ describe('useTocElement', () => {
       }),
     });
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
-    useScrollRefMock.mockReturnValue(container);
+    useScrollRefMock.mockReturnValue({
+      current: document.createElement('div'),
+    });
+    useContentControllerMock.mockReturnValue({
+      activeContentId: 'h1',
+      onContentScroll,
+    });
 
     const stateHook = renderHook(() => useTocElementState());
     const hook = renderHook(() => useTocElement(stateHook.result.current));
@@ -75,7 +66,12 @@ describe('useTocElement', () => {
     expect(stateHook.result.current.headingList).toEqual([
       { id: 'h1', path: [0] },
     ]);
-    expect(scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 45 });
-    expect(addSelectedRow).toHaveBeenCalledWith('h1');
+    expect(stateHook.result.current.activeContentId).toBe('h1');
+    expect(onContentScroll).toHaveBeenCalledWith({
+      behavior: 'instant',
+      el: expect.any(HTMLElement),
+      id: 'h1',
+      path: [0],
+    });
   });
 });

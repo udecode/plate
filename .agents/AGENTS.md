@@ -1,4 +1,4 @@
-- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `bun install` to sync. Never edit `SKILL.md` directly.
+- `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `pnpm install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
 - Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
@@ -18,13 +18,14 @@
 
 - DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
 - Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow docs/solutions/style.md for writing tone/structure.
-- Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles during package/app work. If local verification rewrites template files, restore them before handoff. Only change `templates/**` when the user explicitly asks for template work.
+- Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles. Fix the source registry, package, or workflow inputs and let CI regenerate templates. If local verification rewrites template files, restore them before handoff.
 - Barrels: If you change package exports, move public files, add/remove files under exported folders, or CI says `pnpm brl` produced changes, run `pnpm brl` before final verification/commit and include the generated barrel updates.
 - Do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior.
 - Prefer inline when used once; extract constants only when reused.
 
 ## Tooling
 
+- Never run `build:registry` outside CI. Registry build output is automated by CI and does not belong in local agent commits.
 - If typecheck/build/dev suddenly blows up with missing-module or package-resolution garbage that does not match the current diff, run `pnpm run reinstall` once before deeper debugging.
 - Treat local-only React runtime weirdness as install corruption first, not product code:
   - `Invalid hook call`
@@ -34,6 +35,7 @@
 - If `pnpm test`, `bun test`, or `pnpm check` suddenly fails with those signals and the failure does not line up with the current diff, run `pnpm run reinstall` once before blocking on the task.
 - `pnpm run reinstall` is the repo reset button: it deletes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`, `apps/www/.contentlayer`, and `tsconfig.tsbuildinfo`, then runs `pnpm install`.
 - Do not use `pnpm run reinstall` as a lazy substitute for fixing real code errors.
+- For `react-dnd` / DnD fixes, do not treat a follow-up Bun `Invalid hook call`, `resolveDispatcher()`, or mixed `.bun` + `.pnpm` React stack as proof the DnD fix is wrong. In this repo, run `pnpm run reinstall` once before reopening the diagnosis; that failure shape is usually local env rot, not duplicate deps or broken DnD logic.
 
 ## Skill
 
@@ -44,6 +46,7 @@ Use those skills when relevant:
 - `tdd`
 - `ce-review` when doing a code review
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
+- @.agents/rules/editor-spec.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
 
 Plate-specific CE exclusions:
 
@@ -70,7 +73,7 @@ When using the following skills, override the default behavior.
 - Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
 - Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
 - If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
-  - [Add browser learning]
+  - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 `ce-*`:
 

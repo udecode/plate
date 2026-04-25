@@ -159,7 +159,7 @@ describe('defaultRules', () => {
     expect(inlineEquation.texExpression).toBe('a=b');
   });
 
-  it('flattens footnote definitions to paragraph children', () => {
+  it('converts footnote definitions into dedicated nodes', () => {
     const editor = createTestEditor();
 
     const result = buildRules(editor).footnoteDefinition.deserialize!(
@@ -174,14 +174,25 @@ describe('defaultRules', () => {
             type: 'paragraph',
           },
         ],
+        identifier: '1',
       } as any,
       {},
       { editor }
     );
 
     expect(result).toEqual({
-      children: [{ text: 'First note' }, { text: 'Second note' }],
-      type: 'p',
+      children: [
+        {
+          children: [{ text: 'First note' }],
+          type: 'p',
+        },
+        {
+          children: [{ text: 'Second note' }],
+          type: 'p',
+        },
+      ],
+      identifier: '1',
+      type: 'footnoteDefinition',
     });
   });
 

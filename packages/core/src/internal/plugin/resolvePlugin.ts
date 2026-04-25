@@ -7,6 +7,15 @@ import type { AnySlatePlugin, SlatePlugin } from '../../lib/plugin/SlatePlugin';
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import { mergePlugins } from '../utils/mergePlugins';
 
+const normalizeConfiguredInputRules = (config: unknown) => {
+  if (config === undefined) return [];
+  if (Array.isArray(config)) return [...config];
+
+  throw new Error(
+    'inputRules config must be an array of explicit rule instances.'
+  );
+};
+
 /**
  * Resolves and finalizes a plugin configuration for use in a Plate editor.
  *
@@ -35,7 +44,21 @@ export const resolvePlugin = <P extends AnySlatePlugin>(
   if (plugin.__configuration) {
     const configResult = plugin.__configuration(
       getEditorPlugin(editor, plugin as any)
-    );
+    ) as any;
+
+    if (configResult.inputRules !== undefined) {
+      const normalizedInputRules = normalizeConfiguredInputRules(
+        configResult.inputRules
+      );
+
+      (plugin as any).__configuredInputRules = [
+        ...normalizeConfiguredInputRules(
+          (plugin as any).__configuredInputRules
+        ),
+        ...normalizedInputRules,
+      ];
+      configResult.inputRules = undefined;
+    }
 
     plugin = mergePlugins(plugin, configResult);
 

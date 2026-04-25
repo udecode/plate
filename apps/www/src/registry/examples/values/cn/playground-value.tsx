@@ -217,7 +217,39 @@ export const playgroundValue: Value = [
   {
     children: [
       {
-        text: '引用块非常适合突出显示重要信息。',
+        children: [
+          {
+            text: '引用块可以在同一个容器中组合段落、引用列表和回复链。',
+          },
+        ],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: 'Markdown 引用会保留这种嵌套结构，而不是把内容压平成纯文本。',
+          },
+        ],
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            text: '同一个引用容器中的引用列表项。',
+          },
+        ],
+        indent: 1,
+        listStyleType: 'disc',
+        type: 'p',
+      },
+      {
+        children: [
+          {
+            children: [{ text: '这里同样支持嵌套引用块。' }],
+            type: 'p',
+          },
+        ],
+        type: 'blockquote',
       },
     ],
     type: 'blockquote',
