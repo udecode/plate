@@ -4,10 +4,16 @@ import test from 'node:test';
 import {
   AUTO_RELEASE_END,
   AUTO_RELEASE_START,
+  getChangesetReleaseType,
   hasChangesetFile,
   isAutoReleaseChecked,
   upsertAutoReleaseBlock,
 } from './auto-release-pr.mjs';
+
+test('uses repo-neutral auto-release markers', () => {
+  assert.equal(AUTO_RELEASE_START, '<!-- auto-release:start -->');
+  assert.equal(AUTO_RELEASE_END, '<!-- auto-release:end -->');
+});
 
 test('detects real changeset files', () => {
   assert.equal(hasChangesetFile(['.changeset/media-redos.md']), true);
@@ -17,21 +23,92 @@ test('detects real changeset files', () => {
   );
 });
 
-test('adds an unchecked auto-release block to changeset PRs', () => {
+test('detects the highest changeset release type from PR file patches', () => {
+  assert.equal(
+    getChangesetReleaseType([
+      {
+        filename: '.changeset/media-redos.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/media": patch
++---
++
++Fix parser`,
+      },
+    ]),
+    'patch'
+  );
+
+  assert.equal(
+    getChangesetReleaseType([
+      {
+        filename: '.changeset/media-redos.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/media": patch
++---
++Fix parser`,
+      },
+      {
+        filename: '.changeset/core-api.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/core": minor
++---
++Add API`,
+      },
+    ]),
+    'minor'
+  );
+
+  assert.equal(
+    getChangesetReleaseType([
+      {
+        filename: '.changeset/core-break.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/core": major
++---
++Remove API`,
+      },
+      {
+        filename: '.changeset/media-redos.md',
+        patch: `@@ -0,0 +1,5 @@
++---
++"@platejs/media": patch
++---
++Fix parser`,
+      },
+    ]),
+    'major'
+  );
+});
+
+test('adds a checked auto-release block to patch-only changeset PRs', () => {
   const body = upsertAutoReleaseBlock('## Summary\nFix media parser.', {
+    defaultChecked: true,
     hasChangeset: true,
   });
 
   assert.equal(
     body,
     `${AUTO_RELEASE_START}
-- [ ] Auto release
+- [x] Auto release
 ${AUTO_RELEASE_END}
 
 ## Summary
 Fix media parser.
 `
   );
+});
+
+test('adds an unchecked auto-release block to minor or major changeset PRs', () => {
+  const body = upsertAutoReleaseBlock('## Summary\nAdd API.', {
+    defaultChecked: false,
+    hasChangeset: true,
+  });
+
+  assert.match(body, /- \[ \] Auto release/);
 });
 
 test('preserves a checked auto-release block', () => {
@@ -78,4 +155,20 @@ Fix media parser.
 
   assert.match(nextBody, /- \[x\] Auto release/);
   assert.doesNotMatch(nextBody, /Version Packages/);
+});
+
+test('rewrites old managed markers to the repo-neutral markers', () => {
+  const body = `<!-- plate:auto-release:start -->
+- [x] Auto release
+<!-- plate:auto-release:end -->
+
+## Summary
+Fix media parser.
+`;
+
+  const nextBody = upsertAutoReleaseBlock(body, { hasChangeset: true });
+
+  assert.match(nextBody, /^<!-- auto-release:start -->/);
+  assert.doesNotMatch(nextBody, /plate:auto-release/);
+  assert.match(nextBody, /- \[x\] Auto release/);
 });

@@ -29,7 +29,11 @@ jobs:
             const helperUrl = pathToFileURL(
               `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
             ).href;
-            const { hasChangesetFile, upsertAutoReleaseBlock } = await import(helperUrl);
+            const {
+              getChangesetReleaseType,
+              hasChangesetFile,
+              upsertAutoReleaseBlock,
+            } = await import(helperUrl);
 
             const pullRequest = context.payload.pull_request;
             const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -40,8 +44,12 @@ jobs:
             });
 
             const hasChangeset = hasChangesetFile(files);
+            const releaseType = getChangesetReleaseType(files);
             const currentBody = pullRequest.body ?? '';
-            const nextBody = upsertAutoReleaseBlock(currentBody, { hasChangeset });
+            const nextBody = upsertAutoReleaseBlock(currentBody, {
+              defaultChecked: releaseType === 'patch',
+              hasChangeset,
+            });
 
             if (nextBody === currentBody) {
               core.info('PR body already matches auto-release policy.');

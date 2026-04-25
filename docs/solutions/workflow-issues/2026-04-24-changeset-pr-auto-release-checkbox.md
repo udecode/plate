@@ -37,10 +37,11 @@ Changeset PRs create a follow-up `[Release] Version packages` PR after merge. Wh
 Use a managed PR-body checkbox plus release workflow enforcement:
 
 1. Add a `pull_request_target` workflow that checks out base code, reads PR file names through the GitHub API, and upserts the checkbox only when the PR contains a real `.changeset/*.md` file.
-2. Preserve the checked state when the user edits the checkbox.
-3. In the release workflow, inspect the merged PR associated with the push to `main`.
-4. If the merged PR has a checked managed checkbox and a changeset file, enable auto-merge on the generated release PR.
-5. Use `API_TOKEN_GITHUB` for the merge path so the follow-up publish workflow can run.
+2. Default patch-only changeset PRs to checked, and default PRs with any `minor` or `major` changeset to unchecked.
+3. Preserve the checked state when the user edits the checkbox.
+4. In the release workflow, inspect the merged PR associated with the push to `main`.
+5. If the merged PR has a checked managed checkbox and a changeset file, enable auto-merge on the generated release PR.
+6. Use `API_TOKEN_GITHUB` for the merge path so the follow-up publish workflow can run.
 
 ```yaml
 env:
@@ -63,6 +64,7 @@ Using the PAT is the critical bit. The release PR merge must create the normal p
 ## Prevention
 
 - Keep dynamic release intent in a managed PR-body block, not only in comments.
+- Default low-risk patch release PRs to checked, but make `minor` and `major` releases an explicit opt-in.
 - For `pull_request_target`, only run trusted base-repo code and read untrusted PR data through the GitHub API.
 - Do not use default `GITHUB_TOKEN` for workflow-triggering release merges.
 - Add helper tests for checkbox preservation, changeset-file detection, and ignoring stray checkbox text outside the managed block.
