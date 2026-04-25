@@ -9,7 +9,6 @@ type NavigationHighlightTarget = Path | TElement | TText | null | undefined;
 export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
   const targetRef = React.useRef(target);
 
-  // eslint-disable-next-line react-hooks/refs
   targetRef.current = target;
 
   return useEditorSelector(
