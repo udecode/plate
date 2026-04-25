@@ -103,6 +103,7 @@ export function InlineEquationElement(
 
   React.useEffect(() => {
     if (selected && isCollapsed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Open the inline equation popover when editor selection enters it.
       setOpen(true);
     }
   }, [selected, isCollapsed]);
