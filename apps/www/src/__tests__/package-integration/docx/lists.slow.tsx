@@ -29,7 +29,7 @@ describe(getDocxTestName(name), () => {
         <hp indent={1} listStyleType="disc">
           one
         </hp>
-        <hp indent={1} listStart={2} listStyleType="disc">
+        <hp indent={1} listStyleType="disc">
           two
         </hp>
         <hp indent={2} listStyleType="disc">
@@ -39,10 +39,10 @@ describe(getDocxTestName(name), () => {
           four
         </hp>
         <hp indent={3}>Sub paragraph</hp>
-        <hp indent={1} listStart={3} listStyleType="disc">
+        <hp indent={1} listStyleType="disc">
           Same list
         </hp>
-        <hp indent={1} listStart={4} listStyleType="disc">
+        <hp indent={1} listStyleType="disc">
           Different list adjacent to the one above.
         </hp>
       </editor>

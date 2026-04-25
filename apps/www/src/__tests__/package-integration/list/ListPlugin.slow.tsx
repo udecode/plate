@@ -203,7 +203,6 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 1,
-        listStart: 2, // Second item in the list
         listStyleType: 'disc',
         type: 'p',
       },
