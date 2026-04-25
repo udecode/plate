@@ -7,6 +7,8 @@ import {
   getChangesetReleaseType,
   hasChangesetFile,
   isAutoReleaseChecked,
+  isVersionPackagesTitle,
+  shouldManageAutoReleaseBlock,
   upsertAutoReleaseBlock,
 } from './auto-release-pr.mjs';
 
@@ -20,6 +22,29 @@ test('detects real changeset files', () => {
   assert.equal(
     hasChangesetFile(['.changeset/README.md', 'packages/media/src/index.ts']),
     false
+  );
+});
+
+test('detects Version packages release PR titles', () => {
+  assert.equal(isVersionPackagesTitle('[Release] Version packages'), true);
+  assert.equal(isVersionPackagesTitle('chore: Version Packages'), true);
+  assert.equal(isVersionPackagesTitle('Fix media parser'), false);
+});
+
+test('does not manage auto-release blocks on Version packages PRs', () => {
+  assert.equal(
+    shouldManageAutoReleaseBlock({
+      files: ['.changeset/media-redos.md'],
+      title: '[Release] Version packages',
+    }),
+    false
+  );
+  assert.equal(
+    shouldManageAutoReleaseBlock({
+      files: ['.changeset/media-redos.md'],
+      title: 'Fix media parser',
+    }),
+    true
   );
 });
 

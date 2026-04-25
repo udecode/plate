@@ -31,7 +31,7 @@ jobs:
             ).href;
             const {
               getChangesetReleaseType,
-              hasChangesetFile,
+              shouldManageAutoReleaseBlock,
               upsertAutoReleaseBlock,
             } = await import(helperUrl);
 
@@ -43,8 +43,13 @@ jobs:
               per_page: 100,
             });
 
-            const hasChangeset = hasChangesetFile(files);
-            const releaseType = getChangesetReleaseType(files);
+            const hasChangeset = shouldManageAutoReleaseBlock({
+              files,
+              title: pullRequest.title ?? '',
+            });
+            const releaseType = hasChangeset
+              ? getChangesetReleaseType(files)
+              : null;
             const currentBody = pullRequest.body ?? '';
             const nextBody = upsertAutoReleaseBlock(currentBody, {
               defaultChecked: releaseType === 'patch',
