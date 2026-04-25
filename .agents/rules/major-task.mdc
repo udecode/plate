@@ -301,6 +301,24 @@ Keep verification mandatory but proportional.
 Apply this section only when the task came from a tracker item and reached a meaningful outcome.
 
 - If the work changed code, follow the same PR and tracker sync contract as `task.mdc`.
+- If the PR contains any real `.changeset/*.md` file, include the managed auto-release block directly at the top of the PR description. Do not wait for CI to add it.
+- Use the checked block for patch-only changesets:
+
+  ```md
+  <!-- auto-release:start -->
+  - [x] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- Use the unchecked block when any changeset frontmatter entry is `minor` or `major`:
+
+  ```md
+  <!-- auto-release:start -->
+  - [ ] Auto release
+  <!-- auto-release:end -->
+  ```
+
+- Omit the block when the PR has no real `.changeset/*.md` file.
 - If the work stayed analytical, comment back only when the analysis itself is useful to the tracker owner.
 - Keep tracker comments user-facing and outcome-focused.
 - Do not dump research process into tracker comments.
