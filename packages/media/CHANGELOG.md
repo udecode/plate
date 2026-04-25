@@ -1,5 +1,11 @@
 # @platejs/media
 
+## 53.0.1
+
+### Patch Changes
+
+- [#4957](https://github.com/udecode/plate/pull/4957) by [@zbeyens](https://github.com/zbeyens) – Fix video URL parsing to avoid ReDoS on crafted time parameters
+
 ## 53.0.0
 
 ### Patch Changes

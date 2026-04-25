@@ -1,6 +1,6 @@
 {
   "name": "@platejs/media",
-  "version": "53.0.0",
+  "version": "53.0.1",
   "description": "Plate Media plugin",
   "keywords": [
     "plate",
@@ -40,7 +40,6 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "js-video-url-parser": "^0.5.1",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

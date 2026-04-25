@@ -1,0 +1,69 @@
+name: Changeset Auto Release Checkbox
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync-auto-release-checkbox:
+    name: Sync auto-release checkbox
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'udecode/plate' }}
+
+    steps:
+      - name: 📥 Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: 🔁 Sync auto-release checkbox
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { pathToFileURL } = await import('node:url');
+            const helperUrl = pathToFileURL(
+              `${process.env.GITHUB_WORKSPACE}/tooling/scripts/auto-release-pr.mjs`
+            ).href;
+            const {
+              getChangesetReleaseType,
+              shouldManageAutoReleaseBlock,
+              upsertAutoReleaseBlock,
+            } = await import(helperUrl);
+
+            const pullRequest = context.payload.pull_request;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              per_page: 100,
+            });
+
+            const hasChangeset = shouldManageAutoReleaseBlock({
+              files,
+              title: pullRequest.title ?? '',
+            });
+            const releaseType = hasChangeset
+              ? getChangesetReleaseType(files)
+              : null;
+            const currentBody = pullRequest.body ?? '';
+            const nextBody = upsertAutoReleaseBlock(currentBody, {
+              defaultChecked: releaseType === 'patch',
+              hasChangeset,
+            });
+
+            if (nextBody === currentBody) {
+              core.info('PR body already matches auto-release policy.');
+              return;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullRequest.number,
+              body: nextBody,
+            });
