@@ -3,5 +3,11 @@
     "app/**/*": {
       "maxDuration": 1
     }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "**": false,
+      "main": true
+    }
   }
 }
