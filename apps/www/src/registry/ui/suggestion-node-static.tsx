@@ -1,13 +1,16 @@
 import * as React from 'react';
 
 import { cva } from 'class-variance-authority';
-import type { TElement, TSuggestionData, TSuggestionText } from 'platejs';
+import type { TElement, TSuggestionText } from 'platejs';
 import type { SlateLeafProps } from 'platejs/static';
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SlateLeaf } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
+import { inlineSuggestionDataClassName as inlineSuggestionDataClassNameLib } from '@/registry/lib/inline-suggestion';
+
+export const inlineSuggestionDataClassName = inlineSuggestionDataClassNameLib;
 
 export const voidRemoveSuggestionClass =
   'relative overflow-hidden before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:z-20 before:flex before:size-10 before:-translate-x-1/2 before:-translate-y-1/2 before:items-center before:justify-center before:rounded-full before:bg-red-500/90 before:text-2xl before:font-semibold before:text-white before:shadow-lg before:content-["X"] after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-[inherit] after:border after:border-red-300/80 after:bg-zinc-950/35 after:content-[""]';
@@ -39,43 +42,11 @@ export const voidRemoveSuggestionVariants = cva('', {
   },
 });
 
-export const inlineSuggestionDataClassName = cn(
-  'in-data-[inline-suggestion=insert]:bg-emerald-100! in-data-[inline-suggestion=insert]:text-emerald-700!',
-  'in-data-[inline-suggestion=remove]:bg-red-100! in-data-[inline-suggestion=remove]:text-red-700!'
-);
-
-export function getStaticElementSuggestionData(element: TElement) {
-  const elementData = (element as TElement & { suggestion?: TSuggestionData })
-    .suggestion;
-
-  if (elementData) return elementData;
-
-  for (const child of element.children) {
-    if (!child || typeof child !== 'object') continue;
-
-    const suggestionKey = Object.keys(child).find((key) =>
-      key.startsWith('suggestion_')
-    );
-
-    if (!suggestionKey) continue;
-
-    return (child as Record<string, TSuggestionData>)[suggestionKey];
-  }
-}
-
-export function getStaticInlineElementSuggestionClassName(
-  suggestionData?: TSuggestionData
-) {
-  if (!suggestionData) return '';
-
-  return cn(
-    'bg-emerald-100! text-emerald-700! no-underline transition-colors duration-200',
-    suggestionData.type === 'remove' && 'bg-red-100! text-red-700!'
-  );
-}
-
 export function isStaticVoidRemoveSuggestion(element: TElement) {
-  return getStaticElementSuggestionData(element)?.type === 'remove';
+  return (
+    (element as TElement & { suggestion?: { type?: string } }).suggestion
+      ?.type === 'remove'
+  );
 }
 
 export function VoidRemoveSuggestionOverlayStatic({

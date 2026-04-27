@@ -16,7 +16,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { useMounted } from '@/registry/hooks/use-mounted';
-import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
+import { inlineSuggestionDataClassName } from '@/registry/lib/inline-suggestion';
 
 import {
   InlineCombobox,

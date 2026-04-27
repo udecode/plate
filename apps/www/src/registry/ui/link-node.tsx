@@ -9,7 +9,7 @@ import { getLinkAttributes } from '@platejs/link';
 import { PlateElement } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
+import { inlineSuggestionDataClassName } from '@/registry/lib/inline-suggestion';
 
 export function LinkElement(props: PlateElementProps<TLinkElement>) {
   return (

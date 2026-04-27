@@ -18,10 +18,6 @@ mock.module('platejs/static', () => ({
 mock.module('@platejs/date', () => ({
   getDateDisplayLabel: getDateDisplayLabelMock,
 }));
-mock.module('@/registry/ui/suggestion-node-static', () => ({
-  getStaticElementSuggestionData: () => {},
-  getStaticInlineElementSuggestionClassName: () => '',
-}));
 
 describe('DateElementStatic', () => {
   beforeEach(() => {
