@@ -212,8 +212,10 @@ describe('inline void suggestion styling', () => {
     );
 
     expect(
-      view.container.querySelector('[data-testid="plate-element"]')?.className
-    ).toContain('in-data-[inline-suggestion=remove]:bg-red-100!');
+      view.container
+        .querySelector('[data-testid="plate-element"]')
+        ?.className.split(' ')
+    ).toContain('data-[inline-suggestion=remove]:bg-red-100!');
   });
 
   it('styles link suggestions through injected inline suggestion data', async () => {
@@ -238,8 +240,10 @@ describe('inline void suggestion styling', () => {
     );
 
     expect(
-      view.container.querySelector('[data-testid="plate-element"]')?.className
-    ).toContain('in-data-[inline-suggestion=insert]:bg-emerald-100!');
+      view.container
+        .querySelector('[data-testid="plate-element"]')
+        ?.className.split(' ')
+    ).toContain('data-[inline-suggestion=insert]:bg-emerald-100!');
   });
 
   it('marks the date trigger with a stable slot and ancestor-aware suggestion variants', async () => {
