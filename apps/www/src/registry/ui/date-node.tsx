@@ -21,13 +21,8 @@ import {
 import { cn } from '@/lib/utils';
 import { inlineSuggestionDataClassName } from '@/registry/ui/suggestion-node-static';
 
-export function DateElement({
-  attributes,
-  children,
-  editor,
-  element,
-  ...props
-}: PlateElementProps<TDateElement>) {
+export function DateElement(props: PlateElementProps<TDateElement>) {
+  const { editor, element } = props;
   const readOnly = useReadOnly();
 
   const trigger = (
@@ -37,7 +32,6 @@ export function DateElement({
         inlineSuggestionDataClassName
       )}
       contentEditable={false}
-      data-slot="date-trigger"
       draggable
     >
       {element.date || element.rawDate ? (
@@ -50,14 +44,12 @@ export function DateElement({
 
   return (
     <PlateElement
+      {...props}
       className="inline-block"
       attributes={{
-        ...attributes,
+        ...props.attributes,
         contentEditable: false,
       }}
-      editor={editor}
-      element={element}
-      {...props}
     >
       {readOnly ? (
         trigger
@@ -81,7 +73,7 @@ export function DateElement({
           </PopoverContent>
         </Popover>
       )}
-      {children}
+      {props.children}
     </PlateElement>
   );
 }

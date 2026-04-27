@@ -254,7 +254,7 @@ describe('inline void suggestion styling', () => {
       />
     );
 
-    const trigger = view.container.querySelector('[data-slot="date-trigger"]');
+    const trigger = view.container.querySelector('span[draggable="true"]');
 
     expect(trigger?.className).toContain(
       'in-data-[inline-suggestion=insert]:bg-emerald-100!'
@@ -289,8 +289,7 @@ describe('inline void suggestion styling', () => {
     );
 
     expect(
-      view.container.querySelector('[data-slot="inline-equation-trigger"]')
-        ?.className
+      view.container.querySelector('div[contenteditable="false"]')?.className
     ).toContain('in-data-[inline-suggestion=remove]:bg-red-100!');
   });
 });

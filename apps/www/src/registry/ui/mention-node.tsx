@@ -27,15 +27,12 @@ import {
   InlineComboboxItem,
 } from './inline-combobox';
 
-export function MentionElement({
-  attributes,
-  children,
-  element,
-  prefix,
-  ...props
-}: PlateElementProps<TMentionElement> & {
-  prefix?: string;
-}) {
+export function MentionElement(
+  props: PlateElementProps<TMentionElement> & {
+    prefix?: string;
+  }
+) {
+  const { element } = props;
   const selected = useSelected();
   const focused = useFocused();
   const mounted = useMounted();
@@ -54,26 +51,25 @@ export function MentionElement({
         element.children[0][KEYS.underline] === true && 'underline'
       )}
       attributes={{
-        ...attributes,
+        ...props.attributes,
         contentEditable: false,
         'data-slate-value': element.value,
         draggable: true,
       }}
-      element={element}
     >
       {mounted && IS_APPLE ? (
         // Mac OS IME https://github.com/ianstormtaylor/slate/issues/3490
         <>
-          {children}
-          {prefix}
+          {props.children}
+          {props.prefix}
           {element.value}
         </>
       ) : (
         // Others like Android https://github.com/ianstormtaylor/slate/pull/5360
         <>
-          {prefix}
+          {props.prefix}
           {element.value}
-          {children}
+          {props.children}
         </>
       )}
     </PlateElement>

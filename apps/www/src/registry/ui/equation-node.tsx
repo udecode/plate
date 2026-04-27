@@ -98,10 +98,10 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
   );
 }
 
-export function InlineEquationElement({
-  element,
-  ...props
-}: PlateElementProps<TEquationElement>) {
+export function InlineEquationElement(
+  props: PlateElementProps<TEquationElement>
+) {
+  const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(
@@ -138,7 +138,6 @@ export function InlineEquationElement({
       className={cn(
         'mx-1 inline-block select-none rounded-sm [&_.katex-display]:my-0!'
       )}
-      element={element}
     >
       <Popover open={open} onOpenChange={setOpen} modal={false}>
         <PopoverTrigger asChild>
@@ -153,7 +152,6 @@ export function InlineEquationElement({
                 'text-muted-foreground after:bg-neutral-500/10'
             )}
             contentEditable={false}
-            data-slot="inline-equation-trigger"
           >
             <span
               ref={katexRef}
