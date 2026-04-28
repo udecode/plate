@@ -418,10 +418,6 @@
           "type": "registry:ui"
         },
         {
-          "path": "src/registry/lib/block-discussion-index.ts",
-          "type": "registry:lib"
-        },
-        {
           "path": "src/registry/ui/block-suggestion.tsx",
           "type": "registry:ui"
         },
@@ -1833,7 +1829,6 @@
         "@platejs/suggestion"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-suggestion.json",
         "https://platejs.org/r/suggestion-kit.json"
       ],
       "files": [
@@ -1867,8 +1862,7 @@
         "@platejs/date"
       ],
       "registryDependencies": [
-        "@shadcn/calendar",
-        "https://platejs.org/r/inline-suggestion.json"
+        "@shadcn/calendar"
       ],
       "files": [
         {
@@ -1904,8 +1898,7 @@
         "react-textarea-autosize"
       ],
       "registryDependencies": [
-        "@shadcn/popover",
-        "https://platejs.org/r/inline-suggestion.json"
+        "@shadcn/popover"
       ],
       "files": [
         {
@@ -2284,9 +2277,7 @@
       "dependencies": [
         "@platejs/link"
       ],
-      "registryDependencies": [
-        "https://platejs.org/r/inline-suggestion.json"
-      ],
+      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/ui/link-node.tsx",
@@ -2539,7 +2530,6 @@
         "@platejs/mention"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/inline-suggestion.json",
         "https://platejs.org/r/use-mounted.json",
         "https://platejs.org/r/inline-combobox.json"
       ],
@@ -4426,17 +4416,6 @@
       },
       "categories": [
         "Serializers"
-      ]
-    },
-    {
-      "name": "inline-suggestion",
-      "type": "registry:lib",
-      "dependencies": [],
-      "files": [
-        {
-          "path": "src/registry/lib/inline-suggestion.ts",
-          "type": "registry:lib"
-        }
       ]
     },
     {
