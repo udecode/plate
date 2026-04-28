@@ -24,13 +24,12 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
 import { cn } from '@/lib/utils';
 import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
 import {
-  inlineSuggestionDataClassName as staticInlineSuggestionDataClassName,
+  inlineSuggestionDataVariants as staticInlineSuggestionDataVariants,
   voidRemoveSuggestionOverlayVariants as staticVoidRemoveSuggestionOverlayVariants,
   voidRemoveSuggestionVariants as staticVoidRemoveSuggestionVariants,
 } from '@/registry/ui/suggestion-node-static';
 
-export const inlineSuggestionDataClassName =
-  staticInlineSuggestionDataClassName;
+export const inlineSuggestionDataVariants = staticInlineSuggestionDataVariants;
 export const voidRemoveSuggestionVariants = staticVoidRemoveSuggestionVariants;
 export const voidRemoveSuggestionOverlayVariants =
   staticVoidRemoveSuggestionOverlayVariants;

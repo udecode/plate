@@ -6,7 +6,7 @@ import type { SlateElementProps } from 'platejs/static';
 
 import { SlateElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
-import { inlineSuggestionDataClassName } from '@/registry/lib/inline-suggestion';
+import { inlineSuggestionDataVariants } from '@/registry/lib/inline-suggestion';
 
 export function DateElementStatic(props: SlateElementProps<TDateElement>) {
   const { element } = props;
@@ -16,7 +16,7 @@ export function DateElementStatic(props: SlateElementProps<TDateElement>) {
       <span
         className={cn(
           'w-fit rounded-sm bg-muted px-1 text-muted-foreground',
-          inlineSuggestionDataClassName
+          inlineSuggestionDataVariants()
         )}
       >
         {element.date || element.rawDate ? (

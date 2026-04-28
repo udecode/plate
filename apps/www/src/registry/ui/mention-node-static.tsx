@@ -7,7 +7,7 @@ import { KEYS } from 'platejs';
 import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
-import { inlineSuggestionDataClassName } from '@/registry/lib/inline-suggestion';
+import { inlineSuggestionDataVariants } from '@/registry/lib/inline-suggestion';
 
 export function MentionElementStatic(
   props: SlateElementProps<TMentionElement> & {
@@ -23,7 +23,7 @@ export function MentionElementStatic(
       as="span"
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
-        inlineSuggestionDataClassName,
+        inlineSuggestionDataVariants(),
         element.children[0][KEYS.bold] === true && 'font-bold',
         element.children[0][KEYS.italic] === true && 'italic',
         element.children[0][KEYS.underline] === true && 'underline'

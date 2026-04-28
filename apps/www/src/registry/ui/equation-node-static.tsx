@@ -8,7 +8,7 @@ import { RadicalIcon } from 'lucide-react';
 import { SlateElement } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
-import { inlineSuggestionDataClassName } from '@/registry/lib/inline-suggestion';
+import { inlineSuggestionDataVariants } from '@/registry/lib/inline-suggestion';
 
 export function EquationElementStatic(
   props: SlateElementProps<TEquationElement>
@@ -83,7 +83,7 @@ export function InlineEquationElementStatic(
         className={cn(
           'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
           'h-6',
-          inlineSuggestionDataClassName,
+          inlineSuggestionDataVariants(),
           props.element.texExpression.length === 0 &&
             'text-muted-foreground after:bg-neutral-500/10'
         )}
