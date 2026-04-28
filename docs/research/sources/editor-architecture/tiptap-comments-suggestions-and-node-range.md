@@ -3,11 +3,11 @@ title: Tiptap comments, suggestions, and node-range surfaces
 type: source
 status: partial
 source_refs:
-  - ../tiptap/packages/extensions/src/focus/focus.ts
-  - ../tiptap/packages/extension-node-range/src/helpers/getNodeRangeDecorations.ts
-  - ../tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx
-  - ../tiptap-docs/src/content/comments/getting-started/overview.mdx
-  - ../tiptap-docs/src/content/content-ai/capabilities/ai-toolkit/api-reference/display-suggestions.mdx
+  - ../raw/tiptap/repo/packages/extensions/src/focus/focus.ts
+  - ../raw/tiptap/repo/packages/extension-node-range/src/helpers/getNodeRangeDecorations.ts
+  - ../raw/tiptap/repo/demos/src/Extensions/CollaborationMapPositions/React/index.tsx
+  - ../raw/tiptap/docs/src/content/comments/getting-started/overview.mdx
+  - ../raw/tiptap/docs/src/content/content-ai/capabilities/suggestion/features/display-suggestions.mdx
 updated: 2026-04-14
 related:
   - docs/research/entities/tiptap.md

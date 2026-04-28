@@ -13,11 +13,12 @@ The final API posture is not “legacy Slate React with faster internals”.
 The kept shape is:
 
 - data-model-first `slate`
-- transaction/commit-first local execution
+- `editor.read` / `editor.update`
+- transaction/commit-first local execution through primitive editor methods
 - projection-source overlays
 - semantic `Editable`
-- compatibility only where it still protects real extension or migration
-  pressure
+- extension methods through `editor.extend({ methods })`
+- generated browser gauntlet proof for cursor/caret claims
 
 ## Hard Cut Matrix
 
@@ -25,38 +26,32 @@ The kept shape is:
 | --- | --- | --- | --- |
 | Keep `decorate` out of the primary API | `done` | Primary `Editable` has no `decorate` prop. Projection stores are the overlay API. Legacy callback-style decoration is only available through the explicitly named `createSlateDecorateCompatSource` adapter. | None for primary API. Keep compat adapter narrow. |
 | Keep child-count chunking dead | `done` | Product `slate-react` runtime has no `renderChunk`, `getChunkSize`, or child-count chunking API. Huge docs use semantic islands, active corridor, occlusion, and projection stores. | None for product runtime. Legacy chunking remains only as historical/comparison context. |
-| Demote mutable editor fields to compat/dev mirrors | `mostly done` | `editor.children`, `editor.selection`, `editor.marks`, and `editor.operations` are documented as compatibility mirrors, not primary reads. Product read paths now use explicit accessors in the provider, `Editable`, Android input manager, and DOM bridge. | Full hard deletion is not active; compatibility mirrors stay until extension/migration pressure is gone. |
-| Stop teaching `editor.apply` / `editor.onChange` | `done for public teaching; compat remains` | Examples no longer monkey-patch `editor.apply`; huge-document instrumentation uses `Editor.subscribe`. Docs classify instance `editor.apply` and `editor.onChange` as compatibility-only. Core keeps `editor.apply` because extension and transaction contracts still prove it as a low-level compatibility surface. | Design a named extension/interception API before removing core compatibility. |
+| Cut mutable editor fields from primary public API | `done for public teaching` | `editor.children`, `editor.selection`, `editor.marks`, and `editor.operations` are not primary read seams. Public docs/examples/tests use read APIs, transaction/update APIs, and focused helpers instead. Internal runtime storage is not app/plugin DX. | Final type-surface deletion remains tied to package/runtime compatibility pressure, not primary docs. |
+| Stop teaching `editor.apply` / `editor.onChange` | `done for public teaching` | Examples do not monkey-patch `editor.apply`; huge-document instrumentation uses `Editor.subscribe`; extension power is through `editor.extend({ methods })` and commit listeners. Direct apply/onChange replacement is not an extension point. | Final low-level compatibility deletion remains tied to package/runtime compatibility pressure. |
 | Hard-cut dead legacy React renderer exports/tests/docs | `done` | Legacy renderer exports `DefaultElement`, `DefaultLeaf`, and `DefaultText` are removed. Old renderer files and the broad legacy decorations test are deleted. Current public primitives are `Editable`, `EditableText`, `SlateElement`, `SlateLeaf`, `SlateText`, `TextString`, `ZeroWidthString`, and related semantic primitives. | Local docs may use `DefaultElement` as an example-local function name; that is not a package export. |
 
 ## Not Done
 
-`editable.tsx` is still not the perfect browser editing architecture.
+Final release closure still needs same-turn verification:
 
-It still owns too many responsibilities:
+- `bun test:integration-local`
+- package build/typecheck/lint gates
+- React/core perf guardrails
+- completion-check closure
 
-- DOM selection reconciliation
-- input routing
-- native/model-owned operation decisions
-- composition handling
-- paste/drop handling
-- post-commit DOM repair
-- test/browser handle plumbing
+The browser editing architecture is under the conformance kernel contract:
 
-The next architecture-quality lane is a browser editing kernel split:
-
-- `selection-reconciler`
-- `input-router`
-- `native-input-strategy`
-- `model-input-strategy`
-- `dom-repair-queue`
-- `browser-proof-handle`
-
-That is separate from the five hard cuts above.
+- event-frame authority
+- selection-source authority
+- mutation-worker boundaries
+- repair-result ownership
+- generated replayable gauntlets
+- scoped mobile/native transport claims
 
 Execution owner:
 
-- [editable browser kernel refactor plan](/Users/zbeyens/git/plate-2/docs/plans/2026-04-22-slate-v2-editable-browser-kernel-refactor-plan.md)
+- [absolute architecture closure plan](/Users/zbeyens/git/plate-2/docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md)
+- [absolute architecture release claim](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
 
 ## Proof Pointers
 

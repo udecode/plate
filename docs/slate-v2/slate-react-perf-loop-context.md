@@ -186,11 +186,13 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
   - `/Users/zbeyens/git/slate-v2/packages/slate/**` only if a focused probe
     proves the blocker is core read/index ownership
 - Current closure:
-  - perf lane is closed with first shelled-block activation accepted as the
-    explicit occlusion tradeoff
-  - browser editing proof is green in Chromium for DOM-owned typing,
-    custom-render/projection fallbacks, IME composition, shell activation,
-    shell-backed fragment paste, and undo after direct DOM sync
+  - perf lane is closed with direct model-only typing into an unpromoted middle
+    shell accepted as the explicit caveat
+  - promoted middle-block typing is the user editing corridor and beats legacy
+    chunking-on
+  - browser editing proof uses generated gauntlets for model state, visible DOM,
+    DOM selection/caret where observable, focus owner, commit metadata, trace
+    legality, replayability, and follow-up typing
   - generated `slate-dom/dist/index.d.ts` aliasing is fixed; `slate-dom` and
     `slate-react` build/typecheck are green
 

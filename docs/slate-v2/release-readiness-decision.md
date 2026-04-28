@@ -10,7 +10,8 @@ status: active
 
 Not release-ready.
 
-The repo has moved past the package-runtime blocker phase.
+The repo has moved past the package-runtime blocker phase. The active owner is
+final claim-width closure for the absolute architecture plan.
 
 ## Readiness Gates
 
@@ -28,35 +29,16 @@ The migration cannot claim RC readiness until all of these are true:
 
 ## Current Blockers
 
-- the live `packages/slate` core benchmark package now exists and the latest
-  compare read says:
-  - explicit normalization is no longer the blocker
-  - read-after-write observation is still slower than legacy, but bounded
-  - huge-document core typing is still slower than legacy, but bounded
-- contributor-facing example parity outside the kept v2-only set is still not
-  fully classified:
-  - same-path open rows still include:
-    - `code-highlighting`
-    - `markdown-preview`
-    - `markdown-shortcuts`
-    - `scroll-into-view`
-    - `shadow-dom`
-    - `styling`
-    - `tables`
-  - no same-path mixed rows remain after `images` prompt/delete proof
-  - broader browser/input parity remains open in
-    `true-slate-rc-proof-ledger.md`
-- the stronger `slate-react` perf-superiority claim is command-owned and
-  closed for important huge-doc lanes:
-  - `bench:react:rerender-breadth:local`
-  - `bench:react:huge-document-overlays:local`
-  - `bench:react:huge-document:legacy-compare:local`
-  - direct 5000-block comparison is the proof gate and is green on important
-    lanes
-  - 1000-block runs are smoke/debug only and do not close the lane
-  - first shelled-block activation versus legacy chunking-on is the explicit
-    accepted occlusion/corridor tradeoff
-- RC ledger closure and final claim-width sync are still pending
+- final integration, build, typecheck, lint, and perf gates need a same-turn
+  closeout run for the active plan
+- the editing epoch destructive proof is green for focused generated and
+  persistent-profile rows, but the full `bun test:integration-local` closure
+  sweep still needs to run in the final slice
+- release docs must keep the exact claim width from
+  [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
+- native mobile proof stays scoped to the current automated claim
+- the huge-document middle-shell caveat stays explicit
+- RC ledger closure and completion-check closure are pending
 
 ## Current Claim Width
 
@@ -65,10 +47,14 @@ The live claim is only this:
 - the migration program is active
 - tranche order is locked
 - drift discipline is locked
-- redesign-first doctrine is now live for `packages/slate`:
-  - native transaction/store-first direction wins
-  - compatibility survives only where it still earns its keep
-  - rewrite is allowed when retrofit shape blocks the better API
+- absolute architecture doctrine is live:
+  - Slate model and operations stay the collaboration truth
+  - `editor.read` and `editor.update` are the public lifecycle
+  - transaction-owned primitive editor methods are the mutation power API
+  - `EditorCommit` is the local runtime truth for history, React, DOM repair,
+    and proof
+  - extension methods compose through `editor.extend({ methods })`
+  - rewrite is allowed when retrofit shape blocks the better API or proof
 - tranche 1 Bun/tooling/docs ownership is green
 - tranche 2 React 19.2.5 + Next 16.2.4 + TypeScript 6.0.3 compatibility is
   green
@@ -76,17 +62,12 @@ The live claim is only this:
   - package-local tests/build/typecheck/lint are green
   - query / operations / snapshot / legacy fixture owners are live
   - accessor / transaction seam is recovered
-  - `editor.operations` is now demoted behind an explicit getter seam
-  - `editor.children` / `editor.selection` / `editor.marks` are now classified
-    as compatibility mirrors instead of primary seams
-  - `withTransaction(editor, tx => ...)` now exposes explicit draft reads
-  - `Editor.apply(editor, op)` is now the explicit public single-op writer
-  - instance `editor.apply(op)` is now compatibility-only
-  - commit subscribers now outrank `editor.onChange()` as the post-commit seam
-  - instance `editor.onChange()` is now compatibility-only
-  - RC posture for those compatibility-only seams is now explicit:
-    keep them through RC
-    revisit hard cuts only after sibling-package migration pressure is gone
+  - stale public field pressure is cut from primary docs/examples/tests:
+    `editor.children`, `editor.selection`, `editor.marks`, and
+    `editor.operations` are not primary read seams
+  - `Transforms.*` is not the primary mutation story
+  - direct `editor.apply` and `editor.onChange` are not extension points
+  - commit subscribers and extension methods own those jobs
   - range refs, bookmarks, normalization, transforms, surface, clipboard, and
     extension owner files are live
   - the core benchmark package exists and runs
@@ -127,16 +108,28 @@ The live claim is only this:
   - focused runtime proof owners are green across provider/hooks, ReactEditor,
     primitives, editable behavior, projections/annotations/widgets, app-owned
     customization, large-document runtime, and with-react
-  - required v2-only examples are real and green in Chromium
+  - required v2-only examples are real and green
   - kept north-star perf lanes are command-backed:
     - `bench:react:rerender-breadth:local`
     - `bench:react:huge-document-overlays:local`
     - `bench:react:huge-document:legacy-compare:local`
   - the data-model-first / React-perfect huge-doc runtime lane is closed:
     direct DOM sync has capability guards, custom render/projection/IME
-    fallbacks are proved in Chromium, shell activation is separate from
-    selection, shell-backed fragment paste is safe, and `slate-dom` /
-    `slate-react` build/typecheck are green
+    fallbacks are proved, shell activation is separate from selection,
+    shell-backed fragment paste is safe, generated cursor/caret gauntlets are
+    replayable, and `slate-dom` / `slate-react` build/typecheck are green
+  - the editing epoch destructive lane is materially closed for the focused
+    regression family:
+    - repeated word-delete is model-owned and epoch-traced
+    - plain text paste over selected range runs inside `editor.update`
+    - generated destructive paste/word-delete gauntlets are replayable and
+      shrinkable
+    - persistent-profile soak emits release-proof artifacts
+    - focused Chromium, Firefox, WebKit, and mobile-project rows are green
+  - native mobile transport claim width is scoped:
+    Playwright mobile viewport and semantic handles are not raw Android/iOS
+    native keyboard or clipboard proof; Appium descriptors are direct-device
+    candidates only when the device gate runs
   - the same-path `huge-document` example is not a parity blocker:
     it is explicitly cut as a legacy chunking playground; v2 huge-doc truth is
     owned by `large-document-runtime` and the 5000-block benchmark gate
@@ -156,14 +149,17 @@ Parity alone is not enough.
 
 The live program must also preserve the v2 reason to exist:
 
+- read/update lifecycle with primitive-method DX
 - best React runtime locality
 - explicit decoration / annotation / widget architecture
 - better large-document posture than legacy
+- generated browser gauntlets for cursor/caret claims
 
 The next mainline blocker is:
 
-- final claim-width / RC ledger closure on top of the now-verified package,
-  example, and perf owners
+- final same-turn integration/build/type/lint/perf closure on top of the
+  verified public API, kernel, generated gauntlet, mobile-scope, and perf
+  owners
 
 not:
 

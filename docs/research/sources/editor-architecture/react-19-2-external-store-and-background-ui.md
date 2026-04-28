@@ -1,8 +1,9 @@
 ---
 title: React 19.2 external-store and background-ui primitives
 type: source
-status: partial
+status: accepted
 source_refs:
+  - https://react.dev/blog/2025/10/01/react-19-2
   - https://react.dev/reference/react/useSyncExternalStore
   - https://react.dev/reference/react/useTransition
   - https://react.dev/reference/react/useDeferredValue
@@ -11,7 +12,7 @@ source_refs:
   - ../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx
   - ../slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx
   - ../slate-v2/docs/walkthroughs/09-performance.md
-updated: 2026-04-15
+updated: 2026-04-28
 related:
   - docs/research/systems/editor-architecture-landscape.md
   - docs/research/systems/slate-v2-overlay-architecture.md
@@ -34,6 +35,11 @@ question.
 - `useDeferredValue` lets non-urgent derived UI lag behind the urgent value.
 - `Activity` preserves state and DOM for hidden UI while letting hidden work run
   at lower priority.
+- React 19.2's official release notes describe `Activity` hidden mode as hiding
+  children, unmounting effects, and deferring updates until React has idle
+  capacity.
+- React 19.2 adds Performance Tracks for Scheduler and Components, which makes
+  render/priority evidence easier to capture during editor stress work.
 
 ## What this means
 
@@ -78,3 +84,19 @@ non-React or custom-runtime engines.
 - keep hidden panes, sidebars, and review chrome on the non-urgent path
 - do not confuse “React has the right primitives” with “the editor core is
   already field-best”
+
+## 2026-04-28 Refresh
+
+The official React 19.2 release page confirms the relevant runtime facts:
+
+- `Activity` supports `visible` and `hidden` modes.
+- hidden Activity children keep state and can be pre-rendered without competing
+  with visible work.
+- Scheduler and Components Performance Tracks expose what React is rendering,
+  which priority it used, and when components render or run effects.
+
+This keeps the Slate v2 conclusion intact: React 19.2 is strong enough for the
+projection and surrounding UI scheduler, but the editor still needs its own
+dirty-node, dirty-source, and transaction/commit runtime. If selection movement
+or typing dirties broad React trees, React 19.2 will expose the problem more
+clearly; it will not make that architecture correct.

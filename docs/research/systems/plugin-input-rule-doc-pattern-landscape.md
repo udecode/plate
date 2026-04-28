@@ -31,9 +31,9 @@ input-rules runtime.
 
 - compiled pages inspected: none before this pass
 - raw paths inspected:
-  - `/Users/zbeyens/git/tiptap-docs/src/content/editor/api/input-rules.mdx`
-  - `/Users/zbeyens/git/tiptap-docs/src/content/editor/api/editor.mdx`
-  - `/Users/zbeyens/git/tiptap-docs/src/content/editor/extensions/custom-extensions/create-new/extension.mdx`
+  - `../raw/tiptap/docs/src/content/editor/api/input-rules.mdx`
+  - `../raw/tiptap/docs/src/content/editor/api/editor.mdx`
+  - `../raw/tiptap/docs/src/content/editor/extensions/custom-extensions/create-new/extension.mdx`
 - direct raw files actually read: the three paths above
 - official source entrypoints checked:
   - `https://tiptap.dev/docs/editor/api/input-rules`

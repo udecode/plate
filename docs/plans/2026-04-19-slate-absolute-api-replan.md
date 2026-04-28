@@ -19,7 +19,8 @@ toward the best honest public API:
 
 - transaction-first writes
 - snapshot/store-first reads
-- mutable editor fields demoted to compatibility where they still earn their keep
+- field-style editor state removed from the normal public shape where the live
+  repo allows it
 - explicit compatibility cuts when the old surface blocks the better API
 - no material perf regression against the current core floor
 
@@ -34,8 +35,8 @@ toward the best honest public API:
 - the user has now chosen the perfect redesign as the live doctrine, not a
   deferred future lane
 - the current required decision is not “what support package is next”
-- the current required decision is “which `slate` public seams stay primary,
-  which become compatibility mirrors, and which get cut or demoted”
+- the current required decision is “which `slate` public surfaces stay primary,
+  which become advanced runtime tools, and which get cut or demoted”
 - completion target for this lane is now met:
   - the `slate` core API direction is settled enough to become the live claim
   - remaining hard cuts are explicitly deferred post-RC
@@ -56,10 +57,11 @@ toward the best honest public API:
   - `bun run lint` green
 - this slice is now closed
 - latest API-direction slice after that:
-  - `editor.operations` is demoted to a compatibility mirror over explicit
-    operation access
+  - historical note: this slice moved operation reads toward explicit operation
+    access; the current live `BaseEditor` does not expose `editor.operations`
+    as a normal field
   - `Editor.getOperations(editor)` / `editor.getOperations()` are now the
-    canonical operations read seam
+    canonical operations read surface
   - `Editor.withTransaction(editor, tx => ...)` now exposes live draft state
     through the transaction argument:
     - `tx.children`
@@ -112,23 +114,23 @@ toward the best honest public API:
   - `tx.apply(op)` is now backed by the base core writer instead of delegating
     through an overridden `editor.apply`
   - transaction-owned writes now survive a wrapped `editor.apply` and still hit
-    the core transaction seam directly
+    the core transaction path directly
 - latest public-write slice after that:
   - `Editor.apply(editor, op)` is now the explicit public single-op writer
-    over that same transaction seam
+    over that same transaction path
   - wrapped `editor.apply(op)` no longer owns the public single-op path by
     default
-  - current contract proof for that seam is live in:
+  - current contract proof for that path is live in:
     - `packages/slate/test/surface-contract.ts`
     - `packages/slate/test/transaction-contract.ts`
 - latest publish-order slice after that:
   - commit subscribers now fire before `editor.onChange()`
   - `editor.onChange()` is now classified as a compatibility callback over the
-    snapshot-store seam, not the primary commit owner
-  - current contract proof for that seam is live in:
+    snapshot-store path, not the primary commit owner
+  - current contract proof for that path is live in:
     - `packages/slate/test/snapshot-contract.ts`
 - latest fixture-owner slice after that:
-  - exact `interfaces/Editor/**` fixtures now prefer explicit read seams over
+  - exact `interfaces/Editor/**` fixtures now prefer explicit read APIs over
     ambient property mirrors
   - remaining direct property pressure is concentrated in explicit
     compatibility-owner files instead of spread across the wider interface tree
@@ -151,12 +153,23 @@ toward the best honest public API:
     - `test/transaction-contract.ts`
   - direct `editor.marks` property writes are now explicitly proved in:
     - `packages/slate/test/snapshot-contract.ts`
+- 2026-04-27 correction:
+  - this inventory is historical, not the current live API fact
+  - current live `BaseEditor` no longer declares `editor.children`,
+    `editor.selection`, `editor.marks`, or `editor.operations` as normal fields
+  - current code should use `getChildren`, `getSelection`, `getSnapshot`,
+    `getOperations`, and transaction APIs instead
+  - remaining hard-cut candidates are public-looking escape hatches:
+    instance `editor.apply(op)`, reset-style `setChildren`, and broad live
+    accessors
+  - `<Slate onChange>` belongs to the React adapter surface, not core editor
+    state
 - latest normalization-claim slice after that:
   - the default-vs-explicit normalization truth is no longer an open owner row
   - the live docs, broad oracle, and explicit-cut registry now agree that:
     heavier adjacent-text/spacer cleanup stays explicit-only
   - the old package-floor fixture cluster is already classified at one owner
-    seam:
+    owner:
     - `packages/slate/test/fixture-claim-overrides.ts`
 
 ## Execution Repo
@@ -202,30 +215,31 @@ toward the best honest public API:
 - rejected: restoring legacy default adjacent-text auto-merge into ordinary
   `move_node` just to satisfy a stale snapshot row when the live docs already
   define that cleanup as explicit-only
-- rejected: a direct committed-mirror cut for `editor.children`
-  - reason:
-    package-floor helpers, root readers, and normalization paths still assume
-    the property is live enough that flipping it explodes the suite
-- rejected: a direct committed-mirror cut for `editor.selection` / `editor.marks`
-  - reason:
-    package-floor compatibility still depends on live property-set semantics
-    for those surfaces
+- historical rejection, superseded by later API work:
+  - `editor.children`, `editor.selection`, `editor.marks`, and
+    `editor.operations` are not normal live fields on the current `BaseEditor`
+  - do not use this old rejection as evidence that those fields still need a
+    fresh hard cut
 
 ## Remaining Kept-Owner Ledger
 
 None blocking this `slate` core lane.
 
-Deferred post-RC:
+Current hard-cut ledger:
 
-- decide whether compatibility-only:
+- already cut as normal core fields:
   - `editor.children`
   - `editor.selection`
   - `editor.marks`
-  stay or get hard-cut after sibling-package migration pressure is gone
-- decide whether compatibility-only:
-  - `editor.apply(op)`
-  - `editor.onChange()`
-  stay or get hard-cut after sibling-package migration pressure is gone
+  - `editor.operations`
+- still worth cutting or fencing before publish:
+  - instance `editor.apply(op)` as an ordinary app write path
+  - reset-style `setChildren`
+  - broad live accessors as normal app-facing reads
+  - any docs or examples that teach live runtime reads before snapshots
+- keep `<Slate onChange>` classified as React adapter output, not a core editor
+  field
+- do not reintroduce field-style compatibility mirrors before publish
 - keep `CustomTypes` cut unless later code work proves reopening it earns its
   cost
 
@@ -260,7 +274,7 @@ Deferred post-RC:
 ## Next Move
 
 1. treat the `slate` core API direction as settled enough to unblock tranche 4
-2. carry the deferred post-RC seam-cut ledger forward explicitly
+2. carry the deferred post-RC cut ledger forward explicitly
 3. keep the current core perf read as the regression floor for later packages
 4. do not reopen `slate` core design questions without new contrary evidence
 
@@ -269,11 +283,11 @@ Deferred post-RC:
 - verdict:
   - `replan`
 - latest landed API redesign owner:
-  - `editor.operations` is now a compatibility mirror
-  - `Editor.getOperations(editor)` is the explicit operations read seam
-  - `withTransaction(tx => ...)` is now an explicit draft-access seam
+  - `editor.operations` is not a normal current `BaseEditor` field
+  - `Editor.getOperations(editor)` is the explicit operations read surface
+  - `withTransaction(tx => ...)` is now an explicit draft-access API
   - `Editor.apply(editor, op)` is now the explicit public single-op writer
-  - `subscribe(...)` is now the primary post-commit seam ahead of
+  - `subscribe(...)` is now the primary post-commit API ahead of
     `editor.onChange()`
 - latest hard-cut or demotion decision:
   - ordinary structural ops do **not** regain legacy automatic adjacent-text
@@ -281,23 +295,24 @@ Deferred post-RC:
   - that row is the thing to demote, not the engine
 - latest hard-cut or demotion decision:
   - `editor.operations` no longer owns the internal queue directly
-  - direct property mutation is compatibility-only
+  - field-style editor state is not the current normal API
   - the redesign itself is no longer deferred
 - latest hard-cut or demotion decision:
-  - instance `editor.apply(op)` is no longer the public default write seam
+  - instance `editor.apply(op)` is no longer the public default write path
   - it survives as compatibility pressure over a stronger explicit writer
 - latest hard-cut or demotion decision:
-  - `editor.onChange()` is no longer treated as the primary commit seam
+  - `editor.onChange()` is no longer treated as the primary commit API
   - it survives as a legacy compatibility callback after commit subscribers
 - latest hard-cut or demotion decision:
   - `editor.children` / `editor.selection` / `editor.marks` are no longer
-    treated as primary read seams
-  - they survive as compatibility mirrors only
+    normal current `BaseEditor` fields
+  - do not reopen them as compatibility mirrors
 - latest hard-cut or demotion decision:
-  - compatibility-only `editor.children` / `editor.selection` / `editor.marks`
-    stay through RC
-  - same RC posture now applies to instance `editor.apply(op)` and
-    `editor.onChange()`
+  - remaining cleanup applies to instance `editor.apply(op)`, reset-style
+    `setChildren`, broad live accessors, and docs/examples that teach them as
+    normal DX
+  - `editor.onChange()` should be discussed only as React adapter output when
+    referring to current live shape
 - remaining unresolved API decisions:
   - no blocking `slate` core API-direction decisions remain in this lane
   - only post-RC cut/defer judgments remain
@@ -313,7 +328,7 @@ Deferred post-RC:
 - next move after this checkpoint:
   - stop here for this execution owner
   - do not invent more `packages/slate` churn under a completed lane
-  - next likely seam:
+  - next likely owner:
     create or switch to the next tranche owner only when the user explicitly
     wants support-package work
 
@@ -342,17 +357,18 @@ Deferred post-RC:
 - added one explicit-cut registry for stale legacy fixture rows in:
   - `packages/slate/test/fixture-claim-overrides.ts`
 - taught `packages/slate/test/index.spec.ts` to skip that explicit-cut family
-  from one owner seam
-- demoted `editor.operations` into a compatibility mirror over explicit
-  operation access in:
+  from one owner
+- historical note: this slice moved operation reads toward explicit operation
+  access; the current live `BaseEditor` does not expose `editor.operations` as
+  a normal field. Files touched at the time:
   - `packages/slate/src/core/public-state.ts`
   - `packages/slate/src/core/apply.ts`
   - `packages/slate/src/interfaces/editor.ts`
   - `packages/slate/src/create-editor.ts`
   - `packages/slate/src/editor/without-normalizing.ts`
-- landed an explicit draft-access transaction seam:
+- landed an explicit draft-access transaction surface:
   - `Editor.withTransaction(editor, tx => ...)`
-- landed the first explicit transaction-owned write seam:
+- landed the first explicit transaction-owned write surface:
   - `tx.apply(op)`
 - pushed `tx.apply(op)` into transaction-owned source paths in:
   - `packages/slate/src/interfaces/transforms/general.ts`
@@ -378,7 +394,7 @@ Deferred post-RC:
 - landed `Editor.apply(editor, op)` as the explicit public single-op writer in:
   - `packages/slate/src/interfaces/editor.ts`
 - proved that the public single-op writer bypasses wrapped `editor.apply(op)`
-  and reuses the transaction seam in:
+  and reuses the transaction path in:
   - `packages/slate/test/surface-contract.ts`
 - proved that behavior in:
   - `packages/slate/test/transaction-contract.ts`
@@ -388,14 +404,15 @@ Deferred post-RC:
   in:
   - `packages/slate/test/snapshot-contract.ts`
 - moved exact `interfaces/Editor/**` fixture reads off ambient mutable
-  properties and onto explicit seams in:
+  properties and onto explicit read APIs in:
   - `packages/slate/test/interfaces/Editor/**`
 - moved broad harness convenience reads off ambient mutable properties in:
   - `packages/slate/test/index.spec.ts`
   - `packages/slate/test/legacy-fixture-utils.ts`
 - rewrote the stray convenience setup fixture in:
   - `packages/slate/test/transforms/mergeNodes/path/non-selectable-ancestor.ts`
-- proved direct `editor.marks` property writes as a live compatibility seam in:
+- historical note: direct `editor.marks` property writes were proved as
+  compatibility pressure in:
   - `packages/slate/test/snapshot-contract.ts`
 - moved internal hot-path live draft reads off `editor.children` in:
   - `packages/slate/src/transforms-text/delete-text.ts`

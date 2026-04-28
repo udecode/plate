@@ -43,6 +43,7 @@ Use those skills when relevant:
 
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
+- `complete-plan` for generating a project continuation prompt from the active plan for Stop-hook continuation
 - `tdd`
 - `ce-review` when doing a code review
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
@@ -83,13 +84,26 @@ When using the following skills, override the default behavior.
 
 ## Commands
 
+### Slate v2 sibling repo
+
+- In `/Users/zbeyens/git/slate-v2`, keep `bun check` fast: lint, typecheck, and unit/package tests only.
+- Do not put `bun test:integration-local` in `bun check`; it is a closure/release gate, not an iteration gate.
+- Use `bun check:full` when a local full browser sweep is needed.
+- `bun check:full` must include release-proof guards before the full browser sweep: release discipline, slate-browser proof contracts, scoped mobile proof, persistent-profile soak, then `bun test:integration-local`.
+- Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
+- During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
+- Run `bun test:integration-local` only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
+- `tmp/completion-check.md` status semantics are strict:
+  - `pending` means more autonomous work remains, even if the current slice is verified.
+  - `done` means the active plan's completion target is met.
+  - `blocked` means no autonomous progress is possible without missing evidence, unavailable tooling, or a user decision.
+  - If the plan or checkpoint names a runnable next move, never set `blocked`; keep `pending` and continue.
+
 ### Development
 
-**CRITICAL**: Before running type checking, you must first install dependencies and build the affected packages and their dependencies.
+Default to source-first typecheck. Do not build packages just to run types unless the repo script or failure proves the typecheck graph still resolves built `dist` output.
 
-Do not default to `pnpm typecheck` for package work in this repo. Package type checking often relies on built exports, so skipping the build step gives you fake failures and wastes time.
-
-If filtered package builds still leave unresolved workspace-package imports during typecheck, run `pnpm build` at the repo root before treating the failure as real package debt.
+If typecheck fails with stale workspace-package declarations, source/dist split-brain, or unresolved package exports, first inspect the package/app `paths` and source-entry setup. Build only when the affected surface intentionally validates release artifacts or still has no source-first typecheck path.
 
 If a local-only build/runtime/test failure points at corrupted files under `node_modules/.bun`, mixed `.bun` / `.pnpm` React installs, package-local `node_modules/react*` symlinks, `Invalid hook call`, or other non-versioned env state while CI is green, clean local env before changing repo code: run `pnpm run reinstall` once, then rerun the exact failing command. If the failure shape changes or disappears, it was local env rot. If not, go back to normal debugging.
 
@@ -99,19 +113,16 @@ If package work changed exports or file layout, run `pnpm brl` before the final 
 
 **Required sequence for type checking modified packages:**
 
-1. `pnpm install` - Install all dependencies and update lockfile if needed
-2. `pnpm turbo build --filter=./packages/modified-package` - Build only the modified package and its dependencies
-3. Wait for the build command to finish successfully. Never run build and typecheck in parallel.
-4. `pnpm turbo typecheck --filter=./packages/modified-package` - Run TypeScript type checking for modified package
-5. `pnpm lint:fix` - Auto-fix linting issues
+1. `pnpm install` - Install dependencies when needed by the task or lockfile state.
+2. `pnpm turbo typecheck --filter=./packages/modified-package` - Run source-first package type checking.
+3. If that fails because the graph resolves built output, fix the source-entry or `paths` setup when that is the right long-term shape.
+4. Build only when checking artifact output, package exports, or a package that intentionally has no source-first typecheck path.
+5. `pnpm lint:fix` - Auto-fix linting issues.
 
 **For multiple modified packages:**
 
 ```bash
-# Build multiple specific packages and their dependencies
-pnpm turbo build --filter=./packages/core --filter=./packages/utils
-
-# Wait for build to finish, then typecheck the same packages
+# Typecheck multiple specific packages through their source graph
 pnpm turbo typecheck --filter=./packages/core --filter=./packages/utils
 
 # Lint multiple packages
@@ -121,20 +132,13 @@ pnpm lint:fix
 **Alternative approaches:**
 
 ```bash
-# Build since last commit (useful for PR changes)
-pnpm turbo build --filter='[HEAD^1]'
-
-# Then typecheck the same changed package graph
+# Typecheck since last commit
 pnpm turbo typecheck --filter='[HEAD^1]'
 
-# Build all changed packages in current branch
-pnpm turbo build --filter='...[origin/main]'
-
-# Then typecheck the same changed package graph
+# Typecheck all changed packages in current branch
 pnpm turbo typecheck --filter='...[origin/main]'
 
 # For workspace-specific operations
-pnpm --filter @platejs/core build
 pnpm --filter @platejs/core typecheck
 pnpm --filter @platejs/core lint:fix
 ```
@@ -142,7 +146,7 @@ pnpm --filter @platejs/core lint:fix
 **Full project commands (use only if needed, these are very slow):**
 
 - `pnpm build` - Build all packages (only use when necessary)
-- `pnpm typecheck` - Root package typecheck. It now warms the workspace with a full package build, retries that build once if the peer-graph race bites, then runs Turbo `typecheck --only`.
+- `pnpm typecheck` - Root package typecheck. It should use source-first package graphs; if it needs a build, treat that as source-entry debt unless the check is explicitly artifact-facing.
 - `bun run test` - Run the fast default test suite during iteration
 - `bun test` - Run the full test suite only at the end of the complete task
 

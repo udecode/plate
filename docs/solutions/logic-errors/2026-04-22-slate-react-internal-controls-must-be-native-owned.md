@@ -1,6 +1,7 @@
 ---
 title: Slate React internal controls must be native-owned
 date: 2026-04-22
+last_updated: 2026-04-28
 category: docs/solutions/logic-errors
 module: Slate v2 slate-react browser editing
 problem_type: logic_error
@@ -8,6 +9,7 @@ component: testing_framework
 symptoms:
   - Text typed into an input inside an editable void leaked into the outer editor or stopped after the first character.
   - Selectionchange events from embedded inputs could overwrite the outer editor selection.
+  - Raw root focus after typing in an editable-void input could land keyboard input in a nested editor instead of the outer editor.
   - Cut/delete rows looked green in Chromium but failed on Firefox, WebKit, or mobile transport.
 root_cause: logic_error
 resolution_type: code_fix
@@ -39,6 +41,9 @@ DOM from the wrong target.
   selection.
 - WebKit needed more than a passive early return; event propagation had to be
   stopped for internal-control input paths.
+- Raw `root.focus()` after editing an input inside an editable void could send
+  the next physical keyboard text into a nested editor, even though the outer
+  model selection was still correct.
 - Firefox cut preserved text deletion but lost the restored collapsed Slate
   selection until cut became an explicit model-owned repair path.
 - Mobile and WebKit clipboard APIs denied read/write access, so clipboard rows
@@ -104,6 +109,47 @@ if (isInteractiveInternalTarget(editor, event.target)) {
 For native `beforeinput` / `input`, use `stopImmediatePropagation()` so root
 native listeners do not continue participating in an app-owned control event.
 
+Native controls and nested editors need one extra split. Inputs, buttons,
+selects, and textareas should keep focus while they are active, but their blur
+handoff should restore the outer document selection when the next focus is not
+caused by a pointer gesture. Nested editors stay native-owned.
+
+```ts
+export const isNativeInternalControlTarget = (
+  editor: ReactEditor,
+  target: EventTarget | null
+) => {
+  const element = isDOMElement(target)
+    ? target
+    : isDOMText(target)
+      ? target.parentElement
+      : null
+
+  const control = element?.closest(
+    'input, textarea, select, button, [role="button"]'
+  )
+
+  return (
+    control instanceof HTMLElement &&
+    control !== ReactEditor.toDOMNode(editor, editor) &&
+    ReactEditor.hasDOMNode(editor, control) &&
+    !ReactEditor.hasEditableTarget(editor, control)
+  )
+}
+```
+
+On native-control blur, export the preserved model selection only when there was
+no pointer intent:
+
+```ts
+if (
+  isNativeInternalControlTarget(editor, event.target) &&
+  !nativePointerFocusRef.current
+) {
+  syncDOMSelectionToEditor()
+}
+```
+
 Cut needs the same model-owned repair discipline as other model-owned edits:
 
 ```ts
@@ -124,6 +170,13 @@ The cut repair works because the collapsed post-cut selection is a Slate model
 decision. Marking it model-owned and repairing the DOM caret prevents a delayed
 browser `selectionchange` from clearing the restored selection.
 
+The native-control blur export fixes the editable-void focus handoff because
+browser document selection can drift into the void shell while the input owns
+focus. If raw `root.focus()` runs after that drift, browsers may focus a nested
+contenteditable inside the void. Exporting the preserved outer selection on
+blur gives the following root focus a real outer caret without stealing focus
+while the input is still typing.
+
 ## Prevention
 
 - Every browser-editing row should assert model text, visible DOM text, Slate
@@ -131,6 +184,11 @@ browser `selectionchange` from clearing the restored selection.
   authoritative.
 - For internal controls inside editor content, add rows that prove the control
   receives input and the outer editor selection is preserved.
+- For editable voids that contain both native controls and nested editors, add
+  a physical-keyboard row that types in the native control, calls raw
+  `root.focus()`, then proves follow-up text lands in the outer editor.
+- Do not restore the outer DOM selection on native-control focus. It steals
+  focus before the input can type. Restore on guarded blur instead.
 - Do not treat mobile Playwright hardware-keyboard behavior as native mobile
   IME proof.
 - Split clipboard assertions by capability:

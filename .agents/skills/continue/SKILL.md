@@ -67,8 +67,11 @@ The state file should record:
 
 Good default homes:
 
-- `docs/plans/*.md`
-- a focused owner doc under `docs/**`
+- the active plan named by the user
+- the current completion/state file
+- `docs/plans/*.md` when the project uses plan files
+- a focused owner doc under `docs/**`, `.agents/**`, or the project's task
+  directory
 - a project-specific execution ledger
 
 Do not keep updating a stale broad plan once the work has moved to a narrower
@@ -93,6 +96,15 @@ reclassified.
 Do not stop just because you wrote a checkpoint.
 
 If the checkpoint has `Next move` and no hard blocker exists, execute it.
+
+`blocked` is a terminal stop state, not a partial-slice handoff state.
+
+Use `blocked` only when no autonomous progress is possible because required
+evidence, tooling, access, or a user decision is missing.
+
+If any in-scope owner still has a runnable next move, the state is `pending`.
+This is true even when the current slice is verified, a focused gate passed, or
+the remaining work is large.
 
 ## Core Questions
 
@@ -265,9 +277,11 @@ Do not stop when:
 Before stopping:
 
 - update the mutable state file with the stop reason
-- if the loop uses a completion-check state file, update it before stopping:
+- if the loop uses a completion state file, update it before stopping:
+  - use `status: pending` when more autonomous work remains
   - use `status: done` when the lane is complete
-  - use `status: blocked` when no autonomous progress is possible
+  - use `status: blocked` only when no autonomous progress is possible
+  - never use `status: blocked` when the checkpoint names a runnable next move
 
 ## Output
 

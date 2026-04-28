@@ -1,80 +1,150 @@
 ---
-title: Slate public single-op writes should use `Editor.apply(...)` and keep `onChange` behind subscribers
+title: Slate operation replay should use applyOperations, operation middleware, and commit subscribers
 date: 2026-04-19
+last_updated: 2026-04-25
 category: developer-experience
 module: slate-v2
 problem_type: developer_experience
 component: tooling
 symptoms:
-  - internal helper paths had already moved onto `tx.apply(...)` and `applyOperation(...)`, but public single-op writes still defaulted to wrapped `editor.apply(...)`
-  - commit subscribers and `editor.onChange()` still competed for authority over post-commit timing
-  - exact interface fixtures kept ambient mutable property reads alive even after explicit accessors existed
+  - public single-operation writes still made replaceable instance editor.apply look like the extension point
+  - React and history paths still had pressure to use editor.onChange for post-commit observation
+  - DOM runtime operation interception depended on monkeypatching editor.apply
+  - tests kept reaching for deleted editor.selection and editor.marks mirrors after the public mutable-field cut
 root_cause: wrong_api
 resolution_type: code_fix
 severity: high
-tags: [slate, slate-v2, editor-apply, subscribe, onchange, transaction, snapshot-store, compatibility]
+tags: [slate, slate-v2, applyoperations, operation-middleware, commit-subscribers, transaction, update-runtime]
 ---
 
-# Slate public single-op writes should use `Editor.apply(...)` and keep `onChange` behind subscribers
+# Slate operation replay should use applyOperations, operation middleware, and commit subscribers
 
 ## Problem
 
-The core redesign had already done the hard part:
+Slate v2 cannot claim an authoritative `editor.update` / commit runtime while
+`editor.apply` and `editor.onChange` are still viable extension points.
 
-- `tx.apply(...)` owned transaction writes
-- `applyOperation(...)` owned helper/transform writes
-- `getSnapshot(...)` and `subscribe(...)` owned the store surface
+The correct shape is:
 
-But the public single-op path still had no explicit stronger seam, so
-`editor.apply(...)` kept winning by default.
+- `editor.applyOperations(...)` for explicit operation import/replay
+- `editor.extend({ operationMiddlewares })` for low-level operation interception
+- `Editor.subscribe(...)` and `Editor.registerCommitListener(...)` for
+  observation
+- readonly low-level `editor.apply` as machinery, not plugin API
 
-At the same time, `editor.onChange()` still ran before subscribers, which left a
-legacy callback looking more authoritative than the actual commit seam.
+## Symptoms
 
-That is how compatibility baggage quietly crawls back into the design.
+- Assigning `editor.apply = ...` still worked in contracts and encouraged
+  monkeypatch plugins.
+- `editor.onChange = ...` still appeared in tests as a reentry/observation
+  hook.
+- `slate-dom` wrapped `apply` to keep DOM node maps synchronized around
+  operations.
+- React composition, clipboard, selection, and Android code still read
+  `editor.selection` / `editor.marks` after those public mirrors were cut.
+- History fixture runners compared `editor.children` / `editor.selection`
+  directly instead of snapshot accessors.
 
 ## What Didn't Work
 
-- Treating wrapped `editor.apply(...)` like the public default after the core
-  already had a stronger transaction writer
-- Letting `editor.onChange()` fire before subscribers, which makes downstream
-  ordering depend on callback luck instead of commit truth
-- Leaving exact interface fixtures on ambient `editor.children` /
-  `editor.selection` reads, which spreads compatibility pressure through tests
-  that are not supposed to own it
+- Keeping `Editor.apply(editor, op)` as the only explicit public single-op seam.
+  It still left instance `editor.apply` looking like the thing plugin authors
+  should replace.
+- Treating `editor.onChange` as "after subscribers" compatibility. The callback
+  still looked like commit authority and kept reentry tests pointed at the wrong
+  abstraction.
+- Restoring public read-only `selection` or `marks` mirrors to make React code
+  compile. That would reintroduce the stale-state habit the architecture is
+  cutting.
 
 ## Solution
 
-1. Add `Editor.apply(editor, op)` as the explicit public single-op writer.
-2. Route that seam through `Editor.withTransaction(editor, tx => tx.apply(op))`
-   so it reuses the same transaction/core writer as the rest of the redesign.
-3. Keep instance `editor.apply(...)` as compatibility pressure, not the primary
-   public write seam.
-4. Notify `subscribe(...)` listeners before calling `editor.onChange()`.
-5. Move exact `interfaces/Editor/**` fixtures onto explicit read seams:
-   - `Editor.getChildren(editor)`
-   - `Editor.getSnapshot(editor).selection`
-   - `Editor.getSnapshot(editor).marks`
+Seal the legacy extension points and name the real ones.
+
+```ts
+editor.applyOperations([
+  {
+    type: 'insert_text',
+    path: [0, 0],
+    offset: 5,
+    text: '!',
+  },
+])
+```
+
+Use operation middleware when a runtime package needs to observe or wrap
+low-level operations:
+
+```ts
+editor.extend({
+  name: 'operation-spy',
+  operationMiddlewares: [
+    ({ operation }, next) => {
+      // pre-operation bookkeeping
+      next(operation)
+      // post-operation bookkeeping
+    },
+  ],
+})
+```
+
+Use commit subscribers for observation:
+
+```ts
+const unsubscribe = Editor.subscribe(editor, (_snapshot, commit) => {
+  if (!commit) return
+
+  // history, React, and runtime observers consume commit metadata here
+})
+```
+
+Implementation details that matter:
+
+- `BaseEditor` does not expose `onChange`.
+- `createEditor()` defines instance `apply` as non-writable and
+  non-configurable.
+- `applyOperations(...)` runs through the transaction/update pipeline.
+- `slate-dom` operation interception composes through extension middleware.
+- React `<Slate onChange>` remains a component prop, but it is backed by
+  snapshot/commit subscription instead of `editor.onChange`.
+- History undo/redo replays operation batches with `applyOperations(...)`.
+- React runtime code reads current state through `getSelection()` and
+  `getMarks()`.
 
 ## Why This Works
 
-It lines the public surface up with the real engine ownership:
+The design separates three jobs that legacy `apply`/`onChange` blurred:
 
-- public single-op writes hit the transaction seam
-- helper/transform writes hit the internal writer seam
-- commit consumers anchor to subscribers, not callback timing
-- compatibility mirrors stay isolated in deliberate owner files
+- operation replay is an explicit API
+- operation interception is extension middleware
+- observation is commit subscription
 
-That makes the core API more honest without pretending the old instance fields
-or callbacks vanished overnight.
+That keeps plugins powerful without letting them replace the core operation
+applier or observe stale callback timing.
+
+It also aligns with the broader Slate v2 architecture:
+
+- `editor.update` owns local writes
+- transactions own operation application
+- `EditorCommit` owns runtime observation
+- React consumes snapshots/commits instead of mutable editor fields
 
 ## Prevention
 
-- When a stronger explicit seam exists, add the public entry point instead of
-  letting compatibility instance methods stay the default by inertia.
-- Treat `subscribe(...)` as the primary commit seam. `onChange()` is userland
-  notification, not commit authority.
-- Keep ambient mutable-property reads out of broad fixture trees once explicit
-  accessors exist.
-- If the remaining compatibility pressure lives mostly in tests and harnesses,
-  classify those owner files directly instead of blaming core source forever.
+- Do not document instance `editor.apply` as plugin API.
+- Do not add `editor.onChange` back to `BaseEditor`.
+- If a runtime needs operation wrapping, add an operation middleware.
+- If a runtime needs observation, subscribe to commits.
+- If a test needs to replay raw operations, use `editor.applyOperations(...)`.
+- If React or DOM code needs current state, use accessors like
+  `editor.getSelection()` and `editor.getMarks()`.
+- Keep an executable hard-cut contract that proves:
+  - `editor.onChange` is absent
+  - `editor.apply` cannot be redefined
+  - `applyOperations(...)` publishes commits
+  - subscribers and commit listeners see the committed batch
+
+## Related Issues
+
+- [Slate history capture must anchor to commit subscribers, not onChange order](../logic-errors/2026-04-03-slate-history-capture-must-anchor-to-commit-subscribers-not-onchange-order.md)
+- [Slate transform namespaces should stay thin sugar over the current engine](2026-04-09-slate-transform-namespaces-should-stay-thin-sugar-over-the-current-engine.md)

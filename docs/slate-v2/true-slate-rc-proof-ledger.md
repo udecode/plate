@@ -8,11 +8,11 @@ status: active
 
 ## Current Read
 
-The fresh-branch program now has package-runtime proof for `slate-dom` and
-`slate-react`.
+The fresh-branch program now has package-runtime proof for `slate-dom`,
+`slate-react`, and the public read/update runtime spine.
 
-The next mainline blocker is broader claim-width closure, not missing DOM/React
-runtime owners.
+The next mainline blocker is final same-turn gate closure, not missing DOM,
+React, public API, kernel, gauntlet, mobile-scope, or huge-doc perf owners.
 
 Not:
 
@@ -56,13 +56,12 @@ These are the current reads:
   - focused runtime owners
   - required v2-only example/browser rows in Chromium
   - command-backed north-star perf owners
-- contributor-facing example parity beyond the kept v2-only set is still open:
-  - same-path open rows still include `code-highlighting`,
-    `markdown-preview`,
-    `markdown-shortcuts`, `scroll-into-view`, `shadow-dom`, `styling`, and
-    `tables`
-  - no same-path mixed rows remain after `images` prompt/delete proof
-- final benchmark/root-proof claim width is still open
+- generated cursor/caret gauntlets are replayable and release-blocking for
+  cursor/caret claims
+- mobile/IME transport proof is scoped by explicit claim metadata and
+  descriptor classification
+- final benchmark/root-proof claim width is classified; final same-turn gate
+  closure is still open
 
 ## V2 North-Star Proof Lanes
 
@@ -81,8 +80,24 @@ These are the current reads:
   - the 5000-block direct comparison is the proof gate and is green on
     important lanes
   - 1000-block runs are smoke/debug only and do not close the lane
-  - first shelled-block activation versus chunking-on is an accepted
-    occlusion/corridor tradeoff, not a steady-editing loss
+  - direct model-only typing into an unpromoted middle shell is an accepted
+    caveat, not the user editing corridor
+  - promoted middle-block typing is the user editing corridor and beats
+    chunking-on
+- read/update public lifecycle proof is live:
+  - public hard-cut contracts guard examples and public teaching paths
+  - primitive method runtime contracts cover implicit target behavior
+  - extension method contracts cover method-first plugin power without direct
+    monkeypatching
+- generated browser gauntlet proof is live:
+  - rows assert model, DOM, DOM selection/caret where observable, focus owner,
+    commit metadata, trace legality, replayability, shrink payloads, and
+    follow-up typing
+- native mobile proof is scoped:
+  - Playwright mobile viewport and semantic handles are not raw Android/iOS
+    keyboard or clipboard proof
+  - Appium Android/iOS descriptors are direct-device proof candidates
+  - agent-browser iOS is proxy evidence
 - data-model-first / React-perfect huge-doc runtime safety is closed in
   Chromium:
   - direct DOM sync has explicit capability checks
@@ -105,9 +120,9 @@ These are the current reads:
 
 ## Rule
 
-Do not upgrade this ledger from infrastructure proof to runtime proof until the
-owning package tranche lands and the proof rows trace back to the settled core
-design, not just the old retrofit surface.
+Do not upgrade this ledger from runtime proof to RC readiness until the final
+integration, build, typecheck, lint, and perf gates run in the active closeout
+slice.
 
 Green harness rows, narrow browser proof, source closeness, or same-path
 examples do not close blanket claim-width or parity by themselves.

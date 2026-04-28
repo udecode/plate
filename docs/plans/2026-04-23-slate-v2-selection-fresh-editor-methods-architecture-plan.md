@@ -1,16 +1,26 @@
 ---
 date: 2026-04-23
 topic: slate-v2-read-update-runtime-architecture
-status: paused
+status: superseded
 depends_on:
   - docs/plans/2026-04-23-slate-v2-remaining-perfect-architecture-batches-plan.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
 related:
+  - docs/plans/2026-04-23-slate-v2-perfect-architecture-master-plan.md
   - docs/solutions/logic-errors/2026-04-04-decorated-multi-leaf-text-needs-cumulative-offset-mapping.md
   - docs/solutions/logic-errors/2026-04-09-slate-react-focus-restore-must-fail-closed-on-transient-dom-point-gaps.md
 ---
 
 # Slate v2 Read/Update Runtime Architecture
+
+## Canonical Plan
+
+The active master execution plan is:
+
+- [docs/plans/2026-04-23-slate-v2-perfect-architecture-master-plan.md](docs/plans/2026-04-23-slate-v2-perfect-architecture-master-plan.md)
+
+This file remains historical execution evidence for the target-fresh and
+read/update transition slices.
 
 ## Authoritative Direction
 

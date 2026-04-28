@@ -11,6 +11,10 @@ source_refs:
   - docs/research/sources/editor-architecture/layout-measurement-and-ime-lanes.md
   - docs/research/sources/editor-architecture/service-channels-and-live-stores.md
   - docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md
+  - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
+  - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
+  - docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md
+  - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - ../prosemirror/view/src/decoration.ts
   - ../prosemirror/state/src/selection.ts
   - ../lexical/packages/lexical/src/LexicalUpdates.ts

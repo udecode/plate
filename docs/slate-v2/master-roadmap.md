@@ -66,15 +66,17 @@ Review stop:
 
 - before engine package recovery starts
 
-### [x] Tranche 3: `slate` Native Transaction Core And Public API Reset
+### [x] Tranche 3: `slate` Read/Update Transaction Core And Public API Reset
 
 - settle `slate` around the best end-state API, not the most conservative
   retrofit
 - move the core toward:
-  - native transactions as the primary write model
-  - snapshot/store-first reads
+  - `editor.read` / `editor.update` as the public lifecycle
+  - primitive editor methods as the flexible mutation API
+  - transaction-owned target freshness
+  - `EditorCommit` as local runtime truth
   - cleaner store/runtime boundaries
-  - compatibility mirrors only where they still earn their keep
+  - hard-cut stale public state pressure from primary docs/examples/tests
 - allow hard cuts where old public seams block the better API
 - keep the package split explicit while the core changes
 - hold the existing correctness and perf floors as hard guardrails
@@ -106,30 +108,23 @@ Important correction:
 
 Tranche-3 closeout read:
 
-- canonical public surface hierarchy is now settled for the live claim:
-  - `getSnapshot`
-  - `subscribe`
-  - `replace`
-  - `reset`
-  - `withTransaction`
-  - `Editor.apply(editor, op)`
-- mutable editor state hierarchy is now classified:
-  - `editor.children` survives as a compatibility mirror, not a primary read seam
-  - `editor.selection` survives as a compatibility mirror, not a primary read seam
-  - `editor.marks` survives as a compatibility mirror, not a primary read seam
-  - RC judgment:
-    keep the mirrors through RC
-  - later hard-cut judgment stays open after sibling packages migrate
+- canonical public runtime hierarchy is settled for the live claim:
+  - `editor.read`
+  - `editor.update`
+  - primitive editor methods
+  - `editor.extend({ methods })`
+  - commit subscribers
+- stale-state hierarchy is classified:
+  - `editor.children` is not a primary read seam
+  - `editor.selection` is not a primary read seam
+  - `editor.marks` is not a primary read seam
+  - `editor.operations` is not a primary read seam
 - write hierarchy:
-  - instance `editor.apply(op)` is now classified as compatibility-only
-  - RC judgment:
-    keep it through RC as compatibility-only
-  - later hard-cut judgment stays open
+  - `editor.update` is the write boundary
+  - direct apply/onChange replacement is not an extension point
 - compatibility-baggage decisions:
-  - instance `editor.onChange()` is now classified as compatibility-only
-  - RC judgment:
-    keep it through RC as compatibility-only
-  - later hard-cut judgment stays open
+  - internal runtime mirrors exist only where package code still needs them
+  - public docs/examples/tests do not teach stale-state APIs
 - explicit normalization claim width is settled:
   - heavier adjacent-text/spacer cleanup stays explicit-only
   - owner: `packages/slate/test/fixture-claim-overrides.ts`
@@ -154,9 +149,9 @@ Current tranche-3 doctrine:
   canonicalization rows:
   - owner: `/Users/zbeyens/git/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
 - the perfect redesign is now the live direction, not a deferred later lane
-- the `slate` core API direction is now settled enough to become the live claim
-- remaining mutable-field / callback / instance-apply cut judgments are
-  explicitly deferred post-RC
+- the `slate` core API direction is the live claim
+- remaining work is final gate closure and claim-width sync, not a new public
+  API debate
 
 ### [x] Tranche 4: `slate-history`, `slate-hyperscript` Lossless Closure
 
@@ -247,28 +242,20 @@ Current tranche-7 read:
 - the kept tranche-5 / tranche-6 perf owners are real
 - what remains is broader contributor-facing parity and claim-width cleanup,
   not missing DOM/React runtime owners
-- highest-signal same-path parity rows still open:
-  - `code-highlighting`
-  - `custom-placeholder`
-  - `huge-document`
-  - `markdown-preview`
-  - `markdown-shortcuts`
-  - `scroll-into-view`
-  - `shadow-dom`
-  - `styling`
-  - `tables`
-- highest-signal mixed rows still open:
-  - `editable-voids`
-  - `images`
-  - `paste-html`
-  - `richtext`
+- generated cursor/caret gauntlets are the release proof lane for rich editing
+  regressions
+- mobile proof is scoped by transport claim metadata and direct-device
+  descriptor classification
+- final integration/build/type/lint/perf closure is the active owner
 - stronger slate-react perf-superiority is command-owned and closed for the
   huge-doc runtime lane:
   - `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
   - the 5000-block proof gate is green on important lanes
   - 1000-block runs are smoke/debug only and do not close the lane
-  - first shelled-block activation versus chunking-on is the accepted
-    occlusion/corridor tradeoff
+  - direct model-only typing into an unpromoted middle shell is the accepted
+    caveat
+  - promoted middle-block typing is the user editing corridor and beats
+    chunking-on
 
 ### [ ] Tranche 8: RC Ledger Closure
 

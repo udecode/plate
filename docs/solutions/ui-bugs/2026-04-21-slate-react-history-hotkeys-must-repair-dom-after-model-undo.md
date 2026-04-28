@@ -1,6 +1,7 @@
 ---
 title: Slate React history hotkeys must repair DOM after model undo
 date: 2026-04-21
+last_updated: 2026-04-27
 category: ui-bugs
 module: slate-v2 slate-react
 problem_type: ui_bug
@@ -9,6 +10,7 @@ symptoms:
   - Cmd+Z on the richtext example updated the Slate model but left inserted text visible in the editor DOM
   - handle-only undo tests passed while the real keyboard history path was broken
   - static Playwright needed rebuilt package output before it reflected slate-react source fixes
+  - generated mobile paste-normalize-undo stress could duplicate text or crash React during DOM removal when undo replay used the wrong history path
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
@@ -35,15 +37,21 @@ Keyboard undo and redo in `slate-react` can mutate the Slate model while leaving
 
 ## Solution
 
-Force a view repair after every history mutation reached from keyboard or native history events:
+Route keyboard and native history events through Slate-owned history, then force
+a view repair only when the history batch is not already handled by direct DOM
+text sync:
 
 ```ts
 if (Hotkeys.isUndo(nativeEvent)) {
   event.preventDefault()
-  const maybeHistoryEditor: any = editor
 
-  if (typeof maybeHistoryEditor.undo === 'function') {
-    maybeHistoryEditor.undo()
+  if (
+    applyModelOwnedHistoryIntent({
+      direction: 'undo',
+      editor,
+    }) &&
+    shouldForceRenderAfterModelOwnedHistory(editor)
+  ) {
     forceRender()
   }
 
@@ -51,13 +59,40 @@ if (Hotkeys.isUndo(nativeEvent)) {
 }
 ```
 
-The same repair belongs on redo and native `historyUndo` / `historyRedo` events. Keep the test on the user path: browser text insertion, keyboard undo, then assert both model text and visible DOM text remove the inserted token.
+Use the same policy for redo and native `historyUndo` / `historyRedo` events.
+The render decision should be based on the last committed operations:
+
+```ts
+export const shouldForceRenderAfterModelOwnedHistory = (editor: Editor) => {
+  const commit = Editor.getLastCommit(editor)
+
+  return (
+    !commit ||
+    commit.operations.some(
+      (operation) =>
+        operation.type !== 'insert_text' &&
+        operation.type !== 'remove_text' &&
+        operation.type !== 'set_selection'
+    )
+  )
+}
+```
+
+Mounted editor text and block renderers can opt out of rerendering after synced
+text-only commits, but generic selector hooks must still report model text
+updates to app code.
 
 ## Why This Works
 
-The native/direct DOM text lane can leave React with no urgent render to perform after history changes. Undo correctly mutates the Slate model, but the DOM still contains browser-inserted text until `slate-react` explicitly reconciles the view.
+The native/direct DOM text lane can leave React with no urgent render to perform
+after history changes. Undo correctly mutates the Slate model, but the DOM can
+still contain browser-inserted text until `slate-react` explicitly reconciles
+the view.
 
-Forcing render after history undo/redo makes the real hotkey path match the already-safe browser-handle path.
+Non-text history batches still need that explicit repair. Text-only history
+batches are different: direct DOM text sync already owns the visible text. A
+broad React render there can race the browser-owned DOM and produce duplicate
+text or node-removal crashes during mobile replay.
 
 ## Prevention
 
@@ -65,6 +100,11 @@ Forcing render after history undo/redo makes the real hotkey path match the alre
 - Assert both `Editor.string(editor, [])` and visible editor DOM after direct/native DOM input.
 - Rebuild touched packages before static Playwright runs when site examples consume package output.
 - Use connected-browser verification for browser-version-specific editing bugs; bundled Playwright can miss real Chrome behavior.
+- Keep generated paste/normalize/undo browser contracts replaying Slate-owned
+  history, not browser-native contenteditable undo.
+- Do not make generic runtime selectors stale to optimize mounted editor
+  internals. Put the synced-text skip on the internal render subscribers that
+  need it.
 
 ## Related Issues
 

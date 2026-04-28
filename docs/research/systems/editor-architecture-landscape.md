@@ -6,9 +6,11 @@ updated: 2026-04-15
 related:
   - docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md
   - docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md
+  - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
+  - docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
   - docs/analysis/editor-architecture-candidates.md
 ---
 

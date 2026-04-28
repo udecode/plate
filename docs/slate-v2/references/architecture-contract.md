@@ -23,6 +23,40 @@ For `slate-react`, semantic islands, active corridor, occlusion,
 selector-first reads, and the overlay kernel take priority over reviving
 child-count chunking or broad snapshot reads as foundational runtime behavior.
 
+## Current Public Runtime Contract
+
+Use
+[absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
+for the public claim.
+
+The current public runtime shape is:
+
+```ts
+editor.read(() => {
+  editor.getSelection()
+  editor.getChildren()
+})
+
+editor.update(() => {
+  editor.unwrapNodes({ match: isList })
+  editor.setNodes({ type: 'list-item' })
+  editor.wrapNodes({ type: 'bulleted-list', children: [] })
+})
+```
+
+The current rules:
+
+- `editor.read` is the coherent read boundary.
+- `editor.update` is the write boundary.
+- primitive editor methods are the flexible mutation API.
+- extension methods compose through `editor.extend({ methods })`.
+- `Transforms.*` is not the primary public mutation story.
+- mutable editor fields are not primary read seams.
+- direct `editor.apply` and direct `editor.onChange` replacement are not
+  extension points.
+- `tx.resolveTarget()` stays internal.
+- child-count chunking stays dead.
+
 ## Purpose
 
 This is the canonical technical north star for `slate-v2`.
@@ -66,22 +100,20 @@ Truth class:
 
 ## Problem Frame
 
-The current Slate rewrite is the best retrofit for the existing ecosystem:
+The current Slate rewrite keeps the good Slate inheritance:
 
-- `Editor.apply(editor, op)` is the explicit public single-op writer
-- `editor.apply(op)` survives as compatibility pressure, not the primary seam
-- `Editor.withBatch(editor, fn)` is the explicit batch boundary
-- `Transforms.applyBatch(editor, ops)` is public sugar over the same engine
-
-That path is correct for Slate today. It preserves plugin expectations and keeps the public API boring.
+- JSON-like document model
+- operation stream for collaboration
+- flexible tree primitives
+- method-first editor DX
 
 It is still a retrofit. The engine underneath is carrying real complexity:
 
-- batch drafts
-- observation barriers on `editor.children`
+- transaction drafts
+- stale public field pressure
 - dirty-path planners
 - family-specific fast paths
-- compatibility with plugins that wrap `editor.apply`
+- compatibility with plugins that replace mutable methods
 
 If Slate were starting from zero, this is not the engine I would choose.
 
@@ -184,10 +216,10 @@ Public calls express intent. They do not mutate the committed tree directly.
 
 Examples:
 
-- `Transforms.insertNodes(...)`
-- `Transforms.setNodes(...)`
-- `Transforms.moveNodes(...)`
-- `Editor.apply(editor, op)`
+- `editor.insertNodes(...)`
+- `editor.setNodes(...)`
+- `editor.moveNodes(...)`
+- `editor.delete(...)`
 
 Those all append normalized intent into the active transaction.
 
@@ -206,37 +238,40 @@ A transaction object owns all mutable working state for one edit session:
 
 That transaction is the actual runtime unit. Not the individual operation.
 
-### 3. Middleware Pipeline
+### 3. Extension Method Pipeline
 
-Plugins do not monkey-patch `editor.apply`. They hook named phases.
+Plugins do not monkey-patch editor methods. They register named extension
+methods and package-local hooks that compose through the same update runtime.
 
-The engine should expose explicit middleware phases like:
+The public shape is method-first:
 
-- `rewriteOperation`
-- `validateOperation`
-- `beforeTransformRefs`
-- `transformRefs`
-- `mutateDraft`
-- `deriveDirtyPaths`
-- `normalizeDraft`
-- `beforeCommit`
-- `afterCommit`
+```ts
+editor.extend({
+  name: 'feature',
+  methods: {
+    runFeature() {
+      this.update(() => {
+        this.setNodes({ feature: true })
+      })
+    },
+  },
+})
+```
 
-That is cleaner than “save old apply, wrap it, hope you understood the timing.”
+That is cleaner than “save old method, wrap it, hope you understood the timing.”
 
 ### 4. Commit Layer
 
 At commit, the engine publishes one new immutable snapshot:
 
-- `editor.children`
-- `editor.selection`
-- `editor.marks`
+- committed children
+- committed selection
+- committed marks
 - transaction-scoped refs/history state
 
 No previously published node object is ever mutated in place. Ever.
 
-Those editor fields are compatibility mirrors over the committed snapshot, not
-the primary read model.
+Public reads go through coherent read APIs, not mutable field observation.
 
 ## React-Optimized Runtime Model
 
@@ -417,23 +452,30 @@ One more hard rule:
 
 ## Public API Sketch
 
-The public surface could stay pretty small:
+The public surface stays small:
 
 ```ts
-Editor.withTransaction(editor, (tx) => {
-  Transforms.insertNodes(editor, node);
-  Transforms.setNodes(editor, { color: "orange" }, { at: [0] });
-  Transforms.moveNodes(editor, { at: [3], to: [1] });
-});
+editor.read(() => {
+  editor.getSelection()
+  editor.getChildren()
+})
+
+editor.update(() => {
+  editor.insertNodes(node)
+  editor.setNodes({ color: 'orange' }, { at: [0] })
+  editor.moveNodes({ at: [3], to: [1] })
+})
 ```
 
-Possible rules:
+Rules:
 
-- `Editor.apply(editor, op)` is the explicit public single-op writer
-- `editor.apply(op)` remains as low-level compatibility
-- if no transaction is active, Slate creates an implicit one for that call
-- `Transforms.*` always target the active transaction
-- `Transforms.applyBatch(...)` is optional and may not even need to exist in v2
+- `editor.update` creates the transaction boundary
+- `editor.read` reads coherent committed state
+- primitive editor methods target the active transaction
+- if a primitive omits `at`, the active transaction resolves the implicit
+  target once
+- if a primitive supplies `at`, DOM selection is not imported
+- direct single-op compatibility forwards into the same transaction runtime
 
 That means the native model is transactional even when the user writes single-op code.
 
@@ -441,8 +483,7 @@ The important runtime detail is that this public API should sit on top of a snap
 
 Commit subscribers are the primary post-commit seam.
 
-`editor.onChange()` survives as a compatibility callback after those
-subscribers, not as the thing downstream systems should anchor to.
+Direct `editor.onChange` replacement is not the extension surface.
 
 ## Plugin Model
 
@@ -450,91 +491,56 @@ This is the real win.
 
 This is end-state direction, not a Phase 1 requirement.
 
-Plugins should override one middleware surface, not one mutable method.
+Plugins should add named extension methods, not replace mutable methods.
 
-There is one useful external constraint here: explicit hook points are good, but they should stay package-local and boundary-local.
-
-Good:
-
-- core transaction phases in `slate`
-- DOM bridge phases in `slate-dom`
-- runtime subscription and lifecycle phases in `slate-react`
-- history capture and grouping phases in `slate-history`
-
-Bad:
-
-- one giant plugin surface that spans every package and quietly re-couples them
-
-Instead of this:
+Use this:
 
 ```ts
-const { apply } = editor;
-
-editor.apply = (op) => {
-  if (op.type === "set_node" && op.newProperties?.color === "blue") {
-    op = {
-      ...op,
-      newProperties: {
-        ...op.newProperties,
-        color: "orange",
-      },
-    };
-  }
-
-  apply(op);
-};
-```
-
-You would do this:
-
-```ts
-editor.rewriteOperation = (op, next) => {
-  if (op.type === "set_node" && op.newProperties?.color === "blue") {
-    op = {
-      ...op,
-      newProperties: {
-        ...op.newProperties,
-        color: "orange",
-      },
-    };
-  }
-
-  return next(op);
-};
+editor.extend({
+  name: 'todo',
+  methods: {
+    toggleTodo() {
+      this.update(() => {
+        this.setNodes({ type: 'todo', checked: true })
+      })
+    },
+  },
+})
 ```
 
 That is vastly easier to reason about:
 
-- one phase
-- one responsibility
+- one public lifecycle
+- one transaction boundary
 - no hidden dependence on commit timing
-- no accidental coupling to tree mutation
+- no accidental coupling to mutable field timing
 
 App and demo instrumentation follows the same rule: observe commits through
-`Editor.subscribe`, not by replacing `editor.apply`.
+`Editor.subscribe`, not by replacing editor methods.
 
 ## Snapshot Semantics
 
 The committed editor state should be immutable and boring:
 
-- `editor.children` is the last committed snapshot
-- `editor.selection` and `editor.marks` are the last committed published state
+- `editor.getChildren()` reads committed children
+- `editor.getSelection()` reads committed selection
+- `editor.getMarks()` reads committed marks
+- mutable fields are internal or compatibility mirrors, not primary read seams
 - transaction draft state is private
 - reading committed state does not mutate anything
 - reading draft state happens through explicit transaction access, not by accident
 
-If a plugin needs to inspect current in-transaction state, it should do so through the transaction object:
+If a plugin needs to mutate selected content, it should use primitives inside
+`editor.update`:
 
 ```ts
-Editor.withTransaction(editor, (tx) => {
-  Transforms.insertNodes(editor, node);
-
-  const currentChildren = tx.children;
-  const currentSelection = tx.selection;
-});
+editor.update(() => {
+  editor.insertNodes(node)
+  editor.setNodes({ color: 'orange' })
+})
 ```
 
-That is cleaner than accessor tricks on `editor.children`.
+That is cleaner than accessor tricks on mutable fields.
 
 For React, this matters even more:
 
@@ -624,7 +630,7 @@ A transaction-first engine with a React-optimized runtime could remove some long
 
 - per-op render churn
 - path-only identity weirdness
-- brittle `editor.apply` override timing
+- brittle method override timing
 - selection synchronization races
 - normalization and derived UI fighting for the same urgent lane
 - mixed-op performance cliffs caused by per-op execution assumptions
@@ -637,7 +643,7 @@ Because it is basically a new editor engine.
 
 The current Slate ecosystem assumes:
 
-- plugins wrap `editor.apply`
+- plugins replace editor methods
 - `apply` has immediate effects
 - editor state is directly observable through current surfaces
 - history, DOM, and selection semantics already exist in this shape
@@ -889,28 +895,33 @@ Strong take:
 Phase 1 should expose the smallest honest surface:
 
 - `createEditor()`
-- `Editor.apply(editor, op)`
-- `Transforms.*`
-- one explicit provisional transaction seam
+- `editor.read(fn)`
+- `editor.update(fn, options?)`
+- primitive editor methods
+- extension methods
 
-Recommended provisional seam:
+Recommended write seam:
 
 ```ts
-Editor.withTransaction(editor, fn);
+editor.update(() => {
+  editor.setNodes({ type: 'heading-one' })
+})
 ```
 
 Why:
 
-- single-op implicit transactions preserve the op-first contract
-- an explicit transaction seam is needed for benchmarks, tests, and multi-op semantics
-- Phase 1 does not need to commit to the final public batching API name yet
+- operations stay the collaboration truth
+- the update boundary gives benchmarks, tests, history, React, and DOM repair
+  one commit truth
+- plugin authors keep Slate-style primitive flexibility without exposed
+  transaction internals
 
 What not to add in Phase 1:
 
-- middleware phase hooks
-- async transaction hooks
-- DOM-facing helpers
-- React-facing selector helpers
+- exposed `tx.resolveTarget()`
+- command policy objects
+- method monkeypatching as the extension model
+- child-count chunking
 
 ### Required Runtime Surface
 
@@ -1049,8 +1060,7 @@ These are the rules Phase 1 has to enforce.
 
 1. No committed snapshot is mutated in place.
 2. No transaction draft leaks as committed state.
-3. mutable editor fields are compatibility mirrors over the last committed
-   published state, not the primary read seams.
+3. mutable editor fields are not primary read seams.
 4. Path is location, not the only identity.
 5. Every public edit path runs inside a transaction, even if implicit.
 6. Normalization finishes before commit or fails intentionally.
@@ -1062,12 +1072,9 @@ These are the rules Phase 1 has to enforce.
 
 Phase 1 flow:
 
-1. public call enters through `editor.apply(op)` or `Transforms.*`
-   - live redesign correction:
-     `Editor.apply(editor, op)` is the explicit public entry
-     and instance `editor.apply(op)` is compatibility-only
+1. public write enters through `editor.update(...)`
 2. engine gets or creates active transaction
-3. transform lowers to operation(s)
+3. primitive editor method lowers to operation(s)
 4. transaction mutates draft
 5. transaction updates refs and normalize debt
 6. transaction normalizes draft
@@ -1078,7 +1085,7 @@ Important:
 - Phase 1 can keep transaction scope synchronous only
 - do **not** design async transaction middleware now
 - the commit path must publish through the core-owned snapshot store
-- commit subscribers should fire before the legacy `editor.onChange()` callback
+- commit subscribers are the post-commit observation surface
 - external replacement must enter through the explicit replacement seam, not by mutating published state in place
 
 ## First Red-Test Lanes
@@ -1088,7 +1095,7 @@ These are the correctness lanes to freeze in Phase 0.
 ### Core lanes to build first
 
 1. `#5977` custom operations should not break editor detection
-   - seam: custom operations in `editor.operations`
+   - seam: custom operations in the operation stream
 2. `#5874` duplicate node insertion by object identity
    - seam: same node object inserted twice should guardrail instead of desyncing
 3. `#5811` custom normalize wrap/unwrap loop
@@ -1136,8 +1143,8 @@ Why freeze later lanes now:
 
 1. create `packages/slate` with mirrored top-level export shape
 2. define `EditorSnapshot`, `SnapshotIndex`, `Transaction`, `RuntimeId`
-3. implement explicit `Editor.apply(editor, op)` over the shared transaction writer
-4. implement explicit `Editor.withTransaction(editor, fn)` seam
+3. implement `editor.read(fn)` and `editor.update(fn, options?)`
+4. route primitive editor methods through the shared transaction writer
 5. implement the core snapshot-store contract
 6. implement the explicit external replacement seam
 7. move normalization debt and ref updates inside the transaction

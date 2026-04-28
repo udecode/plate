@@ -1,11 +1,13 @@
 ---
 date: 2026-04-07
+last_updated: 2026-04-26
 problem_type: logic_error
 component: slate
 root_cause: logic_error
 title: Slate v2 cross-block delete should reuse the merge seam
 tags:
   - slate-v2
+  - editor-methods
   - delete
   - merge
   - transforms
@@ -47,3 +49,16 @@ For Slate v2 adjacent cross-block deletion:
 
 If block-boundary delete and block merge have separate semantics, one of them
 will drift.
+
+## Sweep guard
+
+When reviewing core editor methods for this regression class, hunt for:
+
+- private structural helpers that manually merge, split, lift, wrap, or unwrap
+  where a primitive seam already owns the behavior
+- optional transaction parameters that fall back to `editor.apply`
+- preflight checks that read live selection before transaction target resolution
+- direct `Transforms.*` use in the core mutation surface
+
+The correct fix is usually to route the method through the owned primitive seam,
+not to make the local helper smarter.
