@@ -6,7 +6,7 @@ import type { SlateElementProps } from 'platejs/static';
 import { getLinkAttributes } from '@platejs/link';
 import { SlateElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
-import { inlineSuggestionDataVariants } from '@/registry/lib/inline-suggestion';
+import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function LinkElementStatic(props: SlateElementProps<TLinkElement>) {
   return (
@@ -15,7 +15,7 @@ export function LinkElementStatic(props: SlateElementProps<TLinkElement>) {
       as="a"
       className={cn(
         'font-medium text-primary underline decoration-primary underline-offset-4',
-        inlineSuggestionDataVariants()
+        inlineSuggestionVariants()
       )}
       attributes={{
         ...props.attributes,

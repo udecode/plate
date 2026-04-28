@@ -206,10 +206,6 @@ export const Index: Record<string, any> = {
       type: "registry:ui",
       target: ""
     },{
-      path: "src/registry/lib/block-discussion-index.ts",
-      type: "registry:lib",
-      target: ""
-    },{
       path: "src/registry/ui/block-suggestion.tsx",
       type: "registry:ui",
       target: ""
@@ -1034,7 +1030,7 @@ export const Index: Record<string, any> = {
     name: "suggestion-node",
     description: "A text component for suggestion.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/inline-suggestion.json","https://platejs.org/r/suggestion-kit.json"],
+    registryDependencies: ["https://platejs.org/r/suggestion-kit.json"],
     files: [{
       path: "src/registry/ui/suggestion-node.tsx",
       type: "registry:ui",
@@ -1055,7 +1051,7 @@ export const Index: Record<string, any> = {
     name: "date-node",
     description: "A date field component with calendar picker.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/calendar","https://platejs.org/r/inline-suggestion.json"],
+    registryDependencies: ["@shadcn/calendar"],
     files: [{
       path: "src/registry/ui/date-node.tsx",
       type: "registry:ui",
@@ -1076,7 +1072,7 @@ export const Index: Record<string, any> = {
     name: "equation-node",
     description: "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
     type: "registry:ui",
-    registryDependencies: ["@shadcn/popover","https://platejs.org/r/inline-suggestion.json"],
+    registryDependencies: ["@shadcn/popover"],
     files: [{
       path: "src/registry/ui/equation-node.tsx",
       type: "registry:ui",
@@ -1308,7 +1304,7 @@ export const Index: Record<string, any> = {
     name: "link-node",
     description: "A component for rendering hyperlinks with hover states.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/inline-suggestion.json"],
+    registryDependencies: [],
     files: [{
       path: "src/registry/ui/link-node.tsx",
       type: "registry:ui",
@@ -1443,7 +1439,7 @@ export const Index: Record<string, any> = {
     name: "mention-node",
     description: "A mention element with customizable prefix and label, powered by a combobox.",
     type: "registry:ui",
-    registryDependencies: ["https://platejs.org/r/inline-suggestion.json","https://platejs.org/r/use-mounted.json","https://platejs.org/r/inline-combobox.json"],
+    registryDependencies: ["https://platejs.org/r/use-mounted.json","https://platejs.org/r/inline-combobox.json"],
     files: [{
       path: "src/registry/ui/mention-node.tsx",
       type: "registry:ui",
@@ -3113,23 +3109,6 @@ export const Index: Record<string, any> = {
     }],
     component: null,
     meta: {"rsc":true},
-  },
-  "inline-suggestion": {
-    name: "inline-suggestion",
-    description: "",
-    type: "registry:lib",
-    registryDependencies: undefined,
-    files: [{
-      path: "src/registry/lib/inline-suggestion.ts",
-      type: "registry:lib",
-      target: ""
-    }],
-    component: React.lazy(async () => {
-      const mod = await import("@/registry/lib/inline-suggestion.ts")
-      const exportName = Object.keys(mod).find(key => typeof mod[key] === 'function' || typeof mod[key] === 'object') || item.name
-      return { default: mod.default || mod[exportName] }
-    }),
-    meta: undefined,
   },
   "uploadthing": {
     name: "uploadthing",

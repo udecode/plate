@@ -5,11 +5,11 @@ export const registryLib: Registry['items'] = [
     dependencies: [],
     files: [
       {
-        path: 'lib/inline-suggestion.ts',
+        path: 'lib/suggestion.ts',
         type: 'registry:lib',
       },
     ],
-    name: 'inline-suggestion',
+    name: 'suggestion',
     type: 'registry:lib',
   },
   {
