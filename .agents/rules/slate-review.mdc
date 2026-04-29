@@ -43,11 +43,20 @@ executes it.
 - Do not patch Slate v2 implementation code in this skill.
 - Do not mark `done` because the review pass is tired.
 - Do not use `blocked` when another research, review, or plan-hardening move is
-  runnable.
+  runnable, unless the user explicitly stops execution or tells you to mark the
+  lane blocked.
 - Treat pasted review findings as context. The latest user request is the task.
 - Keep Slate v2 unopinionated. Plate owns opinionated product APIs.
 - A breaking or paradigm change needs an adoption story. "Cleaner architecture"
   alone is not a justification.
+- Plate/slate-yjs migration means architecture backbone, not support for their
+  current public APIs. Do not require current-version Plate adapters,
+  `editor.api` / `editor.tf` compatibility, or current slate-yjs integration
+  fixtures from raw Slate.
+- Use current Plate/slate-yjs source only to understand migration pressure.
+  Required proof is substrate-level: `state` / `tx` extension namespaces,
+  schema/spec policy, deterministic operations/snapshots/commits, commit
+  metadata, and local-only target semantics.
 - If a change touches extension, plugin, collaboration, operation, or data-model
   surfaces, a raw-Slate answer alone is insufficient.
 - Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
@@ -132,7 +141,7 @@ Weights:
 | --- | ---: |
 | React 19.2 runtime performance | 0.20 |
 | Slate-close unopinionated DX | 0.20 |
-| Plate and slate-yjs migration shape | 0.15 |
+| Plate and slate-yjs migration-backbone shape | 0.15 |
 | Regression-proof testing strategy | 0.20 |
 | Research evidence completeness | 0.15 |
 | shadcn-style composability and hook/component minimalism | 0.10 |
@@ -146,8 +155,9 @@ Score evidence rules:
   external systems or local repos the review relies on.
 - Regression-proof testing cannot score above `0.80` without named replayable
   browser/unit/stress contracts.
-- Migration shape cannot score above `0.85` if applicable Plate/plugin or
-  slate-yjs/collab answers are missing.
+- Migration-backbone shape cannot score above `0.85` if applicable plugin or
+  collab substrate answers are missing. Do not lower the score because raw
+  Slate lacks current-version Plate/slate-yjs adapters; that is not the target.
 
 Completion threshold:
 
@@ -159,13 +169,15 @@ Completion threshold:
 - no missing acceptance criteria for implementation
 - no public API surface left in "maybe" language
 - every major breaking/paradigm change has an accepted objection-ledger row
-- extension/plugin/collaboration/data-model changes have Plate/plugin and
-  slate-yjs/collab answers when applicable
+- extension/plugin/collaboration/data-model changes have migration-backbone
+  answers when applicable
 - no objection-ledger row is `unresolved`, `revise`, or `drop` without a
   corresponding plan response
 - pass schedule is complete
 - pass-state ledger proves earlier passes completed before closure
 - plan deltas from review are recorded
+- final user-review handoff lists every accepted plan item/decision, with
+  before/after shape when applicable
 
 If any gate fails, status stays `pending`.
 
@@ -179,8 +191,8 @@ The plan must include:
 4. Public API target.
 5. Internal runtime target.
 6. Hook/component/render DX target.
-7. Plate migration target.
-8. slate-yjs migration target.
+7. Plate migration-backbone target.
+8. slate-yjs migration-backbone target.
 9. Legacy regression proof matrix.
 10. Browser stress / parity strategy.
 11. Hard cuts and rejected alternatives.
@@ -190,7 +202,8 @@ The plan must include:
 15. Open questions and what would change the decision.
 16. Implementation phases with owners.
 17. Fast driver gates.
-18. Final completion gates.
+18. Final user-review handoff outline.
+19. Final completion gates.
 
 ## Pass Schedule
 
@@ -244,7 +257,8 @@ For every major breaking or paradigm change, record:
 - Regression proof: slate-browser, unit, integration, stress, or parity coverage
   required.
 - Ecosystem answers, when triggered: Plate/plugin author answer and
-  slate-yjs/collab maintainer answer.
+  slate-yjs/collab maintainer answer. These are migration-backbone answers, not
+  current-version support promises.
 - Verdict: `keep`, `revise`, `drop`, or `unresolved`.
 
 Ledger rows are mandatory for changes like:
@@ -274,8 +288,8 @@ Rules:
   "cleaner architecture", or lacks proof that a real user problem is solved.
 - If the best answer is only "cleaner architecture", the verdict is `revise` or
   `drop`.
-- If an ecosystem-triggering change has a weak Plate/plugin or slate-yjs/collab
-  answer, the verdict is `revise` or `unresolved`.
+- If an ecosystem-triggering change has a weak migration-backbone answer for
+  plugin or collab architecture, the verdict is `revise` or `unresolved`.
 - `unresolved`, `revise`, or `drop` rows must feed back into the plan before
   completion can be `done`.
 - Reuse prior ledger rows when rerunning this skill, but revalidate them against
@@ -289,16 +303,17 @@ normalization, snapshot, or data-model behavior.
 
 For each triggered ledger row, add two short answers:
 
-- Plate/plugin maintainer: can Plate expose this without wrapping every core
-  call, losing composition, or becoming a compatibility junk drawer?
+- Plate/plugin maintainer: can a product layer migrate to this backbone without
+  wrapping every core call, losing composition, or becoming a compatibility
+  junk drawer?
 - slate-yjs/collab maintainer: do operations, identity, snapshots,
   normalization, remote apply, and conflict behavior stay deterministic?
 
 For core API/data-model changes, also name:
 
 - exact affected extension points
-- Plate/plugin migration surface
-- slate-yjs/collab contract affected
+- plugin migration-backbone surface
+- collab contract affected
 - proof required before closure
 
 The pass exists to catch ecosystem breakage, not to veto every core cleanup. If
@@ -332,7 +347,8 @@ in the plan:
   bad legacy footguns.
 - Unopinionated-core pass: prove the shape does not turn Slate v2 into a Plate
   replacement.
-- Migration pass: prove Plate and slate-yjs have a believable route.
+- Migration pass: prove Plate and slate-yjs have a believable backbone route,
+  not current-version adapter support.
 - Regression pass: prove bugs are caught by generated browser contracts, not
   example-by-example patching.
 - Research pass: prove Lexical, ProseMirror, and Tiptap were used as evidence,
@@ -341,8 +357,8 @@ in the plan:
   layers.
 - Slate maintainer pass: challenge every breaking/paradigm change as if
   reviewing a Slate PR; record objections and answers in the ledger.
-- Ecosystem maintainer pass: only when triggered, add Plate/plugin and
-  slate-yjs/collab answers to the same ledger row.
+- Ecosystem maintainer pass: only when triggered, add plugin and collab
+  migration-backbone answers to the same ledger row.
 
 ## Complete-Plan Bridge
 
@@ -359,15 +375,55 @@ Do not use `complete-plan` from this skill to execute Slate v2 code changes.
 The user reviews the finished plan first. Execution starts only after a later
 explicit execution request.
 
+## Done Handoff
+
+When setting completion to `done`, the final chat response must include a
+concise but exhaustive bullet list of every accepted plan item and decision so
+the user can review without opening the full plan.
+
+Group bullets by surface when useful:
+
+- public API
+- React/runtime
+- hooks and render contracts
+- events and callbacks
+- schema/predicate behavior
+- migration-backbone decisions
+- browser/regression proof
+- hard cuts and rejected alternatives
+- implementation phases and gates
+
+Each bullet should use concise grammar and include:
+
+- decision name or surface
+- before -> after shape when the plan changes an existing shape
+- status: `add`, `keep`, `cut`, `rename`, `revise`, or `gate`
+- proof pointer when short enough: evidence row, ledger row, test/proof family,
+  or plan section
+
+If a decision has no before/after shape, write `decision: ...` instead of
+inventing one.
+
+Do not list only highlights. If the plan accepts twenty decisions, the handoff
+lists twenty bullets. Keep each bullet short; group them instead of omitting
+items.
+
 ## Final Response
 
 When the plan is still pending, say what score remains and what the next owner
 is.
 
-When the plan reaches `done`, say:
+When the plan reaches `done`, use this shape:
 
 ```md
 Slate review plan is ready for user review: [docs/plans/...](docs/plans/...)
+
+Decisions:
+- Public API: ...
+- React/runtime: ...
+- Hooks/render: ...
+- Events/callbacks: ...
+- Tests/proof: ...
 ```
 
-Do not paste the whole plan into chat.
+Do not paste the whole plan into chat. Do paste the exhaustive decision bullets.

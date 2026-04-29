@@ -1,17 +1,20 @@
 # Slate v2 Absolute Architecture Review Plan
 
 Date: 2026-04-28
-Status: done; closure pass complete
-Score: 0.924 (closure score)
+Status: done; slate-review rerun closed
+Score: 0.923 (rerun closure score; previous closure score was 0.924)
 
 ## 1. Current Verdict
 
-The architecture direction is still the right one, and the review is complete
-under the updated `slate-review` rules.
+The architecture direction is still the right one, and this rerun is closed.
+The prior execution completed the accepted plan; this review cycle rechecked
+that plan against live source and found one public-DX guard to add.
 
-The previous single-pass closure was too optimistic. The current multi-pass
-review has completed Pass 1, Pass 2, Pass 3, Pass 4, Pass 5, Pass 6, Pass 7,
-Pass 8, Pass 9, Pass 10, Pass 11, the revision pass, and the closure pass.
+The previous multi-pass review completed and drove the implementation lane.
+This rerun has its own pass schedule. Pass 1 and Pass 2 are recorded below;
+Pass 3 hardens the public write policy, Pass 4 answers maintainer and
+ecosystem objections, Pass 5 folds that policy into the execution plan, and
+Pass 6 closes the review gates.
 
 Keep the Slate model and operations. Hard cut the remaining public API clutter
 toward:
@@ -26,38 +29,54 @@ editor.update((tx) => {
 })
 ```
 
-The current live code still has the exact issues this plan resolves:
+The implementation lane closed the exact issues this plan targeted.
+Closed in `/Users/zbeyens/git/slate-v2`:
 
-- eager void renderer `focused` / `selected` / `actions`:
-  `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:208`
-- public `onKeyCommand`:
-  `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:76`
-- public `onSnapshotChange`:
-  `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate.tsx:35`
-- flat editor method surface:
-  `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:67`
-- extension methods mutating the editor object:
-  `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts:126`
+- eager void renderer `focused` / `selected` / `actions`
+- public `onKeyCommand`
+- public `onSnapshotChange`
+- raw Slate `onValueChange` / `onSelectionChange`
+- extension methods mutating the editor object
 
-The old void-shell lane is complete, but the public render and core API shape is
-not yet absolute.
+New review finding:
 
-## 2. Confidence Scorecard
+- The plan header was stale after execution: it still described hook cleanup,
+  schema/spec predicates, and browser stress gates as open even though later
+  Phase 5-7 ledger sections mark them complete.
+- The bigger DX issue was live API drift: the accepted public target is
+  `editor.update((tx) => tx.nodes.*)`, but live examples and tests still teach
+  `editor.update(() => editor.insertNodes(...))` and similar primitive editor
+  methods. Pass 3 resolves the policy: `tx.*` is the only normal public write
+  path; primitive editor write methods may remain only as advanced/internal
+  bridge APIs and must leave first-party authoring docs/examples/tests.
 
-This is the closure score. It passes the `slate-review` threshold.
+2026-04-28 correction: the ecosystem lane was over-scoped. Slate v2 does not
+need to support current Plate or slate-yjs APIs directly, and it must not
+require current-version adapter fixtures. The migration requirement is a raw
+architecture backbone only: stable operations, commits, snapshots, `state` /
+`tx` extension namespaces, schema/spec policy, and local-only render targets so
+Plate, slate-yjs, and similar libraries have a credible migration path. Any
+older "Plate adapter fixture" wording in this plan is superseded by this
+correction.
+
+## 2. Historical Closure Scorecard
+
+This is the previous closure score from the completed review lane. It does not
+close the current rerun; the active rerun closure score is `0.923` in section
+2.6.
 
 | Dimension | Weight | Score | Evidence |
 | --- | ---: | ---: | --- |
 | React 19.2 runtime performance | 0.20 | 0.92 | Pass 3 rechecked node/text selector dirty-runtime-id filtering in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:31`, root source filters in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:23`, and render profiler budgets in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:267`; the revision pass moved eager void subscriptions, stale-target handling, and plugin browser contracts into implementation phases and final gates instead of leaving them as review-only notes. |
 | Slate-close unopinionated DX | 0.20 | 0.93 | Pass 4 rechecked legacy Slate docs for `onKeyDown` and `onChange`, current v2 `onKeyCommand`, `onSnapshotChange`, `RenderVoidProps`, hook exports, and the accepted `state` / `tx` decision. Pass 5 rechecked legacy Slate command/transform docs, Tiptap command/chain source, current v2 command registry, and the current extension-method mutation surface. Pass 9 cut raw Slate filtered change callbacks; the final raw callback surface is `onChange` plus advanced `onCommit`. Pass 10 challenged every hard cut as a skeptical Slate maintainer and kept the Slate mental model: document value, paths, operations, `Editable`, `renderElement`, `renderLeaf`, `onKeyDown`, `onChange`, and plain React renderers. |
-| Plate and slate-yjs migration shape | 0.15 | 0.93 | Pass 6 rechecked Plate table typed API/transform groups in `/Users/zbeyens/git/plate-2/packages/table/src/lib/BaseTablePlugin.ts:119`, link element config in `/Users/zbeyens/git/plate-2/packages/link/src/lib/BaseLinkPlugin.ts:13`, mark transform sugar in `/Users/zbeyens/git/plate-2/packages/basic-nodes/src/lib/BaseBoldPlugin.ts:27`, image void/media transforms in `/Users/zbeyens/git/plate-2/packages/media/src/lib/image/BaseImagePlugin.ts:33`, Plate Yjs adapter APIs in `/Users/zbeyens/git/plate-2/packages/yjs/src/lib/BaseYjsPlugin.ts:30`, and v2 operation replay/commit contracts in `/Users/zbeyens/git/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts:38` and `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:14`. The revision pass made Plate adapter fixtures, slate-yjs remote commit/target proof, and ecosystem TypeScript fixtures required implementation work. |
-| Regression-proof testing strategy | 0.20 | 0.92 | Pass 7 rechecked the operation-family contract list in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:43`, inline void navigation at `generated-editing.test.ts:254`, markable inline void shell proof at `generated-editing.test.ts:348`, block void navigation and no-layout-gap proof at `generated-editing.test.ts:408`, editable island focus proof at `generated-editing.test.ts:556`, table boundary navigation at `generated-editing.test.ts:625`, search focus/decorations at `generated-editing.test.ts:665`, mouse toolbar selection at `generated-editing.test.ts:698`, replay proof in `/Users/zbeyens/git/slate-v2/playwright/stress/replay.test.ts:19`, and release/stress scripts in `/Users/zbeyens/git/slate-v2/package.json:60`. The revision pass moved final callback, hook, namespace, Plate adapter, stale-target, plugin browser contract, and slate-yjs replay proof into the proof matrix, phases, and final gates. |
+| Plate and slate-yjs migration shape | 0.15 | 0.93 | Pass 6 rechecked Plate table typed API/transform groups in `/Users/zbeyens/git/plate-2/packages/table/src/lib/BaseTablePlugin.ts:119`, link element config in `/Users/zbeyens/git/plate-2/packages/link/src/lib/BaseLinkPlugin.ts:13`, mark transform sugar in `/Users/zbeyens/git/plate-2/packages/basic-nodes/src/lib/BaseBoldPlugin.ts:27`, image void/media transforms in `/Users/zbeyens/git/plate-2/packages/media/src/lib/image/BaseImagePlugin.ts:33`, Plate Yjs adapter APIs in `/Users/zbeyens/git/plate-2/packages/yjs/src/lib/BaseYjsPlugin.ts:30`, and v2 operation replay/commit contracts in `/Users/zbeyens/git/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts:38` and `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:14`. The 2026-04-28 correction cuts current-version adapter fixture requirements; the remaining requirement is migration-backbone proof only. |
+| Regression-proof testing strategy | 0.20 | 0.92 | Pass 7 rechecked the operation-family contract list in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:43`, inline void navigation at `generated-editing.test.ts:254`, markable inline void shell proof at `generated-editing.test.ts:348`, block void navigation and no-layout-gap proof at `generated-editing.test.ts:408`, editable island focus proof at `generated-editing.test.ts:556`, table boundary navigation at `generated-editing.test.ts:625`, search focus/decorations at `generated-editing.test.ts:665`, mouse toolbar selection at `generated-editing.test.ts:698`, replay proof in `/Users/zbeyens/git/slate-v2/playwright/stress/replay.test.ts:19`, and release/stress scripts in `/Users/zbeyens/git/slate-v2/package.json:60`. The revision pass moved final callback, hook, namespace, migration-backbone proof, stale-target, plugin browser contract, and collab replay proof into the proof matrix, phases, and final gates. |
 | Research evidence completeness | 0.15 | 0.92 | Pass 8 rechecked the compiled research entrypoints in `docs/research/index.md`, the accepted `state` / `tx` decision in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`, the cross-corpus steal/reject decision in `docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md:21`, runtime-owned shell DX in `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md:19`, React 19.2 evidence in `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:31`, and local source citations in `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts:1375`, `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts:101`, `/Users/zbeyens/git/prosemirror/state/src/transaction.ts:22`, and `/Users/zbeyens/git/tiptap/packages/core/src/CommandManager.ts:28`. No contradiction was found. |
-| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | Pass 9 reduced each public surface to one obvious path plus at most one advanced escape hatch: `onChange` / `onCommit`, `renderVoid({ element, target })` / `renderShellUnsafe`, named hooks / `useEditorSelector`, `state` / `tx`, and Plate-owned product sugar. The revision pass keeps raw Slate minimal while requiring Plate/shadcn-style adapter proof for richer component ergonomics. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | Pass 9 reduced each public surface to one obvious path plus at most one advanced escape hatch: `onChange` / `onCommit`, `renderVoid({ element, target })` / `renderShellUnsafe`, named hooks / `useEditorSelector`, `state` / `tx`, and Plate-owned product sugar. The revision pass keeps raw Slate minimal while requiring migration-backbone proof, not current Plate adapter support. |
 
 Weighted total: `0.924`.
 
-Completion threshold passes:
+Historical completion threshold passed:
 
 - total score is above `0.92`
 - no dimension is below `0.85`
@@ -66,6 +85,351 @@ Completion threshold passes:
 - extension, plugin, Plate, and slate-yjs answers are present
 - implementation acceptance criteria and final proof gates are recorded
 - pass-state ledger is complete through closure
+
+## 2.1 2026-04-28 Slate Review Rerun: Pass 1 Current-State Read
+
+Status: complete for Pass 1 only. Completion remains `pending`.
+
+Current verdict: keep the architecture direction, but do not re-close the plan
+yet. The code is stronger than the old header says, while the public write-DX
+story is weaker than the accepted target says.
+
+Score: `0.880`.
+
+| Dimension | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| React 19.2 runtime performance | 0.20 | 0.90 | `EditableDOMRoot` is mostly wiring through `useEditableRootRuntime` and stable runtime handlers in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx:124` and `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:100`; root selector sources are named and operation-filtered in `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:26`; stress rows assert render budgets in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:45` and run through the generated harness at `generated-editing.test.ts:930`. |
+| Slate-close unopinionated DX | 0.20 | 0.82 | Accepted research says normal writes should be `editor.update((tx) => tx.nodes.set(...))` in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`; live `BaseEditor` still exposes primitive transform methods in `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts:258`; first-party examples still teach `editor.update(() => editor.insertNodes(...))` and `editor.update(() => editor.removeNodes(...))` in `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx:100` and `images.tsx:147`; write-boundary tests explicitly call this the routed primitive path in `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:79`. |
+| Plate and slate-yjs migration-backbone shape | 0.15 | 0.91 | Type fixtures prove plugin-style `state` / `tx` groups in `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:132`; runtime extension tests prove tx groups read transaction-local state in `/Users/zbeyens/git/slate-v2/packages/slate/test/extension-namespaces-contract.ts:103`; collab contracts prove deterministic remote replay and local runtime-id null/rebase behavior in `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:113` and `collab-history-runtime-contract.ts:152`; browser rows add stale-target replay in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:106`. |
+| Regression-proof testing strategy | 0.20 | 0.92 | Operation-family contracts cover inline voids, markable inline voids, block voids, editable islands, stale targets, tables, search focus, toolbar selection, paste, and IME in `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts:45`; the plugin contract registry exists in `/Users/zbeyens/git/slate-v2/packages/slate-browser/src/playwright/index.ts:2413`; Phase 7 recorded `bun check:full` exit 0 plus focused retry-disabled reruns for the two retry-resolved rows. |
+| Research evidence completeness | 0.15 | 0.86 | The React 19.2 page still supports React as projection scheduler, not editor invalidation engine, in `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:57`; the newer state/tx decision is accepted in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`; this pass found stale wording in the older steal/reject/defer decision and added a maintain note there, so the lane is usable but needs a proper research refresh pass before closure. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.86 | `renderVoid` is minimal at `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:190`; stale hook aliases and callback names grep clean in `packages/slate-react/src`, tests, and first-party examples; five `React.createElement` callsites remain in `slate-react` components, including `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx:187`, so JSX cleanup is still a small DX/composability polish item rather than a blocker. |
+
+Weighted total: `0.880`.
+
+Pass 1 findings:
+
+- P1: public write DX is not final. Raw Slate now has `state` / `tx`, but live
+  examples still teach primitive editor methods inside `editor.update`. Either
+  make `tx.*` the author-facing path in examples/docs/tests or explicitly
+  demote primitive editor methods to advanced/internal bridge status with a
+  release guard.
+- P2: the plan header drifted after execution. Later Phase 5-7 sections are
+  accurate, but the top verdict still spoke as if hook cleanup, schema/spec,
+  and browser parity were open.
+- P2: the research layer had stale wording. The older steal/reject/defer
+  decision still described primitive editor methods as the power API inside
+  update; this pass added a maintain note pointing to the newer state/tx
+  decision as the current authority.
+- P3: React `createElement` leftovers are not a runtime architecture blocker,
+  but if the goal is absolute DX and shadcn-style component readability, the
+  five remaining `slate-react` component callsites should be converted or
+  explicitly justified.
+
+Plan delta from Pass 1:
+
+- Reopened the plan from previous closure to a new `slate-review` rerun.
+- Set active score to `0.880`.
+- Demoted the prior `0.924` to historical closure score only.
+- Updated the research layer to resolve the state/tx wording drift.
+- Named Pass 2 as research and live-source refresh.
+
+Next owner:
+
+- Pass 2: research and live-source refresh. Recheck the live public write
+  surface, examples, docs expectations, and the current research pages before
+  deciding whether the next plan revision should hard-cut primitive write DX or
+  document it as advanced/internal.
+
+## 2.2 2026-04-28 Slate Review Rerun: Pass 2 Research And Live-Source Refresh
+
+Status: complete for Pass 2 only. Completion remains `pending`.
+
+Verdict: the research direction is not contradictory, but the live public
+surface is not final. `state` / `tx` is real and tested. The docs/examples
+still teach primitive `editor.*` writes as normal authoring DX, so this stays a
+P1 until the plan either hard-cuts those examples to `tx.*` or explicitly
+classifies primitive methods as advanced/internal bridge APIs.
+
+Score: `0.886`.
+
+| Dimension | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| React 19.2 runtime performance | 0.20 | 0.90 | Dirty runtime-id selection and decoration impact stay in `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts:1200` and `public-state.ts:1226`; this pass did not find new React hot-path regression evidence, so performance stays unchanged from Pass 1. |
+| Slate-close unopinionated DX | 0.20 | 0.83 | `state` / `tx` is proven by `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:29`, `state-tx-public-api-contract.ts:51`, and `state-tx-public-api-contract.ts:80`; live `BaseEditor` still wires primitive writes in `/Users/zbeyens/git/slate-v2/packages/slate/src/create-editor.ts:200` and `create-editor.ts:247`; docs still teach primitive method DX in `/Users/zbeyens/git/slate-v2/docs/concepts/04-transforms.md:3` and `/Users/zbeyens/git/slate-v2/docs/concepts/07-editor.md:41`. |
+| Plate and slate-yjs migration-backbone shape | 0.15 | 0.92 | `tx` read/write coherence and extension namespace direction remain the accepted backbone in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`; `applyOperations` remains the explicit replay writer in `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:57`, which keeps collaboration proof out of React callback naming. |
+| Regression-proof testing strategy | 0.20 | 0.92 | Browser-operation family coverage from Pass 1 still stands; this pass added a sharper unit/docs gap: `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:79` intentionally preserves primitive writes inside update, so future regression contracts must prove the final chosen public write path rather than accepting both as normal DX. |
+| Research evidence completeness | 0.15 | 0.88 | Refreshed `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md` with live-source evidence and appended `docs/research/log.md`; the older steal/reject/defer decision now points to the state/tx decision as current naming authority. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.86 | No new React component API issue surfaced beyond Pass 1; minimalism stays limited by the same public-write clutter: normal docs still expose a large primitive editor object instead of one grouped `tx` surface. |
+
+Weighted total: `0.886`.
+
+Pass 2 findings:
+
+- P1 remains: public write DX mismatch. The accepted normal path is
+  `editor.update((tx) => tx.nodes.*)`, but live docs/tests/examples still teach
+  `editor.update(() => editor.*)`.
+- Research is consistent after refresh: `tx.*` is the accepted target;
+  primitive `editor.*` writes are either advanced/internal bridge APIs or need
+  hard-cut migration from first-party author-facing docs/examples.
+- `applyOperations` is not part of the mismatch. It remains the explicit
+  operation replay writer for collaboration and replay proof.
+
+Plan delta from Pass 2:
+
+- Updated the state/tx decision page with live-source evidence.
+- Appended a research log entry for the state/tx live-source refresh.
+- Raised active score from `0.880` to `0.886`.
+- Raised migration-backbone score from `0.91` to `0.92` because the `tx`
+  substrate and replay writer proof are real.
+- Raised research score from `0.86` to `0.88` because the stale-source gap is
+  resolved.
+- Kept DX below the `0.85` floor because public docs/examples still teach the
+  wrong normal write surface.
+
+Next owner:
+
+- Pressure passes, starting with DX and unopinionated-core pressure over the
+  public write path.
+- Decide and record one of two end states:
+  - make `tx.*` the only normal public write path in docs/examples/tests and
+    classify primitive editor writes as advanced/internal bridge APIs
+  - revise the accepted API target to keep primitive editor methods as normal
+    DX, accepting the resulting lower architecture score and larger editor
+    object
+
+## 2.3 2026-04-28 Slate Review Rerun: Pass 3 DX/Unopinionated-Core Pressure
+
+Status: complete for Pass 3 only. Completion remains `pending`.
+
+Verdict: do not revise the accepted API target downward. The normal public
+write path is:
+
+```ts
+editor.update((tx) => {
+  tx.nodes.set(props, { at: target })
+})
+```
+
+Primitive `editor.*` write methods are not the normal authoring API. They may
+exist as advanced/internal bridge APIs for legacy transform fixtures, core
+runtime composition, codemods, and low-level compatibility during the rewrite,
+but first-party docs, examples, walkthroughs, and public API pages must teach
+`tx.*`.
+
+Keeping primitive editor writes as normal public DX would be the wrong call. It
+would preserve a large editor object, make `state` / `tx` look optional, and
+teach the exact surface the architecture is trying to stop.
+
+Score: `0.903`.
+
+| Dimension | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| React 19.2 runtime performance | 0.20 | 0.90 | Unchanged from Pass 2: dirty runtime-id impact and React projection remain the performance owner; this pass did not touch hot runtime evidence. |
+| Slate-close unopinionated DX | 0.20 | 0.88 | The accepted `tx` shape is proven in `/Users/zbeyens/git/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:56`; current docs still teach primitive methods in `/Users/zbeyens/git/slate-v2/docs/concepts/04-transforms.md:3`, `/Users/zbeyens/git/slate-v2/docs/concepts/06-commands.md:3`, and `/Users/zbeyens/git/slate-v2/docs/api/transforms.md:3`; the pressure decision keeps `tx.*` normal and demotes primitive writes from public authoring docs. |
+| Plate and slate-yjs migration-backbone shape | 0.15 | 0.93 | `state` / `tx` extension namespaces stay aligned with the migration backbone in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:60`; keeping primitive editor writes out of normal docs protects Plate-owned product sugar from leaking back into raw Slate. |
+| Regression-proof testing strategy | 0.20 | 0.92 | `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:27` rejects primitive writes outside `editor.update`, while `write-boundary-contract.ts:79` still proves the old routed primitive path; the revision pass must add public-surface guards that first-party authoring examples/docs use `tx.*` and low-level primitive fixtures are classified explicitly. |
+| Research evidence completeness | 0.15 | 0.89 | The refreshed state/tx decision page records the live-source split in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:100`; no new research contradiction was found. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.90 | The pass restores the one-normal-path rule for writes: app authors see `editor.update((tx) => ...)`, while primitive editor writes become advanced/internal bridge APIs instead of another public component authoring style. |
+
+Weighted total: `0.903`.
+
+Pass 3 findings:
+
+- Public write policy is now decided: `tx.*` is normal public DX.
+- Primitive editor writes are advanced/internal bridge APIs, not author-facing
+  examples/docs/API reference material.
+- The implementation plan needs a release guard that prevents first-party
+  docs/examples/walkthroughs from re-teaching primitive `editor.*` writes as
+  normal usage.
+- Low-level transform fixtures can still use primitive methods if they are
+  explicitly classified as core runtime/legacy transform fixtures rather than
+  authoring examples.
+
+Plan delta from Pass 3:
+
+- Resolved the public write-policy fork in favor of `tx.*`.
+- Raised DX above the `0.85` floor because the plan now has one normal write
+  path again.
+- Raised migration and composability scores because raw Slate keeps a smaller
+  public authoring surface and leaves product sugar to Plate/adapters.
+- Kept completion `pending`: the score is below `0.92`, the objection/revision
+  passes are still incomplete, and the final implementation acceptance criteria
+  must include docs/examples/public-surface guards for the chosen policy.
+
+Next owner:
+
+- Maintainer and ecosystem objection pass for the hardened public write policy.
+- Update or add objection rows covering:
+  - why primitive editor writes are advanced/internal bridge APIs
+  - how Slate-close migration remains practical
+  - how Plate and slate-yjs still get the migration backbone without raw Slate
+    exposing current-version adapter APIs
+  - which tests/guards prove docs/examples use `tx.*` as the normal path
+
+## 2.4 2026-04-28 Slate Review Rerun: Pass 4 Maintainer/Ecosystem Objections
+
+Status: complete for Pass 4 only. Completion remains `pending`.
+
+Verdict: keep the hardened public write policy.
+
+The strongest maintainer objection is fair: legacy Slate users know
+`Editor.*` and `Transforms.*`, and `tx.nodes.set` looks like a new dialect. The
+answer is not to keep primitive `editor.*` writes as normal DX. Legacy Slate's
+actual split was already "editor value + static helpers + transforms +
+commands." `tx.*` preserves that idea while making update ownership explicit:
+reads and writes happen in the transaction view, operations still fall out as
+Slate operations, and the editor object stops becoming a dumping ground.
+
+The strongest ecosystem objection is also fair: Plate currently has
+`editor.api` / `editor.tf`, and slate-yjs current integrations are not written
+against `state` / `tx`. Raw Slate should still not support those current APIs.
+The migration target is the backbone: typed extension namespaces on `state` and
+`tx`, deterministic operations/commits, explicit operation replay, and local
+targets that never become collaboration identity.
+
+Score: `0.918`.
+
+| Dimension | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| React 19.2 runtime performance | 0.20 | 0.90 | No new runtime objection changes the React projection model from Pass 3. |
+| Slate-close unopinionated DX | 0.20 | 0.91 | Legacy Slate uses `Transforms.insertNodes(editor, ...)` and `Transforms.setNodes(editor, ...)` in `/Users/zbeyens/git/slate/docs/api/transforms.md:39` and `/Users/zbeyens/git/slate/docs/walkthroughs/05-executing-commands.md:53`; v2 docs currently teach primitive editor writes in `/Users/zbeyens/git/slate-v2/docs/concepts/04-transforms.md:3` and `/Users/zbeyens/git/slate-v2/docs/concepts/06-commands.md:3`; the accepted v2 target keeps the Slate transform mental model but moves normal writes to `tx.*`. |
+| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Plate pressure is real: table/media/yjs still use `PluginConfig`, `extendEditorTransforms`, `editor.api`, and `editor.tf` in `/Users/zbeyens/git/plate-2/packages/table/src/lib/BaseTablePlugin.ts:119`, `/Users/zbeyens/git/plate-2/packages/media/src/lib/image/BaseImagePlugin.ts:58`, and `/Users/zbeyens/git/plate-2/packages/yjs/src/lib/BaseYjsPlugin.ts:71`; v2 proves the intended backbone with typed extension groups in `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:132` and remote replay in `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:113`. |
+| Regression-proof testing strategy | 0.20 | 0.93 | The objection pass makes the missing guard explicit: first-party authoring docs/examples/API pages must grep clean for normal primitive `editor.*` writes, while low-level transform fixtures stay classified. Existing write-boundary tests already split illegal primitive writes from routed bridge writes in `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:27` and `write-boundary-contract.ts:79`. |
+| Research evidence completeness | 0.15 | 0.91 | The accepted state/tx decision explicitly rejects `api` / `tf` as raw Slate naming and explains extension groups in `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27` and `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:60`; no contradiction surfaced. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | The pass keeps one normal write authoring surface and one advanced bridge: app/component authors use `editor.update((tx) => ...)`; internal/runtime fixtures may use primitive editor writes only when classified. |
+
+Weighted total: `0.918`.
+
+Maintainer objections answered:
+
+- "This is not Slate anymore." Rejected. It keeps Slate value, paths, ranges,
+  operations, `Editable`, `renderElement`, `renderLeaf`, `onKeyDown`, and
+  `onChange`. It changes where writes are expressed.
+- "Primitive editor methods are simpler." Rejected for normal DX. They are
+  shorter, but they make the large editor object the teaching surface and make
+  `state` / `tx` look optional.
+- "This is too much churn before publish." Rejected. This is exactly when the
+  hard cut belongs.
+- "Docs should stay close to legacy `Transforms.*`." Accepted in spirit:
+  docs should teach `tx.nodes.*`, `tx.text.*`, `tx.selection.*`, and
+  `tx.marks.*` as the transaction-owned successor to transform families.
+
+Ecosystem objections answered:
+
+- Plate may keep `editor.api` / `editor.tf` as its product adapter vocabulary.
+  Raw Slate should not import those names.
+- Plate migration proof is namespace and inference proof, not current-version
+  adapter fixtures.
+- slate-yjs migration proof is deterministic operation replay, commit metadata,
+  and target locality, not current slate-yjs API compatibility.
+- Plugin authors get extension namespaces on `state` and `tx`, not editor-object
+  mutation.
+
+Revision requirements from this pass:
+
+- Add implementation acceptance criteria that docs, walkthroughs, examples, and
+  public API pages teach `tx.*` as the normal write path.
+- Add a release guard that allows primitive editor writes only in classified
+  core/runtime/legacy transform fixtures.
+- Update the hard-cut and proof sections so primitive editor writes are named as
+  advanced/internal bridge APIs.
+- Keep `applyOperations` as the explicit replay writer and outside the normal
+  authoring-DX ban.
+
+Next owner:
+
+- Revision pass. Fold the public write-policy objection answers into the main
+  API target, hard cuts, proof matrix, implementation phases, and final gates.
+
+## 2.5 2026-04-28 Slate Review Rerun: Pass 5 Revision
+
+Status: complete for Pass 5 only. Completion remains `pending` until the
+closure pass verifies the gates.
+
+Verdict: the plan now owns the hardened public write policy in the main
+execution sections, not only in the objection notes.
+
+Revision decisions:
+
+- `tx.*` is the only normal public write path.
+- primitive `editor.*` write methods are advanced/internal bridge APIs.
+- first-party docs, walkthroughs, examples, and public API pages must teach
+  `tx.*`.
+- low-level primitive transform fixtures may stay only when classified as
+  core/runtime/legacy transform fixtures.
+- `applyOperations` remains the explicit operation replay writer and is outside
+  the normal authoring-DX ban.
+- Plate may keep `editor.api` / `editor.tf` as adapter vocabulary; raw Slate
+  does not import those names.
+
+Score: `0.923`.
+
+| Dimension | Weight | Score | Evidence |
+| --- | ---: | ---: | --- |
+| React 19.2 runtime performance | 0.20 | 0.91 | The revision does not alter the React runtime owner, but the API target now prevents docs/examples from bypassing transaction-owned dirty commits with primitive write teaching. |
+| Slate-close unopinionated DX | 0.20 | 0.92 | Section 4 now makes `tx.*` the normal authoring path while preserving Slate's transform-family mental model; Row 2b records the adoption story and rejects primitive editor writes as normal docs/API DX. |
+| Plate and slate-yjs migration-backbone shape | 0.15 | 0.94 | Phase 6 and the final gates keep migration proof at the backbone layer: typed `state` / `tx` extension groups, operation replay, commit metadata, and local target behavior without current-version Plate/slate-yjs adapters. |
+| Regression-proof testing strategy | 0.20 | 0.93 | The proof matrix, release-discipline gate, and final gates now require first-party authoring docs/examples/API pages to use `tx.*` and classify any primitive write fixtures explicitly. |
+| Research evidence completeness | 0.15 | 0.91 | No research contradiction remains after the state/tx live-source refresh and Row 2b adoption answer. |
+| shadcn-style composability and hook/component minimalism | 0.10 | 0.93 | The final public shape keeps one normal write surface, one operation-replay escape hatch, and one classified bridge for internals. |
+
+Weighted total: `0.923`.
+
+Plan changes from revision:
+
+- Strengthened the Public API Target section with the final normal/advanced
+  write split.
+- Added a proof-matrix row for public write surface guards.
+- Updated hard cuts to ban primitive editor writes as normal authoring DX, even
+  inside `editor.update`.
+- Added Phase 1, Phase 7, fast-gate, and final-gate criteria for
+  docs/examples/API guardrails.
+- Kept current Plate/slate-yjs adapter support out of scope.
+
+Next owner:
+
+- Closure pass. Verify score threshold, dimension floors, pass-state ledger,
+  objection rows, public API certainty, and final gates, then set
+  `tmp/completion-check.md` to `done` only if everything still passes.
+
+## 2.6 2026-04-28 Slate Review Rerun: Pass 6 Closure
+
+Status: complete. The slate-review rerun is closed.
+
+Verdict: pass the plan. The rerun did not find a reason to pivot away from the
+accepted architecture. It found one real public-DX gap: primitive
+`editor.*` writes were still being treated as normal authoring material in live
+docs/examples. The final plan closes that gap by making `tx.*` the only normal
+public write path and by classifying primitive editor writes as
+advanced/internal bridge APIs.
+
+Closure score: `0.923`.
+
+Closure gates checked:
+
+- total score is above the `0.92` threshold
+- every score dimension is above the `0.85` floor
+- every score dimension cites concrete file, research, test, or plan evidence
+- no unplanned P0/P1 issue remains
+- no public API surface is left in "maybe" language
+- maintainer and ecosystem objections for the `tx.*` write policy are answered
+- migration remains architecture-backbone proof, not current-version
+  Plate/slate-yjs adapter support
+- implementation phases, proof matrix, browser/release strategy, hard cuts,
+  fast gates, and final gates include the public write policy
+- pass-state ledger proves the rerun sequence through closure
+- plan deltas record the rerun changes
+
+Final decision:
+
+- Keep `editor.read((state) => ...)`.
+- Keep `editor.update((tx) => ...)`.
+- Teach normal writes through `tx.nodes.*`, `tx.text.*`, `tx.selection.*`, and
+  `tx.marks.*`.
+- Keep primitive `editor.*` writes only as advanced/internal bridge APIs.
+- Keep `applyOperations` as the explicit replay writer.
+- Keep raw Slate free of Plate-owned `editor.api` / `editor.tf` vocabulary.
 
 ## 3. Source-Backed Architecture North Star
 
@@ -162,6 +526,26 @@ editor.addMark()
 ```
 
 Those move behind `tx`.
+
+Normal authoring surfaces must teach `tx.*`, not primitive editor writes:
+
+```ts
+editor.update((tx) => {
+  tx.nodes.set({ type: 'heading' }, { at: target })
+  tx.text.insert('hello')
+  tx.selection.set(target)
+})
+```
+
+Primitive write methods such as `editor.setNodes`, `editor.insertText`,
+`editor.select`, and `editor.removeNodes` are advanced/internal bridge APIs.
+They may remain for core runtime composition, codemods, and low-level legacy
+transform fixtures, but first-party docs, examples, walkthroughs, and public
+API pages must not present them as normal app authoring DX.
+
+`editor.applyOperations(operations)` is separate. It is the explicit operation
+replay writer for history, collaboration, and replay fixtures, not normal
+authoring syntax.
 
 ### Read State
 
@@ -563,9 +947,9 @@ If a raw Slate API can corrupt browser/runtime ownership, make it advanced and
 require proof.
 ```
 
-## 7. Plate Migration Target
+## 7. Plate Migration Backbone Target
 
-Plate should expose product APIs on top of Slate primitives:
+Plate may later expose product APIs on top of Slate primitives:
 
 ```ts
 editor.update((tx) => {
@@ -574,29 +958,32 @@ editor.update((tx) => {
 })
 ```
 
-Plate may keep `editor.tf` and `editor.api` as Plate adapter sugar, but raw
-Slate must not use those names.
+Raw Slate must not implement or support current Plate `editor.tf` /
+`editor.api` directly. Those names are Plate-owned product sugar if Plate
+chooses to build an adapter later.
 
-Migration route:
+Backbone route:
 
-1. Convert Plate plugin transforms into `tx.<plugin>.*` groups.
-2. Convert Plate query helpers into `state.<plugin>.*` groups.
-3. Keep high-level Plate commands as product sugar over `editor.update`.
-4. Keep existing Slate operation output stable so collaboration and history do
+1. Raw Slate extension namespaces can express transform groups like
+   `tx.table.*` and query groups like `state.table.*`.
+2. Raw Slate schema/spec policy can express inline, void, markable-void,
+   selectable, and read-only node behavior without renderer-owned DOM hacks.
+3. Raw Slate keeps operation output stable so collaboration and history do
    not fork.
+4. Plate owns any current-API adapter, compatibility layer, chain API, toolbar
+   command sugar, or codemod.
 
 Proof required:
 
-- one table plugin migration row
-- one link/mark plugin migration row
-- one void/media plugin migration row
-- type inference row where Plate does not need `RenderVoidPropsFor` casts
-- adapter fixture proving `editor.api` / `editor.tf` call through legal raw
-  Slate read/update contexts
-- no adapter transform can write outside `editor.update`
-- no adapter API can observe stale pre-transaction state during `editor.update`
+- synthetic table/link/media-style namespace fixtures compile against
+  `state.<plugin>` and `tx.<plugin>` groups
+- type inference proves extension groups compose without widening the editor
+  object
+- content-only void renderers cover media-style nodes without
+  `RenderVoidPropsFor` casts
+- no proof fixture imports or promises support for current Plate APIs
 
-## 8. slate-yjs Migration Target
+## 8. slate-yjs Migration Backbone Target
 
 The collab contract remains operations, commits, snapshots, and deterministic
 normalization.
@@ -619,12 +1006,14 @@ Proof required:
   `onCommit`
 - stale local `EditorTarget` handles fail softly or rebase through runtime APIs;
   they never become serialized collaboration identity
+- no proof fixture imports or promises support for current slate-yjs APIs
 
 ## 8.1 Pass 6 Migration Verdict
 
-Verdict: the migration path is credible, but only if Slate v2 treats `state` /
-`tx` as the raw extension namespace substrate and Plate keeps product
-`editor.api` / `editor.tf` sugar above it.
+Verdict: the migration path is credible only as a raw Slate backbone. The
+previous adapter-fixture requirement was too high and is cut. Slate v2 should
+prove the substrate that Plate/slate-yjs can migrate to, not support their
+current versions.
 
 Table/plugin row:
 
@@ -632,9 +1021,9 @@ Table/plugin row:
   transforms.
 - `api.create.table`, `api.table.getSelectedCell`, and
   `api.table.isCellSelected` map to `state.create.*` and `state.table.*`.
-- `tf.insert.tableRow`, `tf.remove.tableColumn`, and `tf.table.merge` map to
-  `tx.insert.*` / `tx.table.*`, or to a Plate adapter that wraps those raw
-  transaction groups.
+- `tf.insert.tableRow`, `tf.remove.tableColumn`, and `tf.table.merge` are
+  examples of product transforms that can map to raw `tx.insert.*` /
+  `tx.table.*` groups later.
 
 Link/mark row:
 
@@ -673,19 +1062,19 @@ slate-yjs / operation replay row:
 
 Keep:
 
-- Plate may keep `editor.api` / `editor.tf` as adapter names.
+- Plate may keep `editor.api` / `editor.tf` as its own product names.
 - Raw Slate exposes `state` / `tx`, not `api` / `tf`, not product command
   catalogs, and not chain-first toolbar ceremony.
 
-Implementation proof required before closure:
+Backbone proof required before closure:
 
-- table adapter fixture compiles against inferred `state.table` and `tx.table`
-  groups
-- link/mark adapter fixture compiles without raw Slate link-specific methods
-- image/media adapter fixture compiles with content-only void renderers
+- table/link/media-style extension namespace fixtures compile against inferred
+  `state.<plugin>` and `tx.<plugin>` groups
+- mark/media fixtures compile without raw Slate link/media-specific methods
+- content-only void renderer fixtures cover media-like nodes
 - extension namespace type fixture proves inferred plugin groups without casts
-- Yjs/remote fixture applies operations with remote metadata and publishes one
-  tagged commit
+- collab-backbone fixture applies operations with remote metadata and publishes
+  one tagged commit without importing slate-yjs
 
 ## 9. Legacy Regression Proof Matrix
 
@@ -699,9 +1088,10 @@ Implementation proof required before closure:
 | Change callbacks | unit tests for `onChange` and `onCommit`; assert `changed` distinguishes value-only, selection-only, metadata-only, and remote commits. |
 | Hook renames | public surface contract tests; no exported old names before publish. |
 | State/tx lifecycle | unit tests: reads outside callback fail or route through snapshot; writes outside update fail; reads inside `tx` see transaction-local changes. |
+| Public write surface | release-discipline guard: first-party authoring docs, examples, walkthroughs, and public API pages teach `tx.*`; primitive editor write usages are allowed only in classified core/runtime/legacy transform fixtures. |
 | Extension namespaces | unit tests: extension state group, tx group, conflict detection, dependency order, cleanup. |
-| Plate adapter | type and runtime fixtures proving `editor.api` / `editor.tf` wrap raw `state` / `tx` legally, with no write access outside `editor.update`. |
-| Yjs migration | remote operation replay, commit metadata, deterministic normalization, and target rebase/null behavior. |
+| Plate migration backbone | synthetic table/link/media-style namespace fixtures prove `state.<plugin>` / `tx.<plugin>` composition without promising current Plate API support. |
+| Collab migration backbone | remote operation replay, commit metadata, deterministic normalization, and target rebase/null behavior without promising current slate-yjs API support. |
 | Plugin browser contracts | plugin-provided browser rows can register with the generated proof system without copy-pasting Playwright mechanics. |
 | Ecosystem TypeScript | fixtures for nested plugin groups, collision errors, composed inference, and `state.<plugin>` / `tx.<plugin>` augmentation. |
 
@@ -714,7 +1104,7 @@ Fast CI:
 - selected browser rows for reported regressions
 - render budget assertions on hot paths
 - public surface contracts for removed callbacks/hooks/void props
-- adapter type fixtures for Plate-style `editor.api` / `editor.tf`
+- migration-backbone type fixtures for plugin-style `state` / `tx` groups
 - stale-target unit contracts
 
 Sparing stress:
@@ -815,7 +1205,7 @@ Required plan response:
   - final hook names
   - final `state` / `tx` lifecycle and namespace fixtures
   - final `onKeyDown(event, ctx)` handled-result contract
-  - Plate/Yjs adapter replay rows
+  - Plate/Yjs migration-backbone replay rows
 - Treat examples as demo surfaces only. Any regression first discovered in an
   example must become a reusable `slate-browser` contract family or step kind.
 
@@ -830,13 +1220,15 @@ Hard cut:
 - renderer-owned void children/spacer/attributes
 - normal public `useSlateStatic`
 - flat public extension method injection on the editor object
-- public docs-first flat mutation methods outside `editor.update`
+- primitive editor write methods as normal public authoring DX, even inside
+  `editor.update`
 - top-level schema predicates as normal authoring surface
 - compatibility aliases before publish
 
 Rejected:
 
 - `editor.update(({ api, tf }) => {})`
+- `editor.update(() => editor.setNodes(...))` as normal first-party docs/API DX
 - `editor.api` / `editor.tf` in raw Slate
 - Tiptap-style flat `editor.commands` as core API
 - keeping Slate legacy void renderer shape for compatibility
@@ -889,6 +1281,40 @@ Rejected:
 - Regression proof: type tests and lifecycle tests for every grouped method.
 - Plate/plugin answer: plugin groups extend the same namespace pattern.
 - slate-yjs answer: grouped methods still emit Slate operations.
+- Verdict: keep.
+
+### Row 2b: Primitive editor writes become advanced/internal bridge APIs
+
+- Change: normal authoring docs and examples use `tx.*`; primitive
+  `editor.insertText`, `editor.setNodes`, `editor.select`, and similar writes
+  may remain only as advanced/internal bridge APIs.
+- Who feels pain: Slate users migrating from direct transform examples, docs
+  authors, and low-level transform-test maintainers.
+- Likely objection: "`editor.update(() => editor.insertText())` is shorter and
+  already guarded by runtime checks."
+- Why this is not change for change's sake: runtime checks prevent illegal
+  writes, but autocomplete and docs would still teach the large editor object
+  as the write API. That undermines the `state` / `tx` architecture.
+- Evidence:
+  `/Users/zbeyens/git/slate-v2/docs/concepts/04-transforms.md:3`;
+  `/Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts:79`;
+  `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:27`.
+- Rejected alternative: keep primitive editor writes as the normal public path
+  inside update. Weaker because `state` / `tx` becomes ceremony instead of the
+  public architecture.
+- Migration answer: docs map legacy transform families to `tx.nodes.*`,
+  `tx.text.*`, `tx.selection.*`, and `tx.marks.*`; codemods can rewrite common
+  `editor.update(() => editor.setNodes(...))` forms to
+  `editor.update((tx) => tx.nodes.set(...))`.
+- Docs / example answer: first-party authoring docs, examples, walkthroughs,
+  and public API pages teach `tx.*` only.
+- Regression proof: release guard greps first-party authoring surfaces for
+  primitive editor writes; low-level primitive fixtures must be explicitly
+  classified.
+- Plate/plugin answer: Plate product sugar can still expose `editor.tf`; raw
+  Slate extension transforms attach to `tx.<plugin>`.
+- slate-yjs answer: no serialized contract change; operation replay continues
+  through explicit `applyOperations`.
 - Verdict: keep.
 
 ### Row 3: Extension namespaces instead of editor method injection
@@ -1144,30 +1570,31 @@ are now explicitly cut.
 
 ## 12.2 Pass 11 Ecosystem Maintainer Verdict
 
-Verdict: keep the architecture, but strengthen the adapter and proof
-requirements. The ecosystem pass did not justify backing away from `state` /
+Verdict: keep the architecture, but keep the ecosystem scope honest. The
+ecosystem pass did not justify backing away from `state` /
 `tx`, content-only void renderers, callback cuts, hook renames, schema/spec
-predicates, or no aliases. It did expose one non-negotiable implementation
-requirement: Plate must get a deliberate adapter layer, not a hand-wavy
-"just migrate everything to raw Slate names" story.
+predicates, or no aliases. It does not require Slate v2 to implement today's
+Plate or slate-yjs adapters. The non-negotiable requirement is a migration
+backbone: extension namespaces, operation replay, commit metadata, and local
+target semantics must be good enough that those libraries can migrate.
 
 Ecosystem challenge results:
 
 | Perspective | Strongest objection | Decision | Required answer |
 | --- | --- | --- | --- |
-| Plate maintainer | Current Plate APIs, tests, and plugins rely heavily on `editor.api` / `editor.tf`; raw Slate `state` / `tx` could become churn with no product benefit. | Keep raw Slate `state` / `tx`; keep Plate `editor.api` / `editor.tf` as Plate-owned adapter sugar. | Add a Plate adapter fixture proving `editor.api` read methods and `editor.tf` transforms call through legal raw Slate read/update contexts without exposing writes outside `editor.update`. |
+| Plate maintainer | Current Plate APIs, tests, and plugins rely heavily on `editor.api` / `editor.tf`; raw Slate `state` / `tx` could become churn with no product benefit. | Keep raw Slate `state` / `tx`; do not support current Plate APIs in raw Slate. Plate may build product sugar later. | Prove the backbone with synthetic table/link/media-style namespace fixtures and operation stability, not current-version adapter fixtures. |
 | Plate plugin author | Extension namespaces can hurt inference if plugin groups, selectors, transforms, and options stop composing cleanly. | Keep extension namespaces. | Add TypeScript fixtures for nested plugin groups, collision errors, composed plugin inference, and `state.<plugin>` / `tx.<plugin>` augmentation. |
-| slate-yjs maintainer | React callback names should not affect collaboration; target refs can go stale after remote operations. | Keep callback cuts and local `target` render props. | Add contracts for remote operation replay, commit metadata, target rebasing/nullability, and no dependency on React `onChange` / `onCommit` for serialized collaboration. |
+| slate-yjs maintainer | React callback names should not affect collaboration; target refs can go stale after remote operations. | Keep callback cuts and local `target` render props. Do not support current slate-yjs APIs directly. | Add raw collab-backbone contracts for remote operation replay, commit metadata, target rebasing/nullability, and no dependency on React `onChange` / `onCommit` for serialized collaboration. |
 | Third-party plugin author | Runtime-owned void shells reduce footguns but can feel less flexible for unusual inline, editable-island, or embedded widgets. | Keep content-only renderers plus ugly unsafe escape hatch. | Add plugin-facing void kind examples for image, mention, embed, table-adjacent widget, and editable island; require `renderShellUnsafe` users to attach browser contracts. |
 | Test/release maintainer | Generated browser contracts can become slow and hard to maintain. | Keep generated proof, split fast and slow lanes. | Add a plugin contract registry: fast core rows in CI, focused plugin rows on package change, full human-like replay in `test:stress` / release gates. |
 | App author | Cutting `focused`, `selected`, and `actions` from void props removes convenient UI state. | Keep opt-in hooks and target-based editor methods. | Add small examples for selection UI, remove/select/set-node commands, stale target behavior, and toolbar usage. |
 
 What this pass changes:
 
-- Plate adapter proof becomes a first-class requirement, not an implementation
-  nice-to-have.
-- `editor.api` / `editor.tf` are explicitly allowed as Plate/product adapter
-  names and explicitly rejected as raw Slate names.
+- Migration-backbone proof becomes a first-class requirement, not current
+  Plate/slate-yjs adapter support.
+- `editor.api` / `editor.tf` remain explicitly rejected as raw Slate names.
+  Plate may own those names later if it builds product sugar.
 - `EditorTarget` needs a stale-target policy:
   - local targets are stable enough for render-time commands
   - remote changes can invalidate targets
@@ -1226,8 +1653,9 @@ Closure gates checked:
 - plan deltas record what changed, what was dropped, what was strengthened, and
   what stayed unchanged
 
-No further review pass is required before executing the plan with
-`complete-plan`.
+Historical note: this closed the previous review lane. The current rerun is
+closed in sections 2.1 through 2.6 and the 2026-04-28 rerun pass-state ledger
+below.
 
 ## 13. Pass Schedule And Pass-State Ledger
 
@@ -1247,7 +1675,63 @@ No further review pass is required before executing the plan with
 | Revision pass | complete | Folded accepted maintainer/ecosystem constraints into the scorecard, Plate migration target, slate-yjs target, proof matrix, browser strategy, implementation phases, fast gates, open questions, and final completion gates. | Added revision verdict; made Plate adapter fixtures, stale-target policy, plugin browser contract registry, plugin void examples, ecosystem TypeScript fixtures, and slate-yjs remote commit/target proof core plan requirements; raised active score to `0.924`. | None for revision; closure must verify every final gate. | Closure pass. |
 | Closure score and final gates | complete | Verified score threshold, dimension floors, evidence citations, accepted objection rows, ecosystem/collab answers, implementation phases, final proof gates, pass-state ledger, and plan deltas. | Added closure verdict; set active score to `0.924`; review lane is ready for `complete-plan` execution. | None. | Done. |
 
+### 2026-04-28 Rerun Pass-State Ledger
+
+| Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
+| --- | --- | --- | --- | --- | --- |
+| Current-state read and initial score | complete | Rechecked live `renderVoid`, callback names, hook alias greps, schema predicate greps, `BaseEditor` primitive method surface, first-party examples, write-boundary contracts, root runtime/event runtime, generated stress rows, plugin browser contract registry, collab runtime contracts, and research decision drift. | Reopened the plan from previous closure; set active score to `0.880`; marked the older primitive-method research wording as superseded by the newer state/tx decision; recorded public write-DX drift as P1. | P1 public write DX mismatch remains: accepted target is `tx.*`, but live examples/tests still teach primitive `editor.*` writes inside update. | Research and live-source refresh pass. |
+| Research and live-source refresh | complete | Rechecked live `state` / `tx` contract tests, primitive write-boundary tests, `BaseEditor` primitive method wiring, docs concepts for transforms/editor, dirty runtime-id impact code, and refreshed the state/tx research decision. | Added Pass 2 verdict and score `0.886`; raised migration and research scores; recorded that `tx.*` is implemented but not yet the taught normal public write path. | P1 public write DX mismatch remains: choose `tx.*` as the only normal path and demote primitive editor writes, or revise the accepted API target. | Pressure passes. |
+| DX/unopinionated-core public write pressure | complete | Rechecked live docs, API pages, examples/tests grep, `BaseEditor` primitive transform surface, `state/tx` contract tests, write-boundary tests, and the accepted state/tx research decision. | Added Pass 3 verdict and score `0.903`; chose `tx.*` as the only normal public write path; classified primitive editor writes as advanced/internal bridge APIs. | Objection rows still need to answer maintainer/ecosystem pushback to the hard public write split. | Maintainer and ecosystem objection pass. |
+| Remaining pressure bridge | complete | Rechecked whether the hardened write policy changes runtime performance, regression, research, or composability requirements. | No runtime pivot; added docs/examples/public-surface guard as the main new regression/composability requirement. | None separate from revision. | Revision pass. |
+| Maintainer and ecosystem objection passes | complete | Challenged `tx.*`-only normal writes against legacy Slate transforms/commands, Plate `editor.api` / `editor.tf`, media/table plugins, slate-yjs plugin pressure, v2 extension namespace type fixtures, and collab replay contracts. | Added Pass 4 verdict and score `0.918`; added objection Row 2b; kept primitive editor writes as advanced/internal bridge APIs only. | Revision pass must fold the objection answers into implementation phases and final gates. | Revision pass. |
+| Revision pass | complete | Folded the public write-policy objection answers into the Public API Target, proof matrix, browser/release strategy, hard cuts, implementation phases, fast gates, and final gates. | Added Pass 5 verdict and score `0.923`; made docs/examples/API `tx.*` guards an implementation and closure requirement. | None for revision; closure must verify final gates. | Closure pass. |
+| Closure pass | complete | Verified threshold, dimension floors, evidence citations, pass-state ledger, objection answers, public API certainty, implementation phases, proof matrix, fast gates, and final gates. | Added Pass 6 closure verdict; set rerun status to `done` with score `0.923`. | None. | Done. |
+
 ## 14. Plan Deltas From Review
+
+2026-04-28 second slate-review rerun deltas:
+
+- Reopened completion from `done` to `pending` for a new review cycle.
+- Added a new Pass 1 current-state read with score `0.880`.
+- Corrected the stale top verdict that still listed already-completed Phase 5-7
+  items as open.
+- Added a P1 review issue for public write-DX drift: `tx.*` is the accepted
+  target, but examples/tests still teach primitive `editor.*` writes inside
+  `editor.update`.
+- Ran a research maintain cleanup so the older steal/reject/defer decision no
+  longer justifies primitive editor methods as the final normal authoring DX.
+- Named research and live-source refresh as the next owner.
+- Completed second-rerun Pass 2 research/live-source refresh.
+- Updated the state/tx decision page with live evidence that `tx.*` is
+  implemented while docs/examples still teach primitive `editor.*` writes.
+- Raised active score to `0.886`, but kept completion `pending` because DX is
+  still below floor and the public write P1 remains.
+- Named DX/unopinionated-core pressure over public write policy as the next
+  owner.
+- Completed second-rerun Pass 3 DX/unopinionated-core pressure.
+- Chose `tx.*` as the only normal public write path.
+- Classified primitive editor writes as advanced/internal bridge APIs rather
+  than normal docs/examples/API reference material.
+- Raised active score to `0.903`.
+- Named maintainer and ecosystem objection pass as the next owner for the
+  hardened public write policy.
+- Completed second-rerun Pass 4 maintainer/ecosystem objection pass.
+- Added objection Row 2b for primitive editor writes as advanced/internal bridge
+  APIs.
+- Kept `tx.*` as the normal public write path after checking legacy Slate,
+  Plate, slate-yjs, v2 extension namespaces, and collab replay.
+- Raised active score to `0.918`.
+- Named revision pass as the next owner.
+- Completed second-rerun Pass 5 revision.
+- Folded the public write-policy objection answers into API target, proof
+  matrix, browser strategy, hard cuts, implementation phases, fast gates, and
+  final gates.
+- Raised active score to `0.923`.
+- Completed second-rerun Pass 6 closure.
+- Verified the closure gates: score threshold, dimension floors, evidence,
+  pass-state ledger, objection answers, public API certainty, and final gates.
+- Set review status to `done`.
+- Named closure pass as the next owner.
 
 Pass 1 rerun deltas:
 
@@ -1370,9 +1854,9 @@ Pass 11 rerun deltas:
 - Rechallenged the plan from Plate maintainer, Plate plugin author, slate-yjs
   maintainer, third-party plugin author, test/release maintainer, and app author
   perspectives.
-- Kept raw Slate `state` / `tx` and explicitly kept `editor.api` /
-  `editor.tf` as Plate-owned adapter sugar.
-- Made Plate adapter proof, stale-target policy, plugin browser contract
+- Kept raw Slate `state` / `tx`; `editor.api` / `editor.tf` stay outside raw
+  Slate and are Plate-owned if Plate builds product sugar later.
+- Made migration-backbone proof, stale-target policy, plugin browser contract
   registry, plugin void examples, and ecosystem TypeScript fixtures required
   before closure.
 - Raised active score from `0.899` to `0.905`.
@@ -1382,7 +1866,7 @@ Revision pass deltas:
 
 - Folded accepted objection answers into the main plan sections instead of
   leaving them only in Pass 10/11 verdicts.
-- Added Plate adapter proof to migration target, proof matrix, phases, and
+- Added migration-backbone proof to migration target, proof matrix, phases, and
   final gates.
 - Added stale `EditorTarget` policy to slate-yjs target, proof matrix, phases,
   open questions, and final gates.
@@ -1430,8 +1914,8 @@ Strengthened acceptance criteria:
 
 - every hard cut has a public surface contract test
 - every render hot path has render budget proof
-- Plate and slate-yjs migration rows are required before closure
-- Plate adapter fixtures prove `editor.api` / `editor.tf` are product sugar over
+- Plate and slate-yjs migration-backbone rows are required before closure
+- migration-backbone fixtures prove plugin-style product sugar can be built over
   legal raw Slate read/update contexts
 - stale `EditorTarget` behavior is specified and covered for local and remote
   changes
@@ -1479,7 +1963,10 @@ Owner: `packages/slate`.
 - introduce `EditorStateView` and `EditorTransactionView`
 - implement grouped read APIs
 - implement grouped tx write APIs
+- classify primitive editor write methods as advanced/internal bridge APIs
 - make writes outside `editor.update` fail in development/test
+- add release-discipline coverage that first-party authoring docs/API/examples
+  do not teach primitive editor writes as normal DX
 - keep operation output identical where behavior is unchanged
 
 ### Phase 2: Extension namespace model
@@ -1532,19 +2019,20 @@ Owner: `packages/slate` and `packages/slate-react`.
 - require `renderShellUnsafe` users to register browser contracts for owned DOM
   shell behavior
 
-### Phase 6: Plate and slate-yjs proof
+### Phase 6: Plate/slate-yjs migration backbone proof
 
-Owner: adapters.
+Owner: raw Slate contracts.
 
-- migrate one Plate-style table/link/media plugin fixture
-- add a Plate adapter fixture proving `editor.api` / `editor.tf` are product
-  sugar over legal raw Slate `state` / `tx` contexts
-- prove Plate adapter transforms cannot write outside `editor.update`
-- prove Plate adapter reads inside updates observe transaction-local state
-- prove slate-yjs remote apply and operation replay stay deterministic
+- add synthetic table/link/media-style extension namespace fixtures
+- prove plugin-style transforms cannot exist outside `editor.update` unless
+  they go through `tx`
+- prove plugin-style reads inside updates observe transaction-local state
+- prove remote apply and operation replay stay deterministic without importing
+  slate-yjs
 - prove remote commit metadata does not depend on React callbacks
 - prove local targets rebase or null after remote remove/move
-- document adapter rules
+- document migration-backbone rules and explicitly say current Plate/slate-yjs
+  APIs are not supported by raw Slate
 
 ### Phase 7: Browser parity and release proof
 
@@ -1552,6 +2040,9 @@ Owner: `packages/slate-browser` and Playwright suite.
 
 - add generated operation-family rows for every renamed public surface
 - add legacy-vs-v2 parity rows for selection and void scenarios
+- add a public write-surface guard for first-party docs, examples,
+  walkthroughs, and public API pages: normal write examples use `tx.*`, and
+  primitive editor write usages must be classified
 - add a plugin browser contract registry so table/media/link/mark/editable
   island plugins can contribute replayable rows
 - add stale-target browser rows around void selection, remote remove/move, and
@@ -1581,6 +2072,18 @@ bun typecheck:site
 bun --filter slate-browser test:core
 cd /Users/zbeyens/git/plate-2 && pnpm test:types
 ```
+
+Public write-surface proof:
+
+```bash
+bun test:release-discipline
+rg "editor\\.update\\(\\(\\) =>|editor\\.(setNodes|insertText|insertNodes|removeNodes|select)\\(" \
+  docs site/examples/ts packages/slate-react/src \
+  -g '!**/dist/**'
+```
+
+The grep is diagnostic. The release-discipline guard owns the allowlist for
+classified core/runtime/legacy transform fixtures.
 
 Focused browser:
 
@@ -1626,16 +2129,23 @@ The implementation is not complete until all gates pass:
 - `useSlateStatic`, `useSelected`, and `useFocused` aliases removed before
   publish
 - writes outside `editor.update` fail in development/test
+- normal first-party authoring docs, examples, walkthroughs, and public API
+  pages use `editor.update((tx) => tx.*)`, not
+  `editor.update(() => editor.*)`
+- primitive editor write usages are classified as advanced/internal bridge,
+  core/runtime, codemod, or legacy transform fixture usages
+- `applyOperations` remains the explicit replay writer and is not treated as
+  normal authoring DX
 - reads inside `tx` see transaction-local state
 - extension `state` / `tx` namespaces typecheck with plugin augmentation
 - `editor.schema` is the documented predicate surface
-- Plate adapter fixture proves `editor.api` / `editor.tf` read/write through
-  legal raw Slate contexts
-- Plate adapter transforms cannot write outside `editor.update`
-- adapter reads inside updates observe transaction-local state
+- migration-backbone fixtures prove table/link/media-style groups read/write
+  through raw `state` / `tx`
+- plugin-style transforms cannot write outside `editor.update`
+- plugin-style reads inside updates observe transaction-local state
 - stale `EditorTarget` handles rebase or fail softly; they are never serialized
   collaboration identity
-- slate-yjs/collab replay fixture passes with remote commit metadata
+- collab-backbone replay fixture passes with remote commit metadata
 - remote apply does not depend on React `onChange` / `onCommit`
 - ecosystem TypeScript fixtures cover nested plugin groups, collision errors,
   composed inference, and state/tx augmentation
@@ -1799,3 +2309,467 @@ Next owner:
   `{ element, target }`, eager `focused` / `selected` / `actions` leave the
   default render path, and first-party void renderers move to opt-in
   node-scoped hooks/selectors.
+
+### 2026-04-28 Phase 2 tracer: void renderer props hard cut
+
+Status: complete for `RenderVoidProps` / first-party examples, lane still
+pending for callback and keyboard API cuts.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- `RenderVoidProps<T>` is `{ element: T; target: Path }`
+- void renderers no longer receive eager `focused`, `selected`, or `actions`
+- runtime still owns the block/inline void shell and hidden spacer/anchor
+- first-party void examples use `useFocused()` / `useSelected()` only inside
+  components that draw selected/focused UI
+- image/video examples use `editor.removeNodes` / `editor.setNodes` with the
+  supplied `target`
+- `RenderVoidPropsFor` and casts disappeared from first-party examples
+- stale example `defineEditorExtension({ methods })` usage was removed
+- release-discipline now bans flat extension `methods` teaching instead of
+  requiring the removed API path
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/custom-types.d.ts`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/embeds.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/paste-html.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/editable-voids.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/inlines.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/forced-layout.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/large-document-runtime.tsx`
+
+Verification:
+
+```bash
+bun --filter slate-react typecheck
+bun --filter slate-react test:vitest
+bun --filter slate build
+bun typecheck:site
+bun typecheck:packages
+bun lint:fix
+bun test:release-discipline
+rg "RenderVoidPropsFor|as RenderVoidProps|actions\\." site/examples/ts packages/slate-react/src packages/slate-react/test
+```
+
+Notes:
+
+- `bun typecheck:site` initially resolved stale `slate/dist` declarations with
+  the previous zero-arg `read` signature. Rebuilding `slate` fixed the artifact
+  path and the site checker passed.
+- The example migration uses local editor wrappers for old predicate/input
+  overrides. That is a temporary bridge until Phase 5 schema/spec predicates
+  replace top-level predicate overrides.
+
+Next owner:
+
+- Phase 3 callback/keyboard API naming: remove public `onSnapshotChange`,
+  expose polished `onChange` / `onCommit`, and replace public `onKeyCommand`
+  with Slate-style `onKeyDown(event, ctx)` handled-result semantics.
+
+### 2026-04-28 Phase 4 tracer: callback and keyboard API hard cut
+
+Status: complete for callback / keyboard naming, lane still pending for hook
+renames and schema/spec cleanup.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- `<Slate>` exposes value-only `onChange(value)` and advanced
+  `onCommit(commit, snapshot)`
+- public `onSnapshotChange`, `onValueChange`, and `onSelectionChange` are gone
+  from source, tests, and first-party examples
+- `<Editable>` exposes `onKeyDown(event, { editor })`
+- public `onKeyCommand` and `EditableKeyCommandHandler` are gone from source,
+  tests, and first-party examples
+- examples that handled keyboard commands now use `onKeyDown`
+- the mentions example observes commits through `onCommit`
+- callback tests prove selection-only commits do not call `onChange`, value
+  commits call `onChange`, and `onCommit` receives commit telemetry
+- keyboard tests prove `onKeyDown` receives editor context and can execute a
+  model command with handled-result semantics
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/index.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/react-editor-contract.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/inlines.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/tables.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/check-lists.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/richtext.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx`
+
+Verification:
+
+```bash
+bun --filter slate-react test:vitest -- editable-behavior react-editor-contract
+bun --filter slate-react test:vitest
+bun --filter slate-react typecheck
+bun typecheck:site
+bun typecheck:packages
+bun test:release-discipline
+bun lint:fix
+rg "onKeyCommand|EditableKeyCommandHandler|onSnapshotChange|onValueChange|onSelectionChange" packages/slate-react/src packages/slate-react/test site/examples/ts packages/slate/test -g '!**/dist/**'
+```
+
+Notes:
+
+- The only remaining `onSelectionChange` grep hit is the internal DOM
+  `selectionchange` event listener in `selection-reconciler.ts`; it is not a
+  public Slate callback.
+- The first red test run proved new callback props were not wired. The final
+  focused run passed after wiring `onChange` / `onCommit`.
+- The keyboard test needed an explicit JSDOM `isContentEditable` property so
+  the event follows the same editable-target branch as browsers.
+
+Next owner:
+
+- Phase 3 hook cleanup: add and migrate to `useEditor`,
+  `useElementSelected`, `useEditorFocused`, `useEditorReadOnly`,
+  `useEditorComposing`, and `useEditorSelector`; cut the old public hook
+  aliases before publish.
+
+### 2026-04-28 Phase 3 tracer: hook alias hard cut
+
+Status: complete for public hook aliases, lane still pending for schema/spec
+predicates and browser proof.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- `useSlateStatic` became `useEditor`
+- `useSelected` became `useElementSelected`
+- `useFocused` became `useEditorFocused`
+- `useReadOnly` became `useEditorReadOnly`
+- `useComposing` became `useEditorComposing`
+- `useSlateSelector` became `useEditorSelector`
+- `useSlateSelection` became `useEditorSelection`
+- broad public `useSlate` / `useSlateWithV` were deleted instead of renamed
+- first-party toolbar examples now use `useEditor` plus `useEditorSelector`
+  for reactive button state
+- void examples that have a runtime target pass it to `useElementSelected`
+- old hook aliases are gone from `slate-react` source, tests, and first-party
+  examples
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-focused.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-read-only.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-composing.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-editor-selection.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/hooks/use-slate.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/index.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- first-party examples under `/Users/zbeyens/git/slate-v2/site/examples/ts`
+
+Verification:
+
+```bash
+bun --filter slate-react test:vitest -- provider-hooks-contract use-element-selected surface-contract
+bun --filter slate-react test:vitest
+bun --filter slate-react typecheck
+bun typecheck:site
+bun typecheck:packages
+bun test:release-discipline
+bun lint:fix
+rg "\\buseSlateStatic\\b|\\buseSelected\\b|\\buseFocused\\b|\\buseReadOnly\\b|\\buseComposing\\b|\\buseSlateSelector\\b|\\buseSlateSelection\\b|\\buseSlate\\b|\\buseSlateWithV\\b" packages/slate-react/src packages/slate-react/test site/examples/ts packages/slate/test -g '!**/dist/**'
+```
+
+Notes:
+
+- `useSlateNodeRef`, `useSlateProjections`, annotation, and widget hooks still
+  carry Slate-domain names because they are not the confusing editor-state hook
+  aliases this phase cuts.
+- The post-lint verification pass was rerun because Biome rewrote 17 files.
+
+Next owner:
+
+- Phase 5 schema/spec predicate surface: replace normal top-level
+  `editor.isInline`, `editor.isVoid`, `editor.markableVoid`, and
+  `editor.isSelectable` monkeypatching with `editor.schema` / element specs,
+  while keeping manual predicate overrides as advanced extension policy.
+
+### 2026-04-28 Phase 5 tracer: schema/spec predicate surface
+
+Status: complete for first-party schema/spec predicates, lane still pending for
+Plate/slate-yjs proof and browser parity.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- added `editor.schema`
+- added app-defined `editor.schema.define(...)`
+- added extension-owned `elements` specs
+- `state.schema` and `tx.schema` expose read-only schema queries
+- `schema.define` is intentionally unavailable from `state.schema` /
+  `tx.schema`
+- `void: 'block' | 'inline' | 'markable-inline' | 'editable-island'` drives
+  default `isVoid`, `isInline`, and `markableVoid` policy
+- `selectable: false` and `readOnly: true` drive selectable/read-only policy
+- first-party examples register element specs instead of overriding top-level
+  predicate methods
+- the internal DOM `onSelectionChange` listener variable was renamed to
+  `handleNativeSelectionChange` so public-callback hard-cut greps are clean
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/src/create-editor.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/src/core/editor-extension.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/test/schema-contract.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/images.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/embeds.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/editable-voids.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/inlines.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/paste-html.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `/Users/zbeyens/git/slate-v2/site/examples/ts/mentions.tsx`
+
+Verification:
+
+```bash
+bun test ./packages/slate/test/schema-contract.ts
+bun test ./packages/slate/test/schema-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/extension-namespaces-contract.ts ./packages/slate/test/extension-contract.ts
+bun --filter slate build
+bun typecheck:site
+bun typecheck:packages
+bun --filter slate-react typecheck
+bun --filter slate-react test:vitest
+bun test:release-discipline
+bun lint:fix
+rg "editor\\.isInline\\s*=|editor\\.isVoid\\s*=|editor\\.markableVoid\\s*=|editor\\.isSelectable\\s*=|editor\\.isElementReadOnly\\s*=|nextIsInline|nextIsVoid|nextIsSelectable|nextMarkableVoid|nextIsElementReadOnly" site/examples/ts -g '!**/dist/**'
+rg "onKeyCommand|EditableKeyCommandHandler|onSnapshotChange|onValueChange|onSelectionChange|state\\.schema\\.define|tx\\.schema\\.define|\\buseSlateStatic\\b|\\buseSelected\\b|\\buseFocused\\b|\\buseReadOnly\\b|\\buseComposing\\b|\\buseSlateSelector\\b|\\buseSlateSelection\\b|\\buseSlate\\b|\\buseSlateWithV\\b" packages/slate-react/src packages/slate-react/test site/examples/ts packages/slate/test/schema-contract.ts packages/slate/test/state-tx-public-api-contract.ts -g '!**/dist/**'
+```
+
+Notes:
+
+- `bun typecheck:site` initially failed against stale `slate/dist`
+  declarations. `bun --filter slate build` refreshed the declarations and the
+  site checker passed.
+- Core tests still override predicate methods where they are explicitly testing
+  low-level behavior. That is accepted advanced policy, not first-party author
+  DX.
+- `state.schema.define` and `tx.schema.define` were cut during review of this
+  slice because read/update views should not mutate global schema policy.
+
+Next owner:
+
+- Blocked by user direction on 2026-04-28. Do not continue Phase 6 as
+  current-version Plate/slate-yjs adapter work. If execution resumes, Phase 6
+  is migration-backbone proof only: synthetic plugin-style `state` / `tx`
+  groups, deterministic operation replay, remote commit metadata, and
+  local-only target behavior. No current Plate or slate-yjs adapter support.
+
+### 2026-04-28 Phase 6 tracer: migration-backbone proof
+
+Status: complete for raw Slate migration-backbone contracts, lane still pending
+for browser parity and release proof.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- synthetic table-style extension namespaces now prove plugin-style
+  `state.table.*` and `tx.table.*` groups
+- tx plugin groups read transaction-local state through `tx.value.get()` after
+  the group mutates the document
+- type fixtures prove table/link/media-style groups compose without mutating
+  the editor object
+- collab contracts prove local update operations replay into a remote editor
+  with deterministic snapshot equality
+- remote apply carries commit metadata through tags without React callbacks
+- remote remove operations null local runtime ids
+- remote move operations rebase local runtime ids
+- serialized remote operations do not carry runtime ids
+- no current Plate or slate-yjs APIs are imported or promised
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate/test/extension-namespaces-contract.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
+
+Verification:
+
+```bash
+bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit
+bun test ./packages/slate/test/extension-namespaces-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts
+bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/generic-extension-contract.ts ./packages/slate/test/extension-contract.ts ./packages/slate/test/extension-namespaces-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/read-update-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/apply-onchange-hard-cut-contract.ts
+bun test:release-discipline
+bun typecheck:packages
+bun lint:fix
+```
+
+Notes:
+
+- The first runtime contract failed because the synthetic table group used
+  `state.nodes.children([])` for root-row counts. Root document rows are
+  document value reads: `state.value.get()` and `tx.value.get()`.
+- This keeps the backbone clean: raw Slate proves substrate behavior; Plate and
+  slate-yjs own any current-version adapter or product API migration.
+
+Next owner:
+
+- Phase 7 browser parity and release proof: plugin browser contract registry,
+  stale-target browser rows for void selection plus remote remove/move, then
+  focused browser gates before any release-quality claim.
+
+### 2026-04-28 Phase 7 tracer: browser contract registry and stale-target replay
+
+Status: complete. The accepted architecture/DX hard-cut lane is done.
+
+Implemented in `/Users/zbeyens/git/slate-v2`:
+
+- added a `slate-browser` plugin contract registry for generated browser rows
+- grouped generated operation families under synthetic plugin-style contract
+  rows without importing current Plate APIs
+- added replayable scenario steps for:
+  - remote `applyOperations`
+  - runtime-id capture
+  - runtime-id path assertions
+  - last-commit tag assertions
+- added a test-browser handle for operation replay and runtime-id lookup
+- added the `stale-target-remote-rebase` stress row
+- proved stale void targets are local runtime facts:
+  - removed runtime ids become `null`
+  - moved runtime ids rebase to the new path
+  - serialized operations do not carry runtime ids
+  - remote replay carries collaboration metadata through commit tags
+- updated the kernel authority inventory for browser-handle remote replay
+
+Files changed:
+
+- `/Users/zbeyens/git/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
+- `/Users/zbeyens/git/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `/Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts`
+
+Verification:
+
+```bash
+bun --filter slate-browser test:core
+bun --filter slate-browser typecheck
+bun --filter slate-browser build
+bunx tsc --project playwright/tsconfig.json --noEmit
+STRESS_FAMILIES=table-cell-boundary-navigation PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun test:stress
+STRESS_FAMILIES=stale-target-remote-rebase PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun test:stress
+bun --filter slate-react test:vitest -- kernel-authority-audit-contract
+bun --filter slate-react typecheck
+bun typecheck:packages
+bun test:release-discipline
+bun lint:fix
+bun check:full
+PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/richtext.test.ts playwright/integration/examples/inlines.test.ts --project=chromium --project=firefox -g "persistent native word-delete|generated inline cut typing gauntlet"
+```
+
+Notes:
+
+- `bun check:full` exited 0. It reported two retry-resolved browser flakes:
+  Chromium richtext persistent native word-delete and Firefox inline cut typing
+  gauntlet.
+- Both retry-resolved rows passed cleanly in the focused retry-disabled rerun:
+  4 passed.
+- This phase is migration-backbone proof only. It does not support current
+  Plate or slate-yjs APIs, and it does not add adapters.
+
+Next owner:
+
+- None. Completion target met.
+
+### 2026-04-28 Complete-plan restart: public write-surface guard
+
+Status: complete.
+
+Reason:
+
+- The `slate-review` rerun closed with one accepted implementation owner:
+  first-party authoring docs, examples, walkthroughs, and public API pages must
+  teach `editor.update((tx) => tx.*)`, not primitive `editor.*` writes.
+- The prior architecture/DX lane was complete, but this public write-surface
+  guard is a new hardening slice from the rerun.
+
+Scope:
+
+- Implementation code lives in `../slate-v2`.
+- Control files live here: `tmp/completion-check.md`, `tmp/continue.md`, and
+  this plan ledger.
+- No current Plate or slate-yjs adapter support.
+
+Next owner:
+
+- Add or tighten the release-discipline/public-surface guard in `../slate-v2`
+  so it fails on unclassified first-party primitive `editor.*` write teaching.
+- Migrate normal authoring docs/examples/API pages to `tx.*`.
+- Classify any remaining primitive `editor.*` write usage as
+  advanced/internal bridge, core/runtime, codemod, or legacy transform fixture
+  usage.
+
+Driver gates:
+
+```bash
+bun test:release-discipline
+rg "editor\\.update\\(\\(\\) =>|editor\\.(setNodes|insertText|insertNodes|removeNodes|select)\\(" docs site/examples/ts packages/slate-react/src -g '!**/dist/**'
+```
+
+Completion:
+
+- `tmp/completion-check.md` is `done`; the guard and targeted proof passed.
+
+Completed in `/Users/zbeyens/git/slate-v2`:
+
+- Added public write-surface coverage to
+  `packages/slate/test/public-surface-contract.ts`.
+- The guard fails on normal first-party docs/examples/API pages that teach
+  primitive `editor.*` writes instead of `tx.*`.
+- Migrated normal authoring docs and examples to transaction methods.
+- Classified the remaining primitive write files as advanced normalizer or
+  collaboration bootstrap policy:
+  - `site/examples/ts/forced-layout.tsx`
+  - `docs/concepts/11-normalizing.md`
+  - `docs/walkthroughs/07-enabling-collaborative-editing.md`
+- Kept current Plate/slate-yjs adapter support out of scope.
+
+Verification:
+
+```bash
+bun test ./packages/slate/test/public-surface-contract.ts --bail 1
+bun test:release-discipline
+bun typecheck:site
+bun typecheck:packages
+bun lint:fix
+bun test:release-discipline
+bun typecheck:site
+rg "editor\\.(collapse|delete|deselect|insertFragment|insertNodes|insertText|mergeNodes|move|moveNodes|removeNodes|select|setNodes|splitNodes|unsetNodes|unwrapNodes|wrapNodes)\\(" docs/api docs/concepts docs/walkthroughs site/examples/ts -g '!**/dist/**'
+PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/images.test.ts playwright/integration/examples/inlines.test.ts --project=chromium
+```
+
+Final verification result:
+
+- release discipline passed: 115 pass
+- site typecheck passed
+- package typecheck passed: 6 package typechecks
+- focused browser proof passed: 12 Chromium tests
+- final grep only reports the classified normalizer/collaboration bootstrap
+  files
+
+Next owner:
+
+- None. This complete-plan implementation slice is done.

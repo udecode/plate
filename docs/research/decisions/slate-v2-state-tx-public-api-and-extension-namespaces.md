@@ -97,6 +97,44 @@ editor.update((tx) => {
 This keeps raw Slate unopinionated while giving Plate and plugins a clean,
 discoverable extension namespace.
 
+## 2026-04-28 Live-Source Refresh
+
+Live `../slate-v2` now has the state/tx substrate:
+
+- `editor.read((state) => ...)` and `editor.update((tx) => ...)` are implemented
+  and tested.
+- `state` and `tx` expose grouped read APIs.
+- `tx` exposes grouped write APIs.
+- extension namespaces can augment `state.<plugin>` and `tx.<plugin>`.
+- tx reads observe transaction-local draft state.
+
+But author-facing docs and examples still teach primitive editor writes inside
+`editor.update(() => ...)` as the normal method API.
+
+Live source evidence:
+
+- `packages/slate/test/state-tx-public-api-contract.ts` proves grouped
+  `state` reads, grouped `tx` writes, and tx-local read coherence.
+- `packages/slate/src/create-editor.ts` still wires primitive transform
+  methods onto `BaseEditor`.
+- `packages/slate/test/write-boundary-contract.ts` rejects primitive writes
+  outside `editor.update`, but still proves primitive writes are routed inside
+  update.
+- `docs/concepts/04-transforms.md` and `docs/concepts/07-editor.md` still
+  present primitive `editor.*` methods as the author-facing method API.
+
+Current research verdict:
+
+- `tx.*` remains the accepted normal public write DX.
+- primitive `editor.*` transform methods should not be presented as the normal
+  author-facing path if the goal is the clean architecture/DX target.
+- either demote primitive editor writes to advanced/internal bridge status with
+  explicit release guards, or migrate examples/docs/tests to `tx.*`.
+- keep `applyOperations` as the explicit operation replay writer for
+  collaboration/backbone proof.
+
+This is a plan/execution gap, not a research contradiction.
+
 ## Predicate Shape
 
 Schema predicates should not stay as top-level editor clutter:

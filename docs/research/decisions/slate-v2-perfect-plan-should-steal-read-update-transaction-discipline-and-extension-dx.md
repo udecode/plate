@@ -81,6 +81,21 @@ Primitive editor methods are the power API inside `editor.update`.
 
 `tx.resolveTarget()` stays internal.
 
+## 2026-04-28 Maintain Note
+
+The later state/tx API decision narrows this public-contract wording:
+
+- `editor.read((state) => ...)` is the normal read path.
+- `editor.update((tx) => ...)` is the normal write path.
+- write groups live on `tx`, including plugin/extension groups.
+- primitive `editor.*` transform methods may remain internal or advanced
+  runtime tools, but this page should not be used to justify them as the final
+  normal authoring DX.
+
+Use
+[slate-v2-state-tx-public-api-and-extension-namespaces.md](slate-v2-state-tx-public-api-and-extension-namespaces.md)
+as the current authority for public naming and extension namespaces.
+
 ## Why This Wins
 
 This combination gives Slate v2:

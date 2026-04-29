@@ -412,3 +412,51 @@
 - confirmed the same conclusion: React 19.2 helps the projection layer and
   non-urgent UI, but Slate still needs editor-owned dirty commits and
   node-scoped subscriptions for hot editing paths
+
+## [2026-04-28] maintain | Slate v2 state/tx decision drift cleanup
+
+- found stale wording in
+  [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
+  that still described primitive `editor.*` methods as the power API inside
+  `editor.update`
+- marked the newer
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  decision as the current authority for public naming and extension namespaces
+- kept the older page accepted for the broader steal/reject/defer conclusion,
+  but stopped it from being used as evidence for flat editor method DX
+
+## [2026-04-28] maintain | Slate v2 state/tx live-source refresh
+
+- refreshed
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  against live `../slate-v2` source, tests, docs, and examples
+- recorded the current split:
+  `state` / `tx` exists and is tested, but author-facing docs/examples still
+  teach primitive `editor.*` writes inside `editor.update`
+- kept the accepted decision unchanged:
+  `editor.update((tx) => tx.*)` is the normal public write target; primitive
+  editor writes need either advanced/internal classification or docs/examples
+  migration before the API can be called final
+
+## [2026-04-28] maintain | Slate v2 node-DX command example cleanup
+
+- refreshed
+  [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
+  during the whole-rewrite review Pass 2
+- updated its extension command example to use
+  `editor.update((tx) => tx.nodes.insert(...))`
+- kept the decision unchanged:
+  runtime-owned shells and spec-first renderers are still accepted, but public
+  command examples must follow the newer `state` / `tx` naming decision
+
+## [2026-04-28] maintain | Slate v2 overlay local proof refresh
+
+- refreshed
+  [slate-v2-local-proof-substrate.md](docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md)
+  against current `../slate-v2` projection, annotation, widget, hook, test, and
+  benchmark files during the decoration/annotation rewrite review
+- removed stale `decoration-sources.ts` source references because live source
+  still routes decoration sources through `projection-store.ts`
+- kept the conclusion unchanged:
+  Slate v2 has strong runtime-id subscription proof, but source-scoped
+  recompute and annotation/widget perf still need lower-level runtime work

@@ -2,7 +2,7 @@
 title: Editor node DX should use runtime owned shells and spec first renderers
 type: decision
 status: accepted
-updated: 2026-04-27
+updated: 2026-04-28
 source_refs:
   - docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md
   - docs/research/systems/editor-node-text-mark-dx-landscape.md
@@ -114,12 +114,22 @@ defineExtension({
   nodes: [Image],
   commands: {
     insertImage(editor, attrs) {
-      editor.update(() => editor.insertNode(Image.create(attrs)))
+      editor.update((tx) => {
+        tx.nodes.insert(Image.create(attrs))
+      })
     },
   },
   browserContracts: [atomicBlockNavigation(Image)],
 })
 ```
+
+## 2026-04-28 Maintain Note
+
+Use the `state` / `tx` decision as the current authority for public command
+examples. Element and extension specs can define commands, but normal writes
+inside those commands should go through `editor.update((tx) => tx.*)`.
+
+Primitive `editor.*` writes are not the public example shape for this decision.
 
 ## Why This Wins
 
