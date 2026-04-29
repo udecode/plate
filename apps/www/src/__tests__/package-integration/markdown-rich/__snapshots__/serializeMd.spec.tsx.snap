@@ -140,15 +140,12 @@ exports[`serializeMd fixtures serializes two \\n within a block quote as two new
 `;
 
 exports[`serializeMd serializes a trailing break in a paragraph as <br /> 1`] = `
-"Paragaph with a new Line
-<br />
+"Paragraph with a new Line<br />
 "
 `;
 
 exports[`serializeMd serializes paragraphs containing only a new line as <br /> 1`] = `
-"
-<br />
-
+"<br />
 
 <br />
 "
