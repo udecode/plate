@@ -1,5 +1,11 @@
 # @platejs/suggestion
 
+## 53.0.3
+
+### Patch Changes
+
+- [#4945](https://github.com/udecode/plate/pull/4945) by [@felixfeng33](https://github.com/felixfeng33) – Fix inline-void delete and replace suggestions around mentions and paragraph boundaries
+
 ## 53.0.0
 
 ## 52.3.10

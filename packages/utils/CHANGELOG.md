@@ -1,5 +1,11 @@
 # @platejs/utils
 
+## 53.0.3
+
+### Patch Changes
+
+- [#4945](https://github.com/udecode/plate/pull/4945) by [@felixfeng33](https://github.com/felixfeng33) – Add a trailing-block insert hook for normalization-driven insert behavior
+
 ## 53.0.0
 
 ### Patch Changes
