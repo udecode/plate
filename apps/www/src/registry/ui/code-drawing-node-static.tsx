@@ -3,6 +3,7 @@ import * as React from 'react';
 import type { TCodeDrawingElement } from '@platejs/code-drawing';
 import type { SlateElementProps } from 'platejs/static';
 
+import { cn } from '@/lib/utils';
 import { SlateElement } from 'platejs/static';
 
 export function CodeDrawingElementStatic({
@@ -11,7 +12,7 @@ export function CodeDrawingElementStatic({
 }: SlateElementProps<TCodeDrawingElement>) {
   return (
     <SlateElement className="my-4 flex w-full items-stretch" {...props}>
-      <div className="flex w-full flex-col md:flex-row">
+      <div className={cn('flex w-full flex-col md:flex-row')}>
         <div className="relative h-full min-w-0 flex-1 rounded-md bg-muted/50 p-8 pr-4">
           <pre className="m-0 overflow-x-auto font-mono text-sm leading-[normal] [tab-size:2] print:break-inside-avoid">
             <code className="block w-full">

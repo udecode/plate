@@ -15,6 +15,41 @@ export type TDiscussion = {
   documentContent?: string;
 };
 
+const BLOCK_SUGGESTION_SELECTOR = '[data-block-suggestion="true"]';
+
+const getTargetElement = (target: EventTarget | null) => {
+  if (target instanceof HTMLElement) return target;
+  if (target instanceof Node) return target.parentElement;
+
+  return null;
+};
+
+export const getDiscussionClickTarget = ({
+  selector,
+  target,
+}: {
+  selector: string;
+  target: EventTarget | null;
+}) => {
+  const element = getTargetElement(target);
+
+  if (!element) return null;
+
+  return element.closest(selector) as HTMLElement | null;
+};
+
+export const getDiscussionBlockClickTarget = ({
+  selector = BLOCK_SUGGESTION_SELECTOR,
+  target,
+}: {
+  selector?: string;
+  target: EventTarget | null;
+}) =>
+  getDiscussionClickTarget({
+    selector,
+    target,
+  });
+
 const discussionsData: TDiscussion[] = [
   {
     id: 'discussion1',

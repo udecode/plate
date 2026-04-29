@@ -32,12 +32,19 @@ describe('deleteSuggestion', () => {
 
     const editor = {
       api: {
+        above: () => {},
         after: () => pointTarget,
+        isEnd: () => false,
         isAt: () => false,
         isEmpty: () => true,
         isStart: () => true,
         node: () => [suggestionNode, [0, 0]],
         pointRef: () => ({ current: pointTarget }),
+        range: (path: number[]) => ({
+          anchor: { offset: 0, path },
+          focus: { offset: 1, path },
+        }),
+        some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
@@ -84,11 +91,18 @@ describe('deleteSuggestion', () => {
 
     const editor = {
       api: {
+        above: () => {},
         after: (point: typeof pointCurrent) =>
           point.offset === 0 ? pointNext : undefined,
+        isEnd: () => false,
         isAt: () => false,
         node: () => {},
         pointRef: () => ({ current: target }),
+        range: (path: number[]) => ({
+          anchor: { offset: 0, path },
+          focus: { offset: 2, path },
+        }),
+        some: () => false,
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
@@ -144,9 +158,14 @@ describe('deleteSuggestion', () => {
         above: () => {},
         after: () => pointTarget,
         before: () => pointTarget,
+        isEnd: () => false,
         isAt: ({ blocks }: any = {}) => !!blocks,
         node: () => {},
         pointRef: () => ({ current: pointTarget }),
+        range: (path: number[]) => ({
+          anchor: { offset: 0, path },
+          focus: { offset: 1, path },
+        }),
         string: () => '\n',
         unhangRange: (range: unknown) => range,
       },

@@ -3,7 +3,7 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor, createSlatePlugin, KEYS } from 'platejs';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';
@@ -14,6 +14,21 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
     currentUserId: 'testId',
   },
+});
+
+const MentionPlugin = createSlatePlugin({
+  key: KEYS.mention,
+  node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
+});
+
+const DatePlugin = createSlatePlugin({
+  key: KEYS.date,
+  node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
+});
+
+const TocPlugin = createSlatePlugin({
+  key: KEYS.toc,
+  node: { isElement: true, isVoid: true },
 });
 
 const testSuggestionData = {
@@ -259,6 +274,297 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
         expect(editor.selection).toEqual(output.selection);
       });
     });
+
+    it('marks only the previous mention-shaped inline void and moves the cursor to its left edge', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hmention key="u1" value="Ada">
+              <htext />
+            </hmention>
+            <htext>
+              <cursor />
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const output = (
+        <editor>
+          <hp>
+            <htext>
+              a
+              <cursor />
+            </htext>
+            <hmention key="u1" value="Ada">
+              <htext />
+            </hmention>
+            <htext />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, MentionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const mentionNode = editor.children[0].children[1] as any;
+      const leftText = editor.children[0].children[0] as any;
+      const rightText = editor.children[0].children[2] as any;
+      const suggestionData = getInlineSuggestionData(mentionNode);
+
+      expect(leftText).toEqual(output.children[0].children[0]);
+      expect(mentionNode.suggestion).toBe(true);
+      expect(suggestionData?.type).toBe('remove');
+      expect(suggestionData?.userId).toBe('testId');
+      expect(rightText).toEqual(output.children[0].children[2]);
+      expect(editor.selection).toEqual(output.selection);
+    });
+
+    it('marks the previous date-shaped inline void with remove suggestion metadata', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext />
+            </hdate>
+            <htext>
+              <cursor />
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const dateNode = editor.children[0].children[1] as any;
+      const dateChild = dateNode.children?.[0] as any;
+      const elementSuggestionData = getInlineSuggestionData(dateNode);
+      const childSuggestionData = getInlineSuggestionData(dateChild);
+
+      expect(dateNode.suggestion || dateChild?.suggestion).toBeTruthy();
+      expect(elementSuggestionData ?? childSuggestionData).toMatchObject({
+        type: 'remove',
+        userId: 'testId',
+      });
+    });
+
+    it('marks a date-shaped inline void when the cursor is inside its void child text', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext>
+                <cursor />
+              </htext>
+            </hdate>
+            <htext />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward();
+
+      const dateNode = editor.children[0].children[1] as any;
+      const dateChild = dateNode.children?.[0] as any;
+      const suggestionData =
+        getInlineSuggestionData(dateNode) ?? getInlineSuggestionData(dateChild);
+
+      expect(dateNode.suggestion || dateChild?.suggestion).toBeTruthy();
+      expect(suggestionData).toMatchObject({
+        type: 'remove',
+        userId: 'testId',
+      });
+    });
+
+    it('does not delete a non-selectable date when backspacing inside later trailing text', () => {
+      const input = (
+        <editor>
+          <hp>
+            <htext>a</htext>
+            <hdate date="2026-04-14">
+              <htext />
+            </hdate>
+            <htext>
+              b<cursor />c
+            </htext>
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, DatePlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const paragraphChildren = editor.children[0].children as any[];
+      const leftText = paragraphChildren[0];
+      const dateNode = paragraphChildren[1];
+      const trailingNodes = paragraphChildren.slice(2);
+      const dateSuggestion =
+        getInlineSuggestionData(dateNode) ??
+        getInlineSuggestionData(dateNode.children?.[0]);
+      const trailingSuggestionNode = trailingNodes.find(
+        (node) => getInlineSuggestionData(node)?.type === 'remove'
+      );
+
+      expect(leftText).toEqual({ text: 'a' });
+      expect(dateSuggestion).toBeUndefined();
+      expect(trailingSuggestionNode?.text).toBe('b');
+    });
+
+    it('marks a remove line break when deleting backward at the start of a paragraph', () => {
+      const input = (
+        <editor>
+          <hp>test1</hp>
+          <hp>
+            <cursor />
+            test2
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const lineBreakSuggestion = (editor.children[0] as any).suggestion;
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <hp
+              suggestion={{
+                createdAt: lineBreakSuggestion.createdAt,
+                id: lineBreakSuggestion.id,
+                isLineBreak: true,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              test1
+              <cursor />
+            </hp>
+            <hp>test2</hp>
+          </editor>
+        ).children
+      );
+      expect(editor.selection).toEqual(
+        (
+          <editor>
+            <hp
+              suggestion={{
+                createdAt: lineBreakSuggestion.createdAt,
+                id: lineBreakSuggestion.id,
+                isLineBreak: true,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              test1
+              <cursor />
+            </hp>
+            <hp>test2</hp>
+          </editor>
+        ).selection
+      );
+    });
+
+    it('marks the previous block void for removal instead of creating a line-break suggestion', () => {
+      const input = (
+        <editor>
+          <htoc>
+            <htext />
+          </htoc>
+          <hp>
+            <cursor />
+            test2
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
+
+      const editor = createSlateEditor({
+        plugins: [suggestionPlugin, TocPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+      editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+      editor.tf.deleteBackward('character');
+
+      const voidSuggestion = (editor.children[0] as any).suggestion;
+
+      expect(editor.children).toEqual(
+        (
+          <editor>
+            <htoc
+              suggestion={{
+                createdAt: voidSuggestion.createdAt,
+                id: voidSuggestion.id,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              <htext>
+                <cursor />
+              </htext>
+            </htoc>
+            <hp>test2</hp>
+          </editor>
+        ).children
+      );
+      expect(voidSuggestion.isLineBreak).toBeUndefined();
+      expect(editor.selection).toEqual(
+        (
+          <editor>
+            <htoc
+              suggestion={{
+                createdAt: voidSuggestion.createdAt,
+                id: voidSuggestion.id,
+                type: 'remove',
+                userId: 'testId',
+              }}
+            >
+              <htext>
+                <cursor />
+              </htext>
+            </htoc>
+            <hp>test2</hp>
+          </editor>
+        ).selection
+      );
+    });
   });
 });
 
@@ -424,6 +730,87 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
       focus: { offset: 0, path: [0, 0] },
     });
   });
+
+  it('keeps the cursor at the start of an expanded selection that spans text, a mention-shaped inline void, and trailing text', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext>
+            before <anchor />
+            text{' '}
+          </htext>
+          <hmention key="u1" value="Ada">
+            <htext />
+          </hmention>
+          <htext>
+            {' after'}
+            <focus />
+            {' text'}
+          </htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.deleteFragment();
+
+    const output = (
+      <editor>
+        <hp>
+          <htext>before </htext>
+          <htext suggestion>
+            <cursor />
+            text{' '}
+          </htext>
+          <hmention key="u1" suggestion value="Ada">
+            <htext />
+          </hmention>
+          <htext suggestion>{' after'}</htext>
+          <htext>{' text'}</htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    expect(editor.children[0].children).toHaveLength(
+      output.children[0].children.length
+    );
+
+    const leftText = editor.children[0].children[0] as any;
+    const removeTextNode = editor.children[0].children[1] as any;
+    const mentionNode = editor.children[0].children[2] as any;
+    const removeTrailingTextNode = editor.children[0].children[3] as any;
+    const trailingText = editor.children[0].children[4] as any;
+    const removeData = getInlineSuggestionData(removeTextNode);
+    const mentionData = getInlineSuggestionData(mentionNode);
+    const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
+
+    expect(leftText).toEqual(output.children[0].children[0]);
+    expect(removeTextNode.text).toBe(
+      (output.children[0].children[1] as any).text
+    );
+    expect(removeData?.type).toBe('remove');
+    expect(removeData?.userId).toBe('testId');
+    expect(mentionNode.children).toEqual(
+      output.children[0].children[2].children
+    );
+    expect(mentionData?.id).toBe(removeData?.id);
+    expect(mentionData?.type).toBe('remove');
+    expect(mentionData?.userId).toBe('testId');
+    expect(removeTrailingTextNode.text).toBe(
+      (output.children[0].children[3] as any).text
+    );
+    expect(trailingRemoveData?.id).toBe(removeData?.id);
+    expect(trailingRemoveData?.type).toBe('remove');
+    expect(trailingRemoveData?.userId).toBe('testId');
+    expect(trailingText).toEqual(output.children[0].children[4]);
+    expect(editor.selection).toEqual(output.selection);
+  });
 });
 
 describe('normalizeNode', () => {
@@ -574,6 +961,96 @@ describe('insert text when cursor is expanded', () => {
     expect(removeNodeData?.id).toEqual(insertedNodeData?.id);
     expect(removeNodeData?.type).toEqual('remove');
     expect(insertedNodeData?.type).toEqual('insert');
+  });
+
+  it('replaces an expanded selection across text, a mention-shaped inline void, and trailing text without looping', () => {
+    const input = (
+      <editor>
+        <hp>
+          <htext>
+            before <anchor />
+            text{' '}
+          </htext>
+          <hmention key="u1" value="Ada">
+            <htext />
+          </hmention>
+          <htext>
+            {' after'}
+            <focus />
+            {' text'}
+          </htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin, MentionPlugin],
+      selection: input.selection,
+      value: input.children,
+    });
+
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.insertText('X');
+
+    const output = (
+      <editor>
+        <hp>
+          <htext>before </htext>
+          <htext suggestion>{'text '}</htext>
+          <hmention key="u1" suggestion value="Ada">
+            <htext />
+          </hmention>
+          <htext suggestion>{' after'}</htext>
+          <htext suggestion>
+            X<cursor />
+          </htext>
+          <htext>{' text'}</htext>
+        </hp>
+      </editor>
+    ) as any as SlateEditor;
+
+    expect(editor.children[0].children).toHaveLength(
+      output.children[0].children.length
+    );
+
+    const leftText = editor.children[0].children[0] as any;
+    const removeTextNode = editor.children[0].children[1] as any;
+    const mentionNode = editor.children[0].children[2] as any;
+    const removeTrailingTextNode = editor.children[0].children[3] as any;
+    const insertedNode = editor.children[0].children[4] as any;
+    const trailingText = editor.children[0].children[5] as any;
+    const removeData = getInlineSuggestionData(removeTextNode);
+    const mentionData = getInlineSuggestionData(mentionNode);
+    const trailingRemoveData = getInlineSuggestionData(removeTrailingTextNode);
+    const insertData = getInlineSuggestionData(insertedNode);
+
+    expect(leftText).toEqual(output.children[0].children[0]);
+    expect(removeTextNode.text).toBe(
+      (output.children[0].children[1] as any).text
+    );
+    expect(removeData?.type).toBe('remove');
+    expect(removeData?.userId).toBe('testId');
+    expect(mentionNode.children).toEqual(
+      output.children[0].children[2].children
+    );
+    expect(mentionData?.id).toBe(removeData?.id);
+    expect(mentionData?.type).toBe('remove');
+    expect(mentionData?.userId).toBe('testId');
+    expect(removeTrailingTextNode.text).toBe(
+      (output.children[0].children[3] as any).text
+    );
+    expect(trailingRemoveData?.id).toBe(removeData?.id);
+    expect(trailingRemoveData?.type).toBe('remove');
+    expect(trailingRemoveData?.userId).toBe('testId');
+    expect(insertedNode.text).toBe(
+      (output.children[0].children[4] as any).text
+    );
+    expect(insertData?.id).toBe(removeData?.id);
+    expect(insertData?.type).toBe('insert');
+    expect(insertData?.userId).toBe('testId');
+    expect(trailingText).toEqual(output.children[0].children[5]);
+    expect(editor.selection).toEqual(output.selection);
   });
 });
 

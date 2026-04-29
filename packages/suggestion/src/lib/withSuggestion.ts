@@ -52,14 +52,17 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
       return apply(operation);
     },
     deleteBackward(unit) {
+      const resolvedUnit = unit ?? 'character';
       const selection = editor.selection!;
-      const pointTarget = editor.api.before(selection, { unit });
+      const pointTarget = editor.api.before(selection, {
+        unit: resolvedUnit,
+      });
 
       if (getOptions().isSuggesting) {
         const node = editor.api.above<TSuggestionElement>();
         // without set suggestion when delete backward in block suggestion
         if (node?.[0][KEYS.suggestion] && !node?.[0].suggestion.isLineBreak) {
-          return deleteBackward(unit);
+          return deleteBackward(resolvedUnit);
         }
 
         if (!pointTarget) return;
@@ -86,12 +89,15 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         }
       }
 
-      deleteBackward(unit);
+      deleteBackward(resolvedUnit);
     },
     deleteForward(unit) {
+      const resolvedUnit = unit ?? 'character';
       if (getOptions().isSuggesting) {
         const selection = editor.selection!;
-        const pointTarget = editor.api.after(selection, { unit });
+        const pointTarget = editor.api.after(selection, {
+          unit: resolvedUnit,
+        });
 
         if (!pointTarget) return;
 
@@ -103,7 +109,7 @@ export const withSuggestion: OverrideEditor<BaseSuggestionConfig> = ({
         return;
       }
 
-      deleteForward(unit);
+      deleteForward(resolvedUnit);
     },
 
     deleteFragment(direction) {

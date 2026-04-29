@@ -18,11 +18,13 @@ export function VideoElementStatic(
           className="group relative m-0 inline-block cursor-default"
           style={{ width }}
         >
-          <video
-            className="w-full max-w-full rounded-sm object-cover px-0"
-            src={url}
-            controls
-          />
+          <div>
+            <video
+              className="w-full max-w-full rounded-sm object-cover px-0"
+              src={url}
+              controls
+            />
+          </div>
           {caption && <figcaption>{NodeApi.string(caption[0])}</figcaption>}
         </figure>
       </div>

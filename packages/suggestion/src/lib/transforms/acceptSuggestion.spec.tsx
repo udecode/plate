@@ -6,6 +6,7 @@ import { jsxt } from '@platejs/test-utils';
 import { createSlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionKey } from '../utils';
 import { acceptSuggestion } from './acceptSuggestion';
 
 jsxt;
@@ -211,6 +212,40 @@ describe('acceptSuggestion', () => {
 
     expect(editor.children).toEqual(output.children);
   });
+
+  it('merges paragraphs after deleteBackward creates a remove line break suggestion', () => {
+    const editor = createSlateEditor({
+      plugins: [suggestionPlugin],
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      value: [
+        { type: 'p', children: [{ text: 'test1' }] },
+        { type: 'p', children: [{ text: 'test2' }] },
+      ],
+    });
+
+    editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
+
+    editor.tf.deleteBackward('character');
+
+    const lineBreakData = (editor.children[0] as any).suggestion;
+
+    acceptSuggestion(editor, {
+      keyId: getSuggestionKey(lineBreakData.id),
+      suggestionId: lineBreakData.id,
+    } as any);
+
+    expect(editor.children).toEqual(
+      (
+        <editor>
+          <hp>test1test2</hp>
+        </editor>
+      ).children
+    );
+  });
+
   it('accept node with both remove and insert suggestions', () => {
     const time = Date.now();
 

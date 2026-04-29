@@ -2,6 +2,17 @@ import type { Registry } from 'shadcn/registry';
 
 export const registryLib: Registry['items'] = [
   {
+    dependencies: [],
+    files: [
+      {
+        path: 'lib/suggestion.ts',
+        type: 'registry:lib',
+      },
+    ],
+    name: 'suggestion',
+    type: 'registry:lib',
+  },
+  {
     dependencies: [
       'uploadthing@7.7.4',
       '@uploadthing/react@7.3.3',
