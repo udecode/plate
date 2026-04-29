@@ -25,12 +25,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { inlineSuggestionVariants } from '@/lib/suggestion';
 import { cn } from '@/lib/utils';
 
 export function EquationElement(props: PlateElementProps<TEquationElement>) {
   const selected = useSelected();
   const [open, setOpen] = React.useState(selected);
   const katexRef = React.useRef<HTMLDivElement | null>(null);
+  const lineBreakBadge = (
+    props as PlateElementProps<TEquationElement> & {
+      lineBreakBadge?: React.ReactNode;
+    }
+  ).lineBreakBadge;
 
   useEquationElement({
     element: props.element,
@@ -71,6 +77,7 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
                 <div>Add a Tex equation</div>
               </div>
             )}
+            {lineBreakBadge}
           </div>
         </PopoverTrigger>
 
@@ -92,7 +99,7 @@ export function EquationElement(props: PlateElementProps<TEquationElement>) {
 export function InlineEquationElement(
   props: PlateElementProps<TEquationElement>
 ) {
-  const element = props.element;
+  const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(
@@ -137,6 +144,7 @@ export function InlineEquationElement(
             className={cn(
               'after:absolute after:inset-0 after:-top-0.5 after:-left-1 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
+              inlineSuggestionVariants(),
               ((element.texExpression.length > 0 && open) || selected) &&
                 'after:bg-brand/15',
               element.texExpression.length === 0 &&

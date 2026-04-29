@@ -21,9 +21,9 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "1.11.0",
+    "lucide-react": "1.13.0",
     "next": "16.2.4",
-    "platejs": "^53.0.0",
+    "platejs": "^53.0.3",
     "radix-ui": "^1.4.3",
     "react": "19.2.5",
     "react-dom": "19.2.5",
@@ -36,15 +36,15 @@
     "@types/node": "^25.6.0",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "@typescript-eslint/parser": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "lefthook": "^2.1.6",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.12",
     "tailwindcss": "4.2.4",
     "typescript": "6.0.3",
-    "ultracite": "7.6.1"
+    "ultracite": "7.6.2"
   },
   "packageManager": "bun@1.3.9"
 }

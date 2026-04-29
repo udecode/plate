@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 const config: Record<
   string,
   {
-    Li: React.FC<PlateElementProps>;
+    Li: React.FC<PlateElementProps & { lineBreakBadge?: React.ReactNode }>;
     Marker: React.FC<PlateElementProps>;
   }
 > = {
@@ -35,7 +35,7 @@ export const BlockList: RenderNodeWrapper = (props) => {
   return (props) => <List {...props} />;
 };
 
-function List(props: PlateElementProps) {
+function List(props: PlateElementProps & { lineBreakBadge?: React.ReactNode }) {
   const { listStart, listStyleType } = props.element as TListElement;
   const { Li, Marker } = config[listStyleType] ?? {};
   const List = isOrderedList(props.element) ? 'ol' : 'ul';
@@ -47,7 +47,14 @@ function List(props: PlateElementProps) {
       style={{ listStyleType }}
     >
       {Marker && <Marker {...props} />}
-      {Li ? <Li {...props} /> : <li>{props.children}</li>}
+      {Li ? (
+        <Li {...props} />
+      ) : (
+        <li>
+          {props.children}
+          {props.lineBreakBadge}
+        </li>
+      )}
     </List>
   );
 }
@@ -70,7 +77,9 @@ function TodoMarker(props: PlateElementProps) {
   );
 }
 
-function TodoLi(props: PlateElementProps) {
+function TodoLi(
+  props: PlateElementProps & { lineBreakBadge?: React.ReactNode }
+) {
   return (
     <li
       className={cn(
@@ -80,6 +89,7 @@ function TodoLi(props: PlateElementProps) {
       )}
     >
       {props.children}
+      {props.lineBreakBadge}
     </li>
   );
 }

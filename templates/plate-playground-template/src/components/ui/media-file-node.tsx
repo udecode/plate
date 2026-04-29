@@ -7,6 +7,7 @@ import type { TFileElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, useReadOnly, withHOC } from 'platejs/react';
 
+import { cn } from '@/lib/utils';
 import { Caption, CaptionTextarea } from './caption';
 
 export const FileElement = withHOC(
@@ -18,7 +19,9 @@ export const FileElement = withHOC(
     return (
       <PlateElement className="my-px rounded-sm" {...props}>
         <a
-          className="group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted"
+          className={cn(
+            'group relative m-0 flex cursor-pointer items-center rounded px-0.5 py-[3px] hover:bg-muted'
+          )}
           contentEditable={false}
           download={name}
           href={unsafeUrl}
@@ -26,7 +29,7 @@ export const FileElement = withHOC(
           role="button"
           target="_blank"
         >
-          <div className="flex items-center gap-1 p-1">
+          <div className={cn('flex items-center gap-1 p-1')}>
             <FileUp className="size-5" />
             <div>{name}</div>
           </div>

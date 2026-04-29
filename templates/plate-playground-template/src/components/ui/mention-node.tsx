@@ -13,6 +13,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 import { useMounted } from '@/hooks/use-mounted';
+import { inlineSuggestionVariants } from '@/lib/suggestion';
 import { cn } from '@/lib/utils';
 
 import {
@@ -29,8 +30,7 @@ export function MentionElement(
     prefix?: string;
   }
 ) {
-  const element = props.element;
-
+  const { element } = props;
   const selected = useSelected();
   const focused = useFocused();
   const mounted = useMounted();
@@ -47,6 +47,7 @@ export function MentionElement(
       }}
       className={cn(
         'inline-block rounded-md bg-muted px-1.5 py-0.5 align-baseline font-medium text-sm',
+        inlineSuggestionVariants(),
         !readOnly && 'cursor-pointer',
         selected && focused && 'ring-2 ring-ring',
         element.children[0][KEYS.bold] === true && 'font-bold',
