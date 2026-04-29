@@ -96,12 +96,95 @@ describe('normalizeListStart', () => {
           listStyleType: 'lower-alpha',
         }),
         createItem('11', { listStyleType: 'disc' }),
-        createItem('12', { listStart: 2, listStyleType: 'disc' }),
+        createItem('12', { listStyleType: 'disc' }),
         createItem('21', { indent: 2, listStyleType: 'disc' }),
         createItem('31', { indent: 3, listStyleType: 'disc' }),
         createItem('31', { indent: 3, listStyleType: undefined }),
-        createItem('13', { listStart: 3, listStyleType: 'disc' }),
-        createItem('14', { listStart: 4, listStyleType: 'disc' }),
+        createItem('13', { listStyleType: 'disc' }),
+        createItem('14', { listStyleType: 'disc' }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('does not assign listStart to unordered list items', () => {
+      const input = [
+        createItem('one', { listStyleType: 'disc' }),
+        createItem('two', { listStyleType: 'disc' }),
+        createItem('three', { listStyleType: 'circle' }),
+        createItem('four', { listStyleType: 'square' }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(input);
+    });
+
+    it('strips previously-assigned listStart from unordered list items', () => {
+      const input = [
+        createItem('one', { listStart: 1, listStyleType: 'disc' }),
+        createItem('two', { listStart: 2, listStyleType: 'disc' }),
+      ];
+
+      const output = [
+        createItem('one', { listStyleType: 'disc' }),
+        createItem('two', { listStyleType: 'disc' }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('resumes ordered numbering after an unordered interruption', () => {
+      const input = [
+        createItem('one'),
+        createItem('two'),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('three'),
+      ];
+
+      const output = [
+        createItem('one'),
+        createItem('two', { listStart: 2 }),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('three', { listStart: 3 }),
+      ];
+
+      const editor = createEditor({
+        normalizeInitial: true,
+        value: input,
+      });
+
+      expect(editor.children).toEqual(output);
+    });
+
+    it('honors listRestart on an ordered item following an unordered interruption', () => {
+      const input = [
+        createItem('one'),
+        createItem('two'),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('five', { listRestart: 5 }),
+        createItem('six'),
+      ];
+
+      const output = [
+        createItem('one'),
+        createItem('two', { listStart: 2 }),
+        createItem('bullet', { listStyleType: 'disc' }),
+        createItem('five', { listRestart: 5, listStart: 5 }),
+        createItem('six', { listStart: 6 }),
       ];
 
       const editor = createEditor({

@@ -45,6 +45,53 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+function createDebouncedCodeDrawingRenderer(
+  setImage: React.Dispatch<React.SetStateAction<string>>,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setError: React.Dispatch<React.SetStateAction<string | null>>
+) {
+  let lastRequestId = 0;
+
+  return debounce(
+    async (code: string | undefined, drawingType: string | undefined) => {
+      lastRequestId += 1;
+      const requestId = lastRequestId;
+
+      if (!code?.trim() || !drawingType) {
+        setImage('');
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const imageData = await renderCodeDrawing(
+          drawingType as CodeDrawingType,
+          code
+        );
+
+        if (lastRequestId === requestId) {
+          setImage(imageData);
+          setError(null);
+        }
+      } catch (err) {
+        if (lastRequestId === requestId) {
+          setError(err instanceof Error ? err.message : 'Rendering failed');
+          setImage('');
+        }
+      } finally {
+        if (lastRequestId === requestId) {
+          setLoading(false);
+        }
+      }
+    },
+    RENDER_DEBOUNCE_DELAY
+  );
+}
+
 function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const editor = useEditorRef();
   const readOnly = useReadOnly();
@@ -52,50 +99,8 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const [error, setError] = React.useState<string | null>(null);
   const [image, setImage] = React.useState<string>('');
 
-  const lastRequestRef = React.useRef(0);
-
-  // Debounced render when code or type changes
   const debouncedRender = React.useMemo(
-    () =>
-      debounce(
-        async (code: string | undefined, drawingType: string | undefined) => {
-          lastRequestRef.current += 1;
-          const requestId = lastRequestRef.current;
-
-          if (!code?.trim() || !drawingType) {
-            setImage('');
-            setLoading(false);
-            setError(null);
-            return;
-          }
-
-          setLoading(true);
-          setError(null);
-
-          try {
-            const imageData = await renderCodeDrawing(
-              drawingType as CodeDrawingType,
-              code
-            );
-
-            // Only update if this is still the latest request
-            if (lastRequestRef.current === requestId) {
-              setImage(imageData);
-              setError(null);
-            }
-          } catch (err) {
-            if (lastRequestRef.current === requestId) {
-              setError(err instanceof Error ? err.message : 'Rendering failed');
-              setImage('');
-            }
-          } finally {
-            if (lastRequestRef.current === requestId) {
-              setLoading(false);
-            }
-          }
-        },
-        RENDER_DEBOUNCE_DELAY
-      ),
+    () => createDebouncedCodeDrawingRenderer(setImage, setLoading, setError),
     []
   );
 

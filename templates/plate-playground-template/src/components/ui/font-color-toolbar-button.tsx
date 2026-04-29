@@ -1,7 +1,5 @@
 'use client';
 
-/* eslint-disable react-hooks/refs -- Ref usage for color picker component refs */
-
 import type {
   DropdownMenuItemProps,
   DropdownMenuProps,
@@ -182,6 +180,7 @@ export function FontColorToolbarButton({
 
   React.useEffect(() => {
     if (selectionDefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the mark color while menu focus clears editor selection.
       setSelectedColor(color);
     }
   }, [color, selectionDefined]);
@@ -344,16 +343,12 @@ function ColorCustom({
     [colors, customColors, fullCustomColors]
   );
 
-  const [customColor, setCustomColor] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
+  const customColor = React.useMemo(() => {
     if (!updatedColor || isColorInCollections(updatedColor)) {
-      setCustomColor(null);
-
-      return;
+      return null;
     }
 
-    setCustomColor(updatedColor);
+    return updatedColor;
   }, [isColorInCollections, updatedColor]);
 
   const computedColors = React.useMemo(
@@ -372,10 +367,16 @@ function ColorCustom({
     [customColor, fullCustomColors, customColors]
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateCustomColorDebounced = React.useCallback(
-    debounce(updateCustomColor, 100),
+  const updateCustomColorDebounced = React.useMemo(
+    () => debounce((value: string) => updateCustomColor(value), 100),
     [updateCustomColor]
+  );
+
+  React.useEffect(
+    () => () => {
+      updateCustomColorDebounced.cancel();
+    },
+    [updateCustomColorDebounced]
   );
 
   return (

@@ -402,20 +402,16 @@ export function FootnoteInputElement(props: PlateElementProps) {
   const proposedIdentifier = numericQuery || nextIdentifier;
   const showCreateOption = !identifiers.includes(proposedIdentifier);
 
-  const filteredIdentifiers = React.useMemo(() => {
-    const matches = (identifier: string) => {
-      if (!query) return true;
+  const filteredIdentifiers = identifiers.filter((identifier: string) => {
+    if (!query) return true;
 
-      const preview = footnoteApi.definitionText?.({ identifier }) ?? '';
+    const preview = footnoteApi.definitionText?.({ identifier }) ?? '';
 
-      return (
-        identifier.includes(query) ||
-        preview.toLowerCase().includes(query.toLowerCase())
-      );
-    };
-
-    return identifiers.filter(matches);
-  }, [footnoteApi, identifiers, query]);
+    return (
+      identifier.includes(query) ||
+      preview.toLowerCase().includes(query.toLowerCase())
+    );
+  });
 
   const insertSelectedFootnote = React.useCallback(
     (identifier: string) => {
