@@ -737,7 +737,6 @@ Affected files:
 - `/Users/zbeyens/git/slate-v2/docs/concepts/08-plugins.md`
 - `/Users/zbeyens/git/slate-v2/docs/concepts/11-normalizing.md`
 - `/Users/zbeyens/git/slate-v2/docs/concepts/12-typescript.md`
-- `/Users/zbeyens/git/slate-v2/docs/concepts/xx-migrating.md`
 - `/Users/zbeyens/git/slate-v2/docs/general/contributing.md`
 - `/Users/zbeyens/git/slate-v2/docs/general/replacement-candidate.md`
 - `/Users/zbeyens/git/slate-v2/docs/walkthroughs/09-performance.md`
@@ -813,8 +812,6 @@ Per-file user-facing justification:
   plus app-owned normalization guidance.
 - `/Users/zbeyens/git/slate-v2/docs/concepts/12-typescript.md` — replaces the
   stale declaration-merging story with the current structural typing model.
-- `/Users/zbeyens/git/slate-v2/docs/concepts/xx-migrating.md` — updates the
-  migration guide to the current editor, React, typing, and overlay surfaces.
 - `/Users/zbeyens/git/slate-v2/docs/general/replacement-candidate.md` —
   restores the missing package-level claim page and states the current overlay
   split directly: projection stores for inline overlays, `Bookmark` for durable

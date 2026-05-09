@@ -32,6 +32,11 @@ editor.read((state) => {
 })
 
 editor.update((tx) => {
+  tx.value.replace({
+    children,
+    marks: null,
+    selection: null,
+  })
   tx.selection.get()
   tx.nodes.set(props, { at: target })
 })
@@ -134,6 +139,34 @@ Current research verdict:
   collaboration/backbone proof.
 
 This is a plan/execution gap, not a research contradiction.
+
+## 2026-04-29 Editor Namespace Hard-Cut Refresh
+
+The public `Editor` value is still a live source mismatch with this decision.
+Live `../slate-v2` still exports `EditorInterface` and `export const Editor`,
+and that namespace mixes editor-state reads, writes, extension registration,
+replacement helpers, and setup helpers.
+
+The hard-cut target is:
+
+- keep `Editor` as a type only
+- keep pure data namespaces such as `Node`, `Path`, `Point`, `Range`,
+  `Element`, and `Text`
+- keep top-level `isEditor(value)` if a public predicate is needed
+- cut the public `Editor` value and public `EditorInterface`
+- cut public transform-registry exports
+- use `editor.read((state) => ...)` for committed reads
+- use `editor.update((tx) => ...)` for writes and tx-local reads
+- use `tx.value.replace(input)` for public whole-document replacement
+
+Live source does not expose `tx.value.replace` yet. Current replacement is
+implemented by `replaceSnapshot`, and `BaseEditor` still exposes
+`replace` / `reset`. That means `tx.value.replace` is an implementation
+requirement for the namespace hard cut, not a current capability.
+
+Fixture seeding should use non-public helpers. Keeping public
+`Editor.replace`, public `editor.replace`, or public `editor.reset` just to make
+tests shorter would preserve the wrong app-author API.
 
 ## Predicate Shape
 

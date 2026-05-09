@@ -920,7 +920,6 @@ Changed files:
 - `/Users/zbeyens/git/slate-v2/docs/api/transforms.md`
 - `/Users/zbeyens/git/slate-v2/docs/api/nodes/editor.md`
 - `/Users/zbeyens/git/slate-v2/docs/concepts/05-operations.md`
-- `/Users/zbeyens/git/slate-v2/docs/concepts/xx-migrating.md`
 - docs/examples from the previous Phase 3 slice.
 
 Rejected tactics:

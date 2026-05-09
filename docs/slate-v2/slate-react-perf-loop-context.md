@@ -78,25 +78,28 @@ Read these before deciding or claiming closure:
 - `bench:react:rerender-breadth:local` exists and proves useful locality facts.
 - `bench:react:huge-document-overlays:local` exists and proves corridor/overlay
   locality facts.
-- `bench:react:huge-document:legacy-compare:local` exists and closes the
-  stronger perf-superiority claim for important lanes, with first shelled-block
-  activation accepted as the explicit occlusion tradeoff.
+- `bench:react:huge-document:legacy-compare:local` exists, but the fresh
+  5000/10000-block runs reopen the stronger perf-superiority claim. Current v2
+  shell islands win startup and full-document operations, then lose steady
+  typing/select lanes hard against legacy chunking-on.
 - `1000` blocks is smoke/debug only. It is not a closure or superiority proof
   gate for this lane.
 - Latest 5000-block proof gate:
-  - v2 wins ready hard
-  - v2 wins steady typing/select-type lanes
-  - v2 wins select-all
-  - v2 wins full-document text replacement and full-document fragment insertion
-  - v2 loses only first activation of a shelled block
-    (`middleBlockPromoteThenTypeMs`) by a small amount against chunking-on
-  - first activation of a shelled block is accepted as the explicit occlusion /
-    corridor-first tradeoff unless product later requires this one-time
-    activation to beat chunking-on too
+  - v2 shell wins ready hard
+  - v2 shell wins full-document text replacement and full-document fragment
+    insertion
+  - v2 shell loses steady typing/select-type lanes against legacy chunking-on by
+    roughly 150-180 ms
+  - v2 shell loses select-all against legacy chunking-on
+  - promoted middle-block typing is not closed as a superiority lane
   - paste is split into text replacement and fragment insertion; neither row is
     native clipboard/browser paste transport
-- Therefore the perf lane must target actual v2 superiority over legacy
-  chunking-on and chunking-off, not command ownership.
+- Latest 10000-block proof gate is harsher:
+  - v2 shell wins ready and full-document operations
+  - legacy chunking-on wins typing/select lanes by roughly 291-365 ms
+- Therefore the current perf lane is red for typing. The next architecture owner
+  is two-tier large-document default behavior: DOM-present grouping first,
+  shell mode explicit until browser/native proof passes.
 
 ## Constraint Hierarchy
 
@@ -186,10 +189,10 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
   - `/Users/zbeyens/git/slate-v2/packages/slate/**` only if a focused probe
     proves the blocker is core read/index ownership
 - Current closure:
-  - perf lane is closed with direct model-only typing into an unpromoted middle
-    shell accepted as the explicit caveat
-  - promoted middle-block typing is the user editing corridor and beats legacy
-    chunking-on
+  - perf lane is not closed for current shell islands
+  - direct model-only typing into an unpromoted middle shell remains red
+  - promoted middle-block typing is also not a closed superiority claim under
+    the latest 5000/10000-block runs
   - browser editing proof uses generated gauntlets for model state, visible DOM,
     DOM selection/caret where observable, focus owner, commit metadata, trace
     legality, replayability, and follow-up typing
@@ -239,7 +242,8 @@ Do not rely on chat history for memory. If it matters, write it to the plan.
 
 The perf lane is complete only when:
 
-- v2 wins the important huge-doc lanes against legacy chunking-on/off, or
+- v2 DOM-present auto wins or matches the important huge-doc lanes against
+  legacy chunking-on/off, or
 - remaining losing lanes are explicitly accepted/deferred with rationale, and
 - required correctness/perf checks have run or hard blockers are named exactly.
 

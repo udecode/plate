@@ -36,6 +36,8 @@ Read only what is needed to decide the next move:
 5. the files or docs carrying the current problem
 6. any architecture/research/context doc that defines the principle stack
 7. previous failed tactics recorded in the state file
+8. `current_pass`, `current_pass_status`, and `current_pass_skill` from the
+   completion state file, if present
 
 Do not rely on chat history for durable state.
 
@@ -72,6 +74,27 @@ Good default homes:
 
 Do not keep updating a stale broad plan once the work has moved to a narrower
 owner.
+
+## Current Pass Skill Rule
+
+If the active state file records `current_pass_skill` and
+`current_pass_status` is `pending`, `in_progress`, or `revise`, load that skill
+before deciding the next move.
+
+If `current_pass_skill` is missing but `current_pass` names a known skill, infer
+`.agents/skills/<current_pass>/SKILL.md` when that file exists, then record the
+explicit `current_pass_skill` path in the state file.
+
+Do not skip to the next owner while the current pass is still pending,
+in-progress, or revision-ready.
+
+When the current pass closes, update the same state file with:
+
+- `current_pass_status`
+- evidence pointer
+- `next_pass`
+
+Keep top-level `status: pending` while a later pass or runnable owner remains.
 
 ## Completion Guard
 

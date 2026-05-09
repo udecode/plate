@@ -147,7 +147,12 @@ Outside the active corridor:
 
 This is much safer than full virtualization because DOM stays present.
 
-This should be the default huge-document posture, not a niche mode.
+This should be the default huge-document baseline, not a niche mode. It is not
+the whole default performance story: current 5000-block evidence says
+DOM-present no-shell can win direct typing/select lanes, but still loses
+startup, full-document replacement, promote, and event-input lanes. Shell or
+occlusion escalation can only become automatic after the browser/native/a11y
+proof gates pass; until then it stays explicit.
 
 ### 5. Keep heavy overlay systems separate
 

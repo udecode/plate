@@ -1,0 +1,69 @@
+---
+description: 'Conditional deliberate-mode pass for high-risk changes: public API, data model, security, destructive actions, collaboration, runtime, migration, release gates, browser-sensitive behavior, and large refactors.'
+argument-hint: '[plan/change]'
+disable-model-invocation: true
+name: high-risk-deliberate-pass
+metadata:
+  skiller:
+    source: .agents/rules/high-risk-deliberate-pass.mdc
+---
+
+# High-Risk Deliberate Pass
+
+Handle $ARGUMENTS.
+
+Use this when the blast radius is high enough that normal planning is too thin.
+
+## Use When
+
+- Public API, data model, storage, operations, collaboration, auth/security,
+  destructive actions, runtime scheduling, browser behavior, package boundaries,
+  release gates, migration paths, or large cross-package refactors are changed.
+- The plan would be expensive to reverse.
+- The failure mode would be user-visible, data-corrupting, security-sensitive, or
+  release-blocking.
+
+## Do Not Use When
+
+- The task is a narrow local fix with low blast radius.
+- The active plan already has a current high-risk pre-mortem and expanded proof
+  plan for the same decision.
+
+## Completion-State Pass Fields
+
+```md
+status: pending
+current_pass: high-risk-deliberate-pass
+current_pass_status: in_progress
+current_pass_skill: .agents/skills/high-risk-deliberate-pass/SKILL.md
+current_pass_scope: <high-risk change>
+current_pass_trigger: high blast radius
+```
+
+## Procedure
+
+1. Name the high-risk trigger.
+2. Record blast radius:
+   - packages/files
+   - users/consumers
+   - data or behavior affected
+   - docs/examples/tests affected
+3. Write a three-scenario pre-mortem.
+4. Expand proof plan:
+   - unit
+   - integration
+   - browser or visual
+   - migration/adoption
+   - docs/example
+   - performance/security when applicable
+5. Identify rollback, hard-cut, or remediation answer.
+6. Decide whether to keep, revise, split, or drop the plan.
+
+## Output
+
+- trigger
+- blast radius
+- pre-mortem
+- expanded proof plan
+- keep/revise/drop verdict
+- next pass

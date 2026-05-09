@@ -14,11 +14,20 @@ This is the full macro-theme rescore over all `682` open Slate issues already tr
 
 The `682` count is the frozen `2026-04-02` research snapshot.
 
-Post-snapshot maintainer triage update:
+Gitcrawl live overlay (`2026-05-04`):
 
-- Dylan executed Batch A
-- `54/54` queued issues are now closed
-- live repo open-issue count is `628`
+- current live issue ledger:
+  [gitcrawl-live-open-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-issues/gitcrawl-live-open-ledger.md)
+- current gitcrawl cluster overlay:
+  [gitcrawl-clusters.md](/Users/zbeyens/git/plate-2/docs/slate-issues/gitcrawl-clusters.md)
+- live open mirror: `630` issues, `29` PRs, `659` open threads total
+- frozen rows no longer live-open: `54`, all closed on GitHub
+- new live issues absent from the frozen corpus: `#6051`, `#6053`
+- raw gitcrawl clusters are conservative: `617` total clusters, `28` multi-member, `589` singleton
+
+The old macro-theme counts below still describe the frozen `682`-issue research
+snapshot. Use the gitcrawl overlay for current live-open accounting and
+duplicate/fix-chain discovery.
 
 The point of this file is not to replace the ledger. The point is to collapse the issue-by-issue noise into a small set of ranked architectural themes that can drive v2 requirements, package ownership, and maintainer triage.
 
@@ -34,16 +43,16 @@ The point of this file is not to replace the ledger. The point is to collapse th
 
 ## Theme Ranking
 
-| Theme | Issues | Pain | Recurrence | Arch Depth | Breadth | V2 Leverage | Priority |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Mobile, IME, And Input Semantics | 129 | 4.29 | 2.03 | 3.86 | 4.62 | 4.18 | 21.37 |
-| Performance And Scalability | 13 | 3.77 | 1.92 | 4.53 | 3.89 | 3.92 | 19.58 |
-| React Runtime, Identity, And Subscription Model | 111 | 3.61 | 1.69 | 3.64 | 3.86 | 3.81 | 17.41 |
-| Selection, Focus, And DOM Bridge | 172 | 3.56 | 1.48 | 3.61 | 4.42 | 3.74 | 17.04 |
-| Clipboard, Serialization, And External Formats | 37 | 3.32 | 1.65 | 3.57 | 4.44 | 3.05 | 16.54 |
-| Core Model, Operations, Normalization, And History | 69 | 3.23 | 1.49 | 3.72 | 3.63 | 3.95 | 16.11 |
-| API, Typing, And Extensibility | 33 | 2.64 | 1.42 | 2.94 | 3.59 | 2.39 | 12.67 |
-| Docs, Examples, Support Noise, And Repo Churn | 118 | 2.00 | 1.29 | 1.72 | 3.41 | 0.88 | 8.59 |
+| Theme                                              | Issues | Pain | Recurrence | Arch Depth | Breadth | V2 Leverage | Priority |
+| -------------------------------------------------- | -----: | ---: | ---------: | ---------: | ------: | ----------: | -------: |
+| Mobile, IME, And Input Semantics                   |    129 | 4.29 |       2.03 |       3.86 |    4.62 |        4.18 |    21.37 |
+| Performance And Scalability                        |     13 | 3.77 |       1.92 |       4.53 |    3.89 |        3.92 |    19.58 |
+| React Runtime, Identity, And Subscription Model    |    111 | 3.61 |       1.69 |       3.64 |    3.86 |        3.81 |    17.41 |
+| Selection, Focus, And DOM Bridge                   |    172 | 3.56 |       1.48 |       3.61 |    4.42 |        3.74 |    17.04 |
+| Clipboard, Serialization, And External Formats     |     37 | 3.32 |       1.65 |       3.57 |    4.44 |        3.05 |    16.54 |
+| Core Model, Operations, Normalization, And History |     69 | 3.23 |       1.49 |       3.72 |    3.63 |        3.95 |    16.11 |
+| API, Typing, And Extensibility                     |     33 | 2.64 |       1.42 |       2.94 |    3.59 |        2.39 |    12.67 |
+| Docs, Examples, Support Noise, And Repo Churn      |    118 | 2.00 |       1.29 |       1.72 |    3.41 |        0.88 |     8.59 |
 
 ## Top-Line Take
 
@@ -62,12 +71,14 @@ One macro-taxonomy mistake is worth calling out explicitly: decorations, render-
 This is the top-priority theme in the full corpus. It covers Android, iOS, Firefox Android, Windows IMEs, Hangul, Chinese, Vietnamese, predictive typing, placeholders during composition, empty-state input, and suggestion replacement behavior.
 
 What matters here:
+
 - `101` issues are valid or likely-valid.
 - `97` are cross-package and `27` land directly in `slate-react`.
 - Direct v2 pressure is high: `98` direct, `16` indirect.
 - Severity stays ugly even across the old tail of the corpus.
 
 Representative issues:
+
 - `#6022` Android mark-toggle typing dismisses keyboard and jumps cursor
 - `#5989` Hangul composition breaks when placeholder is visible
 - `#5984` Android backspace requires two presses
@@ -75,6 +86,7 @@ Representative issues:
 - `#5130` Android Firefox predictive typing breaks badly
 
 Why this matters for v2:
+
 - Slate needs a firmer input-event contract.
 - Empty-state and placeholder behavior are part of the hot path, not decorative edge cases.
 - Runtime commits and DOM reconciliation need to be less eager and less state-leaky during composition.
@@ -86,12 +98,14 @@ Why this matters for v2:
 Low count, high leverage. This theme jumps because the issues that do show up are deep, valid, and strongly connected to the same runtime and engine seams.
 
 What matters here:
+
 - `12` issues are valid or likely-valid.
 - Direct v2 pressure is high: `9` direct, `3` indirect.
 - Package pressure spans `slate`, `slate-react`, `slate-history`, and cross-package seams.
 - This is the clearest proof that issue count alone is a bad roadmap ranking tool.
 
 Representative issues:
+
 - `#6038` batch-aware apply engine
 - `#5992` huge-document cut is slow
 - `#5945` large plaintext paste is slow
@@ -99,6 +113,7 @@ Representative issues:
 - `#5131` rerender count on selection changes
 
 Why this matters for v2:
+
 - Performance work should stay benchmark-driven.
 - The leverage is high because the same fixes touch transaction boundaries, subscription breadth, normalization cost, and browser-selection behavior.
 
@@ -109,12 +124,14 @@ Why this matters for v2:
 This is the cleanest `slate-react` architecture cluster in the full corpus. It is about editor instance replacement, rerender breadth, decoration timing, focus initialization, hydration identity, controlled-value drift, and path resolution reliability under React-driven updates.
 
 What matters here:
+
 - `88` issues are valid or likely-valid.
 - `78` land directly in `slate-react` and `27` more are cross-package.
 - Direct v2 pressure is high: `72` direct, `22` indirect.
 - This theme stays large across the entire history of open issues instead of collapsing into recent noise.
 
 Representative issues:
+
 - `#5709` `useSlate` holds old editor instance after recreation
 - `#5697` `ReactEditor.findPath` reliability proposal
 - `#5987` decorate callback updates move the caret
@@ -123,6 +140,7 @@ Representative issues:
 - `#5131` rerenders on selection change
 
 Why this matters for v2:
+
 - This is the strongest argument for a transaction-first engine with a cleaner runtime boundary.
 - The signal is not “make the core React-shaped.”
 - The signal is “give `slate-react` a coherent committed snapshot model, better identity rules, and narrower subscriptions.”
@@ -164,12 +182,14 @@ Why this matters for v2:
 This is the largest theme by raw count. It covers DOM point/path translation, focus restoration, inline-boundary behavior, shadow DOM, zero-width offsets, table and void selection, gesture directionality, and selection repair after editor actions.
 
 What matters here:
+
 - `135` issues are valid or likely-valid.
 - `102` are cross-package, with additional pressure in `slate`, `slate-react`, and ecosystem adapters.
 - Direct v2 pressure is high: `110` direct, `29` indirect.
 - The failures are not cosmetic. Many are cursor-loss, wrong-path, or crash-class issues.
 
 Representative issues:
+
 - `#6034` wrong down-arrow cursor at end of table
 - `#5938` `DOMEditor.findPath` returns no or wrong path
 - `#5760` zero-length text node offset crash
@@ -177,6 +197,7 @@ Representative issues:
 - `#5690` double-click before inline element can crash Slate
 
 Why this matters for v2:
+
 - Slate needs a cleaner runtime ownership model for DOM selection.
 - Selection repair should not depend on brittle incidental render state.
 - Stable identity and explicit commit boundaries should help, but they are not enough by themselves. A real selection bridge still has to exist.
@@ -188,12 +209,14 @@ Why this matters for v2:
 This theme is smaller, but coherent. It covers HTML paste parsing, clipboard fragment collisions, empty-line export, node-type preservation on paste, foreign DOM ingestion, and document-format adapter pressure.
 
 What matters here:
+
 - `31` issues are valid or likely-valid.
 - `21` are cross-package, with meaningful spill into ecosystem adapters and `slate-react`.
 - Direct v2 pressure is mixed but real: `16` direct, `11` indirect.
 - The failures span both concrete bugs and boundary-design questions.
 
 Representative issues:
+
 - `#5630` paste into selected content leaves undeletable block shape
 - `#5328` HTML containing `data-slate-fragment` can break parsing
 - `#5233` clipboard fragment format should be customizable
@@ -201,6 +224,7 @@ Representative issues:
 - `#5253` portable text JSON loading request
 
 Why this matters for v2:
+
 - Serialized-document boundaries and clipboard schema isolation are not solved by runtime cleanup alone.
 - This theme argues for clearer import/export seams and less accidental coupling to Slate’s private fragment format.
 
@@ -211,12 +235,14 @@ Why this matters for v2:
 Lower count than the runtime-boundary themes, but still high leverage. This is the engine-model cluster: operation ownership, normalization debt, history grouping, collaboration edges, and structural boundary semantics.
 
 What matters here:
+
 - `57` issues are valid or likely-valid.
 - Package pressure centers on `slate`, with meaningful spill into `slate-history`, ecosystem layers, and cross-package behavior.
 - Direct v2 pressure is high: `49` direct, `11` indirect.
 - This theme stayed stable across the older corpus instead of fading out.
 
 Representative issues:
+
 - `#5977` custom operations are not handled cleanly
 - `#5874` same node inserted more than once desyncs
 - `#5811` normalization loops explode on custom schema
@@ -224,6 +250,7 @@ Representative issues:
 - `#5587` Grammarly integration breaks history grouping
 
 Why this matters for v2:
+
 - This is where the transaction-first engine actually earns its keep.
 - Operation ownership, normalization debt, identity, and history boundaries need a cleaner model.
 - If v2 does not improve this theme, it is just prettier runtime paint.
@@ -235,12 +262,14 @@ Why this matters for v2:
 This theme mixes real API and typing seams with a fair amount of expectation mismatch.
 
 What matters here:
+
 - `24` issues are valid.
 - Package pressure splits across `slate`, `slate-react`, repo-only surface area, and some cross-package seams.
 - Direct v2 pressure is real but not dominant: `11` direct, `11` indirect.
 - This theme matters more for DX sharpness than for the first engine cut.
 
 Representative issues:
+
 - `#5287` `isBlock` guard behavior is wrong
 - `#5246` Unicode-aware string helpers should be public
 - `#5599` hyperscript shorthand typing/docs pain
@@ -248,6 +277,7 @@ Representative issues:
 - `#5710` document replacement ergonomics
 
 Why this matters for v2:
+
 - There is real pressure for sharper type contracts, clearer ownership boundaries, and better operation/extensibility seams.
 - But this theme also contains a lot of “I expected Slate to behave differently” noise. Do not confuse API clarity with a mandate to grow the core.
 
@@ -258,12 +288,14 @@ Why this matters for v2:
 This is not a v2 architecture theme. It is a maintainer-load theme.
 
 What matters here:
+
 - Validity is mostly triage debt: `32` invalid, `23` stale candidates, `7` likely-invalid, `3` duplicate candidates.
 - `65` issues land in docs-only pressure and `28` land in `site/examples`.
 - Direct v2 pressure is basically nonexistent: `3` direct, `7` indirect.
 - This theme is huge enough to distort perception if it is not explicitly de-weighted.
 
 Representative issues:
+
 - `#6007` NPM and GitHub releases do not match
 - `#5436` sticky toolbar example request
 - `#5403` show-more/show-less example request
@@ -271,6 +303,7 @@ Representative issues:
 - `#5202` clone/install repo issue from old tooling history
 
 Why this matters:
+
 - This theme should not steer v2 architecture.
 - It does justify the triage apparatus: reply posture, maintainer action, duplicate target, linked artifacts, and stale handling are carrying real weight.
 - If this theme is ignored, it will drown the real product and architecture signals.

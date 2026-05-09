@@ -1,6 +1,7 @@
 ---
 title: Slate React cut proof must use real shortcut transport and assert selection
 date: 2026-04-22
+last_updated: 2026-05-04
 category: docs/solutions/logic-errors
 module: Slate v2 slate-react browser editing
 problem_type: logic_error
@@ -9,6 +10,7 @@ symptoms:
   - "A synthetic cut event proved clipboard payload and text deletion but left Slate selection null"
   - "A post-cut clipboard helper re-copied from the editor and perturbed the collapsed selection"
   - "Model-only cut proof missed the visual/browser selection risk"
+  - "Selected block void cut deleted the model node but returned no trace command or repair request"
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
@@ -88,6 +90,26 @@ if (collapsePoint) {
 }
 ```
 
+For selected block voids, also assert the React cut handler returns the same
+model-owned repair contract as expanded cuts. Deleting the void node is not
+enough; the runtime needs a command trace and repair request so the DOM caret
+does not depend on browser luck:
+
+```ts
+const result = applyEditableCut({ editor, event, readOnly: false })
+
+expect(result.command).toEqual({ kind: 'delete-fragment' })
+expect(result.repair).toEqual({
+  focus: true,
+  kind: 'repair-caret',
+  selectionSourceTransition: {
+    preferModelSelection: true,
+    reason: 'model-command',
+    selectionSource: 'model-owned',
+  },
+})
+```
+
 ## Why This Works
 
 The user-facing cut contract is not just "clipboard got data" or "text was
@@ -99,6 +121,8 @@ The full contract is:
 - selected content is removed from model and DOM
 - model selection collapses at the cut start
 - DOM focus/selection is repaired so the caret is visually honest
+- the event runtime returns a non-null command trace and repair request when it
+  performs the model mutation itself
 
 `Editor.pointRef(...)` tracks the intended collapsed point through the deletion.
 `ReactEditor.focus(...)` then syncs the browser selection back to that model
@@ -112,6 +136,8 @@ selection.
   copy from the editor.
 - Cut tests should assert clipboard payload, model/visible text, and collapsed
   Slate selection.
+- Handler-level cut tests should also assert the returned command and repair
+  request when the handler performs model-owned deletion directly.
 - Treat synthetic `ClipboardEvent('cut')` as a narrow React handler diagnostic,
   not full browser editing proof.
 

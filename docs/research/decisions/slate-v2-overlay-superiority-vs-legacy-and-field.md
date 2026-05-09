@@ -93,8 +93,10 @@ Lexical outright.”
 
 ### Tiptap
 
-Slate v2 now beats legacy Slate more convincingly than Tiptap beats
-ProseMirror.
+Slate v2 overlay architecture still beats legacy Slate's `decorate` story.
+Do not read that as a current large-document typing superiority claim:
+fresh 5000/10000-block shell-island comparisons lose steady typing/select lanes
+to legacy chunking-on.
 Tiptap is still the productization and packaging benchmark.
 
 The useful lesson from Tiptap is:
@@ -130,6 +132,7 @@ The honest superiority claim is:
 
 - better than legacy Slate for overlay architecture by a wide margin
 - aligned with the best overlay semantics in the field
+- not currently proven faster than legacy chunking-on for large-document typing
 - still not the single best engine on every axis
 
 That is a stronger and more defensible claim than pretending the field does not

@@ -2,7 +2,7 @@
 title: Lexical read/update extension runtime
 type: source
 status: accepted
-updated: 2026-04-23
+updated: 2026-04-30
 source_refs:
   - ../raw/lexical/repo/packages/lexical-website/docs/intro.md
   - ../raw/lexical/repo/packages/lexical-website/docs/concepts/editor-state.md
@@ -12,6 +12,13 @@ source_refs:
   - ../raw/lexical/repo/packages/lexical-website/docs/extensions/intro.md
   - ../raw/lexical/repo/packages/lexical-website/docs/extensions/design.md
   - ../raw/lexical/repo/packages/lexical/src/LexicalUpdateTags.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalCommands.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalNodeState.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/nodes/LexicalDecoratorNode.ts
+  - /Users/zbeyens/git/lexical/packages/lexical/src/extension-core/types.ts
+  - /Users/zbeyens/git/lexical/packages/lexical-website/docs/extensions/signals.md
 related:
   - docs/research/entities/lexical.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
@@ -38,6 +45,38 @@ runtime architecture.
 - extensions bundle configuration, registration, dependency declaration, and
   runtime output.
 
+## 2026-04-30 Local API Surface Refresh
+
+Direct local source refresh against `/Users/zbeyens/git/lexical` adds sharper
+API evidence for the Slate v2 API review:
+
+- `LexicalEditor` partitions listeners by update, editable, decorator, text
+  content, root, command, mutation, and node transform.
+- command listeners are prioritized, deterministic within priority, and always
+  invoked inside an update context.
+- `LexicalUpdateTags.ts` gives named lifecycle metadata for history, paste,
+  collaboration, scroll, DOM selection, focus, and composition.
+- `LexicalUpdates.ts` enforces synchronous active read/update contexts and
+  applies transforms before DOM reconciliation.
+- Lexical's transform heuristic processes dirty leaves first, then dirty
+  elements, keeps root transform last, and trips an infinite-transform guard.
+- extension-core separates extension `init`, `build`, `register`, and
+  `afterRegistration`, with dependencies, peer dependencies, conflicts, merged
+  config, output, and an abort signal for cleanup.
+- extension signals are the current Lexical answer for reactive extension-local
+  state that should not be rebuilt through coarse React effects.
+- `NodeState` adds schema-like, parse-backed, JSON-serializable ad-hoc node
+  state with default elision and equality hooks.
+- `DecoratorNode` exposes a runtime-owned isolated/rendered node lane with
+  inline, isolated, and keyboard-selectable policy hooks.
+
+Takeaway: the next Slate v2 steal pass should focus less on Lexical's public
+command examples and more on listener partitioning, extension lifecycle,
+typed lifecycle tags, dirty transform scheduling, decorator/atom isolation, and
+extension-local reactive state. The Slate answer should stay `state` / `tx`
+and plain JSON nodes; Lexical's class nodes, `$` helpers, and dispatch-command
+app API remain wrong for raw Slate.
+
 ## What To Steal
 
 ### 1. Read/update lifecycle naming
@@ -48,12 +87,12 @@ the write boundary. `editor.read` is the matching read boundary.
 Slate v2 should use:
 
 ```ts
-editor.read(() => {
-  editor.getSelection()
+editor.read((state) => {
+  state.selection.get()
 })
 
-editor.update(() => {
-  editor.setNodes({ type: 'heading-one' })
+editor.update((tx) => {
+  tx.nodes.set({ type: 'heading-one' })
 })
 ```
 
@@ -122,7 +161,8 @@ The final Slate v2 public runtime should be:
 ```txt
 editor.read
 editor.update
-primitive methods inside update
+state groups inside read
+tx groups inside update
 commit metadata after update
 React runtime consumes live reads and dirty commits
 ```

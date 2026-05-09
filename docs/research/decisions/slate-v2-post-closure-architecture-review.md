@@ -58,9 +58,10 @@ The honest post-closure status is stronger than "promising", but still not
 - The automated mobile claim is scoped. Semantic mobile handles and Playwright
   mobile viewport rows are not raw human-device keyboard, clipboard, glide, or
   voice proof.
-- The React huge-document claim has an accepted caveat: direct model-only
-  typing into an unpromoted middle shell remains slower than the promoted
-  editing corridor.
+- The React huge-document claim is reopened for typing: fresh 5000/10000-block
+  comparisons show current shell islands winning ready/full-document lanes but
+  losing steady typing/select lanes to legacy chunking-on. The kept direction is
+  DOM-present auto by default and explicit shell mode behind proof gates.
 
 ## Harsh Take
 
@@ -87,4 +88,3 @@ Implementation closure for the scoped release claim: high.
 Regression-free browser editing across unknown user behavior: not high enough
 to claim perfection. Browser editing earns confidence through adversarial soak,
 real-device coverage, and dogfooding, not through a closed plan file.
-

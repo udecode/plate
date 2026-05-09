@@ -1,5 +1,15 @@
 # Research Log
 
+## [2026-05-03] maintain | TanStack virtualization source refresh
+
+- refreshed
+  [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
+  against the live `../slate-v2` TanStack-backed implementation
+- replaced the stale "dependency absent / fixed segment" gap with the current
+  decoupling gap: virtualized option types, render branch, materialization,
+  metrics, shell fallback, and keyboard classification are still spread through
+  shared shell/staged rendering files
+
 ## [2026-04-04] bootstrap | initialize docs/research
 
 - moved the agent-reference-wiki pattern from `docs/plans/` to
@@ -223,6 +233,16 @@
   compatibility auto-transactions, internal `Transforms.*` lanes, read-only
   public mirrors, explicit kernel bridges, scoped mobile proof, and the
   accepted huge-document middle-shell caveat
+
+## [2026-04-30] maintain | Lexical API surface refresh for Slate v2 steal review
+
+- refreshed the Lexical read/update source summary against local
+  `/Users/zbeyens/git/lexical`
+- added focused evidence for listener partitions, prioritized command handlers,
+  update tags, dirty transform scheduling, extension lifecycle/dependencies,
+  extension signals, NodeState, and DecoratorNode policy hooks
+- narrowed the Slate v2 takeaway: steal lifecycle/runtime ideas, not Lexical's
+  class-node model, `$` public helpers, or dispatch-command app API
 
 ## [2026-04-15] full | plugin input rules documentation pattern landscape
 
@@ -460,3 +480,58 @@
 - kept the conclusion unchanged:
   Slate v2 has strong runtime-id subscription proof, but source-scoped
   recompute and annotation/widget perf still need lower-level runtime work
+
+## [2026-04-29] maintain | Slate v2 Editor namespace hard-cut review
+
+- corrected
+  [slate-v2-architecture-verdict-after-human-stress-sweep.md](docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md)
+  so it no longer describes primitive editor methods inside `editor.update` as
+  the current public power API
+- corrected
+  [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  so its public target uses grouped `state` / `tx` methods instead of flat
+  primitive editor methods inside lifecycle callbacks
+- kept
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  as the current naming authority for public reads, writes, and extension
+  namespaces
+
+## [2026-04-29] maintain | Slate v2 Editor namespace Pass 3 refresh
+
+- refreshed
+  [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
+  for the public `Editor` value hard-cut decision
+- recorded `tx.value.replace(input)` as the public whole-document replacement
+  target and called out that live `../slate-v2` still needs to implement it
+- updated
+  [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
+  so its public API target includes transaction-owned value replacement
+
+## [2026-04-30] maintain | collaborative annotation channel decision
+
+- added a Slate v2 annotation-channel decision:
+  [slate-v2-collaborative-annotation-channels.md](docs/research/decisions/slate-v2-collaborative-annotation-channels.md)
+- accepted external annotation channels as the raw Slate default for
+  comment-only collaboration, with document-embedded ids left as an adapter or
+  product choice
+
+## [2026-05-01] maintain | Slate v2 large-document perf claim correction
+
+- corrected the Slate v2 perf claim after fresh 5000/10000-block
+  shell-island-vs-legacy-chunking benchmarks showed current shell islands win
+  ready/full-document lanes but lose steady typing/select lanes to legacy
+  chunking-on
+- updated the live Slate v2 docs and affected research decisions to point at
+  the accepted next owner:
+  DOM-present auto by default, stronger commit dirtiness, and explicit shell
+  mode behind browser/native proof
+
+## [2026-05-03] maintain | TanStack Virtual / GitHub large-surface virtualization evidence
+
+- added
+  [tanstack-virtual-and-github-large-surface-virtualization.md](docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md)
+  for the Slate v2 virtualization ralplan
+- recorded the current conclusion:
+  TanStack Virtual is a good viewport range engine for an experimental
+  virtualized mode, but Slate must keep DOM coverage, selection, copy/paste,
+  IME, mobile, browser-find, and a11y policy in Slate-owned code

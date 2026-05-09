@@ -782,7 +782,6 @@ Files changed:
 - `../slate-v2/docs/walkthroughs/06-saving-to-a-database.md`
 - `../slate-v2/docs/walkthroughs/09-performance.md`
 - `../slate-v2/docs/api/nodes/element.md`
-- `../slate-v2/docs/concepts/xx-migrating.md`
 - `../slate-v2/packages/slate/test/public-surface-contract.ts`
 
 Verification:

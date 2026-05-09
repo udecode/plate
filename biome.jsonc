@@ -191,6 +191,56 @@
           }
         }
       }
+    },
+    {
+      "includes": ["benchmarks/editor/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noLabelWithoutControl": "off",
+            "noPositiveTabindex": "off",
+            "useButtonType": "off"
+          },
+          "complexity": {
+            "noStaticOnlyClass": "off",
+            "useLiteralKeys": "off",
+            "useOptionalChain": "off"
+          },
+          "correctness": {
+            "noQwikUseVisibleTask": "off",
+            "noUnusedFunctionParameters": "off",
+            "noUnusedPrivateClassMembers": "off",
+            "noUnusedVariables": "off"
+          },
+          "nursery": {
+            "noEmptySource": "off"
+          },
+          "performance": {
+            "useTopLevelRegex": "off"
+          },
+          "style": {
+            "noDescendingSpecificity": "off",
+            "noHeadElement": "off",
+            "noParameterProperties": "off",
+            "useAtIndex": "off",
+            "useCollapsedElseIf": "off",
+            "useConsistentArrayType": "off",
+            "useConsistentMemberAccessibility": "off",
+            "useConsistentTypeDefinitions": "off",
+            "useNodejsImportProtocol": "off",
+            "useReadonlyClassProperties": "off",
+            "useTemplate": "off"
+          },
+          "suspicious": {
+            "noAlert": "off",
+            "noConsole": "off",
+            "noDuplicateJsxProps": "off",
+            "noEvolvingTypes": "off",
+            "noUnassignedVariables": "off",
+            "useIterableCallbackReturn": "off"
+          }
+        }
+      }
     }
   ]
 }

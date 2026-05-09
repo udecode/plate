@@ -1,0 +1,439 @@
+---
+description: 'Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate v2 coverage mapping, and copy/refactor/create decisions.'
+argument-hint: '[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]'
+disable-model-invocation: true
+---
+
+# Editor Test Harvester
+
+Use this skill when mining another editor repository for tests worth stealing:
+Lexical, ProseMirror, CodeMirror, TipTap, Monaco, Quill, or any local clone under
+`..`. The job is not to clone their framework. The job is to extract portable
+editor behavior proof and turn it into better Slate v2 coverage.
+
+This follows the ClawSweeper method and the ralplan confidence model:
+source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
+passes, narrow claims, then implementation only when asked.
+
+## Source Of Truth
+
+Read these first:
+
+1. The target editor repo, preferably a local checkout like `../lexical`.
+2. `../slate-v2` current test files and package scripts.
+3. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
+4. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
+   when a test exists because of a known upstream bug.
+
+Never browse GitHub files. If the target is `owner/repo` and the checkout is
+missing, clone it to `../repo-name`.
+
+## Core Rules
+
+- Build a complete target test-file inventory before reading favorite files.
+- Store harvest artifacts in one stable repo folder:
+  `docs/editor-test-harvester/<repo>/`. Do not create dated report files under
+  `docs/plans/` for normal harvest output.
+- Reruns are idempotent. Read the existing repo folder first, rerun the source
+  inventory, update the same files in place, and record new/removed source rows
+  instead of creating a duplicate report.
+- Every target test file ends in exactly one category: portable, skip, harness,
+  product-shell, or uncertain.
+- Every skip gets a reason. "Looks internal" is too vague.
+- Preserve the behavior invariant, not the upstream API shape.
+- Do not paste upstream test code verbatim. Write the strongest local Slate v2
+  proof for the invariant, with source path references.
+- Prefer DRY Slate coverage: if a related test exists, strengthen or split it
+  instead of creating a duplicate.
+- Browser, mobile, selection, clipboard, and IME claims need honest runtime
+  proof. A jsdom composition test does not prove mobile/IME behavior.
+- Do not edit `../slate-v2` unless the user asks for apply/copy/fix execution.
+- No GitHub comments, labels, commits, pushes, or PRs unless explicitly asked.
+- A single-pass matrix is a first-pass harvest, not a comprehensive harvest.
+- Do not call a harvest comprehensive unless the pass schedule is complete, the
+  score gates pass, and the report includes a full inventory appendix.
+- Use `pending` while more autonomous harvest/review passes remain. Use `done`
+  only after the closure score passes or when the user explicitly asked for a
+  quick/first-pass report and the report says so in the verdict.
+
+## Completion State
+
+For a normal harvest, create or update a completion file:
+
+```text
+tmp/completion-checks/editor-test-harvest-<repo>.md
+```
+
+Use:
+
+```md
+status: pending
+plan: docs/editor-test-harvester/<repo>/report.md
+current_pass: <pass-name>
+current_pass_status: in_progress
+current_pass_skill: .agents/skills/editor-test-harvester/SKILL.md
+next_pass: <next-pass>
+```
+
+Set `done` only when:
+
+- total score is `>= 0.92`;
+- no dimension is below `0.85`;
+- inventory count equals classified count;
+- every runnable test file is either test-name indexed, read, or explicitly
+  skipped as non-behavior with a reason;
+- every portable and portable-mixed source has at least one behavior row or a
+  recorded reason why its rows were rejected;
+- every `covered`, `refactor-existing`, `create-new`, `copy-now`, and `defer`
+  action has a Slate v2 owner or explicit gap;
+- every create/copy/refactor row has an implementation target and verification
+  command;
+- the report has a full inventory appendix or a linked inventory file.
+
+If any gate fails but more work is possible, keep `pending` and write
+`tmp/continue.md` with the next harvest pass. Use `blocked` only when the target
+repo, Slate v2 checkout, required browser/device tooling, or a user decision is
+missing and no useful autonomous pass remains.
+
+## Confidence Score
+
+Score each harvest pass from `0.00` to `1.00`.
+
+| Dimension | Weight |
+| --- | ---: |
+| Inventory completeness | 0.20 |
+| Behavior extraction depth | 0.20 |
+| Skip precision and negative controls | 0.15 |
+| Slate coverage mapping accuracy | 0.20 |
+| Actionability of copy/refactor/create plan | 0.15 |
+| Provenance and reproducibility | 0.10 |
+
+Score caps:
+
+- Inventory completeness cannot exceed `0.75` unless the report records the
+  exact inventory command, total count, classified count, and unresolved count.
+- Inventory completeness cannot exceed `0.90` unless every test file path appears
+  in a full inventory appendix or linked inventory file.
+- Behavior extraction depth cannot exceed `0.75` if portable files were routed
+  only by file name.
+- Behavior extraction depth cannot exceed `0.85` unless all portable and
+  portable-mixed runnable files have test-name extraction with line pointers.
+- Skip precision cannot exceed `0.80` unless every skipped file or skip family
+  has a concrete reason and at least one negative-control example was read.
+- Slate coverage mapping cannot exceed `0.80` unless the report records the
+  `../slate-v2` search commands and current owner files/tests for covered and
+  refactor-existing rows.
+- Actionability cannot exceed `0.80` unless every create/refactor/copy row names
+  a target test file, proof kind, and focused verification command.
+- Provenance cannot exceed `0.80` when issue/PR-linked upstream regression tests
+  are copied without ClawSweeper-style exact thread or local source rationale.
+- The total score cannot exceed `0.88` if the report has no pass-state ledger.
+- The total score cannot exceed `0.90` if the full inventory appendix is absent.
+
+Completion threshold:
+
+- total score `>= 0.92`;
+- no dimension below `0.85`;
+- no `uncertain` test files remain;
+- no portable-mixed file remains unexamined;
+- no create/refactor/copy row lacks a target owner;
+- no browser/IME/mobile claim is based only on jsdom or synthetic model tests;
+- pass-state ledger proves every pass completed before closure.
+
+Below threshold, the report can still be useful, but it must say
+`first-pass`, `partial`, or `pending` and name the next owner.
+
+## Pass Schedule
+
+Run harvests as passes, not one giant skim:
+
+1. Intake and boundary pass:
+   - target repo path or clone target;
+   - surfaces in scope and explicit non-goals;
+   - report-only vs apply;
+   - browser/device availability.
+2. Inventory pass:
+   - find package manager and test harnesses;
+   - build the full test inventory;
+   - split actual runnable tests from fixtures/support files;
+   - write every inventory row to the appendix with an initial category.
+3. Test-name extraction pass:
+   - extract `describe` / `it` / `test` names for every runnable portable,
+     portable-mixed, and uncertain file;
+   - for huge files, index test names first, then read targeted ranges;
+   - no portable-mixed file may stay summarized only by file name.
+4. Classification pressure pass:
+   - challenge skips and product-shell routing;
+   - read negative-control examples from each large skip family;
+   - route every file to portable, portable-mixed, skip, harness,
+     product-shell, or defer.
+5. Behavior extraction pass:
+   - turn source tests into behavior invariants;
+   - attach source file, line, test name, tag, proof kind, browser/device
+     requirements, and issue/PR rationale when present.
+6. Slate coverage mapping pass:
+   - search `../slate-v2` by behavior keywords and adjacent concepts;
+   - map to exact current Slate tests, browser stress rows, docs, or explicit
+     gaps;
+   - do not use old plans as current coverage proof.
+7. Action planning pass:
+   - assign `covered`, `refactor-existing`, `create-new`, `copy-now`, `defer`,
+     or `skip`;
+   - for every non-covered row, name target package/browser file, proof kind,
+     and verification command.
+8. Ecosystem synthesis pass:
+   - state what mechanism Slate should steal, reject, or deliberately diverge
+     from;
+   - include browser/runtime/testing strategy, not just a source list.
+9. Closure review pass:
+   - score all dimensions with evidence;
+   - record pass-state ledger;
+   - list open gaps and next owner;
+   - set completion `done` only if gates pass.
+
+Pass-state ledger rows must include:
+
+- pass name;
+- status: `pending`, `in_progress`, or `complete`;
+- evidence added;
+- report delta;
+- open issues;
+- next owner.
+
+## Discovery Workflow
+
+1. Resolve the target repo:
+
+   ```bash
+   test -d ../lexical || git clone https://github.com/facebook/lexical.git ../lexical
+   ```
+
+2. Resolve the stable harvest directory:
+
+   ```bash
+   repo_key="$(basename ../lexical | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')"
+   report_dir="docs/editor-test-harvester/${repo_key}"
+   mkdir -p "$report_dir"
+   ```
+
+   For `owner/repo` targets, use the cloned repo basename as `<repo>`. If
+   `report.md`, `inventory.md`, or `test-index.md` already exists, read them
+   before inventory and treat the run as an update. The rerun must look for new
+   and removed test files in the target checkout, then rewrite the same stable
+   files.
+
+3. Capture repo basics without starting with git state:
+
+   ```bash
+   rg --files ../lexical | rg '(^|/)(package.json|bun.lock|pnpm-lock.yaml|yarn.lock|vitest|jest|playwright|wdio|cypress)'
+   ```
+
+4. Build the exhaustive test inventory:
+
+   ```bash
+   rg --files ../lexical \
+     | rg '(^|/)(__tests__|test|tests|spec|e2e|integration|playwright|cypress|wdio|fixtures)(/|$)|\.(test|spec)\.[cm]?[jt]sx?$' \
+     | rg -v '(^|/)(dist|build|coverage|node_modules|vendor|fixtures/generated|__snapshots__)(/|$)'
+   ```
+
+5. Classify every inventory row and record it in the appendix:
+
+   - `portable`: proves framework-agnostic editor behavior.
+   - `skip`: framework internals, command registry, node-class mechanics,
+     product UI, build tooling, or test harness only.
+   - `harness`: reusable testing technique, but no product behavior assertion.
+   - `product-shell`: app/demo behavior outside raw editor substrate.
+   - `uncertain`: needs a read before routing.
+
+6. Extract test names for all runnable portable, portable-mixed, and uncertain
+   files:
+
+   ```bash
+   rg -n "(describe|it|test)\\(" <target-test-files>
+   ```
+
+7. Read all portable and uncertain files. For huge files, index test names first,
+   then read the relevant ranges.
+8. Extract behavior rows. Use behavior words, not upstream class names.
+9. Search `../slate-v2` for equivalent coverage using behavior keywords and
+   adjacent concepts. Do not stop at exact upstream names.
+10. Assign one Slate action per portable row:
+
+   - `covered`: current Slate v2 test fully proves the invariant.
+   - `refactor-existing`: related coverage exists but needs split, rename,
+     stronger assertions, or browser proof.
+   - `create-new`: no adequate coverage; propose the target test location.
+   - `copy-now`: user asked to apply and the invariant is safe to implement now.
+   - `defer`: requires unavailable raw device/browser/tooling proof.
+   - `skip`: after reading, it is not portable enough.
+
+## Portable Test Taxonomy
+
+Use these tags consistently:
+
+- `ime-composition`
+- `beforeinput-input`
+- `composition-selection-repair`
+- `selection-dom-mapping`
+- `clipboard-paste`
+- `drag-drop`
+- `history-undo-redo`
+- `normalization-schema`
+- `delete-backspace`
+- `insert-fragment`
+- `marks-inline`
+- `void-atom`
+- `tables-grid`
+- `decorations-overlays`
+- `collaboration-remote`
+- `performance-large-doc`
+- `accessibility-keyboard`
+- `serialization-parsing`
+- `browser-engine`
+- `mobile-device`
+- `focus-blur`
+- `shadow-dom`
+
+Portable examples:
+
+- IME composition through marked text, decorations, void boundaries, and undo.
+- Selection mapping around zero-width text, voids, inline boundaries, and tables.
+- Browser-specific selection behavior such as Firefox multi-range selections.
+- Native paste, drag, drop, beforeinput delete, and compositionend ordering.
+- Undo granularity across composition, paste, delete, and fragment insertions.
+
+Skip examples:
+
+- React/Vue/Svelte integration internals.
+- Lexical node-class lifecycle or ProseMirror plugin object mechanics.
+- Command registry wiring with no observable editor behavior.
+- Test utility tests that prove only the upstream harness.
+- Product demo chrome, menus, shortcuts, or app-specific UX policy.
+
+## Output Shape
+
+For report-only runs, write a durable report under:
+
+```text
+docs/editor-test-harvester/<repo>/report.md
+```
+
+Use stable companion files in the same directory:
+
+```text
+docs/editor-test-harvester/<repo>/inventory.md
+docs/editor-test-harvester/<repo>/test-index.md
+```
+
+Do not include the date in file names. Put run dates, inventory commands, source
+checkout path, and source revision/provenance inside the report instead. If a
+previous harvest exists, rewrite these files in place and add a rerun/update
+note that names newly discovered and removed target test files.
+
+Use this shape:
+
+```markdown
+# Editor Test Harvest: <repo>
+
+status: pending|first-pass done|done
+score: 0.xx
+
+## Inventory
+
+- target: `<path>`
+- test files found: N
+- portable: N
+- skipped: N
+- harness/product/uncertain: N
+
+## Confidence Score
+
+| Dimension | Score | Evidence | Cap hit |
+| --- | ---: | --- | --- |
+
+## Pass-State Ledger
+
+| Pass | Status | Evidence added | Report delta | Open issues | Next owner |
+| --- | --- | --- | --- | --- | --- |
+
+## Matrix
+
+| Source | Test | Tag | Invariant | Proof kind | Slate coverage | Action |
+| --- | --- | --- | --- | --- | --- | --- |
+| `../lexical/...` | `test name` | `ime-composition` | ... | browser/unit/raw-device | `../slate-v2/...` or none | covered/refactor-existing/create-new/defer |
+
+## Skips
+
+| Source | Reason |
+| --- | --- |
+| `../lexical/...` | Framework node-class invariant, no portable editor behavior. |
+
+## Next Slice
+
+1. Refactor existing ...
+2. Create new ...
+3. Defer raw-device ...
+
+## Full Inventory Appendix
+
+| Source | Runnable | Category | Reason | Test-name extraction |
+| --- | --- | --- | --- | --- |
+```
+
+If the inventory appendix is too large, write it to:
+
+```text
+docs/editor-test-harvester/<repo>/inventory.md
+```
+
+Then link it from the main report. Do not omit it.
+
+Write the extracted portable/portable-mixed test-name index to:
+
+```text
+docs/editor-test-harvester/<repo>/test-index.md
+```
+
+For apply runs, edit `../slate-v2` tests only after the matrix exists. Keep the
+implementation slice small enough to verify. Source comments are useful only
+when they explain the behavior being protected; do not make tests read like
+upstream changelogs.
+
+## Verification
+
+Report-only verification:
+
+```bash
+rg --files <target> | rg '<test inventory pattern>' | wc -l
+rg -n "Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" docs/editor-test-harvester/<repo>/report.md
+test -f docs/editor-test-harvester/<repo>/inventory.md
+test -f docs/editor-test-harvester/<repo>/test-index.md
+bun run completion-check -- --file tmp/completion-checks/editor-test-harvest-<repo>.md
+```
+
+Implementation verification in `../slate-v2`:
+
+- Run the focused package or browser test that owns the new proof.
+- Run `bun check` before claiming the applied slice is closed.
+- For release-quality browser claims, use `bun check:full`.
+- Use raw mobile proof only when real device/Appium artifacts exist; semantic
+  mobile handles and Playwright mobile viewports are not raw-device proof.
+
+## ClawSweeper Use
+
+Use ClawSweeper as the model for provenance work. If a test points at an
+upstream issue, PR, browser bug, or closed-thread rationale, apply the
+ClawSweeper bar: exact thread, exact behavior, no speculative closure claim, and
+no broad claim without current source proof.
+
+When local issue archaeology is useful, use the gitcrawl command surface through
+that ClawSweeper discipline:
+
+```bash
+gitcrawl doctor --json
+gitcrawl search issues "<behavior phrase>" -R <owner/repo> --state all --json number,title,state,url --limit 20
+gitcrawl sync <owner/repo> --numbers <issue-or-pr-number> --include-comments --with pr-details --json
+```
+
+Treat gitcrawl as provenance and candidate generation only. The target repo test
+inventory still owns coverage accounting.

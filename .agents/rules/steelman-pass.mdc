@@ -1,0 +1,60 @@
+---
+description: Conditional review pass that challenges major decisions with the strongest fair objection, tradeoff tension, alternatives, and adoption answer.
+argument-hint: '[decision/plan]'
+disable-model-invocation: true
+---
+
+# Steelman Pass
+
+Handle $ARGUMENTS.
+
+Use this to prevent "changed for no reason" plans.
+
+## Use When
+
+- A plan changes public API, architecture, package boundaries, behavior contracts,
+  migration paths, or testing gates.
+- A major decision has only a happy-path justification.
+- User adoption, maintainer trust, or migration cost matters.
+
+## Do Not Use When
+
+- The change is tiny, mechanical, and already proven.
+- The active review skill already recorded a fresh accepted steelman row for the
+  same decision.
+
+## Completion-State Pass Fields
+
+```md
+status: pending
+current_pass: steelman-pass
+current_pass_status: in_progress
+current_pass_skill: .agents/skills/steelman-pass/SKILL.md
+current_pass_scope: <decision>
+current_pass_trigger: major decision needs challenge
+```
+
+## Procedure
+
+For each major decision, record:
+
+1. Decision.
+2. Strongest fair objection in user language.
+3. Steelman antithesis: best argument for not doing it.
+4. Tradeoff tension: what gets worse or more expensive.
+5. Viable alternatives.
+6. Why the chosen option wins.
+7. Adoption/migration answer.
+8. Docs/example answer.
+9. Proof required.
+10. Verdict: `keep`, `revise`, `drop`, or `unresolved`.
+
+Do not accept "cleaner" as the only payoff.
+
+## Output
+
+- challenge rows
+- accepted revisions
+- dropped choices
+- unresolved decisions
+- next pass

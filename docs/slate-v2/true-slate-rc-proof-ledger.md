@@ -73,17 +73,19 @@ These are the current reads:
 - React rerender locality under overlay churn has a command-backed owner
 - huge-document overlay cost and corridor-first posture have a command-backed
   owner
-- direct v2-vs-legacy huge-document perf superiority is closed for important
-  lanes:
+- direct v2-vs-legacy huge-document perf superiority is open for typing:
   - `bench:react:huge-document:legacy-compare:local` directly compares legacy
     chunking-on, legacy chunking-off, and v2
-  - the 5000-block direct comparison is the proof gate and is green on
-    important lanes
+  - the 5000-block direct comparison is the release proof gate
   - 1000-block runs are smoke/debug only and do not close the lane
-  - direct model-only typing into an unpromoted middle shell is an accepted
-    caveat, not the user editing corridor
-  - promoted middle-block typing is the user editing corridor and beats
-    chunking-on
+  - current shell islands win startup and full-document operations
+  - current shell islands lose steady typing/select lanes and select-all against
+    legacy chunking-on
+  - direct model-only typing into an unpromoted middle shell is not an accepted
+    superiority caveat anymore
+  - promoted middle-block typing is not a closed superiority claim
+  - the next accepted direction is DOM-present auto first, with shell mode
+    explicit until browser/native proof passes
 - read/update public lifecycle proof is live:
   - public hard-cut contracts guard examples and public teaching paths
   - primitive method runtime contracts cover implicit target behavior

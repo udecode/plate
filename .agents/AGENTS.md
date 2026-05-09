@@ -43,11 +43,15 @@ Use those skills when relevant:
 
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `complete-plan` for generating a project continuation prompt from the active plan for Stop-hook continuation
+- `ralph` for generating a project continuation prompt from the active plan for Stop-hook continuation
+- `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
+- `plate-ralplan` / `slate-ralplan` for pass-gated architecture/spec planning before execution
+- `ralplan-creator` for creating new domain-specific `*-ralplan` skills from the shared skeleton
 - `tdd`
 - `ce-review` when doing a code review
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/editor-spec.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
+- @.agents/rules/plate-ralplan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
 
 Plate-specific CE exclusions:
 

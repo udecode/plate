@@ -247,15 +247,18 @@ Current tranche-7 read:
 - mobile proof is scoped by transport claim metadata and direct-device
   descriptor classification
 - final integration/build/type/lint/perf closure is the active owner
-- stronger slate-react perf-superiority is command-owned and closed for the
-  huge-doc runtime lane:
+- stronger slate-react perf-superiority is command-owned and open for typing:
   - `REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local`
-  - the 5000-block proof gate is green on important lanes
+  - the 5000-block proof gate is red for current shell-island typing/select
+    lanes against legacy chunking-on
   - 1000-block runs are smoke/debug only and do not close the lane
-  - direct model-only typing into an unpromoted middle shell is the accepted
-    caveat
-  - promoted middle-block typing is the user editing corridor and beats
-    chunking-on
+  - current shell islands still win ready and full-document operations
+  - direct model-only typing into an unpromoted middle shell is not an accepted
+    superiority caveat anymore
+  - promoted middle-block typing is not a closed superiority claim
+  - the accepted next owner is two-layer auto: DOM-present as the safe
+    baseline, with shell/occlusion escalation explicit or proof-disabled until
+    browser/native/a11y/collab gates pass
 
 ### [ ] Tranche 8: RC Ledger Closure
 

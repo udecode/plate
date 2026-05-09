@@ -2264,7 +2264,7 @@ bunx turbo build --filter=./packages/slate --force
 bunx turbo typecheck --filter=./packages/slate --force
 bun run bench:core:observation:compare:local
 bun run bench:core:huge-document:compare:local
-rg -n "editor\\.\\w+\\s*=|with[A-Z][A-Za-z]* = editor|with[A-Z][A-Za-z]*\\(createEditor|override command|override the behaviors|methods to override|schema-specific-instance-methods-to-override|Callback Method|accessor seam" docs/concepts docs/walkthroughs docs/api -g '!CHANGELOG.md' -g '!xx-migrating.md'
+rg -n "editor\\.\\w+\\s*=|with[A-Z][A-Za-z]* = editor|with[A-Z][A-Za-z]*\\(createEditor|override command|override the behaviors|methods to override|schema-specific-instance-methods-to-override|Callback Method|accessor seam" docs/concepts docs/walkthroughs docs/api -g '!CHANGELOG.md'
 ```
 
 Results:
@@ -2326,8 +2326,6 @@ Checkpoint:
 - risks:
   - raw JavaScript method assignment still works and can be cut harder after
     React/Yjs package migration owners are known
-  - `xx-migrating.md` is still stale legacy migration prose and should be cut
-    or rewritten in a docs cleanup lane
   - browser editing regressions remain open until Batch 7 and Batch 8
 - earliest gates:
   - safety: add React target-runtime contract rows that prove UI commands import

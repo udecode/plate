@@ -107,16 +107,23 @@ This file is the control plan for the whole program.
 
 ## Live Triage Status
 
-The research corpus is still the frozen `2026-04-02` `682`-issue snapshot.
+The original research corpus is the frozen `2026-04-02` `682`-issue snapshot.
+Keep it as historical evidence, not current open-issue accounting.
 
-Post-snapshot maintainer triage update:
+Gitcrawl rebuild update (`2026-05-04`):
 
-- Dylan executed Batch A from [triage-close-queue.md](/Users/zbeyens/git/plate-2/docs/slate-issues/triage-close-queue.md)
-- Batch A queue size: `54`
-- Batch A issues still open: `0`
-- live repo open-issue count after Batch A: `628`
+- live open mirror: `630` issues and `29` PRs, `659` open threads total
+- comments/reviews hydrated: `1856`
+- embeddings: `659`
+- clusters: `617` total, `28` multi-member, `589` singleton
+- frozen rows no longer live-open: `54`, all closed on GitHub
+- live issues missing from the frozen corpus: `#6051`, `#6053`
 
-That means the analysis docs should keep their `682`-issue corpus numbers, but Batch A should no longer be described as pending work.
+Use [gitcrawl-live-open-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-issues/gitcrawl-live-open-ledger.md)
+for current open issue accounting and
+[gitcrawl-rebuild-report.md](/Users/zbeyens/git/plate-2/docs/slate-issues/gitcrawl-rebuild-report.md)
+for gaps. Keep [open-issues-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-issues/open-issues-ledger.md)
+as the frozen historical corpus until it is fully archived or replaced.
 
 ## Pilot Calibration
 

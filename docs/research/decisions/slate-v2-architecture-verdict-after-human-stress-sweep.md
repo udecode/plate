@@ -2,7 +2,7 @@
 title: Slate v2 architecture is right direction but not absolute or battle-tested yet
 type: decision
 status: accepted
-updated: 2026-04-28
+updated: 2026-04-29
 source_refs:
   - docs/slate-v2/absolute-architecture-release-claim.md
   - docs/slate-v2/release-readiness-decision.md
@@ -16,6 +16,7 @@ source_refs:
   - docs/solutions/developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md
   - tmp/completion-check.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
+  - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/research/decisions/slate-v2-post-closure-architecture-review.md
   - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
@@ -51,10 +52,11 @@ The architecture direction is the right one:
 
 - Slate model and operations remain the data and collaboration truth.
 - `editor.read` / `editor.update` are the public lifecycle.
-- primitive editor methods inside `editor.update` are the power API.
+- grouped `state` / `tx` methods are the normal public read/write API.
+- primitive write registries are runtime-owned internals, not author-facing API.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,
   DOM repair, and proof.
-- extensions compose through `editor.extend`.
+- extensions compose through `state` / `tx` namespaces and `editor.extend`.
 - React consumes live reads, dirty ids/ranges, commits, projection dirtiness,
   and capability-checked DOM text sync.
 - browser claims require generated model + DOM + selection + commit proof.
@@ -177,11 +179,12 @@ can own the same fact.
 The target DX is strong.
 
 Keeping Slate's JSON-like model plus operation stream is the correct migration
-magnet for Plate and Yjs. The hard cut away from public mutable fields and
-primary `Transforms.*` usage is also correct. Public selectors staying
-model-truth-only is the right app DX. Extension methods over `editor.update`
-are cleaner than method monkeypatching, and less ceremonial than making
-Tiptap-style `focus().chain().run()` the default mental model.
+magnet for Plate and Yjs. The hard cut away from public mutable fields,
+primary `Transforms.*` usage, and flat public editor writes is also correct.
+Public selectors staying model-truth-only is the right app DX. Extension
+namespaces on `state` and `tx` are cleaner than method monkeypatching, and less
+ceremonial than making Tiptap-style `focus().chain().run()` the default mental
+model.
 
 The weak point is not the public idea. It is migration proof. Plate and Yjs
 need real adapter lanes and contract tests, not confidence from core tests

@@ -1,0 +1,68 @@
+---
+description: Conditional pass to lock current behavior with focused proof before risky edits, cleanup, refactors, browser fixes, or parity-sensitive work.
+argument-hint: '[behavior/scope]'
+disable-model-invocation: true
+name: regression-lock-pass
+metadata:
+  skiller:
+    source: .agents/rules/regression-lock-pass.mdc
+---
+
+# Regression Lock Pass
+
+Handle $ARGUMENTS.
+
+Use this before changing behavior-sensitive code. The job is to make the current
+contract observable before edits.
+
+## Use When
+
+- A bug fix, refactor, cleanup, migration, or browser fix could change behavior.
+- The active plan needs proof before a risky pass starts.
+- A regression class has been reported and must not be reintroduced.
+- Existing tests are too broad, too slow, or absent for the behavior at risk.
+
+## Do Not Use When
+
+- The task is docs-only and has no executable behavior.
+- The behavior is intentionally undefined and the current pass is defining it.
+- A targeted proof already exists and was run in the current slice.
+
+## Completion-State Pass Fields
+
+```md
+status: pending
+current_pass: regression-lock-pass
+current_pass_status: in_progress
+current_pass_skill: .agents/skills/regression-lock-pass/SKILL.md
+current_pass_scope: <behavior/scope>
+current_pass_trigger: risky change needs behavior lock
+```
+
+Close with `current_pass_status: complete` only after the proof is recorded.
+
+## Procedure
+
+1. Name the behavior that must not change.
+2. Pick the smallest honest proof:
+   - unit test
+   - integration test
+   - browser replay
+   - visual proof
+   - static contract check
+   - manual proof only when automation is genuinely not practical
+3. Prefer fast driver proofs during iteration.
+4. Run the proof before editing when possible.
+5. If adding a test, make it fail for the missing/at-risk behavior when that is
+   practical; otherwise document why the proof is characterization-only.
+6. Record the command or proof artifact in the active plan.
+7. Set the next pass to the pass that will safely edit behavior.
+
+## Output
+
+- protected behavior
+- proof type
+- command/artifact
+- result
+- known gaps
+- next pass

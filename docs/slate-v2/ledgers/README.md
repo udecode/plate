@@ -20,6 +20,7 @@ Status words:
 
 Current live ledgers:
 
+- [fork-issue-dossier.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/fork-issue-dossier.md)
 - [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/example-parity-matrix.md)
 - [legacy-playwright-example-tests.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/legacy-playwright-example-tests.md)
 - [legacy-slate-history-test-files.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/legacy-slate-history-test-files.md)

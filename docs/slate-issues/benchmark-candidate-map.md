@@ -58,9 +58,21 @@ Do not turn this into one giant benchmark lane. Keep it split by operation famil
 - benchmark readiness: `ready-with-minor-setup`
 - public benchmark seam: huge-document cut benchmark
 
-### Why This Is Not Ready Yet
+### Current Proof
 
-The user pain is obvious, but the workload still needs to be normalized into a stable harness lane instead of living as one anecdotal report.
+The workload now has a stable harness lane in
+`../slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+The issue-size gate is:
+
+```bash
+SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun ./scripts/benchmarks/slate/5945-large-plaintext-paste.mjs
+```
+
+The current proof supports `Improves #5992`, not `Fixes #5992`: exact
+whole-child range delete lowers to one `replace_children` operation and meets
+the accepted warm interaction benchmark target, and browser stress covers a
+5,000-block huge-document cut row. Exact closure still needs maintainer
+acceptance that the benchmark plus browser stress matches the original repro.
 
 ### Minimal Workload Shape
 
@@ -78,7 +90,10 @@ The user pain is obvious, but the workload still needs to be normalized into a s
 
 ### Current Blocker
 
-The exact harness shape is not yet extracted into an existing perf file. It needs a stable fixture and a public-operation sequence that matches the real report.
+The harness exists, the warm interaction target is green, and a browser
+huge-document cut row exists. Exact closure now depends on whether maintainers
+accept the cold snapshot allocation row as startup/editor-preparation cost and
+the 5,000-block browser stress row as sufficient user-path coverage.
 
 ### Best Next Step
 
@@ -273,11 +288,11 @@ The workload is concrete and user-visible, and the thread keeps pointing back to
 
 ### Current Blocker
 
-The existing perf harness still needs a lane that matches this older clipboard-heavy workload more directly.
+The package benchmark lane now covers populated-editor copy and middle paste at 10,000-block scale. Exact browser closure still needs the historical full-book/user-path repro.
 
 ### Best Next Step
 
-Add one benchmark lane for large-payload paste/cut through the public insert-data path.
+Add the browser/user-path reproduction before upgrading the claim beyond `Improves`.
 
 ---
 ## Issue #3752

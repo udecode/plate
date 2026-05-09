@@ -2,12 +2,13 @@
 title: Slate v2 should use read/update as the public runtime lifecycle
 type: decision
 status: accepted
-updated: 2026-04-25
+updated: 2026-04-29
 source_refs:
   - docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md
   - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
   - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
   - docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md
+  - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
 related:
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/plans/2026-04-23-slate-v2-selection-fresh-editor-methods-architecture-plan.md
@@ -45,28 +46,39 @@ read/update lifecycle
 transaction-owned target freshness
 commit metadata
 React-optimized live reads and dirty regions
-extension-method ergonomics
+extension namespace ergonomics
 browser gauntlet proof
 ```
 
 ## Public API Target
 
 ```ts
-editor.read(() => {
-  editor.getSelection()
-  editor.getChildren()
-  editor.getMarks()
+editor.read((state) => {
+  state.selection.get()
+  state.value.get()
+  state.marks.get()
 })
 
-editor.update(() => {
-  editor.unwrapNodes({ match: isList })
-  editor.setNodes({ type: 'list-item' })
-  editor.wrapNodes({ type: 'bulleted-list', children: [] })
+editor.update((tx) => {
+  tx.value.replace({
+    children,
+    marks: null,
+    selection: null,
+  })
+  tx.nodes.unwrap({ match: isList })
+  tx.nodes.set({ type: 'list-item' })
+  tx.nodes.wrap({ type: 'bulleted-list', children: [] })
 })
 ```
 
-Primitive methods remain flexible. This is closer to Slate's durable value than
-adding a semantic method for every custom node type.
+Grouped `state` and `tx` methods stay primitive and flexible. This is closer to
+Slate's durable value than adding a semantic method for every custom node type,
+without keeping flat editor mutation methods as normal public DX.
+
+Whole-document replacement is also a transaction write. The public shape is
+`editor.update((tx) => tx.value.replace(input))`. Static `Editor.replace`,
+public `editor.replace`, and public `editor.reset` are not part of the target
+app-author API.
 
 ## Internal Contract
 
@@ -74,7 +86,7 @@ adding a semantic method for every custom node type.
 editor.update
   -> active transaction
   -> implicit target resolves once if needed
-  -> primitive methods use the transaction target when `at` is omitted
+  -> internal write registry uses the transaction target when `at` is omitted
   -> operations
   -> EditorCommit
   -> history/collaboration/render/DOM repair
@@ -93,16 +105,18 @@ editor.update
 
 ## Extension Direction
 
-Use extension methods and optional chain sugar:
+Use extension namespaces and optional product-layer chain sugar:
 
 ```ts
-editor.extend({
-  name: 'todo',
-  methods: {
-    toggleTodo() {
-      this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+defineEditorExtension({
+  key: 'todo',
+  tx: {
+    todo(tx) {
+      return {
+        toggle() {
+          tx.nodes.set({ type: 'todo', checked: true })
+        },
+      }
     },
   },
 })

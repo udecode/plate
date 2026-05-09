@@ -61,8 +61,8 @@ pretending there was one universal inline rule.
    - move a collapsed forward delete into the next inline only when the cursor
      is at the end of a real text node immediately before that inline
 
-It also keeps the legacy-complex-script branch from overwriting the caret after
-the Thai-character reinsertion path.
+If a delete path has a content-restoration branch, verify it does not define
+character boundaries differently from `getCharacterDistance`.
 
 ## Why this works
 
@@ -93,3 +93,4 @@ For Slate v2 delete normalization:
 
 - [Slate v2 collapsed delete should reuse the before/after location seam](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-07-slate-v2-collapsed-delete-should-reuse-before-after-location-seam.md)
 - [Slate direct-audit green does not mean mirrored if the harness shapes output](/Users/zbeyens/git/plate-2/docs/solutions/workflow-issues/2026-04-14-slate-direct-audit-green-does-not-mean-mirrored-if-harness-shapes-output.md)
+- [Slate v2 character delete must share text-unit boundaries](2026-05-09-slate-v2-character-delete-must-share-text-unit-boundaries.md)
