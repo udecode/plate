@@ -36,17 +36,20 @@ Plate-local skills unless a future workflow needs a real standalone command.
 Read these first, in order:
 
 1. `docs/slate-issues/gitcrawl-live-open-ledger.md`
-2. `docs/slate-issues/gitcrawl-clusters.md`
-3. `docs/slate-v2/ledgers/fork-issue-dossier.md`
-4. `docs/slate-v2/ledgers/issue-coverage-matrix.md`
-5. `docs/slate-v2/references/pr-description.md`
-6. Current implementation proof in `../slate-v2` when a claim depends on code.
+2. `docs/slate-issues/gitcrawl-v2-sync-ledger.md` when it exists
+3. `docs/slate-issues/open-issues-ledger.md`
+4. `docs/slate-issues/gitcrawl-clusters.md`
+5. `docs/slate-v2/ledgers/fork-issue-dossier.md`
+6. `docs/slate-v2/ledgers/issue-coverage-matrix.md`
+7. `docs/slate-v2/references/pr-description.md`
+8. Current implementation proof in `../slate-v2` when a claim depends on code.
 
-The live gitcrawl ledger owns current corpus accounting. The fork issue dossier
-owns the long-form fork-local issue sections. The legacy ledger is not a corpus
-evidence source; inspect it only if the user explicitly names it. The issue
-coverage matrix owns exact implementation claims. The PR description must stay
-synced with exact claims, counts, proof references, and non-claims.
+The live gitcrawl ledger is generated live input only. The v2 sync ledger owns
+current manual issue classifications. The frozen open issues ledger is the
+`682`-issue historical classification seed, not current live truth. The fork
+issue dossier owns long-form fork-local issue sections. The issue coverage
+matrix owns exact implementation claims. The PR description must stay synced
+with exact claims, counts, proof references, and non-claims.
 
 ## Gitcrawl Install And CLI Baseline
 
@@ -282,8 +285,8 @@ For each issue:
 5. Classify before patching.
 6. Fix locally only if this is a current bug, root cause is clear, the patch is
    narrow, and focused regression proof is practical.
-7. Update issue ledger, issue coverage matrix, active plan, and PR description
-   if claim status changes.
+7. Update the v2 sync ledger, issue coverage matrix, active plan, and PR
+   description if claim status changes.
 8. Run the smallest meaningful verification.
 
 Qualified candidates must pass every gate:
@@ -350,10 +353,11 @@ Default compiled output targets:
   `docs/slate-v2/ledgers/fork-issue-dossier.md`.
 - Batch scratch files are allowed only as temporary working notes. The durable
   issue-by-issue output belongs in the fork issue dossier.
-- Live ledger truth stays in `docs/slate-issues/gitcrawl-live-open-ledger.md`.
+- Generated live issue rows stay in `docs/slate-issues/gitcrawl-live-open-ledger.md`.
+- Current manual issue sync stays in `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
 - Cluster truth stays in `docs/slate-issues/gitcrawl-clusters.md`.
-- Old ledger notes are optional context only; do not require them for every
-  dossier section.
+- Frozen open ledger notes are historical context only; do not require them for
+  every dossier section.
 
 For each issue, write this shape:
 
@@ -424,7 +428,7 @@ Evidence:
 - ...
 
 Action:
-- ledger: update needed | already synced | no change
+- v2 sync ledger: update needed | already synced | no change
 - coverage matrix: update needed | no exact claim
 - PR description: update needed | no change
 - implementation: none | focused fix path

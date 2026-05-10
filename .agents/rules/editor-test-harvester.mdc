@@ -9,7 +9,8 @@ disable-model-invocation: true
 Use this skill when mining another editor repository for tests worth stealing:
 Lexical, ProseMirror, CodeMirror, TipTap, Monaco, Quill, or any local clone under
 `..`. The job is not to clone their framework. The job is to extract portable
-editor behavior proof and turn it into better Slate v2 coverage.
+editor behavior proof and route it to the right owner: raw Slate v2 substrate or
+Plate packages, kits, examples, and docs.
 
 This follows the ClawSweeper method and the ralplan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
@@ -21,8 +22,10 @@ Read these first:
 
 1. The target editor repo, preferably a local checkout like `../lexical`.
 2. `../slate-v2` current test files and package scripts.
-3. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
-4. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
+3. Plate package/docs/example owners in this checkout when the behavior is a
+   plugin, kit, UI, React integration, or product policy.
+4. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
+5. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
    when a test exists because of a known upstream bug.
 
 Never browse GitHub files. If the target is `owner/repo` and the checkout is
@@ -37,14 +40,22 @@ missing, clone it to `../repo-name`.
 - Reruns are idempotent. Read the existing repo folder first, rerun the source
   inventory, update the same files in place, and record new/removed source rows
   instead of creating a duplicate report.
-- Every target test file ends in exactly one category: portable, skip, harness,
-  product-shell, or uncertain.
+- Every target test file ends in exactly one category: portable, portable-mixed,
+  plate-owned, skip, harness, product-shell, or uncertain.
 - Every skip gets a reason. "Looks internal" is too vague.
 - Preserve the behavior invariant, not the upstream API shape.
-- Do not paste upstream test code verbatim. Write the strongest local Slate v2
-  proof for the invariant, with source path references.
+- Do not paste upstream test code verbatim. Write the strongest local proof for
+  the invariant, with source path references.
 - Prefer DRY Slate coverage: if a related test exists, strengthen or split it
   instead of creating a duplicate.
+- Use `plate-owned` when the useful behavior should fit Plate, not raw Slate.
+  Examples: link/autolink grammar, list/checklist policy, markdown transformer
+  UX, mention/hashtag/emoji/date-time plugins, media/product decorators,
+  toolbar/menu state, React plugin hosts, NodeView/PluginView-style authoring,
+  and rich product examples.
+- Do not force Plate-owned rows into `../slate-v2`. Split substrate proof from
+  plugin policy: raw Slate owns editor primitives; Plate owns opinionated
+  features, integration ergonomics, and product-facing behavior.
 - Browser, mobile, selection, clipboard, and IME claims need honest runtime
   proof. A jsdom composition test does not prove mobile/IME behavior.
 - Do not edit `../slate-v2` unless the user asks for apply/copy/fix execution.
@@ -84,10 +95,10 @@ Set `done` only when:
   skipped as non-behavior with a reason;
 - every portable and portable-mixed source has at least one behavior row or a
   recorded reason why its rows were rejected;
-- every `covered`, `refactor-existing`, `create-new`, `copy-now`, and `defer`
-  action has a Slate v2 owner or explicit gap;
-- every create/copy/refactor row has an implementation target and verification
-  command;
+- every `covered`, `refactor-existing`, `create-new`, `copy-now`, `defer`, and
+  `plate-owned` action has a raw Slate owner, Plate owner, or explicit gap;
+- every create/copy/refactor/plate-owned row has an implementation target and
+  verification command or a documented Plate backlog owner;
 - the report has a full inventory appendix or a linked inventory file.
 
 If any gate fails but more work is possible, keep `pending` and write
@@ -104,7 +115,7 @@ Score each harvest pass from `0.00` to `1.00`.
 | Inventory completeness | 0.20 |
 | Behavior extraction depth | 0.20 |
 | Skip precision and negative controls | 0.15 |
-| Slate coverage mapping accuracy | 0.20 |
+| Slate/Plate coverage mapping accuracy | 0.20 |
 | Actionability of copy/refactor/create plan | 0.15 |
 | Provenance and reproducibility | 0.10 |
 
@@ -120,11 +131,13 @@ Score caps:
   portable-mixed runnable files have test-name extraction with line pointers.
 - Skip precision cannot exceed `0.80` unless every skipped file or skip family
   has a concrete reason and at least one negative-control example was read.
-- Slate coverage mapping cannot exceed `0.80` unless the report records the
-  `../slate-v2` search commands and current owner files/tests for covered and
-  refactor-existing rows.
+- Slate/Plate coverage mapping cannot exceed `0.80` unless the report records
+  the `../slate-v2` search commands for raw rows and the current Plate owner or
+  explicit Plate gap for `plate-owned` rows.
 - Actionability cannot exceed `0.80` unless every create/refactor/copy row names
-  a target test file, proof kind, and focused verification command.
+  a target test file, proof kind, and focused verification command, and every
+  `plate-owned` row names the likely Plate package, kit, example, docs, or
+  backlog owner.
 - Provenance cannot exceed `0.80` when issue/PR-linked upstream regression tests
   are copied without ClawSweeper-style exact thread or local source rationale.
 - The total score cannot exceed `0.88` if the report has no pass-state ledger.
@@ -136,7 +149,7 @@ Completion threshold:
 - no dimension below `0.85`;
 - no `uncertain` test files remain;
 - no portable-mixed file remains unexamined;
-- no create/refactor/copy row lacks a target owner;
+- no create/refactor/copy/plate-owned row lacks a target owner;
 - no browser/IME/mobile claim is based only on jsdom or synthetic model tests;
 - pass-state ledger proves every pass completed before closure.
 
@@ -165,22 +178,24 @@ Run harvests as passes, not one giant skim:
 4. Classification pressure pass:
    - challenge skips and product-shell routing;
    - read negative-control examples from each large skip family;
-   - route every file to portable, portable-mixed, skip, harness,
+   - route every file to portable, portable-mixed, plate-owned, skip, harness,
      product-shell, or defer.
 5. Behavior extraction pass:
    - turn source tests into behavior invariants;
    - attach source file, line, test name, tag, proof kind, browser/device
      requirements, and issue/PR rationale when present.
-6. Slate coverage mapping pass:
+6. Slate/Plate coverage mapping pass:
    - search `../slate-v2` by behavior keywords and adjacent concepts;
-   - map to exact current Slate tests, browser stress rows, docs, or explicit
-     gaps;
+   - search current Plate packages, docs, examples, and kits for plugin/product
+     behavior;
+   - map to exact current Slate tests, browser stress rows, Plate owners, docs,
+     or explicit gaps;
    - do not use old plans as current coverage proof.
 7. Action planning pass:
    - assign `covered`, `refactor-existing`, `create-new`, `copy-now`, `defer`,
-     or `skip`;
-   - for every non-covered row, name target package/browser file, proof kind,
-     and verification command.
+     `plate-owned`, or `skip`;
+   - for every non-covered row, name target package/browser/docs owner, proof
+     kind, and verification command or backlog owner.
 8. Ecosystem synthesis pass:
    - state what mechanism Slate should steal, reject, or deliberately diverge
      from;
@@ -239,6 +254,10 @@ Pass-state ledger rows must include:
 5. Classify every inventory row and record it in the appendix:
 
    - `portable`: proves framework-agnostic editor behavior.
+   - `portable-mixed`: contains raw editor behavior plus framework/product
+     policy that must be split before action.
+   - `plate-owned`: useful behavior, but the right owner is Plate, not raw
+     Slate v2.
    - `skip`: framework internals, command registry, node-class mechanics,
      product UI, build tooling, or test harness only.
    - `harness`: reusable testing technique, but no product behavior assertion.
@@ -257,7 +276,7 @@ Pass-state ledger rows must include:
 8. Extract behavior rows. Use behavior words, not upstream class names.
 9. Search `../slate-v2` for equivalent coverage using behavior keywords and
    adjacent concepts. Do not stop at exact upstream names.
-10. Assign one Slate action per portable row:
+10. Assign one owner action per portable row:
 
    - `covered`: current Slate v2 test fully proves the invariant.
    - `refactor-existing`: related coverage exists but needs split, rename,
@@ -265,6 +284,7 @@ Pass-state ledger rows must include:
    - `create-new`: no adequate coverage; propose the target test location.
    - `copy-now`: user asked to apply and the invariant is safe to implement now.
    - `defer`: requires unavailable raw device/browser/tooling proof.
+   - `plate-owned`: route to Plate package, kit, example, docs, or backlog owner.
    - `skip`: after reading, it is not portable enough.
 
 ## Portable Test Taxonomy
@@ -309,6 +329,16 @@ Skip examples:
 - Command registry wiring with no observable editor behavior.
 - Test utility tests that prove only the upstream harness.
 - Product demo chrome, menus, shortcuts, or app-specific UX policy.
+
+Plate-owned examples:
+
+- Link/autolink grammar, link-splitting policy, and no-nested-link decisions.
+- List/checklist indentation, ordered metadata, list-exit, and ARIA policy.
+- Markdown transformer UX, MDX/custom transformers, and serializer choices.
+- Mention, hashtag, keyword, emoji, date-time, equation, and media plugins.
+- React plugin hosts, menus, typeahead, toolbar state, and example app behavior.
+- ProseMirror NodeView, MarkView, PluginView, and plugin prop lifecycle ideas
+  when they improve Plate authoring but should not become raw Slate API.
 
 ## Output Shape
 
@@ -358,9 +388,9 @@ score: 0.xx
 
 ## Matrix
 
-| Source | Test | Tag | Invariant | Proof kind | Slate coverage | Action |
+| Source | Test | Tag | Invariant | Proof kind | Owner coverage | Action |
 | --- | --- | --- | --- | --- | --- | --- |
-| `../lexical/...` | `test name` | `ime-composition` | ... | browser/unit/raw-device | `../slate-v2/...` or none | covered/refactor-existing/create-new/defer |
+| `../lexical/...` | `test name` | `ime-composition` | ... | browser/unit/raw-device | `../slate-v2/...`, Plate owner, or none | covered/refactor-existing/create-new/defer/plate-owned |
 
 ## Skips
 

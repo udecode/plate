@@ -3,6 +3,8 @@
 source report: [report.md](./report.md)
 target: `../lexical`
 generated_at: 2026-05-08
+last_consolidated_at: 2026-05-09
+consolidation: live inventory rerun returned 271 rows; no new or removed rows.
 
 Inventory command:
 
@@ -15,6 +17,18 @@ rg --files ../lexical \
 Counts: total 271; runnable 196; fixture/support 75; portable 124; portable-mixed 13; product-shell 33; harness 12; skip 89; uncertain 0.
 
 Every row is classified. Portable and portable-mixed runnable rows are indexed in [the test-name index](./test-index.md).
+
+`plate-owned` is an owner-routing overlay on top of the closed counts above. Use it when a residual row is useful for Plate plugins/examples/docs but should not become raw Slate v2 law.
+
+## Plate-Owned Overlay
+
+| Source pattern | Current category | Plate target | Raw Slate split |
+| --- | --- | --- | --- |
+| `lexical-link/src/__tests__/*`, `AutoLinks.spec.mjs`, residual `Links*CopyAndPaste` rows | `skip`, `portable`, `portable-mixed` | Plate link/autolink package, examples, and docs | Keep only generic inline boundaries, paste import, and safe link insertion in Slate v2. |
+| `lexical-list/src/__tests__/*`, `List.spec.mjs`, checklist/list paste rows | `portable`, `portable-mixed` | Plate list/checklist packages and list-policy docs | Keep structural list fragments, wrappers, and path/query behavior in Slate v2. |
+| `lexical-markdown/src/__tests__/*`, `Markdown.spec.mjs` residuals | `portable`, `portable-mixed` | Plate markdown serializer/transformer package and docs | Keep markdown shortcut examples in Slate v2. |
+| `Hashtags.spec.mjs`, `Keywords.spec.mjs`, `DateTime.spec.mjs`, `Emoticons.spec.mjs`, `EquationNode.spec.mjs`, `CharacterLimit.spec.mjs`, `Images.spec.mjs` residuals | `portable`, `portable-mixed` | Plate feature/plugin packages and examples | Keep decoration, inline atom, void, and markable-void substrate proofs in Slate v2. |
+| React Composer, menu, nested composer, typeahead, extension host, toolbar/product shell rows | `product-shell`, `skip` | Plate React/plugin ergonomics if accepted | No raw Slate target unless a framework-agnostic invariant is split out. |
 
 | Source | Runnable | Category | Family | Reason | Slate target / extraction |
 | --- | --- | --- | --- | --- | --- |

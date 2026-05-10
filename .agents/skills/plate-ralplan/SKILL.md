@@ -78,10 +78,10 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 ## Required Artifacts
 
 - Plan file under `docs/plans/`.
-- Completion file: session-scoped `tmp/completion-checks/<session-id>.md`
-  when `COMPLETION_CHECK_ID` or `CODEX_THREAD_ID` exists; fallback
-  `tmp/completion-check.md`. When hook env has no session id, the checker uses
-  the most recently touched file in `tmp/completion-checks/`.
+- Completion file: use session-scoped
+  `tmp/completion-checks/<session-id>.md` for detailed parallel plan state when
+  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
+  fallback `tmp/completion-check.md` only when no session id is available.
 - Continuation prompt: `tmp/continue.md` when further autonomous plan/spec work
   remains.
 - Editor-behavior outputs under `docs/editor-behavior/` when law changes.

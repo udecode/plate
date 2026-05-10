@@ -6021,6 +6021,51 @@ Mobile/IME macro accounting: `149` frozen R7 input-runtime rows reviewed; no
 new exact fixed or improved claim; exact mobile/IME closure remains gated on
 matching browser or raw-device proof.
 
+## All-Harvest PM-10/PM-09 Input Runtime Sync - 2026-05-10
+
+Status: macro-routed
+Bucket: v2-input-runtime
+Confidence: medium-high
+
+Scope:
+This is the ClawSweeper related-issue pass for the first ProseMirror rows in
+`docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`.
+It covers PM-10 composition lifecycle and PM-09 DOM-change disambiguation. It
+does not add an upstream issue comment, PR claim, fixed count, or improved
+count.
+
+Archive evidence:
+
+- `gitcrawl doctor --json` reported gitcrawl `0.2.1`, local archive data
+  present, no GitHub token, and last sync at `2026-05-04T14:58:11.123944Z`.
+- Archive searches for composition, IME, beforeinput, Android input, DOM
+  change, and selection found the existing input-runtime pressure set.
+- Thread reads covered `#6051`, `#6022`, `#5989`, `#5984`, `#5983`, `#5931`,
+  `#5918`, `#5974`, `#4400`, `#5883`, `#4466`, `#3309`, `#4223`, `#3470`,
+  and `#2051`.
+
+Decision:
+Keep this pass as related issue accounting only. The PM-10 and PM-09 harvest
+rows justify the next implementation owner, not issue promotion. Existing
+related or non-claim statuses remain correct for `#6051`, `#6022`, `#5989`,
+`#5984`, `#5983`, `#5931`, `#5830`, `#5643`, `#5883`, `#4400`, `#5603`,
+`#5669`, `#4223`, `#3470`, and `#2051`.
+
+`#4466`, `#5493`, `#5974`, and `#5918` remain proof-needed or future-proof
+pressure until a matching browser, keyboard-layout, or IME reproduction lands.
+`#3309` is not part of the PM-10/PM-09 closure path; route it to the PM-12/PM-13
+projection and browser-selection slices.
+
+The next legal execution move is PM-10 composition proof in current
+`../slate-v2` source. Exact Android, Firefox Android, Samsung Keyboard, voice
+input, Windows suggestion, Hangul, Chinese, Vietnamese, or Japanese/Korean IME
+closure still needs matching browser or raw-device artifacts.
+
+PR-description text:
+All-harvest PM-10/PM-09 accounting: related input-runtime and DOM-change issues
+reviewed; no new exact fixed or improved claim; implementation starts with
+composition lifecycle proof.
+
 ## DOM Selection / Focus Bridge Planning Sync - 2026-05-08
 
 This is ClawSweeper issue discovery for
@@ -6348,3 +6393,117 @@ or maintainer-equivalence proof named in the plan.
 | Performance proof-route backlog | 10 | `#2733`, `#2669`, `#790`, `#5216`, `#5592`, `#4202`, `#4210`, `#3748`, `#5349`, `#4025` | Related, proof-needed, or needs-repro until a later execution slice adds exact proof. |
 | Policy/API/accessibility non-claims | 5 | `#2465`, `#2564`, `#3177`, `#3892`, `#2572` | Keep out of fixed/improved performance language; these are DX, ecosystem, or release-guard pressure only. |
 | PR prose sync | 3 | `#5945`, `#4056`, `#5992` | Existing PR text remains exact. No new PR performance text is added by this planning pass. |
+
+## All-Harvest PM-08 Collaboration Convergence Sync - 2026-05-10
+
+This is planning/accounting sync for
+`docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`.
+It reviews the ProseMirror PM-08 collaboration pressure against current Slate v2
+proof and adds no PR-facing fixed or improved issue claim.
+
+Evidence:
+
+- ProseMirror harvest row:
+  `docs/editor-test-harvester/prosemirror/report.md`, PM-08.
+- current v2 proof:
+  `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts` now
+  includes three-peer replay convergence for text, mark, range-delete, and move
+  commits, with remote collaboration metadata skipping local undo history.
+- verification:
+  `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`.
+- type/lint proof:
+  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate`;
+  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate/test/collab-history-runtime-contract.ts --fix`.
+
+| Issue | Status after PM-08 | Decision |
+| --- | --- | --- |
+| #5771 | Related | The new PM-08 row proves core package replay convergence, but not the issue's high-QPS remote `insert_text` versus local selection repro. Keep exact closure for a later collaboration-selection proof. |
+| #5533 | Related | Operation replay is a better primitive than a Yjs-only story, but Slate still does not ship a first-party OT/Yjs-free collaboration protocol. |
+| #2288 | Improves, unchanged | Range-delete replay now has explicit three-peer package proof, but public range-operation exposure remains a separate API decision. |
+| #1770 | Related | Replay convergence reduces operation-transport pressure, but it is not a general operation-composition utility. |
+| #3741 | Related | Remote `move_node` replay convergence is covered, but Slate still does not add moved-node payloads to serialized `move_node` operations. |
+
+Decision:
+Keep PM-08 as core package proof only. Do not claim slate-yjs browser behavior,
+OT transform closure, simultaneous typing rebasing, or high-QPS selection
+stability from this row.
+
+PR-description text:
+None; no PR-facing claim count changes.
+
+## All-Harvest PM-13 Geometry And RTL Browser Selection Sync - 2026-05-10
+
+This is planning/accounting sync for
+`docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`.
+It reviews the ProseMirror PM-13 selection geometry pressure against current
+Slate v2 browser proof and adds no PR-facing fixed or improved issue claim.
+
+Evidence:
+
+- ProseMirror harvest row:
+  `docs/editor-test-harvester/prosemirror/report.md`, PM-13.
+- ProseMirror source rows:
+  `docs/editor-test-harvester/prosemirror/test-index.md`, `webtest-selection`
+  RTL coordinate and wrapped-line coordinate rows.
+- current v2 proof:
+  `../slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts`
+  now includes browser rows for RTL DOM selection offset mapping, RTL visual
+  geometry direction, and wrapped-line selection rectangles.
+- verification:
+  `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-browser test:selection`.
+- type/lint proof:
+  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate-browser`;
+  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate-browser/test/browser/selection.browser.test.ts --fix`.
+
+| Issue | Status after PM-13 | Decision |
+| --- | --- | --- |
+| #1498 | Related, unchanged | PM-13 proves browser RTL selection offset mapping and visual geometry direction, plus wrapped-line rectangles. It does not close the exact RTL Enter/new-line caret repro. |
+
+Decision:
+Keep PM-13 as browser selection-geometry proof only. Do not claim full RTL input
+closure, mobile Persian scroll behavior, list-direction behavior, atom arrow
+motion, or decorated-selection closure from this row.
+
+PR-description text:
+None; no PR-facing claim count changes.
+
+## All-Harvest PM-12 Projection And Widget Mapping Sync - 2026-05-10
+
+This is planning/accounting sync for
+`docs/plans/2026-05-10-slate-v2-all-editor-harvest-test-processing-ralplan.md`.
+It reviews the ProseMirror PM-12 projection/widget pressure against current
+Slate v2 package proof and adds no PR-facing fixed or improved issue claim.
+
+Evidence:
+
+- ProseMirror harvest row:
+  `docs/editor-test-harvester/prosemirror/report.md`, PM-12.
+- current v2 proof:
+  `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+  now includes nested moved-node projection runtime-bucket mapping.
+- current v2 proof:
+  `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx` now
+  includes runtime-id node-widget move/remove mapping.
+- verification:
+  `cd /Users/zbeyens/git/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
+- type/lint proof:
+  `cd /Users/zbeyens/git/slate-v2 && bun turbo typecheck --filter=./packages/slate-react`;
+  `cd /Users/zbeyens/git/slate-v2 && bunx biome check packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/widget-layer-contract.tsx --fix`.
+
+| Issue | Status after PM-12 | Decision |
+| --- | --- | --- |
+| #4483 | Improves, unchanged | PM-12 strengthens local projection runtime-bucket mapping, but the legacy dynamic-decoration API proposal remains unclaimed. |
+| #4477 | Improves, unchanged | Runtime-id node widgets now have structural move/remove proof, but product collaborative comments remain outside raw Slate closure. |
+| #5987 | Improves, unchanged | Structural projection mapping reduces decoration/caret pressure, but the exact async app repro is not closed. |
+| #4392 | Improves, unchanged | Nested moved-node projection mapping strengthens cross-node decoration pressure, but full legacy decorate API parity is not claimed. |
+| #3382 | Improves, unchanged | Projection slices stay keyed to runtime text ranges through structural moves; legacy `Text.decorations` API behavior remains outside the v2 contract. |
+| #3352 | Improves, unchanged | Cross-node projection is still represented by range-to-text-slice projection; decorator callback API parity is not claimed. |
+| #3309 | Related, unchanged | PM-12 is package mapping proof only. Exact decorated-text selection closure still needs matching browser proof, likely in PM-13. |
+
+Decision:
+Keep PM-12 as package-level projection/widget mapping proof only. Do not claim
+NodeView/MarkView parity, PM widget side-position semantics, async decoration
+caret closure, product comment closure, or decorated-selection browser closure.
+
+PR-description text:
+None; no PR-facing claim count changes.

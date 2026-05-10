@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const DEFAULT_STATE_FILE = 'tmp/completion-check.md';
@@ -68,26 +68,23 @@ const resolveStateFileForId = (cwd, stateId) => {
   return resolve(cwd, DEFAULT_STATE_DIR, `${sanitizedId}.md`);
 };
 
-const getLatestScopedStateFile = (cwd) => {
-  const stateDir = resolve(cwd, DEFAULT_STATE_DIR);
-
-  if (!existsSync(stateDir)) {
-    return;
+const readStatus = (content) => {
+  for (const pattern of statusPatterns) {
+    const match = content.match(pattern);
+    if (match?.[1]) {
+      return normalize(match[1]);
+    }
   }
 
-  const stateFiles = readdirSync(stateDir)
-    .filter((fileName) => fileName.endsWith('.md'))
-    .map((fileName) => {
-      const filePath = resolve(stateDir, fileName);
+  if (doneChecklistPattern.test(content)) {
+    return 'done';
+  }
 
-      return {
-        filePath,
-        mtimeMs: statSync(filePath).mtimeMs,
-      };
-    })
-    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+  if (blockedChecklistPattern.test(content)) {
+    return 'blocked';
+  }
 
-  return stateFiles[0]?.filePath;
+  return 'pending';
 };
 
 const resolveStateFile = ({ args, cwd, env }) => {
@@ -116,32 +113,7 @@ const resolveStateFile = ({ args, cwd, env }) => {
     }
   }
 
-  const latestScopedStateFile = getLatestScopedStateFile(cwd);
-
-  if (latestScopedStateFile) {
-    return latestScopedStateFile;
-  }
-
   return resolve(cwd, DEFAULT_STATE_FILE);
-};
-
-const readStatus = (content) => {
-  for (const pattern of statusPatterns) {
-    const match = content.match(pattern);
-    if (match?.[1]) {
-      return normalize(match[1]);
-    }
-  }
-
-  if (doneChecklistPattern.test(content)) {
-    return 'done';
-  }
-
-  if (blockedChecklistPattern.test(content)) {
-    return 'blocked';
-  }
-
-  return 'pending';
 };
 
 const fail = (message) => {

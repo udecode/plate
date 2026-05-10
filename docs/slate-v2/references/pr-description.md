@@ -25,7 +25,7 @@ Full ledger:
 Current summary:
 
 - Fixed issue claims: `31`
-- Related issue matrix rows: `158`
+- Related issue matrix rows: `189`
 - Live corpus accounting: `630` open issues, `29` open PRs, `659` open
   threads, and `617` gitcrawl clusters from the 2026-05-04 refresh. This is
   corpus accounting, not an auto-close claim.

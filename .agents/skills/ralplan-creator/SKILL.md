@@ -200,7 +200,11 @@ it.
 ## Required Artifacts
 
 - Plan file under `<plan-directory>/`.
-- Completion file: `<completion-state-file>`.
+- Completion file: use session-scoped
+  `tmp/completion-checks/<session-id>.md` for parallel plan state when
+  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
+  fallback `<completion-state-file>` or `tmp/completion-check.md` only when no
+  session id is available.
 - Continuation prompt: `<continuation-prompt-file>` when further autonomous
   plan work remains.
 - Research updates under `<research-directory>` when the evidence lane is stale,
@@ -302,7 +306,13 @@ include exact doc, generated artifact, route, issue, or benchmark probes.
 
 ## Completion State
 
-Set `<completion-state-file>` to `pending` before starting or resuming review.
+Set the active completion file to `pending` before starting or resuming review.
+Prefer `tmp/completion-checks/<CODEX_THREAD_ID>.md` when `CODEX_THREAD_ID`
+exists, because the plain completion hook inherits that env and can check
+parallel sessions independently. Use `COMPLETION_CHECK_ID`, `--id`, or `--file`
+when a caller supplies an explicit plan id/file. Fall back to
+`<completion-state-file>` or `tmp/completion-check.md` only when no session id
+or explicit id/file is available.
 
 Use:
 
@@ -449,7 +459,7 @@ Run the review as passes, not one giant essay:
 9. Closure score and final gates.
 
 After each pass, update the active plan with pass status, evidence, changes,
-and next owner. Keep `<completion-state-file>` as `pending` while any pass or
+and next owner. Keep the active completion file as `pending` while any pass or
 revision remains runnable.
 
 Pass-state ledger rows must include:
@@ -904,7 +914,7 @@ When the score is below threshold and a runnable next move exists:
 
 1. Update the plan with the current score, evidence, rejected tactics, and next
    owner.
-2. Keep `<completion-state-file>` as `pending`.
+2. Keep the active completion file as `pending`.
 3. Use `ralph` to refresh the continuation prompt.
 4. Scope-lock the continuation prompt to <Domain> Ralplan planning, research,
    review, and domain-output work only.

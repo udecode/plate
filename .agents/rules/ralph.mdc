@@ -310,9 +310,12 @@ include:
 
 - read the completion state file before choosing the next move
 - use the session-scoped completion state file for parallel sessions; the
-  checker auto-selects `tmp/completion-checks/<session-id>.md` when it exists,
-  or the most recently touched file in `tmp/completion-checks/` when hook env
-  has no session id
+  checker auto-selects `tmp/completion-checks/<session-id>.md` only when
+  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or
+  `--file` selects it; otherwise it falls back to `tmp/completion-check.md`
+- when `CODEX_THREAD_ID` exists, `ralph` should create or update
+  `tmp/completion-checks/<CODEX_THREAD_ID>.md` and use that as the active
+  completion state for this session
 - set status `pending` before starting execution
 - keep status `pending` while work remains
 - set status `done` only when complete

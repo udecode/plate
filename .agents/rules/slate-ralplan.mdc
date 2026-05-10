@@ -81,10 +81,10 @@ executes it.
 ## Required Artifacts
 
 - Plan file under `docs/plans/`.
-- Completion file: session-scoped `tmp/completion-checks/<session-id>.md`
-  when `COMPLETION_CHECK_ID` or `CODEX_THREAD_ID` exists; fallback
-  `tmp/completion-check.md`. When hook env has no session id, the checker uses
-  the most recently touched file in `tmp/completion-checks/`.
+- Completion file: use session-scoped
+  `tmp/completion-checks/<session-id>.md` for detailed parallel plan state when
+  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
+  fallback `tmp/completion-check.md` only when no session id is available.
 - Continuation prompt: `tmp/continue.md` when further autonomous plan work
   remains.
 - Research updates under `docs/research/` when the evidence lane is stale or
@@ -96,10 +96,18 @@ executes it.
   Slate v2 public API, runtime behavior, browser behavior, examples, issue
   claims, or PR narrative. Run it once per related surface, not after every v2
   edit. Re-run only when the touched issue surface changes materially.
-- Live issue corpus sync updates in
-  `docs/slate-issues/gitcrawl-live-open-ledger.md`: update current issue
-  classifications and cluster rollups whenever a plan or implementation slice
-  claims, improves, reviews, or intentionally excludes an issue or cluster.
+- Live issue corpus input:
+  `docs/slate-issues/gitcrawl-live-open-ledger.md` is generated live gitcrawl
+  data only. Read it for current open rows and gitcrawl cluster IDs; do not add
+  manual classifications there.
+- Current manual issue sync updates in
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`: update current issue
+  classifications whenever a plan or implementation slice claims, improves,
+  reviews, or intentionally excludes an issue or cluster. If the file does not
+  exist yet, create it before recording current live sync state.
+- Frozen corpus context in `docs/slate-issues/open-issues-ledger.md`: use it as
+  the `682`-issue historical classification seed, not as current live sync
+  truth.
 - Fork issue dossier updates in
   `docs/slate-v2/ledgers/fork-issue-dossier.md`: append one self-contained
   section per reviewed related issue, using ClawSweeper's Fork Issue Dossier
@@ -146,6 +154,8 @@ completion file already points at one.
 4. `docs/research/README.md`, `docs/research/index.md`, and
    `docs/research/log.md`.
 5. `docs/slate-issues/gitcrawl-live-open-ledger.md`,
+   `docs/slate-issues/gitcrawl-v2-sync-ledger.md` when it exists,
+   `docs/slate-issues/open-issues-ledger.md`,
    `docs/slate-issues/gitcrawl-clusters.md`,
    `docs/slate-issues/issue-clusters.md`,
    `docs/slate-issues/test-candidate-map/`,
@@ -345,8 +355,10 @@ Completion threshold:
   explicitly skipped with a concrete reason such as `docs-only typo`, `pure
 internal refactor with no issue-facing behavior`, or `already covered by
 completed pass <name/date>`
-- live issue corpus sync complete for the current slice: touched issues and
-  clusters are updated in `docs/slate-issues/gitcrawl-live-open-ledger.md`
+- live issue corpus sync complete for the current slice: generated live rows
+  are read from `docs/slate-issues/gitcrawl-live-open-ledger.md`, and touched
+  issue classifications are updated in
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
 - fork issue dossier sync complete for every reviewed related issue in
   `docs/slate-v2/ledgers/fork-issue-dossier.md`
 - `docs/slate-v2/references/pr-description.md` updated when the plan changes
@@ -404,7 +416,8 @@ The plan must include:
     - fixed issues with exact `Fixes #....: <description>` wording;
     - related but not fixed issues with category and reason;
     - cluster coverage and remaining cluster backlog;
-    - live gitcrawl ledger sync status for every touched issue and cluster;
+    - generated live gitcrawl row read status and manual v2 sync ledger status
+      for every touched issue and cluster;
     - fork issue dossier sync status for every reviewed issue section;
     - PR-description update status for issue claims, API shape, proof status,
       and release gates.
@@ -451,8 +464,10 @@ Run the review as passes, not one giant essay:
    `high-risk-deliberate-pass`.
 9. Ecosystem maintainer pass when triggered.
 10. Revision pass that answers objections and updates the plan.
-11. Issue sync accounting pass: update
-    `docs/slate-issues/gitcrawl-live-open-ledger.md`,
+11. Issue sync accounting pass: read generated live rows from
+    `docs/slate-issues/gitcrawl-live-open-ledger.md`; write current manual
+    classifications to `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; then
+    update
     `docs/slate-issues/gitcrawl-clusters.md`,
     `docs/slate-v2/ledgers/fork-issue-dossier.md`,
     `docs/slate-v2/ledgers/issue-coverage-matrix.md`, and
@@ -536,6 +551,8 @@ the skip reason in the active plan.
 Read these files before scoring the plan ready:
 
 - `docs/slate-issues/gitcrawl-live-open-ledger.md`
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md` when it exists
+- `docs/slate-issues/open-issues-ledger.md`
 - `docs/slate-issues/gitcrawl-clusters.md`
 - `docs/slate-issues/issue-clusters.md`
 - `docs/slate-issues/test-candidate-map/`
@@ -561,8 +578,9 @@ For each plan, record:
   part of the current fix;
 - cluster coverage: which issue cluster this pass advances and which cluster
   backlog remains;
-- live-ledger sync status: which current issue rows and cluster rollups in
-  `docs/slate-issues/gitcrawl-live-open-ledger.md` changed;
+- live-ledger sync status: which current issue rows were read from
+  `docs/slate-issues/gitcrawl-live-open-ledger.md`, and which manual sync rows
+  changed in `docs/slate-issues/gitcrawl-v2-sync-ledger.md`;
 - fork issue dossier sync status: which sections were added or refreshed in
   `docs/slate-v2/ledgers/fork-issue-dossier.md`;
 - proof route: unit, browser, integration, benchmark, docs/example, or
@@ -588,12 +606,13 @@ Classification rules:
 
 The active plan must include an issue matrix with at least:
 
-| Issue | Cluster | Claim | Why | Proof route | Live ledger sync | PR line |
+| Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
 | ----- | ------- | ----- | --- | ----------- | ---------------- | ------- |
 
-`Live ledger sync` is the exact status change for the issue row and cluster
-rollup in `docs/slate-issues/gitcrawl-live-open-ledger.md`. `PR line` is the exact
-line to add to
+`V2 sync ledger` is the exact status change for the issue row in
+`docs/slate-issues/gitcrawl-v2-sync-ledger.md`, using
+`docs/slate-issues/gitcrawl-live-open-ledger.md` as generated live input.
+`PR line` is the exact line to add to
 `docs/slate-v2/ledgers/issue-coverage-matrix.md`, or `related matrix only` when
 the issue must not be auto-closed. The PR description receives exact fixed issue
 lines, count summaries, and any current API/proof/release-gate rows touched by
@@ -604,8 +623,9 @@ section in the PR description.
 
 ## PR Reference And Issue Accounting
 
-Update `docs/slate-issues/gitcrawl-live-open-ledger.md` first whenever a plan
-or implementation slice touches a current issue or cluster. Then update
+Read `docs/slate-issues/gitcrawl-live-open-ledger.md` first whenever a plan or
+implementation slice touches a current issue or cluster. Then update
+`docs/slate-issues/gitcrawl-v2-sync-ledger.md` for current manual sync state and
 `docs/slate-v2/ledgers/issue-coverage-matrix.md` for PR-slice claims. Update
 `docs/slate-v2/references/pr-description.md` whenever the slice changes exact
 fixed issue claims, accepted public API shape, proof references, release gates,
@@ -613,10 +633,11 @@ examples, or maintainer-facing PR narrative.
 
 Rules:
 
-- Live issue corpus sync lives in
-  `docs/slate-issues/gitcrawl-live-open-ledger.md`.
-  Every touched issue row and cluster rollup must move from `not-started` to
-  the right v2 sync status.
+- Generated live issue input lives in
+  `docs/slate-issues/gitcrawl-live-open-ledger.md`; manual v2 sync status lives
+  in `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
+  Every touched current issue row must move from `not-started` to the right v2
+  sync status in the manual sync ledger.
 - Fixed issues go under the coverage ledger's fixed issue section as:
   `Fixes #....: <description>`.
 - Improved-but-not-fixed issues go in the related matrix with claim `Improves`,

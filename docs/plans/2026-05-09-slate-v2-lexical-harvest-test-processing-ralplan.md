@@ -1967,3 +1967,287 @@ and validated its YAML frontmatter.
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/regression/1113-link-newline-at-end.spec.mjs`
 is the next unresolved link/end-boundary source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`1113-link-newline-at-end.spec.mjs` source-read is complete. The portable row
+is link end-boundary selection after inserting a new line. A new browser proof
+in `../slate-v2/playwright/integration/examples/inlines.test.ts` failed red
+because Enter after a typed URL inline link produced a second empty link at the
+start of the next paragraph. `../slate-v2/site/examples/ts/inlines.tsx` now
+moves one offset out of a collapsed inserted link, matching the inline boundary
+policy used by the mentions example. The proof now locks exactly one typed URL
+link, selection in the next block, and follow-up text outside the link. Focused
+proof, full inlines browser proof, `bun run lint:fix`, and `../slate-v2`
+`bun check` passed. Added
+`docs/solutions/logic-errors/2026-05-09-collapsed-inline-link-insertion-must-move-selection-outside.md`
+and validated its YAML frontmatter. No generic autolink API, raw mobile,
+collaboration, table-model, or issue claim changed.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/1384-insert-nodes.spec.mjs`
+is the next unresolved insert-nodes source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`1384-insert-nodes.spec.mjs` source-read is complete. The filename is
+misleading: the portable row is code-block clipboard insertion, where copying a
+nested code-line fragment and pasting inside an active code line must merge into
+that line instead of inserting a sibling or top-level code block. A new package
+contract in `../slate-v2/packages/slate/test/clipboard-contract.ts` failed red,
+then `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` was
+updated to fit a single nested text-block child from the same structural
+container into the active nested text block. A new browser proof in
+`../slate-v2/playwright/integration/examples/code-highlighting.test.ts` locks
+the native copy/paste behavior. Focused package proof, full clipboard contract,
+focused browser proof, full code-highlighting browser proof, `bun run lint:fix`,
+and `../slate-v2` `bun check` passed. Added
+`docs/solutions/logic-errors/2026-05-09-nested-clipboard-fragments-must-merge-into-active-text-block.md`
+and validated its YAML frontmatter.
+No Lexical Playground setup, exact gutter/theme output, raw mobile,
+collaboration, table-model, or issue claim changed.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/221-editing-hashtags.spec.mjs`
+is the next unresolved inline-token editing source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`221-editing-hashtags.spec.mjs` source-read is complete. The portable row is
+dynamic decorated text-token editing, not mention, mark, inline-void, hashtag
+plugin, or Lexical theme behavior. `../slate-v2/site/examples/ts/highlighted-text.tsx`
+now adds hashtag-style projections over normal text, and
+`../slate-v2/playwright/integration/examples/highlighted-text.test.ts` proves
+Space splitting `#yolo` to decorated `#yo`, Delete removing the plain trailing
+space at the boundary, and Backspace from the plain tail preserving decorated
+`#yol`. The first focused proof failed red because no hashtag projection
+rendered. A full-document Backspace setup also exposed a separate
+projected-document replacement edge, so the final proof uses model-owned token
+setup and browser keyboard behavior for the accepted invariant. Focused hashtag
+proof, full highlighted-text browser proof, `bun run lint:fix`, and
+`../slate-v2` `bun check` passed. Added
+`docs/solutions/best-practices/2026-05-09-hashtag-like-text-tokens-should-use-dynamic-decorations.md`
+and validated its YAML frontmatter. No raw mobile, collaboration, table-model,
+or issue claim changed.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/230-navigation-around-hashtags.spec.mjs`
+is the next unresolved inline-token navigation source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`230-navigation-around-hashtags.spec.mjs` source-read is complete. The portable
+row is dynamic decorated text-token navigation after transient prefix insertion
+and deletion, not a Lexical hashtag plugin or DOM theme contract.
+`../slate-v2/playwright/integration/examples/highlighted-text.test.ts` now
+proves that after replacing the document with `#foo`, inserting `a` before it,
+deleting that prefix, then pressing ArrowRight moves the collapsed selection
+into the decorated hashtag-style token at offset `1` through the model-owned
+movement path. Focused browser proof, full highlighted-text browser proof,
+`bun run lint:fix`, and `../slate-v2` `bun check` passed. No runtime code,
+raw mobile, collaboration, table-model, or issue claim changed.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/3136-insert-nodes-adjacent-to-inline.spec.mjs`
+is the next unresolved inline-adjacent rich paste/replacement source-read
+candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`3136-insert-nodes-adjacent-to-inline.spec.mjs` source-read is complete. The
+portable rows are rich paste/replacement of selected plain text immediately
+before and immediately after an inline link. `../slate-v2/packages/slate/test/clipboard-contract.ts`
+now proves both core fragment replacement directions, and
+`../slate-v2/playwright/integration/examples/inlines.test.ts` proves rich HTML
+paste replaces adjacent selected text without expanding or swallowing the link.
+Focused package proof, full clipboard contract, focused browser proof, full
+inlines browser proof, `bun run lint:fix`, and `../slate-v2` `bun check`
+passed. No runtime code, raw mobile, collaboration, table-model, or issue claim
+changed.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/379-backspace-with-mentions.spec.mjs`
+is the next unresolved mention/text-token Backspace source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`379-backspace-with-mentions.spec.mjs` source-read is complete. The portable row
+is Backspace at a line boundary before a mention/text token, not Lexical
+Playground typeahead setup, mention styling, exact DOM/theme output, raw mobile,
+collaboration, table-model, or issue behavior.
+`../slate-v2/playwright/integration/examples/mentions.test.ts` now proves that
+splitting immediately before a leading inline mention and pressing Backspace at
+that new line boundary preserves both mention atoms and restores the boundary
+selection. Focused browser proof, full mentions Chromium proof,
+`bun run lint:fix`, and `../slate-v2` `bun check` passed. No runtime code, raw
+mobile, collaboration, table-model, or issue claim changed.
+
+`../lexical/packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs`
+is source-read/applied. The portable row is Mac `Ctrl+O` open-line behavior:
+open an empty line before the current line without moving selection past the
+following text. Slate now has a dedicated `open-line` insert-break variant wired
+through `slate-dom` hotkeys and the `slate-react` keyboard/mutation runtime. The
+runtime inserts an empty paragraph before the current block directly, instead of
+reusing normal split-block and repairing selection afterward. Browser proof
+asserts `foo`, empty line, `bar`, selection on the empty line, and open-line
+kernel command metadata.
+
+Verification for the 399 slice:
+
+- `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium -g "opens a line with Mac Ctrl\\+O"` passed.
+- `cd ../slate-v2 && bun test ./packages/slate-dom/test/hotkeys.ts` passed.
+- `cd ../slate-v2 && bun test ./packages/slate-react/test/editing-kernel-contract.ts` passed.
+- `cd ../slate-v2 && bun run lint:fix && bun check` passed.
+
+The full richtext Chromium owner sweep was attempted and showed one
+deterministic unrelated IME mark expectation mismatch in `commits IME composition
+through an active mark before a formatted sibling`: the rendered DOM has sibling
+`em`, `code`, and `em strong` nodes, while the test expects `em code`. That is
+not part of the 399 open-line owner and stays out of this slice.
+
+The completion checkpoint stays `pending` because
+`../lexical/packages/lexical-playground/__tests__/regression/429-swapping-emoji.spec.mjs`
+is the next unresolved emoji-line Enter/Backspace source-read candidate.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`429-swapping-emoji.spec.mjs` source-read is complete. The portable row is
+emoji-line Enter/Backspace behavior: Enter at the start of an emoji line opens
+an empty block before it, keeps selection at the emoji-line start, and
+Backspace rejoins without corrupting emoji text or selection. Lexical
+Playground emoji substitution UI, exact emoji span/theme DOM, flaky tagging,
+raw mobile, collaboration, table-model, and issue behavior stay out.
+`../slate-v2/playwright/integration/examples/richtext.test.ts` now owns the
+plain Unicode emoji browser proof. Focused browser proof and
+`bun run lint:fix && bun check` passed from `../slate-v2`.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/regression/5251-paste-into-inline-element.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`5251-paste-into-inline-element.spec.mjs` source-read is complete. The portable
+row is selected inline-link text replacement by a rich clipboard payload:
+pasted content must stay outside the surviving link tail. Slate now has package
+proof for rich fragment insertion, DOM clipboard fallback proof for
+HTML-with-plain-text payloads, and an inlines browser proof for user-visible
+paste behavior. `insertFragment` now handles selected one-level inline text with
+a single replacement operation, and DOM plain-text fallback routes expanded
+same-inline selections through fragment insertion instead of inheriting the
+inline. Focused red browser proof initially failed with `replaced` inside the
+link; the final focused browser proof, full inlines Chromium file,
+clipboard-contract, clipboard-boundary, `bun run lint:fix`, and `../slate-v2`
+`bun check` passed. Added
+`docs/solutions/logic-errors/2026-05-09-html-clipboard-fallback-must-not-inherit-selected-inline-text.md`
+and validated its YAML frontmatter. Lexical Playground link toolbar setup,
+exact DOM/theme output, raw mobile, collaboration, table-model, and issue
+behavior stay out.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/regression/5583-select-list-followed-by-element-node.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`5583-select-list-followed-by-element-node.spec.mjs` source-read is complete.
+The portable row is native selection import over list content followed by a
+non-text/boundary element without crashing. Slate already had adjacent
+block-void delete proof and a generic native drag-selection boundary row, but
+not the list + boundary combination, so
+`../slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts`
+now proves a native drag from a materialized list item to a boundary placeholder
+imports into a valid Slate range with no page errors. Focused browser proof,
+full dom-coverage Chromium proof, `bun run lint:fix`, and `../slate-v2`
+`bun check` passed. Lexical Playground drag helpers, horizontal-rule product
+shell, exact DOM/theme output, raw mobile/device, collaboration, table-model,
+and issue behavior stay out.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/regression/7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground regression
+`7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs` source-read is
+complete. The portable row is rich HTML clipboard insertion inside a nested
+editable island plus restoring parent-editor use afterward. Slate now proves
+that rich HTML paste inside the nested rich-text editor preserves bold text,
+does not leak into the parent value, preserves the parent selection, and still
+allows parent-editor typing after nested editing. `site/examples/ts/richtext.tsx`
+now owns a narrow HTML paste capability that reuses the shared deserializer but
+normalizes imported content to the rich-text example's supported blocks and
+marks. The selection runtime now rejects DOM selections and beforeinput target
+ranges whose endpoints cross from a parent editor into a nested editor before
+they can replace parent content.
+
+Verification for the 7635 slice:
+
+- `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "rich HTML inside nested editor"` first failed red because the nested editor inserted plain text and dropped `<strong>`.
+- `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "parent selection that crosses|rich HTML inside nested editor"` passed after tightening parent/nested selection import.
+- `cd ../slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium` passed: 12 tests.
+- `cd ../slate-v2 && bun run lint:fix && bun check` passed: Biome formatted touched files, package/site/root typecheck passed, Bun tests passed, and slate-react Vitest passed.
+- `ruby -e 'require "yaml"; YAML.load_file("docs/solutions/logic-errors/2026-05-09-parent-nested-dom-selections-must-not-import-as-parent-ranges.md")'` passed for the solution note.
+
+Lexical image caption UI, `SELECTION_INSERT_CLIPBOARD_NODES_COMMAND` API,
+Playground command harness, exact DOM/theme output, raw mobile/device,
+collaboration, table-model, and issue behavior stay out.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/e2e/AutoLinks.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground e2e
+`AutoLinks.spec.mjs` source-read is complete. The portable Slate-owned row is
+not Lexical's full autolink plugin. Slate now proves the narrow accepted
+behavior in `../slate-v2/playwright/integration/examples/inlines.test.ts`:
+pasting a single URL at a collapsed selection creates one safe inline link,
+places the caret outside the link, and keeps follow-up typing outside the link.
+Focused pasted-URL browser proof, full inlines Chromium proof, `bun run
+lint:fix`, and `../slate-v2` `bun check` passed. Lexical's broad URL/email
+parser matrix, delimiter tokenization, invalid URL grammar, unlink/relink UI,
+unlinked-autolink preservation, emoji shortcode destruction, styling/font rows,
+toolbar/product shell, exact DOM/theme output, raw mobile, collaboration,
+table-model, and issue behavior stay deferred or rejected under future
+link/autolink plugin owners.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/e2e/Hashtags.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground e2e
+`Hashtags.spec.mjs` source-read is complete. The portable Slate-owned rows are
+dynamic decorated text-token editing, not Lexical's hashtag plugin grammar.
+Existing highlighted-text rows already covered hashtag-style decoration, Space
+splitting, Delete/Backspace boundaries, transient-prefix navigation,
+decorated-range copy/cut, and decorated-text IME/editing. The new proof in
+`../slate-v2/playwright/integration/examples/highlighted-text.test.ts` covers
+the missing delimiter/marker update: deleting the delimiter between `#hello`
+and `world` expands the decorated token, restoring the delimiter shrinks it
+back, and deleting the leading `#` drops the decoration with stable caret
+placement. Focused delimiter proof, full highlighted-text Chromium proof, `bun
+run lint:fix`, and `../slate-v2` `bun check` passed. Lexical's hashtag plugin
+grammar, invalid-match matrix, markdown import/export shell, format inheritance
+styling, exact DOM/theme output, raw mobile, collaboration, table-model, and
+issue behavior stay deferred or rejected.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/e2e/Keywords.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground e2e
+`Keywords.spec.mjs` source-read is complete with no Slate code change. The raw
+portable rows are already covered by the highlighted-text owner: projected text
+selection/movement/editing, mark-click typing through projections, decorated
+IME, copy/cut semantics, hashtag-style delimiter merge/split, and deleting a
+decorated selected range. Lexical's exact `congrats` grammar, bracket/team token
+policy, keyword styling, product plugin setup, exact DOM/theme output, raw
+mobile, collaboration, table-model, and issue behavior stay deferred or
+rejected. No new `../slate-v2` verification was needed for this slice because
+no code or test file changed.
+
+The completion checkpoint stays `pending` because the next runnable non-table
+row is
+`../lexical/packages/lexical-playground/__tests__/e2e/SelectionAlwaysOnDisplay.spec.mjs`.
+
+Ralph execution update on 2026-05-09: lexical-playground e2e
+`SelectionAlwaysOnDisplay.spec.mjs` source-read is complete with no Slate code
+change. The only raw Slate-owned invariant is blurred-editor model-selection
+persistence, and current `../slate-v2/playwright/integration/examples/richtext.test.ts`
+already proves it in `keeps model selection when focus moves outside the editor`.
+Lexical's always-on fake-selection overlay, highlight alignment tolerance,
+plain-text skip policy, exact DOM/theme output, raw mobile/device,
+collaboration, table-model, and issue behavior stay deferred or rejected as
+product visualization or future dedicated owners. The remaining raw mobile and
+collaboration buckets are explicit future-owner deferrals, so the selected
+Lexical non-table execution lane is closed.

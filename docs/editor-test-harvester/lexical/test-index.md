@@ -3,6 +3,8 @@
 source report: [report.md](./report.md)
 target: `../lexical`
 generated_at: 2026-05-08
+last_consolidated_at: 2026-05-09
+consolidation: portable runnable file count still 137; extracted line count still 1996; no missing or stale index files.
 
 Indexed runnable portable and portable-mixed files: 137.
 Extracted test/describe/it lines: 1996.
@@ -2964,4 +2966,3 @@ target: ../slate-v2/packages/slate/test; add focused browser proof only when beh
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTextNode.test.tsx:813` describe: updateDOM()
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTextNode.test.tsx:914` describe: exportDOM()
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTextNode.test.tsx:965` test: mergeWithSibling
-

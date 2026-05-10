@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -88,33 +88,16 @@ test('falls back to the shared state when the implicit session has no state file
   });
 });
 
-test('uses the latest scoped state when hook env has no session id', async () => {
+test('uses the shared state when hook env has no session id', async () => {
   await withTempWorkspace(async (cwd) => {
     await writeFile(
       path.join(cwd, 'tmp/completion-check.md'),
-      'status: pending\n'
+      'status: done\n'
     );
     await mkdir(path.join(cwd, 'tmp/completion-checks'), { recursive: true });
-
-    const staleScopedFile = path.join(
-      cwd,
-      'tmp/completion-checks/stale-session.md'
-    );
-    const activeScopedFile = path.join(
-      cwd,
-      'tmp/completion-checks/active-session.md'
-    );
-    await writeFile(staleScopedFile, 'status: pending\n');
-    await writeFile(activeScopedFile, 'status: done\n');
-    await utimes(
-      staleScopedFile,
-      new Date('2026-01-01'),
-      new Date('2026-01-01')
-    );
-    await utimes(
-      activeScopedFile,
-      new Date('2026-01-02'),
-      new Date('2026-01-02')
+    await writeFile(
+      path.join(cwd, 'tmp/completion-checks/other-session.md'),
+      'status: pending\n'
     );
 
     const result = await runCompletionCheck({
@@ -126,7 +109,7 @@ test('uses the latest scoped state when hook env has no session id', async () =>
     });
 
     assert.equal(result.code, 0);
-    assert.match(result.stdout, /tmp\/completion-checks\/active-session\.md/);
+    assert.match(result.stdout, /tmp\/completion-check\.md/);
   });
 });
 
