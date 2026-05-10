@@ -3,7 +3,7 @@ date: 2026-05-07
 topic: slate-v2-inline-delete-boundary-repro-ralplan
 status: done
 skill: slate-ralplan
-completion: tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md
+completion: .tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md
 score: 0.93
 selected_issue: "#5972"
 ---
@@ -450,7 +450,7 @@ Total: `0.93`.
 
 | Pass | Status | Evidence Added | Plan Delta | Open Issues | Next Owner |
 | --- | --- | --- | --- | --- | --- |
-| Current-state read | complete | `tmp/continue.md`, structural delete checkpoint, current source/test files | Selected new lane, not prior slice continuation | none | Ralplan |
+| Current-state read | complete | `.tmp/continue.md`, structural delete checkpoint, current source/test files | Selected new lane, not prior slice continuation | none | Ralplan |
 | ClawSweeper related issue discovery | complete | gitcrawl #5972 and hybrid search | #5972 selected, neighbors classified non-claim | none | Ralplan |
 | Issue-ledger pass | complete | test candidate map, dossier, coverage matrix | #5972 was kept Related until implementation proof landed | none | Ralplan |
 | Intent/boundary | complete | explicit scope/non-goals/decision boundary | no user question needed | none | Ralplan |
@@ -458,7 +458,7 @@ Total: `0.93`.
 | High-risk pass | complete | destructive edit pre-mortem | owner classification gate added | none | Ralplan |
 | Issue sync accounting | complete | coverage/dossier/PR pointers | generated live corpus unchanged by design | none | Ralplan |
 | Closure score | complete | score `0.93` with no dimension below `0.90` | ready for execution | none | Ralph |
-| Ralph execution start | complete | `tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md` moved to `pending` | red browser row became the active pass | none | execution agent |
+| Ralph execution start | complete | `.tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md` moved to `pending` | red browser row became the active pass | none | execution agent |
 | Red browser row | complete | `../slate-v2/playwright/integration/examples/inlines.test.ts` | #5972 reproduced: Backspace after clearing the inline deleted the preceding space | none | core delete planner |
 | Core fix | complete | `../slate-v2/packages/slate/src/transforms-text/delete-text.ts`; `../slate-v2/packages/slate/test/delete-contract.ts` | Backspace at the start of an empty editable inline routes to path delete instead of previous-character delete | none | verification |
 | Verification and issue sync | complete | package test, browser parity, typecheck, lint, issue ledgers, PR reference | #5972 moved from Related to Fixes | none | done |

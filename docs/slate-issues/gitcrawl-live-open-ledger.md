@@ -2,7 +2,7 @@
 date: 2026-05-04
 topic: slate-issues-gitcrawl-live-open-ledger
 status: active
-source: tmp/gitcrawl/2026-05-04T145301Z-threads.json
+source: .tmp/gitcrawl/2026-05-04T145301Z-threads.json
 ---
 
 # Slate Issues Gitcrawl Live Open Ledger

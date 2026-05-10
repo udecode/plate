@@ -3,7 +3,7 @@ date: 2026-05-06
 topic: slate-v2-dom-selection-boundary-proof
 status: done
 score: 0.96
-completion: tmp/completion-checks/slate-v2-dom-selection-boundary-proof-ralplan.md
+completion: .tmp/completion-checks/slate-v2-dom-selection-boundary-proof-ralplan.md
 ---
 
 # Slate v2 DOM Selection Boundary Proof Ralplan

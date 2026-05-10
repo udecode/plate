@@ -109,7 +109,7 @@ gitcrawl cluster ianstormtaylor/slate --threshold 0.80 --min-size 1 --max-cluste
 gitcrawl clusters ianstormtaylor/slate --json
 ```
 
-Store outputs under `tmp/gitcrawl/` with timestamped filenames and summarize
+Store outputs under `.tmp/gitcrawl/` with timestamped filenames and summarize
 them into `docs/slate-issues/gitcrawl-rebuild-report.md`.
 
 Use `gitcrawl clusters` and `cluster-detail` for multi-member clusters. Use
@@ -181,7 +181,7 @@ Goal:
 
 Outputs:
 
-- refreshed `tmp/gitcrawl/*`
+- refreshed `.tmp/gitcrawl/*`
 - updated `docs/slate-issues/gitcrawl-rebuild-report.md`
 - updated `docs/slate-issues/gitcrawl-clusters.md`
 - new/updated `docs/slate-issues/gitcrawl-recluster-map.md`
@@ -327,7 +327,7 @@ Verdict: ready for user review. Execution should start with Batch 0, then Batch
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/slate-v2/references/pr-description.md`
-- session completion file under `tmp/completion-checks/`
+- session completion file under `.tmp/completion-checks/`
 
 ## Completion Gates
 
@@ -361,7 +361,7 @@ Then move to Batch 1 high-signal multi-member clusters.
 
 | Time                 | Pass                           | Status      | Evidence                                                                                                                                  | Next owner                                  |
 | -------------------- | ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| 2026-05-04T14:53:01Z | clawsweeper-recluster-batch-0  | in_progress | `tmp/continue.md` refreshed; completion state set to `pending` for Batch 0 gitcrawl corpus work.                                          | Run gitcrawl doctor/refresh/cluster         |
+| 2026-05-04T14:53:01Z | clawsweeper-recluster-batch-0  | in_progress | `.tmp/continue.md` refreshed; completion state set to `pending` for Batch 0 gitcrawl corpus work.                                          | Run gitcrawl doctor/refresh/cluster         |
 | 2026-05-04T15:00:00Z | clawsweeper-recluster-batch-0  | complete    | Live refresh synced `659` threads; cluster output reconciled to `617` clusters, `28` multi-member clusters, and `589` singleton clusters. | Batch 1: high-signal multi-member clusters  |
 | 2026-05-04T15:08:00Z | clawsweeper-recluster-batch-1  | in_progress | Cluster 1 reviewed; dossier sections appended for #4564, #3723, #4789, #3836, #5711, #3834, and #4984 with no exact closure claims.       | Continue Batch 1 with cluster 5             |
 | 2026-05-04T15:14:00Z | clawsweeper-recluster-batch-1  | in_progress | Cluster 5 reviewed; dossier sections appended for #4074, #4618, and #3429 with no exact closure claims.                                   | Continue Batch 1 with cluster 6             |

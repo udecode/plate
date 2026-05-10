@@ -312,7 +312,7 @@ This Ralplan is ready for user review only when:
 - Regression proof route names package and DOM clipboard gates precisely.
 - High-risk/browser proof pass is applied or skipped with a concrete reason.
 - final score is `>= 0.92` and no dimension is below `0.85`.
-- `tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-ralplan.md`
+- `.tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-ralplan.md`
   is `done`.
 
 Status: complete.

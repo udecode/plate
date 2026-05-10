@@ -512,7 +512,7 @@ Execution ledger:
 
 | Time | Pass | Owner | Evidence | Result | Next |
 | --- | --- | --- | --- | --- | --- |
-| 2026-05-08T00:15:49+08:00 | deslop-pass | public docs/examples | completion state reset to pending; `tmp/continue.md` refreshed | started | grep source docs/examples and patch only real public-teaching drift |
+| 2026-05-08T00:15:49+08:00 | deslop-pass | public docs/examples | completion state reset to pending; `.tmp/continue.md` refreshed | started | grep source docs/examples and patch only real public-teaching drift |
 | 2026-05-08T00:21:19+08:00 | deslop-pass | public docs/examples | removed `slate/internal` from `../slate-v2/site/examples/ts/forced-layout.tsx`; replaced stale `Editor.children` prose in `../slate-v2/docs/libraries/slate-react/annotations.md`; source grep clean; `bun typecheck:site`, public-surface contract, `bun check`, and focused forced-layout Playwright stress row passed | phase 1 complete | phase 2 test-helper audit |
 | 2026-05-08T00:22:15+08:00 | deslop-pass | package tests | completion state moved to phase 2 | in progress | grep package tests for public-vs-internal helper ambiguity |
 | 2026-05-08T00:29:59+08:00 | deslop-pass | package tests | moved public read/update and generic API tests off `slate/internal`; focused public/helper tests passed | phase 2 complete | phase 3 internal helper naming audit |

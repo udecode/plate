@@ -30,6 +30,8 @@ jspm_packages/
 **/tmp
 /tmp
 /tmp*
+/.tmp
+/.tmp*
 /out-tsc
 **/build
 

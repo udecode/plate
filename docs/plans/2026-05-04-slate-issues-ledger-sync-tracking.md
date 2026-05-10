@@ -94,7 +94,7 @@ Verification:
 - Matrix/PR count script confirmed `3` exact fixed claims and `27`
   improved/related/not-claimed rows.
 - `bun run completion-check` passed against
-  `tmp/completion-checks/slate-issues-full-v2-rewrite-sync.md`.
+  `.tmp/completion-checks/slate-issues-full-v2-rewrite-sync.md`.
 - `pnpm lint:fix` failed on existing `benchmarks/editor/**` lint debt; Biome
   reported `202` benchmark diagnostics and no fixes were applied to this docs
   pass.

@@ -1079,7 +1079,7 @@ Status: `done`.
 
 Active checkpoint:
 
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-input-runtime-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-input-runtime-execution.md`
 
 Completed:
 

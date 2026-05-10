@@ -585,13 +585,13 @@ The execution lane is complete only when:
 - issue coverage matrix is synced;
 - fork issue dossier is synced;
 - PR description counts/text are synced if any claim changes;
-- `tmp/continue.md` points to the next real owner;
+- `.tmp/continue.md` points to the next real owner;
 - completion file is `done`.
 
 ## 26. Ralph Execution Ledger
 
 | Pass | Status | Owner | Evidence | Next owner |
 | --- | --- | --- | --- | --- |
-| Ralph activation | started | `../slate-v2/packages/slate` | `tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `tmp/continue.md` refreshed for this lane. | TDD red proof for `#5977`. |
+| Ralph activation | started | `../slate-v2/packages/slate` | `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `.tmp/continue.md` refreshed for this lane. | TDD red proof for `#5977`. |
 | TDD red proof | complete | `../slate-v2/packages/slate`; `../slate-v2/packages/slate-dom` | Focused tests first failed on missing concrete guards and silent unknown replay, then passed after adding guards and fail-closed replay validation. | Verification closeout. |
 | Verification closeout | complete | `../slate-v2/packages/slate`; `../slate-v2/packages/slate-dom`; `docs/slate-v2/**` | Focused package tests, transaction/collab metadata tests, `slate` and `slate-dom` typecheck, `bun lint:fix`, issue matrix, fork dossier, PR reference, changeset, and full execution ledger are synced. | Next `slate-ralplan` bucket selection. |

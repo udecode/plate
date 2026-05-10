@@ -97,7 +97,7 @@ When using the following skills, override the default behavior.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
 - Run `bun test:integration-local` only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
-- `tmp/completion-check.md` status semantics are strict:
+- `.tmp/completion-check.md` status semantics are strict:
   - `pending` means more autonomous work remains, even if the current slice is verified.
   - `done` means the active plan's completion target is met.
   - `blocked` means no autonomous progress is possible without missing evidence, unavailable tooling, or a user decision.

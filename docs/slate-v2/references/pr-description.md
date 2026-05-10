@@ -256,17 +256,17 @@ Proof references:
 - `docs/plans/2026-05-07-slate-v2-inline-delete-boundary-repro-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-operation-extensibility-validation-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-insert-fragment-at-location-ralplan.md`
-- `tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`
+- `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`
 - `../slate-v2/packages/slate/test/clipboard-contract.ts`
 - `../slate-v2/packages/slate/test/query-contract.ts`
 - `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
 - `../slate-v2/packages/slate/test/commit-metadata-contract.ts`
 - `../slate-v2/packages/slate/test/migration-backbone-contract.ts`
 - `../slate-v2/packages/slate/src/editor/nodes.ts`
-- `tmp/completion-checks/slate-v2-editor-nodes-reverse-order-ralplan.md`
-- `tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`
-- `tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md`
-- `tmp/completion-checks/slate-v2-core-caret-movement-word-insert-break-execution.md`
+- `.tmp/completion-checks/slate-v2-editor-nodes-reverse-order-ralplan.md`
+- `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`
+- `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md`
+- `.tmp/completion-checks/slate-v2-core-caret-movement-word-insert-break-execution.md`
 - `../slate-v2/packages/slate/test/snapshot-contract.ts`
 - `../slate-v2/packages/slate/test/transaction-contract.ts`
 
@@ -420,13 +420,13 @@ Proof references:
 - `../slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
 - `../slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
 - `../slate-v2/packages/slate/test/clipboard-contract.ts`
-- `tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-execution.md`
+- `.tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-execution.md`
 - `../slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-serialization-execution.md`
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-fragment-insertion-shape-execution.md`
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-inline-void-execution.md`
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`
-- `tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-api-extension-surface-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-serialization-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-fragment-insertion-shape-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-inline-void-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`
+- `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-api-extension-surface-execution.md`
 
 ## 6. React Runtime Closure
 

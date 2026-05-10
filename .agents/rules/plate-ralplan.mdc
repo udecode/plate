@@ -75,11 +75,12 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 
 - Plan file under `docs/plans/`.
 - Completion file: use session-scoped
-  `tmp/completion-checks/<session-id>.md` for detailed parallel plan state when
+  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state when
   `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
-  fallback `tmp/completion-check.md` only when no session id is available.
-- Continuation prompt: `tmp/continue.md` when further autonomous plan/spec work
-  remains.
+  fallback `.tmp/completion-check.md` only when no session id is available and no
+  scoped state files exist.
+- Continuation prompt: `.tmp/<session-id>/continue.md` when further autonomous
+  plan/spec work remains.
 - Editor-behavior outputs under `docs/editor-behavior/` when law changes.
 - Research updates under `docs/research/` when the evidence lane is stale,
   contradictory, or incomplete.
@@ -110,7 +111,7 @@ Always read only what is relevant, but start from these sources:
 
 1. Latest user request.
 2. Active completion file if present: session-scoped
-   `tmp/completion-checks/<session-id>.md`, otherwise `tmp/completion-check.md`.
+   `.tmp/<session-id>/completion-check.md`, otherwise `.tmp/completion-check.md`.
 3. Active plan under `docs/plans/` if present.
 4. [docs/editor-behavior/README.md](docs/editor-behavior/README.md).
 5. [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md).
@@ -355,8 +356,8 @@ Pass-state ledger rows must include:
 - next owner
 
 Do not mark multiple major passes complete in one activation. Finish the current
-pass, refresh `tmp/continue.md`, keep status `pending`, and let the next
-activation run the next pass.
+pass, refresh the active continuation prompt, keep status `pending`, and let the
+next activation run the next pass.
 
 ## Editor-Behavior Outputs
 
@@ -843,7 +844,7 @@ When the score is below threshold and a runnable next move exists:
 1. Update the plan with the current score, evidence, rejected tactics, and next
    owner.
 2. Keep the active completion file as `pending`.
-3. Use `ralph` to refresh `tmp/continue.md`.
+3. Use `ralph` to refresh the active continuation prompt.
 4. Scope-lock the continuation prompt to Plate Ralplan planning, research, and
    editor-behavior spec work only.
 5. Continue the next review/refinement slice.

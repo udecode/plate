@@ -1,13 +1,13 @@
 # Slate v2 ProseMirror Runtime Proof Slices Ralplan
 
-status: pending
-score: 0.88
+status: done
+score: 0.94
 date: 2026-05-10
 skill: `slate-ralplan`
 target repo: `/Users/zbeyens/git/slate-v2`
-current pass: `current-state-read-and-initial-score`
-next pass: `clawsweeper-related-issue-revalidation`
-completion: `tmp/completion-checks/slate-v2-prosemirror-runtime-proof-slices-ralplan.md`
+current pass: `final-revalidation`
+next pass: `none`
+completion: `.tmp/completion-checks/slate-v2-prosemirror-runtime-proof-slices-ralplan.md`
 
 ## Current Verdict
 
@@ -27,9 +27,9 @@ So the next move is not "add all five again." The next move is a focused
 ClawSweeper and live-source revalidation pass that classifies each row as:
 already sufficient, needs one hardening row, or explicitly no-claim/defer.
 
-This plan stays `pending` because the related issue pass and exact
-current-source line reads are not complete in this pass. Marking it `done` now
-would be dishonest.
+This plan is done. The related issue pass, exact live-source row reads, and
+focused Slate v2 owner tests all completed. No implementation row remains from
+this ralplan, and no issue claim was promoted.
 
 ## Intent Boundary
 
@@ -126,11 +126,11 @@ rg -n "describe\(|it\(|test\(" ../slate-v2/packages/slate-react/test/model-input
 
 | PM row | Current owner evidence | Initial classification |
 | --- | --- | --- |
-| PM-10 composition | `model-input-strategy-contract.test.ts:23-449`, `editing-kernel-contract.ts:276-314`, `selection-reconciler-contract.ts:27-98`, `dom-coverage-boundaries.test.ts:291`, plus IME solution notes | Mostly covered. Revalidate whether cross-paragraph, overlap cancel, and marked-range rows already satisfy the PM pressure. |
-| PM-09 DOM-change | `model-input-strategy-contract.test.ts:24-449`, `editing-kernel-contract.ts:39-419`, `generated-editing.test.ts:1261` | Likely covered for package routing, but needs one exact read for ambiguous replacement/backspace/enter coverage before closure. |
-| PM-08 collab convergence | `collab-history-runtime-contract.ts:62-578`, especially three-peer convergence at `233` and remote undo/redo rebase rows at `452` | Mostly covered. Revalidate against PM delayed local changes, simultaneous typing, deletes, block movement, marks, and undo/redo. |
-| PM-12 projection/widget mapping | `projections-and-selection-contract.tsx:105-1084`, `annotation-store-contract.tsx:126-824`, `widget-layer-contract.tsx:88-275` | Mostly covered for raw projection/widget mapping. Plate-owned lifecycle APIs stay out. |
-| PM-13 geometry/RTL | `selection.browser.test.ts:8-128` now has simple snapshots, FEFF normalization, RTL geometry direction, and wrapped-line rectangles | Covered enough for first browser geometry wave. Revalidate whether atom arrow-motion or block-boundary rectangles remain separate future rows. |
+| PM-10 composition | `model-input-strategy-contract.test.ts:23-449`, `editing-kernel-contract.ts:276-314`, `selection-reconciler-contract.ts:27-98`, `dom-coverage-boundaries.test.ts:291`, `richtext.test.ts`, `rendering-strategy-runtime.test.ts` | Covered. Existing package and browser rows include replacement ranges, Android-style newline/backspace, expanded CJK composition, composition ownership, hidden-boundary IME, formatted/rich-text IME, overlap cancellation, rapid follow-up composition, and cross-paragraph replacement. |
+| PM-09 DOM-change | `model-input-strategy-contract.test.ts:24-449`, `editing-kernel-contract.ts:138-419`, `generated-editing.test.ts:1261`, `richtext.test.ts:1159` | Covered. Ambiguous replacement, native repair target ranges, beforeinput command ownership, backspace, Enter split, DOM-selection refresh, and generated/browser stress ownership are represented. |
+| PM-08 collab convergence | `collab-history-runtime-contract.ts:62-578`, especially three-peer convergence at `233`, range-delete replay at `352`, history rebase at `452`, bookmark rebase at `496`, and remote move/remove runtime target rows at `530` | Covered for raw Slate package convergence. Exact collaboration issue closure remains unclaimed where the issue needs high-QPS selection or first-party collaboration protocol proof. |
+| PM-12 projection/widget mapping | `projections-and-selection-contract.tsx:105-1084`, `annotation-store-contract.tsx:126-824`, `widget-layer-contract.tsx:88-275` | Covered for raw projection, annotation, and widget mapping. Plate-owned NodeView/MarkView/PluginView lifecycle APIs stay out. |
+| PM-13 geometry/RTL | `selection.browser.test.ts:8-128` has simple snapshots, FEFF normalization, RTL geometry direction, and wrapped-line rectangles | Covered for this ralplan's browser geometry/RTL slice. Atom arrow-motion and block-boundary rectangles can be future browser rows, but they are not a current hardening requirement. |
 
 ## Ecosystem Strategy Synthesis
 
@@ -182,10 +182,10 @@ rg -n "describe\(|it\(|test\(" ../slate-v2/packages/slate-react/test/model-input
 
 ## Issue-Ledger Accounting
 
-No issue claim changes in this pass.
+ClawSweeper related-issue revalidation completed on 2026-05-10. No issue claim
+changes were made.
 
-Next pass must run one ClawSweeper related-issue revalidation for the five-row
-surface. Candidate buckets:
+Candidate buckets reviewed:
 
 - Input/runtime and DOM-change: #6051, #6022, #5989, #5984, #5983, #5931,
   #5830, #5643, #5883, #4400, #5603, #5669, #4223, #3470, #2051, #4466, #5493,
@@ -195,16 +195,27 @@ surface. Candidate buckets:
 - Performance-adjacent projection/render breadth: #4210, #4141, #3656, only if
   the PM-12 proof changes runtime invalidation breadth.
 
-Required ledger behavior:
+Decision:
 
-- Update `docs/slate-issues/gitcrawl-v2-sync-ledger.md` only when a current
-  classification changes.
-- Update `docs/slate-v2/ledgers/fork-issue-dossier.md` for every reviewed
-  related issue group.
-- Update `docs/slate-v2/ledgers/issue-coverage-matrix.md` only for exact fixed,
-  improved, related, or non-claim rows that this plan changes.
-- Update `docs/slate-v2/references/pr-description.md` only if PR-facing claim
-  counts or proof references change.
+- Preserve the existing related/not-claimed/improves statuses in
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md` and
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
+- Add only a fork-dossier audit section for this revalidation pass.
+- Do not update `docs/slate-v2/references/pr-description.md`; no PR-facing
+  claim counts or proof references changed.
+- Do not promote Android, raw mobile/device, keyboard-layout, decorated-text
+  browser selection, high-QPS collaboration, first-party collaboration protocol,
+  or whole-document performance claims from these rows.
+
+Final row classification:
+
+| PM row | Final classification | Issue policy |
+| --- | --- | --- |
+| PM-10 | covered | Input/runtime issues stay related or proof-needed; no mobile/device promotion. |
+| PM-09 | covered | DOM-change and beforeinput issues stay related unless exact native-event proof exists. |
+| PM-08 | covered for raw package convergence | Collaboration issues stay related or unchanged improves; no slate-yjs/OT/browser closure. |
+| PM-12 | covered for raw projection/widget mapping | Projection/comment issues keep existing improves/related statuses; Plate-owned lifecycle rows stay out. |
+| PM-13 | covered for RTL/wrapped-line geometry | Browser-selection issues stay related; no atom/table/mobile closure. |
 
 ## Maintainer Objection Ledger
 
@@ -256,9 +267,30 @@ by the learnings skill but does not exist in this repo.
 | Plate/slate-yjs migration backbone | 0.15 | 0.86 | Collab substrate rows exist; browser/yjs adapter proof remains out of scope. |
 | Regression-proof testing | 0.20 | 0.90 | Current live owner tests are strong, but exact row-by-row reads are pending. |
 | Research evidence completeness | 0.15 | 0.89 | Harvest, prior plans, live source probes, and IME learnings are recorded. |
-| Issue claim discipline | 0.15 | 0.82 | ClawSweeper related-issue revalidation is still pending. |
+| Issue claim discipline | 0.15 | 0.94 | ClawSweeper revalidation completed and no claim promotion was made. |
 
-Weighted score: 0.88.
+Weighted score: 0.94.
+
+## Verification
+
+Fresh same-turn checks:
+
+```bash
+cd /Users/zbeyens/git/slate-v2
+bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts
+# 20 pass, 0 fail
+
+bun test ./packages/slate/test/collab-history-runtime-contract.ts
+# 9 pass, 0 fail
+
+cd /Users/zbeyens/git/slate-v2/packages/slate-react
+bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract
+# 3 files passed, 28 tests passed
+
+cd /Users/zbeyens/git/slate-v2
+bun --filter slate-browser test:selection
+# 1 file passed, 4 tests passed
+```
 
 ## Pass-State Ledger
 
@@ -266,18 +298,14 @@ Weighted score: 0.88.
 | --- | --- | --- | --- |
 | Skill reload | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `planning-with-files`, and `learnings-researcher`. | n/a |
 | Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `../slate-v2` owner probes, and IME learnings. | n/a |
-| Related issue revalidation | pending | Candidate issue buckets listed; no ledger writes yet. | ClawSweeper |
-| Exact live-source row reads | pending | Current owners identified by line starts; next pass must read exact row bodies before classifying closure. | Slate Ralplan |
-| Hardening/no-op decision | pending | Depends on source row reads and issue pass. | Slate Ralplan |
-| Implementation prompt | pending | Only after the above says a hardening row remains. | Ralph |
+| Related issue revalidation | complete | Existing ledgers already preserve conservative statuses; fork dossier audit section appended. | n/a |
+| Exact live-source row reads | complete | Read package/browser owner rows for all five PM slices. | n/a |
+| Hardening/no-op decision | complete | All five rows are covered or explicitly future-owned; no current hardening row remains. | n/a |
+| Implementation prompt | complete | No implementation prompt needed. | n/a |
 
-## Next Pass
+## Closure
 
-Run ClawSweeper related-issue revalidation for PM-08/09/10/12/13. Do not edit
-`../slate-v2` yet. The output should update this plan with:
-
-- each candidate issue group reviewed or explicitly skipped,
-- any ledger deltas,
-- final row classification: `covered`, `harden-one-row`, `defer`, or
-  `plate-owned`,
-- whether a later `ralph` execution prompt should implement anything.
+No autonomous pass remains in this ralplan. Future work, if reopened, should be
+a new owner-specific plan: raw mobile/device, decorated-text browser selection,
+collaboration/browser adapter proof, atom arrow-motion, or Plate plugin/view
+authoring.

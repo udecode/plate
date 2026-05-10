@@ -85,7 +85,7 @@ rg -n "createEditor<|initialValue|renderVoid|useElementSelected|decorationSource
 
 ## Completion Target
 
-Set `tmp/completion-check.md` to `done` only when:
+Set `.tmp/completion-check.md` to `done` only when:
 
 - all five phases are complete
 - no normal docs path teaches stale legacy API contracts
@@ -102,7 +102,7 @@ Set `tmp/completion-check.md` to `done` only when:
 
 | Date | Slice | Files changed | Evidence | Next owner |
 | --- | --- | --- | --- | --- |
-| 2026-04-29 | Activated execution lane from accepted review plan. | This plan, `tmp/completion-check.md`, `tmp/continue.md` | Review lane closed at `0.92`; Phase 1 is runnable. | Phase 1 front door and navigation docs |
+| 2026-04-29 | Activated execution lane from accepted review plan. | This plan, `.tmp/completion-check.md`, `.tmp/continue.md` | Review lane closed at `0.92`; Phase 1 is runnable. | Phase 1 front door and navigation docs |
 | 2026-04-29 | Completed Phase 1 front door and navigation. | `../slate-v2/docs/Introduction.md`, `../slate-v2/docs/Summary.md`, `../slate-v2/docs/walkthroughs/01-installing-slate.md`, `../slate-v2/docs/walkthroughs/08-using-the-bundled-source.md` | Focused stale-term grep over touched docs returned no matches for beta, broken bundled-source, direct mutable fields, extension methods, or direct write snippets. Changelog and migration links are labeled historical. | Phase 2 core lifecycle docs |
 | 2026-04-29 | Completed Phase 2 core lifecycle docs. | `../slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`, `../slate-v2/docs/walkthroughs/05-executing-commands.md`, `../slate-v2/docs/concepts/07-editor.md`, `../slate-v2/docs/concepts/08-plugins.md`, `../slate-v2/docs/concepts/11-normalizing.md`, `../slate-v2/docs/api/nodes/editor.md` | Focused stale-write/API grep over Phase 2 docs returned no matches for extension `methods`, direct mutable fields, direct `Editor.addMark` / `Editor.removeMark` calls, or normal-path primitive writes. | Phase 3 React runtime docs |
 | 2026-04-29 | Completed Phase 3 React runtime docs. | `../slate-v2/docs/libraries/slate-react/slate.md`, `../slate-v2/docs/libraries/slate-react/editable.md`, `../slate-v2/docs/concepts/09-rendering.md`, `../slate-v2/docs/api/nodes/element.md` | Focused React docs grep found no `useSlate`, `<Editor>`, under-construction source escape hatch, app-owned void spacer example, eager `selected` / `focused` void props, or unsafe void action props. | Phase 4 collaboration substrate docs |

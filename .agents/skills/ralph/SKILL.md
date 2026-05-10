@@ -1,5 +1,5 @@
 ---
-description: Generate tmp/continue.md from the active plan, set the completion state to pending, then start the next runnable slice or review pass.
+description: Generate a session-scoped continuation prompt from the active plan, set the completion state to pending, then start the next runnable slice or review pass.
 name: ralph
 metadata:
   skiller:
@@ -32,7 +32,7 @@ Create one paste-ready continuation prompt that:
 - records the current pass in the completion state file
 - respects the project's completion state file when one exists
 - encodes a real stop rule, not a cooldown crutch
-- writes the result to `tmp/continue.md`
+- writes the result to the active continuation prompt file
 - sets the completion state to `pending`
 - starts the active plan's next runnable slice or required review pass in the
   current turn
@@ -48,13 +48,15 @@ Resolve project conventions before writing:
 
 1. Completion state file:
    - prefer the file named by the user or active plan
-   - else, for parallel sessions, use `tmp/completion-checks/<session-id>.md`
-     when `COMPLETION_CHECK_ID` or `CODEX_THREAD_ID` exists; create it when
-     starting or resuming a lane
-   - else use `tmp/completion-check.md` if it exists
+   - else, for parallel sessions, use `.tmp/<session-id>/completion-check.md`
+     when `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or `CODEX_SESSION_ID`
+     exists; create it when starting or resuming a lane
+   - else use `.tmp/completion-check.md` only when no scoped state files exist
    - else use the active plan as the mutable state file
 2. Continuation prompt output:
-   - always use `tmp/continue.md`
+   - prefer `.tmp/<session-id>/continue.md` when `COMPLETION_CHECK_ID`,
+     `CODEX_THREAD_ID`, or `CODEX_SESSION_ID` exists
+   - else use `.tmp/default/continue.md`
 3. Continue skill reference:
    - prefer `.agents/skills/continue/SKILL.md` if it exists
    - else use the available `continue` skill reference from the current runtime
@@ -96,7 +98,7 @@ Do not dump repo trivia into the prompt.
 4. Set the completion state to `pending` immediately, before prompt emission
    or execution work.
 5. Generate the continuation prompt from the active plan.
-6. Write the prompt to `tmp/continue.md`.
+6. Write the prompt to the active continuation prompt file.
 7. Update the active plan ledger, if it exists, to record that execution started
    or resumed.
 8. Sync any maintainer-facing reference docs named by the active plan,
@@ -216,7 +218,7 @@ Stop rule:
 The chat response must be one sentence with a repo-relative link:
 
 ```md
-Continue prompt - Sent to Codex when completion is blocked, so the task continues instead of stopping: [tmp/continue.md](tmp/continue.md)
+Continue prompt - Sent to Codex when completion is blocked, so the task continues instead of stopping: [.tmp/<session-id>/continue.md](.tmp/<session-id>/continue.md)
 ```
 
 Do not stop after emitting that sentence if the user asked to start execution
@@ -247,7 +249,7 @@ Do not paste long repeated doctrine into the prompt if a linked doc owns it.
 
 ### Rule 2.5: Context Grounding
 
-Before writing `tmp/continue.md` or starting a slice, make sure the active plan
+Before writing the active continuation prompt or starting a slice, make sure the active plan
 or mutable ledger contains a compact grounding block:
 
 - task statement
@@ -314,12 +316,17 @@ include:
 
 - read the completion state file before choosing the next move
 - use the session-scoped completion state file for parallel sessions; the
-  checker auto-selects `tmp/completion-checks/<session-id>.md` only when
+  checker auto-selects `.tmp/<session-id>/completion-check.md` only when
   `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or
-  `--file` selects it; otherwise it falls back to `tmp/completion-check.md`
+  `--file` selects it
+- without a session id, the checker treats a pending `.tmp/completion-check.md`
+  as unsafe when scoped state files exist and skips it instead of blocking every
+  session
 - when `CODEX_THREAD_ID` exists, `ralph` should create or update
-  `tmp/completion-checks/<CODEX_THREAD_ID>.md` and use that as the active
+  `.tmp/<CODEX_THREAD_ID>/completion-check.md` and use that as the active
   completion state for this session
+- record `continue_file: .tmp/<session-id>/continue.md` in the completion state
+  whenever the lane remains `pending`
 - set status `pending` before starting execution
 - keep status `pending` while work remains
 - set status `done` only when complete
@@ -346,6 +353,7 @@ shape:
 ```md
 status: pending
 plan: docs/plans/current-plan.md
+continue_file: .tmp/<session-id>/continue.md
 current_pass: deslop-pass
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/deslop-pass/SKILL.md
@@ -445,8 +453,9 @@ skips are not allowed.
 
 ### Rule 6.5: Start Execution
 
-After the completion state is `pending` and `tmp/continue.md` is written, start
-the first runnable slice or required review pass from the active plan.
+After the completion state is `pending` and the active continuation prompt is
+written, start the first runnable slice or required review pass from the active
+plan.
 
 Do not stop at prompt generation.
 
@@ -475,8 +484,9 @@ passes, confidence gates, challenge ledgers, or phase gates:
 - record each pass result in the active plan ledger before moving on
 - after a pass finds issues, make the next owner the revision pass or the next
   named review pass, not generic execution
-- after recording a pass result, refresh `tmp/continue.md` and let the next
-  activation run the next pass while the completion state remains `pending`
+- after recording a pass result, refresh the active continuation prompt and let
+  the next activation run the next pass while the completion state remains
+  `pending`
 - if the active lane is a planning/review gate, do not start implementation
   work just because `ralph` usually starts execution
 - set status `done` only when the active plan's confidence gates, pass gates,
@@ -630,7 +640,7 @@ Good:
 
 - `.agents/skills/continue/SKILL.md`
 - `docs/plans/current-plan.md`
-- `tmp/continue.md`
+- `.tmp/<session-id>/continue.md`
 
 Bad:
 

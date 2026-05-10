@@ -2,7 +2,7 @@
 date: 2026-05-04
 topic: slate-issues-gitcrawl-rebuild-report
 status: active
-source: tmp/gitcrawl/2026-05-04T145301Z-refresh.json
+source: .tmp/gitcrawl/2026-05-04T145301Z-refresh.json
 ---
 
 # Slate Issues Gitcrawl Rebuild Report
@@ -38,13 +38,13 @@ Use this rebuild as the current triage entrypoint:
 
 Raw Batch 0 artifacts:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-doctor.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-refresh.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-doctor-after-refresh.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-clusters.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-<id>-detail.json` for each
+- `.tmp/gitcrawl/2026-05-04T145301Z-doctor.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-refresh.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-doctor-after-refresh.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-clusters.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-<id>-detail.json` for each
   multi-member cluster
 
 Commands:

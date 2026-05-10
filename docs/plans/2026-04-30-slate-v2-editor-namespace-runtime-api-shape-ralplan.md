@@ -1522,7 +1522,7 @@ This Ralplan can be marked `done` only when:
 - high-risk deliberate pass is complete
 - revision pass is complete
 - no objection ledger row is unresolved
-- `tmp/continue.md` points at closure or completion
+- `.tmp/continue.md` points at closure or completion
 - no stale completion-check state points at an already completed pass
 
 Closure result before extension-namespace reopen:
@@ -1534,7 +1534,7 @@ Closure result before extension-namespace reopen:
 - all public API decisions final
 - implementation phases have owner surfaces and acceptance files
 - high-risk proof lanes are folded into fast/slow gates
-- `tmp/completion-check.md` was set to `done`
+- `.tmp/completion-check.md` was set to `done`
 
 Current completion state: pending while the Ralph implementation lane runs.
 

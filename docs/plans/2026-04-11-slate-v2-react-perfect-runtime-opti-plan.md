@@ -164,7 +164,7 @@ Work:
 - promote the current ad hoc huge-doc chunking comparison into a repo-owned
   script with stable outputs
 - keep the core-only compare scripts in `slate-v2/scripts/`
-- ensure every lane writes JSON to `tmp/`
+- ensure every lane writes JSON to `.tmp/`
 
 Acceptance:
 

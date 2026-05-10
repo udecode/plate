@@ -36,7 +36,7 @@ Completed work:
 
 Read first:
 
-- `tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `.tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
 - `docs/plans/2026-05-08-slate-v2-performance-scalability-slate-issues-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
@@ -239,7 +239,7 @@ Then in `plate-2`:
 
 ```bash
 pnpm lint:fix
-bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md
+bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md
 ```
 
 Completion rule:
@@ -499,8 +499,8 @@ Run this loop after every Item 1 or Item 2 slice.
 - `docs/slate-issues/gitcrawl-live-open-ledger.md`
 - `docs/slate-issues/gitcrawl-clusters.md`
 - active plan under `docs/plans/`
-- active completion file under `tmp/completion-checks/`
-- `tmp/continue.md`
+- active completion file under `.tmp/completion-checks/`
+- `.tmp/continue.md`
 
 ### Rules
 

@@ -276,8 +276,8 @@ Next owner:
 
 ### 2026-04-29 Ralph Activation
 
-- Set `tmp/completion-check.md` back to `pending`.
-- Regenerated `tmp/continue.md` for execution instead of review.
+- Set `.tmp/completion-check.md` back to `pending`.
+- Regenerated `.tmp/continue.md` for execution instead of review.
 - Started Phase 1 contract-first tests in
   `../slate-v2/packages/slate/test/public-surface-contract.ts`.
 - Added red public contracts for:
@@ -1405,5 +1405,5 @@ Do not set `done` until:
 - no public API surface is in "maybe" language
 - migration-backbone answers exist for Plate and slate-yjs
 - public export/test/doc acceptance criteria are named
-- `tmp/continue.md` is synchronized
+- `.tmp/continue.md` is synchronized
 - `bun run completion-check` passes after status is set appropriately

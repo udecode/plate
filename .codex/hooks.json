@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node tooling/scripts/completion-check-hook.mjs",
+            "timeout": 86400,
+            "statusMessage": "Running completion check"
+          }
+        ]
+      }
+    ]
+  }
+}

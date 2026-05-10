@@ -28,9 +28,9 @@ performance work.
 ## Artifact Policy
 
 - Durable markdown lives here.
-- Raw benchmark JSON lives in [tmp/](/Users/zbeyens/git/plate-2/tmp/).
+- Raw benchmark JSON lives in [.tmp/](/Users/zbeyens/git/plate-2/.tmp/).
 - Older docs may still mention `docs/plans/*.json` from before the raw
-  artifact move. When that happens, prefer the matching file in `tmp/`.
+  artifact move. When that happens, prefer the matching file in `.tmp/`.
 - Internal one-off planning/proof notes belong under `docs/plans/`, not
   here, unless they are directly useful to understanding the performance story.
 

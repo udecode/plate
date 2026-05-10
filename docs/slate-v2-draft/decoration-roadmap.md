@@ -893,7 +893,7 @@ scaling and invalidation, so benchmark truth is part of the contract.
 ### Benchmark hard rules
 
 - one lane = one decision
-- benchmark artifacts must live in `tmp/` with stable names
+- benchmark artifacts must live in `.tmp/` with stable names
 - benchmark docs must update:
   - [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md)
   - [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md)

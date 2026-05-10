@@ -681,7 +681,7 @@ Closure checks:
   collab targets
 - pass-state ledger shows every pass before closure as complete
 - no user-decision questions remain
-- `tmp/completion-check.md` is set to `done`
+- `.tmp/completion-check.md` is set to `done`
 
 Closure verdict:
 
@@ -1089,7 +1089,7 @@ Closure pass verified:
 - scorecard still matches the evidence after revision
 - pass-state ledger has no pending pass before closure
 - final gates are non-circular and actionable
-- `tmp/completion-check.md` and `tmp/continue.md` point at closure
+- `.tmp/completion-check.md` and `.tmp/continue.md` point at closure
 - completion state is set to `done` after this closure check is recorded
 
 ## 22. Implementation Phases With Owners
@@ -1208,6 +1208,6 @@ This plan is `done` because:
 - static `Editor.*` inventory is complete
 - every implementation phase has acceptance tests
 - high-risk proof plan names exact tests
-- `tmp/continue.md` points at the closed Ralplan state
+- `.tmp/continue.md` points at the closed Ralplan state
 - after status is set to `done`, `bun run completion-check` passes from
   `/Users/zbeyens/git/plate-2`

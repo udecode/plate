@@ -534,7 +534,7 @@ This Ralplan is ready for Ralph:
 - TDD and performance pressure rows are complete.
 - Maintainer objection rows and high-risk rows have accepted answers.
 - final score is at least `0.92` and no dimension is below `0.85`.
-- `tmp/completion-checks/slate-v2-editor-nodes-reverse-order-ralplan.md` is
+- `.tmp/completion-checks/slate-v2-editor-nodes-reverse-order-ralplan.md` is
   `done`.
 
 Status: done.
@@ -543,7 +543,7 @@ Status: done.
 
 | Slice | Status | Evidence | Plan delta | Next owner |
 | --- | --- | --- | --- | --- |
-| activation | complete | User invoked `ralph`; checkpoint set back to `pending`; `tmp/continue.md` regenerated for implementation. | Ralph execution started from the accepted `#5080` Ralplan. | red public query-contract test |
+| activation | complete | User invoked `ralph`; checkpoint set back to `pending`; `.tmp/continue.md` regenerated for implementation. | Ralph execution started from the accepted `#5080` Ralplan. | red public query-contract test |
 | red query-contract test | complete | `bun test ./packages/slate/test/query-contract.ts -t "nodes reverse"` failed before the fix with reverse paths `["1", "0", "0.3", "0.1"]` instead of `["1", "0.3", "0.1", "0"]`. | Added a public nested-match regression in `../slate-v2/packages/slate/test/query-contract.ts`. | editor query implementation |
 | editor query implementation | complete | `../slate-v2/packages/slate/src/editor/nodes.ts` traverses the forward range through existing filtering/mode logic, then reverses emitted matches for `reverse: true`. | Raw `Node.nodes` remains unchanged; `#5080` is fixed at the public query layer. | scoped verification |
 | scoped verification | complete | Focused reverse query proof passed; full `query-contract.ts` passed with `74 pass`; `bun --filter slate typecheck` passed; `bun lint:fix` passed with no final fixes. | Required package proof for the `#5080` lane is complete. | issue claim sync |

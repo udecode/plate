@@ -498,7 +498,7 @@ Implementation starts with tests, not a dependency deletion.
 
 - Plan is ready.
 - Implementation not started in this ralplan pass.
-- `tmp/completion-check.md` may be set to `done` for this planning lane because no further autonomous plan review is needed; the next runnable work is implementation, which requires a `go`/execution turn.
+- `.tmp/completion-check.md` may be set to `done` for this planning lane because no further autonomous plan review is needed; the next runnable work is implementation, which requires a `go`/execution turn.
 
 ## Execution Ledger
 
@@ -510,8 +510,8 @@ Supporting skills: `hard-cut`, `tdd`
 
 Actions:
 
-- Reopened `tmp/completion-check.md` as `pending`.
-- Refreshed `tmp/continue.md` for the implementation lane.
+- Reopened `.tmp/completion-check.md` as `pending`.
+- Refreshed `.tmp/continue.md` for the implementation lane.
 - Read relevant solution notes before implementation:
   - history hotkeys need real keyboard proof;
   - hard cuts need explicit contract/test files, not only default discovery;
@@ -554,7 +554,7 @@ Verification:
 Completion decision:
 
 - The hard cut is complete.
-- `tmp/completion-check.md` may be set to `done`.
+- `.tmp/completion-check.md` may be set to `done`.
 
 ### 2026-05-03 upstream is-hotkey test backfill
 

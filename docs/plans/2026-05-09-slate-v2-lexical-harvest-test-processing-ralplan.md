@@ -934,7 +934,7 @@ architecture choice
 | We close browser-only behavior with unit proof. | Proof owners are split: package tests for model invariants, Playwright for browser behavior, raw-device gate for mobile claims. |
 | Clipboard source-drill sprawls into code before row ownership is clear. | Phase 2 is source-drill only; implementation requires exact expected Slate output and proof owner. |
 | Table/mobile/collab non-claims drift into release or issue wording. | The plan, checkpoint, and continuation prompt repeat the non-claims; issue sync reruns only when claims change. |
-| We hide the real next work in a chat answer. | `tmp/continue.md` points at the current next runnable slice. |
+| We hide the real next work in a chat answer. | `.tmp/continue.md` points at the current next runnable slice. |
 
 ## Pass Schedule
 
@@ -950,7 +950,7 @@ architecture choice
 | 8. High-risk pass | complete | Loaded high-risk-deliberate-pass; recorded trigger, blast radius, pre-mortem, proof matrix, non-claim guards, ClawSweeper trigger policy, and text-unit verification scope. | Raised score to `0.92`; kept plan pending because revision/final accounting/closure remain runnable. | revision handled in pass 9 | `slate-ralplan` |
 | 9. Revision pass | complete | Re-read plan, checkpoint, continuation prompt, high-risk gate, implementation phases, issue accounting, proof matrix, and stale wording search. | Folded high-risk guards into Ralph-ready slices and implementation phases; prepared score dimensions; kept first `ralph` narrow and protected table/raw-mobile/collab non-claims. | issue accounting handled in pass 10 | `slate-ralplan` |
 | 10. Issue sync accounting | complete | Re-read plan claim rows, PR reference summary, issue coverage matrix rows, fork dossier rows, and live/open ledger policy. | Recorded no-op sync: no claims, PR counts, or related classifications changed after revision. | closure handled in pass 11 | `clawsweeper` |
-| 11. Closure score and final gates | complete | Re-read prepared score dimensions, pass schedule, completion file, continuation prompt, and final gates. | Marked the ralplan `done`; prepared `tmp/continue.md` for the first `ralph` execution slice. | no open planning pass | `ralph` |
+| 11. Closure score and final gates | complete | Re-read prepared score dimensions, pass schedule, completion file, continuation prompt, and final gates. | Marked the ralplan `done`; prepared `.tmp/continue.md` for the first `ralph` execution slice. | no open planning pass | `ralph` |
 | 12. Ralph execution: text-unit/delete package parity | complete | Added Lexical #7163 Unicode text-unit/delete rows; removed complex-script reverse-delete restoration; updated Thai delete fixtures; ran focused text-unit proof, unit-character fixtures, `bun run lint:fix`, and `bun check` in `../slate-v2`. | Marked Lexical #7163 `already-applied` in the processing ledger; left issue claims unchanged. | clipboard source-drill remains runnable | `ralph` |
 
 ## Plan Deltas
@@ -1005,7 +1005,7 @@ architecture choice
   PR counts, related classifications, fork dossier statuses, and non-claim
   surfaces stayed unchanged.
 - Completed closure scoring at `0.92` with no dimension below `0.85`.
-- Marked this ralplan done and prepared `tmp/continue.md` for the next `ralph`
+- Marked this ralplan done and prepared `.tmp/continue.md` for the next `ralph`
   execution slice: text-unit/delete package parity only.
 - Completed the first `ralph` execution slice. Lexical #7163 is now applied in
   Slate's text-unit contract, reverse complex-script deletion follows the same
@@ -1060,7 +1060,7 @@ Planning repo gates:
 ```bash
 cd /Users/zbeyens/git/plate-2
 pnpm lint:fix
-bun run completion-check -- --file tmp/completion-checks/slate-v2-lexical-harvest-test-processing-ralplan.md
+bun run completion-check -- --file .tmp/completion-checks/slate-v2-lexical-harvest-test-processing-ralplan.md
 ```
 
 Slate v2 gates for later implementation slices:

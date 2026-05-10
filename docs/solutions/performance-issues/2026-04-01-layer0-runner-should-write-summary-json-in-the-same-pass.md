@@ -58,7 +58,7 @@ The smoke freeze command is:
 
 It writes:
 
-- `tmp/editor-perf-layer0-smoke.json`
+- `.tmp/editor-perf-layer0-smoke.json`
 - `docs/plans/editor-perf-layer0-smoke-summary.json`
 
 The full Layer 0 command is:

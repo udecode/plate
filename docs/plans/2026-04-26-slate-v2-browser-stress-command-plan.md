@@ -36,10 +36,10 @@ human-like browser sweep, release proof, or replay for a reported editing bug.
 2. Reuse `scenario.run`, replay serialization, kernel trace checks, and DOM
    shape assertions.
 3. Add generated stress cases under `playwright/stress`.
-4. Write replay artifacts under `tmp/stress-artifacts`.
+4. Write replay artifacts under `.tmp/stress-artifacts`.
 5. Add `test:stress` and `test:stress:replay` scripts.
 6. Run focused verification for the stress tests and replay path.
-7. Keep `tmp/completion-check.md` synchronized.
+7. Keep `.tmp/completion-check.md` synchronized.
 
 ## Evidence Log
 
@@ -83,10 +83,10 @@ human-like browser sweep, release proof, or replay for a reported editing bug.
   after the fix.
 - `PLAYWRIGHT_BASE_URL=http://localhost:3100 bun test:stress` -> passed, 5
   tests.
-- `STRESS_REPLAY=tmp/stress-artifacts/chromium/plaintext/default-plaintext-select-all-multiline-paste.json PLAYWRIGHT_BASE_URL=http://localhost:3100 bun test:stress:replay`
+- `STRESS_REPLAY=.tmp/stress-artifacts/chromium/plaintext/default-plaintext-select-all-multiline-paste.json PLAYWRIGHT_BASE_URL=http://localhost:3100 bun test:stress:replay`
   -> passed.
 - `bun lint:fix` -> passed, formatted 3 files.
 - `bun lint` -> passed, checked 1567 files.
 - `bun --filter slate-browser typecheck && bun typecheck:root` -> passed.
-- `STRESS_REPLAY=tmp/stress-artifacts/chromium/richtext/default-richtext-select-all-type-delete-undo.json PLAYWRIGHT_BASE_URL=http://localhost:3100 bun test:stress:replay`
+- `STRESS_REPLAY=.tmp/stress-artifacts/chromium/richtext/default-richtext-select-all-type-delete-undo.json PLAYWRIGHT_BASE_URL=http://localhost:3100 bun test:stress:replay`
   -> passed.

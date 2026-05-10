@@ -188,7 +188,7 @@ exact rationale:
   chunking, or accepted with benchmark-backed rationale
 - `bun test:integration-local`, relevant package build/type/lint, and React/core
   perf gates pass
-- `tmp/completion-check.md` is updated only when this becomes the active
+- `.tmp/completion-check.md` is updated only when this becomes the active
   implementation lane
 
 ## Batch 1: Public API Hard Cut
@@ -519,7 +519,7 @@ Acceptance:
   - what is semantic-only
   - what is native mobile
   - what remains deferred
-- `tmp/completion-check.md` is `done` only after all active implementation
+- `.tmp/completion-check.md` is `done` only after all active implementation
   targets are closed
 
 Do not:
@@ -595,9 +595,9 @@ bun run lint
   - owner classification
   - rejected tactics
   - next move
-- if this plan becomes active, set `tmp/completion-check.md` to `pending`
+- if this plan becomes active, set `.tmp/completion-check.md` to `pending`
   before code work starts
-- do not set `tmp/completion-check.md` to `done` until all active completion
+- do not set `.tmp/completion-check.md` to `done` until all active completion
   targets are met or exactly deferred
 
 ## Stop Rule
@@ -630,20 +630,20 @@ Start with Batch 1:
 Actions:
 
 - activated this plan as the current completion lane
-- switched `tmp/completion-check.md` to `status: pending`
+- switched `.tmp/completion-check.md` to `status: pending`
 - confirmed Batch 1 starts with inventory/classification before broad edits
 
 Commands:
 
 - `sed -n '1,260p' docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 - `sed -n '260,620p' docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
-- `sed -n '1,160p' tmp/completion-check.md`
+- `sed -n '1,160p' .tmp/completion-check.md`
 - `sed -n '1,220p' package.json`
 
 Artifacts:
 
 - active plan: `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
-- completion gate: `tmp/completion-check.md`
+- completion gate: `.tmp/completion-check.md`
 
 Evidence:
 
@@ -668,7 +668,7 @@ Owner classification:
 Changed files:
 
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 
 Rejected tactics:
 
@@ -3027,7 +3027,7 @@ Next action:
 
 - run the final integration, package build/typecheck, lint, and perf guardrails
   required by the active completion target; then update
-  `tmp/completion-check.md` to `done` only if every required gate passes or to
+  `.tmp/completion-check.md` to `done` only if every required gate passes or to
   `blocked` only with exact missing evidence
 
 Checkpoint:
@@ -3149,7 +3149,7 @@ Rejected tactics:
 
 Next action:
 
-- set `tmp/completion-check.md` to `done` and run `bun completion-check`
+- set `.tmp/completion-check.md` to `done` and run `bun completion-check`
 
 Checkpoint:
 
@@ -3240,7 +3240,7 @@ Changed files:
 - `../slate-v2/packages/slate/src/utils/modify.ts`
 - `../slate-v2/packages/slate/test/**`
 - `../slate-v2/docs/general/changelog.md`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
 Rejected tactics:
@@ -3373,7 +3373,7 @@ Changed files:
 - `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 - `docs/solutions/developer-experience/2026-04-19-slate-public-single-op-writes-should-use-editor-apply-and-keep-onchange-behind-subscribers.md`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
 Rejected tactics:
@@ -3408,7 +3408,7 @@ Checkpoint:
 Actions:
 
 - reactivated this plan for the stricter `Transforms.*` hard cut
-- switched `tmp/completion-check.md` back to `status: pending`
+- switched `.tmp/completion-check.md` back to `status: pending`
 - reloaded prior solution notes and classified the 2026-04-09 transform
   namespace solution as stale for the current architecture
 - confirmed the open problem: docs/examples were already cleaned, but internals,
@@ -3418,13 +3418,13 @@ Actions:
 Commands:
 
 - `sed -n '1,240p' docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
-- `sed -n '1,220p' tmp/completion-check.md`
-- `rg -n "Transforms|transform namespace|editor\\.update|Public API|Hard Cut|mutable|completion" docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md docs/research/decisions/slate-v2-read-update-runtime-architecture.md docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md tmp/completion-check.md`
+- `sed -n '1,220p' .tmp/completion-check.md`
+- `rg -n "Transforms|transform namespace|editor\\.update|Public API|Hard Cut|mutable|completion" docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md docs/research/decisions/slate-v2-read-update-runtime-architecture.md docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md .tmp/completion-check.md`
 - `rg -n "title:.*(transform|slate|api)|tags:.*(transform|slate|api)|module:.*(slate|editor)" docs/solutions --glob '*.md' -i`
 
 Evidence:
 
-- `tmp/completion-check.md` is pending for this active owner
+- `.tmp/completion-check.md` is pending for this active owner
 - previous completion ledger explicitly says `Transforms.*` was only reduced in
   selected paths, not fully cut
 - previous solution doc restored transform namespaces as thin sugar; that is no
@@ -3455,7 +3455,7 @@ Owner classification:
 
 Changed files:
 
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
 Rejected tactics:
@@ -3551,7 +3551,7 @@ Evidence:
   output
 - transform namespace grep only finds negative assertions in
   `packages/slate/test/public-surface-contract.ts`
-- `bun completion-check` passes for `tmp/completion-check.md`
+- `bun completion-check` passes for `.tmp/completion-check.md`
 
 Hypothesis:
 
@@ -3597,7 +3597,7 @@ Changed files:
 - package source, fixture, and contract-test call sites migrated mechanically
   from `Transforms.*` to editor primitives
 - `docs/solutions/developer-experience/2026-04-09-slate-transform-namespaces-should-stay-thin-sugar-over-the-current-engine.md`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
 Rejected tactics:
@@ -3612,7 +3612,7 @@ Rejected tactics:
 
 Next action:
 
-- mark `tmp/completion-check.md` done for this slice and run
+- mark `.tmp/completion-check.md` done for this slice and run
   `bun completion-check`
 
 Checkpoint:
@@ -3636,7 +3636,7 @@ Checkpoint:
 Actions:
 
 - reactivated this plan for the primitive auto-transaction hard cut
-- moved `tmp/completion-check.md` back to `status: pending`
+- moved `.tmp/completion-check.md` back to `status: pending`
 - grounded the decision in the local Lexical source/docs:
   `editor.update(...)` is the write boundary, Lexical state helpers error
   outside update/read, and only named command dispatch opens an implicit update
@@ -3646,7 +3646,7 @@ Actions:
 Commands:
 
 - `rg -n "slate-v2|read/update|editor.update|completion-check|hard cut" /Users/zbeyens/.codex/memories/MEMORY.md`
-- `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|read-update" docs/solutions docs/plans docs/research tmp/completion-check.md --glob '*.md'`
+- `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|read-update" docs/solutions docs/plans docs/research .tmp/completion-check.md --glob '*.md'`
 - `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|withTransaction|applyOperations" ../slate-v2/packages/slate/src ../slate-v2/packages/slate/test ../slate-v2/docs --glob '!**/dist/**'`
 - `sed -n '1,220p' ../slate-v2/packages/slate/test/write-boundary-contract.ts`
 - `sed -n '1,1240p' ../slate-v2/packages/slate/src/core/public-state.ts`
@@ -3899,7 +3899,7 @@ Changed files:
 - `../slate-v2/site/examples/ts/tables.tsx`
 - `.agents/AGENTS.md`
 - `AGENTS.md`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
 Rejected tactics:
@@ -3912,7 +3912,7 @@ Rejected tactics:
 
 Next action:
 
-- mark `tmp/completion-check.md` done for this release-proof slice and run
+- mark `.tmp/completion-check.md` done for this release-proof slice and run
   `bun completion-check`
 
 Checkpoint:

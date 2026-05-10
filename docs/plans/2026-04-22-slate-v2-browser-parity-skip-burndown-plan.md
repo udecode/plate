@@ -63,14 +63,14 @@ The lane is complete only when:
 - no important editing behavior is Chromium-only.
 - model state and visible DOM state are both proved for editing behavior.
 
-`tmp/completion-check.md` must stay `status: pending` until this standard is
+`.tmp/completion-check.md` must stay `status: pending` until this standard is
 met.
 
 ## Review Items
 
 ### P0: Completion State Is Wrong
 
-`tmp/completion-check.md` cannot be `done` while the active standard rejects
+`.tmp/completion-check.md` cannot be `done` while the active standard rejects
 Chromium-only closure and broad skips.
 
 Fix:
@@ -331,7 +331,7 @@ Keep only if they serve the final architecture:
 
 Owner:
 
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 - this plan
 - integration skip inventory
 
@@ -500,7 +500,7 @@ Allowed docs:
 - `docs/slate-v2/**`
 - `docs/research/**`
 - `docs/solutions/**`
-- `tmp/completion-check.md`
+- `.tmp/completion-check.md`
 
 Allowed code:
 
@@ -566,7 +566,7 @@ Earliest gates:
 
 Next move:
 
-- set `tmp/completion-check.md` to `pending`
+- set `.tmp/completion-check.md` to `pending`
 - remove one high-value skip from core editing rows
 - run the focused row
 - fix the owner or hard-cut the row

@@ -14,7 +14,7 @@ source_refs:
   - docs/plans/2026-04-26-slate-v2-human-editing-stress-sweep.md
   - docs/solutions/developer-experience/2026-04-27-slate-react-public-selectors-must-stay-model-truth.md
   - docs/solutions/developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md
-  - tmp/completion-check.md
+  - .tmp/completion-check.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md

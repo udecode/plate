@@ -172,7 +172,7 @@ explicit benchmark and browser gates below.
 
 Current #5992 proof:
 
-- `tmp/completion-checks/slate-v2-best-pasting-strategy-ralplan.md` records the
+- `.tmp/completion-checks/slate-v2-best-pasting-strategy-ralplan.md` records the
   latest issue-size run: `50,000`-block two-node cut is `621.26ms`
   copy-plus-delete and `511.47ms` edit-only at `3` operations.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md` keeps #5992 at `Improves`,
@@ -614,7 +614,7 @@ This ralplan is done only when:
 - benchmark target is explicit;
 - issue ledgers and PR reference are synced if claims/API target changed;
 - score is `>= 0.92`, no dimension below `0.85`;
-- `tmp/continue.md` points to the accepted next owner.
+- `.tmp/continue.md` points to the accepted next owner.
 
 Current status: done for ralplan. Next owner: `ralph` execution of this plan,
 starting with the red op-contract/benchmark proof.

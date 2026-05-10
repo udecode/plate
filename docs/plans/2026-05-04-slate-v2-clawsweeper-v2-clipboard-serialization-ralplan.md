@@ -566,7 +566,7 @@ Current source evidence:
 - `../slate-v2/package.json` has benchmark commands for core, React, history,
   and #6038, but no clipboard large-payload command.
 - `../slate-v2/scripts/benchmarks/README.md` says new lanes belong under
-  `scripts/benchmarks/**`, artifacts belong in `tmp/`, and public `bench:*`
+  `scripts/benchmarks/**`, artifacts belong in `.tmp/`, and public `bench:*`
   command names are the contract.
 - `../slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` currently
   pays clipboard costs in these places: model-backed fragment `JSON.stringify`
@@ -795,7 +795,7 @@ Unchanged:
 - `clawsweeper`: applied. Related issue pass ran through the active issue
   matrix, live gitcrawl representative threads, and fork ledger updates.
 - `planning-with-files`: applied through `docs/plans`, checkpoint, and
-  `tmp/continue.md`.
+  `.tmp/continue.md`.
 - `learnings-researcher`: applied. Relevant solution notes confirm the split:
   core fragment meaning, DOM transport, React delegation, app-owned rich HTML.
   The expected `docs/solutions/patterns/critical-patterns.md` file is absent in

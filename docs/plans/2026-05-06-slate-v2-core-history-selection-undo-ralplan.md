@@ -551,7 +551,7 @@ cd ../slate-v2 && bun lint:fix
 ```
 
 All gates passed after lint. The execution checkpoint is
-`tmp/completion-checks/slate-v2-core-history-selection-undo-execution.md`.
+`.tmp/completion-checks/slate-v2-core-history-selection-undo-execution.md`.
 
 ## Final Completion Gates
 

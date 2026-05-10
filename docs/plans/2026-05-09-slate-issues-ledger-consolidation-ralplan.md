@@ -2,7 +2,7 @@
 date: 2026-05-09
 topic: slate-issues-ledger-consolidation
 status: done
-completion_file: tmp/completion-checks/slate-v2-slate-issues-ledger-consolidation-ralplan.md
+completion_file: .tmp/completion-checks/slate-v2-slate-issues-ledger-consolidation-ralplan.md
 source: docs/slate-issues
 ---
 
@@ -69,7 +69,7 @@ API behavior cannot.
 
 | Artifact | Current fact | Decision |
 | --- | --- | --- |
-| `docs/slate-issues/gitcrawl-live-open-ledger.md` | `630` live issue rows; frontmatter source `tmp/gitcrawl/2026-05-04T145301Z-threads.json`; text says live gitcrawl fields only. | Keep generated/live-only. Do not add manual classifications here. |
+| `docs/slate-issues/gitcrawl-live-open-ledger.md` | `630` live issue rows; frontmatter source `.tmp/gitcrawl/2026-05-04T145301Z-threads.json`; text says live gitcrawl fields only. | Keep generated/live-only. Do not add manual classifications here. |
 | `docs/slate-issues/open-issues-ledger.md` | Frozen `2026-04-02` research corpus with `682` issues and existing sync vocabulary. | Keep as historical seed and frozen corpus record. Do not pretend it is current live sync. |
 | `docs/slate-issues/issue-clusters.md` | `9` macro themes; `378` raw primary clusters; top themes are selection/DOM, mobile/IME, React runtime, and performance. | Keep as macro taxonomy source. |
 | `docs/slate-issues/gitcrawl-clusters.md` | `617` gitcrawl clusters for `659` open threads; only `28` clusters have more than one member. | Keep as archive-neighbor discovery, not architecture taxonomy. |
@@ -410,8 +410,8 @@ node tooling/scripts/slate-issues-ledger-check.mjs
 Files:
 
 - this plan
-- `tmp/completion-checks/slate-v2-slate-issues-ledger-consolidation-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-slate-issues-ledger-consolidation-ralplan.md`
+- `.tmp/continue.md`
 
 Work:
 

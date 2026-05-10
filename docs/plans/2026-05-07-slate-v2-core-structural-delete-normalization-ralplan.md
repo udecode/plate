@@ -3,7 +3,7 @@ date: 2026-05-07
 topic: slate-v2-core-structural-delete-normalization
 status: slate-ralplan-done
 score: 0.94
-completion: tmp/completion-checks/slate-v2-core-structural-delete-normalization-ralplan.md
+completion: .tmp/completion-checks/slate-v2-core-structural-delete-normalization-ralplan.md
 owner: ../slate-v2/packages/slate
 ---
 
@@ -64,11 +64,11 @@ bun --filter slate typecheck
 
 Current completed evidence:
 
-- `tmp/completion-checks/slate-v2-core-history-selection-undo-execution.md`
+- `.tmp/completion-checks/slate-v2-core-history-selection-undo-execution.md`
   records #3534/#3551/#4559 as exact fixed claims and #3705/#3921 as improved.
-- `tmp/completion-checks/slate-v2-dom-selection-boundary-proof-ralplan.md`
+- `.tmp/completion-checks/slate-v2-dom-selection-boundary-proof-ralplan.md`
   records the DOM/browser boundary fixed claims, including #6034 and #3991.
-- `tmp/completion-checks/slate-v2-range-delete-replace-children-ralplan.md`
+- `.tmp/completion-checks/slate-v2-range-delete-replace-children-ralplan.md`
   records `replace_children` as the child-window operation for large range
   delete, history, refs, and collab.
 

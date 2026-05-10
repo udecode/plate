@@ -3,7 +3,7 @@ date: 2026-05-08
 topic: slate-v2-dom-selection-focus-bridge
 status: done
 score: 0.94
-completion: tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md
+completion: .tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md
 current_pass: closure-score-and-final-gates
 next_pass: none
 ---
@@ -912,7 +912,7 @@ Planning artifact gates:
 
 ```bash
 cd /Users/zbeyens/git/plate-2
-bun run completion-check -- --file tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md
+bun run completion-check -- --file .tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md
 ```
 
 Expected after closure: passes with `status: done`.
@@ -1247,8 +1247,8 @@ Status: complete.
 Owner:
 
 - `docs/plans/2026-05-08-slate-v2-dom-selection-focus-bridge-ralplan.md`
-- `tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md`
+- `.tmp/continue.md`
 - `../slate-v2`
 
 Scope:

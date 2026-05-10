@@ -4,7 +4,7 @@ topic: slate-v2-react-decorations-slate-issues-ralplan
 status: slate-ralplan-done
 skill: slate-ralplan
 bucket: react-runtime-decorations-annotations
-completion: tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
+completion: .tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
 ---
 
 # Slate v2 React / Decorations Slate Issues Ralplan
@@ -200,7 +200,7 @@ Focused current verification:
 - result: passed; no fixes applied.
 - cwd: `plate-2`
 - command:
-  `bun run completion-check -- --file tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+  `bun run completion-check -- --file .tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
 - result: expected failure because the active completion file is `pending`
   after pass 5.
 
@@ -1337,7 +1337,7 @@ Planning gates, cwd `plate-2`:
 
 ```bash
 pnpm lint:fix
-bun run completion-check -- --file tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
+bun run completion-check -- --file .tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
 ```
 
 Focused Slate v2 behavior gates, cwd `../slate-v2`:
@@ -1487,8 +1487,8 @@ Files changed:
 - `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Decision:
 
@@ -1518,8 +1518,8 @@ benchmarks.
 Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1560,8 +1560,8 @@ Status: complete; already done in live source, verified by focused contracts.
 Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1602,8 +1602,8 @@ Files changed:
 - `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1645,8 +1645,8 @@ Status: complete; already done in live source, verified by focused contracts.
 Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1684,8 +1684,8 @@ Files changed:
 
 - `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1721,8 +1721,8 @@ Status: complete.
 Files changed:
 
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Browser proof covered:
 
@@ -1769,8 +1769,8 @@ Files changed:
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 
@@ -1824,8 +1824,8 @@ Files changed:
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
-- `tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
-- `tmp/continue.md`
+- `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
+- `.tmp/continue.md`
 
 Live source owner:
 

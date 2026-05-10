@@ -525,7 +525,7 @@ Plan:
 
 - port the three draft current-only core lanes
 - keep the existing `#6038` artifact and command alive
-- normalize artifact naming under `tmp/`
+- normalize artifact naming under `.tmp/`
 
 Verification:
 
@@ -570,9 +570,9 @@ Plan:
 - port the draft compare lanes after infra is fixed
 - replace stale `pnpm` assumptions with current package-manager-aware plumbing
 - keep outputs stable:
-  - `tmp/slate-normalization-compare-benchmark.json`
-  - `tmp/slate-core-observation-benchmark.json`
-  - `tmp/slate-core-huge-document-benchmark.json`
+  - `.tmp/slate-normalization-compare-benchmark.json`
+  - `.tmp/slate-core-observation-benchmark.json`
+  - `.tmp/slate-core-huge-document-benchmark.json`
 
 Verification:
 
@@ -649,7 +649,7 @@ Anything else is backwards.
 Benchmark infra/package verification:
 
 - run every new `bench:core:*` and `bench:slate:6038:local` command once
-- confirm each command writes the expected `tmp/*.json` artifact
+- confirm each command writes the expected `.tmp/*.json` artifact
 
 Regression verification:
 

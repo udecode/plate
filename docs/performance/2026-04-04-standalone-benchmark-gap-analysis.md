@@ -21,7 +21,7 @@ come from:
 
 - [editor-perf/page.tsx](/Users/zbeyens/git/plate-2/apps/www/src/app/dev/editor-perf/page.tsx)
 - [run-editor-perf.mts](/Users/zbeyens/git/plate-2/apps/www/scripts/run-editor-perf.mts)
-- [editor-perf-public-summary-3020.json](/Users/zbeyens/git/plate-2/tmp/editor-perf-public-summary-3020.json)
+- [editor-perf-public-summary-3020.json](/Users/zbeyens/git/plate-2/.tmp/editor-perf-public-summary-3020.json)
 
 That public harness uses:
 

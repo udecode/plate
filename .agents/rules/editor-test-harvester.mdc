@@ -72,7 +72,7 @@ missing, clone it to `../repo-name`.
 For a normal harvest, create or update a completion file:
 
 ```text
-tmp/completion-checks/editor-test-harvest-<repo>.md
+.tmp/editor-test-harvest-<repo>/completion-check.md
 ```
 
 Use:
@@ -101,10 +101,10 @@ Set `done` only when:
   verification command or a documented Plate backlog owner;
 - the report has a full inventory appendix or a linked inventory file.
 
-If any gate fails but more work is possible, keep `pending` and write
-`tmp/continue.md` with the next harvest pass. Use `blocked` only when the target
-repo, Slate v2 checkout, required browser/device tooling, or a user decision is
-missing and no useful autonomous pass remains.
+If any gate fails but more work is possible, keep `pending` and write the active
+continuation prompt with the next harvest pass. Use `blocked` only when the
+target repo, Slate v2 checkout, required browser/device tooling, or a user
+decision is missing and no useful autonomous pass remains.
 
 ## Confidence Score
 
@@ -438,7 +438,7 @@ rg --files <target> | rg '<test inventory pattern>' | wc -l
 rg -n "Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" docs/editor-test-harvester/<repo>/report.md
 test -f docs/editor-test-harvester/<repo>/inventory.md
 test -f docs/editor-test-harvester/<repo>/test-index.md
-bun run completion-check -- --file tmp/completion-checks/editor-test-harvest-<repo>.md
+bun run completion-check -- --id editor-test-harvest-<repo>
 ```
 
 Implementation verification in `../slate-v2`:

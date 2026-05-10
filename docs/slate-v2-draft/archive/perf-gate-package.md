@@ -56,12 +56,12 @@ These do not block RC truth by themselves:
 
 | Lane id | Class | Command | Artifact / output | Owner | Current status |
 | --- | --- | --- | --- | --- | --- |
-| `perf-runtime-richtext-format` | mainstream richtext flows | `pnpm bench:replacement:richtext:local` | `tmp/slate-replacement-richtext-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
-| `perf-runtime-placeholder` | `slate-react` mounted runtime basics | `pnpm bench:replacement:placeholder:local` | `tmp/slate-replacement-placeholder-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
-| `perf-runtime-huge-document` | huge-document user flows | `pnpm bench:replacement:huge-document:local` | `tmp/slate-replacement-huge-document-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
-| `perf-history-compare` | `slate-history` undo / redo on the default editor surface | `pnpm bench:history:compare:local` | `tmp/slate-history-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `pass` |
-| `perf-core-normalization-local` | core normalization / engine lanes | `pnpm bench:normalization:local` | `tmp/slate-normalization-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `open` |
-| `perf-core-normalization-compare` | core normalization / engine lanes | `pnpm bench:normalization:compare:local` | `tmp/slate-normalization-compare-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `open` |
+| `perf-runtime-richtext-format` | mainstream richtext flows | `pnpm bench:replacement:richtext:local` | `.tmp/slate-replacement-richtext-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
+| `perf-runtime-placeholder` | `slate-react` mounted runtime basics | `pnpm bench:replacement:placeholder:local` | `.tmp/slate-replacement-placeholder-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
+| `perf-runtime-huge-document` | huge-document user flows | `pnpm bench:replacement:huge-document:local` | `.tmp/slate-replacement-huge-document-benchmark.json` | [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md) | `pass` |
+| `perf-history-compare` | `slate-history` undo / redo on the default editor surface | `pnpm bench:history:compare:local` | `.tmp/slate-history-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `pass` |
+| `perf-core-normalization-local` | core normalization / engine lanes | `pnpm bench:normalization:local` | `.tmp/slate-normalization-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `open` |
+| `perf-core-normalization-compare` | core normalization / engine lanes | `pnpm bench:normalization:compare:local` | `.tmp/slate-normalization-compare-benchmark.json` | [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md) | `open` |
 
 Current read:
 

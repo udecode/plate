@@ -100,7 +100,7 @@ bun check
 
 Inspect the emitted JSON artifacts, not just command success:
 
-- `tmp/slate-editor-store-benchmark.json`
+- `.tmp/slate-editor-store-benchmark.json`
 - `packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`
 
 ## Why This Works

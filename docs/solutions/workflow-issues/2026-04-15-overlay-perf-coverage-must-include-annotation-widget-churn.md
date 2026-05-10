@@ -101,7 +101,7 @@ two isolated tricks.
 - Prefer extending an existing locality lane before creating a brand-new
   benchmark family.
 - If a rerender benchmark writes artifacts under a filtered package cwd, record
-  the real artifact path in docs instead of guessing a repo-root `tmp/` path.
+  the real artifact path in docs instead of guessing a repo-root `.tmp/` path.
 
 ## Related Issues
 

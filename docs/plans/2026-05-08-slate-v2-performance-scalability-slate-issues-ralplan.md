@@ -9,9 +9,9 @@ Current pass: `closure`
 Current score: `0.95`
 
 Completion file:
-`tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+`.tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
 
-Continuation prompt: `tmp/continue.md`
+Continuation prompt: `.tmp/continue.md`
 
 ## Ralph Execution Slice 1
 
@@ -30,7 +30,7 @@ Result:
 - Shared core summaries now emit `p75`, `p95`, and `p99`.
 - Shared React summaries now emit `p75`, `p95`, and `p99`.
 - `bench:core:editor-store:local` now runs on the current transaction API and
-  writes percentile fields to `tmp/slate-editor-store-benchmark.json`.
+  writes percentile fields to `.tmp/slate-editor-store-benchmark.json`.
 - `bench:react:huge-document-overlays:local` writes percentile fields to
   `packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`.
 - `bun check` passes in `../slate-v2`.
@@ -1432,78 +1432,78 @@ Next user-visible action:
 Planning checks in `plate-2`:
 
 - `pnpm lint:fix`
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
 
 Pass 1 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 2 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 3 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 4 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 5 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 6 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 7 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 8 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 9 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 10 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 11 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   failed as expected because top-level status is `pending`.
 
 Pass 12 verification:
 
 - `pnpm lint:fix` passed.
-- `bun run completion-check -- --file tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
+- `bun run completion-check -- --file .tmp/completion-checks/slate-v2-performance-scalability-slate-issues-ralplan.md`
   passed because top-level status is `done`.
 
 Slate v2 verification for later execution or closure:

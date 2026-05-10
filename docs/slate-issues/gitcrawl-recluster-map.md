@@ -3,7 +3,7 @@ date: 2026-05-04
 topic: slate-issues-gitcrawl-recluster-map
 status: active
 source:
-  - tmp/gitcrawl/2026-05-04T145301Z-clusters.json
+  - .tmp/gitcrawl/2026-05-04T145301Z-clusters.json
   - docs/slate-issues/gitcrawl-clusters.md
 ---
 
@@ -84,15 +84,15 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-1-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4564.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3723.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4789.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3836.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5711.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3834.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4984.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-dom-point.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-1-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4564.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3723.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4789.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3836.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5711.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3834.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4984.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-dom-point.json`
 
 Decision:
 
@@ -109,11 +109,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-5-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4074.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4618.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3429.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-inline-boundary.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-5-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4074.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4618.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3429.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-inline-boundary.json`
 
 Decision:
 
@@ -129,11 +129,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-6-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3705.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3756.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3921.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-history-set-selection.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-6-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3705.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3756.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3921.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-history-set-selection.json`
 
 Decision:
 
@@ -149,11 +149,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-7-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3634.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5537.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4961.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-reacteditor-focus.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-7-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3634.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5537.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4961.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-reacteditor-focus.json`
 
 Decision:
 
@@ -169,11 +169,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-9-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-6022.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-6027.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-android-mark-toggle.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-6022-6027.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-9-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-6022.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-6027.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-android-mark-toggle.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-6022-6027.json`
 
 Decision:
 
@@ -189,11 +189,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-10-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5987.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-6033.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-async-decoration-caret.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-10-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5987.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-6033.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-async-decoration-caret.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
 
 Decision:
 
@@ -209,11 +209,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-11-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5983.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-6020.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-android-empty-voice.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-11-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5983.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-6020.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-android-empty-voice.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
 
 Decision:
 
@@ -229,11 +229,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-12-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5183.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5391.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-android-inline-void-keyboard.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-12-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5183.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5391.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-android-inline-void-keyboard.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
 
 Decision:
 
@@ -249,11 +249,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-13-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4400.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5883.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-android-ime-empty-node.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-13-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4400.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5883.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-android-ime-empty-node.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
 
 Decision:
 
@@ -268,11 +268,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-14-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5826.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5882.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-refocus-autoscroll.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-14-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5826.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5882.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-refocus-autoscroll.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`
 
 Decision:
 
@@ -290,13 +290,13 @@ Status: reviewed and split.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-3-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3478.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4001.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3497.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3777.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-placeholder-composition-dom-point.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-3-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3478.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4001.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3497.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3777.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-placeholder-composition-dom-point.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
 
 Decision:
 
@@ -311,11 +311,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-19-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5088.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5473.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-19-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5088.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5473.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
 
 Decision:
 
@@ -330,11 +330,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-4376.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5171.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-4376.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5171.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
 
 Decision:
 
@@ -349,11 +349,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-22-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5095.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5096.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-22-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5095.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5096.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-mobile-browser-selection-quirks.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
 
 Decision:
 
@@ -368,11 +368,11 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-23-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-3871.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-neighbors-5847.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-triple-click-block-selection.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-23-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-3871.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-5847.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-triple-click-block-selection.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`
 
 Decision:
 
@@ -387,20 +387,20 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-2-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-4-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-8-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-15-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-17-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-18-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-21-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-24-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-25-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-26-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-27-detail.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-cluster-28-detail.json`
-- matching `tmp/gitcrawl/2026-05-04T145301Z-neighbors-*.json` files for each
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-2-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-4-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-8-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-15-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-17-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-18-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-21-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-24-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-25-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-26-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-27-detail.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-cluster-28-detail.json`
+- matching `.tmp/gitcrawl/2026-05-04T145301Z-neighbors-*.json` files for each
   member issue/PR.
 
 Decision:
@@ -438,20 +438,20 @@ Status: reviewed.
 
 Raw evidence:
 
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-samsung-firefox-android.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-inline-void-selection-keyboard.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-placeholder-composition.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-reacteditor-focus-parent-state.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-useselected-stale-path.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-decorate-async-caret-jump.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-history-set-selection-undo.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-copy-paste-inline-void.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-search-singleton-large-document-paste-cut-performance.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`
-- `tmp/gitcrawl/2026-05-04T145301Z-batch3-singleton-decisions.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-samsung-firefox-android.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-inline-void-selection-keyboard.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-placeholder-composition.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-reacteditor-focus-parent-state.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-useselected-stale-path.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-decorate-async-caret-jump.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-history-set-selection-undo.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-copy-paste-inline-void.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-large-document-paste-cut-performance.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`
+- `.tmp/gitcrawl/2026-05-04T145301Z-batch3-singleton-decisions.json`
 
 Decision:
 

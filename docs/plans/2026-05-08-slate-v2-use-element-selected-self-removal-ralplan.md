@@ -2,7 +2,7 @@
 date: 2026-05-08
 topic: slate-v2-use-element-selected-self-removal-ralplan
 status: done
-completion: tmp/completion-checks/slate-v2-use-element-selected-self-removal-ralplan.md
+completion: .tmp/completion-checks/slate-v2-use-element-selected-self-removal-ralplan.md
 skills:
   - slate-ralplan
   - clawsweeper
@@ -521,7 +521,7 @@ Accepted revisions from the objection pass:
 
 - Activated `ralph` execution: completion state is pending again, the current
   owner is `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`,
-  and `tmp/continue.md` is an execution prompt.
+  and `.tmp/continue.md` is an execution prompt.
 - Selected `#6053` as the next runnable issue lane.
 - Promoted `#6053` to `fixes-claimed` after exact package proof.
 - Added missing issue coverage matrix row for `#6053`.

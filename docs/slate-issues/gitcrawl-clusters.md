@@ -2,7 +2,7 @@
 date: 2026-05-04
 topic: slate-issues-gitcrawl-clusters
 status: active
-source: tmp/gitcrawl/2026-05-04T145301Z-clusters.json
+source: .tmp/gitcrawl/2026-05-04T145301Z-clusters.json
 ---
 
 # Slate Issues Gitcrawl Clusters
