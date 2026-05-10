@@ -47,7 +47,7 @@ Resolve project conventions before writing:
    - else, for parallel sessions, use `.tmp/<session-id>/completion-check.md`
      when `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or `CODEX_SESSION_ID`
      exists; create it when starting or resuming a lane
-   - else use `.tmp/completion-check.md` only when no scoped state files exist
+   - else create an explicit plan id and use `.tmp/<plan-id>/completion-check.md`
    - else use the active plan as the mutable state file
 2. Continuation prompt output:
    - prefer `.tmp/<session-id>/continue.md` when `COMPLETION_CHECK_ID`,
@@ -315,9 +315,8 @@ include:
   checker auto-selects `.tmp/<session-id>/completion-check.md` only when
   `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or
   `--file` selects it
-- without a session id, the checker treats a pending `.tmp/completion-check.md`
-  as unsafe when scoped state files exist and skips it instead of blocking every
-  session
+- without a session id, create an explicit scoped completion file instead of
+  relying on the old shared root completion file
 - when `CODEX_THREAD_ID` exists, `ralph` should create or update
   `.tmp/<CODEX_THREAD_ID>/completion-check.md` and use that as the active
   completion state for this session

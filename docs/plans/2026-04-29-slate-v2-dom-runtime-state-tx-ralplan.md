@@ -681,7 +681,7 @@ Closure checks:
   collab targets
 - pass-state ledger shows every pass before closure as complete
 - no user-decision questions remain
-- `.tmp/completion-check.md` is set to `done`
+- `.tmp/<session-id>/completion-check.md` is set to `done`
 
 Closure verdict:
 
@@ -1089,7 +1089,7 @@ Closure pass verified:
 - scorecard still matches the evidence after revision
 - pass-state ledger has no pending pass before closure
 - final gates are non-circular and actionable
-- `.tmp/completion-check.md` and `.tmp/continue.md` point at closure
+- `.tmp/<session-id>/completion-check.md` and `.tmp/continue.md` point at closure
 - completion state is set to `done` after this closure check is recorded
 
 ## 22. Implementation Phases With Owners

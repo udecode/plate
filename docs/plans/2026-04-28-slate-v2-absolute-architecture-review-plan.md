@@ -391,7 +391,7 @@ Next owner:
 
 - Closure pass. Verify score threshold, dimension floors, pass-state ledger,
   objection rows, public API certainty, and final gates, then set
-  `.tmp/completion-check.md` to `done` only if everything still passes.
+  `.tmp/<session-id>/completion-check.md` to `done` only if everything still passes.
 
 ## 2.6 2026-04-28 Slate Review Rerun: Pass 6 Closure
 
@@ -1630,7 +1630,7 @@ Revision decisions:
 
 The plan now has a high enough score for closure review, but not for automatic
 completion. Closure still needs to verify every gate and then set
-`.tmp/completion-check.md` to `done`.
+`.tmp/<session-id>/completion-check.md` to `done`.
 
 ## 12.4 Closure Pass Verdict
 
@@ -2709,7 +2709,7 @@ Reason:
 Scope:
 
 - Implementation code lives in `../slate-v2`.
-- Control files live here: `.tmp/completion-check.md`, `.tmp/continue.md`, and
+- Control files live here: `.tmp/<session-id>/completion-check.md`, `.tmp/continue.md`, and
   this plan ledger.
 - No current Plate or slate-yjs adapter support.
 
@@ -2731,7 +2731,7 @@ rg "editor\\.update\\(\\(\\) =>|editor\\.(setNodes|insertText|insertNodes|remove
 
 Completion:
 
-- `.tmp/completion-check.md` is `done`; the guard and targeted proof passed.
+- `.tmp/<session-id>/completion-check.md` is `done`; the guard and targeted proof passed.
 
 Completed in `/Users/zbeyens/git/slate-v2`:
 

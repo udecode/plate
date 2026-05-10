@@ -610,7 +610,7 @@ Status: inventory complete, baseline gates in progress.
 
 Actions:
 
-- Reset `.tmp/completion-check.md` from the closed controller lane to this
+- Reset `.tmp/<session-id>/completion-check.md` from the closed controller lane to this
   active editing-kernel rewrite lane.
 - Inventoried direct editing/timing ownership across:
   - `../slate-v2/packages/slate-react/src/**`

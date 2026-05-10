@@ -1,42 +1,109 @@
 ---
-description: 'Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate v2 coverage mapping, and copy/refactor/create decisions.'
-argument-hint: '[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]'
+description: "Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions."
+argument-hint: "[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]"
 disable-model-invocation: true
 ---
 
 # Editor Test Harvester
 
-Use this skill when mining another editor repository for tests worth stealing:
-Lexical, ProseMirror, CodeMirror, TipTap, Monaco, Quill, or any local clone under
-`..`. The job is not to clone their framework. The job is to extract portable
-editor behavior proof and route it to the right owner: raw Slate v2 substrate or
-Plate packages, kits, examples, and docs.
+Use this skill when mining another editor repository for tests worth harvesting:
+Lexical, ProseMirror, CodeMirror, Tiptap, Monaco, Quill, or any local clone under
+`..`.
+
+The job is not to clone their framework. The job is to extract portable editor
+behavior proof and route it to the right owner: raw Slate v2 substrate or Plate
+packages, kits, examples, and docs.
 
 This follows the ClawSweeper method and the ralplan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
-passes, narrow claims, then implementation only when asked.
+passes, narrow claims, license-aware invariant extraction, then implementation
+only when asked.
 
 ## Source Of Truth
 
 Read these first:
 
-1. The target editor repo, preferably a local checkout like `../lexical`.
-2. `../slate-v2` current test files and package scripts.
-3. Plate package/docs/example owners in this checkout when the behavior is a
+1. The target repo license evidence: `LICENSE`, `LICENCE`, `COPYING`, `NOTICE`,
+   package metadata, or workspace metadata.
+2. The target editor repo, preferably a local checkout like `../lexical`.
+3. `../slate-v2` current test files and package scripts.
+4. Plate package/docs/example owners in this checkout when the behavior is a
    plugin, kit, UI, React integration, or product policy.
-4. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
-5. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
+5. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
+6. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
    when a test exists because of a known upstream bug.
 
 Never browse GitHub files. If the target is `owner/repo` and the checkout is
 missing, clone it to `../repo-name`.
 
+## License Gate And Output Mode
+
+Before harvesting behavior, classify the target repo license from local source
+files only: `LICENSE`, `LICENCE`, `COPYING`, `NOTICE`, package metadata, or
+workspace metadata.
+
+Use one of these modes:
+
+- `permissive`: MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, ISC, CC0, or
+  clearly equivalent permissive licensing.
+- `behavior-only`: GPL, LGPL, AGPL, MPL, EPL, CDDL, proprietary, commercial,
+  source-available, mixed/unclear licensing, missing license evidence, or any
+  repo whose tests are not clearly permissively reusable.
+
+Output location:
+
+- `permissive`: write harvest artifacts under
+  `docs/editor-test-harvester/<repo>/`.
+- `behavior-only`: write harvest artifacts under
+  `.tmp/editor-test-harvester/<repo>/`.
+
+`.tmp/editor-test-harvester/<repo>/` is unversioned scratch space. It may contain
+source-adjacent notes, detailed provenance, raw local observations, and working
+material needed to understand the source repo.
+
+The strict invariant-only rule applies when producing versioned or durable
+project output from a `behavior-only` source:
+
+- Do not copy upstream test code, fixtures, helpers, snapshots, expected output
+  blobs, or expressive test prose into Plate, Slate, docs, examples, commits, or
+  PRs.
+- Do not translate upstream code line-by-line into versioned local tests.
+- Do not preserve upstream fixture shape in versioned output unless the shape is
+  a generic factual editor state required to describe the behavior.
+- Use source paths, minimal line references, and short paraphrased test labels
+  as provenance in versioned output.
+- Extract the behavior invariant, then write a fresh local proof using local
+  Slate/Plate fixtures, names, helpers, and assertions.
+- When in doubt about license mode, treat the source as `behavior-only`.
+
+Rule of thumb: study the wound, don’t transplant the skin.
+
+`behavior-only` does not block learning from non-permissive, source-available,
+or unclear-license projects. It blocks copying into versioned Plate/Slate output.
+The local proof should show that the implementation was independently expressed
+from the invariant, not pasted or mechanically ported from upstream source.
+
 ## Core Rules
 
+- License-gate the target before choosing the report directory.
+- For permissive targets, write normal durable artifacts under
+  `docs/editor-test-harvester/<repo>/`.
+- For `behavior-only` targets, write unversioned scratch artifacts under
+  `.tmp/editor-test-harvester/<repo>/`.
+- For `behavior-only` targets, copying source material inside `.tmp` is allowed
+  as scratch provenance, but copying it into versioned Plate, Slate, docs,
+  examples, commits, or PRs is forbidden.
+- For `behavior-only` targets, every versioned behavior row, implementation,
+  docs note, and test must be rewritten as a fresh invariant in local language,
+  with only source path/line provenance.
+- Never claim an upstream test was copied from a `behavior-only` repo into
+  versioned output. The valid versioned actions are invariant extraction, fresh
+  local proof, defer, or skip.
 - Build a complete target test-file inventory before reading favorite files.
-- Store harvest artifacts in one stable repo folder:
-  `docs/editor-test-harvester/<repo>/`. Do not create dated report files under
-  `docs/plans/` for normal harvest output.
+- Store harvest artifacts in one stable repo folder chosen by license mode:
+  `docs/editor-test-harvester/<repo>/` for permissive targets, or
+  `.tmp/editor-test-harvester/<repo>/` for `behavior-only` targets.
+- Do not create dated report files under `docs/plans/` for normal harvest output.
 - Reruns are idempotent. Read the existing repo folder first, rerun the source
   inventory, update the same files in place, and record new/removed source rows
   instead of creating a duplicate report.
@@ -44,8 +111,10 @@ missing, clone it to `../repo-name`.
   plate-owned, skip, harness, product-shell, or uncertain.
 - Every skip gets a reason. "Looks internal" is too vague.
 - Preserve the behavior invariant, not the upstream API shape.
-- Do not paste upstream test code verbatim. Write the strongest local proof for
-  the invariant, with source path references.
+- Do not paste upstream test code verbatim into versioned output. For
+  `behavior-only` targets, do not paste, mechanically translate, or preserve
+  upstream fixture/helper shape in versioned output. Write the strongest fresh
+  local proof for the invariant, with source path references only.
 - Prefer DRY Slate coverage: if a related test exists, strengthen or split it
   instead of creating a duplicate.
 - Use `plate-owned` when the useful behavior should fit Plate, not raw Slate.
@@ -75,11 +144,18 @@ For a normal harvest, create or update a completion file:
 .tmp/editor-test-harvest-<repo>/completion-check.md
 ```
 
+The completion file is always under `.tmp`, even for permissive targets. The
+report path inside it depends on license mode:
+
+- `permissive`: `docs/editor-test-harvester/<repo>/report.md`
+- `behavior-only`: `.tmp/editor-test-harvester/<repo>/report.md`
+
 Use:
 
 ```md
 status: pending
-plan: docs/editor-test-harvester/<repo>/report.md
+license_mode: permissive|behavior-only
+plan: <docs/editor-test-harvester/<repo>/report.md or .tmp/editor-test-harvester/<repo>/report.md>
 current_pass: <pass-name>
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/editor-test-harvester/SKILL.md
@@ -110,14 +186,14 @@ decision is missing and no useful autonomous pass remains.
 
 Score each harvest pass from `0.00` to `1.00`.
 
-| Dimension | Weight |
-| --- | ---: |
-| Inventory completeness | 0.20 |
-| Behavior extraction depth | 0.20 |
-| Skip precision and negative controls | 0.15 |
-| Slate/Plate coverage mapping accuracy | 0.20 |
-| Actionability of copy/refactor/create plan | 0.15 |
-| Provenance and reproducibility | 0.10 |
+| Dimension                                  | Weight |
+| ------------------------------------------ | -----: |
+| Inventory completeness                     |   0.20 |
+| Behavior extraction depth                  |   0.20 |
+| Skip precision and negative controls       |   0.15 |
+| Slate/Plate coverage mapping accuracy      |   0.20 |
+| Actionability of copy/refactor/create plan |   0.15 |
+| Provenance and reproducibility             |   0.10 |
 
 Score caps:
 
@@ -129,6 +205,9 @@ Score caps:
   only by file name.
 - Behavior extraction depth cannot exceed `0.85` unless all portable and
   portable-mixed runnable files have test-name extraction with line pointers.
+- Behavior extraction depth cannot exceed `0.85` for `behavior-only` targets
+  unless the report separates scratch provenance from versioned-output
+  invariants.
 - Skip precision cannot exceed `0.80` unless every skipped file or skip family
   has a concrete reason and at least one negative-control example was read.
 - Slate/Plate coverage mapping cannot exceed `0.80` unless the report records
@@ -139,7 +218,9 @@ Score caps:
   `plate-owned` row names the likely Plate package, kit, example, docs, or
   backlog owner.
 - Provenance cannot exceed `0.80` when issue/PR-linked upstream regression tests
-  are copied without ClawSweeper-style exact thread or local source rationale.
+  are used without ClawSweeper-style exact thread or local source rationale.
+- Provenance cannot exceed `0.80` for `behavior-only` targets unless the report
+  records license evidence, output directory, and versioned-output copy policy.
 - The total score cannot exceed `0.88` if the report has no pass-state ledger.
 - The total score cannot exceed `0.90` if the full inventory appendix is absent.
 
@@ -151,10 +232,13 @@ Completion threshold:
 - no portable-mixed file remains unexamined;
 - no create/refactor/copy/plate-owned row lacks a target owner;
 - no browser/IME/mobile claim is based only on jsdom or synthetic model tests;
-- pass-state ledger proves every pass completed before closure.
+- pass-state ledger proves every pass completed before closure;
+- for `behavior-only` targets, no versioned report, test, docs, fixture,
+  snapshot, or implementation output contains copied or mechanically translated
+  upstream source material.
 
-Below threshold, the report can still be useful, but it must say
-`first-pass`, `partial`, or `pending` and name the next owner.
+Below threshold, the report can still be useful, but it must say `first-pass`,
+`partial`, or `pending` and name the next owner.
 
 ## Pass Schedule
 
@@ -162,6 +246,8 @@ Run harvests as passes, not one giant skim:
 
 1. Intake and boundary pass:
    - target repo path or clone target;
+   - license evidence and license mode;
+   - report directory selected from license mode;
    - surfaces in scope and explicit non-goals;
    - report-only vs apply;
    - browser/device availability.
@@ -174,7 +260,10 @@ Run harvests as passes, not one giant skim:
    - extract `describe` / `it` / `test` names for every runnable portable,
      portable-mixed, and uncertain file;
    - for huge files, index test names first, then read targeted ranges;
-   - no portable-mixed file may stay summarized only by file name.
+   - no portable-mixed file may stay summarized only by file name;
+   - for `behavior-only` targets, record raw/source-adjacent extraction only in
+     `.tmp`; convert anything that leaves `.tmp` into short paraphrased
+     provenance.
 4. Classification pressure pass:
    - challenge skips and product-shell routing;
    - read negative-control examples from each large skip family;
@@ -183,7 +272,10 @@ Run harvests as passes, not one giant skim:
 5. Behavior extraction pass:
    - turn source tests into behavior invariants;
    - attach source file, line, test name, tag, proof kind, browser/device
-     requirements, and issue/PR rationale when present.
+     requirements, and issue/PR rationale when present;
+   - for `behavior-only` targets, scratch extraction may live in `.tmp`, but any
+     versioned row or implementation must be rewritten as a fresh local
+     invariant.
 6. Slate/Plate coverage mapping pass:
    - search `../slate-v2` by behavior keywords and adjacent concepts;
    - search current Plate packages, docs, examples, and kits for plugin/product
@@ -195,15 +287,19 @@ Run harvests as passes, not one giant skim:
    - assign `covered`, `refactor-existing`, `create-new`, `copy-now`, `defer`,
      `plate-owned`, or `skip`;
    - for every non-covered row, name target package/browser/docs owner, proof
-     kind, and verification command or backlog owner.
+     kind, and verification command or backlog owner;
+   - for `behavior-only` targets, `copy-now` means "write a fresh local proof
+     from the invariant" when producing versioned output.
 8. Ecosystem synthesis pass:
    - state what mechanism Slate should steal, reject, or deliberately diverge
      from;
+   - state what mechanism Plate should own as product/plugin policy;
    - include browser/runtime/testing strategy, not just a source list.
 9. Closure review pass:
    - score all dimensions with evidence;
    - record pass-state ledger;
    - list open gaps and next owner;
+   - verify license-mode output placement;
    - set completion `done` only if gates pass.
 
 Pass-state ledger rows must include:
@@ -223,35 +319,74 @@ Pass-state ledger rows must include:
    test -d ../lexical || git clone https://github.com/facebook/lexical.git ../lexical
    ```
 
-2. Resolve the stable harvest directory:
+2. Classify license mode before creating report artifacts:
 
    ```bash
-   repo_key="$(basename ../lexical | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')"
-   report_dir="docs/editor-test-harvester/${repo_key}"
+   target="../lexical"
+
+   mapfile -t license_files < <(
+     {
+       find "$target" -maxdepth 2 -type f \
+         \( -iname 'LICENSE*' -o -iname 'LICENCE*' -o -iname 'COPYING*' -o -iname 'NOTICE*' \)
+       find "$target" -maxdepth 3 -type f \
+         \( -name 'package.json' -o -name 'pnpm-workspace.yaml' -o -name 'package.yaml' \)
+     } | sort -u
+   )
+
+   mkdir -p .tmp/editor-test-harvest-license
+   printf '%s\n' "${license_files[@]}" > .tmp/editor-test-harvest-license/files.txt
+
+   if [ "${#license_files[@]}" -gt 0 ] && \
+      rg -i 'MIT License|Apache License|BSD 2-Clause|BSD 3-Clause|ISC License|CC0|SPDX-License-Identifier:\s*(MIT|Apache-2.0|BSD-2-Clause|BSD-3-Clause|ISC|CC0-1.0)|"license"\s*:\s*"(MIT|Apache-2.0|BSD-2-Clause|BSD-3-Clause|ISC|CC0-1.0)"' \
+        "${license_files[@]}" >/dev/null && \
+      ! rg -i 'GPL|AGPL|LGPL|MPL|EPL|CDDL|commercial|proprietary|source-available|Business Source|Elastic License|Server Side Public License|SSPL' \
+        "${license_files[@]}" >/dev/null; then
+     license_mode="permissive"
+   else
+     license_mode="behavior-only"
+   fi
+
+   echo "license_mode=$license_mode"
+   cat .tmp/editor-test-harvest-license/files.txt
+   ```
+
+   If license evidence is missing, mixed, or unclear, use `behavior-only`.
+
+3. Resolve the stable harvest directory:
+
+   ```bash
+   repo_key="$(basename "$target" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-')"
+
+   if [ "$license_mode" = "behavior-only" ]; then
+     report_dir=".tmp/editor-test-harvester/${repo_key}"
+   else
+     report_dir="docs/editor-test-harvester/${repo_key}"
+   fi
+
    mkdir -p "$report_dir"
    ```
 
    For `owner/repo` targets, use the cloned repo basename as `<repo>`. If
-   `report.md`, `inventory.md`, or `test-index.md` already exists, read them
-   before inventory and treat the run as an update. The rerun must look for new
-   and removed test files in the target checkout, then rewrite the same stable
-   files.
+   `report.md`, `inventory.md`, or `test-index.md` already exists in the chosen
+   license-mode report directory, read them before inventory and treat the run
+   as an update. The rerun must look for new and removed test files in the target
+   checkout, then rewrite the same stable files.
 
-3. Capture repo basics without starting with git state:
+4. Capture repo basics without starting with git state:
 
    ```bash
-   rg --files ../lexical | rg '(^|/)(package.json|bun.lock|pnpm-lock.yaml|yarn.lock|vitest|jest|playwright|wdio|cypress)'
+   rg --files "$target" | rg '(^|/)(package.json|bun.lock|pnpm-lock.yaml|yarn.lock|vitest|jest|playwright|wdio|cypress)'
    ```
 
-4. Build the exhaustive test inventory:
+5. Build the exhaustive test inventory:
 
    ```bash
-   rg --files ../lexical \
+   rg --files "$target" \
      | rg '(^|/)(__tests__|test|tests|spec|e2e|integration|playwright|cypress|wdio|fixtures)(/|$)|\.(test|spec)\.[cm]?[jt]sx?$' \
      | rg -v '(^|/)(dist|build|coverage|node_modules|vendor|fixtures/generated|__snapshots__)(/|$)'
    ```
 
-5. Classify every inventory row and record it in the appendix:
+6. Classify every inventory row and record it in the appendix:
 
    - `portable`: proves framework-agnostic editor behavior.
    - `portable-mixed`: contains raw editor behavior plus framework/product
@@ -264,28 +399,38 @@ Pass-state ledger rows must include:
    - `product-shell`: app/demo behavior outside raw editor substrate.
    - `uncertain`: needs a read before routing.
 
-6. Extract test names for all runnable portable, portable-mixed, and uncertain
+7. Extract test names for all runnable portable, portable-mixed, and uncertain
    files:
 
    ```bash
    rg -n "(describe|it|test)\\(" <target-test-files>
    ```
 
-7. Read all portable and uncertain files. For huge files, index test names first,
+8. Read all portable and uncertain files. For huge files, index test names first,
    then read the relevant ranges.
-8. Extract behavior rows. Use behavior words, not upstream class names.
-9. Search `../slate-v2` for equivalent coverage using behavior keywords and
-   adjacent concepts. Do not stop at exact upstream names.
-10. Assign one owner action per portable row:
 
-   - `covered`: current Slate v2 test fully proves the invariant.
-   - `refactor-existing`: related coverage exists but needs split, rename,
-     stronger assertions, or browser proof.
-   - `create-new`: no adequate coverage; propose the target test location.
-   - `copy-now`: user asked to apply and the invariant is safe to implement now.
-   - `defer`: requires unavailable raw device/browser/tooling proof.
-   - `plate-owned`: route to Plate package, kit, example, docs, or backlog owner.
-   - `skip`: after reading, it is not portable enough.
+9. Extract behavior rows. Use behavior words, not upstream class names.
+
+10. Search `../slate-v2` for equivalent coverage using behavior keywords and
+    adjacent concepts. Do not stop at exact upstream names.
+
+11. Search Plate packages, kits, examples, and docs when behavior belongs to
+    product/plugin policy rather than raw Slate substrate.
+
+12. Assign one owner action per portable row:
+
+- `covered`: current Slate v2 or Plate test fully proves the invariant.
+- `refactor-existing`: related coverage exists but needs split, rename,
+  stronger assertions, or browser proof.
+- `create-new`: no adequate coverage; propose the target test location.
+- `copy-now`: user asked to apply, the invariant is safe to implement now,
+  and the target is permissive. For `behavior-only` targets, this means
+  "write a fresh local proof from the invariant" for versioned output, never
+  copy upstream code, fixtures, snapshots, helpers, or expressive prose into
+  Plate, Slate, docs, examples, commits, or PRs.
+- `defer`: requires unavailable raw device/browser/tooling proof.
+- `plate-owned`: route to Plate package, kit, example, docs, or backlog owner.
+- `skip`: after reading, it is not portable enough.
 
 ## Portable Test Taxonomy
 
@@ -313,6 +458,9 @@ Use these tags consistently:
 - `mobile-device`
 - `focus-blur`
 - `shadow-dom`
+- `pagination-layout`
+- `structured-blocks`
+- `markdown-richtext-roundtrip`
 
 Portable examples:
 
@@ -321,6 +469,10 @@ Portable examples:
 - Browser-specific selection behavior such as Firefox multi-range selections.
 - Native paste, drag, drop, beforeinput delete, and compositionend ordering.
 - Undo granularity across composition, paste, delete, and fragment insertions.
+- Fragment insertion through mixed inline/block/void boundaries.
+- Collaborative position mapping across concurrent insert/delete and undo.
+- Pagination and deterministic layout behavior when the source proves editor
+  semantics rather than renderer-only appearance.
 
 Skip examples:
 
@@ -329,6 +481,9 @@ Skip examples:
 - Command registry wiring with no observable editor behavior.
 - Test utility tests that prove only the upstream harness.
 - Product demo chrome, menus, shortcuts, or app-specific UX policy.
+- Snapshot-only styling assertions with no editor behavior invariant.
+- Versioned-output candidates from `behavior-only` repos that cannot be reduced
+  to a fresh invariant without preserving expressive source material.
 
 Plate-owned examples:
 
@@ -339,26 +494,39 @@ Plate-owned examples:
 - React plugin hosts, menus, typeahead, toolbar state, and example app behavior.
 - ProseMirror NodeView, MarkView, PluginView, and plugin prop lifecycle ideas
   when they improve Plate authoring but should not become raw Slate API.
+- Tiptap-style extension ergonomics, command ergonomics, and schema packaging
+  when the behavior is developer-product surface rather than raw editor truth.
 
 ## Output Shape
 
-For report-only runs, write a durable report under:
+For report-only runs, choose the output directory by license mode:
 
 ```text
+# permissive
 docs/editor-test-harvester/<repo>/report.md
+
+# behavior-only
+.tmp/editor-test-harvester/<repo>/report.md
 ```
+
+`behavior-only` reports are unversioned scratch artifacts. They may contain
+detailed local research notes. They must not be copied into durable project docs
+without rewriting into fresh invariant language.
 
 Use stable companion files in the same directory:
 
 ```text
-docs/editor-test-harvester/<repo>/inventory.md
-docs/editor-test-harvester/<repo>/test-index.md
+<report_dir>/inventory.md
+<report_dir>/test-index.md
 ```
 
 Do not include the date in file names. Put run dates, inventory commands, source
-checkout path, and source revision/provenance inside the report instead. If a
-previous harvest exists, rewrite these files in place and add a rerun/update
-note that names newly discovered and removed target test files.
+checkout path, source revision/provenance, license mode, and license evidence
+inside the report instead.
+
+If a previous harvest exists in the chosen license-mode report directory, rewrite
+these files in place and add a rerun/update note that names newly discovered and
+removed target test files.
 
 Use this shape:
 
@@ -367,35 +535,58 @@ Use this shape:
 
 status: pending|first-pass done|done
 score: 0.xx
+license_mode: permissive|behavior-only
+license_evidence: `<path/to/LICENSE or package metadata>`
+output_mode: durable|scratch
+versioned_copy_policy: normal|fresh-invariant-only
 
 ## Inventory
 
 - target: `<path>`
 - test files found: N
 - portable: N
+- portable-mixed: N
+- plate-owned: N
 - skipped: N
 - harness/product/uncertain: N
+
+## License Gate
+
+| Field                 | Value                              |
+| --------------------- | ---------------------------------- |
+| License mode          | `permissive` or `behavior-only`    |
+| Evidence files        | `<local paths>`                    |
+| Output directory      | `docs/...` or `.tmp/...`           |
+| Output mode           | `durable` or `scratch`             |
+| Versioned copy policy | `normal` or `fresh-invariant-only` |
+
+For `behavior-only` targets, this report is scratch material. Anything promoted
+from it into versioned Plate/Slate output must be rewritten as a fresh invariant
+and local proof.
 
 ## Confidence Score
 
 | Dimension | Score | Evidence | Cap hit |
-| --- | ---: | --- | --- |
+| --------- | ----: | -------- | ------- |
 
 ## Pass-State Ledger
 
 | Pass | Status | Evidence added | Report delta | Open issues | Next owner |
-| --- | --- | --- | --- | --- | --- |
+| ---- | ------ | -------------- | ------------ | ----------- | ---------- |
 
 ## Matrix
 
-| Source | Test | Tag | Invariant | Proof kind | Owner coverage | Action |
-| --- | --- | --- | --- | --- | --- | --- |
-| `../lexical/...` | `test name` | `ime-composition` | ... | browser/unit/raw-device | `../slate-v2/...`, Plate owner, or none | covered/refactor-existing/create-new/defer/plate-owned |
+| Source ref       | Test ref   | Tag               | Behavior invariant | Proof kind              | Owner coverage                          | Action                                                 |
+| ---------------- | ---------- | ----------------- | ------------------ | ----------------------- | --------------------------------------- | ------------------------------------------------------ |
+| `../lexical/...` | `test ref` | `ime-composition` | ...                | browser/unit/raw-device | `../slate-v2/...`, Plate owner, or none | covered/refactor-existing/create-new/defer/plate-owned |
+
+For `behavior-only` targets, `Source ref` and `Test ref` are scratch provenance.
+Any versioned output derived from `Behavior invariant` must be rewritten locally.
 
 ## Skips
 
-| Source | Reason |
-| --- | --- |
+| Source           | Reason                                                       |
+| ---------------- | ------------------------------------------------------------ |
 | `../lexical/...` | Framework node-class invariant, no portable editor behavior. |
 
 ## Next Slice
@@ -407,13 +598,13 @@ score: 0.xx
 ## Full Inventory Appendix
 
 | Source | Runnable | Category | Reason | Test-name extraction |
-| --- | --- | --- | --- | --- |
+| ------ | -------- | -------- | ------ | -------------------- |
 ```
 
 If the inventory appendix is too large, write it to:
 
 ```text
-docs/editor-test-harvester/<repo>/inventory.md
+<report_dir>/inventory.md
 ```
 
 Then link it from the main report. Do not omit it.
@@ -421,33 +612,55 @@ Then link it from the main report. Do not omit it.
 Write the extracted portable/portable-mixed test-name index to:
 
 ```text
-docs/editor-test-harvester/<repo>/test-index.md
+<report_dir>/test-index.md
 ```
 
-For apply runs, edit `../slate-v2` tests only after the matrix exists. Keep the
-implementation slice small enough to verify. Source comments are useful only
-when they explain the behavior being protected; do not make tests read like
-upstream changelogs.
+For apply runs, edit `../slate-v2` or Plate tests only after the matrix exists.
+Keep the implementation slice small enough to verify.
+
+Source comments are useful only when they explain the behavior being protected.
+Do not make tests read like upstream changelogs. For `behavior-only` targets,
+source comments in versioned output must not quote or closely paraphrase
+upstream test bodies, fixtures, snapshots, expected output blobs, or expressive
+prose.
 
 ## Verification
 
 Report-only verification:
 
 ```bash
+# Set this from the license gate.
+# permissive:
+report_dir="docs/editor-test-harvester/<repo>"
+
+# behavior-only:
+report_dir=".tmp/editor-test-harvester/<repo>"
+
 rg --files <target> | rg '<test inventory pattern>' | wc -l
-rg -n "Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" docs/editor-test-harvester/<repo>/report.md
-test -f docs/editor-test-harvester/<repo>/inventory.md
-test -f docs/editor-test-harvester/<repo>/test-index.md
+rg -n "License Gate|Confidence Score|Pass-State Ledger|Matrix|Skips|Next Slice|Full Inventory Appendix" "$report_dir/report.md"
+test -f "$report_dir/inventory.md"
+test -f "$report_dir/test-index.md"
 bun run completion-check -- --id editor-test-harvest-<repo>
 ```
 
-Implementation verification in `../slate-v2`:
+Versioned-output hygiene check for behavior-only sources:
+
+```bash
+rg -n "copied from|verbatim|fixture copied|ported from" \
+  docs ../slate-v2 packages apps examples 2>/dev/null && \
+  echo "Review versioned output for unsafe behavior-only wording" || true
+```
+
+Implementation verification in `../slate-v2` or Plate:
 
 - Run the focused package or browser test that owns the new proof.
 - Run `bun check` before claiming the applied slice is closed.
 - For release-quality browser claims, use `bun check:full`.
 - Use raw mobile proof only when real device/Appium artifacts exist; semantic
   mobile handles and Playwright mobile viewports are not raw-device proof.
+- For `behavior-only` sources, verify that versioned local tests use local
+  fixtures, helpers, names, and assertions, not upstream test code or
+  mechanically ported fixture shape.
 
 ## ClawSweeper Use
 
@@ -467,3 +680,8 @@ gitcrawl sync <owner/repo> --numbers <issue-or-pr-number> --include-comments --w
 
 Treat gitcrawl as provenance and candidate generation only. The target repo test
 inventory still owns coverage accounting.
+
+For `behavior-only` targets, issue/PR provenance may identify why a behavior
+matters, but it still must not justify copying upstream code, fixtures,
+snapshots, expected output blobs, or expressive test prose into versioned output.
+Extract the invariant. Write the local proof fresh.

@@ -142,7 +142,7 @@ Allowed docs:
 - `docs/slate-v2/**`
 - `docs/research/**`
 - `docs/solutions/**`
-- `.tmp/completion-check.md` only when starting/executing the lane
+- `.tmp/<session-id>/completion-check.md` only when starting/executing the lane
 
 ## Phase 0: Baseline And Classification
 
@@ -182,7 +182,7 @@ Acceptance:
 
 - Baseline artifacts are attached to this plan or a dated execution log.
 - Every remaining problem has a single owner classification.
-- `.tmp/completion-check.md` remains `done` until execution actually starts.
+- `.tmp/<session-id>/completion-check.md` remains `done` until execution actually starts.
 
 ## 2026-04-22 Phase 0 Execution Start
 
@@ -191,7 +191,7 @@ Status: in progress.
 Actions:
 
 - started execution of this lane
-- changed `.tmp/completion-check.md` to `pending`
+- changed `.tmp/<session-id>/completion-check.md` to `pending`
 - current owner is Phase 0 baseline and classification
 
 Next action:
@@ -203,7 +203,7 @@ Next action:
 
 Actions:
 
-- set `.tmp/completion-check.md` to `status: pending`
+- set `.tmp/<session-id>/completion-check.md` to `status: pending`
 - ran skip inventory, public-surface inventory, lint, full integration, and
   core comparison benchmarks
 
@@ -2156,7 +2156,7 @@ Earliest gates:
 
 Next move:
 
-- run final verification and set `.tmp/completion-check.md` to `done` only if
+- run final verification and set `.tmp/<session-id>/completion-check.md` to `done` only if
   the active completion target is satisfied
 
 Do-not-do list:
@@ -2192,7 +2192,7 @@ Final changed areas in this lane:
 - `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/slate-v2/ledgers/slate-editor-api.md`
 - `docs/slate-v2/references/architecture-contract.md`
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 
 Final verification commands:
 
@@ -2510,7 +2510,7 @@ bun run lint
 
 Completion:
 
-- `.tmp/completion-check.md` should be set to `pending` only when execution of
+- `.tmp/<session-id>/completion-check.md` should be set to `pending` only when execution of
   this lane starts.
 - Set it to `done` only when all success criteria above are met.
 - Set it to `blocked` only if no autonomous progress is possible and the exact

@@ -617,14 +617,14 @@ This plan is complete when:
 
 ### 2026-04-26: Execution Start
 
-- Actions: activated this plan via `complete-plan`, set `.tmp/completion-check.md` to `pending`, generated `.tmp/continue.md`.
+- Actions: activated this plan via `complete-plan`, set `.tmp/<session-id>/completion-check.md` to `pending`, generated `.tmp/continue.md`.
 - Commands: read active plan, previous source-first typecheck plan, completion state, Slate v2 package scripts, and current Slate v2 core type files.
-- Artifacts: `.tmp/continue.md`, updated `.tmp/completion-check.md`.
+- Artifacts: `.tmp/continue.md`, updated `.tmp/<session-id>/completion-check.md`.
 - Evidence: current Slate v2 still imports `ExtendedType` in `interfaces/editor.ts`, `interfaces/text.ts`, `interfaces/element.ts`, `interfaces/range.ts`, `interfaces/point.ts`, and `interfaces/operation.ts`; DOM/React still have `custom-types.ts` declaration augmentation files.
 - Hypothesis: Batch 0 should first prove the desired API with compile/runtime contracts, then Batch 1 can replace declaration merging without losing Plate parity.
 - Decision: start with inventory plus red generic contracts; do not mutate core generic implementation before the contracts exist.
 - Owner classification: Batch 0, red type contracts and exact file inventory.
-- Changed files: `.tmp/completion-check.md`, `.tmp/continue.md`, `docs/plans/2026-04-26-slate-v2-plate-generics-type-system-plan.md`.
+- Changed files: `.tmp/<session-id>/completion-check.md`, `.tmp/continue.md`, `docs/plans/2026-04-26-slate-v2-plate-generics-type-system-plan.md`.
 - Rejected tactics: no browser kernel work; no source-first site alias work before package/app type pollution is removed.
 - Next action: generate `.tmp/slate-v2-generics-file-inventory.txt`, add the first generic contract tests, run focused gates, and record expected failures.
 

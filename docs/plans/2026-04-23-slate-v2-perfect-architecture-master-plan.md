@@ -396,7 +396,7 @@ Allowed:
 - `docs/plans/**`
 - `docs/research/**`
 - `docs/slate-v2/**`
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `../slate-v2/packages/slate/**`
 - `../slate-v2/packages/slate-dom/**`
 - `../slate-v2/packages/slate-react/**`
@@ -659,7 +659,7 @@ Status: complete for the first lifecycle slice.
 
 Actions:
 
-- resumed execution and restored `.tmp/completion-check.md` from `blocked` to
+- resumed execution and restored `.tmp/<session-id>/completion-check.md` from `blocked` to
   `pending`
 - added first Batch 1 contract file:
   `../slate-v2/packages/slate/test/read-update-contract.ts`
@@ -911,7 +911,7 @@ Actions:
   - `getDOMSelectionSnapshot`
   - `selectDOMRange`
 - corrected stale mutable memory in
-  `.tmp/completion-check.md`; it falsely claimed Batch 2 and later batches were
+  `.tmp/<session-id>/completion-check.md`; it falsely claimed Batch 2 and later batches were
   already complete while Batch 2 substrate work was still active
 
 Evidence:
@@ -940,7 +940,7 @@ Owner classification:
   sludge
 - remaining bare `Locator` handle wrappers in `richtext.test.ts`: transitional
   suite debt, not the shared substrate contract
-- stale completion claims in `.tmp/completion-check.md`: execution-memory owner,
+- stale completion claims in `.tmp/<session-id>/completion-check.md`: execution-memory owner,
   not product/runtime truth
 
 Rejected tactics:
@@ -1244,7 +1244,7 @@ Status: in progress.
 
 Actions:
 
-- resumed execution and restored `.tmp/completion-check.md` from `blocked` to
+- resumed execution and restored `.tmp/<session-id>/completion-check.md` from `blocked` to
   `pending`
 - inspected the remaining `large-doc-and-scroll.tsx` rows after Slice 1
 - classified the remaining bare `createEditor()` rows in that file as
@@ -2662,7 +2662,7 @@ Checkpoint:
   - progress: any new regression cluster must be classified by owner before a
     local patch
 - next move:
-  - set `.tmp/completion-check.md` to `done` and run `bun completion-check`
+  - set `.tmp/<session-id>/completion-check.md` to `done` and run `bun completion-check`
 - do-not-do list:
   - do not reopen the architecture from a single future cursor bug
   - do not accept stale package `dist` as browser evidence
@@ -2680,5 +2680,5 @@ Stop only when:
 
 While paused:
 
-- `.tmp/completion-check.md` should stay `blocked`
+- `.tmp/<session-id>/completion-check.md` should stay `blocked`
 - this plan remains the active master plan

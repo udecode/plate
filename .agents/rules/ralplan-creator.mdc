@@ -197,10 +197,9 @@ it.
 
 - Plan file under `<plan-directory>/`.
 - Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for parallel plan state when
-  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
-  fallback `<completion-state-file>` or `.tmp/completion-check.md` only when no
-  session id is available and no scoped state files exist.
+  `.tmp/<session-id>/completion-check.md` for parallel plan state. If no
+  runtime session id exists, create an explicit plan id and use the same scoped
+  layout. Do not use the old shared root completion file.
 - Continuation prompt: `.tmp/<session-id>/continue.md` when a session id exists,
   otherwise `<continuation-prompt-file>`, when further autonomous plan work
   remains.
@@ -307,10 +306,9 @@ Set the active completion file to `pending` before starting or resuming review.
 Prefer `.tmp/<CODEX_THREAD_ID>/completion-check.md` when `CODEX_THREAD_ID`
 exists, because the plain completion hook inherits that env and can check
 parallel sessions independently. Use `COMPLETION_CHECK_ID`, `--id`, or `--file`
-when a caller supplies an explicit plan id/file. Fall back to
-`<completion-state-file>` or `.tmp/completion-check.md` only when no session id
-or explicit id/file is available and no scoped state files exist. Store the
-matching continuation prompt in `.tmp/<session-id>/continue.md` and record it as
+when a caller supplies an explicit plan id/file. If no session id or explicit
+id/file is available, create an explicit scoped plan id. Store the matching
+continuation prompt in `.tmp/<session-id>/continue.md` and record it as
 `continue_file`.
 
 Use:

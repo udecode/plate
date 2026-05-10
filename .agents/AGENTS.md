@@ -45,6 +45,7 @@ Use those skills when relevant:
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
 - `ralph` for generating a project continuation prompt from the active plan for Stop-hook continuation
 - `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `resolve-slate-issue` for one Slate issue at a time: fetch source, prove current Slate v2 behavior, fix or classify, then comment directly with `gh`
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
 - `plate-ralplan` / `slate-ralplan` for pass-gated architecture/spec planning before execution
 - `ralplan-creator` for creating new domain-specific `*-ralplan` skills from the shared skeleton
@@ -97,7 +98,8 @@ When using the following skills, override the default behavior.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
 - Run `bun test:integration-local` only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
-- `.tmp/completion-check.md` status semantics are strict:
+- Completion state status semantics are strict. Use a scoped file such as
+  `.tmp/<session-id>/completion-check.md`; do not use the old shared root file:
   - `pending` means more autonomous work remains, even if the current slice is verified.
   - `done` means the active plan's completion target is met.
   - `blocked` means no autonomous progress is possible without missing evidence, unavailable tooling, or a user decision.

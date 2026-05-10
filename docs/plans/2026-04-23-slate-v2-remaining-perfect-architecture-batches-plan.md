@@ -999,7 +999,7 @@ Exception order:
 
 ## Completion Model
 
-Each batch gets its own active plan and its own `.tmp/completion-check.md`
+Each batch gets its own active plan and its own `.tmp/<session-id>/completion-check.md`
 pending/done cycle.
 
 Do not reuse Batch 1 or Batch 2 as active execution ledgers.
@@ -1452,7 +1452,7 @@ Status: complete for the first tracer; Batch 6 remains open.
 
 Actions:
 
-- Reopened `.tmp/completion-check.md` to `status: pending`.
+- Reopened `.tmp/<session-id>/completion-check.md` to `status: pending`.
 - Added a richtext browser tracer for:
   - select text in the second paragraph
   - apply bold
@@ -1544,7 +1544,7 @@ Changed files:
 - `../slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
 - `../slate-v2/playwright/integration/examples/richtext.test.ts`
 - generated dist files for rebuilt packages
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 
 Rejected tactics:
 

@@ -2103,7 +2103,7 @@ Next owner:
   - run closure verification for core transaction/history, React/browser
     kernel rows, and huge-doc perf guardrails
   - classify any red as owner debt instead of marking completion
-  - if all closure gates pass, set `.tmp/completion-check.md` to `status: done`
+  - if all closure gates pass, set `.tmp/<session-id>/completion-check.md` to `status: done`
     with Batch 1 completion rationale
 
 ## Batch 1 Tracer 17 Result
@@ -2126,7 +2126,7 @@ Actions:
 Changed files:
 
 - `docs/plans/2026-04-22-slate-v2-authoritative-command-kernel-architecture-plan.md`
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 
 Evidence:
 

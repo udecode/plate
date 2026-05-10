@@ -601,7 +601,7 @@ Goal: docs, checks, and release language match reality.
 Work:
 
 - Update the absolute architecture plan with the epoch-kernel result.
-- Update `.tmp/completion-check.md` while execution is active.
+- Update `.tmp/<session-id>/completion-check.md` while execution is active.
 - Update `.agents/AGENTS.md` if a new release gate becomes permanent.
 - Keep `check` fast.
 - Keep `check:full` release-grade.
@@ -667,7 +667,7 @@ This plan is complete when:
 - `bun test:integration-local` passes
 - `bun test:release-proof` passes
 - relevant package build/typecheck/lint gates pass
-- `.tmp/completion-check.md` is `status: done` or `status: blocked`
+- `.tmp/<session-id>/completion-check.md` is `status: done` or `status: blocked`
 - `bun completion-check` passes
 
 ## First Concrete Next Move
@@ -817,7 +817,7 @@ Next action:
 
 Actions:
 
-- Corrected `.tmp/completion-check.md` from `status: blocked` back to
+- Corrected `.tmp/<session-id>/completion-check.md` from `status: blocked` back to
   `status: pending`.
 - Tightened agent rules so `blocked` is not used for verified partial slices.
 
@@ -834,7 +834,7 @@ Next action:
 
 Actions:
 
-- Read `.tmp/completion-check.md` and confirmed the active lane is pending.
+- Read `.tmp/<session-id>/completion-check.md` and confirmed the active lane is pending.
 - Reused `.tmp/continue.md` as the Stop-hook continuation prompt.
 - Marked this plan active before starting Batch 1 execution.
 
@@ -1419,7 +1419,7 @@ Checkpoint:
   closure has not run.
 - earliest gates: existing kernel contracts, generated browser rows,
   persistent soak, and release-proof remain the evidence for the audit.
-- next move: update public claim/gate docs and `.tmp/completion-check.md`, then
+- next move: update public claim/gate docs and `.tmp/<session-id>/completion-check.md`, then
   run the final closure gates.
 - do-not-do list: do not claim raw mobile proof; do not turn the audit into
   another API migration plan.
@@ -1440,13 +1440,13 @@ Actions:
   read order.
 - Updated the read/update architecture decision status so it reflects current
   proof and the remaining full integration/raw-device boundaries.
-- Fixed `.tmp/completion-check.md` so Batch 5 no longer contradicts itself and
+- Fixed `.tmp/<session-id>/completion-check.md` so Batch 5 no longer contradicts itself and
   the current owner is final verification closure.
 
 Commands:
 
 ```bash
-rg -n "regression-free|Chromium-only|proved in Chromium|not yet release-blocking|semantic mobile.*raw|raw.*semantic|integration-local.*check|test:integration-local.*check|persistent-browser.*not|destructive.*not" docs/slate-v2 docs/research docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md .tmp/completion-check.md
+rg -n "regression-free|Chromium-only|proved in Chromium|not yet release-blocking|semantic mobile.*raw|raw.*semantic|integration-local.*check|test:integration-local.*check|persistent-browser.*not|destructive.*not" docs/slate-v2 docs/research docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md docs/plans/2026-04-25-slate-v2-editing-epoch-kernel-regression-closure-plan.md .tmp/<session-id>/completion-check.md
 ```
 
 Evidence:
@@ -1454,7 +1454,7 @@ Evidence:
 - The stale-danger grep still returns historical ledger lines and negative
   hard-cut statements by design, but no current front-door release claim
   overstates Chromium-only proof, raw mobile proof, or model-only cursor proof.
-- The contradictory `.tmp/completion-check.md` Batch 5 wording is fixed.
+- The contradictory `.tmp/<session-id>/completion-check.md` Batch 5 wording is fixed.
 - The primary release claim explicitly separates generated destructive browser
   proof, persistent-profile soak, full integration closure, and raw
   mobile/device scope.

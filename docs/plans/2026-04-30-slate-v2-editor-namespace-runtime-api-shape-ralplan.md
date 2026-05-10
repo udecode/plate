@@ -1534,7 +1534,7 @@ Closure result before extension-namespace reopen:
 - all public API decisions final
 - implementation phases have owner surfaces and acceptance files
 - high-risk proof lanes are folded into fast/slow gates
-- `.tmp/completion-check.md` was set to `done`
+- `.tmp/<session-id>/completion-check.md` was set to `done`
 
 Current completion state: pending while the Ralph implementation lane runs.
 

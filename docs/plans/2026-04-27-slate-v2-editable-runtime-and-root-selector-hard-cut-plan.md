@@ -544,7 +544,7 @@ Replan if:
 
 This plan is active.
 
-`.tmp/completion-check.md` is `pending` and points at this file.
+`.tmp/<session-id>/completion-check.md` is `pending` and points at this file.
 
 ## Execution Ledger
 
@@ -553,7 +553,7 @@ This plan is active.
 Actions:
 
 - Activated this plan.
-- Refreshed `.tmp/completion-check.md` for the Editable runtime/root selector
+- Refreshed `.tmp/<session-id>/completion-check.md` for the Editable runtime/root selector
   lane.
 - Wrote `.tmp/continue.md`.
 - Started Phase 0.
@@ -565,7 +565,7 @@ Commands:
 
 Artifacts:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 - this plan
 
@@ -591,7 +591,7 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
 
@@ -660,7 +660,7 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
@@ -747,7 +747,7 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
 - `../slate-v2/packages/slate-react/src/components/editable.tsx`
 - `../slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
@@ -827,7 +827,7 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
 - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - `../slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
@@ -907,7 +907,7 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-27-slate-v2-editable-runtime-and-root-selector-hard-cut-plan.md`
 - `../slate-v2/packages/slate-react/src/components/editable.tsx`
 - `../slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
@@ -1095,4 +1095,4 @@ Evidence:
 Decision:
 
 - This plan is complete.
-- `.tmp/completion-check.md` can be set to `done`.
+- `.tmp/<session-id>/completion-check.md` can be set to `done`.

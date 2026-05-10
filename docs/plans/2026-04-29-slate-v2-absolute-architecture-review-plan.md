@@ -276,7 +276,7 @@ Next owner:
 
 ### 2026-04-29 Ralph Activation
 
-- Set `.tmp/completion-check.md` back to `pending`.
+- Set `.tmp/<session-id>/completion-check.md` back to `pending`.
 - Regenerated `.tmp/continue.md` for execution instead of review.
 - Started Phase 1 contract-first tests in
   `../slate-v2/packages/slate/test/public-surface-contract.ts`.

@@ -46,7 +46,7 @@ and surface browser-visible editing bugs.
    - out of scope
 5. Patch only confirmed bugs if the owner is clear.
 6. Add focused package or browser contract coverage for patched behavior.
-7. Update this plan and `.tmp/completion-check.md` before handoff.
+7. Update this plan and `.tmp/<session-id>/completion-check.md` before handoff.
 
 ## Evidence Log
 

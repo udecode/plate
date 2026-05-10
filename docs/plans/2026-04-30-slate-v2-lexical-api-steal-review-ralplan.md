@@ -1018,7 +1018,7 @@ This plan is done only when:
 - every rejected Lexical feature has a concrete reason
 - maintainer ledger rows are accepted
 - browser/unit proof rows exist
-- `.tmp/completion-check.md` points here with status `done`
+- `.tmp/<session-id>/completion-check.md` points here with status `done`
 
 Current state: `done` after section 27 closed the source/listener partition,
 ProseMirror pressure, tag-vocabulary, and public-proof cleanup questions.
@@ -1388,7 +1388,7 @@ Status: complete.
 
 Trigger:
 
-- The stop hook found `.tmp/completion-check.md` still `pending`.
+- The stop hook found `.tmp/<session-id>/completion-check.md` still `pending`.
 - Section 26 correctly left the plan open until source/listener partition design,
   ProseMirror DOM/bookmark pressure, canonical tags, and public-proof cleanup
   were explicit.
@@ -1695,7 +1695,7 @@ Changed files:
 - `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
 - `docs/solutions/performance-issues/2026-04-30-slate-v2-source-bus-routing-must-prove-upstream-fan-in-and-runtime-bucket-locality-separately.md`
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 
 Verification:
@@ -1731,5 +1731,5 @@ Completion verdict:
 
 - Execution target met.
 - No next autonomous pass remains for this activated lane.
-- `.tmp/completion-check.md` can move to `done` after the checkpoint and
+- `.tmp/<session-id>/completion-check.md` can move to `done` after the checkpoint and
   continuation prompt are updated.

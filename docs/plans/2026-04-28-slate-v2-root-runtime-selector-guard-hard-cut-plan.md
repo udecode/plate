@@ -420,7 +420,7 @@ Mitigation:
 
 When execution starts:
 
-- Update `.tmp/completion-check.md` to `status: pending`.
+- Update `.tmp/<session-id>/completion-check.md` to `status: pending`.
 - Refresh `.tmp/continue.md` with this plan.
 - Keep status `pending` while any phase has a runnable next move.
 - Set `done` only after Phase 4 final gates pass.
@@ -433,7 +433,7 @@ When execution starts:
 Actions:
 
 - Activated this plan through `complete-plan`.
-- Set `.tmp/completion-check.md` to `status: pending`.
+- Set `.tmp/<session-id>/completion-check.md` to `status: pending`.
 - Refreshed `.tmp/continue.md` for this lane.
 - Added root selector source ownership guards to
   `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`.
@@ -455,7 +455,7 @@ Evidence:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `.tmp/continue.md`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 - `../slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
@@ -626,7 +626,7 @@ Evidence:
 
 Changed files:
 
-- `.tmp/completion-check.md`
+- `.tmp/<session-id>/completion-check.md`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 
 Decision:

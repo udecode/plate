@@ -75,10 +75,9 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 
 - Plan file under `docs/plans/`.
 - Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state when
-  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
-  fallback `.tmp/completion-check.md` only when no session id is available and no
-  scoped state files exist.
+  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state.
+  If no runtime session id exists, create an explicit plan id and use the same
+  scoped layout. Do not use the old shared root completion file.
 - Continuation prompt: `.tmp/<session-id>/continue.md` when further autonomous
   plan/spec work remains.
 - Editor-behavior outputs under `docs/editor-behavior/` when law changes.
@@ -111,7 +110,7 @@ Always read only what is relevant, but start from these sources:
 
 1. Latest user request.
 2. Active completion file if present: session-scoped
-   `.tmp/<session-id>/completion-check.md`, otherwise `.tmp/completion-check.md`.
+   `.tmp/<session-id>/completion-check.md`, or an explicit plan-id scoped file.
 3. Active plan under `docs/plans/` if present.
 4. [docs/editor-behavior/README.md](docs/editor-behavior/README.md).
 5. [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md).

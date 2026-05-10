@@ -61,7 +61,7 @@ Allowed docs/memory work:
 - `docs/plans/**`
 - `docs/research/**`
 - `docs/slate-v2/**`
-- `.tmp/completion-check.md` only when this plan becomes active execution
+- `.tmp/<session-id>/completion-check.md` only when this plan becomes active execution
 
 Allowed code work:
 
@@ -111,7 +111,7 @@ This plan is currently planned, not active execution.
 When execution starts:
 
 - set this file to `status: active`
-- update `.tmp/completion-check.md` to `status: pending`
+- update `.tmp/<session-id>/completion-check.md` to `status: pending`
 - set the current owner to Batch 0
 - append execution slices to this file after every meaningful change
 - run `bun completion-check` only after this plan is `done` or `blocked`
@@ -499,7 +499,7 @@ Acceptance:
   - raw native device claim
   - persistent-browser dogfood claim
   - known limits
-- `.tmp/completion-check.md` is `done` or `blocked` when the active execution
+- `.tmp/<session-id>/completion-check.md` is `done` or `blocked` when the active execution
   lane closes
 
 ## Always-Run Closeout Gates For Code Changes
@@ -557,7 +557,7 @@ Commands:
 
 ```sh
 sed -n '1,260p' docs/plans/2026-04-24-slate-v2-post-closure-proof-hardening-plan.md
-sed -n '1,180p' .tmp/completion-check.md
+sed -n '1,180p' .tmp/<session-id>/completion-check.md
 rg -n "cursor|caret|selection|Appium|Playwright|slate-v2|browser proof|completion-check" docs/solutions -S --glob '*.md'
 sed -n '1,180p' docs/solutions/logic-errors/2026-04-24-slate-browser-proof-must-separate-model-owned-handles-root-selection-and-usable-focus.md
 sed -n '1,120p' docs/solutions/developer-experience/2026-04-19-slate-public-single-op-writes-should-use-editor-apply-and-keep-onchange-behind-subscribers.md

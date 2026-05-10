@@ -82,10 +82,9 @@ executes it.
 
 - Plan file under `docs/plans/`.
 - Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state when
-  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or an explicit plan id exists;
-  fallback `.tmp/completion-check.md` only when no session id is available and no
-  scoped state files exist.
+  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state.
+  If no runtime session id exists, create an explicit plan id and use the same
+  scoped layout. Do not use the old shared root completion file.
 - Continuation prompt: `.tmp/<session-id>/continue.md` when further autonomous
   plan work remains.
 - Research updates under `docs/research/` when the evidence lane is stale or
@@ -97,6 +96,13 @@ executes it.
   Slate v2 public API, runtime behavior, browser behavior, examples, issue
   claims, or PR narrative. Run it once per related surface, not after every v2
   edit. Re-run only when the touched issue surface changes materially.
+- Issue discovery is ledger/cache-first. Reuse existing ClawSweeper output in
+  `docs/slate-v2/ledgers/fork-issue-dossier.md`,
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, and generated live rows
+  before any live GitHub read. Do not run broad `gh issue list`,
+  `gh search issues`, or unscoped live GitHub discovery from Slate Ralplan just
+  to refresh known corpus counts or already-classified surfaces.
 - Live issue corpus input:
   `docs/slate-issues/gitcrawl-live-open-ledger.md` is generated live gitcrawl
   data only. Read it for current open rows and gitcrawl cluster IDs; do not add
@@ -150,7 +156,7 @@ completion file already points at one.
 
 1. Latest user request.
 2. Active completion file if present: session-scoped
-   `.tmp/<session-id>/completion-check.md`, otherwise `.tmp/completion-check.md`.
+   `.tmp/<session-id>/completion-check.md`, or an explicit plan-id scoped file.
 3. Active plan under `docs/plans/` if present.
 4. `docs/research/README.md`, `docs/research/index.md`, and
    `docs/research/log.md`.
@@ -446,10 +452,15 @@ Run the review as passes, not one giant essay:
 
 1. Current-state read and initial score.
 2. Related issue discovery pass: run ClawSweeper once for the plan's touched
-   issue surface. Use `gitcrawl` first when available, then local ledgers and
-   live GitHub only when the claim depends on current thread state. Update the
-   active plan and `docs/slate-v2/ledgers/fork-issue-dossier.md`. Do not rerun
-   ClawSweeper on later v2 edits unless the issue-facing surface changes.
+   issue surface when existing ledgers do not already cover that surface. Read
+   current generated/manual ledgers first, then reuse prior ClawSweeper dossier
+   and matrix rows when they match. Use live GitHub only for exact issue refs
+   whose current thread state affects a new fixed/improved/duplicate/stale
+   decision. Do not run broad live GitHub issue lists or searches for surfaces
+   already classified by ClawSweeper. Update the active plan and
+   `docs/slate-v2/ledgers/fork-issue-dossier.md` only when the pass changes
+   issue classifications or claim text. Do not rerun ClawSweeper on later v2
+   edits unless the issue-facing surface changes.
 3. Issue-ledger pass: scan the full `docs/slate-issues` ledger, cluster map,
    test candidate map, benchmark candidate map, package impact matrix, and
    requirements file for issues the plan can fix, partially cover, or must
@@ -544,6 +555,24 @@ on every implementation edit. Its job is to find and classify the related issue
 set once, append fork-local issue sections, and define the issue accounting that
 later implementation slices reuse.
 
+Ledger/cache discipline:
+
+- Start from existing durable outputs, not live GitHub:
+  `docs/slate-issues/gitcrawl-live-open-ledger.md`,
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`,
+  `docs/slate-v2/ledgers/fork-issue-dossier.md`,
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`, and
+  `docs/slate-v2/references/pr-description.md`.
+- If those files already contain a completed ClawSweeper pass for the same
+  surface, cite and reuse it. Record `already covered by completed pass
+  <name/date>` instead of rediscovering the same issues.
+- Do not run broad `gh issue list`, `gh search issues`, or unscoped live GitHub
+  discovery in Slate Ralplan. Broad corpus state belongs to generated gitcrawl
+  ledgers and ClawSweeper refreshes.
+- Use live GitHub only for a narrow issue ref when a new claim depends on
+  current thread state, comments, duplicate links, stale/closed state, or
+  maintainer wording not present in the ledgers.
+
 Skip ClawSweeper only when the plan is provably unrelated to issue-facing
 behavior, for example a typo, local wording cleanup, generated skill sync, or a
 pure internal refactor with no public API/runtime/browser/example claim. Record
@@ -631,6 +660,12 @@ implementation slice touches a current issue or cluster. Then update
 `docs/slate-v2/references/pr-description.md` whenever the slice changes exact
 fixed issue claims, accepted public API shape, proof references, release gates,
 examples, or maintainer-facing PR narrative.
+
+This accounting is a durable-ledger read/update pass. Do not use broad live
+GitHub commands to rebuild what the generated live ledger, manual sync ledger,
+coverage matrix, and fork dossier already record. Live GitHub belongs only to
+narrow issue-ref verification when the claim would otherwise be stale or
+unsafe.
 
 Rules:
 

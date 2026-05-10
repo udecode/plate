@@ -8,8 +8,7 @@ problem_type: workflow_issue
 component: development_workflow
 symptoms:
   - `bun run completion-check` failed on another session's pending scoped plan.
-  - A completed shared state was ignored because a newer scoped state existed.
-  - A session with `CODEX_THREAD_ID` but no scoped file fell through to another plan's pending `.tmp/completion-check.md`.
+  - A session with `CODEX_THREAD_ID` but no scoped file fell through to another plan's pending state.
   - State and continuation prompts used different directory indexes.
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
@@ -28,20 +27,20 @@ session had a newer pending plan.
 ## Symptoms
 
 - `bun run completion-check` failed with another session's pending scoped file.
-- `.tmp/completion-check.md` was already `done`, but the script skipped it.
-- `.tmp/completion-check.md` belonged to another session and was `pending`, but a
-  session with no scoped state still inherited that failure.
+- A completed state was skipped because another session had a newer scoped file.
+- Another session's scoped file was `pending`, and a session with no scoped
+  state still inherited that failure.
 - Parallel planning sessions could block each other without sharing a goal.
 
 ## What Didn't Work
 
 - Guessing the active plan from file modification time. A newer file only proves
   recent writes, not ownership by the current session.
-- Storing more context in `.tmp/continue.md`. That file is also repo-global, so
-  it cannot safely identify the current session when multiple sessions run.
-- Falling back to `.tmp/completion-check.md` after seeing `CODEX_THREAD_ID` but
-  not finding a matching scoped file. That makes the hook inherit another
-  session's root state.
+- Storing more context in `.tmp/continue.md`. That file is repo-global, so it
+  cannot safely identify the current session when multiple sessions run.
+- Falling back to an unscoped state file after seeing `CODEX_THREAD_ID` but not
+  finding a matching scoped file. That makes the hook inherit another session's
+  state.
 - Splitting session state across `.tmp/completion-checks/<id>.md` and
   `.tmp/continue/<id>.md`. It works, but it forces every workflow doc and
   operator to remember two unrelated path shapes for one session.
@@ -55,18 +54,17 @@ Make scoped completion files opt-in and co-locate session artifacts:
 
 The checker should read a scoped file when `COMPLETION_CHECK_ID`,
 `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or `--file` selects it. With no
-selector, it may use `.tmp/completion-check.md` only when that shared state is
-green or when no scoped state files exist. When an inherited session id has no
-matching scoped file, it exits successfully with a skip message instead of
-reading the shared root file. Legacy `.tmp/completion-checks/<id>.md` files can
-remain readable as a compatibility fallback, but new state should use
+selector, workflow docs and generated skills should create an explicit plan id
+and use the same scoped layout. When an inherited session id has no matching
+scoped file, the hook should exit successfully with a skip message instead of
+reading another session's file. Legacy `.tmp/completion-checks/<id>.md` files
+can remain readable as a compatibility fallback, but new state should use
 `.tmp/<session-id>/completion-check.md`.
 
 Cover the main scoped path:
 
 ```js
-test('prefers a matching CODEX_THREAD_ID state over the shared fallback', async () => {
-  await writeFile(path.join(cwd, '.tmp/completion-check.md'), 'status: pending\n');
+test('prefers a matching CODEX_THREAD_ID state', async () => {
   await mkdir(path.join(cwd, '.tmp/session-a'), { recursive: true });
   await writeFile(
     path.join(cwd, '.tmp/session-a/completion-check.md'),
@@ -87,8 +85,6 @@ The missing-session regression is the important guard:
 
 ```js
 test('skips when the implicit session has no state file', async () => {
-  await writeFile(path.join(cwd, '.tmp/completion-check.md'), 'status: pending\n');
-
   const result = await runCompletionCheck({
     cwd,
     env: { CODEX_THREAD_ID: 'missing-session' },
@@ -99,11 +95,10 @@ test('skips when the implicit session has no state file', async () => {
 });
 ```
 
-Keep the no-session fallback guard too:
+Keep the no-selector guard too:
 
 ```js
-test('uses the shared state when hook env has no session id', async () => {
-  await writeFile(path.join(cwd, '.tmp/completion-check.md'), 'status: done\n');
+test('skips unselected scoped states when no session id is available', async () => {
   await mkdir(path.join(cwd, '.tmp/other-session'), { recursive: true });
   await writeFile(
     path.join(cwd, '.tmp/other-session/completion-check.md'),
@@ -116,29 +111,7 @@ test('uses the shared state when hook env has no session id', async () => {
   });
 
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /tmp\/completion-check\.md/);
-});
-```
-
-Then cover the Stop-hook shape where no session id is available and the shared
-file is pending while scoped state files exist:
-
-```js
-test('skips a pending shared state when scoped states exist and no session id is available', async () => {
-  await writeFile(path.join(cwd, '.tmp/completion-check.md'), 'status: pending\n');
-  await mkdir(path.join(cwd, '.tmp/other-session'), { recursive: true });
-  await writeFile(
-    path.join(cwd, '.tmp/other-session/completion-check.md'),
-    'status: pending\n'
-  );
-
-  const result = await runCompletionCheck({
-    cwd,
-    env: { CODEX_SESSION_ID: '', CODEX_THREAD_ID: '' },
-  });
-
-  assert.equal(result.code, 0);
-  assert.match(result.stdout, /scoped states exist/);
+  assert.match(result.stdout, /no session id/);
 });
 ```
 
@@ -158,10 +131,9 @@ The wrapper maps hook stdin `session_id` into `CODEX_THREAD_ID` when the env var
 is absent, then runs `bun run completion-check`. The checker resolves that to
 `.tmp/<CODEX_THREAD_ID>/completion-check.md` when the file exists. If the file
 does not exist, the hook passes because this session has no active completion
-gate. If no session id is visible and scoped state files exist, a pending root
-state is also skipped because it is not safe to assign to the current session.
-That gives each parallel session its own state and continuation prompt without
-a repo-level multi-plan index.
+gate. If no session id is visible, workflow docs should create an explicit
+completion id before starting a lane. That gives each parallel session its own
+state and continuation prompt without a repo-level multi-plan index.
 
 When the state is pending, record the session continuation prompt in the state
 file:
@@ -191,9 +163,8 @@ human operator the same session key.
 - For parallel sessions, rely on inherited `CODEX_THREAD_ID`, hook stdin
   `session_id`, `COMPLETION_CHECK_ID=<session-id>`, or
   `bun run completion-check -- --id <session-id>`.
-- Keep `.tmp/completion-check.md` as the unscoped fallback only for repo-level
-  completion state when no scoped states exist, or when the shared state is
-  already green.
+- Do not document an unscoped completion fallback. Use a session id or explicit
+  plan id.
 - Do not write `.tmp/continue.md` or new `.tmp/continue/<id>.md` files; use
   `.tmp/<session-id>/continue.md` and record it as `continue_file` in the
   completion state.

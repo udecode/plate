@@ -11,7 +11,7 @@ hard-cut lane:
 2. Centralize scattered `slate/internal` live-read imports behind
    `slate-react` runtime modules.
 
-`.tmp/completion-check.md` is `done` for this lane.
+`.tmp/<session-id>/completion-check.md` is `done` for this lane.
 
 ## Execution Ledger
 
@@ -20,12 +20,12 @@ hard-cut lane:
 - Slice name: activation and selector contract tracer.
 - Owner classification: Plan 1A/1B, selector public truth versus internal
   mounted render policy.
-- Actions taken: set `.tmp/completion-check.md` to `pending`, refreshed
+- Actions taken: set `.tmp/<session-id>/completion-check.md` to `pending`, refreshed
   `.tmp/continue.md`, and marked this plan active.
 - Commands run: none yet for code; this is the control-file activation step.
 - Evidence: completion state and continuation prompt now point at this plan.
 - Decision: start with contracts before cutting the public selector option.
-- Changed files: `.tmp/completion-check.md`, `.tmp/continue.md`,
+- Changed files: `.tmp/<session-id>/completion-check.md`, `.tmp/continue.md`,
   `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`.
 - Rejected tactics: no code-first refactor before a selector contract.
 - Next action: in `../slate-v2`, add selector contracts proving public
@@ -75,7 +75,7 @@ hard-cut lane:
 - Decision: close this lane as complete, while keeping the full-gate flake
   recorded as residual browser-harness risk rather than hiding it.
 - Changed files:
-  - `.tmp/completion-check.md`
+  - `.tmp/<session-id>/completion-check.md`
   - `.tmp/continue.md`
   - `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`
   - `../slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
@@ -481,7 +481,7 @@ architecture claim.
     `bun check`.
 11. Update this plan and the research verdict with actual evidence.
 12. If execution continues through release-quality closure, activate
-    `.tmp/completion-check.md` and require `bun check:full` before `done`.
+    `.tmp/<session-id>/completion-check.md` and require `bun check:full` before `done`.
 
 ## Stop And Replan Conditions
 
