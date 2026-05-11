@@ -152,6 +152,7 @@ export const defaultRules: MdRules = {
         children.length === 1 &&
         children[0]?.type === 'text' &&
         children[0].value === node.url &&
+        options.remarkStringifyOptions?.resourceLink !== true &&
         BARE_AUTOLINK_PROTOCOL_REGEX.test(node.url ?? '');
 
       if (isBareAutolinkLiteral) {
