@@ -53,6 +53,29 @@ describe('gfm package surfaces', () => {
     expect(deserializeMd(editor, markdown)).toMatchObject(value);
   });
 
+  it('respects resourceLink when serializing bare autolink literals', () => {
+    const editor = createTestEditor();
+    const value = [
+      {
+        children: [
+          {
+            children: [{ text: 'https://platejs.org' }],
+            type: 'a',
+            url: 'https://platejs.org',
+          },
+        ],
+        type: 'p',
+      },
+    ];
+
+    expect(
+      serializeMd(editor, {
+        remarkStringifyOptions: { resourceLink: true },
+        value: value as any,
+      })
+    ).toBe('[https://platejs.org](https://platejs.org)\n');
+  });
+
   it('round-trips footnote references and definitions as dedicated nodes', () => {
     const editor = createTestEditor();
     const input = '[^1]\n\n[^1]: Footnote text';
