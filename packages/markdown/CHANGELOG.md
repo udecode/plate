@@ -1,5 +1,11 @@
 # @platejs/markdown
 
+## 53.0.4
+
+### Patch Changes
+
+- [#4972](https://github.com/udecode/plate/pull/4972) by [@ajmnz](https://github.com/ajmnz) – Respect `resourceLink` when serializing bare autolink literals
+
 ## 53.0.0
 
 ### Major Changes
