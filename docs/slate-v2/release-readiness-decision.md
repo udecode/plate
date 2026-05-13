@@ -53,7 +53,7 @@ The live claim is only this:
   - transaction-owned primitive editor methods are the mutation power API
   - `EditorCommit` is the local runtime truth for history, React, DOM repair,
     and proof
-  - extension methods compose through `editor.extend({ methods })`
+  - extensions compose through named `editor`, `state`, and `tx` groups
   - rewrite is allowed when retrofit shape blocks the better API or proof
 - tranche 1 Bun/tooling/docs ownership is green
 - tranche 2 React 19.2.5 + Next 16.2.4 + TypeScript 6.0.3 compatibility is
@@ -61,13 +61,13 @@ The live claim is only this:
 - `packages/slate` is materially farther along:
   - package-local tests/build/typecheck/lint are green
   - query / operations / snapshot / legacy fixture owners are live
-  - accessor / transaction seam is recovered
+  - accessor / transaction boundary is recovered
   - stale public field pressure is cut from primary docs/examples/tests:
     `editor.children`, `editor.selection`, `editor.marks`, and
-    `editor.operations` are not primary read seams
+    `editor.operations` are not primary read paths
   - `Transforms.*` is not the primary mutation story
   - direct `editor.apply` and `editor.onChange` are not extension points
-  - commit subscribers and extension methods own those jobs
+  - commit subscribers and extension groups own those jobs
   - range refs, bookmarks, normalization, transforms, surface, clipboard, and
     extension owner files are live
   - the core benchmark package exists and runs

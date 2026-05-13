@@ -24,7 +24,7 @@ Full ledger:
 
 Current summary:
 
-- Fixed issue claims: `31`
+- Fixed issue claims: `32`
 - Related issue matrix rows: `189`
 - Live corpus accounting: `630` open issues, `29` open PRs, `659` open
   threads, and `617` gitcrawl clusters from the 2026-05-04 refresh. This is
@@ -40,6 +40,8 @@ Current summary:
 - Lexical harvest issue-ledger sync added `4` related/non-claim rows from the
   processing backlog: `#5894`, `#4730`, `#3387`, and `#3872`. New exact fixed
   or improved claims from that sync: `0`.
+- Yjs/collaboration readiness sync promotes `#5771` from Related to Improves,
+  with no new exact fixed issue claim.
 
 Current fixed issue claims:
 
@@ -107,8 +109,10 @@ Current fixed issue claims:
 - Fixes #5080: `state.nodes.match({ reverse: true })` returns the exact reverse
   of the forward matched entry order for nested matching entries.
 - Fixes #6053: `useElementSelected()` does not throw when a selected rendered
-  element removes itself, and `useElementSelected(path)` returns `false` after
-  the watched path is removed.
+  element removes itself, and `useElementSelected({ at: path })` returns
+  `false` after the watched path is removed.
+- Fixes #5400: Public helper value namespaces use `*Api`, so importing Slate
+  helpers no longer shadows DOM globals such as `Node`.
 
 Rules:
 
@@ -202,7 +206,7 @@ Accepted current shape:
 - Reads use state accessors and plain helper functions.
 - Writes use transaction methods.
 - Primitive editor methods live on the editor instance.
-- Extension methods use `editor.extend({ methods })`.
+- Extensions use named `editor`, `state`, and `tx` groups.
 - `EditorCommit` is the post-commit truth object for subscribers and integration
   layers.
 - Collaboration/Yjs-style adapters use deterministic operation replay, typed
@@ -210,6 +214,9 @@ Accepted current shape:
   adapter-shaped public namespaces.
 - The public `Editor.*` static method namespace is not the v2 teaching or
   extension surface.
+- Public data helper values use `*Api` names such as `NodeApi`, `ElementApi`,
+  `PathApi`, and `RangeApi`; model type names stay `Node`, `Element`, `Path`,
+  and `Range`.
 - Mutable editor fields, direct `apply` extension points, direct `onChange`
   extension points, and `Transforms.*` teaching are outside the final public
   posture.
@@ -674,43 +681,63 @@ Proof references:
 - `../slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
 
-## 6.5 Render Void Path Prop
+## 6.5 Render Path Props
 
 Affected:
 
+- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `../slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
 - `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `../slate-v2/packages/slate-react/src/hooks/use-element-path.ts`
 - `../slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
+- `../slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `../slate-v2/packages/slate-dom/test/bridge.ts`
 - `../slate-v2/site/examples/ts/images.tsx`
 - `../slate-v2/site/examples/ts/embeds.tsx`
+- `../slate-v2/site/examples/ts/check-lists.tsx`
 - `../slate-v2/site/examples/ts/paste-html.tsx`
 - `../slate-v2/site/examples/ts/mentions.tsx`
 - `../slate-v2/docs/libraries/slate-react/editable.md`
 - `../slate-v2/docs/libraries/slate-react/hooks.md`
-- `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `docs/plans/2026-05-12-slate-v2-render-path-prop-performance-ralplan.md`
 
 Accepted current shape:
 
-- `renderVoid` receives `{ element, path }`.
-- The value is a Slate `Path`, so the public prop is named `path`, not
-  `target`.
-- `useElementSelected(path?)` names its optional `Path` parameter literally.
-- No temporary `target` alias is kept for v2.
+- `RenderElementProps` receives `attributes`, `children`, `element`,
+  `isInline`, and `slots`; it does not expose eager `path` or `index`.
+- `RenderVoidProps` receives `{ element }`; it does not expose eager `path`.
+- Event handlers resolve the current location with `editor.dom.findPath(element)`.
+- `DOMEditor.findPath` resolves by runtime id before stale weak-map indexes.
+- `useElementPath()` is the opt-in render-time path subscription.
+- `useElementSelected()` keeps intersection semantics; block voids that only
+  want selected UI for a collapsed caret use
+  `useElementSelected({ mode: 'collapsed' })`.
+- Explicit watched paths use `useElementSelected({ at: path })`; there is no
+  positional path overload.
+- No temporary `target`, `path`, or `index` compat alias is kept for v2 render
+  props.
 
 Why it belongs in the PR:
 
-- Public examples should not teach `target: Path` when transforms and selection
-  hooks consume a path.
-- This keeps the v2 void surface small and literal before API freeze.
+- Public render props must not force sibling-wide rerenders after leading
+  inserts just to keep tree-address props fresh.
+- Path is current location metadata, not mounted-node identity.
+- The default renderer surface stays small while path-dependent UI can opt into
+  a targeted subscription.
 
 Proof references:
 
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- `../slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `../slate-v2/packages/slate-dom/test/bridge.ts`
 - `../slate-v2/site/examples/ts/images.tsx`
 - `../slate-v2/site/examples/ts/embeds.tsx`
+- `../slate-v2/site/examples/ts/check-lists.tsx`
 - `../slate-v2/site/examples/ts/paste-html.tsx`
-- `../slate-v2/site/examples/ts/mentions.tsx`
-- `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `docs/plans/2026-05-12-slate-v2-render-path-prop-performance-ralplan.md`
 
 ## 7. DOM Coverage Boundaries
 
@@ -772,8 +799,9 @@ Accepted current shape:
 - Staged large-document mounting uses DOM coverage for pending regions.
 - `interactiveReady` and `nativeSurfaceComplete` are separate concepts.
 - Full-document replacement must not leave stale far DOM exposed.
-- Virtualized rendering is explicit and experimental. The code/API can be named
-  `virtualized`; the docs and JSDoc must say experimental/not production-ready.
+- Virtualized rendering is explicit and experimental. The API exposes it only
+  through object form, `{ type: 'virtualized' }`; stable string strategies stay
+  `auto`, `full`, `staged`, and `shell`.
 
 Why it belongs in the PR:
 

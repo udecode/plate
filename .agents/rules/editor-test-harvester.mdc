@@ -1,6 +1,6 @@
 ---
-description: "Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions."
-argument-hint: "[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]"
+description: 'Mine external editor repositories for portable editor-behavior tests with ClawSweeper-style discipline: multi-pass exhaustive inventory, confidence scoring, framework-specific skip reasons, Slate/Plate coverage mapping, license-aware invariant extraction, and copy/refactor/create decisions.'
+argument-hint: '[<repo-path-or-owner/repo> [--apply] [surface/tag/filter]]'
 disable-model-invocation: true
 ---
 
@@ -103,6 +103,9 @@ from the invariant, not pasted or mechanically ported from upstream source.
 - Store harvest artifacts in one stable repo folder chosen by license mode:
   `docs/editor-test-harvester/<repo>/` for permissive targets, or
   `.tmp/editor-test-harvester/<repo>/` for `behavior-only` targets.
+- For `behavior-only` targets, `inventory.md` and `test-index.md` also stay
+  under `.tmp/editor-test-harvester/<repo>/`. Never create or refresh
+  `docs/editor-test-harvester/<repo>/inventory.md`.
 - Do not create dated report files under `docs/plans/` for normal harvest output.
 - Reruns are idempotent. Read the existing repo folder first, rerun the source
   inventory, update the same files in place, and record new/removed source rows
@@ -520,6 +523,10 @@ Use stable companion files in the same directory:
 <report_dir>/test-index.md
 ```
 
+For `behavior-only` targets, `<report_dir>` means
+`.tmp/editor-test-harvester/<repo>`. Do not write inventory or test-index files
+to `docs/editor-test-harvester/<repo>/`.
+
 Do not include the date in file names. Put run dates, inventory commands, source
 checkout path, source revision/provenance, license mode, and license evidence
 inside the report instead.
@@ -646,6 +653,8 @@ bun run completion-check -- --id editor-test-harvest-<repo>
 Versioned-output hygiene check for behavior-only sources:
 
 ```bash
+test ! -f "docs/editor-test-harvester/<repo>/inventory.md"
+test ! -f "docs/editor-test-harvester/<repo>/test-index.md"
 rg -n "copied from|verbatim|fixture copied|ported from" \
   docs ../slate-v2 packages apps examples 2>/dev/null && \
   echo "Review versioned output for unsafe behavior-only wording" || true

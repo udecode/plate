@@ -1,5 +1,15 @@
 # Research Log
 
+## [2026-05-11] maintain | scroll selection visibility runtime
+
+- compiled a new editor-architecture source summary for caret visibility and
+  nested scroll behavior:
+  [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
+- compared local ProseMirror, Lexical, CodeMirror, Tiptap, Milkdown, and
+  Obsidian evidence for selection-first / scroll-second runtime design
+- recorded the Slate v2 target split: selection import, scroll request, and
+  post-commit visibility
+
 ## [2026-05-03] maintain | TanStack virtualization source refresh
 
 - refreshed

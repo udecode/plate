@@ -1525,7 +1525,7 @@ None; detailed ledger only.
 
 Status: issue-reviewed
 Bucket: v2-core-engine
-Confidence: medium
+Confidence: high
 
 Issue summary:
 High-frequency collaboration operations can preempt anchor/selection state and
@@ -1538,10 +1538,16 @@ Evidence:
 - duplicate/stale/invalid proof: collaboration QPS repro, not React hook
   self-removal.
 - live GitHub checked: yes, live-gitcrawl-only.
-- current v2 proof: no collaboration proof in this lane.
+- current v2 proof: focused core proof now covers high-QPS remote inserts
+  against collapsed local selection, same-offset contention, suffix inserts,
+  split/merge, selected-node removal, local follow-up typing, remote-history
+  skip, bookmark rebasing, canonical reconcile, and remote side-effect skip
+  policy.
 
 Decision:
-Related only. It stays a core/collaboration selection rebase owner.
+Improves only. Slate v2 now proves the core collaboration-selection substrate,
+but exact provider/browser closure remains unclaimed until a real adapter repro
+passes.
 
 PR-description text:
 None; detailed ledger only.
@@ -6447,6 +6453,64 @@ stability from this row.
 PR-description text:
 None; no PR-facing claim count changes.
 
+## udecode/slate#9 History Selection Precondition Regression Refresh
+
+Date: 2026-05-13
+
+Bucket: `v2-dom-selection` plus `slate-history`
+
+Planning source:
+`docs/plans/2026-05-13-slate-v2-history-selection-precondition-ralplan.md`.
+
+Implemented finding:
+
+- The existing Chromium plaintext row still passes for simple middle-line typing
+  undo.
+- A package-level mixed commit repro failed before the fix: one commit that
+  imports selection with `set_selection(start -> middle)` and then applies
+  `insert_text` stored the stale commit-wide `selectionBefore`; undo restored
+  `[0,0]@0` instead of the edit point `[0,0]@3`.
+- `slate-history` now builds each batch from the first saveable operation,
+  applies leading selection-only operations to `batch.selectionBefore`, and
+  trims those leading precondition operations from `batch.operations`.
+- Selection operations after the first saveable operation remain in the batch;
+  redo keeps explicit post-edit selection.
+- The scroll-into-view browser row now covers the user-visible follow-up:
+  type at the final block, manually scroll away, type again, undo, wait for the
+  delayed native selection update, scroll away again, and type a third time.
+  The third insertion stays at the restored final-block edit point instead of
+  jumping to offset `0`.
+
+Decision:
+
+Treat `udecode/slate#9` as fork-local `improves-implemented`. The exact
+mixed-commit history hole and the scroll-into-view caret replay are fixed in
+Slate v2, but this stays out of upstream PR fixed-issue counts until a
+maintainer accepts broader #9 claim wording.
+
+Proof:
+
+- `../slate-v2/packages/slate-history/test/history-contract.ts` mixed
+  `set_selection` plus `insert_text` red/green: `26 pass`.
+- `../slate-v2/packages/slate/test/commit-metadata-contract.ts` plus
+  `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`:
+  `14 pass`.
+- `bun --filter slate-history typecheck`, `bun --filter slate typecheck`, and
+  `bun --filter slate-react typecheck`: all exited `0`.
+- Chromium scroll-into-view rows with rebuilt static output: `2 passed`.
+- Chromium scroll-into-view strict row against `http://localhost:3100`:
+  `1 passed`.
+- Chromium plaintext and richtext undo rows with retries disabled: `4 passed`,
+  including the Mac keyboard undo repair row.
+- `bun --filter slate-react build`: exited `0`.
+- `bun --filter slate-react test:vitest -- selection-side-effect-policy-contract`:
+  `2 passed`.
+- `bun lint:fix`: exited `0`.
+
+PR-description text:
+None. This is fork-local issue accounting and should not change upstream PR
+fixed-issue counts until a maintainer-facing claim is accepted.
+
 ## Udecode Open Issues Phase 3 IME Cancellation Sync - 2026-05-10
 
 This is execution/accounting sync for
@@ -6730,6 +6794,31 @@ Decision:
 Keep all `udecode/slate` open issues out of PR closure claims until exact local
 red proof exists. Group execution by shared runtime owner: history, clipboard,
 composition, and target ownership.
+
+## Helper Namespace Global Collision - 2026-05-13
+
+Issue:
+
+- `ianstormtaylor/slate#5400`
+
+Decision:
+
+Claim `Fixes #5400`. Public helper value namespaces now use `*Api` names such
+as `NodeApi`, `ElementApi`, `PathApi`, and `RangeApi`, while model type names
+stay `Node`, `Element`, `Path`, and `Range`. Public docs/examples no longer
+import bare helper values that shadow DOM globals.
+
+Proof:
+
+- `../slate-v2/packages/slate/test/public-surface-contract.ts`
+- `../slate-v2/packages/slate/test/interfaces-contract.ts`
+- `docs/plans/2026-05-13-slate-v2-api-helper-namespace-rename-ralplan.md`
+- `docs/slate-issues/open-issues-dossiers/5402-5250.md`
+
+PR-description text:
+
+- Fixes #5400: Public helper value namespaces use `*Api`, so importing Slate
+  helpers no longer shadows DOM globals such as `Node`.
 
 PR-description text:
 None; no PR-facing claim count changes.

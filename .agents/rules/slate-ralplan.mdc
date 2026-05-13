@@ -41,6 +41,14 @@ executes it.
 ## Hard Policy
 
 - Do not patch Slate v2 implementation code in this skill.
+- Treat that as a hard editing boundary. Slate Ralplan may edit only planning,
+  research, issue-ledger, PR-reference, and scoped completion/continuation
+  artifacts it explicitly owns.
+- Do not create, modify, or delete `../slate-v2` implementation, test, example,
+  package, build, or config files from this skill.
+- User phrases like "go", "rewrite", "feel free to build", "fix it", or
+  "execute" do not override this boundary when `slate-ralplan` is the active
+  skill. Convert them into plan decisions, proof rows, and a `ralph` handoff.
 - Do not mark `done` because the review pass is tired.
 - Do not use `blocked` when another research, review, or plan-hardening move is
   runnable, unless the user explicitly stops execution or tells you to mark the
@@ -142,6 +150,11 @@ executes it.
 - Applicable implementation-skill review notes in the active plan: Vercel
   React, performance-oracle, and tdd, plus shadcn/react-useeffect when relevant,
   each marked `applied` or `skipped` with a concrete reason.
+- Allowed edit scope from this skill: `docs/plans/**`, `docs/research/**`,
+  `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
+  `docs/slate-v2/references/**`, and scoped `.tmp/<session-id>/**` state. Any
+  Slate v2 source, test, example, package, build, or config edit belongs to
+  later `ralph` execution.
 
 Default plan path:
 
@@ -1009,9 +1022,10 @@ When the score is below threshold and a runnable next move exists:
    review work only.
 5. Continue the next review/refinement slice.
 
-Do not use `ralph` from this skill to execute Slate v2 code changes.
-The user reviews the finished plan first. Execution starts only after a later
-explicit execution request.
+Do not execute Slate v2 changes from this skill. Do not start a `ralph`
+execution loop from inside Slate Ralplan. This skill only writes the plan and
+the continuation prompt that tells `ralph` what to execute after the user
+explicitly invokes `ralph`.
 
 ## Done Handoff
 

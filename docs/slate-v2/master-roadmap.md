@@ -77,7 +77,7 @@ Review stop:
   - `EditorCommit` as local runtime truth
   - cleaner store/runtime boundaries
   - hard-cut stale public state pressure from primary docs/examples/tests
-- allow hard cuts where old public seams block the better API
+- allow hard cuts where old public paths block the better API
 - keep the package split explicit while the core changes
 - hold the existing correctness and perf floors as hard guardrails
 
@@ -95,7 +95,7 @@ Landed inside tranche 3:
   - `legacy-editor-nodes-fixtures.ts`
   - `legacy-interfaces-fixtures.ts`
   - `legacy-transforms-fixtures.ts`
-  - accessor/transaction seam in `accessor-transaction.test.ts`
+  - accessor/transaction boundary in `accessor-transaction.test.ts`
 
 Important correction:
 
@@ -112,13 +112,13 @@ Tranche-3 closeout read:
   - `editor.read`
   - `editor.update`
   - primitive editor methods
-  - `editor.extend({ methods })`
+  - extension `editor`, `state`, and `tx` groups
   - commit subscribers
 - stale-state hierarchy is classified:
-  - `editor.children` is not a primary read seam
-  - `editor.selection` is not a primary read seam
-  - `editor.marks` is not a primary read seam
-  - `editor.operations` is not a primary read seam
+  - `editor.children` is not a primary read path
+  - `editor.selection` is not a primary read path
+  - `editor.marks` is not a primary read path
+  - `editor.operations` is not a primary read path
 - write hierarchy:
   - `editor.update` is the write boundary
   - direct apply/onChange replacement is not an extension point

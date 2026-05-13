@@ -69,23 +69,25 @@ Rules:
 
 ## Extension Contract
 
-Extensions add named methods through `editor.extend({ methods })`.
+Extensions add named `editor`, `state`, and `tx` groups.
 
 ```ts
-editor.extend({
+editor.extend(defineEditorExtension({
   name: 'todo',
-  methods: {
-    toggleTodo() {
-      this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+  tx: {
+    todo(tx) {
+      return {
+        toggle() {
+          tx.nodes.set({ type: 'todo', checked: true })
+        },
+      }
     },
   },
-})
+}))
 ```
 
-Extension methods compose through the editor method runtime. Direct method
-replacement is not the blessed extension model.
+Extension groups compose through the read/update runtime. Direct method
+replacement is not the public extension model.
 
 ## Hard Cuts
 
@@ -105,7 +107,7 @@ These are not primary public API:
 
 Internal storage and compatibility mirrors exist only where package/runtime code
 still requires them. Public docs, examples, and plugin guidance must use
-read/update, primitive methods, extension methods, commit listeners, and
+read/update, state groups, tx groups, editor groups, commit listeners, and
 projection sources.
 
 ## Browser Editing Claim

@@ -49,9 +49,9 @@ The current rules:
 - `editor.read` is the coherent read boundary.
 - `editor.update` is the write boundary.
 - primitive editor methods are the flexible mutation API.
-- extension methods compose through `editor.extend({ methods })`.
+- extensions compose through named `editor`, `state`, and `tx` groups.
 - `Transforms.*` is not the primary public mutation story.
-- mutable editor fields are not primary read seams.
+- mutable editor fields are not primary read paths.
 - direct `editor.apply` and direct `editor.onChange` replacement are not
   extension points.
 - `tx.resolveTarget()` stays internal.
@@ -238,24 +238,27 @@ A transaction object owns all mutable working state for one edit session:
 
 That transaction is the actual runtime unit. Not the individual operation.
 
-### 3. Extension Method Pipeline
+### 3. Extension Group Pipeline
 
 Plugins do not monkey-patch editor methods. They register named extension
-methods and package-local hooks that compose through the same update runtime.
+groups and package-local hooks that compose through the same read/update
+runtime.
 
-The public shape is method-first:
+The public shape is group-first:
 
 ```ts
-editor.extend({
+editor.extend(defineEditorExtension({
   name: 'feature',
-  methods: {
-    runFeature() {
-      this.update(() => {
-        this.setNodes({ feature: true })
-      })
+  tx: {
+    feature(tx) {
+      return {
+        run() {
+          tx.nodes.set({ feature: true })
+        },
+      }
     },
   },
-})
+}))
 ```
 
 That is cleaner than “save old method, wrap it, hope you understood the timing.”
@@ -426,7 +429,7 @@ The document format can stay simple while the runtime still maintains stable ide
 
 That bridge should be a real subsystem, not timing-sensitive glue spread across event handlers, render, and normalization side effects.
 
-Package seam:
+Package boundary:
 
 - `slate-dom` owns browser semantics, translation, and selection rules
 - `slate-react` owns React lifecycle wiring around that boundary
@@ -444,11 +447,11 @@ If Slate v2 is serious about React, these should be treated as hard rules:
 - event-handler writes: user-driven editor writes happen in event handlers and commands, not in effects watching state changes
 - no mutation during render: all editor writes happen in event handlers, commands, or transaction runners, never as a side effect of rendering
 - no broad context churn: context can carry stable editor/store access, but high-frequency content data should flow through selector subscriptions
-- reset with boundaries, not effects: when local UI state must be discarded, prefer explicit replacement seams or keyed boundaries over effect-driven reset logic
+- reset with boundaries, not effects: when local UI state must be discarded, prefer explicit replacement entrypoints or keyed boundaries over effect-driven reset logic
 
 One more hard rule:
 
-- controlled or external value replacement must go through an explicit core seam, not by mutating published editor state and hoping React catches up
+- controlled or external value replacement must go through an explicit core entrypoint, not by mutating published editor state and hoping React catches up
 
 ## Public API Sketch
 
@@ -481,7 +484,7 @@ That means the native model is transactional even when the user writes single-op
 
 The important runtime detail is that this public API should sit on top of a snapshot engine that can publish one coherent commit to React, not a chain of observable partial mutations.
 
-Commit subscribers are the primary post-commit seam.
+Commit subscribers are the primary post-commit boundary.
 
 Direct `editor.onChange` replacement is not the extension surface.
 
@@ -491,21 +494,23 @@ This is the real win.
 
 This is end-state direction, not a Phase 1 requirement.
 
-Plugins should add named extension methods, not replace mutable methods.
+Plugins should add named extension groups, not replace mutable methods.
 
 Use this:
 
 ```ts
-editor.extend({
+editor.extend(defineEditorExtension({
   name: 'todo',
-  methods: {
-    toggleTodo() {
-      this.update(() => {
-        this.setNodes({ type: 'todo', checked: true })
-      })
+  tx: {
+    todo(tx) {
+      return {
+        toggle() {
+          tx.nodes.set({ type: 'todo', checked: true })
+        },
+      }
     },
   },
-})
+}))
 ```
 
 That is vastly easier to reason about:
@@ -525,7 +530,7 @@ The committed editor state should be immutable and boring:
 - `editor.getChildren()` reads committed children
 - `editor.getSelection()` reads committed selection
 - `editor.getMarks()` reads committed marks
-- mutable fields are internal or compatibility mirrors, not primary read seams
+- mutable fields are internal or compatibility mirrors, not primary read paths
 - transaction draft state is private
 - reading committed state does not mutate anything
 - reading draft state happens through explicit transaction access, not by accident
@@ -652,7 +657,7 @@ Pivoting now would mean:
 
 - new plugin model
 - new transaction semantics
-- new history seam
+- new history boundary
 - new observation model
 - a rewritten `slate-react` runtime model
 - a migration problem on top of the performance problem
@@ -756,7 +761,7 @@ stabilized surface:
 
 - sharpen package APIs without faking parity
 - keep public promises bounded by the proved matrix
-- no default retreat into geometry seam hunting
+- no default retreat into geometry-boundary hunting
 
 New geometry proof is still allowed.
 
@@ -813,7 +818,7 @@ These are not up for bikeshedding in Phase 1.
 8. `children`, `selection`, `marks`, and ref-aligned lookup state publish atomically.
 9. Hidden or background runtime surfaces must never observe half-committed state.
 10. Core owns the snapshot-store contract that runtime packages subscribe to.
-11. Core owns an explicit replacement seam for external value or snapshot replacement.
+11. Core owns an explicit replacement entrypoint for external value or snapshot replacement.
 
 ## Non-Goals
 
@@ -898,9 +903,9 @@ Phase 1 should expose the smallest honest surface:
 - `editor.read(fn)`
 - `editor.update(fn, options?)`
 - primitive editor methods
-- extension methods
+- extension groups
 
-Recommended write seam:
+Recommended write path:
 
 ```ts
 editor.update(() => {
@@ -931,7 +936,7 @@ That means `slate` must own equivalents of:
 
 - `getSnapshot(editor)`
 - `subscribe(editor, listener)`
-- one explicit replacement seam for external value or snapshot replacement
+- one explicit replacement entrypoint for external value or snapshot replacement
 
 Strong take:
 
@@ -1060,7 +1065,7 @@ These are the rules Phase 1 has to enforce.
 
 1. No committed snapshot is mutated in place.
 2. No transaction draft leaks as committed state.
-3. mutable editor fields are not primary read seams.
+3. mutable editor fields are not primary read paths.
 4. Path is location, not the only identity.
 5. Every public edit path runs inside a transaction, even if implicit.
 6. Normalization finishes before commit or fails intentionally.
@@ -1086,7 +1091,7 @@ Important:
 - do **not** design async transaction middleware now
 - the commit path must publish through the core-owned snapshot store
 - commit subscribers are the post-commit observation surface
-- external replacement must enter through the explicit replacement seam, not by mutating published state in place
+- external replacement must enter through the explicit replacement entrypoint, not by mutating published state in place
 
 ## First Red-Test Lanes
 
@@ -1095,13 +1100,13 @@ These are the correctness lanes to freeze in Phase 0.
 ### Core lanes to build first
 
 1. `#5977` custom operations should not break editor detection
-   - seam: custom operations in the operation stream
+   - boundary: custom operations in the operation stream
 2. `#5874` duplicate node insertion by object identity
-   - seam: same node object inserted twice should guardrail instead of desyncing
+   - boundary: same node object inserted twice should guardrail instead of desyncing
 3. `#5811` custom normalize wrap/unwrap loop
-   - seam: normalization should not spin until iteration guard death
+   - boundary: normalization should not spin until iteration guard death
 4. `#5972` empty inline `deleteBackward` semantics
-   - seam: structural delete stays coherent inside core transforms
+   - boundary: structural delete stays coherent inside core transforms
 
 ### Reserved next lane once core foundation exists
 
@@ -1120,7 +1125,7 @@ These are the benchmark lanes to freeze in Phase 0.
 ### Core-first lane
 
 1. `#6038` transaction execution and mixed structural updates
-   - seam: repeated tree updates, exact-path ops, mixed structural batches
+   - boundary: repeated tree updates, exact-path ops, mixed structural batches
    - package: `slate`
 
 ### Frozen for later phases, but chosen now
@@ -1146,7 +1151,7 @@ Why freeze later lanes now:
 3. implement `editor.read(fn)` and `editor.update(fn, options?)`
 4. route primitive editor methods through the shared transaction writer
 5. implement the core snapshot-store contract
-6. implement the explicit external replacement seam
+6. implement the explicit external replacement entrypoint
 7. move normalization debt and ref updates inside the transaction
 8. publish immutable committed snapshots
 9. add the first four core red-test lanes
@@ -1404,7 +1409,7 @@ That means at minimum:
 Truth class:
 
 - mixed:
-  - `Near-term required` for snapshot/store/selector/runtime-seam sections
+  - `Near-term required` for snapshot/store/selector/runtime-boundary sections
   - `Future direction` for the more speculative runtime posture sections named
     below
 
@@ -1725,7 +1730,7 @@ Effects in this package should exist only when synchronizing with something outs
 
 If the problem is only “props changed” or “editor snapshot changed”, that is almost certainly not an effect problem.
 
-Important seam:
+Important boundary:
 
 - when the external system is the browser editing surface, `slate-react` wires lifecycle and listener ownership through `slate-dom`
 - `slate-react` does not reinterpret DOM points, selection semantics, or composition rules on its own

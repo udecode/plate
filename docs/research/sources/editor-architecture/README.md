@@ -55,6 +55,7 @@ Current pages:
 - [prosemirror-transaction-view-dom-runtime.md](docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md)
 - [tiptap-extension-command-react-dx.md](docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md)
 - [node-text-mark-render-dx-corpus-ledger.md](docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md)
+- [scroll-selection-visibility-runtime.md](docs/research/sources/editor-architecture/scroll-selection-visibility-runtime.md)
 
 This directory should not turn into a dump of one-off notes.
 

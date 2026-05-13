@@ -46,9 +46,13 @@ template below is complete on its own.
 - Do not create aliases for old skill names unless the user explicitly asks.
 - Do not generate a domain ralplan that can mark `done` after only writing a
   polished essay.
-- Do not let a generated ralplan implement product/code changes unless the user
-  explicitly asks for an execution ralplan. Default domain ralplans are planning
-  and review gates.
+- Do not generate a domain ralplan that patches product/code changes. A
+  `*-ralplan` is planning/review/spec/output only; execution belongs to `ralph`
+  or another explicitly execution-named skill.
+- User phrases like "go", "rewrite", "feel free to build", "fix it", or
+  "execute" must not be treated as permission for a generated ralplan to edit
+  implementation files. The generated ralplan must record the execution plan
+  and hand off to `ralph`.
 - A generated ralplan must have a user-review stop before implementation.
 - A generated ralplan must include a completion-state contract, pass-state
   ledger, confidence score, objection ledger, and final handoff bullets.
@@ -68,7 +72,8 @@ Before writing a new ralplan, infer or record:
 - recurring failure mode this ralplan prevents
 - use cases
 - non-use cases
-- whether the lane is planning-only, spec-law, review-only, or execution-gated
+- whether the lane is planning-only, spec-law, review-only, or
+  execution-planning-only
 - plan artifact path pattern
 - completion state file pattern
 - continuation prompt path
@@ -173,8 +178,13 @@ it.
 
 ## Hard Policy
 
-- This is a planning/review gate first. Do not patch implementation code unless
-  the user explicitly asks for implementation inside this skill.
+- This is a planning/review gate. Do not patch implementation code, tests,
+  examples, package files, build config, or product files from this skill.
+- User phrases like "go", "rewrite", "feel free to build", "fix it", or
+  "execute" do not override this editing boundary. Record execution steps and
+  hand off to `ralph`.
+- Allowed edits are only plan, research, spec, ledger, completion-state,
+  continuation, and domain-output artifacts explicitly owned by this ralplan.
 - Do not mark `done` because the review pass is tired.
 - Do not use `blocked` when another research, review, or plan-hardening move is
   runnable, unless the user explicitly stops execution or tells you to mark the
@@ -918,9 +928,10 @@ When the score is below threshold and a runnable next move exists:
    review, and domain-output work only.
 5. Continue the next review/refinement slice.
 
-Do not use `ralph` from this skill to execute implementation code unless the
-user explicitly asks for that mode. The user reviews the finished plan first.
-Execution starts only after a later explicit execution request.
+Do not execute implementation from this skill, and do not use `ralph` from this
+skill as an immediate executor. This skill refreshes the continuation prompt
+only. Execution starts after the user explicitly invokes `ralph` or another
+execution skill.
 
 ## Done Handoff
 
@@ -1009,10 +1020,12 @@ Do not paste the whole plan into chat. Do paste the exhaustive decision bullets.
    gates.
 10. Ensure the objection ledger includes the right personas and required fields.
 11. Ensure the done handoff requires exhaustive decision bullets.
-12. Create or sync the matching `SKILL.md`.
-13. Search for stale old-name references if this is a rename.
-14. Run a sync review.
-15. Run the project completion check if present.
+12. Ensure the generated ralplan forbids implementation edits and routes
+    execution to `ralph` without executing from the ralplan itself.
+13. Create or sync the matching `SKILL.md`.
+14. Search for stale old-name references if this is a rename.
+15. Run a sync review.
+16. Run the project completion check if present.
 
 ## Sync Review
 
@@ -1032,6 +1045,7 @@ handoff:
 - research/evidence rules included
 - high-risk triggers included
 - Ralph bridge included
+- implementation edit boundary included
 - final handoff bullets included
 - stale old-name references removed
 
@@ -1051,6 +1065,7 @@ A generated ralplan is not acceptable unless it can answer all of these:
 
 - What exact recurring failure does this ralplan prevent?
 - What files/artifacts does it write?
+- Which implementation/product files are explicitly off-limits?
 - What does it read first?
 - How does it keep completion `pending`?
 - What score dimensions are used?
@@ -1066,6 +1081,7 @@ A generated ralplan is not acceptable unless it can answer all of these:
 - Which maintainers/users object, and where are their objections recorded?
 - What downstream/ecosystem surfaces must be answered?
 - What implementation-review lenses can apply?
+- How does it route execution to `ralph` without executing itself?
 - What proof contracts prevent regressions?
 - What plan deltas are recorded after every pass?
 - How does `ralph` resume the next pass?

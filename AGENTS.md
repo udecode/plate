@@ -52,6 +52,7 @@ Use those skills when relevant:
 - `clawsweeper` for Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
 - `resolve-slate-issue` for one Slate issue at a time: fetch source, prove current Slate v2 behavior, fix or classify, then comment directly with `gh`
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
+- `editor-harvest-ralplan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate ralplan queue
 - `plate-ralplan` / `slate-ralplan` for pass-gated architecture/spec planning before execution
 - `ralplan-creator` for creating new domain-specific `*-ralplan` skills from the shared skeleton
 - `tdd`
@@ -182,7 +183,7 @@ pnpm --filter @platejs/core lint:fix
 
 - Before non-trivial bug/feature work on existing code, load `learnings-researcher` and check `docs/solutions` first.
 - For multi-step work, anything likely to be compacted / use a full context window, or any task that starts trivial but grows into that shape, start/update `planning-with-files` immediately. Do not wait for compaction or the next turn.
-- For bug fixes or behavior changes with a sane test seam, use `tdd` before the fix.
+- For bug fixes or behavior changes with a sane test surface, use `tdd` before the fix.
 
 ### Verification Checklist
 
