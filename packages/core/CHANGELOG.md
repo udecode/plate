@@ -1,5 +1,7 @@
 # @platejs/core
 
+## 53.0.5
+
 ## 53.0.0
 
 ### Minor Changes
