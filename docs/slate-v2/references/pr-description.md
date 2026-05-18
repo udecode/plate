@@ -25,7 +25,7 @@ Full ledger:
 Current summary:
 
 - Fixed issue claims: `32`
-- Related issue matrix rows: `189`
+- Related issue matrix rows: `192`
 - Live corpus accounting: `630` open issues, `29` open PRs, `659` open
   threads, and `617` gitcrawl clusters from the 2026-05-04 refresh. This is
   corpus accounting, not an auto-close claim.
@@ -42,6 +42,24 @@ Current summary:
   or improved claims from that sync: `0`.
 - Yjs/collaboration readiness sync promotes `#5771` from Related to Improves,
   with no new exact fixed issue claim.
+- Native beforeinput command-handler sync adds related rows for `#3586` and
+  `#4681`, and refreshes `#3568`, `#5181`, and `#4317`. New exact fixed or
+  improved claims from that sync: `0`.
+- Plate-fit API hard-cut sync reverses the earlier raw Slate renderer/key
+  helper target: raw Slate keeps `Editable render*` and browser event props,
+  model/runtime behavior stays in extensions, and Plate owns renderer/keymap
+  product packaging. New exact fixed or improved claims from that sync: `0`.
+- Table transform-boundary sync clarifies that Backspace/Delete/Enter table-cell
+  boundary behavior, markdown Enter/Backspace model behavior, and richtext
+  exit-on-Enter behavior belong in `transforms.*` middleware rather than raw
+  `Editable onKeyDown` key branches. New exact fixed or improved claims from
+  that sync: `0`.
+- Android markdown shortcut flush sync keeps app-facing markdown behavior in
+  `transforms.insertText`, removes example-side Android flush plumbing, and
+  routes Android pending-diff timing to the input runtime. Focused unit,
+  typecheck, lint, and markdown-shortcuts browser proof passed; raw Android
+  device proof is still required before any exact `#4532` claim. New exact
+  fixed or improved claims from that sync: `0`.
 
 Current fixed issue claims:
 
@@ -55,8 +73,8 @@ Current fixed issue claims:
   and embedded HTML fallback fragments.
 - Fixes #3486: Custom clipboard format keys isolate internal fragment
   transport.
-- Fixes #4569: `insertData` docs state capability order, handler return
-  semantics, and fallback behavior.
+- Fixes #4569: `insertData` docs state handler ordering, return semantics,
+  and fallback behavior.
 - Fixes #6034: The tables example keeps the caret in the final table cell when
   the table is the last node and ArrowDown is pressed before typing.
 - Fixes #3871: The richtext example imports browser triple-click as the clicked
@@ -106,7 +124,7 @@ Current fixed issue claims:
   the inserted content.
 - Fixes #5089: Rich multi-block fragment paste into the middle of a paragraph
   preserves block separation instead of flattening into the current paragraph.
-- Fixes #5080: `state.nodes.match({ reverse: true })` returns the exact reverse
+- Fixes #5080: `state.nodes.entries({ reverse: true })` returns the exact reverse
   of the forward matched entry order for nested matching entries.
 - Fixes #6053: `useElementSelected()` does not throw when a selected rendered
   element removes itself, and `useElementSelected({ at: path })` returns
@@ -217,6 +235,45 @@ Accepted current shape:
 - Public data helper values use `*Api` names such as `NodeApi`, `ElementApi`,
   `PathApi`, and `RangeApi`; model type names stay `Node`, `Element`, `Path`,
   and `Range`.
+- Editors compose behavior through creation-time `extensions`, not public
+  `with*` wrappers, `withEditor`, or author-facing `editor.extend`.
+- Built-in packages expose lowercase extension factories such as `history()`,
+  `dom()`, and `react()`.
+- Custom extension factories use the same lower camel-case singular shape, such
+  as `editableVoid()`, `checklist()`, `mention()`, or `table()`. Plural names
+  are reserved for naturally plural domains such as `shortcuts()` or
+  `normalizers()`. PascalCase `NameExtension` is reserved for static extension
+  values. Plate's `NamePlugin` suffix belongs to Plate's product plugin layer,
+  not raw Slate extensions.
+- Replayable extension reads live under `editor.read((state) => state.<group>)`;
+  replayable extension writes/actions live under
+  `editor.update((tx) => tx.<group>)`.
+- Installed runtime/control APIs live under `editor.api.<capability>`, so
+  history controls use `editor.api.history`, DOM/React runtime APIs use
+  `editor.api.dom` / `editor.api.react`, clipboard APIs use
+  `editor.api.clipboard`, and public editor-bound helper namespaces such as
+  `HistoryEditor`, `DOMEditor`, and a runtime `ReactEditor` namespace are not
+  app-facing APIs. The app-facing React editor instance type is the generic
+  extension-derived `ReactEditor<Value, Extensions>`.
+- One extension may install multiple public API handles. `dom()` installs the
+  DOM projection/focus handle and may also install the clipboard handle. Public
+  API keys are capability names, not package names.
+- Generic extension-aware code may use `editor.getApi(extensionToken)` where the
+  token is the branded factory or static extension value. String lookup such as
+  `editor.getApi('history')` and fresh-instance lookup such as
+  `editor.getApi(history())` are not public APIs.
+- Type tests must include negative contracts for uninstalled APIs,
+  `editor.getApi('history')`, `editor.getApi(history())`,
+  `editor.api.history.undo`, and `editor.getApi(history).undo`.
+- State node queries expose `state.nodes.entries(...)` for lazy all-match
+  traversal, `state.nodes.find(...)` for first-match reads, and
+  `state.nodes.some(...)` for boolean active checks. Use
+  `state.nodes.toArray(options, map?)` only when a read or update callback needs
+  an explicit materialized array.
+- Element void config is string-only: `void: 'block'`,
+  `void: 'inline'`, `void: 'markable-inline'`, or
+  `void: 'editable-island'`. Absence means non-void; `void: true` is fixture
+  data only when a matcher maps it to an explicit schema spec.
 - Mutable editor fields, direct `apply` extension points, direct `onChange`
   extension points, and `Transforms.*` teaching are outside the final public
   posture.
@@ -230,6 +287,9 @@ Open debt:
 
 - Some tests still use legacy-style fixtures such as `Editor.replace`. Treat that
   as fixture migration debt, not a public API endorsement.
+- Some legacy-oracle tests still use node data markers such as `void: true`.
+  Treat those as fixture data matched into explicit string specs, not supported
+  `EditorElementSpec.void` config.
 - Structural delete and normalization now have focused core package proof for
   #4121/#2500/#3965/#3950. #5811 is improved by deterministic normalization
   loop detection. #1654 is improved by wiring existing `isIsolating` schema
@@ -263,7 +323,10 @@ Proof references:
 - `docs/plans/2026-05-07-slate-v2-inline-delete-boundary-repro-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-operation-extensibility-validation-ralplan.md`
 - `docs/plans/2026-05-07-slate-v2-insert-fragment-at-location-ralplan.md`
+- `docs/plans/2026-05-13-slate-v2-void-kind-api-ralplan.md`
 - `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`
+- `../slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
+- `../slate-v2/packages/slate/test/schema-contract.ts`
 - `../slate-v2/packages/slate/test/clipboard-contract.ts`
 - `../slate-v2/packages/slate/test/query-contract.ts`
 - `../slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
@@ -315,6 +378,11 @@ Accepted current shape:
 - `slate-dom` owns DOM selection export/import, clipboard policy, DOM coverage
   lookup, and hotkey matching.
 - DOM helpers cannot blindly assume every model point has mounted DOM.
+- Strict DOM bridge helpers still throw for direct invariant checks, while
+  nullable `resolve*` helpers return `null` for recoverable model/DOM projection
+  gaps.
+- Runtime recovery in `slate-react` uses resolver helpers instead of
+  `suppressThrow`, local catch wrappers, or strict projection calls.
 - Clipboard behavior uses the model when DOM coverage says native DOM is missing
   or stale.
 - `is-hotkey` is not a dependency. Slate owns `isHotkey(spec, event)` in
@@ -330,6 +398,7 @@ Proof references:
 - `docs/plans/2026-05-03-slate-v2-hotkey-runtime-dependency-ralplan.md`
 - `docs/plans/2026-05-02-slate-v2-hidden-subtree-first-class-ralplan.md`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
+- `docs/plans/2026-05-14-slate-v2-total-runtime-error-policy-ralplan.md`
 - `docs/slate-v2/replacement-gates-scoreboard.md`
 
 ## 5.1 Clipboard And Serialization Boundary
@@ -349,20 +418,21 @@ Accepted current shape:
   HTML fragment transport, plain-text fallback, and DOM coverage copy/paste
   policy.
 - `slate-react` owns browser event dispatch for copy, cut, paste, drag, and
-  drop, then delegates payload work to `editor.dom.clipboard`.
-- Low-level clipboard APIs stay under `editor.dom.clipboard`; raw `editor`
-  does not grow a public clipboard namespace.
-- App-owned rich HTML/image/custom paste behavior runs through
-  `dom.clipboard.insertData` capabilities.
+  drop, then delegates payload work to `editor.api.clipboard`.
+- Low-level clipboard APIs stay under top-level `editor.api.clipboard`; raw
+  `editor` does not grow a public clipboard namespace.
+- App-owned rich HTML/image/custom paste behavior runs through typed clipboard
+  ingress handlers; `insertData` stays input-only and does not own output
+  serialization or product paste-rule policy.
 - Custom fragment format keys isolate both `application/${clipboardFormatKey}`
   payloads and embedded `data-slate-fragment` HTML fallback. Mismatched
   embedded fragments fall back to safe import behavior instead of importing
   schema-private JSON.
-- `withReact` and `withDOM` take options objects for DOM adapter settings:
-  `withReact(createEditor(), { clipboardFormatKey: 'x-product-fragment' })`.
+- DOM adapter settings are passed to extension factories, not wrappers:
+  `dom({ clipboardFormatKey: 'x-product-fragment' })` in the editor
+  `extensions` list.
 - `DOMClipboardInsertDataHandler` is public from `slate-dom`; app-owned rich
-  HTML/image paste behavior runs through typed `dom.clipboard.insertData`
-  capabilities.
+  HTML/image paste behavior runs through typed clipboard ingress authoring.
 - Foreign or malformed internal fragment payloads must fail closed and fall
   back to safe import behavior.
 - Rich Slate fragment insertion preserves the receiving text-block type when a
@@ -458,6 +528,9 @@ Accepted current shape:
   runtime surfaces, not the first public docs path.
 - Default editing remains DOM-present unless an explicit rendering strategy says
   otherwise.
+- Public examples teach stable Slate React capabilities before React
+  memoization ceremony: renderer registration, input rules, key commands,
+  semantic commands, and projector options.
 - Generated browser gauntlets and v2-only examples are part of the proof surface.
 
 Why it belongs in the PR:
@@ -478,6 +551,9 @@ Proof references:
 - `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `../slate-v2/packages/slate-react/test/annotation-store-contract.test.tsx`
+- `../slate-v2/packages/slate-react/test/widget-layer-contract.test.tsx`
 - `../slate-v2/docs/libraries/slate-react/editable.md`
 - `../slate-v2/docs/libraries/slate-react/hooks.md`
 - `../slate-v2/docs/libraries/slate-react/slate.md`
@@ -510,10 +586,11 @@ Accepted current shape:
 
 - `createEditor({ initialValue, initialSelection })` seeds public editor state
   synchronously before React provider render.
-- `useSlateEditor({ initialValue, withEditor })` is the React helper for the common
-  `withReact(createEditor(...))` construction path.
-- `withEditor` is singular because it mirrors Slate's existing `withReact` /
-  `withHistory` composition instead of inventing a plugin array DSL.
+- `useSlateEditor({ initialValue, extensions })` is the React helper for
+  creation-time extension composition.
+- A direct `createReactEditor({ initialValue, extensions })` constructor can
+  support tests and non-hook React setup without introducing a second
+  composition model.
 - `<Slate editor={editor}>` provides context, subscriptions, decoration sources,
   one annotation store, and callbacks. It does not initialize document content.
 - Mounted document replacement is explicit through
@@ -545,49 +622,260 @@ Proof references:
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `../slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
 
-## 6.2 React Editable Extension Input Rules
+## 6.2 React Editable Input Rule Ownership
 
 Affected:
 
+- `../slate-v2/packages/slate/src/core/editor-extension.ts`
+- `../slate-v2/packages/slate/src/core/transform-middleware.ts`
+- `../slate-v2/packages/slate/src/create-editor.ts`
+- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `../slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
 - `../slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
 - `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
 - `../slate-v2/packages/slate-react/src/index.ts`
+- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
 - `../slate-v2/site/examples/ts/check-lists.tsx`
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/site/examples/ts/inlines.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
 
-Accepted current shape:
+Current implemented shape:
 
-- `Editable` can read input rules from editor extension capabilities.
-- `editableInputRules(...)` is the Slate React helper for registering model
-  input behavior from an editor extension.
-- Example model behavior such as checklist Backspace belongs to the editor
-  behavior layer, not example-level `Editable onKeyDown` glue.
-- Public extension `commands` remain rejected; input rules are a narrow React
-  editing capability, not a command registry revival.
+- `slate` extension registration accepts transform middleware for every public
+  mutating editor transform in `EditorTransformApi` except engine controls.
+- Covered transform families: marks, text/delete/fragment/break insertion,
+  node transforms, and selection transforms.
+- Explicitly excluded from transform middleware: `bookmark`, `normalize`,
+  `setNormalizing`, and `withoutNormalizing`.
+- Transform middleware runs through keyed internal command registration and
+  defaults through the transform registry without exposing public command slots.
+- `next()` forwards current args unchanged, and `next(overrides)` shallow-merges
+  explicit overrides such as `next({ text: normalizedText })`.
+- Handling is expressed by not calling `next()`, matching Slate's old
+  `withX(editor)` override feel without monkeypatching editor methods.
+- Internal default forwarding skips nested public transform middleware so aliases
+  like `deleteBackward -> delete` do not double-fire extension hooks.
+- Slate React does not expose `EditableInputRule*`, `editableInputRules(...)`,
+  `EDITABLE_INPUT_RULE_CAPABILITY`, or an `Editable inputRules` prop.
+- Keep `onDOMBeforeInput` as the public raw native escape hatch. Public
+  `onCommand` / `EditableCommand*` is cut; native-format behavior that Slate
+  owns stays internal/runtime-owned and covered by focused contracts.
+- Checklist Backspace uses `transforms.deleteBackward(...)`.
+- Markdown typed shortcuts and inline URL typed insertion use
+  `transforms.insertText(...)` where the behavior is model-owned.
+- Direct command registry helpers stay out of the primary public package; command
+  middleware is substrate, while public examples teach transform middleware.
+- Keep rich semantic input-rule families in Plate, not raw Slate.
+- Public extension `commands` fields remain rejected; direct
+  `Editor.registerCommand(...)` stays the low-level substrate and advanced
+  escape hatch, while normal examples teach transform middleware.
+
+Accepted current source shape:
+
+- Transform middleware covers writes only. It is not the full no-regression
+  answer for old overrideable editor methods.
+- Grouped `extension.queries` covers accepted pure read methods across
+  `fragment`, `marks`, `nodes`, `points`, `ranges`, and `text`, including
+  static/read parity for the pure read keys that do not naturally fit the
+  previous grouped state view: `nodes.path`, `nodes.elementReadOnly`,
+  `nodes.shouldMergeNodesRemovePrevNode`, and `points.positions`.
+- Query middleware is keyed by group/method, supports `next(overrides)`,
+  preserves generator reads during default delegation, rejects double `next()`,
+  and prevents `editor.update` from starting inside query middleware.
+- `normalizers.editor` is the typed ordered middleware lane for editor-root and
+  value-level normalization.
+- `normalizers.node` is the typed ordered middleware lane for non-root node
+  normalization, with `next(overrides)`, built-in fallback delegation, cleanup,
+  extension-local registration ids, scoped normalizer `tx`, and double-next
+  proof.
+- Scoped normalizer `tx` exposes model repair APIs and `value.get()`, but not
+  recursive normalization controls, operation replay, or whole-value
+  replacement.
+- Operation and commit extension slots answer old `apply` and `onChange`
+  pressure. The accepted author-facing naming target is `operations.apply` for
+  operation-level hooks, `onCommit` for post-transaction observers, and `setup`
+  for extension-local runtime installation.
+- Refs, raw snapshots, runtime ids, lifecycle controls, and engine controls stay
+  out of extension override middleware.
+- Proof source:
+  `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
+  Section `Full Editor Method Override Coverage Ralplan - 2026-05-16`.
 
 Why it belongs in the PR:
 
 - The examples should teach first-class editor behavior composition instead of
   copying per-component keydown branches.
-- The React runtime already owns beforeinput, composition, repair, and DOM
-  selection policy, so model input rules need to enter through that runtime.
+- Model behavior should not be authored through browser `inputType` strings.
+- The core command registry already routes delete and insert-text commands
+  through deterministic middleware, which covers DOM, keyboard fallback, and
+  programmatic command paths better than a React beforeinput rule registry.
+- Transform middleware gives that same one-path runtime proof while preserving
+  the Slate-close `withX(editor)` override feel for public examples.
+- The `next()` contract keeps the common case tiny while still allowing
+  middleware to normalize args before delegating.
 
 Not claimed:
 
 - A full extension keyboard shortcut system.
 - A replacement for every app-owned `onKeyDown` escape hatch.
 - Legacy command-slot compatibility.
+- Legacy method-slot monkeypatch compatibility. The claim is v2 capability
+  parity through first-class extension surfaces, not restoring mutable editor
+  method fields.
+- A new fixed or improved issue claim for the adjacent input-runtime issues or
+  `#3557`; the insert-node/fragment extension pressure is related proof, not an
+  exact upstream repro closure.
 
 Proof references:
 
-- `../slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `../slate-v2/packages/slate/src/core/editor-extension.ts`
+- `../slate-v2/packages/slate/src/core/transform-middleware.ts`
+- `../slate-v2/packages/slate/src/core/query-middleware.ts`
+- `../slate-v2/packages/slate/src/core/normalize-node.ts`
+- `../slate-v2/packages/slate/src/create-editor.ts`
+- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `../slate-v2/packages/slate/src/core/command-registry.ts`
+- `../slate-v2/packages/slate/src/editor/delete-backward.ts`
+- `../slate-v2/packages/slate/test/query-extension-contract.ts`
+- `../slate-v2/packages/slate/test/normalization-contract.ts`
+- `../slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
+- `../slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `../slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
+- `../slate-v2/packages/slate/test/transaction-contract.ts`
+- `../slate-v2/packages/slate/test/transforms-contract.ts`
+- `../slate-v2/packages/slate/test/public-surface-contract.ts`
+- `../slate-v2/site/examples/ts/forced-layout.tsx`
+- `../slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
+- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `../slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
 - `../slate-v2/site/examples/ts/check-lists.tsx`
-- `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/site/examples/ts/inlines.tsx`
+- `bun check` in `../slate-v2`
+- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/forced-layout.test.ts --project=chromium`
+- `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/check-lists.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/inlines.test.ts --project=chromium`
+- `docs/plans/2026-05-13-slate-v2-editable-input-rule-ownership-ralplan.md`
+
+## 6.2.1 React Editable Native Input Boundary
+
+Affected:
+
+- `../slate-v2/packages/slate-react/src/components/editable.tsx`
+- `../slate-v2/packages/slate-react/src/editable/editable-key-commands.ts`
+- `../slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `../slate-v2/packages/slate-react/src/editable/input-router.ts`
+- `../slate-v2/site/examples/ts/code-highlighting.tsx`
+- `../slate-v2/site/examples/ts/iframe.tsx`
+- `../slate-v2/site/examples/ts/images.tsx`
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/site/examples/ts/richtext.tsx`
+- `../slate-v2/site/examples/ts/tables.tsx`
+- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `docs/plans/2026-05-14-slate-v2-callback-memoization-dx-ralplan.md`
+
+Accepted current shape:
+
+- `onDOMBeforeInput` is the raw native `InputEvent` escape hatch and receives
+  Slate context.
+- Public `onCommand` and `EditableCommand*` are no longer accepted raw Slate
+  app DX. They crossed into product command language.
+- Native-format behavior that Slate owns remains internal runtime behavior
+  after the public prop/types removal.
+- Raw Slate examples use `Editable onKeyDown` for UI hotkeys and
+  `transforms.*` middleware for reusable model behavior.
+- Table Backspace/Delete/Enter, markdown Enter/Backspace, and richtext
+  exit-on-Enter are model transform behavior, not UI shortcut behavior.
+- Plate owns product shortcut/keymap composition.
+- Native input listeners attach to the root once and read the latest handler
+  props without requiring user `useMemo` or `useCallback`.
+- Slate reports format commands but does not hard-code a mark schema.
+
+Why it belongs in the PR:
+
+- Formatting examples should not teach browser `inputType` parsing as normal
+  editor behavior, but raw Slate also should not expose product command unions
+  as public app API.
+- The React runtime already owns native input classification and DOM repair, so
+  native-format handling can stay internal while public apps use raw
+  `onDOMBeforeInput` only when they need a low-level escape hatch.
+
+Not claimed:
+
+- A general plugin command registry.
+- A replacement for app-owned overlay/cursor key handlers.
+- Exact closure for legacy `onDOMBeforeInput` paste behavior.
+- Exact closure for the historical DOMPoint crash reports without their
+  original repro proof.
+
+Proof references:
+
+- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `../slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `../slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
+- `../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md`
+- `docs/plans/2026-05-18-slate-v2-table-transform-boundary-ralplan.md`
+
+## 6.2.2 Core Boolean Mark Key Type Helper
+
+Affected:
+
+- `../slate-v2/packages/slate/src/interfaces/text.ts`
+- `../slate-v2/packages/slate/src/index.ts`
+- `../slate-v2/packages/slate/test/generic-value-contract.ts`
+- `../slate-v2/site/examples/ts/custom-types.d.ts`
+- `../slate-v2/site/examples/ts/mark-utils.ts`
+- `../slate-v2/site/examples/ts/richtext.tsx`
+- `../slate-v2/site/examples/ts/hovering-toolbar.tsx`
+- `../slate-v2/site/examples/ts/iframe.tsx`
+- `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`
+
+Accepted shape:
+
+- `slate` should export type-only `BooleanMarkKeysOf<N>` and
+  `BooleanMarksOf<N>` helpers derived from existing `MarksOf<N>`.
+- Examples should replace local mapped conditional types such as
+  `BooleanTextKey<T>` with `BooleanMarkKeysOf<CustomText>`.
+- Boolean mark helpers should exclude non-boolean mark attributes like
+  `fontSize?: string`.
+- `MarkKeysOf<N>` keeps its existing optional-mark fallback behavior; this is an
+  additive helper, not a semantic rewrite.
+
+Why it belongs in the PR:
+
+- Public examples should teach Slate mark typing, not copied TypeScript
+  conditional/mapped-type machinery.
+- The helper names a raw Slate concept and stays type-only, so it does not turn
+  core into a toolbar, hotkey, or Plate plugin API.
+
+Not claimed:
+
+- No runtime mark behavior change.
+- No browser-formatting behavior change.
+- No fixed issue claim for #5075 until exact TypeScript repro proof exists.
+  The current claim is `Improves #5075`.
+
+Proof references:
+
+- `../slate-v2/packages/slate/src/interfaces/text.ts`
+- `../slate-v2/packages/slate/test/generic-value-contract.ts`
+- `../slate-v2/site/examples/ts/custom-types.d.ts`
+- `../slate-v2/site/examples/ts/mark-utils.ts`
+- `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`
 
 ## 6.3 React Decoration Source Hook
 
 Affected:
 
+- `../slate-v2/packages/slate/src/interfaces/node.ts`
 - `../slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`
 - `../slate-v2/packages/slate-react/src/decoration-source.ts`
 - `../slate-v2/site/examples/ts/code-highlighting.tsx`
@@ -597,6 +885,7 @@ Affected:
 - `../slate-v2/site/examples/ts/external-decoration-sources.tsx`
 - `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
 
 Accepted current shape:
 
@@ -606,8 +895,28 @@ Accepted current shape:
   common example and app code.
 - The hook keeps the source stable for an editor while reading the latest
   `read` and `runtimeScope` callbacks.
+- The hook accepts `deps?: readonly unknown[]` so external query/state changes
+  refresh the source without recreating it or teaching memoized option objects
+  in examples.
 - `dirtiness` and `runtimeScope` remain visible in the call site because they
   are the performance contract.
+- Structurally identical dirtiness class lists keep the same hook source
+  identity, so multi-class sources can inline `dirtiness: ['text', 'node']`
+  without caller-side tuple constants.
+- `NodeApi.findTextRanges(root, query, options)` is the accepted raw Slate
+  helper for turning text matches into `Range[]`. It is not a search feature:
+  first-tranche options stay thin with `caseSensitive` plus `RegExp` or matcher
+  callbacks, no `wholeWord`, no locale policy, and no public
+  `across: 'text-siblings'` option.
+- `createRangeDecorationSource(editor, options)` is the accepted helper over
+  `createDecorationSource` for callers that already have ranges or range
+  entries and do not need to hand-build projection objects, keys, or refresh
+  defaults.
+- `useSlateRangeDecorationSource(editor, options)` is the React helper for
+  range-based decorations. It shares the low-level hook's lifecycle cleanup and
+  `deps` refresh contract without recreating the source object.
+- `createDecorationSource` and `useSlateDecorationSource` remain the power APIs
+  for external stores, custom invalidation, manual `runtimeScope`, and metrics.
 - The huge-overlay benchmark uses `useEditorSelector` plus
   `decorationSources`; no `useSlateSelector` alias or direct
   `<Slate projectionStore={...}>` prop is required.
@@ -616,20 +925,33 @@ Why it belongs in the PR:
 
 - Decoration examples should teach the projection model, not repeated
   `useMemo` plus cleanup `useEffect` ceremony.
+- Search, hashtag, markdown-preview, code-token, lint, and diagnostics examples
+  should use generic range/source helpers when the repeated work is
+  range-to-projection plumbing.
 - Source lifecycle belongs behind a hook when the source is created inside a
   React component.
+- Raw Slate should not grow `editor.api.search`, `SearchApi`, or product search
+  options to satisfy a search-highlighting example.
 
 Current proof:
 
 - `bun run bench:react:huge-document-overlays:local` passes in `../slate-v2`.
 - Benchmark green does not claim browser/native closure; selection, IME, copy,
   paste, find, and mobile rows remain separate gates.
+- Range-source helper proof still requires parity against the manual source
+  path: `sourceReadCount`, `recomputeCount`, `fullFallbackCount`,
+  `changedRuntimeBucketCount`, `runtimeSubscriberWakeCount`, and
+  `globalSubscriberWakeCount` must not regress.
+- `#4076` stays a docs/example non-claim. It supports simplifying the example
+  and rejecting product-shaped search API in raw Slate; it is not a fixed or
+  improved issue claim.
 
 Proof references:
 
 - `../slate-v2/packages/slate-react/test/app-owned-customization.tsx`
 - `../slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
 - `../slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `../slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
 - `../slate-v2/site/examples/ts/code-highlighting.tsx`
 - `../slate-v2/site/examples/ts/search-highlighting.tsx`
 - `../slate-v2/site/examples/ts/markdown-preview.tsx`
@@ -637,6 +959,7 @@ Proof references:
 - `../slate-v2/site/examples/ts/external-decoration-sources.tsx`
 - `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+- `docs/plans/2026-05-18-slate-v2-search-highlighting-dx-ralplan.md`
 
 ## 6.4 React Annotation Store Context
 
@@ -644,7 +967,10 @@ Affected:
 
 - `../slate-v2/packages/slate-react/src/components/slate.tsx`
 - `../slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `../slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `../slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
 - `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
 - `../slate-v2/packages/slate-react/test/surface-contract.tsx`
 - `../slate-v2/docs/libraries/slate-react/annotations.md`
 - `../slate-v2/docs/libraries/slate-react/hooks.md`
@@ -665,6 +991,9 @@ Accepted current shape:
   sidebars read the same committed annotation state.
 - Raw Slate owns the anchor/projection substrate only. Review comments,
   suggestions, permissions, and collaboration services stay product-layer work.
+- `useSlateAnnotationStore` and `useSlateWidgetStore` accept projector options
+  with explicit deps so examples can map product data without caller-side
+  `useMemo` arrays.
 
 Why it belongs in the PR:
 
@@ -676,10 +1005,48 @@ Why it belongs in the PR:
 Proof references:
 
 - `../slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `../slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
 - `../slate-v2/site/examples/ts/collaborative-comments.tsx`
 - `../slate-v2/site/examples/ts/review-comments.tsx`
 - `../slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
 - `docs/plans/2026-05-04-slate-v2-legacy-example-dx-ralplan.md`
+
+## 6.4.1 React Editable Renderer Registration
+
+Affected:
+
+- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `../slate-v2/packages/slate-react/src/index.ts`
+- `../slate-v2/docs/concepts/09-rendering.md`
+- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `../slate-v2/docs/walkthroughs/03-defining-custom-elements.md`
+- `../slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`
+- `../slate-v2/docs/walkthroughs/05-executing-commands.md`
+- `../slate-v2/docs/walkthroughs/09-performance.md`
+
+Accepted current shape:
+
+- Raw Slate should not own a renderer registry. Public `editableRenderers(...)`
+  and any planned `editable.renderers` facet are hard cuts.
+- Raw `Editable` render props are the Slate React rendering API.
+- Beginner docs teach module-level or editor-creation-stable render callbacks,
+  not `useCallback` cargo cult and not raw Slate renderer registries.
+- Core `slate` stays non-React; renderer registration belongs to `slate-react`.
+
+Not claimed:
+
+- A raw Slate renderer registry.
+- A core `EditorElementSpec` React renderer field.
+- Exact closure for selection-event callback churn reports without their
+  original browser repro.
+
+Proof references:
+
+- `../slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md`
 
 ## 6.5 Render Path Props
 
@@ -708,8 +1075,10 @@ Accepted current shape:
 - `RenderElementProps` receives `attributes`, `children`, `element`,
   `isInline`, and `slots`; it does not expose eager `path` or `index`.
 - `RenderVoidProps` receives `{ element }`; it does not expose eager `path`.
-- Event handlers resolve the current location with `editor.dom.findPath(element)`.
-- `DOMEditor.findPath` resolves by runtime id before stale weak-map indexes.
+- Event handlers resolve the current location with
+  `editor.api.dom.findPath(element)`.
+- The installed DOM extension handle resolves by runtime id before stale
+  weak-map indexes.
 - `useElementPath()` is the opt-in render-time path subscription.
 - `useElementSelected()` keeps intersection semantics; block voids that only
   want selected UI for a collapsed caret use
@@ -802,6 +1171,9 @@ Accepted current shape:
 - Virtualized rendering is explicit and experimental. The API exposes it only
   through object form, `{ type: 'virtualized' }`; stable string strategies stay
   `auto`, `full`, `staged`, and `shell`.
+- Rendering strategy option objects normalize by primitive fields inside
+  `Editable`, so examples do not need caller-side `useMemo` just to stabilize
+  option identity.
 
 Why it belongs in the PR:
 
@@ -822,6 +1194,8 @@ Proof references:
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/plans/2026-05-03-slate-v2-experimental-virtualized-rendering-boundary.md`
 - `docs/slate-v2/replacement-gates-scoreboard.md`
+- `../slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+- `../slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`
 
 ## 9. Browser Regression And Example Proof
 

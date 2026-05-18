@@ -30,6 +30,8 @@ Create one paste-ready continuation prompt that:
 - names final completion criteria
 - preserves compact context grounding for the active plan
 - records the current pass in the completion state file
+- sets or verifies the thread goal around the desired end state when a goal
+  tool is available
 - respects the project's completion state file when one exists
 - encodes a real stop rule, not a cooldown crutch
 - writes the result to the active continuation prompt file
@@ -47,16 +49,21 @@ Create one paste-ready continuation prompt that:
 Resolve project conventions before writing:
 
 1. Completion state file:
-   - prefer the file named by the user or active plan
-   - else, for parallel sessions, use `.tmp/<session-id>/completion-check.md`
-     when `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or `CODEX_SESSION_ID`
-     exists; create it when starting or resuming a lane
-   - else create an explicit plan id and use `.tmp/<plan-id>/completion-check.md`
-   - else use the active plan as the mutable state file
+   - use the active runtime id, never an invented plan id
+   - resolve `<id>` from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or
+     `CODEX_SESSION_ID`
+   - when the Stop hook provides `session_id` on stdin, treat that exact value
+     as the runtime id because the hook maps it to `CODEX_THREAD_ID`
+   - create or update `.tmp/<id>/completion-check.md` when starting or resuming
+     a lane
+   - a completion file named by the user or active plan is read as context only
+     unless it is the same `.tmp/<id>/completion-check.md`
+   - if no runtime id is available, stop and report the missing hook/session id;
+     do not create `.tmp/<plan-id>/completion-check.md` and do not use the
+     active plan as the mutable completion state file
 2. Continuation prompt output:
-   - prefer `.tmp/<session-id>/continue.md` when `COMPLETION_CHECK_ID`,
-     `CODEX_THREAD_ID`, or `CODEX_SESSION_ID` exists
-   - else use `.tmp/default/continue.md`
+   - use `.tmp/<id>/continue.md` beside the active completion file
+   - if no runtime id is available, stop before writing a continuation prompt
 3. Continue skill reference:
    - prefer `.agents/skills/continue/SKILL.md` if it exists
    - else use the available `continue` skill reference from the current runtime
@@ -65,6 +72,18 @@ Resolve project conventions before writing:
    - prefer the command named by the user, active plan, package scripts, or
      project docs
    - else describe the completion gate generically and do not invent a command
+5. Goal tool:
+   - if a goal tool is available, use `set_goal()` before execution unless the
+     current goal already matches the desired end state
+   - create the goal around the desired end state rather than the execution plan
+   - include constraints, scope, or verification details only when they
+     materially change what done means
+   - use the goal or user-input tool to ask when the goal would otherwise be
+     unclear
+   - if no goal tool is available, ask the user to set the goal instead of
+     silently proceeding without one
+   - do not start execution until the goal is set, verified as already matching,
+     or the user explicitly resolves the missing-goal path
 
 Do not hardcode machine-specific paths, package managers, or repo names.
 
@@ -73,18 +92,19 @@ Do not hardcode machine-specific paths, package managers, or repo names.
 Read only what you need:
 
 1. the user's stated goal
-2. the completion state file, if present
-3. the active plan or mutable state file
-4. relevant research / architecture / context docs
-5. context grounding fields already recorded in the plan
-6. current next owner
-7. current strongest safety gate
-8. current strongest progress gate
-9. pass schedule / pressure passes / review gates, if the active plan has them
-10. ClawSweeper related-issue pass state, if this is a Slate v2 issue-facing
+2. current goal state, if a goal tool exists
+3. the completion state file, if present
+4. the active plan or mutable state file
+5. relevant research / architecture / context docs
+6. context grounding fields already recorded in the plan
+7. current next owner
+8. current strongest safety gate
+9. current strongest progress gate
+10. pass schedule / pressure passes / review gates, if the active plan has them
+11. ClawSweeper related-issue pass state, if this is a Slate v2 issue-facing
     plan
-11. final completion checks
-12. scope exclusions already made explicit
+12. final completion checks
+13. scope exclusions already made explicit
 
 Do not dump repo trivia into the prompt.
 
@@ -93,28 +113,32 @@ Do not dump repo trivia into the prompt.
 1. Discover the completion state file, active plan, continue skill reference,
    and completion gate command.
 2. Read the completion state file and active plan.
-3. Ensure the active plan has compact context grounding, adding it when missing
+3. Set or verify the thread goal with `set_goal()` when a goal tool is
+   available. Ask the user to clarify or set the goal if no clear desired end
+   state can be derived. Do not encode the goal as "run Ralph" or as a phase
+   list; encode the desired final state.
+4. Ensure the active plan has compact context grounding, adding it when missing
    from available evidence instead of creating a separate state system.
-4. Set the completion state to `pending` immediately, before prompt emission
+5. Set the completion state to `pending` immediately, before prompt emission
    or execution work.
-5. Generate the continuation prompt from the active plan.
-6. Write the prompt to the active continuation prompt file.
-7. Update the active plan ledger, if it exists, to record that execution started
+6. Generate the continuation prompt from the active plan.
+7. Write the prompt to the active continuation prompt file.
+8. Update the active plan ledger, if it exists, to record that execution started
    or resumed.
-8. Sync any maintainer-facing reference docs named by the active plan,
+9. Sync any maintainer-facing reference docs named by the active plan,
    completion file, or governing skill when the current slice changes issue
    claims, public API shape, release gates, proof status, examples, or PR-review
    narrative.
-9. For Slate v2 issue-facing plans, ensure one ClawSweeper related-issue pass
+10. For Slate v2 issue-facing plans, ensure one ClawSweeper related-issue pass
    exists for the touched surface before closure. If absent, schedule/start that
    pass and update `docs/slate-v2/ledgers/fork-issue-dossier.md`. If already
    complete and the issue-facing surface has not changed, do not rerun it.
-10. If the active plan declares a pass schedule, start the first unfinished
+11. If the active plan declares a pass schedule, start the first unfinished
     required pass and keep completion `pending` unless that pass closes the
     whole lane.
-11. Otherwise start the first runnable execution slice from the active plan.
-12. Do not print the full prompt in chat.
-13. Return the one-sentence Stop-hook prompt only when you need to hand back a
+12. Otherwise start the first runnable execution slice from the active plan.
+13. Do not print the full prompt in chat.
+14. Return the one-sentence Stop-hook prompt only when you need to hand back a
     hook configuration line, after execution has started, or when execution is
     impossible for an explicitly named blocker.
 
@@ -233,6 +257,27 @@ Use the project-local `continue` skill if it exists.
 Do not use a specialized duplicate continue skill when the generic `continue`
 can govern the loop.
 
+### Rule 1.5: Set The Goal
+
+Use `set_goal()` when a goal tool is available.
+
+Create the goal around the desired end state, not the execution plan.
+
+Good:
+
+- "Slate v2 exposes lazy `entries`, early-exit `find`/`some`, synced reference
+  docs, and passing focused plus broad checks."
+
+Bad:
+
+- "Run Ralph phase 1, phase 2, phase 3."
+
+Include constraints, scope, or verification details only when they materially
+change what `done` means. Use the goal or user-input tool to ask if the goal
+would otherwise be unclear. If no goal tool is available, ask the user to set
+the goal instead of silently skipping goal setup. Do not start implementation
+until goal setup is either complete or explicitly resolved by the user.
+
 ### Rule 2: Read-First Beats Repetition
 
 Move stable task context into docs and link those docs from the prompt.
@@ -315,16 +360,16 @@ When the project has a completion state file or completion gate command,
 include:
 
 - read the completion state file before choosing the next move
-- use the session-scoped completion state file for parallel sessions; the
-  checker auto-selects `.tmp/<session-id>/completion-check.md` only when
-  `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, `--id`, or
-  `--file` selects it
-- without a session id, create an explicit scoped completion file instead of
-  relying on the old shared root completion file
-- when `CODEX_THREAD_ID` exists, `ralph` should create or update
-  `.tmp/<CODEX_THREAD_ID>/completion-check.md` and use that as the active
-  completion state for this session
-- record `continue_file: .tmp/<session-id>/continue.md` in the completion state
+- use the runtime-id scoped completion state file for parallel sessions; resolve
+  `<id>` from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or
+  Stop-hook stdin `session_id`
+- `ralph` must create or update `.tmp/<id>/completion-check.md` and use that as
+  the active completion state for this session
+- without a runtime id, stop and report the missing hook/session id; do not
+  create `.tmp/<plan-id>/completion-check.md`, `.tmp/default/continue.md`, or
+  any other fallback completion state
+- record `completion_id: <id>` and `continue_file: .tmp/<id>/continue.md` in the
+  completion state
   whenever the lane remains `pending`
 - set status `pending` before starting execution
 - keep status `pending` while work remains
@@ -352,7 +397,8 @@ shape:
 ```md
 status: pending
 plan: docs/plans/current-plan.md
-continue_file: .tmp/<session-id>/continue.md
+completion_id: <id>
+continue_file: .tmp/<id>/continue.md
 current_pass: deslop-pass
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/deslop-pass/SKILL.md
@@ -371,6 +417,7 @@ Allowed `current_pass_status` values:
 - `complete`
 - `revise`
 - `blocked`
+- `skipped`
 
 Rules:
 
@@ -381,6 +428,9 @@ Rules:
   more work.
 - Set `current_pass_status: revise` when the pass found issues and the next move
   is a revision pass.
+- Set `current_pass_status: skipped` only for an applicable pass whose trigger
+  was reviewed and intentionally not run. Record the concrete skip/no-rerun
+  reason, evidence, and owner in the completion state and active plan.
 - Set top-level `status: done` only when all passes and completion gates are
   closed.
 - Set top-level `status: blocked` only when no autonomous progress remains.
@@ -508,6 +558,12 @@ plan. `ralph` only schedules and resumes the passes.
 
 Use pass skills when their trigger is present. Do not load them as ceremony.
 
+Triggered pass skills are mandatory accounting boundaries. Do not fold an
+applicable pass into a generic `ralph` execution record, a final verification
+paragraph, or a broad `bun check` result. If a pass trigger is present and the
+pass is intentionally skipped, record a distinct `current_pass` entry with
+`current_pass_status: skipped`, the exact reason, evidence, and next owner.
+
 - `intent-boundary-pass`: planning or review lanes with unclear intent, scope,
   non-goals, or decision boundaries.
 - `steelman-pass`: major decisions, paradigm changes, public API changes, or
@@ -540,6 +596,33 @@ Use pass skills when their trigger is present. Do not load them as ceremony.
 When a pass skill runs, record its name in `current_pass_skill`, add a pass row
 to the active plan or ledger, and return to `ralph` scheduling when the
 pass closes.
+
+For public API or behavior changes, the default required pass chain is:
+
+1. `tdd-pass` or an explicit recorded skip reason before implementation closes.
+2. `diff-review-pass` after implementation and focused verification.
+3. `verification-sweep-pass` before `status: done`.
+
+For Slate v2 public API, runtime behavior, browser behavior, example, issue
+claim, or PR-narrative changes, `clawsweeper-related-issues` must either run or
+be recorded as a no-rerun decision that cites the already-completed sweep and
+why the touched surface or claim set did not materially change.
+
+Passing `bun check`, focused tests, typecheck, benchmarks, or grep gates is
+fresh evidence. It is not a substitute for the required pass-state accounting
+when a pass trigger is present.
+
+Minimum closeout accounting for implementation lanes:
+
+- If `tdd-pass` was triggered, either record its pass result or a distinct
+  skipped-pass entry before implementation is considered closed.
+- If `diff-review-pass` was triggered, record a changed-files review result
+  after focused verification.
+- If `verification-sweep-pass` was triggered, record it immediately before
+  `status: done`, after final gates and reference docs are current.
+- If `clawsweeper-related-issues` is not rerun, cite the prior completed sweep
+  and explain why this slice did not materially change the issue surface or
+  claim set.
 
 ### Rule 6.7: Fresh Evidence Closeout
 

@@ -1745,7 +1745,7 @@ None; detailed ledger only.
 
 ## #5075 Formatting type 'string' can't be used to index type 'Node'
 
-Status: not-claimed
+Status: improves-claimed
 Bucket: v2-api-dx
 Confidence: high
 
@@ -1759,13 +1759,22 @@ Evidence:
 - duplicate/stale/invalid proof: TypeScript API/DX issue, not runtime stale
   path.
 - live GitHub checked: yes, live-gitcrawl-only.
-- current v2 proof: no behavior claim.
+- current v2 proof:
+  `../slate-v2/packages/slate/src/interfaces/text.ts`;
+  `../slate-v2/packages/slate/test/generic-value-contract.ts`;
+  `../slate-v2/site/examples/ts/custom-types.d.ts`;
+  `../slate-v2/site/examples/ts/mark-utils.ts`;
+  `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`.
 
 Decision:
-Not claimed by this lane.
+Improves. Slate v2 exposes type-only boolean mark key/object helpers and the
+examples no longer copy local formatting-key mapped types. This is not a
+`Fixes` claim until the exact original TypeScript repro is replayed.
 
 PR-description text:
-None; detailed ledger only.
+Improves #5075: Slate v2 exposes type-only boolean mark key/object helpers and
+examples no longer copy local formatting-key mapped types. Exact closure still
+needs original repro proof.
 
 ## #3478 Editor crashes with redux
 
@@ -5895,11 +5904,11 @@ Evidence:
 
 Decision:
 Claim `Fixes #5080`. The current v2 read API now proves that
-`state.nodes.match({ reverse: true })` returns the exact reverse of the forward
+`state.nodes.entries({ reverse: true })` returns the exact reverse of the forward
 matched entry list for nested matching entries.
 
 PR-description text:
-Fixes #5080: `state.nodes.match({ reverse: true })` returns the exact reverse
+Fixes #5080: `state.nodes.entries({ reverse: true })` returns the exact reverse
 of the forward matched entry order for nested matching entries.
 
 ## #5684 SlateEditor.nodes match issue
@@ -6413,7 +6422,7 @@ or maintainer-equivalence proof named in the plan.
 | Existing dossier and matrix rows | 13 | `#6038`, `#3656`, `#4141`, `#5131`, `#3430`, `#5945`, `#4056`, `#5992`, `#3752`, `#2195`, `#2405`, `#4483`, `#2051` | Preserve current `Improves`, `Related`, and `Not claimed` statuses; no promotion from this planning pass. |
 | Existing macro/future-proof rows | 7 | `#5433`, `#5420`, `#5274`, `#4317`, `#3354`, `#3926`, `#5697` | Keep as future proof pressure or guard rows; no PR auto-close text. |
 | Performance proof-route backlog | 10 | `#2733`, `#2669`, `#790`, `#5216`, `#5592`, `#4202`, `#4210`, `#3748`, `#5349`, `#4025` | Related, proof-needed, or needs-repro until a later execution slice adds exact proof. |
-| Policy/API/accessibility non-claims | 5 | `#2465`, `#2564`, `#3177`, `#3892`, `#2572` | Keep out of fixed/improved performance language; these are DX, ecosystem, or release-guard pressure only. |
+| Policy/API/accessibility non-claims | 4 | `#2465`, `#2564`, `#3892`, `#2572` | Keep out of fixed/improved performance language; these are DX, ecosystem, or release-guard pressure only. |
 | PR prose sync | 3 | `#5945`, `#4056`, `#5992` | Existing PR text remains exact. No new PR performance text is added by this planning pass. |
 
 ## All-Harvest PM-08 Collaboration Convergence Sync - 2026-05-10
@@ -6452,6 +6461,155 @@ stability from this row.
 
 PR-description text:
 None; no PR-facing claim count changes.
+
+## #3802 Explain a quirk with reference to node objects
+
+Status: planning-reviewed
+Bucket: v2-api-dx
+Confidence: medium
+
+Issue summary:
+The issue is API and documentation pressure around object identity, node
+references, and why duplicating or reusing node objects can produce surprising
+behavior.
+
+Evidence:
+
+- live gitcrawl row: singleton open issue, `path-identity-and-node-reference-rules`.
+- current manual row:
+  `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
+- issue coverage row:
+  `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
+- current R11 requirement:
+  `docs/slate-issues/requirements-from-issues.md#r11-tighten-the-public-api-and-type-surface`.
+- active planning owner:
+  `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md`.
+- future proof owner:
+  `../slate-v2/packages/slate/test/public-surface-contract.ts`.
+
+Decision:
+Keep as `Related`, not fixed or improved. The unified extension composition
+plan directly targets public API/type/extension DX by removing public wrapper
+composition, `withEditor`, and public author-facing `editor.extend` from the
+taught author path. That is the right architectural direction for #3802-style
+DX pressure, but exact closure needs implementation proof: stale public wrapper
+surfaces gone, creation-time extension types inferred, and public-surface
+contracts passing.
+
+PR-description text:
+Synced during the issue/reference pass. The PR reference now points authors to
+creation-time `extensions`, replayable `state` / `tx`, and installed
+`editor.api` handles, with no new fixed or improved issue claim.
+
+## Render Element Extension DX Ralplan - 2026-05-16
+
+Plan:
+
+- `docs/plans/2026-05-16-slate-v2-render-element-extension-dx-ralplan.md`
+
+Touched surface:
+
+- `Editable` raw render props
+- `editableRenderers(...)` extension capability
+- first-party example renderer ownership
+- `RenderElementProps` and example renderer typing
+
+Evidence:
+
+- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `../slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `../slate-v2/docs/concepts/09-rendering.md`
+- `../slate-v2/site/examples/ts/check-lists.tsx`
+- `../slate-v2/site/examples/ts/images.tsx`
+- `../slate-v2/site/examples/ts/embeds.tsx`
+- `../slate-v2/site/examples/ts/inlines.tsx`
+
+| Issue | Status after pass | Decision |
+| --- | --- | --- |
+| `#3177` | Related, planning-reviewed | Registered renderers answer the plugin-layer composition direction, but current first-party examples still need cleanup before any closure or improvement claim. |
+| `#5349` | Related, blocked-on-repro | Renderer consistency does not prove the empty-editor render churn report. Keep repro-first. |
+| `#4317` | Related, unchanged | Registered renderers reduce callback identity pressure, but the exact `onSelect` render-callback repro still needs browser proof. |
+
+Decision:
+No new `Fixes` or `Improves` issue claims. Keep PR fixed and improved issue
+counts unchanged.
+
+## Native Beforeinput Semantic Command Handler - 2026-05-14
+
+Plan:
+
+- `docs/plans/2026-05-14-slate-v2-callback-memoization-dx-ralplan.md`
+
+Touched surface:
+
+- `Editable.onDOMBeforeInput` raw native escape hatch
+- `Editable.onCommand` semantic command handler
+- native `format*` beforeinput and format-hotkey command classification
+- native input listener callback stability
+
+Evidence:
+
+- `../slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `../slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `../slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
+- `../slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `../slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `bun --filter slate-react typecheck`
+- `bun --filter slate-react test`
+- `bun check`
+
+| Issue | Status after pass | Decision |
+| --- | --- | --- |
+| `#3568` | Related, materially improved | App formatting still has a runtime-owned native-format path, but raw Slate no longer exposes public `onCommand` / `EditableCommand*`. No exact closure until the original crash repro is replayed. |
+| `#3586` | Related, materially improved | Native format handling stays runtime-owned after the public `onCommand` cut. No exact DOMPoint crash closure until the original repro is replayed. |
+| `#4681` | Related, unchanged | Raw `onDOMBeforeInput` remains an escape hatch, but paste-specific `onDOMBeforeInput` behavior is not claimed. |
+| `#5181` | Related, materially improved | Native input listeners read latest handlers without reattaching on prop changes, but the exact stale `onChange` / editor replacement callback bug is not closed. |
+| `#4317` | Related, unchanged | Render callback selection churn is adjacent callback identity pressure; this lane only proves native input listener stability. |
+
+Decision:
+No new `Fixes` issue claims. Keep PR fixed issue count unchanged.
+
+## Example Memoization Hard-Cut Sync - 2026-05-14
+
+Plan:
+
+- `docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md`
+
+Touched surface:
+
+- registered `Editable` renderers through `editableRenderers(...)`
+- extension key commands through `editableKeyCommands(...)`
+- command/rule examples that previously needed callback or array memoization
+- rendering-strategy option normalization
+- annotation/widget projector overloads
+- lazy initial-state docs for localStorage-backed content
+
+Evidence:
+
+- `../slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+- `../slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `../slate-v2/packages/slate-react/test/annotation-store-contract.test.tsx`
+- `../slate-v2/packages/slate-react/test/widget-layer-contract.test.tsx`
+- `../slate-v2/docs/libraries/slate-react/editable.md`
+- `../slate-v2/docs/concepts/09-rendering.md`
+- `../slate-v2/site/examples/ts/code-highlighting.tsx`
+- `../slate-v2/site/examples/ts/iframe.tsx`
+- `../slate-v2/site/examples/ts/images.tsx`
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/site/examples/ts/richtext.tsx`
+- `../slate-v2/site/examples/ts/tables.tsx`
+
+| Issue | Status after pass | Decision |
+| --- | --- | --- |
+| `#4317` | Related, improved pressure only | Registered renderers remove beginner render-callback identity pressure, but the exact `onSelect` render-callback repro still needs browser proof before any closure claim. |
+| `#5181` | Related, unchanged | Projector overloads and key-command registration reduce memoization ceremony, but they do not replay the stale `onChange` / editor replacement callback bug. |
+
+Decision:
+No new `Fixes` or `Improves` issue claims. Keep PR fixed issue count and
+improved issue count unchanged.
 
 ## udecode/slate#9 History Selection Precondition Regression Refresh
 
@@ -6822,3 +6980,270 @@ PR-description text:
 
 PR-description text:
 None; no PR-facing claim count changes.
+
+## Editable Capabilities DX Ralplan - 2026-05-17
+
+Plan:
+
+- `docs/plans/2026-05-17-slate-v2-editable-capabilities-dx-ralplan.md`
+
+Touched surface:
+
+- `EditorExtension.capabilities` as internal registry substrate
+- `editableKeyCommands(...)` public helper DX
+- `editableRenderers(...)` public helper DX
+- `clipboard.insertData` public authoring shape
+- typed package extension facets such as `editable` and `clipboard`
+
+Evidence:
+
+- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `../slate-v2/packages/slate/src/core/editor-extension.ts`
+- `../slate-v2/packages/slate/src/core/extension-registry.ts`
+- `../slate-v2/packages/slate/src/create-editor.ts`
+- `../slate-v2/packages/slate-react/src/editable/editable-key-commands.ts`
+- `../slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
+- `../slate-v2/site/examples/ts/iframe.tsx`
+- `../slate-v2/site/examples/ts/richtext.tsx`
+- `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md`
+
+| Issue | Status after pass | Decision |
+| --- | --- | --- |
+| `#3177` | Related, planning-reviewed | Extension-owned rendering/behavior composition remains the right direction, but public capability helper spreads are no longer accepted final DX. No fix/improve claim until examples, docs, type contracts, and runtime proof land. |
+| `#5961` | Related, not claimed | The plan reduces public raw key-callback authoring pressure, but the DevTools `onKeyDown` render-warning report remains stale and unreproduced. |
+| `#4613` | Improves, unchanged | Existing clipboard capability improve claim stays scoped to typed `insertData` handlers. The proposed `clipboard` facet is an authoring-DX refinement and adds no new behavior claim. |
+
+Decision:
+No new `Fixes` or `Improves` issue claims. Keep PR fixed/improved issue counts
+unchanged.
+
+## Plate-fit API Hard Cuts Ralplan - 2026-05-17
+
+Plan:
+
+- `docs/plans/2026-05-17-slate-v2-plate-fit-api-hard-cuts-ralplan.md`
+
+Touched surface:
+
+- raw Slate React renderer/key-command helper APIs
+- public `EditorExtension.capabilities` authoring
+- public `Editable onCommand` / `EditableCommand*`
+- package-owned `clipboard.insertData` authoring vocabulary
+- Plate boundary for shortcuts, keymaps, input rules, paste rules, and renderer
+  registries
+
+Evidence:
+
+- `docs/slate-issues/gitcrawl-live-open-ledger.md:592`
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md:594`
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md:208`
+- `docs/slate-issues/open-issues-dossiers/3313-2733.md:757`
+- `docs/slate-issues/test-candidate-map/3313-2733.md:181`
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md:39`
+- `docs/slate-issues/open-issues-dossiers/5994-5918.md:468`
+- `docs/slate-v2/ledgers/fork-issue-dossier.md:3953`
+
+| Issue | Status after pass | Decision |
+| --- | --- | --- |
+| `#3177` | Related, planning-reviewed | Renderer composition pressure is real, but raw Slate should not own a renderer registry. Target raw Slate shape is `Editable render*` escape hatches plus reusable model middleware; Plate owns renderer/plugin composition. Execution proof landed; no fix/improve claim is added. |
+| `#5961` | Related, not claimed | DevTools `onKeyDown` warning remains stale/triage-closed. Removing raw key-command registry DX does not reproduce or fix the original warning. |
+| `#4613` | Improves, unchanged | Existing clipboard improve claim stays scoped to typed `insertData` handlers. This plan refines authoring vocabulary away from public `capabilities`; it does not broaden clipboard behavior claims. |
+| input-rule family | Already cut, unchanged | Public raw Slate input-rule helpers stay out. Plate owns semantic input-rule families; raw Slate keeps transform middleware. |
+
+Decision:
+No new `Fixes` or `Improves` issue claims. Later issue-sync accounting updated
+the manual ledger, coverage matrix, and PR reference where they still described
+renderer registries as the accepted raw Slate target.
+
+## Plate-fit API Hard Cuts Broader Issue Pass - 2026-05-17
+
+Plan:
+
+- `docs/plans/2026-05-17-slate-v2-plate-fit-api-hard-cuts-ralplan.md`
+
+Additional issue pressure reviewed:
+
+- `#3222`, `#3802`, `#3557`, `#4089`
+- `#5050`, `#5010`, `#4795`
+- `#3586`, `#3568`, `#4681`
+- `#5233`, `#4569`, `#4440`, `#4888`
+- `#4956`, `#5172`
+
+Decision:
+
+- Public plugin-composition pressure is real, but raw Slate should not answer it
+  with renderer/keymap/input-rule registries. Raw Slate keeps extension
+  substrate, transform/input middleware, and render/event escape hatches.
+- Public input interception pressure is real. It reinforces transform/input
+  middleware and DOM/model synchronization proof, not Plate-shaped keymap or
+  renderer APIs.
+- Native format/beforeinput rows constrain the `onCommand` cut: public
+  `onCommand` / `EditableCommand*` are cut, and Slate-owned native-format
+  behavior stays internal/runtime-owned after removal.
+- Clipboard rows constrain the `capabilities` cut: `clipboard.insertData` input
+  ingress stays, custom fragment-key fixes stay, and output serializers remain
+  outside this plan.
+- Docs/example packaging rows stay non-claims. They support moving polished
+  feature packaging to Plate, not raw Slate API growth.
+
+Claim result:
+
+- No new `Fixes` or `Improves` issue claims.
+- Issue-sync accounting updated stale manual/coverage/PR wording for #3177,
+  renderer registries, `capabilities`, and the public `onCommand` cut.
+
+## Plate-fit API Hard Cuts Issue Sync Accounting - 2026-05-17
+
+Plan:
+
+- `docs/plans/2026-05-17-slate-v2-plate-fit-api-hard-cuts-ralplan.md`
+
+Synced artifacts:
+
+- `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md`
+- `docs/slate-v2/references/pr-description.md`
+- `docs/slate-v2/ledgers/fork-issue-dossier.md`
+
+Synced decisions:
+
+| Issue | Accounting result |
+| --- | --- |
+| `#3177` | Stays `Related` / `planning-reviewed`. Raw Slate should not own a renderer registry; target is raw `Editable render*` plus model/runtime extensions, with Plate owning product renderer/plugin composition. |
+| `#5961` | Stays not claimed. Raw key-command registry removal does not reproduce or fix the stale DevTools `onKeyDown` warning; raw Slate keeps `Editable onKeyDown`. |
+| `#4613` | Existing clipboard improve claim stays scoped to typed `insertData` input ingress. No broader method override, paste-rule, or output serializer claim. |
+| `#4569` | Existing docs fix claim stays, with wording shifted from public string `capabilities` to typed clipboard ingress. |
+| `#5233` | Existing custom fragment-key fix claim stays unchanged and must remain green when clipboard authoring vocabulary changes. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- Fixed/improved counts remain unchanged.
+
+## Table Transform Boundary Ralplan - 2026-05-18
+
+Planning source:
+
+- `docs/plans/2026-05-18-slate-v2-table-transform-boundary-ralplan.md`
+
+Reviewed surface:
+
+- `../slate-v2/site/examples/ts/tables.tsx`
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/site/examples/ts/richtext.tsx`
+- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `../slate-v2/packages/slate/src/create-editor.ts`
+- `docs/slate-v2/references/pr-description.md`
+
+Decision:
+
+Backspace/Delete/Enter table-cell boundary behavior is model transform behavior,
+not raw keyboard UI behavior. The target authoring shape is an example-local
+`table()` extension using `transforms.deleteBackward`, `deleteForward`, and
+`insertBreak`. Markdown Enter/Backspace and richtext exit-on-Enter follow the
+same rule. UI-only hotkeys and widget navigation stay in `Editable onKeyDown`.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#6034` | Existing `Fixes` row unchanged | The current fixed claim is ArrowDown at the last table cell. This plan changes authoring ownership for Backspace/Delete/Enter and does not broaden the ArrowDown proof. |
+| `#4658` | Related, unchanged | Custom table text outside table belongs to table boundary and invalid DOM import policy. A local table transform extension can reduce escape routes, but no exact repro or browser proof is added by this planning pass. |
+| `#5355` | Not claimed, unchanged | `colgroup` / `col` crash behavior depends on app-rendered DOM shapes that omit editable descendants, not table-cell Backspace/Delete/Enter transform ownership. |
+| `#2558` | Not claimed, unchanged | Multi-cell table selection requires an explicit table selection model; this plan does not add one. |
+| `#3408` | Related, unchanged | Delete-backward table/list replacement pressure stays in the structural delete family; this plan only routes example policy through transform middleware. |
+| `#5961` | Related, not claimed | Raw Slate still keeps `Editable onKeyDown` for UI shortcuts; moving transform-equivalent behavior out of `onKeyDown` does not reproduce or fix the stale DevTools render-warning report. |
+| `#3568`, `#3586`, `#4681` | Related, unchanged | The public `onCommand` hard cut and native input boundary remain as previously classified. This plan narrows example guidance but does not add native-format or paste proof. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- Fixed/improved counts remain unchanged.
+
+PR sync:
+
+- `docs/slate-v2/references/pr-description.md` records the table transform
+  boundary and links this plan.
+- `docs/slate-v2/ledgers/issue-coverage-matrix.md` keeps existing rows; no new
+  `Fixes`, `Improves`, `Related`, or `Not claimed` row is required because all
+  reviewed issue classifications already exist.
+
+## Android Markdown Shortcut Flush Ralplan - 2026-05-18
+
+Planning source:
+
+- `docs/plans/2026-05-18-slate-v2-android-markdown-shortcut-flush-dx-ralplan.md`
+
+Reviewed surface:
+
+- `../slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `../slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `../slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `../slate-v2/packages/slate/src/core/transform-middleware.ts`
+- `../slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+
+Decision:
+
+The app-side `scheduleAndroidMarkdownShortcutFlush(editor)` helper is not the
+right canonical DX. Markdown shortcut policy should stay in
+`extension.transforms.insertText`, while Slate React owns Android pending-diff
+flush timing. Raw Slate should not add a product markdown shortcut API or
+revive public `Editable inputRules` for this case.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#4532` | Related, implementation-reviewed | The implementation removes the example-side Android flush helper, routes stored Android text diffs through registered `insertText` transform middleware, and passes local regression proof. Candidate `Improves #4532` still requires raw Android browser/device proof. |
+| `#4531`, `#4543`, `#6022`, `#5983`, `#4400`, `#5883`, `#5130`, `#5050` | Related, unchanged | These share Android, IME, beforeinput, or input-policy ownership, but the Android markdown shortcut flush plan does not prove their exact repros. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- Related issue matrix rows: `+1` for `#4532`.
+- Implementation proof added: focused Android input manager unit proof,
+  transform-middleware detection proof, markdown example surface proof,
+  markdown-shortcuts chromium/mobile Playwright proof, slate/slate-react
+  typecheck, site typecheck, and lint.
+
+## Extension Slot Naming Ralplan - 2026-05-18
+
+Planning source:
+
+- `docs/plans/2026-05-18-slate-v2-extension-slots-ralplan.md`
+
+Reviewed surface:
+
+- `../slate-v2/packages/slate/src/interfaces/editor.ts`
+- `../slate-v2/packages/slate/src/core/editor-extension.ts`
+- `../slate-v2/packages/slate/src/core/public-state.ts`
+- `../slate-v2/packages/slate-history/src/history-extension.ts`
+- `../slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
+- `../slate-v2/packages/slate-react/src/plugin/with-react.ts`
+
+Decision:
+
+Keep the mechanisms, but do not keep registry-shaped names as the normal
+extension author API. Target `operations.apply` for low-level operation hooks,
+`onCommit` for post-transaction observers, and `setup` for extension-local
+runtime installation. Keep internal registry storage names if they are useful
+inside the runtime.
+
+Issue accounting:
+
+| Issue | Classification | Reason |
+| --- | --- | --- |
+| `#3557` | Related, planning-reviewed | Broad method override pressure must keep full extension middleware coverage across transforms, queries, normalizers, operation apply hooks, and commit observers. Slot naming does not close the exact legacy insert override report. |
+| `#1770`, `#2288`, `#3741`, `#3874` | Related, unchanged | Operation and commit lifecycles preserve the transaction/op/collab pressure already represented in the core-operation rows. The naming review adds no operation-composition, range-operation, or moved-node payload claim. |
+| `#1024`, `#5233`, `#4569` | Existing clipboard classifications unchanged | Clipboard ingress still belongs to typed clipboard APIs and extension-owned `insertData`; the extension slot naming review does not broaden clipboard fix claims. |
+| `#3222`, `#4089`, `#3177` | Related, unchanged | Plugin/extension API pressure supports better extension authoring vocabulary, but raw Slate still should not own Plate-style product plugin bundles or renderer registries. |
+
+Claim result:
+
+- New fixed claims: `0`.
+- New improved claims: `0`.
+- Existing `Related`, `Fixes`, and `Improves` rows remain at their current
+  classification.

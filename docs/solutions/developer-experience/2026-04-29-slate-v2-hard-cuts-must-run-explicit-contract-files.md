@@ -2,6 +2,7 @@
 title: Slate v2 hard cuts must run explicit contract files, not only default tests
 type: solution
 date: 2026-04-29
+last_updated: 2026-05-17
 status: completed
 category: developer-experience
 module: slate-v2
@@ -20,6 +21,9 @@ tags:
   - hard-cut
   - contract-tests
   - public-api
+  - examples
+  - browser-contracts
+  - benchmarks
 ---
 
 # Slate v2 hard cuts must run explicit contract files, not only default tests
@@ -63,11 +67,36 @@ For kept contracts:
 For deleted behavior, delete the test. Do not preserve a compatibility helper
 just to keep old contract wording alive.
 
+When a hard cut deletes a public example route, sweep more than the example
+registry:
+
+- `site/constants/examples.ts`
+- `site/pages/examples/[example].tsx`
+- `site/examples/ts/<route>.tsx`
+- `playwright/integration/examples/<route>.test.ts`
+- `packages/slate-browser/src/core/first-party-browser-contracts.ts`
+- `playwright/stress/generated-editing.test.ts`
+- browser benchmark scripts under `scripts/benchmarks/browser/**`
+- docs proof maps that name the route
+
+If the behavior still exists, move the browser proof to the surviving public
+route. If the route was only a synthetic harness, delete the harness-specific
+stress rows and keep package-level tests for the runtime behavior.
+
+For Playwright route migrations, remember that this repo configures
+`testIdAttribute: 'data-test-id'`. Public example metrics that tests read
+should use `data-test-id`, not `data-testid`.
+
 ## Why This Works
 
 Bun's default test discovery does not treat every `*-contract.ts` file as a
 test file. Explicit path runs are the only way to prove those files still match
 the current API.
+
+Example route hard cuts have the same shape: the route can disappear from the
+nav while benchmark paths, generated stress rows, proof maps, or static exports
+still point at it. Grepping route names after the cut catches those stale
+references before the browser gate does.
 
 ## Prevention
 
@@ -76,3 +105,7 @@ the current API.
 - Direct public editor alias greps should include tests, not only package
   source and docs.
 - If a test only proves a removed API, delete it.
+- For deleted public examples, grep the route slug repo-wide after build-backed
+  browser verification, excluding only intentional policy tags.
+- Retarget benchmark paths to the surviving public route before deleting the
+  old fixture.

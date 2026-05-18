@@ -1,5 +1,5 @@
 ---
-description: Review Slate v2 architecture/API plans against React 19.2 runtime performance, Slate-close unopinionated DX, legacy-regression proof, research evidence, and shadcn-style composability; write a scored plan and keep completion pending until the plan is strong enough to execute.
+description: Review Slate v2 architecture/API plans against React 19.2 runtime performance, Slate-close unopinionated DX, legacy-regression proof, research evidence, and shadcn-style composability; write a scored plan and keep completion pending until every required pass and closure gate is complete.
 argument-hint: '[--quick|--standard|--deep] <Slate v2 architecture/API review prompt>'
 disable-model-invocation: true
 ---
@@ -13,9 +13,10 @@ review prompts where the failure mode is death by incremental suggestions.
 
 This is a planning/review gate, not an implementation lane. It creates or
 updates the execution-grade plan, scores it, and keeps the completion state
-`pending` until the score is high enough. When the score passes, set completion
-to `done` so the user can review the plan before a later `ralph` run
-executes it.
+`pending` until every required pass, issue/reference sync gate, verification
+gate, and closure score gate is complete. Score is only one input. A high score
+never permits `done` by itself; `done` means the full pass schedule is closed
+and the plan is ready for user review before a later `ralph` run executes it.
 
 ## Use When
 
@@ -36,7 +37,8 @@ executes it.
 - The user asks to execute an already accepted plan.
 - The user asks for a narrow bug fix or browser repro.
 - The user asks for a normal code review of a diff.
-- The plan already has a passing Slate Ralplan score and the user says to build.
+- The plan already has a passing Slate Ralplan score, completed pass schedule,
+  closed final gates, and the user says to build.
 
 ## Hard Policy
 
@@ -50,6 +52,15 @@ executes it.
   "execute" do not override this boundary when `slate-ralplan` is the active
   skill. Convert them into plan decisions, proof rows, and a `ralph` handoff.
 - Do not mark `done` because the review pass is tired.
+- Score is not completion. A passing score with any pending pass, issue sync,
+  reference sync, verification gate, named next owner, or runnable next action
+  stays `pending`.
+- The top-level completion status is the lane status, not the current pass
+  status. Close a pass with `current_pass_status: complete`; do not use
+  top-level `done` unless the whole lane is closed.
+- Top-level `done` is legal only in the closure/final-gates pass, after the
+  active plan proves every earlier pass-state row is complete or explicitly
+  skipped with evidence.
 - Do not use `blocked` when another research, review, or plan-hardening move is
   runnable, unless the user explicitly stops execution or tells you to mark the
   lane blocked.
@@ -57,6 +68,14 @@ executes it.
 - Keep Slate v2 unopinionated. Plate owns opinionated product APIs.
 - A breaking or paradigm change needs an adoption story. "Cleaner architecture"
   alone is not a justification.
+- Prefer inline example logic when it is only used once. Do not invent local
+  helpers like `isAtStartOfX`, `getActiveX`, or `applyX` just to make a plan
+  look tidy. Extract a helper only when the same logic is reused, the inline
+  block is genuinely distracting, or the helper is the proposed public/internal
+  API being reviewed.
+- Example DX matters: a Slate example should show the actual API shape at the
+  call site first. Helper extraction is a readability tool, not a default
+  architecture move.
 - Intent, outcome, scope, non-goals, and decision boundaries must be explicit
   before the plan can score as ready.
 - Major decisions need a decision brief: principles, top drivers, viable
@@ -89,12 +108,26 @@ executes it.
 ## Required Artifacts
 
 - Plan file under `docs/plans/`.
-- Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state.
-  If no runtime session id exists, create an explicit plan id and use the same
-  scoped layout. Do not use the old shared root completion file.
-- Continuation prompt: `.tmp/<session-id>/continue.md` when further autonomous
-  plan work remains.
+- Completion file: use the active runtime id, never an invented plan id. Resolve
+  `<id>` from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or
+  `CODEX_SESSION_ID`. When the Stop hook provides `session_id` on stdin, treat
+  that exact value as the runtime id because the hook maps it to
+  `CODEX_THREAD_ID`. Write `.tmp/<id>/completion-check.md`. If no runtime id is
+  available, stop and report the missing hook/session id instead of creating
+  `.tmp/<plan-id>/completion-check.md`. Do not use the old shared root
+  completion file.
+- Activation reset: for every new Slate Ralplan activation except an explicit
+  status-only inspection, replace `.tmp/<id>/completion-check.md` with a fresh
+  `status: pending` block for the current plan before pass work starts. Do not
+  leave, append to, or trust a prior `done` file just because it uses the same
+  runtime id. One Codex thread can run many ralplans, so same-id `done` state is
+  stale unless the latest user request is explicitly resuming that same plan.
+  If the user is only asking to update or test this reset policy, do not end the
+  assistant turn with the active hook state still `pending`; close that
+  meta-maintenance task as `done` after recording that the next real Slate
+  Ralplan activation must reset itself to `pending`.
+- Continuation prompt: `.tmp/<id>/continue.md` beside the active completion file
+  when further autonomous plan work remains.
 - Research updates under `docs/research/` when the evidence lane is stale or
   incomplete.
 - Issue-ledger accounting in the active plan: fixed issue claims, related issue
@@ -152,9 +185,39 @@ executes it.
   each marked `applied` or `skipped` with a concrete reason.
 - Allowed edit scope from this skill: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
-  `docs/slate-v2/references/**`, and scoped `.tmp/<session-id>/**` state. Any
+  `docs/slate-v2/references/**`, and scoped `.tmp/<runtime-id>/**` state. Any
   Slate v2 source, test, example, package, build, or config edit belongs to
   later `ralph` execution.
+
+## Goal Setup
+
+Before creating or resuming a Slate Ralplan:
+
+- If a goal tool is available, use `set_goal()` unless the current goal already
+  matches the desired end state.
+- Create the goal around the desired end state, not the execution plan.
+- Include constraints, scope, or verification details only when they materially
+  change what `done` means.
+- Use the goal or user-input tool to ask when the goal would otherwise be
+  unclear.
+- If no goal tool is available, ask the user to set the goal instead of
+  silently skipping goal setup.
+- Do not start the planning pass until the goal is set, verified as already
+  matching, or the user explicitly resolves the missing-goal path.
+
+Good goal:
+
+```txt
+Slate Ralplan proves the callback-memoization API shape is the best DX/runtime
+target, records all required pass results, and leaves a complete plan ready for
+Ralph execution.
+```
+
+Bad goal:
+
+```txt
+Run Slate Ralplan passes 1 through 12.
+```
 
 Default plan path:
 
@@ -163,17 +226,27 @@ docs/plans/YYYY-MM-DD-slate-v2-absolute-architecture-review-plan.md
 ```
 
 Reuse an active plan instead when the prompt names one or the current
-completion file already points at one.
+runtime-id completion file already points at the same plan and the latest user
+request is clearly resuming that same plan. Do not reuse a plan merely because
+the same session-scoped completion file points at it; if the latest request
+introduces a different surface, treat the existing completion file as stale and
+reset it for the new plan.
 
 ## Read First
 
 1. Latest user request.
-2. Active completion file if present: session-scoped
-   `.tmp/<session-id>/completion-check.md`, or an explicit plan-id scoped file.
-3. Active plan under `docs/plans/` if present.
-4. `docs/research/README.md`, `docs/research/index.md`, and
+2. Current goal state, if a goal tool exists.
+3. Active completion file if present: `.tmp/<id>/completion-check.md`, where
+   `<id>` is resolved from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`,
+   `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`. Do not treat a
+   plan-name folder as active unless that exact value came from the runtime id.
+   Read it to detect stale prior state, not to inherit completion. If its
+   `plan:` or `current_pass_scope:` does not match the latest user request,
+   record it as stale and overwrite it during activation reset.
+4. Active plan under `docs/plans/` if present.
+5. `docs/research/README.md`, `docs/research/index.md`, and
    `docs/research/log.md`.
-5. `docs/slate-issues/gitcrawl-live-open-ledger.md`,
+6. `docs/slate-issues/gitcrawl-live-open-ledger.md`,
    `docs/slate-issues/gitcrawl-v2-sync-ledger.md` when it exists,
    `docs/slate-issues/open-issues-ledger.md`,
    `docs/slate-issues/gitcrawl-clusters.md`,
@@ -182,12 +255,12 @@ completion file already points at one.
    `docs/slate-issues/benchmark-candidate-map.md`,
    `docs/slate-issues/package-impact-matrix.md`, and
    `docs/slate-issues/requirements-from-issues.md`.
-6. `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
+7. `docs/slate-v2/ledgers/issue-coverage-matrix.md`,
    `docs/slate-v2/ledgers/fork-issue-dossier.md`, and
    `docs/slate-v2/references/pr-description.md`.
-7. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Slate,
+8. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Slate,
    React 19.2, node/render DX, and browser proof.
-8. Live `../slate-v2` API surfaces touched by the review.
+9. Live `../slate-v2` API surfaces touched by the review.
 
 Read when relevant:
 
@@ -302,18 +375,68 @@ Common command ownership examples:
 
 ## Completion State
 
-Set the active completion file to `pending` before starting or resuming review.
+Set `.tmp/<id>/completion-check.md` to `pending` before starting or resuming
+review, where `<id>` is the active runtime id from `COMPLETION_CHECK_ID`,
+`CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`.
+
+If no runtime id is available, stop and report the missing hook/session id.
+Do not create `.tmp/<plan-id>/completion-check.md` as a fallback for
+Slate Ralplan.
+
+### Activation Reset
+
+Before current-state read, scoring, pass execution, or plan edits for a new
+Slate Ralplan activation:
+
+1. Resolve the active runtime id.
+2. Resolve the target plan path from the latest user request or create the
+   default plan path.
+3. Read any existing `.tmp/<id>/completion-check.md` only to capture
+   `previous_status` and `previous_plan`.
+4. Replace the whole completion file with a fresh `status: pending` template for
+   the target plan.
+5. Include `previous_status` and `previous_plan` when the existing file pointed
+   at another plan or said `done`.
+6. Refresh `.tmp/<id>/continue.md` if more review work remains.
+
+Do not append to the old file. Do not preserve `status: done`. Do not treat a
+same-runtime-id completion file as current unless the latest user request
+explicitly asks to resume or inspect that same plan. Clearing to an empty file
+is also invalid; the file must be rewritten into a parseable pending state.
+Do not apply this reset as a standalone closeout action and then stop. If the
+current task is rule/state maintenance rather than an active Slate Ralplan pass,
+record the reset-policy maintenance as complete and leave the active Stop-hook
+state `done`, with a note that the next real activation must overwrite it with
+fresh `pending`.
 
 Use:
 
 ```md
 status: pending
 plan: docs/plans/YYYY-MM-DD-slate-v2-absolute-architecture-review-plan.md
+completion_id: <id>
+continue_file: .tmp/<id>/continue.md
+current_pass: current-state-read
+current_pass_status: in_progress
+next_pass: related-issue-discovery
+next_action: finish current pass and refresh plan/continue state
 ```
 
 Set `done` only when all completion gates below pass. Set `blocked` only when no
 autonomous progress is possible because evidence, tooling, access, or a user
 decision is missing.
+
+Use the completion file as the lightweight current-pass state. Keep detailed
+pass evidence in the active plan.
+
+Allowed `current_pass_status` values:
+
+- `pending`
+- `in_progress`
+- `complete`
+- `revise`
+- `blocked`
+- `skipped`
 
 Single-pass completion is invalid by default:
 
@@ -321,10 +444,34 @@ Single-pass completion is invalid by default:
 - a newly created or newly activated review plan must stay `pending`
 - only the closure pass may set `done`
 - the closure pass is valid only after earlier pass-state rows are already
-  recorded as complete in the active plan
+  recorded as complete in the active plan before the current activation starts
+- pass rows written earlier in the same assistant turn do not make the closure
+  pass eligible
 - if the current activation creates, rewrites, or materially rescopes the plan,
   record the next pass and keep status `pending`
-- ignore this only when the user explicitly asks for a single-pass review
+- there is no single-pass bypass; user phrases like `full`, `all passes`,
+  `continue until done`, or `give me the Done Handoff` do not permit setting
+  top-level `done` in the same activation that created, rewrote, or rescoped the
+  plan
+- if no Stop-hook continuation or separate resume occurred between passes, it is
+  still the same activation
+
+Before writing `status: done`, prove in the plan and completion file:
+
+- every scheduled pass row is `complete` or intentionally `skipped` with a
+  concrete reason and evidence
+- no pass row is `pending`, `in_progress`, `revise`, or `blocked` with a
+  runnable next move
+- `current_pass` is the closure/final-gates pass
+- `current_pass_status` is `complete`
+- `next_pass` is `none`
+- `next_action` is `none`
+- every completion threshold row below passes
+- `final_handoff_status` is `complete`
+- the final chat response includes the exhaustive Done Handoff bullet list
+
+If any assertion fails, write `status: pending`, name the earliest runnable
+`next_pass`, and refresh `.tmp/<id>/continue.md`.
 
 ## Confidence Score
 
@@ -360,6 +507,8 @@ Score evidence rules:
   unless the invalidated alternatives are named and fairly rejected.
 
 Completion threshold:
+
+All rows are conjunctive. Passing score is necessary but never sufficient.
 
 - total score `>= 0.92`
 - no dimension below `0.85`
@@ -404,8 +553,10 @@ completed pass <name/date>`
   package, browser, or issue-fix claim has a recorded `../slate-v2` command and
   result, and no relevant failing `../slate-v2` command is left without a fix,
   unrelated-failure proof, or explicit owner
-- final user-review handoff lists every accepted plan item/decision, with
-  before/after shape when applicable
+- final user-review handoff gate complete: the active plan contains the final
+  handoff outline, the completion file records `final_handoff_status:
+  complete`, and the final chat response lists every accepted plan
+  item/decision with before/after shape when applicable
 
 If any gate fails, status stays `pending`.
 
@@ -500,6 +651,12 @@ Run the review as passes, not one giant essay:
     related, and non-fix classification produced by the plan.
 12. Closure score and final gates.
 
+The closure score and final gates are their own pass. Do not fold closure into
+the previous pass. The closure pass may start only when every earlier
+pass-state row was already `complete` or intentionally `skipped` with evidence
+before this activation began. Rows completed in the same assistant turn are
+current-pass work, not prior closure eligibility.
+
 After each pass, update the active plan with pass status, evidence, changes,
 and next owner. Keep the active completion file as `pending` while any pass or
 revision remains runnable.
@@ -516,6 +673,11 @@ Pass-state ledger rows must include:
 Do not mark multiple major passes complete in one activation. Finish the current
 pass, refresh the active continuation prompt, keep status `pending`, and let the
 next activation run the next pass.
+
+If the user explicitly asks for the `Done Handoff` before the closure pass is
+eligible, do not invent one. Record the current pass result, write a pending
+handoff that names the next pass, refresh `.tmp/<id>/continue.md`, and leave
+top-level `status: pending`.
 
 ## Intent Boundary Gate
 
@@ -1012,7 +1174,8 @@ in the plan:
 
 ## Ralph Bridge
 
-When the score is below threshold and a runnable next move exists:
+When the score is below threshold, any required pass remains open, or any
+completion gate has a runnable next move:
 
 1. Update the plan with the current score, evidence, rejected tactics, and next
    owner.
@@ -1028,6 +1191,9 @@ the continuation prompt that tells `ralph` what to execute after the user
 explicitly invokes `ralph`.
 
 ## Done Handoff
+
+This is a mandatory closeout gate, not an optional summary. If the final answer
+would omit this handoff, keep completion `pending`.
 
 When setting completion to `done`, the final chat response must include a
 concise but exhaustive bullet list of every accepted plan item and decision so
@@ -1075,6 +1241,13 @@ Do not list only highlights. If the plan accepts twenty decisions, the handoff
 lists twenty bullets. Keep each bullet short; group them instead of omitting
 items.
 
+Before writing `status: done`, update the completion file with:
+
+```md
+final_handoff_status: complete
+final_handoff: emitted in final chat response
+```
+
 ## Final Response
 
 When the plan is still pending, say what score remains and what the next owner
@@ -1094,4 +1267,5 @@ Decisions:
 - Tests/proof: ...
 ```
 
-Do not paste the whole plan into chat. Do paste the exhaustive decision bullets.
+Those bullets are examples of grouping, not a five-item limit. Do not paste the
+whole plan into chat. Do paste the exhaustive decision bullets.

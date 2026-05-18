@@ -35,7 +35,8 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 - The user asks for a narrow bug fix without spec work.
 - The user asks for a normal code review of a diff.
 - The user asks to execute an already accepted Plate Ralplan plan.
-- The plan already passed this workflow and the user says to build.
+- The plan already has a passing Plate Ralplan score, completed pass schedule,
+  closed final gates, and the user says to build.
 
 ## Hard Policy
 
@@ -60,6 +61,15 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
   options, rejected alternatives, and why the chosen option wins.
 - Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
   decisions need cited evidence.
+- Score is not completion. A passing score with any pending pass, spec-law
+  output, verification gate, named next owner, or runnable next action stays
+  `pending`.
+- The top-level completion status is the lane status, not the current pass
+  status. Close a pass with `current_pass_status: complete`; do not use
+  top-level `done` unless the whole lane is closed.
+- Top-level `done` is legal only in the closure/final-gates pass, after the
+  active plan proves every earlier pass-state row is complete or explicitly
+  skipped with evidence.
 - For current Plate features, parity and protocol matter. For deferred features,
   do not inflate the release gate.
 - Run applicable implementation-review lenses instead of trusting generic editor
@@ -74,12 +84,16 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 ## Required Artifacts
 
 - Plan file under `docs/plans/`.
-- Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for detailed parallel plan state.
-  If no runtime session id exists, create an explicit plan id and use the same
-  scoped layout. Do not use the old shared root completion file.
-- Continuation prompt: `.tmp/<session-id>/continue.md` when further autonomous
-  plan/spec work remains.
+- Completion file: use the active runtime id, never an invented plan id. Resolve
+  `<id>` from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or
+  `CODEX_SESSION_ID`. When the Stop hook provides `session_id` on stdin, treat
+  that exact value as the runtime id because the hook maps it to
+  `CODEX_THREAD_ID`. Write `.tmp/<id>/completion-check.md`. If no runtime id is
+  available, stop and report the missing hook/session id instead of creating
+  `.tmp/<plan-id>/completion-check.md`. Do not use the old shared root
+  completion file.
+- Continuation prompt: `.tmp/<id>/continue.md` beside the active completion file
+  when further autonomous plan/spec work remains.
 - Editor-behavior outputs under `docs/editor-behavior/` when law changes.
 - Research updates under `docs/research/` when the evidence lane is stale,
   contradictory, or incomplete.
@@ -95,34 +109,66 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
   Vercel React, react-useeffect, performance-oracle, and tdd, each marked
   `applied` or `skipped` with a concrete reason.
 
+## Goal Setup
+
+Before creating or resuming a Plate Ralplan:
+
+- If a goal tool is available, use `set_goal()` unless the current goal already
+  matches the desired end state.
+- Create the goal around the desired end state, not the execution plan.
+- Include constraints, scope, or verification details only when they materially
+  change what `done` means.
+- Use the goal or user-input tool to ask when the goal would otherwise be
+  unclear.
+- If no goal tool is available, ask the user to set the goal instead of
+  silently skipping goal setup.
+- Do not start the planning pass until the goal is set, verified as already
+  matching, or the user explicitly resolves the missing-goal path.
+
+Good goal:
+
+```txt
+Plate Ralplan proves the editor-behavior authority, node model, protocol rows,
+and proof gates are ready for user review and later Ralph execution.
+```
+
+Bad goal:
+
+```txt
+Run Plate Ralplan passes 1 through 9.
+```
+
 Default plan path:
 
 ```txt
 docs/plans/YYYY-MM-DD-plate-ralplan-review-plan.md
 ```
 
-Reuse an active plan when the prompt names one or the completion file already
-points at one.
+Reuse an active plan when the prompt names one or the runtime-id completion file
+already points at one.
 
 ## Read First
 
 Always read only what is relevant, but start from these sources:
 
 1. Latest user request.
-2. Active completion file if present: session-scoped
-   `.tmp/<session-id>/completion-check.md`, or an explicit plan-id scoped file.
-3. Active plan under `docs/plans/` if present.
-4. [docs/editor-behavior/README.md](docs/editor-behavior/README.md).
-5. [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md).
-6. [docs/editor-behavior/markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md).
-7. [docs/editor-behavior/editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md).
-8. [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md).
-9. [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md).
-10. [docs/editor-behavior/markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md).
-11. [docs/research/README.md](docs/research/README.md), `docs/research/index.md`,
+2. Current goal state, if a goal tool exists.
+3. Active completion file if present: `.tmp/<id>/completion-check.md`, where
+   `<id>` is resolved from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`,
+   `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`. Do not treat a
+   plan-name folder as active unless that exact value came from the runtime id.
+4. Active plan under `docs/plans/` if present.
+5. [docs/editor-behavior/README.md](docs/editor-behavior/README.md).
+6. [docs/editor-behavior/markdown-standards.md](docs/editor-behavior/markdown-standards.md).
+7. [docs/editor-behavior/markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md).
+8. [docs/editor-behavior/editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md).
+9. [docs/editor-behavior/markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md).
+10. [docs/editor-behavior/master-roadmap.md](docs/editor-behavior/master-roadmap.md).
+11. [docs/editor-behavior/markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md).
+12. [docs/research/README.md](docs/research/README.md), `docs/research/index.md`,
     and `docs/research/log.md` when present.
-12. [docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md](docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md).
-13. [docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md](docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md).
+13. [docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md](docs/solutions/best-practices/markdown-editor-reference-audits-must-treat-silence-as-a-gap.md).
+14. [docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md](docs/solutions/best-practices/editor-behavior-specs-must-lock-node-model-and-affinity-before-ux.md).
 
 Read when relevant:
 
@@ -202,18 +248,42 @@ uses a stale current state.
 
 ## Completion State
 
-Set the active completion file to `pending` before starting or resuming review.
+Set `.tmp/<id>/completion-check.md` to `pending` before starting or resuming
+review, where `<id>` is the active runtime id from `COMPLETION_CHECK_ID`,
+`CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`.
+
+If no runtime id is available, stop and report the missing hook/session id.
+Do not create `.tmp/<plan-id>/completion-check.md` as a fallback for
+Plate Ralplan.
 
 Use:
 
 ```md
 status: pending
 plan: docs/plans/YYYY-MM-DD-plate-ralplan-review-plan.md
+completion_id: <id>
+continue_file: .tmp/<id>/continue.md
+current_pass: current-state-read
+current_pass_status: in_progress
+next_pass: intent-boundary-and-decision-brief
+next_action: finish current pass and refresh plan/continue state
 ```
 
 Set `done` only when all completion gates pass. Set `blocked` only when no
 autonomous progress is possible because evidence, tooling, access, or a user
 decision is missing.
+
+Use the completion file as the lightweight current-pass state. Keep detailed
+pass evidence in the active plan.
+
+Allowed `current_pass_status` values:
+
+- `pending`
+- `in_progress`
+- `complete`
+- `revise`
+- `blocked`
+- `skipped`
 
 Single-pass completion is invalid by default:
 
@@ -225,6 +295,21 @@ Single-pass completion is invalid by default:
 - if the current activation creates, rewrites, or materially rescopes the plan,
   record the next pass and keep status `pending`
 - ignore this only when the user explicitly asks for a single-pass review
+
+Before writing `status: done`, prove in the plan and completion file:
+
+- every scheduled pass row is `complete` or intentionally `skipped` with a
+  concrete reason and evidence
+- no pass row is `pending`, `in_progress`, `revise`, or `blocked` with a
+  runnable next move
+- `current_pass` is the closure/final-gates pass
+- `current_pass_status` is `complete`
+- `next_pass` is `none`
+- `next_action` is `none`
+- every completion threshold row below passes
+
+If any assertion fails, write `status: pending`, name the earliest runnable
+`next_pass`, and refresh `.tmp/<id>/continue.md`.
 
 ## Confidence Score
 
@@ -267,6 +352,8 @@ Score evidence rules:
   unless the invalidated alternatives are named and fairly rejected.
 
 Completion threshold:
+
+All rows are conjunctive. Passing score is necessary but never sufficient.
 
 - total score `>= 0.92`
 - no dimension below `0.85`
@@ -339,6 +426,10 @@ Run the review as passes, not one giant essay:
 7. Ecosystem maintainer pass when triggered.
 8. Revision pass that answers objections and updates the plan/spec stack.
 9. Closure score and final gates.
+
+The closure score and final gates are their own pass. Do not fold closure into
+the previous pass. The closure pass may start only when every earlier
+pass-state row is already `complete` or intentionally `skipped` with evidence.
 
 After each pass, update the active plan with pass status, evidence, changes,
 and next owner. Keep the active completion file as `pending` while any pass or
@@ -838,7 +929,8 @@ in the plan:
 
 ## Ralph Bridge
 
-When the score is below threshold and a runnable next move exists:
+When the score is below threshold, any required pass remains open, or any
+completion gate has a runnable next move:
 
 1. Update the plan with the current score, evidence, rejected tactics, and next
    owner.

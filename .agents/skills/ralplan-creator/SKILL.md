@@ -50,6 +50,9 @@ template below is complete on its own.
 - Do not create aliases for old skill names unless the user explicitly asks.
 - Do not generate a domain ralplan that can mark `done` after only writing a
   polished essay.
+- Do not generate a domain ralplan that can mark `done` from score alone. Score
+  is one input; completion requires all required passes, output syncs,
+  verification gates, and closure gates.
 - Do not generate a domain ralplan that patches product/code changes. A
   `*-ralplan` is planning/review/spec/output only; execution belongs to `ralph`
   or another explicitly execution-named skill.
@@ -85,6 +88,7 @@ Before writing a new ralplan, infer or record:
 - optional read-when-relevant sources
 - domain evidence sources
 - confidence dimensions and weights
+- goal setup rules
 - score caps and threshold rules
 - completion gates
 - required plan sections
@@ -143,7 +147,7 @@ explicit reason recorded in the sync review.
 
 ````md
 ---
-description: <Review or define DOMAIN plans against DOMAIN quality bars; write a scored plan and keep completion pending until the plan is ready for user review.>
+description: <Review or define DOMAIN plans against DOMAIN quality bars; write a scored plan and keep completion pending until every required pass and closure gate is complete.>
 argument-hint: '[--quick|--standard|--deep] <DOMAIN planning/review prompt>'
 disable-model-invocation: true
 ---
@@ -158,9 +162,10 @@ misaligned execution, or unreviewed breaking changes>.
 
 This is a planning/review gate, not an implementation lane. It creates or
 updates an execution-grade plan, scores it, and keeps the completion state
-`pending` until the score is high enough. When the score passes, set completion
-to `done` so the user can review the plan before a later `ralph` run executes
-it.
+`pending` until every required pass, output-sync gate, verification gate, and
+closure score gate is complete. Score is only one input. A high score never
+permits `done` by itself; `done` means the full pass schedule is closed and the
+plan is ready for user review before a later `ralph` run executes it.
 
 ## Use When
 
@@ -176,8 +181,8 @@ it.
 - The user asks to execute an already accepted plan.
 - The user asks for a narrow bug fix without planning/spec work.
 - The user asks for a normal code review of a diff.
-- The plan already has a passing <Domain> Ralplan score and the user says to
-  build.
+- The plan already has a passing <Domain> Ralplan score, completed pass
+  schedule, closed final gates, and the user says to build.
 - <Domain-specific exclusion.>
 
 ## Hard Policy
@@ -190,6 +195,14 @@ it.
 - Allowed edits are only plan, research, spec, ledger, completion-state,
   continuation, and domain-output artifacts explicitly owned by this ralplan.
 - Do not mark `done` because the review pass is tired.
+- Score is not completion. A passing score with any pending pass, output sync,
+  verification gate, named next owner, or runnable next action stays `pending`.
+- The top-level completion status is the lane status, not the current pass
+  status. Close a pass with `current_pass_status: complete`; do not use
+  top-level `done` unless the whole lane is closed.
+- Top-level `done` is legal only in the closure/final-gates pass, after the
+  active plan proves every earlier pass-state row is complete or explicitly
+  skipped with evidence.
 - Do not use `blocked` when another research, review, or plan-hardening move is
   runnable, unless the user explicitly stops execution or tells you to mark the
   lane blocked.
@@ -210,13 +223,16 @@ it.
 ## Required Artifacts
 
 - Plan file under `<plan-directory>/`.
-- Completion file: use session-scoped
-  `.tmp/<session-id>/completion-check.md` for parallel plan state. If no
-  runtime session id exists, create an explicit plan id and use the same scoped
-  layout. Do not use the old shared root completion file.
-- Continuation prompt: `.tmp/<session-id>/continue.md` when a session id exists,
-  otherwise `<continuation-prompt-file>`, when further autonomous plan work
-  remains.
+- Completion file: use the active runtime id, never an invented plan id. Resolve
+  `<id>` from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`, or
+  `CODEX_SESSION_ID`. When the Stop hook provides `session_id` on stdin, treat
+  that exact value as the runtime id because the hook maps it to
+  `CODEX_THREAD_ID`. Write `.tmp/<id>/completion-check.md`. If no runtime id is
+  available, stop and report the missing hook/session id instead of creating
+  `.tmp/<plan-id>/completion-check.md`. Do not use the old shared root
+  completion file.
+- Continuation prompt: `.tmp/<id>/continue.md` beside the active completion file
+  when further autonomous plan work remains.
 - Research updates under `<research-directory>` when the evidence lane is stale,
   contradictory, or incomplete.
 - Domain objection ledger in the active plan. If it grows too large, split it to
@@ -231,26 +247,59 @@ it.
   `applied` or `skipped` with a concrete reason.
 - <Domain-specific output artifacts, if any.>
 
+## Goal Setup
+
+Before creating or resuming a <Domain> Ralplan:
+
+- If a goal tool is available, use `set_goal()` unless the current goal already
+  matches the desired end state.
+- Create the goal around the desired end state, not the execution plan.
+- Include constraints, scope, or verification details only when they materially
+  change what `done` means.
+- Use the goal or user-input tool to ask when the goal would otherwise be
+  unclear.
+- If no goal tool is available, ask the user to set the goal instead of
+  silently skipping goal setup.
+- Do not start the planning pass until the goal is set, verified as already
+  matching, or the user explicitly resolves the missing-goal path.
+
+Good goal:
+
+```txt
+<Domain> Ralplan proves the accepted target shape, output artifacts, and proof
+gates are ready for user review and later Ralph execution.
+```
+
+Bad goal:
+
+```txt
+Run <Domain> Ralplan passes 1 through 9.
+```
+
 Default plan path:
 
 ```txt
 <plan-directory>/YYYY-MM-DD-<domain>-ralplan-review-plan.md
 ```
 
-Reuse an active plan when the prompt names one or the completion file already
-points at one.
+Reuse an active plan when the prompt names one or the runtime-id completion file
+already points at one.
 
 ## Read First
 
 Always read only what is relevant, but start from these sources:
 
 1. Latest user request.
-2. `<completion-state-file>` if present.
-3. Active plan under `<plan-directory>/` if present.
-4. <Domain overview/readme/source-of-truth docs.>
-5. <Domain source files, examples, tests, or generated outputs.>
-6. <Research index/log/docs, when present.>
-7. <Known best-practice docs or local reference repos, when relevant.>
+2. Current goal state, if a goal tool exists.
+3. Active completion file if present: `.tmp/<id>/completion-check.md`, where
+   `<id>` is resolved from `COMPLETION_CHECK_ID`, `CODEX_THREAD_ID`,
+   `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`. Do not treat a
+   plan-name folder as active unless that exact value came from the runtime id.
+4. Active plan under `<plan-directory>/` if present.
+5. <Domain overview/readme/source-of-truth docs.>
+6. <Domain source files, examples, tests, or generated outputs.>
+7. <Research index/log/docs, when present.>
+8. <Known best-practice docs or local reference repos, when relevant.>
 
 Read when relevant:
 
@@ -316,21 +365,22 @@ include exact doc, generated artifact, route, issue, or benchmark probes.
 
 ## Completion State
 
-Set the active completion file to `pending` before starting or resuming review.
-Prefer `.tmp/<CODEX_THREAD_ID>/completion-check.md` when `CODEX_THREAD_ID`
-exists, because the plain completion hook inherits that env and can check
-parallel sessions independently. Use `COMPLETION_CHECK_ID`, `--id`, or `--file`
-when a caller supplies an explicit plan id/file. If no session id or explicit
-id/file is available, create an explicit scoped plan id. Store the matching
-continuation prompt in `.tmp/<session-id>/continue.md` and record it as
-`continue_file`.
+Set `.tmp/<id>/completion-check.md` to `pending` before starting or resuming
+review, where `<id>` is the active runtime id from `COMPLETION_CHECK_ID`,
+`CODEX_THREAD_ID`, `CODEX_SESSION_ID`, or Stop-hook stdin `session_id`.
+
+If no runtime id is available, stop and report the missing hook/session id.
+Do not create `.tmp/<plan-id>/completion-check.md` as a fallback for generated
+ralplans. Store the matching continuation prompt in `.tmp/<id>/continue.md` and
+record it as `continue_file`.
 
 Use:
 
 ```md
 status: pending
 plan: <plan-directory>/YYYY-MM-DD-<domain>-ralplan-review-plan.md
-continue_file: .tmp/<session-id>/continue.md
+completion_id: <id>
+continue_file: .tmp/<id>/continue.md
 current_pass: <pass-name>
 current_pass_status: in_progress
 current_pass_skill: .agents/skills/<pass-or-domain-skill>/SKILL.md
@@ -338,6 +388,7 @@ current_pass_owner: <owner>
 current_pass_scope: <scope>
 current_pass_trigger: <trigger>
 next_pass: <next-pass>
+next_action: <next-action>
 ```
 
 Set `done` only when all completion gates pass. Set `blocked` only when no
@@ -354,6 +405,33 @@ Single-pass completion is invalid by default:
 - if the current activation creates, rewrites, or materially rescopes the plan,
   record the next pass and keep status `pending`
 - ignore this only when the user explicitly asks for a single-pass review
+
+Use the completion file as the lightweight current-pass state. Keep detailed
+pass evidence in the active plan.
+
+Allowed `current_pass_status` values:
+
+- `pending`
+- `in_progress`
+- `complete`
+- `revise`
+- `blocked`
+- `skipped`
+
+Before writing `status: done`, prove in the plan and completion file:
+
+- every scheduled pass row is `complete` or intentionally `skipped` with a
+  concrete reason and evidence
+- no pass row is `pending`, `in_progress`, `revise`, or `blocked` with a
+  runnable next move
+- `current_pass` is the closure/final-gates pass
+- `current_pass_status` is `complete`
+- `next_pass` is `none`
+- `next_action` is `none`
+- every completion threshold row below passes
+
+If any assertion fails, write `status: pending`, name the earliest runnable
+`next_pass`, and refresh `.tmp/<id>/continue.md`.
 
 ## Confidence Score
 
@@ -396,6 +474,8 @@ Score evidence rules:
   unless the invalidated alternatives are named and fairly rejected.
 
 Completion threshold:
+
+All rows are conjunctive. Passing score is necessary but never sufficient.
 
 - total score `>= 0.92`
 - no dimension below `0.85`
@@ -469,6 +549,10 @@ Run the review as passes, not one giant essay:
 8. Revision pass that answers objections and updates the plan and domain output
    artifacts.
 9. Closure score and final gates.
+
+The closure score and final gates are their own pass. Do not fold closure into
+the previous pass. The closure pass may start only when every earlier
+pass-state row is already `complete` or intentionally `skipped` with evidence.
 
 After each pass, update the active plan with pass status, evidence, changes,
 and next owner. Keep the active completion file as `pending` while any pass or
@@ -922,7 +1006,8 @@ in the plan:
 
 ## Ralph Bridge
 
-When the score is below threshold and a runnable next move exists:
+When the score is below threshold, any required pass remains open, or any
+completion gate has a runnable next move:
 
 1. Update the plan with the current score, evidence, rejected tactics, and next
    owner.
@@ -1020,16 +1105,20 @@ Do not paste the whole plan into chat. Do paste the exhaustive decision bullets.
 6. Create the generated ralplan from the full template above.
 7. Add domain-specific sections only where the domain needs them.
 8. Ensure confidence weights total `1.00`.
-9. Ensure completion gates include the shared threshold and domain-specific
+9. Ensure the generated ralplan includes Goal Setup with `set_goal()` when a
+   goal tool exists.
+10. Ensure completion gates include the shared threshold and domain-specific
    gates.
-10. Ensure the objection ledger includes the right personas and required fields.
-11. Ensure the done handoff requires exhaustive decision bullets.
-12. Ensure the generated ralplan forbids implementation edits and routes
+11. Ensure score is never sufficient for completion; `done` requires completed
+    pass schedule, output syncs, verification gates, and closure gates.
+12. Ensure the objection ledger includes the right personas and required fields.
+13. Ensure the done handoff requires exhaustive decision bullets.
+14. Ensure the generated ralplan forbids implementation edits and routes
     execution to `ralph` without executing from the ralplan itself.
-13. Create or sync the matching `SKILL.md`.
-14. Search for stale old-name references if this is a rename.
-15. Run a sync review.
-16. Run the project completion check if present.
+15. Create or sync the matching `SKILL.md`.
+16. Search for stale old-name references if this is a rename.
+17. Run a sync review.
+18. Run the project completion check if present.
 
 ## Sync Review
 
@@ -1044,6 +1133,8 @@ handoff:
 - sections intentionally omitted with reason
 - confidence dimensions and whether weights total `1.00`
 - completion threshold and pass-gate summary
+- goal setup rules included
+- score-not-completion and closure-pass-only rules included
 - objection-ledger personas
 - implementation-review lenses included
 - research/evidence rules included
@@ -1071,7 +1162,9 @@ A generated ralplan is not acceptable unless it can answer all of these:
 - What files/artifacts does it write?
 - Which implementation/product files are explicitly off-limits?
 - What does it read first?
+- How does it set or verify the goal around the desired end state?
 - How does it keep completion `pending`?
+- How does it prevent score-only `done`?
 - What score dimensions are used?
 - What caps prevent unsupported confidence?
 - What threshold marks the plan ready?

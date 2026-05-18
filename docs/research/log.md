@@ -1,5 +1,15 @@
 # Research Log
 
+## [2026-05-14] maintain | slate v2 example memoization ecosystem refresh
+
+- reused the existing editor-architecture lane for Lexical, ProseMirror,
+  Tiptap, React 19.2, Plate, and slate-yjs evidence
+- refreshed the active Slate Ralplan with a steal/reject/diverge strategy:
+  [2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md](docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md)
+- found no missing compiled research page for this planning question; remaining
+  gaps are performance, regression, migration, objection, and high-risk proof
+  rows inside the plan
+
 ## [2026-05-11] maintain | scroll selection visibility runtime
 
 - compiled a new editor-architecture source summary for caret visibility and
@@ -545,3 +555,15 @@
   TanStack Virtual is a good viewport range engine for an experimental
   virtualized mode, but Slate must keep DOM coverage, selection, copy/paste,
   IME, mobile, browser-find, and a11y policy in Slate-owned code
+
+## [2026-05-17] maintain | Slate v2 Plate-fit API hard-cut ecosystem refresh
+
+- refreshed the Plate-fit API hard-cut ralplan against existing compiled
+  editor-architecture research plus live local Tiptap, ProseMirror, Lexical,
+  and Plate source
+- kept the compiled conclusion unchanged:
+  Tiptap/Plate-style feature packaging belongs in Plate; raw Slate should keep
+  read/update, state/tx, transform/query/normalizer middleware, typed DOM
+  ingress facets, and raw React escape hatches
+- no new source page was added because existing compiled research plus local
+  source lines were sufficient for this pass
