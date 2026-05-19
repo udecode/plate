@@ -4,3 +4,11 @@
 preload = ["./tooling/config/bunTestSetup.ts"]
 # Use test-specific tsconfig for path mappings (e.g., @/registry/*)
 tsconfig = "./tooling/config/tsconfig.test.json"
+# Exclude Playwright e2e tests - they should be run with `npx playwright test`
+root = "./packages"
+
+[install]
+# Supply-chain defense: require packages to be at least 7 days old before
+# installation. Compromised packages (stolen maintainer tokens) are almost
+# always yanked within hours, well before this window elapses.
+minimumReleaseAge = 604800
