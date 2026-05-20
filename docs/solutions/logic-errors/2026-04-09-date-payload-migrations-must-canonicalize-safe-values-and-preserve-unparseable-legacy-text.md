@@ -113,7 +113,7 @@ pnpm lint:fix
 ```
 
 Browser verification also passed against `http://127.0.0.1:3000/docs/date`
-through `dev-browser`, confirming the page loaded and still surfaced the date
+through `browser-use`, confirming the page loaded and still surfaced the date
 UI content.
 
 ## Related Issues

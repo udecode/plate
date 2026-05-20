@@ -499,7 +499,7 @@ pnpm lint:fix
 Browser verification:
 
 ```bash
-dev-browser --connect http://127.0.0.1:9222
+browser-use --connect http://127.0.0.1:9222
 ```
 
 Verify the date demo path still shows:

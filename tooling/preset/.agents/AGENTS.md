@@ -14,22 +14,16 @@ When using the following skills, override the default behavior.
 
 - Do not create `task_plan.md`, `findings.md`, or `progress.md` at repo root. Merge that content into one file under `.claude/docs/plans/`. Example: `.claude/docs/plans/2026-03-11-task.md`
 
-`dev-browser`:
+Browser usage:
 
-- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work.
-- If `http://127.0.0.1:9222` is unavailable, use `browser-debug-setup` first.
-- Reuse the persistent debug browser/profile. Do not spin up disposable browser instances unless the user asks.
-- Do not close or stop the user's connected debug browser. Close named pages only when needed.
-- Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
-- Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
-- If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
-  - [Add browser learning]
+- Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
+- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
 
 `ce-*`:
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks.
 - **PR:** Before creating or updating a PR, run the local verification that actually matters here. At minimum: `bun run typecheck`, `bun run lint:fix`, and `bun run build` if the task touched app behavior or build config.
-- **plan:** Include `dev-browser` in acceptance criteria for browser features.
+- **plan:** Include Browser Use in acceptance criteria for browser features.
 - **deepen-plan:** Context7 only when not covered by skills.
 - **work:** UI tasks require browser verification before marking complete. Never guess.
 
@@ -81,7 +75,7 @@ When using the following skills, override the default behavior.
 • Condition YES -> in_progress -> verify -> completed
 • NEVER git commit unless explicitly asked
 • Avoid unnecessary `bun dev`
-• Use Skill(dev-browser) for browser testing instead of next-devtools browser evaluation
+• Use Browser Use for browser testing instead of next-devtools browser evaluation
 
 **Verification Checklist:**
 

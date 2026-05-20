@@ -16,6 +16,7 @@ templates/my-app
 
 # Generated files
 .history
+apps/www/next-env.d.ts
 node_modules/
 report.*
 *.tsv

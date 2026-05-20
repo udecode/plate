@@ -28,9 +28,12 @@ merge_strategy = "merge"
 command = "npx"
 args = [ "shadcn@latest", "mcp" ]
 
-
 [mcp_servers.plate.env]
 REGISTRY_URL = "http://localhost:3000/rd/registry.json"
+
+[mcp_servers.agentation]
+command = "npx"
+args = [ "-y", "agentation-mcp@latest", "server" ]
 
 # --- Agent-Specific Configuration ---
 

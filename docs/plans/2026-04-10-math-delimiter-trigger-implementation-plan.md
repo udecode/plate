@@ -314,7 +314,7 @@ Scenarios:
 
 ### Browser verification
 
-Verify on the real docs/demo surface with `dev-browser`:
+Verify on the real docs/demo surface with `browser-use`:
 
 - open the equation demo/docs page
 - confirm selection-wrap works

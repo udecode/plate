@@ -8,7 +8,7 @@ the root cause, and fix it with fresh verification.
 ## Context
 
 - User reports a `codeblock` regression and asks whether it was verified in
-  `dev-browser`.
+  `browser-use`.
 - Current browser surface is `http://localhost:3001/`.
 - I did not specifically verify code block behavior in browser before the
   report.
@@ -24,7 +24,7 @@ the root cause, and fix it with fresh verification.
 ## Working Plan
 
 - [x] Load relevant skills and scan repo learnings
-- [x] Reproduce the regression in `dev-browser`
+- [x] Reproduce the regression in `browser-use`
 - [x] Identify the exact failing flow and likely owner layer
 - [x] Fix the root cause
 - [x] Run fresh verification for the touched surface

@@ -60,6 +60,7 @@ const plateMdxComponents = {
   KeyTableItem,
   MinusIcon,
   PackageInfo: EmptyComponent,
+  ReleaseIndex: EmptyComponent,
   SquareAsteriskIcon,
   Steps,
 };

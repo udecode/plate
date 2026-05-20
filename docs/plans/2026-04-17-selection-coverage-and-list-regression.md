@@ -28,7 +28,7 @@ Expand rule regression coverage around selection placement after autoformat-styl
 
 ## Progress
 
-- Loaded `testing`, `tdd`, `learnings-researcher`, `debug`, `planning-with-files`, and `dev-browser`.
+- Loaded `testing`, `tdd`, `learnings-researcher`, `debug`, `planning-with-files`, and `browser-use`.
 - Started a batch pass instead of treating link selection and list autoformat as isolated one-offs.
 - Added selection assertions across the current rule coverage that can be
   modeled honestly: list, markdown link, blockquote, code block, and the broad

@@ -54,5 +54,5 @@ resolved by deletion, not just by the explicit renumber action.
   `useNodePath`
 - 2026-04-06: made duplicate-warning chrome `contentEditable={false}` so the
   warning text and repair button are not editable text surface
-- 2026-04-06: verified with targeted `bun test`, `dev-browser`, and
+- 2026-04-06: verified with targeted `bun test`, `browser-use`, and
   `pnpm lint:fix`; skipped `www` build/typecheck by direct user request

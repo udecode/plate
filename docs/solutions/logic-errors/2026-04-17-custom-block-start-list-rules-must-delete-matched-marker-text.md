@@ -103,7 +103,7 @@ pnpm lint:fix
 
 Browser proof:
 
-- Fresh `dev-browser` load of `http://localhost:3001/blocks/list-demo`
+- Fresh `browser-use` load of `http://localhost:3001/blocks/list-demo`
 - Reset to an empty paragraph
 - Type `- `
 - Result is an empty list item with selection at `[0, 0]`, offset `0`

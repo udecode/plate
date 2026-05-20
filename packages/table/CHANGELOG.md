@@ -6,6 +6,8 @@
 
 - [#4941](https://github.com/udecode/plate/pull/4941) by [@zbeyens](https://github.com/zbeyens) – Escalate the second `selectAll` from the current table to the whole document.
 
+- `useTableElement` no longer returns `isSelectingCell`. Use `usePluginOption(TablePlugin, 'isSelectingCell')` for table-level state, or `useTableCellElement` inside table cell components.
+
 ## 52.3.20
 
 ### Patch Changes

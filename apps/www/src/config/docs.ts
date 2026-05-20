@@ -47,6 +47,11 @@ export const gettingStartedNavItems: SidebarNavItem[] = [
     title: 'Installation',
     titleCn: '安装',
   },
+  {
+    href: '/docs/releases',
+    title: 'Releases',
+    titleCn: '版本发布',
+  },
 ];
 
 export const installationNavItems: SidebarNavItem[] = [
@@ -291,11 +296,6 @@ export const docsConfig: DocsConfig = {
     },
     {
       items: [
-        {
-          href: '/docs/migration',
-          title: 'Latest',
-          titleCn: '最新',
-        },
         {
           href: '/docs/migration/v48',
           title: 'v48',

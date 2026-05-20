@@ -38,7 +38,7 @@ not just a rendered heading list.
 - [x] add failing tests for that behavior first
 - [x] implement the minimal durable fix in package and app code
 - [x] verify with targeted tests, package build/typecheck where needed, lint,
-      and dev-browser
+      and browser-use
 
 ## Progress Log
 
@@ -53,7 +53,7 @@ not just a rendered heading list.
 - 2026-04-06: updated the registry TOC node so only the active heading row gets
   `aria-current="location"` and active styling
 - 2026-04-06: verified red/green with targeted `toc` + app specs, package
-  build/typecheck, `www build:registry`, `lint:fix`, and `dev-browser`
+  build/typecheck, `www build:registry`, `lint:fix`, and `browser-use`
 - 2026-04-06: browser verification only worked correctly on `localhost:3001`;
   `127.0.0.1:3001` left the docs preview stuck on `Loading...` because Next dev
   blocked cross-origin HMR resources by default
