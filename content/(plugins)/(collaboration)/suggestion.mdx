@@ -74,7 +74,6 @@ Create the suggestion plugin with extended configuration for state management:
 ```tsx
 import {
   type ExtendConfig,
-  type Path,
   isSlateEditor,
   isSlateElement,
   isSlateString,
@@ -92,7 +91,6 @@ export type SuggestionConfig = ExtendConfig<
   {
     activeId: string | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -103,7 +101,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       activeId: null,
       currentUserId: 'alice', // Set your current user ID
       hoverId: null,
-      uniquePathMap: new Map(),
     },
     render: {
       node: SuggestionLeaf,
@@ -122,7 +119,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
 - `options.activeId`: Currently active suggestion ID for visual highlighting
 - `options.currentUserId`: ID of the current user creating suggestions  
 - `options.hoverId`: Currently hovered suggestion ID for hover effects
-- `options.uniquePathMap`: Map tracking unique paths for suggestion resolution
 - `render.node`: Assigns [`SuggestionLeaf`](/docs/components/suggestion-node) to render suggestion text marks
 - `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-suggestion) for block-level suggestions
 

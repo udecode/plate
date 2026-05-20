@@ -132,6 +132,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
 export function CodeDrawingElement(
   props: PlateElementProps<TCodeDrawingElement>
 ) {
+  const { children } = props;
   const isMobile = useIsMobile();
   const editor = useEditorRef();
   const readOnly = useReadOnly();
@@ -213,19 +214,22 @@ export function CodeDrawingElement(
   const content = (
     <PlateElement {...props}>
       <div contentEditable={false}>
-        <CodeDrawingPreview
-          code={code}
-          drawingType={drawingType}
-          drawingMode={drawingMode}
-          image={image}
-          loading={loading}
-          onCodeChange={handleCodeChange}
-          onDrawingTypeChange={handleDrawingTypeChange}
-          onDrawingModeChange={handleDrawingModeChange}
-          readOnly={readOnly}
-          isMobile={isMobile}
-        />
+        <div>
+          <CodeDrawingPreview
+            code={code}
+            drawingType={drawingType}
+            drawingMode={drawingMode}
+            image={image}
+            loading={loading}
+            onCodeChange={handleCodeChange}
+            onDrawingTypeChange={handleDrawingTypeChange}
+            onDrawingModeChange={handleDrawingModeChange}
+            readOnly={readOnly}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
+      {children}
     </PlateElement>
   );
 

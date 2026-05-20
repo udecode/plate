@@ -1,7 +1,9 @@
 import {
+  ElementApi,
   type NodeEntry,
   type Point,
   type SlateEditor,
+  type TElement,
   type TLocation,
   type TSuggestionElement,
   type TSuggestionText,
@@ -22,10 +24,20 @@ export const findSuggestionProps = (
 
   const api = editor.getApi(BaseSuggestionPlugin);
 
+  const getInlineElementEntry = (point: Point) =>
+    editor.api.above<TElement>({
+      at: point,
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        editor.api.isInline(node) &&
+        !!api.suggestion.nodeId(node),
+    });
+
   let entry = api.suggestion.node({
     at,
     isText: true,
   }) as NodeEntry<TSuggestionText> | undefined;
+  let inlineEntry: NodeEntry<TElement> | undefined;
 
   if (!entry) {
     let start: Point;
@@ -44,9 +56,13 @@ export const findSuggestionProps = (
         at: nextPoint,
         isText: true,
       }) as NodeEntry<TSuggestionText> | undefined;
+
+      if (!entry) {
+        inlineEntry = getInlineElementEntry(nextPoint);
+      }
     }
 
-    if (!entry) {
+    if (!entry && !inlineEntry) {
       const prevPoint = editor.api.before(start);
 
       if (prevPoint) {
@@ -54,6 +70,10 @@ export const findSuggestionProps = (
           at: prevPoint,
           isText: true,
         }) as NodeEntry<TSuggestionText> | undefined;
+
+        if (!entry) {
+          inlineEntry = getInlineElementEntry(prevPoint);
+        }
       }
 
       const blockEntry = editor.api.block({ at: start });
@@ -86,6 +106,20 @@ export const findSuggestionProps = (
     return {
       id: api.suggestion.nodeId(entry[0]) ?? nanoid(),
       createdAt: getInlineSuggestionData(entry[0])?.createdAt ?? Date.now(),
+    };
+  }
+
+  const inlineSuggestionData =
+    inlineEntry && api.suggestion.suggestionData(inlineEntry[0]);
+
+  if (
+    inlineEntry &&
+    inlineSuggestionData?.type === type &&
+    isCurrentUserSuggestion(editor, inlineEntry[0] as any)
+  ) {
+    return {
+      id: api.suggestion.nodeId(inlineEntry[0]) ?? nanoid(),
+      createdAt: inlineSuggestionData.createdAt ?? Date.now(),
     };
   }
 

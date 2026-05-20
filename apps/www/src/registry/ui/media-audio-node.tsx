@@ -9,6 +9,8 @@ import { useMediaState } from '@platejs/media/react';
 import { ResizableProvider } from '@platejs/resizable';
 import { PlateElement, withHOC } from 'platejs/react';
 
+import { cn } from '@/lib/utils';
+
 import { Caption, CaptionTextarea } from './caption';
 
 export const AudioElement = withHOC(
@@ -22,7 +24,7 @@ export const AudioElement = withHOC(
           className="group relative cursor-default"
           contentEditable={false}
         >
-          <div className="h-16">
+          <div className={cn('h-16 rounded-sm')}>
             <audio className="size-full" src={unsafeUrl} controls />
           </div>
 

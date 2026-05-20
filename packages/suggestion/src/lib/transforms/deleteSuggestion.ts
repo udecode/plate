@@ -13,7 +13,11 @@ import {
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries/';
-import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
+import {
+  getInlineSuggestionData,
+  getSuggestionKey,
+  isCurrentUserSuggestion,
+} from '../utils';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
@@ -30,6 +34,57 @@ export const deleteSuggestion = (
   } = {}
 ) => {
   let resId: string | undefined;
+
+  const getInlineEntryAt = (point: Point) =>
+    editor.api.above<TElement>({
+      at: point,
+      match: (node) => ElementApi.isElement(node) && editor.api.isInline(node),
+    });
+
+  const getAdjacentInlineVoidEntry = (
+    point: Point,
+    {
+      reverse,
+    }: {
+      reverse?: boolean;
+    }
+  ) => {
+    try {
+      const adjacentPath = reverse
+        ? PathApi.previous(point.path)
+        : PathApi.next(point.path);
+
+      if (!adjacentPath) return;
+
+      const entry = editor.api.node<TElement>(adjacentPath);
+
+      if (
+        entry &&
+        ElementApi.isElement(entry[0]) &&
+        editor.api.isInline(entry[0]) &&
+        editor.api.isVoid(entry[0])
+      ) {
+        return entry;
+      }
+    } catch {}
+  };
+
+  const isBoundaryPoint = (
+    point: Point,
+    {
+      reverse,
+    }: {
+      reverse?: boolean;
+    }
+  ) => {
+    const range = editor.api.range(point.path);
+
+    if (!range) return false;
+
+    return reverse
+      ? editor.api.isStart(point, range)
+      : editor.api.isEnd(point, range);
+  };
 
   editor.tf.withoutNormalizing(() => {
     const { anchor: from, focus: to } = at;
@@ -53,6 +108,7 @@ export const deleteSuggestion = (
       const pointTarget = toRef.current;
 
       if (!pointTarget) break;
+      if (PointApi.equals(pointCurrent, pointTarget)) break;
       // don't delete across blocks
       if (
         !editor.api.isAt({
@@ -60,20 +116,23 @@ export const deleteSuggestion = (
           blocks: true,
         })
       ) {
+        const inlineRange = reverse
+          ? {
+              anchor: pointTarget,
+              focus: pointCurrent,
+            }
+          : {
+              anchor: pointCurrent,
+              focus: pointTarget,
+            };
         // always 0 when across blocks
-        const str = editor.api.string(
-          reverse
-            ? {
-                anchor: pointTarget,
-                focus: pointCurrent,
-              }
-            : {
-                anchor: pointCurrent,
-                focus: pointTarget,
-              }
-        );
+        const str = editor.api.string(inlineRange);
+        const hasInlineNode = editor.api.some({
+          at: inlineRange,
+          match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
+        });
 
-        if (str.length === 0) break;
+        if (str.length === 0 && !hasInlineNode) break;
       }
 
       const getPoint = reverse ? editor.api.before : editor.api.after;
@@ -94,6 +153,87 @@ export const deleteSuggestion = (
             focus: pointNext,
           };
       range = editor.api.unhangRange(range, { character: true });
+
+      const inlineEntryAtNext = getInlineEntryAt(pointNext);
+      const inlineEntryAtCurrent = inlineEntryAtNext
+        ? undefined
+        : getInlineEntryAt(pointCurrent);
+      const canUseAdjacentInlineFallback = isBoundaryPoint(pointCurrent, {
+        reverse,
+      });
+      const adjacentInlineEntry =
+        inlineEntryAtNext ||
+        inlineEntryAtCurrent ||
+        !canUseAdjacentInlineFallback
+          ? undefined
+          : getAdjacentInlineVoidEntry(pointCurrent, { reverse });
+      const inlineEntryAtCurrentIsNonSelectable =
+        !!inlineEntryAtCurrent &&
+        !editor.api.isSelectable(inlineEntryAtCurrent[0]);
+      const adjacentInlineEntryIsNonSelectable =
+        !!adjacentInlineEntry &&
+        !editor.api.isSelectable(adjacentInlineEntry[0]);
+      const inlineEntry =
+        inlineEntryAtNext ??
+        (inlineEntryAtCurrentIsNonSelectable
+          ? inlineEntryAtCurrent
+          : undefined) ??
+        (adjacentInlineEntryIsNonSelectable ? adjacentInlineEntry : undefined);
+      const pointCurrentInsideInline =
+        !!inlineEntry && PathApi.isAncestor(inlineEntry[1], pointCurrent.path);
+
+      if (
+        inlineEntry &&
+        editor.api.isVoid(inlineEntry[0]) &&
+        (!inlineEntryAtNext || !pointCurrentInsideInline)
+      ) {
+        editor.tf.setNodes(
+          {
+            [getSuggestionKey(id)]: {
+              id,
+              createdAt,
+              type: 'remove',
+              userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+            },
+            [KEYS.suggestion]: true,
+          },
+          { at: inlineEntry[1] }
+        );
+
+        const beforeInlineElement = editor.api.before(inlineEntry[1]);
+        const targetIsInsideInlineElement =
+          PathApi.equals(inlineEntry[1], pointTarget.path) ||
+          PathApi.isAncestor(inlineEntry[1], pointTarget.path);
+
+        if (reverse) {
+          if (beforeInlineElement) {
+            editor.tf.select(beforeInlineElement);
+
+            if (
+              !targetIsInsideInlineElement &&
+              !PointApi.equals(beforeInlineElement, pointTarget)
+            ) {
+              continue;
+            }
+          }
+
+          break;
+        }
+
+        const afterInlineElement = editor.api.after(inlineEntry[1]);
+
+        if (afterInlineElement) {
+          editor.tf.select(afterInlineElement);
+
+          if (!PointApi.equals(afterInlineElement, pointTarget)) {
+            continue;
+          }
+        } else if (beforeInlineElement) {
+          editor.tf.select(beforeInlineElement);
+        }
+
+        break;
+      }
 
       // if the current point is in block addition suggestion, delete block
       const entryBlock = editor.api.node<TElement>({
@@ -151,6 +291,10 @@ export const deleteSuggestion = (
           }
 
           if (!isBlockSuggestion) {
+            const isPreviousBlockVoid =
+              editor.api.isVoid(previousAboveNode[0]) &&
+              !editor.api.isInline(previousAboveNode[0]);
+
             editor.tf.setNodes(
               {
                 [KEYS.suggestion]: {
@@ -159,6 +303,7 @@ export const deleteSuggestion = (
                   type: 'remove',
                   userId:
                     editor.getOptions(BaseSuggestionPlugin).currentUserId!,
+                  ...(isPreviousBlockVoid ? {} : { isLineBreak: true }),
                 },
               },
               { at: previousAboveNode[1] }
@@ -200,6 +345,7 @@ export const deleteSuggestion = (
       setSuggestionNodes(editor, {
         at: range,
         createdAt: createdAt as number,
+        includeInlineElements: false,
         suggestionDeletion: true,
         suggestionId: id,
       });

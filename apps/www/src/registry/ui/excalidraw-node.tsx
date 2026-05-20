@@ -8,6 +8,8 @@ import type { PlateElementProps } from 'platejs/react';
 import { useExcalidrawElement } from '@platejs/excalidraw/react';
 import { PlateElement, useReadOnly } from 'platejs/react';
 
+import { cn } from '@/lib/utils';
+
 import '@excalidraw/excalidraw/index.css';
 
 export function ExcalidrawElement(
@@ -23,7 +25,11 @@ export function ExcalidrawElement(
   return (
     <PlateElement {...props}>
       <div contentEditable={false}>
-        <div className="mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border">
+        <div
+          className={cn(
+            'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border'
+          )}
+        >
           {Excalidraw && (
             <Excalidraw
               {...(excalidrawProps as any)}

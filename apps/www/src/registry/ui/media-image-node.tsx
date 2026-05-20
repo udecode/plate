@@ -45,16 +45,18 @@ export const ImageElement = withHOC(
                 className={mediaResizeHandleVariants({ direction: 'left' })}
                 options={{ direction: 'left' }}
               />
-              <Image
-                ref={handleRef}
-                className={cn(
-                  'block w-full max-w-full cursor-pointer object-cover px-0',
-                  'rounded-sm',
-                  focused && selected && 'ring-2 ring-ring ring-offset-2',
-                  isDragging && 'opacity-50'
-                )}
-                alt={props.attributes.alt as string | undefined}
-              />
+              <div>
+                <Image
+                  ref={handleRef}
+                  className={cn(
+                    'block w-full max-w-full cursor-pointer object-cover px-0',
+                    'rounded-sm',
+                    focused && selected && 'ring-2 ring-ring ring-offset-2',
+                    isDragging && 'opacity-50'
+                  )}
+                  alt={props.attributes.alt as string | undefined}
+                />
+              </div>
               <ResizeHandle
                 className={mediaResizeHandleVariants({
                   direction: 'right',

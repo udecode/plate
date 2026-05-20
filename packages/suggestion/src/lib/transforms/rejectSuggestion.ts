@@ -23,6 +23,21 @@ export const rejectSuggestion = (
   description: TResolvedSuggestion
 ) => {
   editor.tf.withoutNormalizing(() => {
+    const inlineInsertElementEntries = [
+      ...editor.api.nodes({
+        at: [],
+        match: (n) => {
+          if (!ElementApi.isElement(n) || !editor.api.isInline(n)) return false;
+
+          const suggestionData = getInlineSuggestionData(n);
+
+          return (
+            suggestionData?.type === 'insert' &&
+            suggestionData.id === description.suggestionId
+          );
+        },
+      }),
+    ];
     const mergeNodes = [
       ...editor.api.nodes({
         at: [],
@@ -55,7 +70,10 @@ export const rejectSuggestion = (
         at: [],
         mode: 'all',
         match: (n) => {
-          if (TextApi.isText(n)) {
+          if (
+            TextApi.isText(n) ||
+            (ElementApi.isElement(n) && editor.api.isInline(n))
+          ) {
             const node = n as TSuggestionText;
             const suggestionData = getInlineSuggestionData(node);
 
@@ -122,6 +140,10 @@ export const rejectSuggestion = (
 
         return false;
       },
+    });
+
+    inlineInsertElementEntries.reverse().forEach(([, path]) => {
+      editor.tf.removeNodes({ at: path });
     });
 
     const updateNodes = [

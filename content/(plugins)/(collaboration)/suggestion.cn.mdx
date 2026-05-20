@@ -90,7 +90,6 @@ export type SuggestionConfig = ExtendConfig<
   {
     activeId: string | null;
     hoverId: string | null;
-    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -101,7 +100,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       activeId: null,
       currentUserId: 'alice', // 设置当前用户ID
       hoverId: null,
-      uniquePathMap: new Map(),
     },
     render: {
       node: SuggestionLeaf,
@@ -120,7 +118,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
 - `options.activeId`：当前活跃建议ID，用于视觉高亮
 - `options.currentUserId`：创建建议的当前用户ID  
 - `options.hoverId`：当前悬停建议ID，用于悬停效果
-- `options.uniquePathMap`：追踪建议解析唯一路径的映射表
 - `render.node`：指定 [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
 - `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-suggestion)
 

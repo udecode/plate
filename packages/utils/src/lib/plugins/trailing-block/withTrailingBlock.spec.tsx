@@ -50,4 +50,43 @@ describe('withTrailingBlock', () => {
     expect(editor.children).toHaveLength(1);
     expect(normalizeNode).toHaveBeenCalledWith([editor, []]);
   });
+
+  it('allows wrapping trailing block insertion', () => {
+    const editor = createSlateEditor({
+      value: [{ type: 'h1', children: [{ text: 'x' }] }] as any,
+    });
+    const insert = mock(
+      (
+        _editor: unknown,
+        {
+          insert: runInsert,
+        }: {
+          insert: () => void;
+        }
+      ) => {
+        runInsert();
+      }
+    );
+    const normalizeNode = mock();
+
+    const override = withTrailingBlock({
+      editor,
+      getOptions: () => ({
+        insert,
+        level: 0,
+        type: 'p',
+      }),
+      tf: { normalizeNode },
+    } as any);
+    const normalize = override.transforms!.normalizeNode!;
+
+    normalize([editor, []]);
+
+    expect(insert).toHaveBeenCalledTimes(1);
+    expect(editor.children[1]).toMatchObject({
+      type: 'p',
+      children: [{ text: '' }],
+    });
+    expect(normalizeNode).not.toHaveBeenCalled();
+  });
 });

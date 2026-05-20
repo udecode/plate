@@ -67,4 +67,50 @@ describe('setSuggestionNodes', () => {
       })
     );
   });
+
+  it('can skip marking outer inline elements', () => {
+    const setNodes = mock();
+    const selection = {
+      anchor: { offset: 3, path: [0, 1, 0] },
+      focus: { offset: 4, path: [0, 1, 0] },
+    };
+    const editor = {
+      api: {
+        isInline: () => true,
+        nodes: () => [[{ type: 'a' }, [0, 1]]],
+      },
+      getOptions: (plugin: unknown) => {
+        expect(plugin).toBe(BaseSuggestionPlugin);
+
+        return { currentUserId: 'user-1' };
+      },
+      selection,
+      tf: {
+        setNodes,
+        withoutNormalizing: (fn: () => void) => fn(),
+      },
+    } as any;
+
+    setSuggestionNodes(editor, {
+      createdAt: 123,
+      includeInlineElements: false,
+      suggestionId: 's-1',
+    });
+
+    const props = {
+      [KEYS.suggestion]: true,
+      [getSuggestionKey('s-1')]: {
+        createdAt: 123,
+        id: 's-1',
+        type: 'remove',
+        userId: 'user-1',
+      },
+    };
+
+    expect(setNodes).toHaveBeenCalledTimes(1);
+    expect(setNodes).toHaveBeenCalledWith(props, {
+      at: selection,
+      marks: true,
+    });
+  });
 });
