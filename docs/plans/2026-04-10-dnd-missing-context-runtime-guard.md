@@ -29,4 +29,4 @@ Prevent `@platejs/dnd` from throwing `Expected drag drop context` when a Plate s
   - `pnpm turbo build --filter=./packages/dnd --filter=./apps/www`
   - `pnpm turbo typecheck --filter=./packages/dnd --filter=./apps/www`
   - `pnpm lint:fix`
-  - `dev-browser --connect http://127.0.0.1:9222` verification on `/` and `/cn` with no console errors, no page errors, and no `Expected drag drop context` crash text
+  - `browser-use --connect http://127.0.0.1:9222` verification on `/` and `/cn` with no console errors, no page errors, and no `Expected drag drop context` crash text

@@ -30,7 +30,7 @@ Fix the `/docs/table` multi-cell selection runtime error:
 - Reloaded task/debug/browser/test/planning skills for this bug.
 - Searched local learnings and code for `table`, `multi-cell`, and the exact Slate error.
 - Started a dedicated plan file for this bug.
-- Reproduced the browser crash on `/docs/table` with `dev-browser` by dragging a multi-cell selection in the first table demo.
+- Reproduced the browser crash on `/docs/table` with `browser-use` by dragging a multi-cell selection in the first table demo.
 - Added `createDemoValueSnapshot` and switched both mounted table demos to pass cloned initial values into `usePlateEditor`.
 - Cleaned non-versioned local env after the `.bun` mirror reintroduced the `is-hotkey` parse failure during verification, then reinstalled with `pnpm install`.
 - Verified the regression test passes, `apps/www` typechecks cleanly, `pnpm lint:fix` passes, and the fresh `/docs/table` browser repro no longer throws page errors.

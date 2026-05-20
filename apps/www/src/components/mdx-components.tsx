@@ -6,6 +6,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { cva } from 'class-variance-authority';
 import { Provider } from 'jotai';
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useMDXComponent } from 'next-contentlayer2/hooks';
 import Image from 'next/image';
 
@@ -61,6 +62,10 @@ import {
 } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
+const ReleaseIndex = dynamic(() =>
+  import('./release-index').then((module) => module.ReleaseIndex)
+);
+
 const components = {
   a: Link,
   Accordion,
@@ -113,6 +118,7 @@ const components = {
   p: Typography.P,
   PackageInfo,
   pre: Typography.Pre,
+  ReleaseIndex,
   Step: Typography.Step,
   Steps: Typography.Steps,
   table: Typography.Table,
@@ -288,7 +294,6 @@ function Accordion({
 const calloutVariants = cva(
   cn(
     'my-4 flex gap-2 rounded-lg border border-s-2 bg-neutral-50 p-3 text-sm shadow-md first:mt-0 dark:bg-neutral-900',
-    '*:[svg]:text-neutral-50 dark:*:[svg]:text-neutral-900',
     '**:[[data-slot="mdx-link"]]:hover:after:bottom-0'
   ),
   {
@@ -341,10 +346,10 @@ function Callout({
     >
       {icon ??
         {
-          error: <CircleX className="size-5 fill-red-500" />,
-          info: <Info className="size-5 fill-blue-500" />,
-          success: <CircleCheck className="size-5 fill-green-500" />,
-          warn: <TriangleAlert className="size-5 fill-orange-500" />,
+          error: <CircleX className="size-5 text-red-500" />,
+          info: <Info className="size-5 text-blue-500" />,
+          success: <CircleCheck className="size-5 text-green-500" />,
+          warn: <TriangleAlert className="size-5 text-orange-500" />,
         }[type]}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         {title ? <p className="!my-0 font-medium">{title}</p> : null}

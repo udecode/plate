@@ -7,6 +7,11 @@
         "REGISTRY_URL": "http://localhost:3000/rd/registry.json"
       },
       "type": "stdio"
+    },
+    "agentation": {
+      "command": "npx",
+      "args": ["-y", "agentation-mcp@latest", "server"],
+      "type": "stdio"
     }
   }
 }

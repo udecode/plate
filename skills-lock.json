@@ -36,6 +36,11 @@
       "sourceType": "github",
       "computedHash": "b1d795a6f3a4004ba9ac21ad10b3473df2917bdbe4f851894dbee66fd513afea"
     },
+    "codex-review": {
+      "source": "steipete/agent-scripts",
+      "sourceType": "github",
+      "computedHash": "2daa33984003fbeb27b821725eb15d6e469251d63e58a6883a42580a0efa0d25"
+    },
     "coding-tutor": {
       "source": "EveryInc/compound-engineering-plugin",
       "sourceType": "github",
@@ -45,11 +50,6 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "computedHash": "09c9096e132640e201c4ffd592ffa144d949243ca7a71c5ef020e111927c495a"
-    },
-    "dev-browser": {
-      "source": "sawyerhood/dev-browser",
-      "sourceType": "github",
-      "computedHash": "d50d11bbefdc1599d78900828dcb69d48e5091769d3f5ce10e06a60efe2405bf"
     },
     "frontend-design": {
       "source": "EveryInc/compound-engineering-plugin",

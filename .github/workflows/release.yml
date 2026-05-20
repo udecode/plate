@@ -4,29 +4,46 @@ on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   release:
     name: Release and changelog
     runs-on: ubuntu-latest
     if: ${{ github.repository == 'udecode/plate' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip release]') }}
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     outputs:
       published: ${{ steps.changesets.outputs.published }}
       publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
 
     steps:
+      - name: Generate App Token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        if: vars.RELEASE_APP_ID != ''
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - name: 📥 Checkout Repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
 
       - name: 🔎 Detect auto-release opt-in
         id: auto_release
         uses: actions/github-script@v7
         with:
+          github-token: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           script: |
             const { pathToFileURL } = await import('node:url');
             const helperUrl = pathToFileURL(
@@ -121,22 +138,144 @@ jobs:
         with:
           cwd: ${{ github.workspace }}
           title: '[Release] Version packages'
-          publish: pnpm release
+          commit: '[Release] Version packages'
+          version: pnpm ci:version
+          publish: pnpm ci:release
+          createGithubReleases: false
         env:
           HOME: ${{ github.workspace }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 🏷️ Push package tags
+        if: ${{ steps.changesets.outputs.published == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          mapfile -t TAGS < <(node tooling/scripts/published-package-tags.mjs)
+
+          for tag in "${TAGS[@]}"; do
+            if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+              echo "Missing expected package tag ${tag}."
+              exit 1
+            fi
+
+            git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/${tag}:refs/tags/${tag}"
+          done
+
+      - name: 📝 Sync release docs from Version Packages PR
+        if: ${{ steps.changesets.outputs.published != 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          RELEASE_PR: ${{ steps.changesets.outputs.pullRequestNumber }}
+        run: |
+          HEAD_REF="$(gh pr view "$RELEASE_PR" --json headRefName --jq .headRefName)"
+
+          gh pr checkout "$RELEASE_PR"
+          node tooling/scripts/sync-version-package-releases.mjs --pr "$RELEASE_PR" --from v49
+
+          if [[ -z "$(git status --porcelain --untracked-files=all -- apps/www/src/generated/release-index.json)" ]]; then
+            echo "Release docs already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/www/src/generated/release-index.json
+          git commit -m "[Release] Sync release docs"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${HEAD_REF}"
+
+      - name: 📝 Generate raw release notes
+        id: raw-notes
+        if: ${{ steps.changesets.outputs.published == 'true' }}
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: node tooling/scripts/release-notes.mjs
+
+      - name: 🧠 Build AI prompt from template
+        id: ai-prompt
+        if: ${{ steps.raw-notes.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
+        run: |
+          PROMPT=$(sed \
+            -e "s|__RAW_CHANGELOG_PATH__|${RAW_PATH}|g" \
+            .github/prompts/release-notes-rewrite.md)
+          EOF_DELIM="PROMPT_EOF_$(openssl rand -hex 8)"
+          echo "prompt<<${EOF_DELIM}" >> "$GITHUB_OUTPUT"
+          echo "$PROMPT" >> "$GITHUB_OUTPUT"
+          echo "${EOF_DELIM}" >> "$GITHUB_OUTPUT"
+
+      - name: 🤖 Rewrite release notes with AI
+        id: ai-notes
+        if: ${{ steps.ai-prompt.outcome == 'success' }}
+        continue-on-error: true
+        uses: anthropics/claude-code-action/base-action@2ff1acb3ee319fa302837dad6e17c2f36c0d98ea # v1.0.91
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.ai-prompt.outputs.prompt }}
+          claude_args: --max-turns 100 --allowedTools "Read Write Bash(gh pr diff*) Bash(gh pr view*)"
+
+      - name: ✅ Validate AI release notes
+        if: ${{ steps.ai-notes.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
+        run: |
+          node tooling/scripts/release-notes.mjs validate "$RAW_PATH" "${RAW_PATH}.final"
+          touch "${RAW_PATH}.final.validated"
+
+      - name: 📝 Create GitHub Release
+        if: ${{ steps.changesets.outputs.published == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB || secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.raw-notes.outputs.version }}
+          RAW_PATH: ${{ steps.raw-notes.outputs.raw_changelog_path }}
+        run: |
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::Could not determine release version."
+            exit 1
+          fi
+
+          TAG="v${VERSION}"
+
+          if [[ -f "${RAW_PATH}.final" && -f "${RAW_PATH}.final.validated" ]]; then
+            NOTES_FILE="${RAW_PATH}.final"
+            echo "Using AI-rewritten release notes."
+          else
+            NOTES_FILE="${RAW_PATH}"
+            if [[ -f "${RAW_PATH}.final" ]]; then
+              echo "::warning::Ignoring unvalidated AI-rewritten release notes."
+            fi
+            echo "Using raw release notes."
+          fi
+
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${TAG}" -f sha="$GITHUB_SHA" 2>/dev/null \
+            || echo "Tag $TAG already exists."
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE"
+            echo "Updated release $TAG."
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --notes-file "$NOTES_FILE" --target "$GITHUB_SHA"
+            echo "Created release $TAG."
+          fi
 
       - name: 🤖 Merge Version Packages PR
         if: ${{ steps.auto_release.outputs.enabled == 'true' && steps.changesets.outputs.pullRequestNumber != '' }}
         env:
-          GH_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.API_TOKEN_GITHUB }}
           RELEASE_PR: ${{ steps.changesets.outputs.pullRequestNumber }}
           SOURCE_PR: ${{ steps.auto_release.outputs.source_pr }}
         run: |
           if [[ -z "${GH_TOKEN}" ]]; then
-            echo "API_TOKEN_GITHUB is required so the merged release PR can trigger publish workflows."
+            echo "A GitHub App token or API_TOKEN_GITHUB is required so the merged release PR can trigger publish workflows."
             exit 1
           fi
 
@@ -148,6 +287,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: release
     if: ${{ needs.release.result == 'success' && needs.release.outputs.published == 'true' }}
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: 📥 Checkout Repo

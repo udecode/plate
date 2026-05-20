@@ -98,7 +98,7 @@ pnpm --filter www build:registry
 pnpm lint:fix
 ```
 
-Browser verification used `dev-browser` against a clean `www` dev server on
+Browser verification used `browser-use` against a clean `www` dev server on
 `127.0.0.1:3001`. The standalone TOC block route loaded, but the docs preview
 surface stayed stuck on `Loading...`, so browser proof for active-row promotion
 was limited to route-level sanity rather than a full interactive TOC assertion.

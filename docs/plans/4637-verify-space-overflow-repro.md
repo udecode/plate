@@ -47,7 +47,7 @@ Determine whether GitHub issue `#4637` is reproducible on the current Plate site
   - no horizontal overflow was observed
   - `editable.scrollWidth === editable.clientWidth`
   - caret remained inside the editor width
-- Browser screenshot saved at `/Users/zbeyens/.dev-browser/tmp/issue-4637-current-site.png`.
+- Browser screenshot saved at `/Users/zbeyens/.browser-use/tmp/issue-4637-current-site.png`.
 - This does not prove the original 2025 report was wrong; it does show the issue is not reproducible on the current site surface.
 
 ## Progress Log
@@ -55,7 +55,7 @@ Determine whether GitHub issue `#4637` is reproducible on the current Plate site
 - Loaded `task`, `learnings-researcher`, `planning-with-files`, and `reproduce-bug`.
 - Deleted the prior `#4535` investigation plan artifact at the user's request.
 - Fetched the full GitHub issue with comments.
-- Loaded `dev-browser` once the issue was confirmed to be browser-facing.
+- Loaded `browser-use` once the issue was confirmed to be browser-facing.
 - Inspected `apps/www/src/registry/ui/editor.tsx` and confirmed current wrapping classes are present.
 - Ran a live browser repro on `platejs.org` with 80 inserted spaces in the middle of a word and captured screenshot + DOM measurements.
 

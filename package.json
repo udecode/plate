@@ -10,6 +10,8 @@
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
+    "ci:release": "pnpm release",
+    "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",

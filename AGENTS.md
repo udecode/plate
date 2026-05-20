@@ -66,25 +66,17 @@ When using the following skills, override the default behavior.
 - For issue-backed work, start the filename with the ticket number instead of `date+ticket`. Example: `docs/plans/4510-fix-schema.md`
 - For non-ticket work, keep the date-based format. Example: `docs/plans/2026-02-07-fix-schema.md`
 
-`dev-browser`:
+Browser usage:
 
-- Use `dev-browser --connect http://127.0.0.1:9222` by default for browser work. Do not preflight `9222` first.
-- Only inspect `9222` or use `browser-debug-setup` after a direct `dev-browser --connect http://127.0.0.1:9222` attempt fails.
-- Reuse one persistent debug Chrome on `127.0.0.1:9222`. Do not spin up disposable browser instances unless the user asks.
-- Use a dedicated Chrome `--user-data-dir` for that debug browser, not the user's normal daily Chrome data dir.
-- Clone the signed-in Chrome profile into the dedicated debug dir, then launch the debug browser from that clone.
-- On macOS, launch the debug browser with `open -na "Google Chrome" --args ... --remote-debugging-port=9222` so it opens as a separate Chrome instance without hijacking the user's normal window.
-- Do not close or stop the user's connected debug browser. Leave that debug window open and reuse it. Close named pages only when needed.
-- Keep scripts small and direct. Prefer `browser.getPage("persistent-main")` for the main app.
-- Use `dev-browser` instead of `agent-browser` or next-devtools `browser_eval`.
-- If `dev-browser` gets blocked by a human prompt or loops on the same step, stop and ask the user to unblock. After the unblock works:
-  - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
+- Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
+- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
+- For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 `ce-*`:
 
-- **plan:** Include `dev-browser` in acceptance criteria for browser features
+- **plan:** Include Browser Use in acceptance criteria for browser features
 - **deepen-plan:** Context7 only when not covered by skills
-- **work:** UI tasks require `dev-browser` BEFORE marking complete. Never guess.
+- **work:** UI tasks require Browser Use BEFORE marking complete. Never guess.
 
 ## Commands
 
@@ -190,7 +182,7 @@ pnpm --filter @platejs/core lint:fix
 - [ ] Typecheck (IF updated `.ts` files or typed test/build config): For package-scoped verification, follow the build-first sequence: `pnpm install` -> `pnpm turbo build --filter=...` -> `pnpm turbo typecheck --filter=...`. If unresolved workspace imports remain, run `pnpm build` at repo root, then rerun the package typecheck. For full repo verification, use `pnpm typecheck`. Do not default to `pnpm typecheck` for package verification.
 - [ ] Lint: Run `lint:fix`
 - [ ] PR gate (IF creating/updating a PR): Run `check`
-- [ ] Browser verification (IF a browser surface changed): verify with `dev-browser` before done
+- [ ] Browser verification (IF a browser surface changed): verify with Browser Use before done
 - [ ] ce-compound (SKIP if trivial): CRITICAL: After completing this request, you MUST evaluate whether it produced extractable knowledge. EVALUATION PROTOCOL (NON-NEGOTIABLE): (1) COMPLETE the user's request first (2) EVALUATE - Did this require non-obvious investigation or debugging? Was the solution something that would help in future similar situations? Did I discover something not immediately obvious from documentation? (3) IF YES to any: load `ce-compound` after the fix is verified and follow its workflow to capture the solution in `docs/solutions/` (4) IF NO to all: Skip - no extraction needed This is NOT optional. Failing to evaluate = valuable knowledge lost.
 
 ### Post Compact Recovery
