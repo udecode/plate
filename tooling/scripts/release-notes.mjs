@@ -21,10 +21,16 @@ const releaseTypeHeadingPattern =
   /^###\s+(Major|Minor|Patch) Changes[^\S\r\n]*$/gm;
 const nextVersionHeadingPattern = /^##\s+/m;
 const packageHeadingPattern = /^## `[^`]+`[^\S\r\n]*$/gm;
+const packageNameFromHeadingPattern = /^## `([^`]+)`/;
 const changeHeadingPattern = /^###\s+(Major|Minor|Patch) Changes[^\S\r\n]*$/gm;
 const changelogLinkPattern =
   /For detailed changes, see \[`CHANGELOG`\]\([^)]+\)/g;
 const fullChangelogLinkPattern = /Full changelog: \[`[^`]+`\]\([^)]+\)/g;
+const fullChangelogFooterPattern =
+  /\n\nFull changelog: \[`[^`]+`\]\([^)]+\)\s*$/;
+const markdownHeadingBoundaryPattern = /\n##\s+/;
+const packageChangelogFooterPattern =
+  /\n*For detailed changes, see \[`CHANGELOG`\]\([^)]+\)\s*$/g;
 const pullRequestLinkPattern = /\[#\d+\]\(https:\/\/github\.com\/[^)]+\)/g;
 const commitLinkPattern =
   /\[`[0-9a-f]{7,40}`\]\(https:\/\/github\.com\/udecode\/plate\/commit\/[0-9a-f]{7,40}\)/g;
@@ -82,6 +88,34 @@ async function main(args) {
     return;
   }
 
+  if (args[0] === 'add-package-changelogs') {
+    const [, releaseNotesPath] = args;
+
+    if (!releaseNotesPath) {
+      throw new Error(
+        'Usage: release-notes.mjs add-package-changelogs <release-notes>'
+      );
+    }
+
+    const publishedPackages = parsePublishedPackages(
+      process.env.PUBLISHED_PACKAGES ??
+        process.env.PUBLISHED_PACKAGES_JSON ??
+        ''
+    );
+    const workspacePackages = await getWorkspacePackages();
+    const content = await readFile(releaseNotesPath, 'utf8');
+    const updatedContent = addPackageChangelogLinks(content, {
+      commitRef: process.env.GITHUB_SHA || 'main',
+      publishedPackages,
+      workspacePackages,
+    });
+
+    await writeFile(releaseNotesPath, updatedContent);
+
+    console.log(`Added package changelog links to ${releaseNotesPath}.`);
+    return;
+  }
+
   const publishedPackages = parsePublishedPackages(
     process.env.PUBLISHED_PACKAGES ?? process.env.PUBLISHED_PACKAGES_JSON ?? ''
   );
@@ -92,18 +126,11 @@ async function main(args) {
   }
 
   const workspacePackages = await getWorkspacePackages();
-  const detailedChanges = getDetailedChanges({
-    commitRef: process.env.GITHUB_SHA || 'main',
-    publishedPackages,
-    version,
-    workspacePackages,
-  });
   const fullChangelog = await getFullChangelog({
     publishedPackages,
     version,
   });
   const body = await generateRawReleaseNotes({
-    detailedChanges,
     fullChangelog,
     publishedPackages,
     workspacePackages,
@@ -176,34 +203,34 @@ export async function getFullChangelog({
   };
 }
 
-export function getDetailedChanges({
+export function getPackageChangelogUrls({
   commitRef = 'main',
   publishedPackages,
   repoRootDirectory = repoRoot,
-  version,
   workspacePackages,
 }) {
-  const preferredPackage = getPreferredPublishedPackage(
-    publishedPackages,
-    version
-  );
+  const changelogUrls = new Map();
 
-  if (!preferredPackage) return null;
+  for (const publishedPackage of publishedPackages) {
+    if (typeof publishedPackage?.name !== 'string') continue;
 
-  const workspacePackage = workspacePackages.get(preferredPackage.name);
+    const workspacePackage = workspacePackages.get(publishedPackage.name);
 
-  if (!workspacePackage?.directory) return null;
+    if (!workspacePackage?.directory) continue;
 
-  const packageDirectory = normalizePath(
-    path.relative(repoRootDirectory, workspacePackage.directory)
-  );
+    const packageDirectory = normalizePath(
+      path.relative(repoRootDirectory, workspacePackage.directory)
+    );
 
-  if (!packageDirectory || packageDirectory.startsWith('..')) return null;
+    if (!packageDirectory || packageDirectory.startsWith('..')) continue;
 
-  return {
-    label: 'CHANGELOG',
-    url: `https://github.com/${repo}/blob/${commitRef}/${packageDirectory}/CHANGELOG.md`,
-  };
+    changelogUrls.set(
+      publishedPackage.name,
+      `https://github.com/${repo}/blob/${commitRef}/${packageDirectory}/CHANGELOG.md`
+    );
+  }
+
+  return changelogUrls;
 }
 
 export async function getWorkspacePackages(roots = packageRoots) {
@@ -238,7 +265,6 @@ export async function getWorkspacePackages(roots = packageRoots) {
 }
 
 export async function generateRawReleaseNotes({
-  detailedChanges,
   fullChangelog,
   publishedPackages,
   workspacePackages,
@@ -297,13 +323,6 @@ export async function generateRawReleaseNotes({
     lines.push('');
   }
 
-  if (detailedChanges) {
-    lines.push(
-      `For detailed changes, see [\`${detailedChanges.label}\`](${detailedChanges.url})`
-    );
-    lines.push('');
-  }
-
   if (fullChangelog) {
     lines.push(
       `Full changelog: [\`${fullChangelog.label}\`](${fullChangelog.url})`
@@ -312,6 +331,57 @@ export async function generateRawReleaseNotes({
   }
 
   return `${lines.join('\n').trimEnd()}\n`;
+}
+
+export function addPackageChangelogLinks(
+  content,
+  {
+    commitRef = 'main',
+    publishedPackages,
+    repoRootDirectory,
+    workspacePackages,
+  }
+) {
+  const changelogUrls = getPackageChangelogUrls({
+    commitRef,
+    publishedPackages,
+    repoRootDirectory,
+    workspacePackages,
+  });
+  let output = '';
+  let cursor = 0;
+
+  for (const match of content.matchAll(packageHeadingPattern)) {
+    const headingStart = match.index;
+
+    if (headingStart < cursor) continue;
+
+    const heading = match[0];
+    const packageName = packageNameFromHeadingPattern.exec(heading)?.[1];
+    const bodyStart = headingStart + heading.length;
+    const nextHeadingMatch = markdownHeadingBoundaryPattern.exec(
+      content.slice(bodyStart)
+    );
+    const sectionEnd =
+      nextHeadingMatch?.index === undefined
+        ? content.length
+        : bodyStart + nextHeadingMatch.index;
+    const changelogUrl = packageName ? changelogUrls.get(packageName) : null;
+    let sectionBody = content.slice(bodyStart, sectionEnd);
+
+    output += content.slice(cursor, bodyStart);
+
+    if (changelogUrl) {
+      sectionBody = appendPackageChangelogLink(sectionBody, changelogUrl);
+    }
+
+    output += sectionBody;
+    cursor = sectionEnd;
+  }
+
+  output += content.slice(cursor);
+
+  return output.endsWith('\n') ? output : `${output}\n`;
 }
 
 export function extractReleaseChanges(changelog, version) {
@@ -465,6 +535,21 @@ function extractReleaseTypeSections(content) {
     })
     .filter(Boolean)
     .sort((a, b) => compareReleaseTypes(a.type, b.type));
+}
+
+function appendPackageChangelogLink(sectionBody, changelogUrl) {
+  const fullChangelogMatch = fullChangelogFooterPattern.exec(sectionBody);
+
+  if (fullChangelogMatch) {
+    const body = sectionBody.slice(0, fullChangelogMatch.index);
+    const footer = sectionBody.slice(fullChangelogMatch.index);
+
+    return `${appendPackageChangelogLink(body, changelogUrl)}${footer}`;
+  }
+
+  return `${sectionBody
+    .replace(packageChangelogFooterPattern, '')
+    .trimEnd()}\n\nFor detailed changes, see [\`CHANGELOG\`](${changelogUrl})`;
 }
 
 async function readPackageJson(directory) {

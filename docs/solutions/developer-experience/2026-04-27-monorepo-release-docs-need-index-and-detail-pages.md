@@ -52,12 +52,13 @@ Generate release docs from the Version Packages PR body:
 - After `changesets/action` creates or updates `[Release] Version packages`, the workflow checks out that PR and runs `tooling/scripts/sync-version-package-releases.mjs --pr <number>`.
 - `tooling/scripts/sync-version-package-releases.mjs` parses the PR description's `# Releases` section, groups package headings by version, and writes `apps/www/src/generated/release-index.json`.
 - For historical backfills, run `node tooling/scripts/sync-version-package-releases.mjs --latest <count> --from v49` so the docs include every generated release entry from v49 onward without pulling older history.
-- The generated entry keeps the Better Auth-style body, points `CHANGELOG` at the selected package's `CHANGELOG.md` when a repo-level GitHub Release exists, falls back to the Version Packages PR otherwise, and stores a preferred package tag for compare links.
+- The generated entry keeps the Better Auth-style body and stores a preferred package tag for compare links. It does not add a single fake `CHANGELOG` footer for monorepo releases.
 - Preferred tags use `platejs@version` when that package published, otherwise the first package tag in the release PR body.
 - `Full changelog` links compare the previous generated release's preferred package tag to the current release's preferred package tag.
-- `tooling/scripts/release-notes.mjs` reads `PUBLISHED_PACKAGES`, resolves the matching package directories, extracts each package's exact `CHANGELOG.md` section, and emits deterministic raw notes grouped by package with one bottom `For detailed changes, see CHANGELOG` link plus one `Full changelog` compare link.
+- `tooling/scripts/release-notes.mjs` reads `PUBLISHED_PACKAGES`, resolves the matching package directories, extracts each package's exact `CHANGELOG.md` section, and emits deterministic raw notes grouped by package with one bottom `Full changelog` compare link.
+- When Claude produces a validated `.final` release note, the workflow injects per-package `For detailed changes, see CHANGELOG` links into that final body. Raw fallback notes hide those links because the raw body is already copied from package changelogs.
 - The parser folds indented continuation lines into the same bullet before moving `[#1234] by @user` metadata to the end of the sentence.
-- `.github/prompts/release-notes-rewrite.md` lets Claude polish the raw notes, but validation keeps package headings, change-type headings, PR links, the full changelog link, entry count, and migration notes intact.
+- `.github/prompts/release-notes-rewrite.md` lets Claude polish the raw notes, but validation keeps package headings, change-type headings, PR links, the full changelog link, entry count, and migration notes intact. The prompt tells Claude not to add changelog links; the deterministic post-process owns that.
 - The release workflow creates or updates one repo-level `vX.Y.Z` GitHub Release using the validated AI notes or the raw notes.
 - `content/releases/index.mdx` renders `<ReleaseIndex />`; the component imports the generated JSON directly.
 
@@ -77,7 +78,7 @@ Full changelog: [`v53.0.4...v53.0.5`](https://github.com/udecode/plate/compare/<
 
 ## Why This Works
 
-The feed answers "what changed recently?" without inventing summaries. Each release row carries all package changes inline, with Better Auth-style fade/expand behavior for long releases. Released rows link the title to the GitHub Release, link `CHANGELOG` to the selected package changelog file, and keep the compare footer; unreleased generated rows can fall back to the Version Packages PR.
+The feed answers "what changed recently?" without inventing summaries. Each release row carries all package changes inline, with Better Auth-style fade/expand behavior for long releases. Released rows link the title to the GitHub Release and keep the compare footer. Package changelog links belong in the GitHub Release body only when the body is an AI-polished summary.
 
 Package-tag compares solve the one-click diff problem without relying on nonexistent repo tags. When `platejs` is published, the compare uses `platejs@version`; otherwise it uses the first published package tag for that version.
 
@@ -91,6 +92,7 @@ Checked-in JSON avoids GitHub API latency and Vercel runtime fetch cost entirely
 - Do not copy Better Auth's product-domain `pr-analyzer` into Plate. Plate's reliable grouping source is each package's Changesets changelog section.
 - Do not link release docs to repo `vX.Y.Z` comparisons for Changesets package releases. Compare package tags instead.
 - Keep AI release-note rewrites behind deterministic raw notes and validation. AI can polish, but package headings, PR links, the full changelog link, entry counts, and migration notes are structural truth.
+- Do not show per-package `CHANGELOG` links when Claude did not produce a validated final body. Raw fallback notes are already detailed package changelogs.
 - Test wrapped Changesets bullets directly. A multi-line bullet should render the full sentence first and append the PR link after the folded summary.
 - If the docs component is rendered through the client MDX component registry, prefer checked-in generated data over a runtime fetch.
 - While historical GitHub Releases are package-tagged, keep one row per version and never expose one primary click per package.

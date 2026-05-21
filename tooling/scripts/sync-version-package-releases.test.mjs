@@ -140,18 +140,20 @@ test('falls back to first package tag and builds compare URLs', () => {
   assert.equal(releases[0].url, 'https://github.com/udecode/plate/pull/2');
   assert.match(
     releases[0].content,
-    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/2\) · \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fmedia%4053\.0\.1\.\.\.%40platejs%2Flist%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
+    /\[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fmedia%4053\.0\.1\.\.\.%40platejs%2Flist%4053\.0\.2\) · By \[@beta\]\(https:\/\/github\.com\/beta\), \[@alpha\]\(https:\/\/github\.com\/alpha\)/
   );
+  assert.doesNotMatch(releases[0].content, /\[`CHANGELOG`\]/);
   assert.doesNotMatch(releases[0].content, /For detailed changes/);
   assert.doesNotMatch(releases[0].content, /Full changelog:/);
   assert.equal(releases[1].url, 'https://github.com/udecode/plate/pull/1');
   assert.match(
     releases[1].content,
-    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\) · \[`v53\.0\.1`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\)/
+    /\[`v53\.0\.1`\]\(https:\/\/github\.com\/udecode\/plate\/pull\/1\)/
   );
+  assert.doesNotMatch(releases[1].content, /\[`CHANGELOG`\]/);
 });
 
-test('uses GitHub Release URLs with package changelog links', () => {
+test('uses GitHub Release URLs without fake package changelog footer links', () => {
   const releases = mergeReleases(
     [
       {
@@ -194,8 +196,9 @@ test('uses GitHub Release URLs with package changelog links', () => {
   );
   assert.match(
     releases[0].content,
-    /\[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/d09298282dd3af8022052e51c212eb6cdcdd3843\/packages\/plate\/CHANGELOG\.md\) · \[`v53\.0\.4\.\.\.v53\.0\.5`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fai%4053\.0\.4\.\.\.platejs%4053\.0\.5\) · By \[@github-actions\\\[bot\\\]\]\(https:\/\/github\.com\/github-actions%5Bbot%5D\)/
+    /\[`v53\.0\.4\.\.\.v53\.0\.5`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/%40platejs%2Fai%4053\.0\.4\.\.\.platejs%4053\.0\.5\) · By \[@github-actions\\\[bot\\\]\]\(https:\/\/github\.com\/github-actions%5Bbot%5D\)/
   );
+  assert.doesNotMatch(releases[0].content, /\[`CHANGELOG`\]/);
   assert.doesNotMatch(releases[0].content, /pull\/4978/);
   assert.equal(releases[1].url, 'https://github.com/udecode/plate/pull/4975');
 });

@@ -5,11 +5,12 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  addPackageChangelogLinks,
   extractReleaseChanges,
   generateRawReleaseNotes,
-  getDetailedChanges,
   getFullChangelog,
   getGlobalReleaseVersion,
+  getPackageChangelogUrls,
   getWorkspacePackages,
   parsePublishedPackages,
   validateAiReleaseNotes,
@@ -87,10 +88,6 @@ test('generates raw release notes from published package changelogs', async () =
   );
 
   const body = await generateRawReleaseNotes({
-    detailedChanges: {
-      label: 'CHANGELOG',
-      url: 'https://github.com/udecode/plate/blob/abc/packages/list/CHANGELOG.md',
-    },
     fullChangelog: {
       label: 'v53.0.1...v53.0.2',
       url: 'https://github.com/udecode/plate/compare/v53.0.1...v53.0.2',
@@ -106,15 +103,12 @@ test('generates raw release notes from published package changelogs', async () =
   assert.match(body, /@dylans/);
   assert.match(
     body,
-    /For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc\/packages\/list\/CHANGELOG\.md\)/
-  );
-  assert.match(
-    body,
     /Full changelog: \[`v53\.0\.1\.\.\.v53\.0\.2`\]\(https:\/\/github\.com\/udecode\/plate\/compare\/v53\.0\.1\.\.\.v53\.0\.2\)/
   );
+  assert.doesNotMatch(body, /For detailed changes/);
 });
 
-test('selects the preferred package changelog for detailed changes', async () => {
+test('builds changelog URLs for every published workspace package', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'plate-detailed-changes-'));
   const packageRoot = path.join(root, 'packages');
   const listDirectory = path.join(packageRoot, 'list');
@@ -132,20 +126,83 @@ test('selects the preferred package changelog for detailed changes', async () =>
   );
 
   assert.deepEqual(
-    getDetailedChanges({
+    getPackageChangelogUrls({
       commitRef: 'abc123',
       publishedPackages: [
         { name: '@platejs/list', version: '53.0.5' },
         { name: 'platejs', version: '53.0.5' },
       ],
       repoRootDirectory: root,
-      version: '53.0.5',
       workspacePackages: await getWorkspacePackages([packageRoot]),
     }),
-    {
-      label: 'CHANGELOG',
-      url: 'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md',
-    }
+    new Map([
+      [
+        '@platejs/list',
+        'https://github.com/udecode/plate/blob/abc123/packages/list/CHANGELOG.md',
+      ],
+      [
+        'platejs',
+        'https://github.com/udecode/plate/blob/abc123/packages/plate/CHANGELOG.md',
+      ],
+    ])
+  );
+});
+
+test('adds package changelog links only during AI finalization', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'plate-package-links-'));
+  const packageRoot = path.join(root, 'packages');
+  const listDirectory = path.join(packageRoot, 'list');
+  const plateDirectory = path.join(packageRoot, 'plate');
+
+  await mkdir(listDirectory, { recursive: true });
+  await mkdir(plateDirectory, { recursive: true });
+  await writeFile(
+    path.join(listDirectory, 'package.json'),
+    JSON.stringify({ name: '@platejs/list', version: '53.0.5' })
+  );
+  await writeFile(
+    path.join(plateDirectory, 'package.json'),
+    JSON.stringify({ name: 'platejs', version: '53.0.5' })
+  );
+
+  const content = `## \`@platejs/list\`
+
+### Patch Changes
+
+- Fix lists.
+
+## \`platejs\`
+
+### Patch Changes
+
+- Update wrapper.
+
+## Contributors
+
+Thanks to everyone who contributed to this release:
+
+@alice
+
+Full changelog: [\`v53.0.4...v53.0.5\`](https://github.com/udecode/plate/compare/v53.0.4...v53.0.5)
+`;
+
+  const linkedContent = addPackageChangelogLinks(content, {
+    commitRef: 'abc123',
+    publishedPackages: [
+      { name: '@platejs/list', version: '53.0.5' },
+      { name: 'platejs', version: '53.0.5' },
+    ],
+    repoRootDirectory: root,
+    workspacePackages: await getWorkspacePackages([packageRoot]),
+  });
+
+  assert.match(
+    linkedContent,
+    /## `@platejs\/list`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/list\/CHANGELOG\.md\)[\s\S]*## `platejs`/
+  );
+  assert.match(
+    linkedContent,
+    /## `platejs`[\s\S]*For detailed changes, see \[`CHANGELOG`\]\(https:\/\/github\.com\/udecode\/plate\/blob\/abc123\/packages\/plate\/CHANGELOG\.md\)[\s\S]*## Contributors/
   );
 });
 

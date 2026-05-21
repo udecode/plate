@@ -280,9 +280,6 @@ export function mergeReleases(
         changelogLabel,
         content: release.content,
         contributors: release.contributors,
-        detailedChangesUrl: releaseUrl
-          ? release.changelogUrl
-          : (release.versionPackagePrUrl ?? url),
         fullChangelogUrl,
       }),
       url,
@@ -306,11 +303,9 @@ function getReleaseContentWithFooter({
   changelogLabel,
   content,
   contributors = [],
-  detailedChangesUrl,
   fullChangelogUrl,
 }) {
   const footer = [
-    detailedChangesUrl ? `[\`CHANGELOG\`](${detailedChangesUrl})` : undefined,
     `[\`${changelogLabel}\`](${fullChangelogUrl})`,
     contributors.length > 0
       ? `By ${formatContributorList(contributors)}`
