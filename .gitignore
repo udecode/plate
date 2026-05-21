@@ -6,6 +6,7 @@ apps/www/public/rd
 **/*.tsbuildinfo
 templates/my-app
 .cursor/local
+.bun
 
 .pnpm-store/*
 .repo_ignore
