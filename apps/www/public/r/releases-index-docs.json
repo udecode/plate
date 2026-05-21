@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "releases-index-docs",
+  "type": "registry:file",
+  "title": "Releases",
+  "description": "Documentation for Releases",
+  "files": [
+    {
+      "path": "../../content/releases/index.mdx",
+      "content": "---\ntitle: Releases\n---\n\n<ReleaseIndex />\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/releases/index.mdx"
+    }
+  ]
+}
